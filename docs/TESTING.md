@@ -20,7 +20,13 @@
 Текущий playable slice покрыт независимыми файлами в `tests/e2e/`:
 
 - `auth-init` — cookie на `game.php` 200, flat `init`/`init2`, nested `user|bag`,
-  numeric `user|conf.id`, item id ≥ 100000, restart hero/bag;
+  numeric `user|conf.id`, tutorial flags в `user|personal_details`, item id ≥ 100000,
+  restart hero/bag;
+- `personal-details` — `user|save_personal_details` flat `status:100` + `state`,
+  persist `pondViewLast` после restart, overlay tutorial flags, nested getter;
+- `browser-auth` — HTML login/register, 302 handoff, пять cookies только в 200,
+  cookie restore, FlashVars/`main.swf`, Pub1 root static, duplicate conflict;
+- `https-startup` — Fastify listen с legacy TLS и GET `/login`;
 - `unsupported` — `clan|info` → `status:203`;
 - `hunt-attack` — `ATTACK_BOT` → flat `fight|conf` с decimal `fightId`/`userId`
   и `instance_id:"0"`;
@@ -31,8 +37,12 @@
 - `finished-fights` — после terminal hunt в PostgreSQL ровно одна строка с
   numeric `teams.1[].id`; повторная идентичная запись не дублирует;
 - `concurrent-heroes` — два уникальных slot параллельно, разные hero/fight id;
-- `protocol-errors` — no-session `status:4`, malformed `204`, unknown OA/fproxy
-  `203`.
+- `protocol-errors` — no-session `status:4`, Flash Content-Type → не `415`,
+  malformed `204`, unknown OA/fproxy `203`;
+- `bootstrap-oa-trace` — CEF-order probe: весь burst init→jail status 100;
+- `common-conf` — `common|conf` status 100 + live `gag_reason_info` + `state`;
+- `user-unitframe` — `user|unitframe` status 100 + live HUD keys (`hpMax`, не `maxHp`) + `state`;
+- `bootstrap-chrome` — jgr-emu shapes: view/magic/chat/flash/menu/book trio/empty lists;
 
 Content import → validate → publish и invalid candidate → rollback остаются
 integration-тестами PostgreSQL, не Fastify E2E.

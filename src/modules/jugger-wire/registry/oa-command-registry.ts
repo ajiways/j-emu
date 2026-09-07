@@ -3,10 +3,24 @@ import { oaRegistryKey, type ObjectActionEnvelope } from "../commands/oa/object-
 
 export class OaCommandRegistry {
   static readonly requiredKeys = [
+    "battlepass|list",
+    "book|quest_list",
+    "chat|conf",
+    "common|conf",
     "common|init",
     "common|init2",
+    "common|menu_link_status",
     "common|object:ATTACK_BOT",
+    "companion|list_user_companions",
+    "craft|user_recipes_list",
+    "jail|list",
     "user|bag",
+    "user|flash_message",
+    "user|magic",
+    "user|personal_details",
+    "user|save_personal_details",
+    "user|unitframe",
+    "user|view",
   ] as const;
 
   private readonly commands: ReadonlyMap<string, OaCommand>;
@@ -28,6 +42,11 @@ export class OaCommandRegistry {
 
   keys(): readonly string[] {
     return [...this.commands.keys()].sort();
+  }
+
+  has(key: string): boolean {
+    if (!key) throw new Error("OA command key is required");
+    return this.commands.has(key);
   }
 
   async dispatch(accountId: number, envelope: ObjectActionEnvelope): Promise<OaEncodedResponse> {

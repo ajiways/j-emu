@@ -2,6 +2,12 @@ import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../character/application/character-service.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import type { WorldService } from "../../world/domain/world-service.ts";
+import type { CommonConfBlock } from "./common-conf-document.ts";
+import {
+  buildUserUnitframe,
+  type UnitframeHudPolicy,
+  type UserUnitframeBlock,
+} from "./user-unitframe-block.ts";
 
 type StatusOkBlock = Readonly<{ status: 100 }>;
 
@@ -49,10 +55,7 @@ type UserConfBlock = Readonly<{
 
 type UserPersonalDetailsBlock = Readonly<{
   status: 100;
-  info: Readonly<{
-    finished_first_fight: string;
-    tutorial2: string;
-  }>;
+  info: Readonly<Record<string, unknown>>;
 }>;
 
 type InitBlocks = Readonly<{
@@ -64,14 +67,7 @@ type InitBlocks = Readonly<{
   "user|personal_details": UserPersonalDetailsBlock;
 }>;
 
-export type UserUnitframeBlock = Readonly<{
-  status: 100;
-  id: number;
-  nick: string;
-  hp: number;
-  maxHp: number;
-  level: number;
-}>;
+export type { UserUnitframeBlock };
 
 type AreaConfBlock = Readonly<{
   status: 100;
@@ -122,6 +118,8 @@ export class BootstrapReadModel {
         finished_first_fight: string;
         tutorial2: string;
       }>;
+      commonConf: CommonConfBlock;
+      unitframe: UnitframeHudPolicy;
       idleFightId: string;
       huntMask: number;
     }>,
@@ -131,8 +129,17 @@ export class BootstrapReadModel {
     return this.policy.heroKind;
   }
 
+  get commonConf(): CommonConfBlock {
+    return this.policy.commonConf;
+  }
+
+  async unitframe(accountId: number): Promise<UserUnitframeBlock> {
+    return buildUserUnitframe(await this.requireHero(accountId), this.policy.unitframe);
+  }
+
   async init(accountId: number): Promise<InitBlocks> {
     const hero = await this.requireHero(accountId);
+    const storedInfo = await this.characters.personalDetails(accountId);
     const items = await this.inventory.list(hero.id);
     const bag: Record<string, BagItemBlock> = {};
     for (const item of items) {
@@ -178,7 +185,7 @@ export class BootstrapReadModel {
       },
       "user|personal_details": {
         status: 100,
-        info: { ...this.policy.tutorialInfo },
+        info: { ...storedInfo, ...this.policy.tutorialInfo },
       },
     };
   }
@@ -210,14 +217,7 @@ export class BootstrapReadModel {
         money: moneyFromMinorUnits(hero.moneyMinor),
         money_gold: this.policy.diamonds,
       },
-      "user|unitframe": {
-        status: 100,
-        id: hero.id,
-        nick: hero.nick,
-        hp: hero.hp,
-        maxHp: hero.maxHp,
-        level: hero.level,
-      },
+      "user|unitframe": buildUserUnitframe(hero, this.policy.unitframe),
       "common|area_conf": {
         status: 100,
         id: area.id,

@@ -10,6 +10,11 @@ import type { IdentityService } from "../identity/application/identity-service.t
 import type { InventoryService } from "../inventory/domain/inventory-service.ts";
 import type { WorldService } from "../world/domain/world-service.ts";
 import { BootstrapReadModel } from "./application/bootstrap-read-model.ts";
+import type { CommonConfBlock } from "./application/common-conf-document.ts";
+import { HeroSheetReadModel } from "./application/hero-sheet-read-model.ts";
+import type { ChatConfPolicy } from "./application/chat-conf-block.ts";
+import type { PaperdollPolicy } from "./application/user-view-block.ts";
+import type { UnitframeHudPolicy } from "./application/user-unitframe-block.ts";
 import { FightWireMapper } from "./application/fight-wire-mapper.ts";
 import { LongPollCoordinator } from "./application/long-poll-coordinator.ts";
 import { JuggerHttpServer } from "./infrastructure/http/jugger-http-server.ts";
@@ -24,6 +29,11 @@ export type JuggerWireBootstrapPolicy = Readonly<{
     finished_first_fight: string;
     tutorial2: string;
   }>;
+  commonConf: CommonConfBlock;
+  unitframe: UnitframeHudPolicy;
+  view: PaperdollPolicy;
+  chat: ChatConfPolicy;
+  menuLinks: Readonly<Record<string, string>>;
   idleFightId: string;
   huntMask: number;
 }>;
@@ -100,6 +110,11 @@ export class JuggerWireModule {
       );
       const commands = new JuggerCommandModule(
         new BootstrapReadModel(characters, inventory, catalog, world, bootstrapPolicy),
+        new HeroSheetReadModel(characters, {
+          view: bootstrapPolicy.view,
+          chat: bootstrapPolicy.chat,
+          menuLinks: bootstrapPolicy.menuLinks,
+        }),
         characters,
         inventory,
         world,

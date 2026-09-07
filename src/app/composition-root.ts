@@ -1,9 +1,11 @@
+import path from "node:path";
 import { PostgresDatabase } from "../infrastructure/postgres/database.ts";
 import { CatalogModule } from "../modules/catalog/catalog-module.ts";
 import { CharacterModule } from "../modules/character/character-module.ts";
 import { CombatModule } from "../modules/combat/combat-module.ts";
 import { IdentityModule } from "../modules/identity/identity-module.ts";
 import { InventoryModule } from "../modules/inventory/inventory-module.ts";
+import { CommonConfDocument } from "../modules/jugger-wire/application/common-conf-document.ts";
 import { JuggerWireModule } from "../modules/jugger-wire/jugger-wire-module.ts";
 import { WorldModule } from "../modules/world/world-module.ts";
 import { Application } from "./application.ts";
@@ -50,6 +52,7 @@ export class CompositionRoot {
         inventory.service,
         database,
       );
+      const { commonConfFile, ...bootstrap } = policy.bootstrap;
       const wire = await JuggerWireModule.create({
         config,
         identity: identity.service,
@@ -60,7 +63,12 @@ export class CompositionRoot {
         catalog: catalog.catalog,
         world: world.service,
         combat: combat.combat,
-        bootstrap: policy.bootstrap,
+        bootstrap: {
+          ...bootstrap,
+          commonConf: CommonConfDocument.load(
+            path.resolve(path.dirname(config.gamePolicyFile), commonConfFile),
+          ),
+        },
         fightWire: policy.fightWire,
         meleeSourceIds: policy.combat.meleeSourceIds,
       });

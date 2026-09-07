@@ -6,7 +6,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PostgresDatabase } from "../../../src/infrastructure/postgres/database.ts";
 import { migrateDatabase } from "../../../src/infrastructure/postgres/migration-runner.ts";
 import { artifacts, bots } from "../../../src/modules/catalog/infrastructure/schema.ts";
-import { heroes } from "../../../src/modules/character/infrastructure/schema.ts";
+import {
+  heroes,
+  heroPersonalDetails,
+} from "../../../src/modules/character/infrastructure/schema.ts";
 import { finishedFights } from "../../../src/modules/combat/infrastructure/schema.ts";
 import {
   activeRelease,
@@ -60,6 +63,7 @@ describe("Drizzle migrations", () => {
       [
         "catalog.artifacts",
         "catalog.bots",
+        "character.hero_personal_details",
         "character.heroes",
         "combat.finished_fights",
         "content.active_release",
@@ -86,6 +90,7 @@ describe("Drizzle migrations", () => {
       areas,
       huntSpawns,
       heroes,
+      heroPersonalDetails,
       items,
       finishedFights,
       drafts,
@@ -94,13 +99,16 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(15);
+    ]).toHaveLength(16);
 
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
     ) as { entries: Array<{ tag: string }> };
-    expect(journal.entries.map((entry) => entry.tag)).toEqual(["0000_foundation_init"]);
-    expect(await appliedCount()).toBe(1);
+    expect(journal.entries.map((entry) => entry.tag)).toEqual([
+      "0000_foundation_init",
+      "0001_character_add_hero_personal_details",
+    ]);
+    expect(await appliedCount()).toBe(2);
 
     const singleton = await database
       .session()

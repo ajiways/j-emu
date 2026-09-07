@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { bigint, check, integer, pgSchema, text } from "drizzle-orm/pg-core";
+import { bigint, check, integer, jsonb, pgSchema, text } from "drizzle-orm/pg-core";
 
 export const characterSchema = pgSchema("character");
 
@@ -27,5 +27,21 @@ export const heroes = characterSchema.table(
     check("heroes_max_hp_check", sql`${table.maxHp} > 0 AND ${table.hp} <= ${table.maxHp}`),
     check("heroes_money_minor_check", sql`${table.moneyMinor} >= 0`),
     check("heroes_version_check", sql`${table.version} > 0`),
+  ],
+);
+
+export const heroPersonalDetails = characterSchema.table(
+  "hero_personal_details",
+  {
+    heroId: integer("hero_id")
+      .primaryKey()
+      .references(() => heroes.id, { onDelete: "cascade" }),
+    info: jsonb("info").$type<Record<string, unknown>>().notNull(),
+    schemaVersion: integer("schema_version").notNull(),
+  },
+  (table) => [
+    check("hero_personal_details_schema_version_check", sql`${table.schemaVersion} = 1`),
+    check("hero_personal_details_info_object_check", sql`jsonb_typeof(${table.info}) = 'object'`),
+    check("hero_personal_details_info_size_check", sql`octet_length(${table.info}::text) <= 16384`),
   ],
 );

@@ -4,6 +4,7 @@ import { CharacterService } from "./application/character-service.ts";
 import type { HeroCreationPolicy } from "./domain/hero.ts";
 import { Hero } from "./domain/hero.ts";
 import { PostgresHeroRepository } from "./infrastructure/postgres-hero-repository.ts";
+import { PostgresPersonalDetailsRepository } from "./infrastructure/postgres-personal-details-repository.ts";
 
 export class CharacterModule {
   private constructor(readonly service: CharacterService) {}
@@ -19,7 +20,11 @@ export class CharacterModule {
     );
     Hero.assertCreationPolicy(creationPolicy);
     return new CharacterModule(
-      new CharacterService(new PostgresHeroRepository(database), creationPolicy),
+      new CharacterService(
+        new PostgresHeroRepository(database),
+        new PostgresPersonalDetailsRepository(database),
+        creationPolicy,
+      ),
     );
   }
 

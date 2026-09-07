@@ -5,6 +5,7 @@ import { CharacterModule } from "../../../src/modules/character/character-module
 import { CombatModule } from "../../../src/modules/combat/combat-module.ts";
 import { IdentityModule } from "../../../src/modules/identity/identity-module.ts";
 import { InventoryModule } from "../../../src/modules/inventory/inventory-module.ts";
+import type { CommonConfBlock } from "../../../src/modules/jugger-wire/application/common-conf-document.ts";
 import { JuggerWireModule } from "../../../src/modules/jugger-wire/jugger-wire-module.ts";
 import { WorldModule } from "../../../src/modules/world/world-module.ts";
 import type { AppConfig } from "../../../src/app/config.ts";
@@ -154,6 +155,44 @@ describe("module factories", () => {
           pocketCapacity: 1,
           heroKind: 1,
           tutorialInfo: { finished_first_fight: "1", tutorial2: "{}" },
+          commonConf: { status: 100 } as CommonConfBlock,
+          unitframe: {
+            rank: 0,
+            fight_id: 0,
+            gag_time: 0,
+            hp_time: 0,
+            mp_time: 0,
+            epic_value: 0,
+            mp: 12,
+            mpMax: 12,
+            exp: 1,
+            expMin: 0,
+            expMax: 68,
+            expStatus: 0,
+            honor: 0,
+            honorMin: 0,
+            honorMax: 100,
+            honorStatus: 0,
+            revenge: 0,
+            revengeMin: 0,
+            revengeMax: "300",
+            revengeStatus: 0,
+            energy_percent_max: 100,
+            energy_percent_current: 100,
+            avatar_small: "avatar_m_set_0_gray_sm.png",
+          },
+          view: {
+            sk: 1,
+            body: "armor();head(0,0,8,152);skin()",
+            avatar_big: "avatar_m_set_0_gray.png",
+            bag_cnt: 2,
+          },
+          chat: {
+            protocol: "mpd",
+            key: "EMUKEY1",
+            chat_server: "https://s1.jugger.ru/esrv//emu",
+          },
+          menuLinks: { "3": "1465239232" },
           idleFightId: "0",
           huntMask: 0,
         },
