@@ -9,6 +9,8 @@ import { WorldModule } from "../modules/world/world-module.ts";
 import { Application } from "./application.ts";
 import type { AppConfig } from "./config.ts";
 import { loadGamePolicy } from "./game-policy.ts";
+import { PlayableAccountRegistration } from "./playable-account-registration.ts";
+import { PlayableDevelopmentIdentity } from "./playable-development-identity.ts";
 
 export class CompositionRoot {
   async build(config: AppConfig): Promise<Application> {
@@ -36,9 +38,23 @@ export class CompositionRoot {
       const combat = CombatModule.create({ database, rules: policy.combat });
       combat.startHistoryCleanup();
       closers.push(combat);
+      const registration = new PlayableAccountRegistration(
+        identity.service,
+        characters.service,
+        inventory.service,
+        database,
+      );
+      const developmentIdentity = new PlayableDevelopmentIdentity(
+        identity.service,
+        characters.service,
+        inventory.service,
+        database,
+      );
       const wire = await JuggerWireModule.create({
         config,
         identity: identity.service,
+        registration,
+        developmentIdentity,
         characters: characters.service,
         inventory: inventory.service,
         catalog: catalog.catalog,

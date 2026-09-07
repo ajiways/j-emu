@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Джаггернаут</title>
+    <script type="text/javascript" src="/js/jquery.js"></script>
+    <script type="text/javascript" src="/js/ac_runactivecontent.js"></script>
+    <script type="text/javascript" src="/js/common.js"></script>
+    <script type="text/javascript" src="/js/swfobject.js"></script>
+    <script type="text/javascript" src="/js/unity.js"></script>
+    <script type="text/javascript">
+      window.unity_check_init = function () {
+        return 1;
+      };
+      window.unity_version_check = function () {
+        return 1;
+      };
+      if (location.search) history.replaceState(null, "", "/game.php");
+    </script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        background: #000;
+        overflow: hidden;
+      }
+      .flash {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="overlay" style="display: none"></div>
+    <div id="noUnity" style="display: none"></div>
+    <div id="flash" class="flash">
+      <script type="text/javascript">
+        var nick = {{{nickJs}}};
+        var userid = {{{idJs}}};
+        var chkUnityVersionMajor = '2';
+        var chkUnityVersionMinor = '';
+        var chkUnityVersionBuild = '';
+        var wmode = 'direct';
+        try {
+          var ver = (typeof AC_GetSwfVer === 'function' ? AC_GetSwfVer() : '11.2').split('.');
+          wmode = parseInt(ver[0], 10) < 11 && parseInt(ver[1], 10) < 2 ? 'opaque' : 'direct';
+        } catch (e) {}
+        if (typeof AC_FL_RunContent === 'function') {
+          AC_FL_RunContent(
+            'id', 'SwfMain', 'name', 'SwfMain',
+            'allowFullScreen', 'true',
+            'allowScriptAccess', 'sameDomain',
+            'width', '100%', 'height', '100%',
+            'src', 'images/swf/main.swf?ux=emu',
+            'flashvars', '{{{flashvars}}}',
+            'quality', 'high', 'scale', 'showall',
+            'wmode', wmode, 'bgcolor', '#000000'
+          );
+        } else {
+          document.write(
+            '<object type="application/x-shockwave-flash" data="/images/swf/main.swf?ux=emu" ' +
+            'width="100%" height="100%" id="SwfMain" name="SwfMain">' +
+            '<param name="movie" value="/images/swf/main.swf?ux=emu">' +
+            '<param name="flashvars" value="{{{flashvars}}}">' +
+            '<param name="allowScriptAccess" value="sameDomain">' +
+            '<param name="allowFullScreen" value="true">' +
+            '<param name="wmode" value="direct">' +
+            '<param name="bgcolor" value="#000000">' +
+            '<param name="scale" value="showall">' +
+            '</object>'
+          );
+        }
+      </script>
+    </div>
+  </body>
+</html>

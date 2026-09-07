@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Джаггернаут — Войти</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        background: #0f0a06;
+        color: #f2e6d8;
+        display: grid;
+        place-items: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+      .card {
+        background: #1e140d;
+        border: 1px solid rgba(196, 92, 38, 0.3);
+        border-radius: 12px;
+        width: min(380px, 94vw);
+        padding: 2rem;
+      }
+      h1 {
+        font-size: 1.3rem;
+        margin: 0 0 0.25rem;
+        color: #e8c87a;
+      }
+      .sub {
+        font-size: 0.82rem;
+        opacity: 0.55;
+        margin: 0 0 1.5rem;
+      }
+      label {
+        display: block;
+        font-size: 0.85rem;
+        opacity: 0.8;
+        margin-bottom: 0.3rem;
+      }
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 0.6rem 0.8rem;
+        border-radius: 7px;
+        border: 1px solid rgba(196, 92, 38, 0.4);
+        background: #150e09;
+        color: #f2e6d8;
+        font-size: 0.95rem;
+        outline: none;
+      }
+      input:focus {
+        border-color: #c45c26;
+      }
+      .field {
+        margin-bottom: 1rem;
+      }
+      button {
+        margin-top: 0.5rem;
+        width: 100%;
+        padding: 0.7rem;
+        border: 0;
+        border-radius: 8px;
+        background: #c45c26;
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #d96e38;
+      }
+      .footer {
+        margin-top: 1.25rem;
+        font-size: 0.82rem;
+        text-align: center;
+        opacity: 0.65;
+      }
+      .footer a {
+        color: #c45c26;
+        text-decoration: none;
+      }
+      .err {
+        background: rgba(220, 50, 50, 0.15);
+        border: 1px solid rgba(220, 50, 50, 0.4);
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+        color: #f8a0a0;
+        margin-bottom: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Джаггернаут</h1>
+      <p class="sub">Локальный эмулятор сервера</p>
+      {{{errorBlock}}}
+      <form method="POST" action="/login">
+        <div class="field">
+          <label for="login">Логин</label>
+          <input type="text" id="login" name="login" autocomplete="username" required />
+        </div>
+        <div class="field">
+          <label for="password">Пароль</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+        <button type="submit">Войти</button>
+      </form>
+      <p class="footer">Нет аккаунта? <a href="/register">Создать</a></p>
+    </div>
+  </body>
+</html>

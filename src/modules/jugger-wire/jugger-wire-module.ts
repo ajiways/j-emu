@@ -1,5 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { AppConfig } from "../../app/config.ts";
+import type { PlayableAccountRegistration } from "../../app/playable-account-registration.ts";
+import type { PlayableDevelopmentIdentity } from "../../app/playable-development-identity.ts";
 import { requirePresent } from "../../shared/kernel/require-present.ts";
 import type { Catalog } from "../catalog/ports/catalog.ts";
 import type { CharacterService } from "../character/application/character-service.ts";
@@ -48,6 +50,8 @@ export class JuggerWireModule {
   static async create(input: {
     config: AppConfig;
     identity: IdentityService;
+    registration: PlayableAccountRegistration;
+    developmentIdentity: PlayableDevelopmentIdentity;
     characters: CharacterService;
     inventory: InventoryService;
     catalog: Catalog;
@@ -59,6 +63,14 @@ export class JuggerWireModule {
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
+    const registration = requirePresent(
+      input.registration,
+      "Jugger-wire module requires playable registration",
+    );
+    const developmentIdentity = requirePresent(
+      input.developmentIdentity,
+      "Jugger-wire module requires development identity",
+    );
     const characters = requirePresent(input.characters, "Jugger-wire module requires characters");
     const inventory = requirePresent(input.inventory, "Jugger-wire module requires inventory");
     const catalog = requirePresent(input.catalog, "Jugger-wire module requires catalog");
@@ -99,6 +111,8 @@ export class JuggerWireModule {
       const http = await new JuggerHttpServer({
         config,
         identity,
+        registration,
+        developmentIdentity,
         characters,
         inventory,
         commands,

@@ -20,10 +20,10 @@ export class JuggerHttpServer {
       ...(https ? { https } : {}),
     });
     await app.register(fastifyCookie);
-    app.addContentTypeParser(
-      "application/octet-stream",
-      { parseAs: "buffer" },
-      (_request, body, done) => done(null, body),
+    // Flash URLRequest POST defaults to application/x-www-form-urlencoded and
+    // may omit Content-Type. AMF routes must read a raw Buffer regardless.
+    app.addContentTypeParser("*", { parseAs: "buffer" }, (_request, body, done) =>
+      done(null, body),
     );
     try {
       await new AuthRouteRegistrar(this.dependencies).register(app);

@@ -1,6 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import { Account } from "../domain/account.ts";
+import { DuplicateAccountError } from "../domain/duplicate-account-error.ts";
 import type { AccountRepository } from "../ports/account-repository.ts";
 import { accounts } from "./schema.ts";
 
@@ -21,21 +22,34 @@ export class PostgresAccountRepository implements AccountRepository {
     return this.single(rows, `account login ${login}`);
   }
 
-  async create(login: string, nick: string, passwordHash: string | null): Promise<Account> {
-    const credentials = Account.credentials(login, nick, passwordHash);
+  async findByNick(nick: string): Promise<Account | null> {
     const rows = await this.database
       .session()
-      .insert(accounts)
-      .values({
-        login: credentials.login,
-        nick: credentials.nick,
-        passwordHash: credentials.passwordHash,
-        createdAt: sql`now()`,
-      })
-      .returning();
-    const row = rows[0];
-    if (rows.length !== 1 || !row) throw new Error("Account insert did not return an id");
-    return Account.restore(row.id, row.login, row.nick, row.passwordHash);
+      .select()
+      .from(accounts)
+      .where(eq(accounts.nick, nick));
+    return this.single(rows, `account nick ${nick}`);
+  }
+
+  async create(login: string, nick: string, passwordHash: string | null): Promise<Account> {
+    const credentials = Account.credentials(login, nick, passwordHash);
+    try {
+      const rows = await this.database
+        .session()
+        .insert(accounts)
+        .values({
+          login: credentials.login,
+          nick: credentials.nick,
+          passwordHash: credentials.passwordHash,
+          createdAt: sql`now()`,
+        })
+        .returning();
+      const row = rows[0];
+      if (rows.length !== 1 || !row) throw new Error("Account insert did not return an id");
+      return Account.restore(row.id, row.login, row.nick, row.passwordHash);
+    } catch (error) {
+      throw duplicateAccountError(error) ?? error;
+    }
   }
 
   async save(account: Account): Promise<void> {
@@ -62,4 +76,29 @@ export class PostgresAccountRepository implements AccountRepository {
     const row = rows[0];
     return row ? Account.restore(row.id, row.login, row.nick, row.passwordHash) : null;
   }
+}
+
+function duplicateAccountError(error: unknown): DuplicateAccountError | undefined {
+  if (!isUniqueViolation(error)) return undefined;
+  const constraint = constraintName(error);
+  if (constraint === "accounts_login_unique") return new DuplicateAccountError("login");
+  if (constraint === "accounts_nick_unique") return new DuplicateAccountError("nick");
+  return undefined;
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  if ("code" in error && error.code === "23505") return true;
+  if ("cause" in error) return isUniqueViolation(error.cause);
+  return false;
+}
+
+function constraintName(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  if ("constraint_name" in error && typeof error.constraint_name === "string") {
+    return error.constraint_name;
+  }
+  if ("constraint" in error && typeof error.constraint === "string") return error.constraint;
+  if ("cause" in error) return constraintName(error.cause);
+  return undefined;
 }

@@ -11,8 +11,9 @@ export class StaticAssetRegistrar {
     }
     await app.register(fastifyStatic, {
       root: this.pub1Dir,
-      prefix: "/Pub1/",
+      prefix: "/",
       decorateReply: false,
+      index: false,
     });
   }
 }

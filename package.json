@@ -10,6 +10,7 @@
     "dev": "tsx watch src/main.ts",
     "build": "tsx scripts/clean-dist.ts && tsc -p tsconfig.json && tsc -p tsconfig.tests.json",
     "start": "node dist/main.js",
+    "start:https": "tsx scripts/start-https.ts",
     "test": "npm run test:unit",
     "test:unit": "vitest run --config vitest.config.ts",
     "test:db": "npm run test:integration",

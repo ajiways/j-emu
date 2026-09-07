@@ -8,6 +8,8 @@ import { InventoryModule } from "../../../src/modules/inventory/inventory-module
 import { JuggerWireModule } from "../../../src/modules/jugger-wire/jugger-wire-module.ts";
 import { WorldModule } from "../../../src/modules/world/world-module.ts";
 import type { AppConfig } from "../../../src/app/config.ts";
+import type { PlayableAccountRegistration } from "../../../src/app/playable-account-registration.ts";
+import type { PlayableDevelopmentIdentity } from "../../../src/app/playable-development-identity.ts";
 import type { Catalog } from "../../../src/modules/catalog/ports/catalog.ts";
 import type { CharacterService } from "../../../src/modules/character/application/character-service.ts";
 import type { CombatPort } from "../../../src/modules/combat/ports/combat-port.ts";
@@ -80,6 +82,8 @@ describe("module factories", () => {
       JuggerWireModule.create({
         config: undefined as unknown as AppConfig,
         identity: {} as IdentityService,
+        registration: {} as PlayableAccountRegistration,
+        developmentIdentity: {} as PlayableDevelopmentIdentity,
         characters: {} as CharacterService,
         inventory: {} as InventoryService,
         catalog: {} as Catalog,
@@ -137,6 +141,8 @@ describe("module factories", () => {
           fightProxyPort: 33120,
         },
         identity: {} as IdentityService,
+        registration: {} as PlayableAccountRegistration,
+        developmentIdentity: {} as PlayableDevelopmentIdentity,
         characters: {} as CharacterService,
         inventory: {} as InventoryService,
         catalog: {} as Catalog,
