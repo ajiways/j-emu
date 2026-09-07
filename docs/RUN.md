@@ -14,7 +14,9 @@ npm run db:publish:development
 `db:migrate` накатывает схему. `db:publish:development` публикует `content/playable-slice.json`. Без обоих шагов runtime не стартует с пустой БД.
 
 Тот же publish-скрипт на уже заполненной БД: совпавший checksum — no-op;
-новый checksum — новая активная release.
+новый checksum — новая активная release. После миграции `0002_world_location_scalars`
+сначала migrate, затем publish: миграция очищает устаревшие `world`/`catalog.bots`
+projection-строки.
 
 ## HTTP :8080 (браузер без CEF)
 

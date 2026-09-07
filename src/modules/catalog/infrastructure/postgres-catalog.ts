@@ -3,6 +3,7 @@ import type { PostgresDatabase } from "../../../infrastructure/postgres/database
 import type { ActiveContentRevision } from "../../content/ports/active-content-revision.ts";
 import { ArtifactDefinition } from "../domain/artifact-definition.ts";
 import { BotDefinition } from "../domain/bot-definition.ts";
+import { HuntLook } from "../domain/hunt-look.ts";
 import type { Catalog } from "../ports/catalog.ts";
 import { artifacts, bots } from "./schema.ts";
 
@@ -43,6 +44,24 @@ export class PostgresCatalog implements Catalog {
       .where(and(eq(bots.releaseId, releaseId), eq(bots.id, id)));
     if (rows.length > 1) throw new Error(`Multiple bot definitions found for ${id}`);
     const row = rows[0];
-    return row ? new BotDefinition(row.id, row.title, row.level, row.maxHp, row.strength) : null;
+    return row
+      ? new BotDefinition(
+          row.id,
+          row.title,
+          row.level,
+          row.maxHp,
+          row.strength,
+          new HuntLook(
+            row.huntNick,
+            row.huntSwf,
+            row.huntScale,
+            row.huntFps,
+            row.huntSpeed,
+            row.huntAvatar,
+            row.huntKind,
+            row.huntHideOnMap,
+          ),
+        )
+      : null;
   }
 }

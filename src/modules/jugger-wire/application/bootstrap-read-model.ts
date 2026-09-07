@@ -1,13 +1,22 @@
+import type { BotDefinition } from "../../catalog/domain/bot-definition.ts";
 import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../character/application/character-service.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import type { WorldService } from "../../world/domain/world-service.ts";
+import {
+  buildLocationAreaConf,
+  huntBotsForArea,
+  type LocationAreaConfBlock,
+} from "./area-conf-block.ts";
 import type { CommonConfBlock } from "./common-conf-document.ts";
+import { buildHuntBlock, type HuntBlock } from "./hunt-block.ts";
 import {
   buildUserUnitframe,
   type UnitframeHudPolicy,
   type UserUnitframeBlock,
 } from "./user-unitframe-block.ts";
+
+export type { HuntBlock, UserUnitframeBlock };
 
 type StatusOkBlock = Readonly<{ status: 100 }>;
 
@@ -67,34 +76,11 @@ type InitBlocks = Readonly<{
   "user|personal_details": UserPersonalDetailsBlock;
 }>;
 
-export type { UserUnitframeBlock };
-
-type AreaConfBlock = Readonly<{
-  status: 100;
-  id: string;
-  title: string;
-  swf: string;
-}>;
-
-type HuntBotBlock = Readonly<{
-  id: string;
-  artikul_id: number;
-  mask: number;
-  position: string;
-  prev: string;
-  fight_id: string;
-}>;
-
-export type HuntBlock = Readonly<{
-  status: 100;
-  bots: Readonly<Record<string, HuntBotBlock>>;
-}>;
-
 type Init2Blocks = Readonly<{
   "common|init2": StatusOkBlock;
   state: HeroStateBlock;
   "user|unitframe": UserUnitframeBlock;
-  "common|area_conf": AreaConfBlock;
+  "common|area_conf": LocationAreaConfBlock;
   "common|hunt": HuntBlock;
 }>;
 
@@ -120,8 +106,6 @@ export class BootstrapReadModel {
       }>;
       commonConf: CommonConfBlock;
       unitframe: UnitframeHudPolicy;
-      idleFightId: string;
-      huntMask: number;
     }>,
   ) {}
 
@@ -193,18 +177,11 @@ export class BootstrapReadModel {
   async init2(accountId: number): Promise<Init2Blocks> {
     const hero = await this.requireHero(accountId);
     const area = await this.world.area(hero.areaId);
-    const bots: Record<string, HuntBotBlock> = {};
+    const bots = new Map<number, BotDefinition>();
     for (const spawn of area.spawns) {
       const definition = await this.catalog.bot(spawn.botId);
       if (!definition) throw new Error(`Bot catalog entry ${spawn.botId} is missing`);
-      bots[spawn.id] = {
-        id: spawn.id,
-        artikul_id: definition.id,
-        mask: this.policy.huntMask,
-        position: `${spawn.x}:${spawn.y}`,
-        prev: `${spawn.x}:${spawn.y}`,
-        fight_id: this.policy.idleFightId,
-      };
+      bots.set(definition.id, definition);
     }
 
     return {
@@ -218,13 +195,8 @@ export class BootstrapReadModel {
         money_gold: this.policy.diamonds,
       },
       "user|unitframe": buildUserUnitframe(hero, this.policy.unitframe),
-      "common|area_conf": {
-        status: 100,
-        id: area.id,
-        title: area.title,
-        swf: area.map,
-      },
-      "common|hunt": { status: 100, bots },
+      "common|area_conf": buildLocationAreaConf(area, huntBotsForArea(area.spawns, bots)),
+      "common|hunt": buildHuntBlock(area.spawns),
     };
   }
 

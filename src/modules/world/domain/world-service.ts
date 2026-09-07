@@ -11,7 +11,7 @@ export class WorldService {
     return area;
   }
 
-  async spawn(areaId: string, spawnId: string): Promise<HuntSpawn | null> {
+  async spawn(areaId: string, spawnId: number): Promise<HuntSpawn | null> {
     const found = (await this.area(areaId)).spawns.find((spawn) => spawn.id === spawnId);
     if (!found) return null;
     return found;

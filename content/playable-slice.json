@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v1",
+  "schemaVersion": "playable-slice/v2",
   "artifacts": [
     {
       "id": 9095,
@@ -17,24 +17,47 @@
       "title": "Грызль",
       "level": 1,
       "maxHp": 20,
-      "strength": 10
+      "strength": 10,
+      "hunt": {
+        "nick": "Грызл",
+        "swf": "gryzl1.swf",
+        "scale": 90,
+        "fps": 15,
+        "speed": 10,
+        "avatar": "avatar_gryzl1_sm.jpg",
+        "kind": 0,
+        "hideOnMap": 0
+      }
     }
   ],
   "areas": [
     {
       "id": "503",
       "title": "Горное поселение",
-      "map": "radway_1.swf",
-      "fightBackground": "1_1"
+      "map": "forestvillage.swf",
+      "fightBackground": "2_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 0,
+      "code": "",
+      "context": "4",
+      "soundIntro": "Ambience_village.mp3",
+      "soundBg": "Ambience_village.mp3",
+      "instArtikulId": 0,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 1,
+      "noClanChat": 0
     }
   ],
   "huntSpawns": [
     {
-      "id": "503:1",
+      "id": 50310,
       "areaId": "503",
       "botId": 2,
-      "x": 420,
-      "y": 260
+      "x": 883,
+      "y": 1499,
+      "huntMask": "bot_1"
     }
   ]
 }

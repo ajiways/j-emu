@@ -35,6 +35,14 @@ export class PostgresCatalogProjection implements CatalogProjection {
           level: bot.level,
           maxHp: bot.maxHp,
           strength: bot.strength,
+          huntNick: bot.hunt.nick,
+          huntSwf: bot.hunt.swf,
+          huntScale: bot.hunt.scale,
+          huntFps: bot.hunt.fps,
+          huntSpeed: bot.hunt.speed,
+          huntAvatar: bot.hunt.avatar,
+          huntKind: bot.hunt.kind,
+          huntHideOnMap: bot.hunt.hideOnMap,
         })),
       );
     }

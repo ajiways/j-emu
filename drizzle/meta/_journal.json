@@ -15,6 +15,13 @@
       "when": 1788800766959,
       "tag": "0001_character_add_hero_personal_details",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788805572401,
+      "tag": "0002_world_location_scalars",
+      "breakpoints": true
     }
   ]
 }

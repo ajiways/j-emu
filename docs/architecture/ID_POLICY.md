@@ -91,6 +91,7 @@ Runtime-сущности, созданные по authored content, получа
 - persisted human participant sequence нет;
 - fight bot ID — process-local counter с `1_000_000`, не сохраняется;
 - catalog `artikul_id` остаётся authored и не перенумеровывается;
+- map hunt spawn `id` authored (`50310` = `503 × 100 + 10`), не sequence;
 - session secret — application-generated token, не persisted aggregate ID.
 
 ## Создание записи

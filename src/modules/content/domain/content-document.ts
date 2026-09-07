@@ -1,5 +1,5 @@
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v1";
-export const CONTENT_VALIDATOR_VERSION = "1";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v2";
+export const CONTENT_VALIDATOR_VERSION = "2";
 
 export type ArtifactDocument = Readonly<{
   id: number;
@@ -11,12 +11,24 @@ export type ArtifactDocument = Readonly<{
   weight: number;
 }>;
 
+type HuntLookDocument = Readonly<{
+  nick: string;
+  swf: string;
+  scale: number;
+  fps: number;
+  speed: number;
+  avatar: string;
+  kind: number;
+  hideOnMap: number;
+}>;
+
 export type BotDocument = Readonly<{
   id: number;
   title: string;
   level: number;
   maxHp: number;
   strength: number;
+  hunt: HuntLookDocument;
 }>;
 
 export type AreaDocument = Readonly<{
@@ -24,14 +36,27 @@ export type AreaDocument = Readonly<{
   title: string;
   map: string;
   fightBackground: string;
+  regionMap: string;
+  ftimeMax: number;
+  code: string;
+  context: string;
+  soundIntro: string;
+  soundBg: string;
+  instArtikulId: number;
+  haveTradeChannel: number;
+  haveKindChannel: number;
+  hideFinishedFights: number;
+  hideRunningFights: number;
+  noClanChat: number;
 }>;
 
 export type HuntSpawnDocument = Readonly<{
-  id: string;
+  id: number;
   areaId: string;
   botId: number;
   x: number;
   y: number;
+  huntMask: string;
 }>;
 
 export type ContentBundle = Readonly<{

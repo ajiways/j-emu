@@ -71,8 +71,6 @@ const schema = z.object({
       chat_server: z.string().min(1),
     }),
     menuLinks: z.record(z.string(), z.string()),
-    idleFightId: z.string().min(1),
-    huntMask: z.number().int().nonnegative(),
   }),
   combat: z.object({
     playerDamageMin: z.number().int().nonnegative(),

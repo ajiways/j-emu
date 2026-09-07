@@ -107,8 +107,9 @@ describe("Drizzle migrations", () => {
     expect(journal.entries.map((entry) => entry.tag)).toEqual([
       "0000_foundation_init",
       "0001_character_add_hero_personal_details",
+      "0002_world_location_scalars",
     ]);
-    expect(await appliedCount()).toBe(2);
+    expect(await appliedCount()).toBe(3);
 
     const singleton = await database
       .session()

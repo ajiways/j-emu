@@ -21,7 +21,9 @@ Playerbot-таблиц и признаков `is_bot` нет.
 ## Текущий playable slice
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
-и миграция `drizzle/0000_foundation_init`. Поля ниже совпадают с runtime.
+и цепочка `drizzle/0000_foundation_init`, `drizzle/0001_character_add_hero_personal_details`,
+`drizzle/0002_world_location_scalars`.
+Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -34,9 +36,12 @@ Playerbot-таблиц и признаков `is_bot` нет.
 ### `character`
 
 - `heroes(id integer GENERATED ALWAYS AS IDENTITY START 1, account_id UNIQUE, nick, level, hp, max_hp, area_id, money_minor, version)`.
+- `hero_personal_details(hero_id PK FK → heroes ON DELETE CASCADE, info jsonb, schema_version=1)`.
 
 `area_id` — текстовая ссылка на authored area; FK на `world.areas` в этом срезе
-нет. Ресурсы, навыки, репутации и preferences не выделены.
+нет. `info` — sparse wire-объект `user|personal_details.info` / form
+`user|save_personal_details`. Нет строки = пустой объект; merge пишет целиком,
+без `jsonb_set`. Ресурсы, навыки и репутации не выделены.
 
 ### `inventory`
 
@@ -51,15 +56,34 @@ Playerbot-таблиц и признаков `is_bot` нет.
 Versioned projection активной content release:
 
 - `artifacts(release_id, id, title, picture, type_id, kind_id, slot_mask, weight)` PK `(release_id, id)`.
-- `bots(release_id, id, title, level, max_hp, strength)` PK `(release_id, id)`.
+- `bots(release_id, id, title, level, max_hp, strength, hunt_nick, hunt_swf,
+hunt_scale, hunt_fps, hunt_speed, hunt_avatar, hunt_kind, hunt_hide_on_map)`
+  PK `(release_id, id)`. Hunt look — спрайт на карте (`area_conf.hunt_bots`),
+  не fight `sk`/`body`.
 
-Spell/loot/level-curve таблиц нет.
+Spell/loot/level-curve таблиц нет. Game-wide `common|conf` в этом срезе — не
+таблица, а обязательный файл `content/common-conf.json` (путь
+`bootstrap.commonConfFile`). Ключи совпадают с live dump; отсутствие файла или
+ключа — ошибка startup.
+
+HUD-константы `user|unitframe` (mp/exp/honor/avatar), которых нет на `heroes`,
+лежат в `bootstrap.unitframe` game policy, не в отдельной таблице.
+Paperdoll/chat/menu_links — `bootstrap.view` / `bootstrap.chat` /
+`bootstrap.menuLinks` (значения jgr-emu `DEFAULT_BODY`, `buildChatConf`,
+seed `menu_link_status`).
 
 ### `world`
 
-- `areas(release_id, id, title, map_asset, fight_background)` PK `(release_id, id)`.
-- `hunt_spawns(release_id, id, area_id, bot_id, position_x, position_y)` PK `(release_id, id)`;
-  FK на `areas` и `catalog.bots` в той же release.
+- `areas(release_id, id, title, map_asset, fight_background, region_map,
+ftime_max, code, context, sound_intro, sound_bg, inst_artikul_id,
+have_trade_channel, have_kind_channel, hide_finished_fights,
+hide_running_fights, no_clan_chat)` PK `(release_id, id)`.
+  `map_asset` — SWF большой карты (`area_conf.swf`). Скалярные поля wire —
+  колонки. `items`, `client_data` и `hunt_farm` mapper собирает пустыми, пока
+  нет дочерних таблиц.
+- `hunt_spawns(release_id, id, area_id, bot_id, position_x, position_y, hunt_mask)`
+  PK `(release_id, id)`; FK на `areas` и `catalog.bots` в той же release.
+  `id` — authored integer `area × 100 + index` (для Gryzl на 503 — `50310`).
 
 `position_x/y` — authored map coordinates (`double precision`). Presence, area
 links и spawn leases не выделены. Текущая локация героя — `heroes.area_id`.
@@ -109,7 +133,7 @@ finish/read request path. Полный контракт:
 
 ### `character`
 
-skills, resources, reputations, preferences, statistics, appearance.
+skills, resources, reputations, statistics, appearance.
 
 ### `inventory`
 
@@ -141,7 +165,12 @@ JSONB запрещён по умолчанию. В текущем срезе о�
 
 1. `content.draft_versions.document` — immutable authoring document;
 2. `combat.finished_fights.teams` — immutable validated snapshot старого
-   `finished_fights.teams` wire DTO для history/info.
+   `finished_fights.teams` wire DTO для history/info;
+3. `character.hero_personal_details.info` — sparse client prefs (`Chat.*`,
+   `pondViewLast`, `tutorial2`, …). Владелец: `character`. Версия:
+   `schema_version=1`. Validation до записи: JSON object, конечные числа,
+   без функций/bigint, лимит 16384 байт. Partial update через `jsonb_set`
+   запрещён: read → merge → write целого объекта.
 
 Для каждого JSONB обязательны владелец, версия, validation до записи, лимит
 размера и запрет частичных business-update через `jsonb_set`. Если ключ

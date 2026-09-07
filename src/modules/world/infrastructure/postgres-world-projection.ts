@@ -20,6 +20,18 @@ export class PostgresWorldProjection implements WorldProjection {
           title: area.title,
           mapAsset: area.map,
           fightBackground: area.fightBackground,
+          regionMap: area.regionMap,
+          ftimeMax: area.ftimeMax,
+          code: area.code,
+          context: area.context,
+          soundIntro: area.soundIntro,
+          soundBg: area.soundBg,
+          instArtikulId: area.instArtikulId,
+          haveTradeChannel: area.haveTradeChannel,
+          haveKindChannel: area.haveKindChannel,
+          hideFinishedFights: area.hideFinishedFights,
+          hideRunningFights: area.hideRunningFights,
+          noClanChat: area.noClanChat,
         })),
       );
     }
@@ -32,6 +44,7 @@ export class PostgresWorldProjection implements WorldProjection {
           botId: spawn.botId,
           positionX: spawn.x,
           positionY: spawn.y,
+          huntMask: spawn.huntMask,
         })),
       );
     }

@@ -14,6 +14,16 @@ describe("ContentValidator", () => {
     expect(validated.entries).toHaveLength(4);
   });
 
+  it("rejects a spawn id outside the area map-hunt range", () => {
+    const spawn = playable.huntSpawns[0];
+    if (!spawn) throw new Error("playable bundle has no hunt spawns");
+    const bundle: ContentBundle = {
+      ...playable,
+      huntSpawns: [{ ...spawn, id: 1 }],
+    };
+    expect(() => new ContentValidator().validate(bundle)).toThrow(/outside map hunt range/);
+  });
+
   it("rejects a spawn that points at a missing bot", () => {
     const bundle: ContentBundle = {
       ...playable,
@@ -45,6 +55,17 @@ describe("parseContentBundle", () => {
       parseContentBundle({
         ...playable,
         artifacts: [{ ...artifact, picture: "" }],
+      }),
+    ).toThrow();
+  });
+
+  it("rejects an area without region_map", () => {
+    const area = playable.areas[0];
+    if (!area) throw new Error("playable bundle has no areas");
+    expect(() =>
+      parseContentBundle({
+        ...playable,
+        areas: [{ ...area, regionMap: "" }],
       }),
     ).toThrow();
   });

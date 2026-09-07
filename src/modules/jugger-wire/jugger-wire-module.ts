@@ -34,8 +34,6 @@ export type JuggerWireBootstrapPolicy = Readonly<{
   view: PaperdollPolicy;
   chat: ChatConfPolicy;
   menuLinks: Readonly<Record<string, string>>;
-  idleFightId: string;
-  huntMask: number;
 }>;
 
 export type JuggerWireFightPolicy = Readonly<{

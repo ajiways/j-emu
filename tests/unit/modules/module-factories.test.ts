@@ -193,8 +193,6 @@ describe("module factories", () => {
             chat_server: "https://s1.jugger.ru/esrv//emu",
           },
           menuLinks: { "3": "1465239232" },
-          idleFightId: "0",
-          huntMask: 0,
         },
         fightWire: {
           heroSkill: 1,

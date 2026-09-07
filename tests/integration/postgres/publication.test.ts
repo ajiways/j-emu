@@ -62,13 +62,13 @@ describe("content publication", () => {
     try {
       const extraBot: ContentBundle = {
         ...playable,
-        bots: [...playable.bots, { id: 3, title: "Другой", level: 1, maxHp: 10, strength: 1 }],
+        bots: [...playable.bots, withHuntBot(3, "Другой")],
       };
       const results = await Promise.allSettled([
         createPostgresContentPublication(firstClient).publish(extraBot),
         createPostgresContentPublication(secondClient).publish({
           ...extraBot,
-          bots: [...playable.bots, { id: 4, title: "Четвёртый", level: 1, maxHp: 10, strength: 1 }],
+          bots: [...playable.bots, withHuntBot(4, "Четвёртый")],
         }),
       ]);
       const accepted = results.filter((result) => result.status === "fulfilled");
@@ -128,3 +128,9 @@ describe("content publication", () => {
     });
   });
 });
+
+function withHuntBot(id: number, title: string): ContentBundle["bots"][number] {
+  const sample = playable.bots[0];
+  if (!sample) throw new Error("playable bundle has no bots");
+  return { ...sample, id, title };
+}

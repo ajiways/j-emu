@@ -43,6 +43,9 @@
 - `common-conf` — `common|conf` status 100 + live `gag_reason_info` + `state`;
 - `user-unitframe` — `user|unitframe` status 100 + live HUD keys (`hpMax`, не `maxHp`) + `state`;
 - `bootstrap-chrome` — jgr-emu shapes: view/magic/chat/flash/menu/book trio/empty lists;
+- `location-area-conf` — `common|init2`: вложенный `area_conf` (`forestvillage.swf`,
+  `radvei_map.swf`, пустые `items`/`client_data`) и массив `common|hunt`
+  (`hunt_mask`, `position_x/y`, idle `fight_id` 0);
 
 Content import → validate → publish и invalid candidate → rollback остаются
 integration-тестами PostgreSQL, не Fastify E2E.

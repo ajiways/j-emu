@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { PLAYABLE_SLICE_SCHEMA_VERSION, type ContentBundle } from "./content-document.ts";
 
+const flag = z.union([z.literal(0), z.literal(1)]);
+
 const artifactSchema = z
   .object({
     id: z.number().int().positive(),
@@ -13,6 +15,19 @@ const artifactSchema = z
   })
   .strict();
 
+const huntLookSchema = z
+  .object({
+    nick: z.string().min(1),
+    swf: z.string().min(1),
+    scale: z.number().int().positive(),
+    fps: z.number().int().positive(),
+    speed: z.number().int().nonnegative(),
+    avatar: z.string().min(1),
+    kind: z.number().int().nonnegative(),
+    hideOnMap: flag,
+  })
+  .strict();
+
 const botSchema = z
   .object({
     id: z.number().int().positive(),
@@ -20,6 +35,7 @@ const botSchema = z
     level: z.number().int().positive(),
     maxHp: z.number().int().positive(),
     strength: z.number().int().nonnegative(),
+    hunt: huntLookSchema,
   })
   .strict();
 
@@ -29,16 +45,29 @@ const areaSchema = z
     title: z.string().min(1),
     map: z.string().min(1),
     fightBackground: z.string().min(1),
+    regionMap: z.string().min(1),
+    ftimeMax: z.number().int().nonnegative(),
+    code: z.string(),
+    context: z.string(),
+    soundIntro: z.string(),
+    soundBg: z.string(),
+    instArtikulId: z.number().int().nonnegative(),
+    haveTradeChannel: flag,
+    haveKindChannel: flag,
+    hideFinishedFights: flag,
+    hideRunningFights: flag,
+    noClanChat: flag,
   })
   .strict();
 
 const huntSpawnSchema = z
   .object({
-    id: z.string().min(1),
+    id: z.number().int().positive().max(2_147_483_647),
     areaId: z.string().min(1),
     botId: z.number().int().positive(),
     x: z.number().finite(),
     y: z.number().finite(),
+    huntMask: z.string().min(1),
   })
   .strict();
 

@@ -12,7 +12,16 @@ export async function publishDevelopmentContent(
   const bundle = loadContentBundleFile(bundleFile);
   const database = new PostgresDatabase(databaseUrl);
   try {
-    await createPostgresContentPublication(database).seed(bundle, bundleFile);
+    const publication = createPostgresContentPublication(database);
+    try {
+      await publication.seed(bundle, bundleFile);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (!message.includes("already has content without a matching bootstrap import")) {
+        throw error;
+      }
+      await publication.publish(bundle);
+    }
   } finally {
     await database.close();
   }

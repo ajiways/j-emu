@@ -33,7 +33,22 @@ export class PostgresWorldRepository implements WorldRepository {
       area.title,
       area.mapAsset,
       area.fightBackground,
-      spawns.map((spawn) => new HuntSpawn(spawn.id, spawn.botId, spawn.positionX, spawn.positionY)),
+      area.regionMap,
+      area.ftimeMax,
+      area.code,
+      area.context,
+      area.soundIntro,
+      area.soundBg,
+      area.instArtikulId,
+      area.haveTradeChannel,
+      area.haveKindChannel,
+      area.hideFinishedFights,
+      area.hideRunningFights,
+      area.noClanChat,
+      spawns.map(
+        (spawn) =>
+          new HuntSpawn(spawn.id, spawn.botId, spawn.positionX, spawn.positionY, spawn.huntMask),
+      ),
     );
   }
 }
