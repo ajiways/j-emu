@@ -1,0 +1,57 @@
+{
+  "name": "j-emu",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22 <25"
+  },
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "test": "npm run test:unit",
+    "test:unit": "vitest run --config vitest.config.ts",
+    "test:db": "npm run test:integration",
+    "test:integration": "tsx tests/support/postgres/reset-test-database.ts && vitest run --config vitest.db.config.ts",
+    "test:e2e": "tsx tests/support/postgres/reset-test-database.ts && vitest run --config vitest.e2e.config.ts",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "dead-code": "knip --include-entry-exports --include files,dependencies,unlisted,unresolved,exports,nsExports,types,nsTypes,enumMembers,namespaceMembers,duplicates,cycles --treat-config-hints-as-errors",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm run lint && npm run dead-code && npm run check:architecture && npm run build",
+    "check:architecture": "tsx scripts/check-architecture.ts",
+    "precommit": "lint-staged && npm run dead-code && npm run check:architecture",
+    "prepare": "husky",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/infrastructure/postgres/migrate.ts",
+    "db:publish:development": "tsx src/infrastructure/postgres/publish-development-content.ts",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/formbody": "^8.0.2",
+    "@fastify/static": "^10.1.3",
+    "drizzle-orm": "^0.45.2",
+    "fastify": "^5.6.2",
+    "postgres": "^3.4.7",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@types/node": "^22.18.1",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "^9.35.0",
+    "husky": "^9.1.7",
+    "knip": "^6.34.0",
+    "lint-staged": "^17.5.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.42.0",
+    "vitest": "^3.2.4"
+  }
+}

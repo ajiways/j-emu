@@ -1,0 +1,52 @@
+{
+  "heroCreation": {
+    "level": 1,
+    "hp": 27,
+    "maxHp": 27,
+    "areaId": "503",
+    "moneyMinor": 2500
+  },
+  "starterItems": [
+    {
+      "artifactId": 9095,
+      "quantity": 1,
+      "location": { "kind": "bag" }
+    }
+  ],
+  "bootstrap": {
+    "diamonds": "0.00",
+    "bagCapacity": 20,
+    "pocketCapacity": 4,
+    "heroKind": 1,
+    "tutorialInfo": {
+      "finished_first_fight": "1",
+      "tutorial2": "{\"finished\":true}"
+    },
+    "idleFightId": "0",
+    "huntMask": 0
+  },
+  "combat": {
+    "playerDamageMin": 8,
+    "playerDamageMax": 12,
+    "botDamageMin": 2,
+    "botDamageMax": 4,
+    "turnTimeoutSeconds": 20,
+    "meleeSourceIds": {
+      "left": 1,
+      "center": 2,
+      "right": 3
+    }
+  },
+  "fightWire": {
+    "heroSkill": 1,
+    "heroBody": "m1",
+    "autoFight": 0,
+    "canLeave": 1,
+    "companionEnabled": 0,
+    "isPvp": 0,
+    "instanceId": "0",
+    "type": "1",
+    "isSlaughter": false,
+    "flags": "0"
+  }
+}

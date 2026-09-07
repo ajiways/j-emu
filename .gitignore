@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.test
+.codebase-memory/
+logs/
+certs/*.key
+certs/*.pem

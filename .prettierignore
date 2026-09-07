@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+.codebase-memory/
+drizzle/
+logs/
+certs/
+package-lock.json
+*.amf
+*.bin
+*.log

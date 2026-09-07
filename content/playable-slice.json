@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "playable-slice/v1",
+  "artifacts": [
+    {
+      "id": 9095,
+      "title": "Перчатка новичка",
+      "picture": "artifact_9095.png",
+      "typeId": "2",
+      "kindId": 0,
+      "slotMask": 16,
+      "weight": 0
+    }
+  ],
+  "bots": [
+    {
+      "id": 2,
+      "title": "Грызль",
+      "level": 1,
+      "maxHp": 20,
+      "strength": 10
+    }
+  ],
+  "areas": [
+    {
+      "id": "503",
+      "title": "Горное поселение",
+      "map": "radway_1.swf",
+      "fightBackground": "1_1"
+    }
+  ],
+  "huntSpawns": [
+    {
+      "id": "503:1",
+      "areaId": "503",
+      "botId": 2,
+      "x": 420,
+      "y": 260
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+# Модель данных
+
+## Общие решения
+
+- Один PostgreSQL; таблицы описываются Drizzle schema files владельца.
+  PostgreSQL schema группирует таблицы модуля и не делает из модуля сервис.
+- Persisted runtime ID выдаёт только БД через identity/sequence/default.
+  Authored catalog ID сохраняется из опубликованного контента. Wire-видимые
+  диапазоны — в [ID_POLICY.md](ID_POLICY.md).
+- Время — `timestamptz`. Unix time появляется только в `jugger-wire`.
+- Деньги текущего среза — целое `money_minor` на герое (`bigint`), не
+  `double precision`. `numeric(20,2)` с кодом валюты — план для `economy`.
+- Счётчики и количество — integer/bigint с `CHECK`.
+- Используются FK, unique/check constraints и `ON DELETE` по смыслу.
+- `operation_id` добавляется только для команд, которые реально могут быть
+  повторены транспортом или background worker.
+- Outbox/inbox не копируются в каждый модуль заранее.
+
+Playerbot-таблиц и признаков `is_bot` нет.
+
+## Текущий playable slice
+
+Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
+и миграции `drizzle/0000`–`0007`. Поля ниже совпадают с runtime.
+
+### `identity`
+
+- `accounts(id uuid DEFAULT gen_random_uuid(), login UNIQUE, nick UNIQUE, password_hash, created_at)`.
+- `sessions(id text PK, account_id UNIQUE → accounts, session_key, created_at)`.
+
+Ник дублируется на `character.heroes` для текущего bootstrap. Отдельных
+`account_credentials` / `operator_roles` нет.
+
+### `character`
+
+- `heroes(id uuid DEFAULT gen_random_uuid(), account_id UNIQUE, nick, level, hp, max_hp, area_id, money_minor, version)`.
+
+`area_id` — текстовая ссылка на authored area; FK на `world.areas` в этом срезе
+нет. Ресурсы, навыки, репутации и preferences не выделены.
+
+### `inventory`
+
+- `item_id_seq`: `MIN 1_000_000_000`, `MAX 2_147_483_647`, `NO CYCLE`.
+- `items(id bigint DEFAULT nextval, hero_id, artifact_id, quantity, location_kind, pocket_position, equipment_slot, version)`.
+
+`location_kind` ∈ `bag|pocket|equipment` с CHECK взаимоисключения slot-колонок.
+Отдельных containers/reservations нет.
+
+### `catalog`
+
+Versioned projection активной content release:
+
+- `artifacts(release_id, id, title, picture, type_id, kind_id, slot_mask, weight)` PK `(release_id, id)`.
+- `bots(release_id, id, title, level, max_hp, strength)` PK `(release_id, id)`.
+
+Spell/loot/level-curve таблиц нет.
+
+### `world`
+
+- `areas(release_id, id, title, map_asset, fight_background)` PK `(release_id, id)`.
+- `hunt_spawns(release_id, id, area_id, bot_id, position_x, position_y)` PK `(release_id, id)`;
+  FK на `areas` и `catalog.bots` в той же release.
+
+`position_x/y` — authored map coordinates (`double precision`). Presence, area
+links и spawn leases не выделены. Текущая локация героя — `heroes.area_id`.
+
+### `combat`
+
+Active state хранится только в process-local `CombatService`. Таблицы active
+fights, participants, turns, effects, packets, checkpoints и events запрещены.
+
+PostgreSQL хранит одну строку завершённого результата по контракту старого
+`jgr-emu.finished_fights`:
+
+- identity: `id`, `account_id`, `hero_id`;
+- wire history: `title`, `type`, `timeout`, `level_min`, `level_max`, `level`,
+  `ml_title`, `winner`, `started`, `duration`, validated `teams jsonb`;
+- query/retention: `area_id`, `finished_at timestamptz`.
+
+Storage может нормализовать старые text/unix-ms типы, но wire mapper обязан
+воспроизводить старый `arena|finished_fights` row. Индексы следуют
+подтверждённым запросам `(area_id, finished_at)` и, пока поддерживается own
+history, `(account_id, finished_at)`.
+
+History удаляется через 72 часа отдельным bounded cleanup job по `finished_at`.
+Cleanup не запускается из finish/list/info request path. Полный контракт:
+[ADR-0015](../adr/ADR-0015-ephemeral-combat-and-finished-history.md).
+
+### `content`
+
+- `drafts(id, content_type, content_key)` UNIQUE `(content_type, content_key)`;
+  `content_type` ∈ `artifact|bot|area|hunt_spawn`.
+- `draft_versions(id, draft_id, version, schema_version, document jsonb, created_at)`.
+- `releases(id, version UNIQUE nextval, checksum UNIQUE, schema_version, validator_version, created_at, activated_at)`.
+- `release_entries(release_id, content_type, content_key, draft_version_id, digest)`.
+- `active_release(lock_id=1, release_id, activated_at)` — singleton pointer.
+- `bootstrap_imports(digest PK, release_id, source, applied_at)`.
+
+Публикация — [CONTENT_PIPELINE.md](CONTENT_PIPELINE.md).
+
+## План (не в runtime)
+
+Таблицы ниже не созданы и не являются baseline. Их нельзя добавлять «на будущее»
+без вертикального среза.
+
+### `character`
+
+skills, resources, reputations, preferences, statistics, appearance.
+
+### `inventory`
+
+containers, item_modifiers, container_slots, equipment_slots, item_reservations.
+
+### `catalog`
+
+item_actions, item_stat_modifiers, creature_stats/loot, spell_definitions,
+level_curves — отдельные таблицы поверх текущих `artifacts`/`bots`.
+
+### `world`
+
+area_links, character_locations, presence_leases, spawn_leases, facts.
+
+### `combat`
+
+`finished_fights` history по ADR-0015. Durable sides/turns/effects, active
+participants и JSONB event log не планируются.
+
+### `quests` / `social` / `economy` / `professions` / `instances`
+
+Модулей в runtime нет. Целевые API — в [MODULES.md](MODULES.md). Схемы
+появляются вместе с первым подтверждённым OA этого модуля.
+
+## Политика JSONB
+
+JSONB запрещён по умолчанию. В текущем срезе он есть только в:
+
+1. `content.draft_versions.document` — immutable authoring document;
+2. `combat.finished_fights.teams` — immutable validated snapshot старого
+   `finished_fights.teams` wire DTO для history/info.
+
+Для каждого JSONB обязательны владелец, версия, validation до записи, лимит
+размера и запрет частичных business-update через `jsonb_set`. Если ключ
+участвует в ограничениях, join, сортировке или деньгах — это колонка.
+
+## Read model для `init/init2`
+
+`BootstrapReadModel` собирает typed snapshot через application ports, не через
+общий SQL join всех модулей. `jugger-wire` переводит snapshot в плоские
+`init/init2` и `state`. Отсутствие обязательного hero/content — ошибка. Готовый
+AMF не хранится как источник истины. Отдельная persisted bootstrap projection
+не вводится до измеренного узкого места.

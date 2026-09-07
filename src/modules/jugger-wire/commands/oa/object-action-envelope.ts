@@ -1,0 +1,67 @@
+import { ProtocolError } from "../../application/protocol-error.ts";
+
+export type ObjectActionEnvelope = Readonly<{
+  object: string;
+  action: string;
+  form?: Readonly<Record<string, unknown>>;
+  input?: Readonly<Record<string, unknown>>;
+  sequence: string | number | boolean | null;
+}>;
+
+export function decodeObjectActionEnvelope(value: unknown): ObjectActionEnvelope {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new ProtocolError(204, "AMF object-action payload must be an object");
+  }
+  const record = value as Record<string, unknown>;
+  const object = record["object"];
+  const action = record["action"];
+  const sequence = record["sq"];
+  if (typeof object !== "string" || typeof action !== "string" || sequence === undefined) {
+    throw new ProtocolError(204, "AMF object, action and sq are required");
+  }
+  if (
+    sequence !== null &&
+    typeof sequence !== "string" &&
+    typeof sequence !== "number" &&
+    typeof sequence !== "boolean"
+  ) {
+    throw new ProtocolError(204, "AMF sq must be a scalar");
+  }
+  const form = optionalObject(record["form"], "form");
+  const input = optionalObject(record["in"], "in");
+  return {
+    object,
+    action,
+    sequence,
+    ...(form ? { form } : {}),
+    ...(input ? { input } : {}),
+  };
+}
+
+export function oaRegistryKey(envelope: ObjectActionEnvelope): string {
+  if (envelope.object === "common" && envelope.action === "object") {
+    if (!envelope.form) throw new ProtocolError(203, "common|object requires form");
+    return `common|object:${String(envelope.form["code"])}`;
+  }
+  return `${envelope.object}|${envelope.action}`;
+}
+
+export function oaResponseKey(envelope: ObjectActionEnvelope): string {
+  if (envelope.object === "common" && envelope.action === "object") return "common|action";
+  return `${envelope.object}|${envelope.action}`;
+}
+
+function optionalObject(
+  value: unknown,
+  field: string,
+): Readonly<Record<string, unknown>> | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (Array.isArray(value)) {
+    if (value.length === 0) return {};
+    throw new ProtocolError(204, `AMF ${field} must not contain dense array values`);
+  }
+  if (typeof value !== "object") {
+    throw new ProtocolError(204, `AMF ${field} must be an object`);
+  }
+  return value as Record<string, unknown>;
+}
