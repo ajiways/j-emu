@@ -1,7 +1,9 @@
 import { CompositionRoot } from "./app/composition-root.ts";
 import { loadConfig } from "./app/config.ts";
+import { loadPackageEnv } from "./infrastructure/load-package-env.ts";
 
-const config = loadConfig();
+const root = loadPackageEnv(import.meta.url);
+const config = loadConfig(process.env, root);
 const application = await new CompositionRoot().build(config);
 
 let stopping = false;

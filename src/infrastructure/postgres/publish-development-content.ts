@@ -1,5 +1,6 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { loadPackageEnv } from "../load-package-env.ts";
 import { PostgresDatabase } from "./database.ts";
 import { createPostgresContentPublication } from "../../modules/content/infrastructure/create-postgres-content-publication.ts";
 import { loadContentBundleFile } from "../../modules/content/infrastructure/load-content-bundle-file.ts";
@@ -19,6 +20,7 @@ export async function publishDevelopmentContent(
 
 const entry = process.argv[1];
 if (entry && pathToFileURL(path.resolve(entry)).href === import.meta.url) {
+  loadPackageEnv(import.meta.url);
   const databaseUrl = process.env.DATABASE_URL;
   const bundleFile = process.env.CONTENT_BUNDLE_FILE;
   if (!databaseUrl) throw new Error("DATABASE_URL is required");

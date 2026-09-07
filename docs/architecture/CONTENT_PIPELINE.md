@@ -21,9 +21,9 @@ active release
 ## Текущий playable slice
 
 Реализованы типы `artifact`, `bot`, `area`, `hunt_spawn`. Seed:
-`npm run db:publish:development` с `CONTENT_BUNDLE_FILE` и `DATABASE_URL`.
-Повтор с тем же checksum не создаёт новый release. Остальные типы из карты
-import contracts ниже — план.
+`npm run db:publish:development` с `CONTENT_BUNDLE_FILE` и `DATABASE_URL`
+из `.env` в корне пакета. Повтор с тем же checksum не создаёт новый release.
+Остальные типы из карты import contracts ниже — план.
 
 ## Состояния и ответственность
 

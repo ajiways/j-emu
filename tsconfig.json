@@ -3,7 +3,7 @@
     "target": "ES2023",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": ".",
+    "rootDir": "src",
     "outDir": "dist",
     "strict": true,
     "noUncheckedIndexedAccess": true,
@@ -15,13 +15,6 @@
     "declaration": true,
     "sourceMap": true
   },
-  "include": [
-    "src/**/*.ts",
-    "tests/**/*.ts",
-    "drizzle.config.ts",
-    "vitest.config.ts",
-    "vitest.db.config.ts",
-    "vitest.e2e.config.ts"
-  ],
+  "include": ["src/**/*.ts"],
   "exclude": ["dist", "node_modules"]
 }

@@ -29,6 +29,19 @@
 wire fixtures, принятые ADR, architecture docs и roadmap. При расхождении код
 приводится к документированному контракту.
 
+## Локальный запуск
+
+`.env` читается из каталога `package.json`, а не из `cwd` и не из `dist/`.
+`npm run build` пишет `dist/main.js`.
+
+```text
+cp .env.example .env
+npm run build
+npm start
+```
+
+`npm run dev`, `db:migrate` и `db:publish:development` загружают тот же файл.
+
 ## Требования к документации
 
 - Обновлять вместе с изменением контракта, конфигурации или процедуры.
