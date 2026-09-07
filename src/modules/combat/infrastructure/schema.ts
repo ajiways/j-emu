@@ -12,7 +12,7 @@ import {
 import { heroes } from "../../character/infrastructure/schema.ts";
 import { accounts } from "../../identity/infrastructure/schema.ts";
 
-const combatSchema = pgSchema("combat");
+export const combatSchema = pgSchema("combat");
 
 export const fightIdSeq = combatSchema.sequence("fight_id_seq", {
   startWith: 1,

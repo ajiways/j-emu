@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import { check, integer, pgSchema, primaryKey, text, uuid } from "drizzle-orm/pg-core";
 import { releases } from "../../content/infrastructure/schema.ts";
 
-const catalogSchema = pgSchema("catalog");
+export const catalogSchema = pgSchema("catalog");
 
 export const artifacts = catalogSchema.table(
   "artifacts",

@@ -59,7 +59,8 @@ routes/command keys и raw AMF fixtures существующего playable slic
 ## Фаза 1. Drizzle и миграции
 
 Статус: выполнена. Единственный migration path — generated SQL в `drizzle/`.
-Playable-slice E2E идёт через Fastify и PostgreSQL.
+Текущая цепочка свёрнута в `0000_foundation_init` (pre-baseline; существующие
+БД не сохраняются). Playable-slice E2E идёт через Fastify и PostgreSQL.
 
 ### Работы
 
@@ -73,12 +74,14 @@ Playable-slice E2E идёт через Fastify и PostgreSQL.
 4. Сгенерировать несколько когезионных baseline migrations с именами
    `<module>_<verb>_<subject>`, эквивалентных фактически используемой части
    `0001_initial.sql`. Не переносить неиспользуемые схемы «на будущее».
-5. Добавить forward-only migration command и журнал Drizzle. Применённые
-   migrations неизменяемы.
+5. Добавить forward-only migration command и журнал Drizzle. До первого
+   стабильного baseline цепочку можно схлопывать; после baseline
+   применённые migrations неизменяемы.
 6. Переписать существующие Postgres repositories на typed queries. Сначала
    сохранить signatures и wire behavior, затем разделять файлы в фазе 6.
-7. Добавить integration tests clean migration, repeated migrate, rollback и
-   upgrade с предыдущего baseline fixture.
+7. Добавить integration tests clean migration, repeated migrate, checksum
+   применённого SQL и ADR-0016 identity/sequences. Upgrade-тесты временной
+   цепочки `0000`–`0009` удалены вместе со схлопыванием.
 8. Сразу перевести `ApplicationHarness` и playable-slice E2E на обязательный
    `TEST_DATABASE_URL`, production module factories и Drizzle. Memory E2E после
    этого удаляется.
@@ -96,10 +99,10 @@ Playable-slice E2E идёт через Fastify и PostgreSQL.
 
 ## Фаза 2. ID из базы данных
 
-Статус: выполнена. Миграция `0009_identity_numeric_ids_and_combat_id_policy`
-перевела account/hero на integer identity с `1`, item sequence на `100_000`,
-fight ID на sequence с `1`, удалила `participant_id_seq`. Human participant
-ID равен `heroes.id`; fight bot ID выдаётся в RAM от `1_000_000`.
+Статус: выполнена. `0000_foundation_init` задаёт account/hero integer identity
+с `1`, item sequence с `100_000`, fight ID sequence с `1`. Human participant
+ID равен `heroes.id`; fight bot ID выдаётся в RAM от `1_000_000`. Persisted
+participant sequence нет.
 
 ### Работы
 
@@ -159,8 +162,8 @@ revision; authored bundle — `content/playable-slice.json`, не game policy.
 
 Статус: выполнена. Production storage — только Drizzle/PostgreSQL. Active combat
 остаётся process-local по ADR-0015. PostgreSQL хранит `combat.finished_fights`
-72 часа; `combat.fights`, `combat.participants` и `combat.events` удалены
-миграцией `0008_combat_replace_state_with_finished_history`.
+72 часа; таблиц `combat.fights`, `combat.participants` и `combat.events` в
+`0000_foundation_init` нет.
 
 ### Работы
 

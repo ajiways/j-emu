@@ -1,6 +1,6 @@
 import { integer, pgSchema, text, timestamp } from "drizzle-orm/pg-core";
 
-const identitySchema = pgSchema("identity");
+export const identitySchema = pgSchema("identity");
 
 export const accounts = identitySchema.table("accounts", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity({

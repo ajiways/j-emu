@@ -36,28 +36,29 @@ FK и общая транзакция не дают права обходить 
 Новая миграция создаётся `drizzle-kit` с понятным именем через `--name`.
 Имя имеет форму `<module>_<verb>_<subject>` в `snake_case`, например
 `--name=inventory_add_item_reservations`. Случайные fantasy-названия,
-`initial`, `update` и номер без смысла запрещены.
+`initial`, `update` и номер без смысла запрещены. Исключение — текущий
+pre-baseline init `foundation_init`: одна миграция на весь playable slice.
 
 Одна миграция содержит одно когезионное изменение либо минимальный набор,
-который нельзя применить раздельно из-за FK. Initial baseline делится по
-зависимостям модулей:
+который нельзя применить раздельно из-за FK.
 
-1. `identity_create_accounts_and_sessions`;
-2. `catalog_create_artifacts_and_bots`;
-3. `world_create_areas_and_spawns`;
-4. `character_create_heroes`;
-5. `inventory_create_items`;
-6. `combat_create_fights_and_participants`;
-7. `issue_database_identifiers`;
-8. `content_create_publication_and_versioned_projections`;
-9. `combat_replace_state_with_finished_history`;
-10. `identity_numeric_ids_and_combat_id_policy`.
+Текущая схема — `drizzle/0000_foundation_init.sql` (ADR-0016 identity и
+sequences, `finished_fights`, content publication). Snapshot и journal
+перегенерированы из schema files. В SQL после generate добавлен только
+`INSERT` singleton-строки `content.active_release`: kit не умеет выразить
+эту строку из Drizzle schema, а runtime требует ровно одну запись.
 
-`drizzle-kit` читает module-owned schema files из `drizzle.config.ts`. Общего
+`drizzle-kit` читает module-owned schema files из `drizzle.config.ts`.
+`pgSchema` экспортируется, чтобы kit создал PostgreSQL schema. Общего
 runtime barrel `db/schema.ts` нет.
 
-Baseline SQL живёт в `drizzle/` и применяется только Drizzle migrator. Применённый
-файл не редактируется и не переименовывается. Любое исправление — новая миграция.
+Пока не объявлен первый стабильный baseline, цепочку `drizzle/` можно
+схлопывать в новую `0000` и заново генерировать snapshot/journal.
+Существующие БД и данные при схлопывании не сохраняются.
+
+После объявления стабильного baseline применённый SQL, snapshot и journal
+entry неизменяемы: файл не редактируется и не переименовывается.
+Исправление — новая миграция. Схлопывание запрещено.
 
 Модуль меняет только свои Drizzle schema files. Межмодульный FK согласуется с
 владельцем обеих сторон и создаётся миграцией владельца зависимой таблицы.

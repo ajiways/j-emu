@@ -12,7 +12,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-const contentSchema = pgSchema("content");
+export const contentSchema = pgSchema("content");
 
 export const releaseVersionSeq = contentSchema.sequence("release_version_seq", {
   startWith: 1,

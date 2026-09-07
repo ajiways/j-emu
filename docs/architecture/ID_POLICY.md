@@ -81,7 +81,7 @@ Runtime-сущности, созданные по authored content, получа
 
 ## Текущий playable slice
 
-После `0009_identity_numeric_ids_and_combat_id_policy`:
+После `0000_foundation_init`:
 
 - `accounts.id` / `heroes.id` — PostgreSQL `integer GENERATED ALWAYS AS IDENTITY`
   с `1`; `heroes.id` одновременно human participant ID на wire;

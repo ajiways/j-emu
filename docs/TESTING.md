@@ -120,7 +120,8 @@ Integration-тест всегда использует PostgreSQL и реаль�
 
 - commit/rollback и вложенного Unit of Work;
 - optimistic/pessimistic locking, race и idempotency;
-- migrations: clean install, последовательное upgrade и несовместимый state;
+- migrations: clean install полной схемы, повторный migrate как no-op,
+  checksum применённого SQL, identity/sequences по ADR-0016;
 - content validation, staging, atomic publication и отказ без partial revision.
 - finished fight history: idempotent insert, area/account query и bounded
   cleanup записей старше 72 часов.

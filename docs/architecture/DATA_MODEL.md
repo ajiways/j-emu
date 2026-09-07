@@ -21,7 +21,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 ## Текущий playable slice
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
-и миграции `drizzle/0000`–`0009`. Поля ниже совпадают с runtime.
+и миграция `drizzle/0000_foundation_init`. Поля ниже совпадают с runtime.
 
 ### `identity`
 

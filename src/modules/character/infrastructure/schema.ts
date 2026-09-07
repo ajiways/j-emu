@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { bigint, check, integer, pgSchema, text } from "drizzle-orm/pg-core";
 
-const characterSchema = pgSchema("character");
+export const characterSchema = pgSchema("character");
 
 export const heroes = characterSchema.table(
   "heroes",

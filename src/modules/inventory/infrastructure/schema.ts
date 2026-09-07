@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { bigint, check, index, integer, pgSchema, text } from "drizzle-orm/pg-core";
 
-const inventorySchema = pgSchema("inventory");
+export const inventorySchema = pgSchema("inventory");
 
 export const itemIdSeq = inventorySchema.sequence("item_id_seq", {
   startWith: 100_000,

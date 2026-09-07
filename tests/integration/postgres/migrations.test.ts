@@ -19,11 +19,7 @@ import {
 import { accounts, sessions } from "../../../src/modules/identity/infrastructure/schema.ts";
 import { items } from "../../../src/modules/inventory/infrastructure/schema.ts";
 import { areas, huntSpawns } from "../../../src/modules/world/infrastructure/schema.ts";
-import { withIsolatedTestDatabase } from "../../support/postgres/isolated-test-database.ts";
-import {
-  requireTestDatabaseUrl,
-  testDatabaseName,
-} from "../../support/postgres/test-database-url.ts";
+import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
 const drizzleFolder = path.resolve(process.cwd(), "drizzle");
@@ -99,6 +95,17 @@ describe("Drizzle migrations", () => {
       activeRelease,
       bootstrapImports,
     ]).toHaveLength(15);
+
+    const journal = JSON.parse(
+      fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
+    ) as { entries: Array<{ tag: string }> };
+    expect(journal.entries.map((entry) => entry.tag)).toEqual(["0000_foundation_init"]);
+    expect(await appliedCount()).toBe(1);
+
+    const singleton = await database
+      .session()
+      .execute<{ lock_id: number }>(sql`SELECT lock_id FROM content.active_release`);
+    expect([...singleton].map((row) => row.lock_id)).toEqual([1]);
   });
 
   it("applies database identifier defaults and bounded item sequence", async () => {
@@ -156,6 +163,40 @@ describe("Drizzle migrations", () => {
           WHERE schemaname = 'inventory' AND sequencename = 'item_id_seq'`,
     );
     expect(itemSequence).toEqual([{ min_value: "100000", max_value: "2147483647", cycle: false }]);
+
+    const identitySequences = await database.session().execute<{
+      schema: string;
+      sequencename: string;
+      start_value: string;
+      min_value: string;
+      max_value: string;
+      cycle: boolean;
+    }>(
+      sql`SELECT schemaname AS schema, sequencename, start_value::text AS start_value,
+                 min_value::text AS min_value, max_value::text AS max_value, cycle
+          FROM pg_sequences
+          WHERE (schemaname = 'identity' AND sequencename = 'accounts_id_seq')
+             OR (schemaname = 'character' AND sequencename = 'heroes_id_seq')
+          ORDER BY schemaname`,
+    );
+    expect([...identitySequences]).toEqual([
+      {
+        schema: "character",
+        sequencename: "heroes_id_seq",
+        start_value: "1",
+        min_value: "1",
+        max_value: "2147483647",
+        cycle: false,
+      },
+      {
+        schema: "identity",
+        sequencename: "accounts_id_seq",
+        start_value: "1",
+        min_value: "1",
+        max_value: "2147483647",
+        cycle: false,
+      },
+    ]);
 
     const combatSequences = await database.session().execute<{
       sequencename: string;
@@ -270,46 +311,6 @@ describe("Drizzle migrations", () => {
     fs.rmSync(tampered, { recursive: true });
   });
 
-  it("upgrades from an earlier baseline to the full journal", async () => {
-    const journal = JSON.parse(
-      fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
-    ) as {
-      entries: Array<{ tag: string }>;
-    };
-    const secondTag = journal.entries[1]?.tag;
-    if (!secondTag) throw new Error("Expected at least two Drizzle migrations");
-    const sourceName = testDatabaseName(databaseUrl).replace(/_test$/, "");
-    await withIsolatedTestDatabase(`${sourceName}_upgrade_test`, async (isolatedUrl) => {
-      const isolated = new PostgresDatabase(isolatedUrl);
-      try {
-        const partial = copyMigrations(secondTag);
-        await migrateDatabase(isolatedUrl, partial);
-        const afterPartial = await isolated.session().execute<{ name: string }>(
-          sql`SELECT schema_name AS name FROM information_schema.schemata
-              WHERE schema_name IN ('identity','catalog','world')`,
-        );
-        expect([...afterPartial].map((row) => row.name).sort()).toEqual(["catalog", "identity"]);
-        await migrateDatabase(isolatedUrl, drizzleFolder);
-        const afterFull = await isolated.session().execute<{ name: string }>(
-          sql`SELECT schema_name AS name FROM information_schema.schemata
-              WHERE schema_name IN ('identity','catalog','world','character','inventory','combat','content')`,
-        );
-        expect([...afterFull].map((row) => row.name).sort()).toEqual([
-          "catalog",
-          "character",
-          "combat",
-          "content",
-          "identity",
-          "inventory",
-          "world",
-        ]);
-        fs.rmSync(partial, { recursive: true });
-      } finally {
-        await isolated.close();
-      }
-    });
-  });
-
   async function names(query: ReturnType<typeof sql>): Promise<string[]> {
     const rows = await database.session().execute<{ name: string }>(query);
     return [...rows].map((row) => row.name);
@@ -327,7 +328,7 @@ describe("Drizzle migrations", () => {
   }
 });
 
-function copyMigrations(throughTag?: string): string {
+function copyMigrations(): string {
   const destination = fs.mkdtempSync(path.join(os.tmpdir(), "j-emu-drizzle-"));
   const journal = JSON.parse(
     fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -336,20 +337,9 @@ function copyMigrations(throughTag?: string): string {
     dialect: string;
     entries: Array<{ tag: string }>;
   };
-  const entries = [];
-  for (const entry of journal.entries) {
-    entries.push(entry);
-    if (throughTag && entry.tag === throughTag) break;
-  }
-  if (throughTag && entries.at(-1)?.tag !== throughTag) {
-    throw new Error(`Unknown migration tag ${throughTag}`);
-  }
   fs.mkdirSync(path.join(destination, "meta"), { recursive: true });
-  fs.writeFileSync(
-    path.join(destination, "meta/_journal.json"),
-    JSON.stringify({ ...journal, entries }, null, 2),
-  );
-  for (const entry of entries) {
+  fs.writeFileSync(path.join(destination, "meta/_journal.json"), JSON.stringify(journal, null, 2));
+  for (const entry of journal.entries) {
     fs.copyFileSync(
       path.join(drizzleFolder, `${entry.tag}.sql`),
       path.join(destination, `${entry.tag}.sql`),

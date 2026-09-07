@@ -11,7 +11,7 @@ import {
 import { bots } from "../../catalog/infrastructure/schema.ts";
 import { releases } from "../../content/infrastructure/schema.ts";
 
-const worldSchema = pgSchema("world");
+export const worldSchema = pgSchema("world");
 
 export const areas = worldSchema.table(
   "areas",
