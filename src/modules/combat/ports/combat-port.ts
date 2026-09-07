@@ -32,12 +32,15 @@ export interface CombatPort {
     accountId: string;
     heroId: string;
     heroNick: string;
+    heroLevel: number;
+    heroKind: number;
     heroHp: number;
     botId: number;
     botNick: string;
     botLevel: number;
     botHp: number;
     arena: string;
+    areaId: string;
   }): Promise<FightStart>;
   execute(accountId: string, command: FightCommand): Promise<readonly CombatEvent[]>;
   activeFightId(accountId: string): Promise<string | null>;

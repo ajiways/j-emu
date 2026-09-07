@@ -127,6 +127,10 @@ export class BootstrapReadModel {
     }>,
   ) {}
 
+  get heroKind(): number {
+    return this.policy.heroKind;
+  }
+
   async init(accountId: string): Promise<InitBlocks> {
     const hero = await this.requireHero(accountId);
     const items = await this.inventory.list(hero.id);

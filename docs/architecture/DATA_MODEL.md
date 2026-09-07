@@ -21,7 +21,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 ## Текущий playable slice
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
-и миграции `drizzle/0000`–`0007`. Поля ниже совпадают с runtime.
+и миграции `drizzle/0000`–`0008`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -67,23 +67,26 @@ links и spawn leases не выделены. Текущая локация ге�
 ### `combat`
 
 Active state хранится только в process-local `CombatService`. Таблицы active
-fights, participants, turns, effects, packets, checkpoints и events запрещены.
+fights, participants, turns, effects, packets, checkpoints и events отсутствуют.
 
 PostgreSQL хранит одну строку завершённого результата по контракту старого
 `jgr-emu.finished_fights`:
 
-- identity: `id`, `account_id`, `hero_id`;
+- identity: `id` = выданный `combat.fight_id_seq` (не отдельный identity),
+  `account_id` / `hero_id` — UUID FK на identity/character;
 - wire history: `title`, `type`, `timeout`, `level_min`, `level_max`, `level`,
   `ml_title`, `winner`, `started`, `duration`, validated `teams jsonb`;
 - query/retention: `area_id`, `finished_at timestamptz`.
 
-Storage может нормализовать старые text/unix-ms типы, но wire mapper обязан
-воспроизводить старый `arena|finished_fights` row. Индексы следуют
-подтверждённым запросам `(area_id, finished_at)` и, пока поддерживается own
-history, `(account_id, finished_at)`.
+`teams.1[].id` — UUID героя строкой: в старом runtime это был integer
+`heroDbId`. Остальные ключи teams совпадают со старым DTO. Storage
+нормализует `teams_json` → `jsonb`, unix-ms → `timestamptz`, duration/winner
+→ integer; wire mapper возвращает старые string/number shapes.
 
-History удаляется через 72 часа отдельным bounded cleanup job по `finished_at`.
-Cleanup не запускается из finish/list/info request path. Полный контракт:
+History не является source of truth для rewards, quests, HP или inventory.
+Запись — одна идемпотентная строка после terminal outcome
+(`ON CONFLICT DO NOTHING`). Retention 72 часа; cleanup — bounded batches по
+индексу `finished_at`, не на finish/read request path. Полный контракт:
 [ADR-0015](../adr/ADR-0015-ephemeral-combat-and-finished-history.md).
 
 ### `content`
@@ -122,8 +125,10 @@ area_links, character_locations, presence_leases, spawn_leases, facts.
 
 ### `combat`
 
-`finished_fights` history по ADR-0015. Durable sides/turns/effects, active
-participants и JSONB event log не планируются.
+Durable sides/turns/effects, active participants и JSONB event log не
+планируются. `arena|finished_fights` OA и `fight_info.php` в текущем срезе
+не отдаются; mapper старого wire shape есть, отдельного gameplay-командного
+пути нет.
 
 ### `quests` / `social` / `economy` / `professions` / `instances`
 

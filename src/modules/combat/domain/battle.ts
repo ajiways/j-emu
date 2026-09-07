@@ -29,6 +29,25 @@ export type BattleEvent =
   | Readonly<{ type: "turn-granted"; timeoutSeconds: number }>
   | Readonly<{ type: "finished"; winnerTeam: 1 | 2; fightId: string }>;
 
+export type HuntBattleInit = Readonly<{
+  fightId: string;
+  accessKey: string;
+  accountId: string;
+  heroId: string;
+  heroFightId: number;
+  heroNick: string;
+  heroLevel: number;
+  heroKind: number;
+  botId: number;
+  botNick: string;
+  botLevel: number;
+  playerMaxHp: number;
+  botMaxHp: number;
+  arena: string;
+  areaId: string;
+  startedAt: Date;
+}>;
+
 export class Battle {
   private playerHpValue: number;
   private botHpValue: number;
@@ -36,23 +55,19 @@ export class Battle {
   private finishedValue = false;
 
   constructor(
-    readonly id: string,
-    readonly accessKey: string,
-    readonly accountId: string,
-    readonly heroId: string,
-    readonly heroFightId: number,
-    readonly heroNick: string,
-    readonly botId: number,
-    readonly botNick: string,
-    readonly botLevel: number,
-    readonly playerMaxHp: number,
-    readonly botMaxHp: number,
-    readonly arena: string,
+    readonly init: HuntBattleInit,
     private readonly rules: BattleRules,
     private readonly random: RandomSource,
   ) {
-    this.playerHpValue = playerMaxHp;
-    this.botHpValue = botMaxHp;
+    this.playerHpValue = init.playerMaxHp;
+    this.botHpValue = init.botMaxHp;
+    if (!init.areaId) throw new Error("Battle area is required");
+    if (!Number.isInteger(init.heroLevel) || init.heroLevel < 1) {
+      throw new Error("Battle hero level must be positive");
+    }
+    if (!Number.isInteger(init.heroKind) || init.heroKind < 1) {
+      throw new Error("Battle hero kind must be positive");
+    }
     if (rules.playerDamageMin < 0 || rules.playerDamageMax < rules.playerDamageMin) {
       throw new Error("Player damage rules are invalid");
     }
@@ -62,6 +77,51 @@ export class Battle {
     if (rules.turnTimeoutSeconds < 1) throw new Error("Turn timeout must be positive");
   }
 
+  get id(): string {
+    return this.init.fightId;
+  }
+  get accessKey(): string {
+    return this.init.accessKey;
+  }
+  get accountId(): string {
+    return this.init.accountId;
+  }
+  get heroId(): string {
+    return this.init.heroId;
+  }
+  get heroFightId(): number {
+    return this.init.heroFightId;
+  }
+  get heroNick(): string {
+    return this.init.heroNick;
+  }
+  get heroLevel(): number {
+    return this.init.heroLevel;
+  }
+  get heroKind(): number {
+    return this.init.heroKind;
+  }
+  get botId(): number {
+    return this.init.botId;
+  }
+  get botNick(): string {
+    return this.init.botNick;
+  }
+  get botLevel(): number {
+    return this.init.botLevel;
+  }
+  get arena(): string {
+    return this.init.arena;
+  }
+  get areaId(): string {
+    return this.init.areaId;
+  }
+  get startedAt(): Date {
+    return this.init.startedAt;
+  }
+  get turnTimeoutSeconds(): number {
+    return this.rules.turnTimeoutSeconds;
+  }
   get finished(): boolean {
     return this.finishedValue;
   }
@@ -132,7 +192,7 @@ export class Battle {
       id: this.botId,
       nick: this.botNick,
       hp: this.botHpValue,
-      maxHp: this.botMaxHp,
+      maxHp: this.init.botMaxHp,
       level: this.botLevel,
       team: 2,
     };

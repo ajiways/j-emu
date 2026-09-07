@@ -25,16 +25,13 @@
 - `hunt-attack` — `ATTACK_BOT` → flat `fight|conf`;
 - `fproxy` — auth / poll / `castSpell` до `fightFinish`;
 - `esrv-exit-reconnect` — `fight|exit`, затем restart и повторный hunt;
+- `combat-restart` — restart посреди боя прекращает active fight, не меняет
+  HP/bag и не создаёт finished history;
+- `finished-fights` — после terminal hunt в PostgreSQL ровно одна строка
+  старого `arena|finished_fights` shape; повторная запись не дублирует;
 - `concurrent-heroes` — два уникальных slot параллельно, разные hero/fight id;
 - `protocol-errors` — no-session `status:4`, malformed `204`, unknown OA/fproxy
   `203`.
-
-Для combat-history closeout обязательны, но пока не реализованы:
-
-- `combat-restart` — restart посреди боя явно прекращает active fight, не
-  применяет partial rewards/items и не создаёт finished history.
-- `finished-fights` — завершённый бой появляется в старом
-  `arena|finished_fights` shape и info view.
 
 Content import → validate → publish и invalid candidate → rollback остаются
 integration-тестами PostgreSQL, не Fastify E2E.

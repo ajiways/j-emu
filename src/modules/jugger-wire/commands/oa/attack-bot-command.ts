@@ -73,12 +73,15 @@ export class AttackBotCommand implements OaCommand {
       accountId: context.accountId,
       heroId: hero.id,
       heroNick: hero.nick,
+      heroLevel: hero.level,
+      heroKind: this.bootstrap.heroKind,
       heroHp: hero.hp,
       botId: bot.id,
       botNick: bot.title,
       botLevel: bot.level,
       botHp: bot.maxHp,
       arena: area.fightBackground,
+      areaId: area.id,
     });
     const init2 = await this.bootstrap.init2(context.accountId);
     return {

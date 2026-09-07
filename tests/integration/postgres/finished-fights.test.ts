@@ -1,0 +1,180 @@
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { PostgresDatabase } from "../../../src/infrastructure/postgres/database.ts";
+import { CombatService } from "../../../src/modules/combat/application/combat-service.ts";
+import { FinishedFightCleanup } from "../../../src/modules/combat/application/finished-fight-cleanup.ts";
+import { FinishedFightRecorder } from "../../../src/modules/combat/application/finished-fight-recorder.ts";
+import { huntFinishedFightRecord } from "../../../src/modules/combat/domain/finished-fight-record.ts";
+import { FINISHED_FIGHT_RETENTION_MS } from "../../../src/modules/combat/domain/finished-fight-retention.ts";
+import { PostgresFightIdSource } from "../../../src/modules/combat/infrastructure/postgres-fight-id-source.ts";
+import { PostgresFinishedFightStore } from "../../../src/modules/combat/infrastructure/postgres-finished-fight-store.ts";
+import { PostgresHeroRepository } from "../../../src/modules/character/infrastructure/postgres-hero-repository.ts";
+import { PostgresAccountRepository } from "../../../src/modules/identity/infrastructure/postgres-account-repository.ts";
+import { toArenaFinishedFightRow } from "../../../src/modules/combat/application/finished-fight-wire-mapper.ts";
+import { MutableClock } from "../../support/fakes/mutable-clock.ts";
+import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
+import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
+
+const databaseUrl = requireTestDatabaseUrl();
+const now = new Date("2026-09-07T12:00:00.000Z");
+
+describe("finished fight history storage", () => {
+  let database: PostgresDatabase;
+
+  beforeAll(async () => {
+    database = new PostgresDatabase(databaseUrl);
+  });
+
+  afterAll(async () => {
+    await database.close();
+  });
+
+  it("writes one idempotent row only after a terminal outcome", async () => {
+    const { account, hero } = await seedHero(`hist-${crypto.randomUUID()}`);
+    const store = new PostgresFinishedFightStore(database);
+    const clock = new MutableClock(now);
+    const combat = new CombatService(
+      new PostgresFightIdSource(database),
+      new SequenceRandom([20]),
+      {
+        playerDamageMin: 20,
+        playerDamageMax: 20,
+        botDamageMin: 1,
+        botDamageMax: 1,
+        turnTimeoutSeconds: 20,
+      },
+      clock,
+      new FinishedFightRecorder(store, clock),
+    );
+    const start = await combat.startHunt({
+      accountId: account.id,
+      heroId: hero.id,
+      heroNick: hero.nick,
+      heroLevel: hero.level,
+      heroKind: 1,
+      heroHp: hero.hp,
+      botId: 2,
+      botNick: "Грызль",
+      botLevel: 1,
+      botHp: 20,
+      arena: "1_1",
+      areaId: hero.areaId,
+    });
+    const fightId = BigInt(start.fightId);
+    expect(await store.findById(fightId)).toBeNull();
+    await combat.execute(account.id, {
+      kind: "authenticate",
+      fightId: start.fightId,
+      sequence: 1,
+    });
+    expect(await store.findById(fightId)).toBeNull();
+    await combat.execute(account.id, { kind: "strike", side: "left", sequence: 2 });
+    const first = await store.findById(fightId);
+    if (!first) throw new Error("Expected a finished fight row");
+    await store.record(first);
+    const again = await store.findById(fightId);
+    if (!again) throw new Error("Expected the finished fight row to remain");
+    expect(again.finishedAt.getTime()).toBe(first.finishedAt.getTime());
+    expect(toArenaFinishedFightRow(first)).toMatchObject({
+      id: Number(start.fightId),
+      title: `Нападение ${hero.nick} на Грызль`,
+      type: 1,
+      timeout: 20,
+      level_min: 1,
+      level_max: 1,
+      level: 0,
+      winner: "1",
+      duration: "0",
+    });
+    expect(first.teams["1"][0]).toMatchObject({
+      id: hero.id,
+      nick: hero.nick,
+      bot: 0,
+      dead: false,
+    });
+    expect(first.teams["2"][0]).toMatchObject({
+      bot: 1,
+      artikul_id: "2",
+      id: "2",
+      nick: "Грызль",
+    });
+  });
+
+  it("deletes expired rows in bounded SQL batches and leaves younger rows", async () => {
+    const { account, hero } = await seedHero(`ttl-${crypto.randomUUID()}`);
+    const store = new PostgresFinishedFightStore(database);
+    const ids = new PostgresFightIdSource(database);
+    const youngId = BigInt(await ids.nextFightId());
+    const oldIds = [
+      BigInt(await ids.nextFightId()),
+      BigInt(await ids.nextFightId()),
+      BigInt(await ids.nextFightId()),
+    ];
+    await store.record(
+      huntRow({
+        fightId: youngId.toString(),
+        accountId: account.id,
+        heroId: hero.id,
+        heroNick: hero.nick,
+        finishedAt: now,
+      }),
+    );
+    for (const id of oldIds) {
+      await store.record(
+        huntRow({
+          fightId: id.toString(),
+          accountId: account.id,
+          heroId: hero.id,
+          heroNick: hero.nick,
+          finishedAt: new Date(now.getTime() - FINISHED_FIGHT_RETENTION_MS - 1_000),
+        }),
+      );
+    }
+    const cleanup = new FinishedFightCleanup(store, new MutableClock(now), 2);
+    expect(await cleanup.runBatch()).toBe(2);
+    expect(await cleanup.runBatch()).toBe(1);
+    expect(await cleanup.runBatch()).toBe(0);
+    expect(await store.findById(youngId)).not.toBeNull();
+    for (const id of oldIds) {
+      expect(await store.findById(id)).toBeNull();
+    }
+  });
+
+  async function seedHero(slug: string) {
+    const accounts = new PostgresAccountRepository(database);
+    const heroes = new PostgresHeroRepository(database);
+    const account = await accounts.create(`hist-${slug}`, `Hist-${slug}`, null);
+    const hero = await heroes.create(account.id, account.nick, {
+      level: 1,
+      hp: 27,
+      maxHp: 27,
+      areaId: "503",
+      moneyMinor: 2500,
+    });
+    return { account, hero };
+  }
+});
+
+function huntRow(input: {
+  fightId: string;
+  accountId: string;
+  heroId: string;
+  heroNick: string;
+  finishedAt: Date;
+}) {
+  return huntFinishedFightRecord({
+    fightId: input.fightId,
+    accountId: input.accountId,
+    heroId: input.heroId,
+    heroNick: input.heroNick,
+    heroLevel: 1,
+    heroKind: 1,
+    botId: 2,
+    botNick: "Грызль",
+    botLevel: 1,
+    timeout: 20,
+    areaId: "503",
+    winner: 1,
+    startedAt: input.finishedAt,
+    finishedAt: input.finishedAt,
+  });
+}

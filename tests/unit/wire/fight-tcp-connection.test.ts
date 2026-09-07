@@ -1,15 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { CombatService } from "../../../src/modules/combat/application/combat-service.ts";
+import { FinishedFightRecorder } from "../../../src/modules/combat/application/finished-fight-recorder.ts";
 import { encodeAmf3 } from "../../../src/modules/jugger-wire/amf/amf3.ts";
 import { decodeFrames } from "../../../src/modules/jugger-wire/amf/framing.ts";
 import { FproxyCommandRegistry } from "../../../src/modules/jugger-wire/registry/fproxy-command-registry.ts";
 import { FightWireMapper } from "../../../src/modules/jugger-wire/application/fight-wire-mapper.ts";
 import { FightTcpConnection } from "../../../src/modules/jugger-wire/infrastructure/tcp/fight-tcp-connection.ts";
-import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { MonotonicFightIdSource } from "../../support/fakes/monotonic-fight-id-source.ts";
+import { MutableClock } from "../../support/fakes/mutable-clock.ts";
+import { RecordingFinishedFightStore } from "../../support/fakes/recording-finished-fight-store.ts";
+import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
 describe("FightTcpConnection", () => {
   it("uses the same CombatPort without importing the HTTP adapter", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const combat = new CombatService(
       new MonotonicFightIdSource(100, 200),
       new SequenceRandom([8]),
@@ -20,17 +24,22 @@ describe("FightTcpConnection", () => {
         botDamageMax: 4,
         turnTimeoutSeconds: 20,
       },
+      clock,
+      new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
     );
     const started = await combat.startHunt({
       accountId: "account",
       heroId: "hero",
       heroNick: "Hero",
+      heroLevel: 1,
+      heroKind: 1,
       heroHp: 27,
       botId: 2,
       botNick: "Грызль",
       botLevel: 1,
       botHp: 20,
       arena: "1_1",
+      areaId: "503",
     });
     const commands = FproxyCommandRegistry.fromMeleeSourceIds({ left: 1, center: 2, right: 3 });
     const wire = new FightWireMapper(

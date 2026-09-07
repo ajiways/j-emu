@@ -148,10 +148,10 @@ revision; authored bundle — `content/playable-slice.json`, не game policy.
 
 ## Фаза 4. Удаление production memory
 
-Статус: требует closeout. Process-local active combat соответствует ADR-0015,
-но текущие migrations ещё создают superseded `combat.fights`,
-`combat.participants`, `combat.events` вместо одной finished-history model с
-TTL 72 часа.
+Статус: выполнена. Production storage — только Drizzle/PostgreSQL. Active combat
+остаётся process-local по ADR-0015. PostgreSQL хранит `combat.finished_fights`
+72 часа; `combat.fights`, `combat.participants` и `combat.events` удалены
+миграцией `0008_combat_replace_state_with_finished_history`.
 
 ### Работы
 
@@ -269,9 +269,9 @@ Fastify/PostgreSQL; каталог `tests/contract` удалён; `TEST_DATABASE
 
 ## Фаза 8. Удаление заменённого кода
 
-Статус: требует closeout по ADR-0015. Superseded adapters, memory repositories,
-`ObjectActionRouter` и каталог `migrations/` отсутствуют, но combat schema всё
-ещё содержит ненужные active/event tables.
+Статус: выполнена. Superseded adapters, memory repositories, `ObjectActionRouter`,
+каталог `migrations/` и active/event combat tables отсутствуют. Combat storage —
+`finished_fights` history с отдельным 72-hour batch cleanup.
 
 ### Работы
 

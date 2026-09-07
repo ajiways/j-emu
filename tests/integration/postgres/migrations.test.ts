@@ -7,7 +7,7 @@ import { PostgresDatabase } from "../../../src/infrastructure/postgres/database.
 import { migrateDatabase } from "../../../src/infrastructure/postgres/migration-runner.ts";
 import { artifacts, bots } from "../../../src/modules/catalog/infrastructure/schema.ts";
 import { heroes } from "../../../src/modules/character/infrastructure/schema.ts";
-import { events, fights, participants } from "../../../src/modules/combat/infrastructure/schema.ts";
+import { finishedFights } from "../../../src/modules/combat/infrastructure/schema.ts";
 import {
   activeRelease,
   bootstrapImports,
@@ -65,9 +65,7 @@ describe("Drizzle migrations", () => {
         "catalog.artifacts",
         "catalog.bots",
         "character.heroes",
-        "combat.events",
-        "combat.fights",
-        "combat.participants",
+        "combat.finished_fights",
         "content.active_release",
         "content.bootstrap_imports",
         "content.draft_versions",
@@ -81,6 +79,9 @@ describe("Drizzle migrations", () => {
         "world.hunt_spawns",
       ].sort(),
     );
+    expect(tables).not.toEqual(
+      expect.arrayContaining(["combat.events", "combat.fights", "combat.participants"]),
+    );
     expect([
       accounts,
       sessions,
@@ -90,16 +91,14 @@ describe("Drizzle migrations", () => {
       huntSpawns,
       heroes,
       items,
-      fights,
-      participants,
-      events,
+      finishedFights,
       drafts,
       draftVersions,
       releases,
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(17);
+    ]).toHaveLength(15);
   });
 
   it("applies database identifier defaults and bounded item sequence", async () => {
@@ -135,12 +134,59 @@ describe("Drizzle migrations", () => {
       { min_value: "1000000000", max_value: "2147483647", cycle: false },
     ]);
 
-    const combatCycles = await database.session().execute<{ cycle: boolean }>(
-      sql`SELECT cycle FROM pg_sequences
+    const combatSequences = await database.session().execute<{
+      sequencename: string;
+      start_value: string;
+      cycle: boolean;
+    }>(
+      sql`SELECT sequencename, start_value::text AS start_value, cycle
+          FROM pg_sequences
           WHERE schemaname = 'combat' AND sequencename IN ('fight_id_seq', 'participant_id_seq')
           ORDER BY sequencename`,
     );
-    expect([...combatCycles].map((row) => row.cycle)).toEqual([false, false]);
+    expect([...combatSequences]).toEqual([
+      { sequencename: "fight_id_seq", start_value: "100000", cycle: false },
+      { sequencename: "participant_id_seq", start_value: "200000", cycle: false },
+    ]);
+
+    const finishedFightColumns = await database.session().execute<{
+      column_name: string;
+      data_type: string;
+      udt_name: string;
+    }>(
+      sql`SELECT column_name, data_type, udt_name
+          FROM information_schema.columns
+          WHERE table_schema = 'combat' AND table_name = 'finished_fights'
+          ORDER BY ordinal_position`,
+    );
+    expect(
+      [...finishedFightColumns].map((row) => ({
+        column_name: row.column_name,
+        data_type: row.data_type,
+        udt_name: row.udt_name,
+      })),
+    ).toEqual([
+      { column_name: "id", data_type: "bigint", udt_name: "int8" },
+      { column_name: "account_id", data_type: "uuid", udt_name: "uuid" },
+      { column_name: "hero_id", data_type: "uuid", udt_name: "uuid" },
+      { column_name: "title", data_type: "text", udt_name: "text" },
+      { column_name: "type", data_type: "integer", udt_name: "int4" },
+      { column_name: "timeout", data_type: "integer", udt_name: "int4" },
+      { column_name: "level_min", data_type: "integer", udt_name: "int4" },
+      { column_name: "level_max", data_type: "integer", udt_name: "int4" },
+      { column_name: "level", data_type: "integer", udt_name: "int4" },
+      { column_name: "ml_title", data_type: "text", udt_name: "text" },
+      { column_name: "winner", data_type: "integer", udt_name: "int4" },
+      { column_name: "started", data_type: "text", udt_name: "text" },
+      { column_name: "duration", data_type: "integer", udt_name: "int4" },
+      { column_name: "teams", data_type: "jsonb", udt_name: "jsonb" },
+      { column_name: "area_id", data_type: "text", udt_name: "text" },
+      {
+        column_name: "finished_at",
+        data_type: "timestamp with time zone",
+        udt_name: "timestamptz",
+      },
+    ]);
   });
 
   it("treats a second migrate as a no-op", async () => {

@@ -57,6 +57,13 @@
       "when": 1788779683134,
       "tag": "0007_content_create_publication_and_versioned_projections",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788786715390,
+      "tag": "0008_combat_replace_state_with_finished_history",
+      "breakpoints": true
     }
   ]
 }

@@ -55,16 +55,25 @@ bounded, noncycling sequence Postgres. Для sequence обязательно з
   подтверждены.
 - `combat.fight`: **unassigned**. `900 001` — начало старого process counter в
   [`fight/ids.ts`](../../../jgr-emu/src/fight/ids.ts), а не доказанный контракт.
+  Каталога `dumps/AS3` в `jgr-emu` нет. Live HTML
+  `fixtures/info_html/jugger_fight_info_full__fight_info.php__fight_id-719053995.html`
+  показывает fight id `"719053995"` (~9 цифр) — этого недостаточно, чтобы
+  назначить MIN/MAX.
 - `combat.participant`: **unassigned**. Старый runtime использовал
   `10 000 000 + hero_id` для человека в
   [`fight/lifecycle.ts`](../../../jgr-emu/src/fight/lifecycle.ts) и counter от
   `90 000 001` для бота в
-  [`fight/ids.ts`](../../../jgr-emu/src/fight/ids.ts). Арифметика и counter
-  запрещены; непересекающиеся DB ranges ещё должны быть подтверждены.
+  [`fight/ids.ts`](../../../jgr-emu/src/fight/ids.ts). В том же live dump
+  human `id` `"4266465"` (hero db id, не `10M+hero`), ключи `users`
+  `16986453`/`16986454`, bot `id` `"17672704"` при `artikul_id` 2. Арифметика и
+  counter запрещены; непересекающиеся DB ranges не подтверждены.
 
-`assigned` означает, что namespace можно реализовать строго указанной sequence.
-`unassigned` блокирует создание соответствующего runtime ID: нельзя угадывать
-max, collision scope или занимать соседний участок.
+`assigned` означает, что namespace можно реализовать строго указанной sequence
+с подтверждёнными границами. `unassigned` означает отсутствие подтверждённого
+live-контракта: нельзя объявлять START/MIN/MAX назначенными, угадывать соседний
+участок или копировать старый process counter. Playable slice может выдавать
+wire ID из operational DB sequence, пока диапазон не подтверждён; такой START
+не становится `assigned`.
 
 Неизвестный диапазон считается неназначенным. Нельзя угадывать его границы,
 брать соседний свободный участок или добавлять fallback.
@@ -93,8 +102,11 @@ Runtime-сущности, созданные по authored content, получа
 | area/spawn id          | text     | authored content                                                           | string                                                         | string                                  |
 
 `inventory.item_instance` назначен и ограничен. Sequences боя текущего среза
-выдают ID, чтобы playable hunt/fproxy работал; live floors `900 001` /
-`10_000_000 + hero_id` по-прежнему **unassigned** и не подставляются.
+(`combat.fight_id_seq` START 100000, `combat.participant_id_seq` START 200000)
+выдают wire ID для hunt/fproxy и PK finished history; эти START остаются
+**operational unassigned**, не live floors. `900 001` /
+`10_000_000 + hero_id` / `90_000_001` по-прежнему **unassigned** и не
+подставляются.
 
 Session secret не является persisted aggregate ID и остаётся
 application-generated.

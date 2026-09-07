@@ -99,6 +99,10 @@ Accounts, sessions, heroes, inventory, content, fight IDs и delivery cursor н�
   является постоянной политикой: active state не восстанавливается и не
   записывается в PostgreSQL. До terminal settlement persistent hero/inventory
   не изменяются. После finish сохраняется только history row на 72 часа.
+- `CombatModule` history cleanup timer — `setInterval` + `unref`, batch 100
+  по индексу `finished_at`. Не вызывается из strike/poll/finish/read.
+  Restart безопасен: таймер создаётся заново, persisted source of truth —
+  `combat.finished_fights`.
 
 ## IDs и БД
 

@@ -77,8 +77,8 @@ Retention завершённой истории — ровно 72 часа. Clea
 - Если позднее появится подтверждённое требование переживать restart, оно
   требует нового ADR и другого hot-state storage; PostgreSQL event log заранее
   не создаётся.
-- Текущие `combat.fights`, `combat.participants`, `combat.events` являются
-  superseded scaffold и должны быть заменены одной finished-history model.
+- Active fight, participant и event tables не являются частью целевой схемы;
+  durable model — одна finished-history table.
 
 ## Источники
 

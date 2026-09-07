@@ -34,6 +34,7 @@ export class CompositionRoot {
       const world = await WorldModule.create({ database });
       closers.push(world);
       const combat = CombatModule.create({ database, rules: policy.combat });
+      combat.startHistoryCleanup();
       closers.push(combat);
       const wire = await JuggerWireModule.create({
         config,

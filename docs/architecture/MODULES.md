@@ -75,8 +75,10 @@ state и outbound packets. В PostgreSQL владеет только завер�
 `finished_fights` history с TTL 72 часа. Не начисляет награды и не меняет
 персонажа/инвентарь напрямую.
 
-**API:** `startCombat`, `joinCombat`, `submitAction`, `getCombatView`,
-`abortCombat`, `listFinishedFights`, `getFinishedFightInfo`.
+**API:** `startHunt`, `execute`, `activeFightId`, `accountForFight`, `takeExit`.
+Mapper старого `arena|finished_fights` / info view существует в combat
+application; OA `arena|finished_fights` и `fight_info.php` в текущем срезе
+не регистрируются.
 
 **События:** process-local turn/packet events и terminal `combat.finished.v1`.
 `combat.finished` содержит подтверждённый outcome, но не утверждает, что награда

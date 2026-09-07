@@ -2,15 +2,16 @@ import { sql } from "drizzle-orm";
 import {
   bigint,
   check,
+  index,
   integer,
   jsonb,
   pgSchema,
-  primaryKey,
-  smallint,
   text,
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import { heroes } from "../../character/infrastructure/schema.ts";
+import { accounts } from "../../identity/infrastructure/schema.ts";
 
 const combatSchema = pgSchema("combat");
 
@@ -24,58 +25,40 @@ export const participantIdSeq = combatSchema.sequence("participant_id_seq", {
   cycle: false,
 });
 
-export const fights = combatSchema.table(
-  "fights",
+export const finishedFights = combatSchema.table(
+  "finished_fights",
   {
     id: bigint("id", { mode: "bigint" }).primaryKey(),
-    status: text("status").notNull(),
-    rulesVersion: text("rules_version").notNull(),
-    arena: text("arena").notNull(),
-    startedAt: timestamp("started_at", { withTimezone: true, mode: "date" }).notNull(),
-    finishedAt: timestamp("finished_at", { withTimezone: true, mode: "date" }),
-  },
-  (table) => [
-    check("fights_status_check", sql`${table.status} IN ('active', 'finished', 'aborted')`),
-  ],
-);
-
-export const participants = combatSchema.table(
-  "participants",
-  {
-    fightId: bigint("fight_id", { mode: "bigint" })
+    accountId: uuid("account_id")
       .notNull()
-      .references(() => fights.id, { onDelete: "cascade" }),
-    participantId: bigint("participant_id", { mode: "bigint" }).notNull(),
-    heroId: uuid("hero_id"),
-    botId: integer("bot_id"),
-    team: smallint("team").notNull(),
-    hp: integer("hp").notNull(),
-    maxHp: integer("max_hp").notNull(),
-  },
-  (table) => [
-    primaryKey({ columns: [table.fightId, table.participantId] }),
-    check("participants_team_check", sql`${table.team} IN (1, 2)`),
-    check("participants_hp_check", sql`${table.hp} >= 0`),
-    check("participants_max_hp_check", sql`${table.maxHp} > 0`),
-    check("participants_actor_check", sql`(${table.heroId} IS NULL) <> (${table.botId} IS NULL)`),
-  ],
-);
-
-export const events = combatSchema.table(
-  "events",
-  {
-    fightId: bigint("fight_id", { mode: "bigint" })
+      .references(() => accounts.id, { onDelete: "restrict" }),
+    heroId: uuid("hero_id")
       .notNull()
-      .references(() => fights.id, { onDelete: "cascade" }),
-    sequence: bigint("sequence", { mode: "bigint" }).notNull(),
-    eventType: text("event_type").notNull(),
-    eventVersion: integer("event_version").notNull(),
-    payload: jsonb("payload").notNull(),
-    occurredAt: timestamp("occurred_at", { withTimezone: true, mode: "date" }).notNull(),
+      .references(() => heroes.id, { onDelete: "restrict" }),
+    title: text("title").notNull(),
+    type: integer("type").notNull(),
+    timeout: integer("timeout").notNull(),
+    levelMin: integer("level_min").notNull(),
+    levelMax: integer("level_max").notNull(),
+    level: integer("level").notNull(),
+    mlTitle: text("ml_title").notNull(),
+    winner: integer("winner").notNull(),
+    started: text("started").notNull(),
+    duration: integer("duration").notNull(),
+    teams: jsonb("teams").notNull(),
+    areaId: text("area_id").notNull(),
+    finishedAt: timestamp("finished_at", { withTimezone: true, mode: "date" }).notNull(),
   },
   (table) => [
-    primaryKey({ columns: [table.fightId, table.sequence] }),
-    check("events_sequence_check", sql`${table.sequence} > 0`),
-    check("events_event_version_check", sql`${table.eventVersion} > 0`),
+    check("finished_fights_type_check", sql`${table.type} > 0`),
+    check("finished_fights_timeout_check", sql`${table.timeout} > 0`),
+    check("finished_fights_level_min_check", sql`${table.levelMin} > 0`),
+    check("finished_fights_level_max_check", sql`${table.levelMax} >= ${table.levelMin}`),
+    check("finished_fights_level_check", sql`${table.level} >= 0`),
+    check("finished_fights_winner_check", sql`${table.winner} IN (1, 2)`),
+    check("finished_fights_duration_check", sql`${table.duration} >= 0`),
+    index("finished_fights_area_finished_idx").on(table.areaId, table.finishedAt),
+    index("finished_fights_account_finished_idx").on(table.accountId, table.finishedAt),
+    index("finished_fights_finished_at_idx").on(table.finishedAt),
   ],
 );

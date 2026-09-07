@@ -1,7 +1,9 @@
 import { randomBytes } from "node:crypto";
+import type { Clock } from "../../../shared/kernel/clock.ts";
 import { requireSafeWireInteger } from "../../../shared/kernel/decimal-id.ts";
 import { Battle, type BattleRules } from "../domain/battle.ts";
 import type { RandomSource } from "../domain/random-source.ts";
+import type { FinishedFightRecorder } from "./finished-fight-recorder.ts";
 import type {
   CombatEvent,
   CombatPort,
@@ -14,7 +16,8 @@ import type { FightIdSource } from "../ports/fight-id-source.ts";
 export class CombatService implements CombatPort {
   // In-progress battles live in process memory. Fight/participant IDs come from
   // PostgreSQL; a restart drops an unfinished battle. Completed hero/inventory
-  // state is persisted by the owning modules.
+  // state is persisted by the owning modules. History is written only after a
+  // terminal outcome.
   private readonly byAccount = new Map<string, Battle>();
   private readonly accountByFight = new Map<string, string>();
   private readonly queues = new Map<string, CombatEvent[]>();
@@ -24,18 +27,23 @@ export class CombatService implements CombatPort {
     private readonly ids: FightIdSource,
     private readonly random: RandomSource,
     private readonly rules: BattleRules,
+    private readonly clock: Clock,
+    private readonly history: FinishedFightRecorder,
   ) {}
 
   async startHunt(input: {
     accountId: string;
     heroId: string;
     heroNick: string;
+    heroLevel: number;
+    heroKind: number;
     heroHp: number;
     botId: number;
     botNick: string;
     botLevel: number;
     botHp: number;
     arena: string;
+    areaId: string;
   }): Promise<FightStart> {
     if (this.byAccount.has(input.accountId)) throw new Error("Account already has an active fight");
     const fightId = await this.ids.nextFightId();
@@ -45,18 +53,24 @@ export class CombatService implements CombatPort {
     );
     const accessKey = randomBytes(16).toString("hex");
     const battle = new Battle(
-      fightId,
-      accessKey,
-      input.accountId,
-      input.heroId,
-      heroFightId,
-      input.heroNick,
-      input.botId,
-      input.botNick,
-      input.botLevel,
-      input.heroHp,
-      input.botHp,
-      input.arena,
+      {
+        fightId,
+        accessKey,
+        accountId: input.accountId,
+        heroId: input.heroId,
+        heroFightId,
+        heroNick: input.heroNick,
+        heroLevel: input.heroLevel,
+        heroKind: input.heroKind,
+        botId: input.botId,
+        botNick: input.botNick,
+        botLevel: input.botLevel,
+        playerMaxHp: input.heroHp,
+        botMaxHp: input.botHp,
+        arena: input.arena,
+        areaId: input.areaId,
+        startedAt: this.clock.now(),
+      },
       this.rules,
       this.random,
     );
@@ -100,6 +114,7 @@ export class CombatService implements CombatPort {
       if (!finished || finished.type !== "finished") {
         throw new Error("Finished battle did not produce a finished event");
       }
+      await this.history.record(battle, finished.winnerTeam);
       this.pendingExits.set(accountId, {
         fightId: battle.id,
         winnerTeam: finished.winnerTeam,

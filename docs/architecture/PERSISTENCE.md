@@ -49,7 +49,8 @@ FK и общая транзакция не дают права обходить 
 5. `inventory_create_items`;
 6. `combat_create_fights_and_participants`;
 7. `issue_database_identifiers`;
-8. `content_create_publication_and_versioned_projections`.
+8. `content_create_publication_and_versioned_projections`;
+9. `combat_replace_state_with_finished_history`.
 
 `drizzle-kit` читает module-owned schema files из `drizzle.config.ts`. Общего
 runtime barrel `db/schema.ts` нет.
@@ -79,8 +80,8 @@ Raw SQL — исключение, а не второй способ persistence.
 - Схема Drizzle является источником generated migrations.
 - `npm run test:integration` поднимает пустой Postgres (`TEST_DATABASE_URL` с
   суффиксом `_test`) и применяет все миграции по порядку.
-- Интеграционные тесты проверяют rollback Unit of Work, sequence IDs и atomic
-  content publication.
+- Интеграционные тесты проверяют rollback Unit of Work, sequence IDs, atomic
+  content publication и bounded cleanup `finished_fights`.
 - `npm run check:architecture` запрещает `Memory*`, `import()`, `AmfValue` вне
   codec и Fastify/Drizzle/AMF в domain/application; Knip — unused files/exports.
 - Production composition не может подключить test fake вместо Postgres
