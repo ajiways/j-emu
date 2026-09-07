@@ -6,6 +6,7 @@ import type { Application } from "../../../src/app/application.ts";
 import type { AppConfig } from "../../../src/app/config.ts";
 import { publishDevelopmentContent } from "../../../src/infrastructure/postgres/publish-development-content.ts";
 import { migrateDatabase } from "../../../src/infrastructure/postgres/migration-runner.ts";
+import { writeClientStaticStubs } from "./client-static-stubs.ts";
 import { requireTestDatabaseUrl } from "../postgres/test-database-url.ts";
 
 const testDatabaseUrl = requireTestDatabaseUrl();
@@ -16,6 +17,7 @@ export class ApplicationHarness {
 
   async start(): Promise<Application> {
     if (this.applicationValue) throw new Error("Application harness is already started");
+    writeClientStaticStubs(this.staticDirectory);
     await migrateDatabase(testDatabaseUrl);
     await publishDevelopmentContent(
       testDatabaseUrl,
