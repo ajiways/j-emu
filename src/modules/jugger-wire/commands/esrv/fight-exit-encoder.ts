@@ -8,7 +8,7 @@ export class FightExitEncoder {
 
   constructor(private readonly wire: FightWireMapper) {}
 
-  encode(accountId: string, exit: FightExit, now: number): EsrvFightExitPacket {
+  encode(accountId: number, exit: FightExit, now: number): EsrvFightExitPacket {
     return {
       channel: `2:${accountId}`,
       ctime: now,

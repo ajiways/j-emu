@@ -41,7 +41,7 @@ type UserPocketBlock = Readonly<{
 
 type UserConfBlock = Readonly<{
   status: 100;
-  id: string;
+  id: number;
   nick: string;
   level: number;
   kind: number;
@@ -66,7 +66,7 @@ type InitBlocks = Readonly<{
 
 export type UserUnitframeBlock = Readonly<{
   status: 100;
-  id: string;
+  id: number;
   nick: string;
   hp: number;
   maxHp: number;
@@ -131,7 +131,7 @@ export class BootstrapReadModel {
     return this.policy.heroKind;
   }
 
-  async init(accountId: string): Promise<InitBlocks> {
+  async init(accountId: number): Promise<InitBlocks> {
     const hero = await this.requireHero(accountId);
     const items = await this.inventory.list(hero.id);
     const bag: Record<string, BagItemBlock> = {};
@@ -183,7 +183,7 @@ export class BootstrapReadModel {
     };
   }
 
-  async init2(accountId: string): Promise<Init2Blocks> {
+  async init2(accountId: number): Promise<Init2Blocks> {
     const hero = await this.requireHero(accountId);
     const area = await this.world.area(hero.areaId);
     const bots: Record<string, HuntBotBlock> = {};
@@ -228,7 +228,7 @@ export class BootstrapReadModel {
     };
   }
 
-  private async requireHero(accountId: string) {
+  private async requireHero(accountId: number) {
     const hero = await this.characters.getByAccountId(accountId);
     if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
     return hero;

@@ -1,13 +1,18 @@
 import { sql } from "drizzle-orm";
-import { bigint, check, integer, pgSchema, text, uuid } from "drizzle-orm/pg-core";
+import { bigint, check, integer, pgSchema, text } from "drizzle-orm/pg-core";
 
 const characterSchema = pgSchema("character");
 
 export const heroes = characterSchema.table(
   "heroes",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    accountId: uuid("account_id").notNull().unique(),
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity({
+      startWith: 1,
+      minValue: 1,
+      maxValue: 2_147_483_647,
+      cycle: false,
+    }),
+    accountId: integer("account_id").notNull().unique(),
     nick: text("nick").notNull(),
     level: integer("level").notNull(),
     hp: integer("hp").notNull(),

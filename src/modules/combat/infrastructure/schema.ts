@@ -8,7 +8,6 @@ import {
   pgSchema,
   text,
   timestamp,
-  uuid,
 } from "drizzle-orm/pg-core";
 import { heroes } from "../../character/infrastructure/schema.ts";
 import { accounts } from "../../identity/infrastructure/schema.ts";
@@ -16,12 +15,9 @@ import { accounts } from "../../identity/infrastructure/schema.ts";
 const combatSchema = pgSchema("combat");
 
 export const fightIdSeq = combatSchema.sequence("fight_id_seq", {
-  startWith: 100_000,
-  cycle: false,
-});
-
-export const participantIdSeq = combatSchema.sequence("participant_id_seq", {
-  startWith: 200_000,
+  startWith: 1,
+  minValue: 1,
+  maxValue: 2_147_483_647,
   cycle: false,
 });
 
@@ -29,10 +25,10 @@ export const finishedFights = combatSchema.table(
   "finished_fights",
   {
     id: bigint("id", { mode: "bigint" }).primaryKey(),
-    accountId: uuid("account_id")
+    accountId: integer("account_id")
       .notNull()
       .references(() => accounts.id, { onDelete: "restrict" }),
-    heroId: uuid("hero_id")
+    heroId: integer("hero_id")
       .notNull()
       .references(() => heroes.id, { onDelete: "restrict" }),
     title: text("title").notNull(),
@@ -50,6 +46,7 @@ export const finishedFights = combatSchema.table(
     finishedAt: timestamp("finished_at", { withTimezone: true, mode: "date" }).notNull(),
   },
   (table) => [
+    check("finished_fights_id_check", sql`${table.id} > 0`),
     check("finished_fights_type_check", sql`${table.type} > 0`),
     check("finished_fights_timeout_check", sql`${table.timeout} > 0`),
     check("finished_fights_level_min_check", sql`${table.levelMin} > 0`),

@@ -27,8 +27,12 @@ describe("auth and init", () => {
     expect((init["common|init"] as Record<string, AmfValue>)["user|bag"]).toBeUndefined();
     const bagItem = firstBagItemFrom(init);
     if (typeof bagItem.id !== "number") throw new Error("bag item id must be a number");
-    expect(bagItem.id).toBeGreaterThanOrEqual(1_000_000_000);
+    expect(bagItem.id).toBeGreaterThanOrEqual(100_000);
     expect(bagItem.id).toBeLessThanOrEqual(2_147_483_647);
+    expect([1, 2, 3, 5, 6, 7, 10]).not.toContain(bagItem.id);
+    const conf = init["user|conf"] as { id: number };
+    expect(typeof conf.id).toBe("number");
+    expect(conf.id).toBeGreaterThanOrEqual(1);
 
     const bagOnly = await client.objectAction({ object: "user", action: "bag", sq: 11 });
     expect(bagOnly["user|bag"]).toMatchObject({ status: 100, amount: 1 });

@@ -10,8 +10,17 @@ export function requireSafeWireInteger(value: bigint, label: string): number {
   return Number(value);
 }
 
-const FIGHT_SAFE_ITEM_ID_MIN = 1_000_000_000n;
+const WIRE_IDENTITY_MIN = 1;
+const WIRE_IDENTITY_MAX = 2_147_483_647;
+const FIGHT_SAFE_ITEM_ID_MIN = 100_000n;
 const FIGHT_SAFE_ITEM_ID_MAX = 2_147_483_647n;
+
+export function requireWireIdentity(value: number, label: string): number {
+  if (!Number.isInteger(value) || value < WIRE_IDENTITY_MIN || value > WIRE_IDENTITY_MAX) {
+    throw new Error(`${label} ${value} is outside the wire identity range`);
+  }
+  return value;
+}
 
 export function requireFightSafeItemId(value: bigint): number {
   if (value < FIGHT_SAFE_ITEM_ID_MIN || value > FIGHT_SAFE_ITEM_ID_MAX) {

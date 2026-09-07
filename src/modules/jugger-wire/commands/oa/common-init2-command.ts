@@ -7,7 +7,7 @@ export class CommonInit2Command implements OaCommand {
 
   constructor(private readonly bootstrap: BootstrapReadModel) {}
 
-  async execute(accountId: string): Promise<OaEncodedResponse> {
+  async execute(accountId: number): Promise<OaEncodedResponse> {
     return { kind: "flat", blocks: await this.bootstrap.init2(accountId) };
   }
 }

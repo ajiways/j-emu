@@ -60,16 +60,16 @@ export class AuthRouteRegistrar {
     );
   }
 
-  private gameUrl(session: { id: string; sessionKey: string; accountId: string }): string {
+  private gameUrl(session: { id: string; sessionKey: string; accountId: number }): string {
     const query = new URLSearchParams({
       _s: session.id,
       _k: session.sessionKey,
-      _u: session.accountId,
+      _u: String(session.accountId),
     });
     return `/game.php?${query.toString()}`;
   }
 
-  private async ensureHero(accountId: string, nick: string): Promise<void> {
+  private async ensureHero(accountId: number, nick: string): Promise<void> {
     const hero = await this.dependencies.characters.getOrCreateForAccount(accountId, nick);
     await this.dependencies.inventory.ensureStarterInventory(hero.id);
   }

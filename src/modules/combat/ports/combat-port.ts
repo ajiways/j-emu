@@ -29,8 +29,8 @@ export type FightExit = Readonly<{
 
 export interface CombatPort {
   startHunt(input: {
-    accountId: string;
-    heroId: string;
+    accountId: number;
+    heroId: number;
     heroNick: string;
     heroLevel: number;
     heroKind: number;
@@ -42,8 +42,8 @@ export interface CombatPort {
     arena: string;
     areaId: string;
   }): Promise<FightStart>;
-  execute(accountId: string, command: FightCommand): Promise<readonly CombatEvent[]>;
-  activeFightId(accountId: string): Promise<string | null>;
-  accountForFight(fightId: string): Promise<string | null>;
-  takeExit(accountId: string): Promise<FightExit | null>;
+  execute(accountId: number, command: FightCommand): Promise<readonly CombatEvent[]>;
+  activeFightId(accountId: number): Promise<string | null>;
+  accountForFight(fightId: string): Promise<number | null>;
+  takeExit(accountId: number): Promise<FightExit | null>;
 }

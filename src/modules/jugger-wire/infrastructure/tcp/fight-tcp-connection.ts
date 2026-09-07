@@ -5,7 +5,7 @@ import { ProtocolError } from "../../application/protocol-error.ts";
 import type { FproxyCommandRegistry } from "../../registry/fproxy-command-registry.ts";
 
 export class FightTcpConnection {
-  private accountId: string | null = null;
+  private accountId: number | null = null;
 
   constructor(
     private readonly combat: CombatPort,

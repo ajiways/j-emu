@@ -18,7 +18,7 @@ describe("Postgres adapters", () => {
 
   it("rolls back all repository writes in a failed Unit of Work", async () => {
     const accounts = new PostgresAccountRepository(database);
-    let createdId: string | undefined;
+    let createdId: number | undefined;
     await expect(
       database.run(async () => {
         const account = await accounts.create(

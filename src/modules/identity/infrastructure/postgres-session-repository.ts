@@ -25,7 +25,7 @@ export class PostgresSessionRepository implements SessionRepository {
     });
   }
 
-  async removeForAccount(accountId: string): Promise<void> {
+  async removeForAccount(accountId: number): Promise<void> {
     await this.database.session().delete(sessions).where(eq(sessions.accountId, accountId));
   }
 }

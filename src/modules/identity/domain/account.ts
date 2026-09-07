@@ -1,6 +1,8 @@
+import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
+
 export class Account {
   private constructor(
-    readonly id: string,
+    readonly id: number,
     readonly login: string,
     readonly nick: string,
     readonly passwordHash: string | null,
@@ -15,7 +17,7 @@ export class Account {
     return { login: login.trim().toLowerCase(), nick: nick.trim(), passwordHash };
   }
 
-  static restore(id: string, login: string, nick: string, passwordHash: string | null): Account {
-    return new Account(id, login, nick, passwordHash);
+  static restore(id: number, login: string, nick: string, passwordHash: string | null): Account {
+    return new Account(requireWireIdentity(id, "account id"), login, nick, passwordHash);
   }
 }

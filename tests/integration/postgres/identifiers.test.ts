@@ -3,10 +3,12 @@ import { PostgresDatabase } from "../../../src/infrastructure/postgres/database.
 import { PostgresHeroRepository } from "../../../src/modules/character/infrastructure/postgres-hero-repository.ts";
 import { PostgresFightIdSource } from "../../../src/modules/combat/infrastructure/postgres-fight-id-source.ts";
 import { PostgresAccountRepository } from "../../../src/modules/identity/infrastructure/postgres-account-repository.ts";
+import { items } from "../../../src/modules/inventory/infrastructure/schema.ts";
 import { PostgresInventoryRepository } from "../../../src/modules/inventory/infrastructure/postgres-inventory-repository.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
+const NATIVE_SPELL_IDS = [1, 2, 3, 5, 6, 7, 10];
 
 describe("PostgreSQL identifiers", () => {
   let database: PostgresDatabase;
@@ -19,11 +21,11 @@ describe("PostgreSQL identifiers", () => {
     await database.close();
   });
 
-  it("issues unique item, fight and participant IDs under parallel transactions", async () => {
+  it("issues unique item and fight IDs under parallel transactions", async () => {
     const { hero } = await seedHero(`parallel-${crypto.randomUUID()}`);
     const clients = Array.from({ length: 8 }, () => new PostgresDatabase(databaseUrl));
     try {
-      const [itemIds, fightIds, participantIds] = await Promise.all([
+      const [itemIds, fightIds] = await Promise.all([
         Promise.all(
           clients.map((client) =>
             new PostgresInventoryRepository(client)
@@ -37,14 +39,35 @@ describe("PostgreSQL identifiers", () => {
           ),
         ),
         Promise.all(clients.map((client) => new PostgresFightIdSource(client).nextFightId())),
-        Promise.all(clients.map((client) => new PostgresFightIdSource(client).nextParticipantId())),
       ]);
       expect(new Set(itemIds).size).toBe(itemIds.length);
       expect(new Set(fightIds).size).toBe(fightIds.length);
-      expect(new Set(participantIds.map(String)).size).toBe(participantIds.length);
-      expect(itemIds.every((id) => id >= 1_000_000_000)).toBe(true);
+      expect(itemIds.every((id) => id >= 100_000 && id <= 2_147_483_647)).toBe(true);
+      expect(itemIds.every((id) => !NATIVE_SPELL_IDS.includes(id))).toBe(true);
+      expect(fightIds.every((id) => /^[1-9][0-9]*$/.test(id))).toBe(true);
+      expect(hero.id).toBeGreaterThanOrEqual(1);
+      expect(hero.id).toBeLessThanOrEqual(2_147_483_647);
     } finally {
       await Promise.all(clients.map((client) => client.close()));
+    }
+  });
+
+  it("rejects item ids below 100000 that would collide with native spells", async () => {
+    const { hero } = await seedHero(`collide-${crypto.randomUUID()}`);
+    try {
+      await database.session().insert(items).values({
+        id: 2n,
+        heroId: hero.id,
+        artifactId: 9095,
+        quantity: 1,
+        locationKind: "bag",
+        pocketPosition: null,
+        equipmentSlot: null,
+        version: 1,
+      });
+      throw new Error("Expected items_id_fight_safe to reject native spell id 2");
+    } catch (error) {
+      expect(errorText(error)).toMatch(/items_id_fight_safe/);
     }
   });
 
@@ -83,7 +106,6 @@ describe("PostgreSQL identifiers", () => {
     });
     const fights = new PostgresFightIdSource(database);
     const firstFight = await fights.nextFightId();
-    const firstParticipant = await fights.nextParticipantId();
     await database.close();
     database = new PostgresDatabase(databaseUrl);
     const reopened = new PostgresInventoryRepository(database);
@@ -95,10 +117,8 @@ describe("PostgreSQL identifiers", () => {
     });
     const reopenedFights = new PostgresFightIdSource(database);
     const secondFight = await reopenedFights.nextFightId();
-    const secondParticipant = await reopenedFights.nextParticipantId();
     expect(second.id).toBeGreaterThan(first.id);
     expect(BigInt(secondFight) > BigInt(firstFight)).toBe(true);
-    expect(secondParticipant > firstParticipant).toBe(true);
   });
 
   async function seedHero(slug: string) {
@@ -116,3 +136,9 @@ describe("PostgreSQL identifiers", () => {
     return { hero, inventory };
   }
 });
+
+function errorText(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  const cause = error.cause instanceof Error ? error.cause.message : "";
+  return `${error.message}\n${cause}`;
+}

@@ -30,7 +30,7 @@ export class OaCommandRegistry {
     return [...this.commands.keys()].sort();
   }
 
-  async dispatch(accountId: string, envelope: ObjectActionEnvelope): Promise<OaEncodedResponse> {
+  async dispatch(accountId: number, envelope: ObjectActionEnvelope): Promise<OaEncodedResponse> {
     const key = oaRegistryKey(envelope);
     const command = this.commands.get(key);
     if (!command) return unsupportedOaResponse(key);

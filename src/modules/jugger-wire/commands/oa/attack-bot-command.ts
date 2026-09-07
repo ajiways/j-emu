@@ -97,7 +97,7 @@ export class AttackBotCommand implements OaCommand {
     return { kind: "flat", blocks: response };
   }
 
-  async execute(accountId: string, envelope: ObjectActionEnvelope): Promise<OaEncodedResponse> {
+  async execute(accountId: number, envelope: ObjectActionEnvelope): Promise<OaEncodedResponse> {
     return this.encode(await this.handle({ accountId }, this.decode(envelope)));
   }
 }

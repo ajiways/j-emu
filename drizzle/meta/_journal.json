@@ -64,6 +64,13 @@
       "when": 1788786715390,
       "tag": "0008_combat_replace_state_with_finished_history",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788793038712,
+      "tag": "0009_identity_numeric_ids_and_combat_id_policy",
+      "breakpoints": true
     }
   ]
 }

@@ -3,14 +3,15 @@ import { PostgresDatabase } from "../../../src/infrastructure/postgres/database.
 import { CombatService } from "../../../src/modules/combat/application/combat-service.ts";
 import { FinishedFightCleanup } from "../../../src/modules/combat/application/finished-fight-cleanup.ts";
 import { FinishedFightRecorder } from "../../../src/modules/combat/application/finished-fight-recorder.ts";
+import { FinishedFightConflictError } from "../../../src/modules/combat/domain/finished-fight-conflict-error.ts";
 import { huntFinishedFightRecord } from "../../../src/modules/combat/domain/finished-fight-record.ts";
 import { FINISHED_FIGHT_RETENTION_MS } from "../../../src/modules/combat/domain/finished-fight-retention.ts";
 import { PostgresFightIdSource } from "../../../src/modules/combat/infrastructure/postgres-fight-id-source.ts";
 import { PostgresFinishedFightStore } from "../../../src/modules/combat/infrastructure/postgres-finished-fight-store.ts";
 import { PostgresHeroRepository } from "../../../src/modules/character/infrastructure/postgres-hero-repository.ts";
 import { PostgresAccountRepository } from "../../../src/modules/identity/infrastructure/postgres-account-repository.ts";
-import { toArenaFinishedFightRow } from "../../../src/modules/combat/application/finished-fight-wire-mapper.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
+import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
@@ -44,6 +45,7 @@ describe("finished fight history storage", () => {
       },
       clock,
       new FinishedFightRecorder(store, clock),
+      new RecordingHistoryWriteObserver(),
     );
     const start = await combat.startHunt({
       accountId: account.id,
@@ -59,6 +61,7 @@ describe("finished fight history storage", () => {
       arena: "1_1",
       areaId: hero.areaId,
     });
+    expect(start.participantId).toBe(hero.id);
     const fightId = BigInt(start.fightId);
     expect(await store.findById(fightId)).toBeNull();
     await combat.execute(account.id, {
@@ -74,16 +77,19 @@ describe("finished fight history storage", () => {
     const again = await store.findById(fightId);
     if (!again) throw new Error("Expected the finished fight row to remain");
     expect(again.finishedAt.getTime()).toBe(first.finishedAt.getTime());
-    expect(toArenaFinishedFightRow(first)).toMatchObject({
-      id: Number(start.fightId),
+    expect(first).toMatchObject({
+      id: fightId,
+      accountId: account.id,
+      heroId: hero.id,
       title: `Нападение ${hero.nick} на Грызль`,
       type: 1,
       timeout: 20,
-      level_min: 1,
-      level_max: 1,
+      levelMin: 1,
+      levelMax: 1,
       level: 0,
-      winner: "1",
-      duration: "0",
+      winner: 1,
+      duration: 0,
+      mlTitle: `1|${hero.id}|2`,
     });
     expect(first.teams["1"][0]).toMatchObject({
       id: hero.id,
@@ -97,6 +103,35 @@ describe("finished fight history storage", () => {
       id: "2",
       nick: "Грызль",
     });
+  });
+
+  it("rejects a conflicting duplicate for the same fight id", async () => {
+    const { account, hero } = await seedHero(`conflict-${crypto.randomUUID()}`);
+    const store = new PostgresFinishedFightStore(database);
+    const ids = new PostgresFightIdSource(database);
+    const fightId = await ids.nextFightId();
+    await store.record(
+      huntRow({
+        fightId,
+        accountId: account.id,
+        heroId: hero.id,
+        heroNick: hero.nick,
+        finishedAt: now,
+        winner: 1,
+      }),
+    );
+    await expect(
+      store.record(
+        huntRow({
+          fightId,
+          accountId: account.id,
+          heroId: hero.id,
+          heroNick: hero.nick,
+          finishedAt: now,
+          winner: 2,
+        }),
+      ),
+    ).rejects.toBeInstanceOf(FinishedFightConflictError);
   });
 
   it("deletes expired rows in bounded SQL batches and leaves younger rows", async () => {
@@ -156,10 +191,11 @@ describe("finished fight history storage", () => {
 
 function huntRow(input: {
   fightId: string;
-  accountId: string;
-  heroId: string;
+  accountId: number;
+  heroId: number;
   heroNick: string;
   finishedAt: Date;
+  winner?: 1 | 2;
 }) {
   return huntFinishedFightRecord({
     fightId: input.fightId,
@@ -168,12 +204,12 @@ function huntRow(input: {
     heroNick: input.heroNick,
     heroLevel: 1,
     heroKind: 1,
-    botId: 2,
+    botArtikulId: 2,
     botNick: "Грызль",
     botLevel: 1,
     timeout: 20,
     areaId: "503",
-    winner: 1,
+    winner: input.winner ?? 1,
     startedAt: input.finishedAt,
     finishedAt: input.finishedAt,
   });

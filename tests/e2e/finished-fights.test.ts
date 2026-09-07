@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Application } from "../../src/app/application.ts";
-import { toArenaFinishedFightRow } from "../../src/modules/combat/application/finished-fight-wire-mapper.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { completeMeleeHunt } from "../support/harness/complete-melee-hunt.ts";
@@ -20,7 +19,7 @@ describe("finished fights", () => {
     await harness.stop();
   });
 
-  it("records one old-shaped history row after a hunt finishes", async () => {
+  it("records one history row after a hunt finishes", async () => {
     const client = await AuthenticatedClient.login(application);
     const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
     const heroId = heroIdFrom(init);
@@ -28,18 +27,20 @@ describe("finished fights", () => {
     const fightId = await completeMeleeHunt(client);
     const row = await loadFinishedFightByWireId(fightId);
     if (!row) throw new Error("Finished hunt did not write history");
-    expect(toArenaFinishedFightRow(row)).toMatchObject({
-      id: Number(fightId),
+    expect(row).toMatchObject({
+      id: BigInt(fightId),
+      heroId,
       title: `Нападение ${nick} на Грызль`,
       type: 1,
       timeout: 20,
-      level_min: 1,
-      level_max: 1,
+      levelMin: 1,
+      levelMax: 1,
       level: 0,
-      winner: "1",
-      ml_title: `1|${heroId}|2`,
+      winner: 1,
+      mlTitle: `1|${heroId}|2`,
     });
     expect(row.teams["1"][0]?.id).toBe(heroId);
+    expect(typeof row.teams["1"][0]?.id).toBe("number");
     expect(row.teams["2"][0]).toMatchObject({ bot: 1, artikul_id: "2", id: "2" });
     expect(await loadFinishedFightByWireId(fightId)).toEqual(row);
   });

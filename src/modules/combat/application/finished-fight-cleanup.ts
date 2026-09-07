@@ -3,6 +3,8 @@ import { FINISHED_FIGHT_RETENTION_MS } from "../domain/finished-fight-retention.
 import type { FinishedFightStore } from "../ports/finished-fight-store.ts";
 
 export class FinishedFightCleanup {
+  private inFlight = false;
+
   constructor(
     private readonly store: FinishedFightStore,
     private readonly clock: Clock,
@@ -14,7 +16,13 @@ export class FinishedFightCleanup {
   }
 
   async runBatch(): Promise<number> {
-    const cutoff = new Date(this.clock.now().getTime() - FINISHED_FIGHT_RETENTION_MS);
-    return this.store.deleteExpiredBatch(cutoff, this.batchSize);
+    if (this.inFlight) return 0;
+    this.inFlight = true;
+    try {
+      const cutoff = new Date(this.clock.now().getTime() - FINISHED_FIGHT_RETENTION_MS);
+      return await this.store.deleteExpiredBatch(cutoff, this.batchSize);
+    } finally {
+      this.inFlight = false;
+    }
   }
 }

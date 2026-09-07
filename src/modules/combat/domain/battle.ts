@@ -1,3 +1,4 @@
+import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { RandomSource } from "./random-source.ts";
 
 export type BattleRules = Readonly<{
@@ -32,13 +33,13 @@ export type BattleEvent =
 export type HuntBattleInit = Readonly<{
   fightId: string;
   accessKey: string;
-  accountId: string;
-  heroId: string;
-  heroFightId: number;
+  accountId: number;
+  heroId: number;
   heroNick: string;
   heroLevel: number;
   heroKind: number;
-  botId: number;
+  botArtikulId: number;
+  botFightId: number;
   botNick: string;
   botLevel: number;
   playerMaxHp: number;
@@ -62,6 +63,16 @@ export class Battle {
     this.playerHpValue = init.playerMaxHp;
     this.botHpValue = init.botMaxHp;
     if (!init.areaId) throw new Error("Battle area is required");
+    requireWireIdentity(init.accountId, "account id");
+    requireWireIdentity(init.heroId, "hero id");
+    requireWireIdentity(init.botArtikulId, "bot artikul id");
+    requireWireIdentity(init.botFightId, "bot fight id");
+    if (init.botFightId === init.heroId) {
+      throw new Error("Fight bot id collides with the human participant id");
+    }
+    if (init.botFightId < 1_000_000) {
+      throw new Error("Fight bot id is below the ephemeral floor");
+    }
     if (!Number.isInteger(init.heroLevel) || init.heroLevel < 1) {
       throw new Error("Battle hero level must be positive");
     }
@@ -83,14 +94,11 @@ export class Battle {
   get accessKey(): string {
     return this.init.accessKey;
   }
-  get accountId(): string {
+  get accountId(): number {
     return this.init.accountId;
   }
-  get heroId(): string {
+  get heroId(): number {
     return this.init.heroId;
-  }
-  get heroFightId(): number {
-    return this.init.heroFightId;
   }
   get heroNick(): string {
     return this.init.heroNick;
@@ -101,8 +109,11 @@ export class Battle {
   get heroKind(): number {
     return this.init.heroKind;
   }
-  get botId(): number {
-    return this.init.botId;
+  get botArtikulId(): number {
+    return this.init.botArtikulId;
+  }
+  get botFightId(): number {
+    return this.init.botFightId;
   }
   get botNick(): string {
     return this.init.botNick;
@@ -147,8 +158,8 @@ export class Battle {
     this.botHpValue = Math.max(0, this.botHpValue - playerDamage);
     const playerCast: BattleEvent = {
       type: "damage",
-      sourceId: this.heroFightId,
-      targetId: this.botId,
+      sourceId: this.heroId,
+      targetId: this.botFightId,
       animation: `attack_${side}`,
       hpChange: -playerDamage,
       killed: this.botHpValue === 0,
@@ -169,8 +180,8 @@ export class Battle {
     this.playerHpValue = Math.max(0, this.playerHpValue - botDamage);
     const botCast: BattleEvent = {
       type: "damage",
-      sourceId: this.botId,
-      targetId: this.heroFightId,
+      sourceId: this.botFightId,
+      targetId: this.heroId,
       animation: "attack_center",
       hpChange: -botDamage,
       killed: this.playerHpValue === 0,
@@ -189,7 +200,7 @@ export class Battle {
   opponentPacket(): BattleEvent {
     return {
       type: "opponent-introduced",
-      id: this.botId,
+      id: this.botFightId,
       nick: this.botNick,
       hp: this.botHpValue,
       maxHp: this.init.botMaxHp,

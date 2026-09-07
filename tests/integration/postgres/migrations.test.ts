@@ -102,18 +102,43 @@ describe("Drizzle migrations", () => {
   });
 
   it("applies database identifier defaults and bounded item sequence", async () => {
-    const accountDefault = await names(
-      sql`SELECT column_default AS name
+    const identityColumns = await database.session().execute<{
+      table_name: string;
+      column_name: string;
+      is_identity: string;
+      identity_generation: string | null;
+      data_type: string;
+    }>(
+      sql`SELECT table_name, column_name, is_identity, identity_generation, data_type
           FROM information_schema.columns
-          WHERE table_schema = 'identity' AND table_name = 'accounts' AND column_name = 'id'`,
+          WHERE (table_schema = 'identity' AND table_name = 'accounts' AND column_name = 'id')
+             OR (table_schema = 'character' AND table_name = 'heroes' AND column_name = 'id')
+          ORDER BY table_name`,
     );
-    expect(accountDefault[0]).toMatch(/gen_random_uuid\(\)/);
-    const heroDefault = await names(
-      sql`SELECT column_default AS name
-          FROM information_schema.columns
-          WHERE table_schema = 'character' AND table_name = 'heroes' AND column_name = 'id'`,
-    );
-    expect(heroDefault[0]).toMatch(/gen_random_uuid\(\)/);
+    expect(
+      [...identityColumns].map((row) => ({
+        table_name: row.table_name,
+        column_name: row.column_name,
+        is_identity: row.is_identity,
+        identity_generation: row.identity_generation,
+        data_type: row.data_type,
+      })),
+    ).toEqual([
+      {
+        table_name: "accounts",
+        column_name: "id",
+        is_identity: "YES",
+        identity_generation: "ALWAYS",
+        data_type: "integer",
+      },
+      {
+        table_name: "heroes",
+        column_name: "id",
+        is_identity: "YES",
+        identity_generation: "ALWAYS",
+        data_type: "integer",
+      },
+    ]);
     const itemDefault = await names(
       sql`SELECT column_default AS name
           FROM information_schema.columns
@@ -130,23 +155,64 @@ describe("Drizzle migrations", () => {
           FROM pg_sequences
           WHERE schemaname = 'inventory' AND sequencename = 'item_id_seq'`,
     );
-    expect(itemSequence).toEqual([
-      { min_value: "1000000000", max_value: "2147483647", cycle: false },
-    ]);
+    expect(itemSequence).toEqual([{ min_value: "100000", max_value: "2147483647", cycle: false }]);
 
     const combatSequences = await database.session().execute<{
       sequencename: string;
       start_value: string;
+      min_value: string;
+      max_value: string;
       cycle: boolean;
     }>(
-      sql`SELECT sequencename, start_value::text AS start_value, cycle
+      sql`SELECT sequencename, start_value::text AS start_value, min_value::text AS min_value,
+                 max_value::text AS max_value, cycle
           FROM pg_sequences
-          WHERE schemaname = 'combat' AND sequencename IN ('fight_id_seq', 'participant_id_seq')
+          WHERE schemaname = 'combat'
           ORDER BY sequencename`,
     );
     expect([...combatSequences]).toEqual([
-      { sequencename: "fight_id_seq", start_value: "100000", cycle: false },
-      { sequencename: "participant_id_seq", start_value: "200000", cycle: false },
+      {
+        sequencename: "fight_id_seq",
+        start_value: "1",
+        min_value: "1",
+        max_value: "2147483647",
+        cycle: false,
+      },
+    ]);
+
+    const participantGone = await database.session().execute<{ count: string }>(
+      sql`SELECT count(*)::text AS count FROM pg_sequences
+          WHERE schemaname = 'combat' AND sequencename = 'participant_id_seq'`,
+    );
+    expect(participantGone[0]?.count).toBe("0");
+
+    const identityTypes = await database.session().execute<{
+      table_name: string;
+      column_name: string;
+      data_type: string;
+      udt_name: string;
+    }>(
+      sql`SELECT table_name, column_name, data_type, udt_name
+          FROM information_schema.columns
+          WHERE (table_schema = 'identity' AND table_name = 'accounts' AND column_name = 'id')
+             OR (table_schema = 'identity' AND table_name = 'sessions' AND column_name = 'account_id')
+             OR (table_schema = 'character' AND table_name = 'heroes' AND column_name IN ('id', 'account_id'))
+             OR (table_schema = 'inventory' AND table_name = 'items' AND column_name = 'hero_id')
+          ORDER BY table_name, column_name`,
+    );
+    expect(
+      [...identityTypes].map((row) => ({
+        table_name: row.table_name,
+        column_name: row.column_name,
+        data_type: row.data_type,
+        udt_name: row.udt_name,
+      })),
+    ).toEqual([
+      { table_name: "accounts", column_name: "id", data_type: "integer", udt_name: "int4" },
+      { table_name: "heroes", column_name: "account_id", data_type: "integer", udt_name: "int4" },
+      { table_name: "heroes", column_name: "id", data_type: "integer", udt_name: "int4" },
+      { table_name: "items", column_name: "hero_id", data_type: "integer", udt_name: "int4" },
+      { table_name: "sessions", column_name: "account_id", data_type: "integer", udt_name: "int4" },
     ]);
 
     const finishedFightColumns = await database.session().execute<{
@@ -167,8 +233,8 @@ describe("Drizzle migrations", () => {
       })),
     ).toEqual([
       { column_name: "id", data_type: "bigint", udt_name: "int8" },
-      { column_name: "account_id", data_type: "uuid", udt_name: "uuid" },
-      { column_name: "hero_id", data_type: "uuid", udt_name: "uuid" },
+      { column_name: "account_id", data_type: "integer", udt_name: "int4" },
+      { column_name: "hero_id", data_type: "integer", udt_name: "int4" },
       { column_name: "title", data_type: "text", udt_name: "text" },
       { column_name: "type", data_type: "integer", udt_name: "int4" },
       { column_name: "timeout", data_type: "integer", udt_name: "int4" },

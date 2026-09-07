@@ -8,7 +8,7 @@ import { items } from "./schema.ts";
 export class PostgresInventoryRepository implements InventoryRepository {
   constructor(private readonly database: PostgresDatabase) {}
 
-  async listForHero(heroId: string): Promise<readonly InventoryItem[]> {
+  async listForHero(heroId: number): Promise<readonly InventoryItem[]> {
     const rows = await this.database
       .session()
       .select()

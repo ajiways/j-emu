@@ -1,4 +1,4 @@
-import { parseDecimalId } from "../../../shared/kernel/decimal-id.ts";
+import { parseDecimalId, requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { fightStartedLabel } from "./fight-started-label.ts";
 import type { FinishedFightTeams } from "./finished-fight-teams.ts";
 import { huntFinishedFightTeams, parseFinishedFightTeams } from "./finished-fight-teams.ts";
@@ -12,8 +12,8 @@ const HUNT_HISTORY_LEVEL = 0;
 
 export type FinishedFightRecord = Readonly<{
   id: bigint;
-  accountId: string;
-  heroId: string;
+  accountId: number;
+  heroId: number;
   title: string;
   type: number;
   timeout: number;
@@ -31,12 +31,12 @@ export type FinishedFightRecord = Readonly<{
 
 export function huntFinishedFightRecord(input: {
   fightId: string;
-  accountId: string;
-  heroId: string;
+  accountId: number;
+  heroId: number;
   heroNick: string;
   heroLevel: number;
   heroKind: number;
-  botId: number;
+  botArtikulId: number;
   botNick: string;
   botLevel: number;
   timeout: number;
@@ -45,7 +45,8 @@ export function huntFinishedFightRecord(input: {
   startedAt: Date;
   finishedAt: Date;
 }): FinishedFightRecord {
-  if (!input.accountId) throw new Error("Finished fight requires an account id");
+  requireWireIdentity(input.accountId, "account id");
+  requireWireIdentity(input.heroId, "hero id");
   if (!input.areaId) throw new Error("Finished fight requires an area id");
   if (!Number.isInteger(input.timeout) || input.timeout < 1) {
     throw new Error("Finished fight timeout must be a positive integer");
@@ -56,6 +57,7 @@ export function huntFinishedFightRecord(input: {
   const duration = Math.floor((input.finishedAt.getTime() - input.startedAt.getTime()) / 1000);
   const levelMin = Math.min(input.heroLevel, input.botLevel);
   const levelMax = Math.max(input.heroLevel, input.botLevel);
+  requireWireIdentity(input.botArtikulId, "bot artikul id");
   return {
     id: parseDecimalId(input.fightId, "fight id"),
     accountId: input.accountId,
@@ -66,7 +68,7 @@ export function huntFinishedFightRecord(input: {
     levelMin,
     levelMax,
     level: HUNT_HISTORY_LEVEL,
-    mlTitle: `${input.botLevel}|${input.heroId}|${input.botId}`,
+    mlTitle: `${input.botLevel}|${input.heroId}|${input.botArtikulId}`,
     winner: input.winner,
     started: fightStartedLabel(input.startedAt),
     duration,
@@ -76,7 +78,7 @@ export function huntFinishedFightRecord(input: {
       heroLevel: input.heroLevel,
       heroKind: input.heroKind,
       heroDead: input.winner === 2,
-      botId: input.botId,
+      botArtikulId: input.botArtikulId,
       botNick: input.botNick,
       botLevel: input.botLevel,
     }),
@@ -87,8 +89,8 @@ export function huntFinishedFightRecord(input: {
 
 export function restoreFinishedFightRecord(row: {
   id: bigint;
-  accountId: string;
-  heroId: string;
+  accountId: number;
+  heroId: number;
   title: string;
   type: number;
   timeout: number;
@@ -106,8 +108,8 @@ export function restoreFinishedFightRecord(row: {
   if (row.winner !== 1 && row.winner !== 2) {
     throw new Error(`Finished fight ${row.id} has an invalid winner`);
   }
-  if (!row.accountId) throw new Error(`Finished fight ${row.id} is missing account id`);
-  if (!row.heroId) throw new Error(`Finished fight ${row.id} is missing hero id`);
+  requireWireIdentity(row.accountId, "account id");
+  requireWireIdentity(row.heroId, "hero id");
   if (!row.title) throw new Error(`Finished fight ${row.id} is missing title`);
   if (!row.mlTitle) throw new Error(`Finished fight ${row.id} is missing ml_title`);
   if (!row.started) throw new Error(`Finished fight ${row.id} is missing started`);
@@ -148,4 +150,25 @@ export function restoreFinishedFightRecord(row: {
     areaId: row.areaId,
     finishedAt: row.finishedAt,
   };
+}
+
+export function finishedFightOutcomesEqual(
+  left: FinishedFightRecord,
+  right: FinishedFightRecord,
+): boolean {
+  return (
+    left.id === right.id &&
+    left.accountId === right.accountId &&
+    left.heroId === right.heroId &&
+    left.title === right.title &&
+    left.type === right.type &&
+    left.timeout === right.timeout &&
+    left.levelMin === right.levelMin &&
+    left.levelMax === right.levelMax &&
+    left.level === right.level &&
+    left.mlTitle === right.mlTitle &&
+    left.winner === right.winner &&
+    left.areaId === right.areaId &&
+    JSON.stringify(left.teams) === JSON.stringify(right.teams)
+  );
 }

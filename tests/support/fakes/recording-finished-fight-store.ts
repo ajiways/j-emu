@@ -1,4 +1,8 @@
-import type { FinishedFightRecord } from "../../../src/modules/combat/domain/finished-fight-record.ts";
+import { FinishedFightConflictError } from "../../../src/modules/combat/domain/finished-fight-conflict-error.ts";
+import {
+  finishedFightOutcomesEqual,
+  type FinishedFightRecord,
+} from "../../../src/modules/combat/domain/finished-fight-record.ts";
 import type { FinishedFightStore } from "../../../src/modules/combat/ports/finished-fight-store.ts";
 
 export class RecordingFinishedFightStore implements FinishedFightStore {
@@ -6,8 +10,13 @@ export class RecordingFinishedFightStore implements FinishedFightStore {
   readonly deleted: Array<{ cutoff: Date; limit: number }> = [];
 
   async record(row: FinishedFightRecord): Promise<void> {
-    if (this.records.some((existing) => existing.id === row.id)) return;
-    this.records.push(row);
+    const existing = this.records.find((item) => item.id === row.id);
+    if (!existing) {
+      this.records.push(row);
+      return;
+    }
+    if (finishedFightOutcomesEqual(existing, row)) return;
+    throw new FinishedFightConflictError(row.id);
   }
 
   async findById(id: bigint): Promise<FinishedFightRecord | null> {

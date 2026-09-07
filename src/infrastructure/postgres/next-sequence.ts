@@ -1,12 +1,11 @@
 import { sql } from "drizzle-orm";
-import { fightIdSeq, participantIdSeq } from "../../modules/combat/infrastructure/schema.ts";
+import { fightIdSeq } from "../../modules/combat/infrastructure/schema.ts";
 import { itemIdSeq } from "../../modules/inventory/infrastructure/schema.ts";
 import type { DatabaseSession } from "./database.ts";
 
 const sequences = {
   "inventory.item_id_seq": itemIdSeq,
   "combat.fight_id_seq": fightIdSeq,
-  "combat.participant_id_seq": participantIdSeq,
 } as const;
 
 export async function nextSequenceText(
@@ -21,8 +20,8 @@ export async function nextSequenceText(
   if (actual !== qualifiedName) {
     throw new Error(`Sequence ${qualifiedName} is registered as ${actual}`);
   }
-  // Drizzle has no typed nextval that returns decimal text. Fight/participant
-  // IDs must not pass through JS number; `::text` keeps the full bigint.
+  // Drizzle has no typed nextval that returns decimal text. Fight IDs must not
+  // pass through JS number; `::text` keeps the full bigint.
   const result = await session.execute<{ id: string }>(
     sql`SELECT nextval(${qualifiedName}::regclass)::text AS id`,
   );

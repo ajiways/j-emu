@@ -15,11 +15,11 @@ export class InventoryService {
     if (starterItems.length === 0) throw new Error("Starter inventory policy is required");
   }
 
-  list(heroId: string): Promise<readonly InventoryItem[]> {
+  list(heroId: number): Promise<readonly InventoryItem[]> {
     return this.inventory.listForHero(heroId);
   }
 
-  async ensureStarterInventory(heroId: string): Promise<void> {
+  async ensureStarterInventory(heroId: number): Promise<void> {
     if ((await this.inventory.listForHero(heroId)).length > 0) return;
     for (const spec of this.starterItems) {
       await this.inventory.create({

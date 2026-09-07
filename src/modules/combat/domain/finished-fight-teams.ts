@@ -1,7 +1,9 @@
+import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
+
 const TEAMS_MAX_BYTES = 16_384;
 
 type FinishedFightHuman = Readonly<{
-  id: string;
+  id: number;
   nick: string;
   level: number;
   kind: number;
@@ -39,16 +41,16 @@ export type FinishedFightTeams = Readonly<{
 }>;
 
 export function huntFinishedFightTeams(input: {
-  heroId: string;
+  heroId: number;
   heroNick: string;
   heroLevel: number;
   heroKind: number;
   heroDead: boolean;
-  botId: number;
+  botArtikulId: number;
   botNick: string;
   botLevel: number;
 }): FinishedFightTeams {
-  if (!input.heroId) throw new Error("Finished fight teams require a hero id");
+  requireWireIdentity(input.heroId, "hero id");
   if (!input.heroNick) throw new Error("Finished fight teams require a hero nick");
   if (!Number.isInteger(input.heroLevel) || input.heroLevel < 1) {
     throw new Error("Finished fight teams require a positive hero level");
@@ -56,9 +58,7 @@ export function huntFinishedFightTeams(input: {
   if (!Number.isInteger(input.heroKind) || input.heroKind < 1) {
     throw new Error("Finished fight teams require a positive hero kind");
   }
-  if (!Number.isInteger(input.botId) || input.botId < 1) {
-    throw new Error("Finished fight teams require a positive bot id");
-  }
+  requireWireIdentity(input.botArtikulId, "bot artikul id");
   if (!input.botNick) throw new Error("Finished fight teams require a bot nick");
   if (!Number.isInteger(input.botLevel) || input.botLevel < 1) {
     throw new Error("Finished fight teams require a positive bot level");
@@ -91,8 +91,8 @@ export function huntFinishedFightTeams(input: {
     "2": [
       {
         bot: 1,
-        artikul_id: String(input.botId),
-        id: String(input.botId),
+        artikul_id: String(input.botArtikulId),
+        id: String(input.botArtikulId),
         nick: input.botNick,
         level: String(input.botLevel),
         kind: "0",
@@ -135,7 +135,8 @@ function parseHuman(value: unknown): FinishedFightHuman {
     throw new Error("Finished fight human member is invalid");
   }
   const row = value as Record<string, unknown>;
-  if (typeof row.id !== "string" || !row.id) throw new Error("Finished fight human id is required");
+  if (!Number.isInteger(row.id)) throw new Error("Finished fight human id is required");
+  requireWireIdentity(row.id as number, "hero id");
   if (typeof row.nick !== "string" || !row.nick) {
     throw new Error("Finished fight human nick is required");
   }
@@ -162,7 +163,7 @@ function parseHuman(value: unknown): FinishedFightHuman {
   if (row.bot !== 0) throw new Error("Finished fight human bot flag is invalid");
   if (row.me !== 0) throw new Error("Finished fight human me flag is invalid");
   return {
-    id: row.id,
+    id: row.id as number,
     nick: row.nick,
     level: row.level as number,
     kind: row.kind as number,

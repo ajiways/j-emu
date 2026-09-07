@@ -6,7 +6,7 @@ export class EsrvPollCommand {
 
   constructor(private readonly combat: CombatPort) {}
 
-  handle(accountId: string): Promise<FightExit | null> {
+  handle(accountId: number): Promise<FightExit | null> {
     return this.combat.takeExit(accountId);
   }
 }

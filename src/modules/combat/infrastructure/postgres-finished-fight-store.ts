@@ -1,6 +1,8 @@
 import { eq, sql } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
+import { FinishedFightConflictError } from "../domain/finished-fight-conflict-error.ts";
 import {
+  finishedFightOutcomesEqual,
   restoreFinishedFightRecord,
   type FinishedFightRecord,
 } from "../domain/finished-fight-record.ts";
@@ -13,10 +15,8 @@ export class PostgresFinishedFightStore implements FinishedFightStore {
 
   async record(row: FinishedFightRecord): Promise<void> {
     const teams = parseFinishedFightTeams(row.teams);
-    await this.database
-      .session()
-      .insert(finishedFights)
-      .values({
+    try {
+      await this.database.session().insert(finishedFights).values({
         id: row.id,
         accountId: row.accountId,
         heroId: row.heroId,
@@ -33,8 +33,16 @@ export class PostgresFinishedFightStore implements FinishedFightStore {
         teams,
         areaId: row.areaId,
         finishedAt: row.finishedAt,
-      })
-      .onConflictDoNothing({ target: finishedFights.id });
+      });
+    } catch (error) {
+      if (!isUniqueViolation(error)) throw error;
+      const existing = await this.findById(row.id);
+      if (!existing) {
+        throw new Error(`Finished fight ${row.id} reported a unique conflict but was not found`);
+      }
+      if (finishedFightOutcomesEqual(existing, row)) return;
+      throw new FinishedFightConflictError(row.id);
+    }
   }
 
   async findById(id: bigint): Promise<FinishedFightRecord | null> {
@@ -68,4 +76,11 @@ export class PostgresFinishedFightStore implements FinishedFightStore {
     `);
     return [...deleted].length;
   }
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  if ("code" in error && error.code === "23505") return true;
+  if ("cause" in error) return isUniqueViolation(error.cause);
+  return false;
 }

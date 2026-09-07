@@ -9,13 +9,14 @@ import { FightTcpConnection } from "../../../src/modules/jugger-wire/infrastruct
 import { MonotonicFightIdSource } from "../../support/fakes/monotonic-fight-id-source.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingFinishedFightStore } from "../../support/fakes/recording-finished-fight-store.ts";
+import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
 describe("FightTcpConnection", () => {
   it("uses the same CombatPort without importing the HTTP adapter", async () => {
     const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const combat = new CombatService(
-      new MonotonicFightIdSource(100, 200),
+      new MonotonicFightIdSource(1),
       new SequenceRandom([8]),
       {
         playerDamageMin: 8,
@@ -26,10 +27,11 @@ describe("FightTcpConnection", () => {
       },
       clock,
       new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
+      new RecordingHistoryWriteObserver(),
     );
     const started = await combat.startHunt({
-      accountId: "account",
-      heroId: "hero",
+      accountId: 1,
+      heroId: 1,
       heroNick: "Hero",
       heroLevel: 1,
       heroKind: 1,
@@ -65,7 +67,7 @@ describe("FightTcpConnection", () => {
       { rs: true, sq: 1, akey: started.accessKey },
       {
         oppnew: {
-          id: 2,
+          id: 1_000_000,
           nick: "Грызль",
           hp: 20,
           maxHp: 20,

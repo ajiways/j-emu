@@ -23,7 +23,7 @@ describe("OA command registry", () => {
 
   it("returns nested status 203 for an unknown key", async () => {
     const registry = new OaCommandRegistry(OaCommandRegistry.requiredKeys.map(stub));
-    const result = await registry.dispatch("account", {
+    const result = await registry.dispatch(1, {
       object: "clan",
       action: "info",
       sequence: 1,
@@ -36,7 +36,7 @@ describe("OA command registry", () => {
 
   it("returns nested status 203 for an unknown common|object code", async () => {
     const registry = new OaCommandRegistry(OaCommandRegistry.requiredKeys.map(stub));
-    const result = await registry.dispatch("account", {
+    const result = await registry.dispatch(1, {
       object: "common",
       action: "object",
       form: { code: "OPEN_WINDOW" },

@@ -29,7 +29,11 @@ describe("fproxy", () => {
     expect(await client.fight({ rc: "auth", eid: fightId, sq: 5 })).toHaveLength(0);
     const authenticated = await client.pollFight();
     expect(authenticated[0]).toMatchObject({ rs: true });
-    expect(authenticated[1]).toHaveProperty("oppnew");
+    expect(authenticated[1]).toMatchObject({
+      oppnew: { nick: "Грызль", team: 2 },
+    });
+    const opponent = authenticated[1] as { oppnew: { id: number } };
+    expect(opponent.oppnew.id).toBeGreaterThanOrEqual(1_000_000);
 
     let finished = false;
     for (let strike = 0; strike < 4 && !finished; strike += 1) {

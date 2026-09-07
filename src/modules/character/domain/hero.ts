@@ -1,3 +1,5 @@
+import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
+
 export type HeroCreationPolicy = Readonly<{
   level: number;
   hp: number;
@@ -8,8 +10,8 @@ export type HeroCreationPolicy = Readonly<{
 
 export class Hero {
   private constructor(
-    readonly id: string,
-    readonly accountId: string,
+    readonly id: number,
+    readonly accountId: number,
     readonly nick: string,
     private levelValue: number,
     private hpValue: number,
@@ -28,8 +30,8 @@ export class Hero {
   }
 
   static restore(values: {
-    id: string;
-    accountId: string;
+    id: number;
+    accountId: number;
     nick: string;
     level: number;
     hp: number;
@@ -38,8 +40,8 @@ export class Hero {
     moneyMinor: number;
   }): Hero {
     return new Hero(
-      values.id,
-      values.accountId,
+      requireWireIdentity(values.id, "hero id"),
+      requireWireIdentity(values.accountId, "account id"),
       values.nick,
       values.level,
       values.hp,

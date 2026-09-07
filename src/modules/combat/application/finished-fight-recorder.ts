@@ -18,7 +18,7 @@ export class FinishedFightRecorder {
         heroNick: battle.heroNick,
         heroLevel: battle.heroLevel,
         heroKind: battle.heroKind,
-        botId: battle.botId,
+        botArtikulId: battle.botArtikulId,
         botNick: battle.botNick,
         botLevel: battle.botLevel,
         timeout: battle.turnTimeoutSeconds,

@@ -7,12 +7,12 @@ import { heroes } from "./schema.ts";
 export class PostgresHeroRepository implements HeroRepository {
   constructor(private readonly database: PostgresDatabase) {}
 
-  async findById(id: string): Promise<Hero | null> {
+  async findById(id: number): Promise<Hero | null> {
     const rows = await this.database.session().select().from(heroes).where(eq(heroes.id, id));
     return this.single(rows, `hero id ${id}`);
   }
 
-  async findByAccountId(accountId: string): Promise<Hero | null> {
+  async findByAccountId(accountId: number): Promise<Hero | null> {
     const rows = await this.database
       .session()
       .select()
@@ -21,7 +21,7 @@ export class PostgresHeroRepository implements HeroRepository {
     return this.single(rows, `hero account ${accountId}`);
   }
 
-  async create(accountId: string, nick: string, policy: HeroCreationPolicy): Promise<Hero> {
+  async create(accountId: number, nick: string, policy: HeroCreationPolicy): Promise<Hero> {
     Hero.assertCreationPolicy(policy);
     const rows = await this.database
       .session()
@@ -43,37 +43,28 @@ export class PostgresHeroRepository implements HeroRepository {
   }
 
   async save(hero: Hero): Promise<void> {
-    await this.database
+    const updated = await this.database
       .session()
-      .insert(heroes)
-      .values({
-        id: hero.id,
-        accountId: hero.accountId,
-        nick: hero.nick,
+      .update(heroes)
+      .set({
         level: hero.level,
         hp: hero.hp,
         maxHp: hero.maxHp,
         areaId: hero.areaId,
         moneyMinor: BigInt(hero.moneyMinor),
-        version: 1,
+        version: sql`${heroes.version} + 1`,
       })
-      .onConflictDoUpdate({
-        target: heroes.id,
-        set: {
-          level: hero.level,
-          hp: hero.hp,
-          maxHp: hero.maxHp,
-          areaId: hero.areaId,
-          moneyMinor: BigInt(hero.moneyMinor),
-          version: sql`${heroes.version} + 1`,
-        },
-      });
+      .where(eq(heroes.id, hero.id))
+      .returning({ id: heroes.id });
+    if (updated.length !== 1) {
+      throw new Error(`Hero ${hero.id} was not updated`);
+    }
   }
 
   private single(
     rows: Array<{
-      id: string;
-      accountId: string;
+      id: number;
+      accountId: number;
       nick: string;
       level: number;
       hp: number;

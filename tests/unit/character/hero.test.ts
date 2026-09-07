@@ -24,8 +24,8 @@ describe("Hero", () => {
     };
     Hero.assertCreationPolicy(policy);
     const hero = Hero.restore({
-      id: "hero-1",
-      accountId: "account",
+      id: 1,
+      accountId: 1,
       nick: "Hero",
       ...policy,
     });

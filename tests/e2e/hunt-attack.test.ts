@@ -28,8 +28,14 @@ describe("hunt attack", () => {
     expect(start["common|action"]).toEqual({ status: 100 });
     expect(start["fight|conf"]).toMatchObject({
       status: 100,
-      conf: { bg: "1_1", port: 33120 },
+      conf: { bg: "1_1", port: 33120, instance_id: "0" },
     });
-    expect(huntFightIdFrom(start)).toMatch(/^\d+$/);
+    const fightConf = start["fight|conf"] as {
+      conf: { fightId: string; userId: string; instance_id: string };
+    };
+    expect(fightConf.conf.fightId).toMatch(/^[1-9][0-9]*$/);
+    expect(fightConf.conf.userId).toMatch(/^[1-9][0-9]*$/);
+    expect(Number(fightConf.conf.userId)).toBeGreaterThanOrEqual(1);
+    expect(huntFightIdFrom(start)).toBe(fightConf.conf.fightId);
   });
 });

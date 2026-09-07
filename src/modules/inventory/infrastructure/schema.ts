@@ -1,11 +1,11 @@
 import { sql } from "drizzle-orm";
-import { bigint, check, index, integer, pgSchema, text, uuid } from "drizzle-orm/pg-core";
+import { bigint, check, index, integer, pgSchema, text } from "drizzle-orm/pg-core";
 
 const inventorySchema = pgSchema("inventory");
 
 export const itemIdSeq = inventorySchema.sequence("item_id_seq", {
-  startWith: 1_000_000_000,
-  minValue: 1_000_000_000,
+  startWith: 100_000,
+  minValue: 100_000,
   maxValue: 2_147_483_647,
   cycle: false,
 });
@@ -16,7 +16,7 @@ export const items = inventorySchema.table(
     id: bigint("id", { mode: "bigint" })
       .primaryKey()
       .default(sql`nextval('inventory.item_id_seq'::regclass)`),
-    heroId: uuid("hero_id").notNull(),
+    heroId: integer("hero_id").notNull(),
     artifactId: integer("artifact_id").notNull(),
     quantity: integer("quantity").notNull(),
     locationKind: text("location_kind").notNull(),
@@ -25,7 +25,7 @@ export const items = inventorySchema.table(
     version: integer("version").notNull(),
   },
   (table) => [
-    check("items_id_fight_safe", sql`${table.id} >= 1000000000`),
+    check("items_id_fight_safe", sql`${table.id} >= 100000`),
     check("items_quantity_check", sql`${table.quantity} > 0`),
     check("items_version_check", sql`${table.version} > 0`),
     check(

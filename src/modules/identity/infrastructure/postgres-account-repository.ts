@@ -7,7 +7,7 @@ import { accounts } from "./schema.ts";
 export class PostgresAccountRepository implements AccountRepository {
   constructor(private readonly database: PostgresDatabase) {}
 
-  async findById(id: string): Promise<Account | null> {
+  async findById(id: number): Promise<Account | null> {
     const rows = await this.database.session().select().from(accounts).where(eq(accounts.id, id));
     return this.single(rows, `account id ${id}`);
   }
@@ -39,28 +39,23 @@ export class PostgresAccountRepository implements AccountRepository {
   }
 
   async save(account: Account): Promise<void> {
-    await this.database
+    const updated = await this.database
       .session()
-      .insert(accounts)
-      .values({
-        id: account.id,
+      .update(accounts)
+      .set({
         login: account.login,
         nick: account.nick,
         passwordHash: account.passwordHash,
-        createdAt: sql`now()`,
       })
-      .onConflictDoUpdate({
-        target: accounts.id,
-        set: {
-          login: account.login,
-          nick: account.nick,
-          passwordHash: account.passwordHash,
-        },
-      });
+      .where(eq(accounts.id, account.id))
+      .returning({ id: accounts.id });
+    if (updated.length !== 1) {
+      throw new Error(`Account ${account.id} was not updated`);
+    }
   }
 
   private single(
-    rows: Array<{ id: string; login: string; nick: string; passwordHash: string | null }>,
+    rows: Array<{ id: number; login: string; nick: string; passwordHash: string | null }>,
     key: string,
   ): Account | null {
     if (rows.length > 1) throw new Error(`Multiple rows found for ${key}`);

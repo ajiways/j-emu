@@ -7,7 +7,7 @@ export class UserBagCommand implements OaCommand {
 
   constructor(private readonly bootstrap: BootstrapReadModel) {}
 
-  async execute(accountId: string): Promise<OaEncodedResponse> {
+  async execute(accountId: number): Promise<OaEncodedResponse> {
     const init = await this.bootstrap.init(accountId);
     return { kind: "nested", value: init["user|bag"] };
   }

@@ -7,13 +7,13 @@ export class CharacterService {
     private readonly creationPolicy: HeroCreationPolicy,
   ) {}
 
-  async getOrCreateForAccount(accountId: string, nick: string): Promise<Hero> {
+  async getOrCreateForAccount(accountId: number, nick: string): Promise<Hero> {
     const existing = await this.heroes.findByAccountId(accountId);
     if (existing) return existing;
     return this.heroes.create(accountId, nick, this.creationPolicy);
   }
 
-  async getByAccountId(accountId: string): Promise<Hero | null> {
+  async getByAccountId(accountId: number): Promise<Hero | null> {
     return this.heroes.findByAccountId(accountId);
   }
 
