@@ -21,27 +21,27 @@ Playerbot-таблиц и признаков `is_bot` нет.
 ## Текущий playable slice
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
-и миграции `drizzle/0000`–`0008`. Поля ниже совпадают с runtime.
+и миграции `drizzle/0000`–`0009`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
-- `accounts(id uuid DEFAULT gen_random_uuid(), login UNIQUE, nick UNIQUE, password_hash, created_at)`.
-- `sessions(id text PK, account_id UNIQUE → accounts, session_key, created_at)`.
+- `accounts(id integer GENERATED ALWAYS AS IDENTITY START 1, login UNIQUE, nick UNIQUE, password_hash, created_at)`.
+- `sessions(id text PK, account_id UNIQUE integer, session_key, created_at)`.
 
 Ник дублируется на `character.heroes` для текущего bootstrap. Отдельных
 `account_credentials` / `operator_roles` нет.
 
 ### `character`
 
-- `heroes(id uuid DEFAULT gen_random_uuid(), account_id UNIQUE, nick, level, hp, max_hp, area_id, money_minor, version)`.
+- `heroes(id integer GENERATED ALWAYS AS IDENTITY START 1, account_id UNIQUE, nick, level, hp, max_hp, area_id, money_minor, version)`.
 
 `area_id` — текстовая ссылка на authored area; FK на `world.areas` в этом срезе
 нет. Ресурсы, навыки, репутации и preferences не выделены.
 
 ### `inventory`
 
-- `item_id_seq`: `MIN 1_000_000_000`, `MAX 2_147_483_647`, `NO CYCLE`.
-- `items(id bigint DEFAULT nextval, hero_id, artifact_id, quantity, location_kind, pocket_position, equipment_slot, version)`.
+- `item_id_seq`: `MIN 100_000` `MAX 2_147_483_647` `NO CYCLE` (не пересекаться с native/glove `persSpells.srcId`). [ID_POLICY.md](ID_POLICY.md), [ID_RANGES.md](../../../jgr-emu/docs/ID_RANGES.md).
+- `items(id bigint DEFAULT nextval, hero_id integer, artifact_id, quantity, location_kind, pocket_position, equipment_slot, version)`.
 
 `location_kind` ∈ `bag|pocket|equipment` с CHECK взаимоисключения slot-колонок.
 Отдельных containers/reservations нет.
@@ -73,20 +73,21 @@ PostgreSQL хранит одну строку завершённого резу�
 `jgr-emu.finished_fights`:
 
 - identity: `id` = выданный `combat.fight_id_seq` (не отдельный identity),
-  `account_id` / `hero_id` — UUID FK на identity/character;
+  `account_id` / `hero_id` — integer FK на identity/character;
 - wire history: `title`, `type`, `timeout`, `level_min`, `level_max`, `level`,
   `ml_title`, `winner`, `started`, `duration`, validated `teams jsonb`;
 - query/retention: `area_id`, `finished_at timestamptz`.
 
-`teams.1[].id` — UUID героя строкой: в старом runtime это был integer
-`heroDbId`. Остальные ключи teams совпадают со старым DTO. Storage
-нормализует `teams_json` → `jsonb`, unix-ms → `timestamptz`, duration/winner
-→ integer; wire mapper возвращает старые string/number shapes.
+`teams.1[].id` — numeric `heroes.id`. Bot member хранит authored `artikul_id`;
+RAM fight bot ID в history не пишется. Storage нормализует `teams_json` →
+`jsonb`, unix-ms → `timestamptz`, duration/winner → integer.
 
 History не является source of truth для rewards, quests, HP или inventory.
-Запись — одна идемпотентная строка после terminal outcome
-(`ON CONFLICT DO NOTHING`). Retention 72 часа; cleanup — bounded batches по
-индексу `finished_at`, не на finish/read request path. Полный контракт:
+Повторная запись идентичного результата идемпотентна; тот же fight ID с
+другими данными — диагностируемая ошибка. Ошибка history не прерывает
+terminal combat packets (явная best-effort policy). Retention 72 часа;
+cleanup — single-flight bounded batches по индексу `finished_at`, не на
+finish/read request path. Полный контракт:
 [ADR-0015](../adr/ADR-0015-ephemeral-combat-and-finished-history.md).
 
 ### `content`
@@ -127,8 +128,7 @@ area_links, character_locations, presence_leases, spawn_leases, facts.
 
 Durable sides/turns/effects, active participants и JSONB event log не
 планируются. `arena|finished_fights` OA и `fight_info.php` в текущем срезе
-не отдаются; mapper старого wire shape есть, отдельного gameplay-командного
-пути нет.
+не отдаются.
 
 ### `quests` / `social` / `economy` / `professions` / `instances`
 

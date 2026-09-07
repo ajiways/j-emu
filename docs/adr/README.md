@@ -25,9 +25,10 @@ Accepted ADRs are immutable except for typo and clarification fixes. Change a de
 10. [ADR-0010: Drizzle persistence](ADR-0010-drizzle-persistence.md)
 11. [ADR-0011: PostgreSQL content publication](ADR-0011-postgres-content-publication.md)
 12. [ADR-0012: E2E-first testing](ADR-0012-e2e-first-testing.md)
-13. [ADR-0013: Database-generated identifiers](ADR-0013-database-generated-identifiers.md)
+13. [ADR-0013: Database-generated identifiers — superseded](ADR-0013-database-generated-identifiers.md)
 14. [ADR-0014: Typed static command dispatch](ADR-0014-typed-static-command-dispatch.md)
 15. [ADR-0015: Ephemeral combat and finished history](ADR-0015-ephemeral-combat-and-finished-history.md)
+16. [ADR-0016: Live-derived ID allocation](ADR-0016-live-derived-id-allocation.md)
 
 ## Conventions
 

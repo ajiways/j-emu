@@ -96,26 +96,35 @@ Playable-slice E2E идёт через Fastify и PostgreSQL.
 
 ## Фаза 2. ID из базы данных
 
-Статус: выполнена. Item/fight/participant ID выдают PostgreSQL sequences;
-account/hero UUID — `gen_random_uuid()`; runtime не зависит от `memoryIds`.
+Статус: выполнена. Миграция `0009_identity_numeric_ids_and_combat_id_policy`
+перевела account/hero на integer identity с `1`, item sequence на `100_000`,
+fight ID на sequence с `1`, удалила `participant_id_seq`. Human participant
+ID равен `heroes.id`; fight bot ID выдаётся в RAM от `1_000_000`.
 
 ### Работы
 
-1. Зафиксировать тип каждого ID: UUID, text wire ID либо PostgreSQL bigint.
-2. Перенести item/fight/participant ID allocation в PostgreSQL
-   sequence/identity через Drizzle adapters.
-3. На TypeScript boundary представлять потенциальный bigint без потери точности:
+1. Перевести account/hero и остальные persistent entity ID на PostgreSQL
+   identity с `1`; `heroes.id` является numeric human participant ID.
+2. Перевести item instance на bounded sequence с `MINVALUE 100_000`,
+   `MAXVALUE 2_147_483_647`, `NO CYCLE`; fight result ID — на sequence с `1`.
+   Не создавать отдельный persisted participant ID для human.
+3. Выдавать ephemeral fight bot ID в RAM от `1_000_000`; он должен быть
+   уникален в одном `persList` и не сохраняться.
+4. На TypeScript boundary представлять потенциальный bigint без потери точности:
    `bigint` или validated decimal string; преобразование в wire number допустимо
    только при доказанном безопасном диапазоне конкретного поля.
-4. Удалить зависимость runtime от `memoryIds` policy.
-5. Проверить uniqueness при параллельных transactions и rollback gaps; gaps
+5. Удалить зависимость persisted runtime ID от `memoryIds` policy.
+6. Проверить uniqueness при параллельных transactions и rollback gaps; gaps
    sequence являются нормой и не должны переиспользоваться.
 
 ### Acceptance gate
 
-- production path не создаёт item/fight/participant IDs в памяти;
+- production path не создаёт persistent ID в памяти;
+- account/hero/fight ID начинаются с 1 и hero wire ID является numeric;
 - параллельный integration test не получает duplicate IDs;
-- item IDs сохраняют fight-safe нижнюю границу;
+- item IDs не пересекаются с native/glove `persSpells.srcId` (пол — [ID_RANGES.md](../../../jgr-emu/docs/ID_RANGES.md), не 1e9);
+- bot participant ID начинается с 1_000_000, не сохраняется и не совпадает с
+  human ID в одном `persList`;
 - reconnect/restart не меняет и не переиспользует выданный ID;
 - raw AMF fixtures не получают непредусмотренное изменение numeric/string shape.
 

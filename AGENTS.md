@@ -60,8 +60,19 @@
 - Все runtime ID выдаёт PostgreSQL через identity/sequence/default. Запрещены
   process counters, `max + 1`, ручное смещение ID и генерация persisted ID в
   domain/application.
-- Wire-диапазоны регистрируются в `docs/architecture/ID_POLICY.md`. Новый
-  диапазон без подтверждённого контракта не назначается.
+- Канон ID: `jgr-emu/docs/ID_RANGES.md`, ADR-0016 и
+  `docs/architecture/ID_POLICY.md`. Не копировать исторические floors из старого
+  кода.
+- Persistent identity начинается с `1`. Исключение: `items.id` экземпляра
+  предмета начинается с `100_000` из-за коллизии `persSpells.srcId`.
+- `artikul_id` каталога сохраняется из контента и не принадлежит sequence
+  `items.id`.
+- Human participant боя равен numeric `heroes.id`; fight bot ID ephemeral,
+  выдаётся в RAM от `1_000_000` и не сохраняется.
+- Wire integer находится в `1..2_147_483_647`. Ноль запрещён, кроме
+  `answer_id=0` (доска) и `instance_id=0` (мир).
+- Map hunt ID = `area × 100 + index`; dungeon hunt уникален в том же
+  `common|hunt`. BG/dungeon copies различаются типом, не диапазоном.
 - Миграции генерируются Drizzle Kit с осмысленным именем
   `--name=<module>_<change>`. Применённые миграции не редактируются.
 

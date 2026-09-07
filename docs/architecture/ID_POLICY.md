@@ -27,56 +27,47 @@ Session secret, CSRF token, correlation ID и idempotency key не являют�
 
 ## Совместимые числовые диапазоны
 
-Реестр ведётся по wire namespace, а не как один глобальный числовой диапазон.
-Например, `inventory.item_instance`, `npc.point`, `combat.fight` и
-`combat.participant` считаются разными namespace только при наличии
-клиентского доказательства, что их значения не сравниваются между собой.
+Канон распределения ID:
+[jgr-emu docs/ID_RANGES.md](../../../jgr-emu/docs/ID_RANGES.md).
+Клиент не требует искусственных префиксов: крупные live ID — накопившийся
+auto-increment, а не MINVALUE.
 
-Когда wire требует подтверждённый диапазон, для него создаётся отдельная
-bounded, noncycling sequence Postgres. Для sequence обязательно задаются:
+Общий persistent default:
 
-- владелец и тип сущности;
-- подтверждённые `MINVALUE` и `MAXVALUE`;
+- identity/sequence начинается с **1**;
 - `NO CYCLE`;
-- ошибка при исчерпании;
-- миграция, создающая или изменяющая sequence.
+- исчерпание является ошибкой;
+- wire integer находится в диапазоне **1..2 147 483 647**.
 
-Зарегистрированные namespaces:
+Единственное подтверждённое исключение к старту с 1:
 
-- `inventory.item_instance`: **assigned** для текущего среза,
-  `MINVALUE 1 000 000 000`, `MAXVALUE 2 147 483 647`, `NO CYCLE`. Floor
-  подтверждён live/client наблюдениями, [описанием pocket wire](../../../jgr-emu/docs/POCKET.md),
-  [старой константой](../../../jgr-emu/src/itemIds.ts) и
-  [integer identity schema](../../../jgr-emu/src/db/schema.ts). Верхняя граница
-  является явным ограничением server storage, а не утверждением о полном
-  диапазоне live; raw-AMF E2E обязателен.
-- `npc.point`: **unassigned**. Известен только legacy floor `920 000` из
-  [`wireIds.ts`](../../../jgr-emu/src/wireIds.ts); max и collision scope не
-  подтверждены.
-- `combat.fight`: **unassigned**. `900 001` — начало старого process counter в
-  [`fight/ids.ts`](../../../jgr-emu/src/fight/ids.ts), а не доказанный контракт.
-  Каталога `dumps/AS3` в `jgr-emu` нет. Live HTML
-  `fixtures/info_html/jugger_fight_info_full__fight_info.php__fight_id-719053995.html`
-  показывает fight id `"719053995"` (~9 цифр) — этого недостаточно, чтобы
-  назначить MIN/MAX.
-- `combat.participant`: **unassigned**. Старый runtime использовал
-  `10 000 000 + hero_id` для человека в
-  [`fight/lifecycle.ts`](../../../jgr-emu/src/fight/lifecycle.ts) и counter от
-  `90 000 001` для бота в
-  [`fight/ids.ts`](../../../jgr-emu/src/fight/ids.ts). В том же live dump
-  human `id` `"4266465"` (hero db id, не `10M+hero`), ключи `users`
-  `16986453`/`16986454`, bot `id` `"17672704"` при `artikul_id` 2. Арифметика и
-  counter запрещены; непересекающиеся DB ranges не подтверждены.
+- `inventory.item_instance` (`items.id`) начинается с **100 000** и имеет
+  `MAXVALUE 2 147 483 647`, `NO CYCLE`;
+- клиент матчит `persSpells.srcId == items.id` без `srcType`, поэтому ID
+  экземпляра не должен совпасть с native `1/2/3/5/6/7/10` или artikul
+  надетой перчатки;
+- исторический floor `1e9` не является контрактом.
 
-`assigned` означает, что namespace можно реализовать строго указанной sequence
-с подтверждёнными границами. `unassigned` означает отсутствие подтверждённого
-live-контракта: нельзя объявлять START/MIN/MAX назначенными, угадывать соседний
-участок или копировать старый process counter. Playable slice может выдавать
-wire ID из operational DB sequence, пока диапазон не подтверждён; такой START
-не становится `assigned`.
+Combat:
 
-Неизвестный диапазон считается неназначенным. Нельзя угадывать его границы,
-брать соседний свободный участок или добавлять fallback.
+- `combat.fight` / `finished_fights.id` выдаёт PostgreSQL с **1**;
+- human participant ID равен numeric `heroes.id` и отдельно не выдаётся;
+- fight bot ID является ephemeral combat state: RAM counter начинается с
+  **1 000 000**, уникален внутри одного `persList` и не сохраняется;
+- floors `900 001`, `100 000`, `200 000`, `10M+hero` и `90 000 001` не
+  являются допустимыми альтернативами.
+
+Остальные специальные правила:
+
+- `0` запрещён, кроме `answer_id=0` (доска) и `instance_id=0` (мир);
+- quest point/answer и dungeon/BG instance copies выдаются с **1**;
+- `book_id` сохраняет подтверждённый номер, а не занимает чужой ID;
+- map hunt ID равен `area × 100 + index`;
+- dungeon hunt ID уникален в том же `common|hunt` относительно карты;
+- BG и dungeon copies различаются типом, а не искусственным floor.
+
+Неизвестный namespace нельзя занимать «на будущее», вычислять по соседнему
+диапазону или снабжать fallback.
 
 ## Authored content
 
@@ -90,26 +81,17 @@ Runtime-сущности, созданные по authored content, получа
 
 ## Текущий playable slice
 
-| ID                     | Postgres | Источник                                                                   | TypeScript                                                     | Wire                                    |
-| ---------------------- | -------- | -------------------------------------------------------------------------- | -------------------------------------------------------------- | --------------------------------------- |
-| `identity.accounts.id` | uuid     | `gen_random_uuid()`                                                        | string                                                         | не клиентский hero id                   |
-| `identity.sessions.id` | text     | crypto на application-границе                                              | string                                                         | `PHPSESSID`                             |
-| `character.heroes.id`  | uuid     | `gen_random_uuid()`                                                        | string                                                         | `user\|conf.id`, `user\|unitframe.id`   |
-| `inventory.items.id`   | bigint   | `inventory.item_id_seq` `MIN 1_000_000_000` `MAX 2_147_483_647` `NO CYCLE` | number после проверки диапазона                                | AMF number в `user\|bag`                |
-| `combat.fight`         | bigint   | `combat.fight_id_seq` START 100000, `NO CYCLE`                             | decimal string                                                 | `fightId` string                        |
-| `combat.participant`   | bigint   | `combat.participant_id_seq` START 200000, `NO CYCLE`                       | bigint; в AMF number только если значение в safe integer range | `userId` string, `srcId`/`dstId` number |
-| artifact/bot id        | integer  | authored content                                                           | number                                                         | number                                  |
-| area/spawn id          | text     | authored content                                                           | string                                                         | string                                  |
+После `0009_identity_numeric_ids_and_combat_id_policy`:
 
-`inventory.item_instance` назначен и ограничен. Sequences боя текущего среза
-(`combat.fight_id_seq` START 100000, `combat.participant_id_seq` START 200000)
-выдают wire ID для hunt/fproxy и PK finished history; эти START остаются
-**operational unassigned**, не live floors. `900 001` /
-`10_000_000 + hero_id` / `90_000_001` по-прежнему **unassigned** и не
-подставляются.
-
-Session secret не является persisted aggregate ID и остаётся
-application-generated.
+- `accounts.id` / `heroes.id` — PostgreSQL `integer GENERATED ALWAYS AS IDENTITY`
+  с `1`; `heroes.id` одновременно human participant ID на wire;
+- `items.id` — `inventory.item_id_seq` `MINVALUE 100000` `MAXVALUE 2147483647`
+  `NO CYCLE`;
+- `finished_fights.id` — `combat.fight_id_seq` с `1`, тот же потолок, `NO CYCLE`;
+- persisted human participant sequence нет;
+- fight bot ID — process-local counter с `1_000_000`, не сохраняется;
+- catalog `artikul_id` остаётся authored и не перенумеровывается;
+- session secret — application-generated token, не persisted aggregate ID.
 
 ## Создание записи
 
@@ -125,4 +107,4 @@ application-generated.
 fallback и повтор с вычисленным ID запрещены.
 
 Основное решение:
-[ADR-0013](../adr/ADR-0013-database-generated-identifiers.md).
+[ADR-0016](../adr/ADR-0016-live-derived-id-allocation.md).

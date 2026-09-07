@@ -44,23 +44,24 @@ checkpoints, packets, effects, leases или event log.
 
 - `teams_json` → validated PostgreSQL `jsonb` с тем же teams DTO;
 - unix-ms `finished_at` → `timestamptz`;
-- numeric duration/winner/type хранятся числовыми типами и явно преобразуются
-  wire mapper;
+- numeric duration/winner/type хранятся числовыми типами;
 - добавляются индексы под подтверждённые запросы по area/account и
   `finished_at`;
 - обязательные поля не получают DB/application defaults.
 
-`arena|finished_fights` возвращает подтверждённые старые поля:
-`id`, `title`, `type`, `timeout`, `level_min`, `level_max`, `level`,
-`ml_title`, `winner`, `started`, `duration`, `teams`. Список scoped по текущей
-локации, фильтруется по nick/level/type и пагинируется по 10 записей, как в
-старом runtime.
+`arena|finished_fights` в текущем срезе не отдаётся. История хранит те же
+поля, что старая строка: `id`, `title`, `type`, `timeout`, `level_min`,
+`level_max`, `level`, `ml_title`, `winner`, `started`, `duration`, `teams`.
+`teams.1[].id` — numeric `heroes.id`.
 
-Retention завершённой истории — ровно 72 часа. Cleanup:
+Повторная запись идентичного результата идемпотентна. Тот же fight ID с
+другими данными — диагностируемая ошибка, а не молчаливый `ON CONFLICT DO
+NOTHING`. Ошибка сохранения history не прерывает terminal combat packets:
+это явная best-effort policy с логом. Cleanup:
 
 - выполняется отдельной периодической задачей, не на finish/read request path;
 - удаляет bounded batches по индексированному `finished_at`;
-- идемпотентен и наблюдаем;
+- single-flight: параллельный запуск не начинает второй DELETE;
 - не влияет на rewards, quests или статистику: history не является их source
   of truth;
 - не продлевает TTL при чтении.

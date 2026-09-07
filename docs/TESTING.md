@@ -20,15 +20,16 @@
 Текущий playable slice покрыт независимыми файлами в `tests/e2e/`:
 
 - `auth-init` — cookie на `game.php` 200, flat `init`/`init2`, nested `user|bag`,
-  fight-safe item id, restart hero/bag;
+  numeric `user|conf.id`, item id ≥ 100000, restart hero/bag;
 - `unsupported` — `clan|info` → `status:203`;
-- `hunt-attack` — `ATTACK_BOT` → flat `fight|conf`;
-- `fproxy` — auth / poll / `castSpell` до `fightFinish`;
+- `hunt-attack` — `ATTACK_BOT` → flat `fight|conf` с decimal `fightId`/`userId`
+  и `instance_id:"0"`;
+- `fproxy` — auth / poll / `castSpell` до `fightFinish`; `oppnew.id` ≥ 1000000;
 - `esrv-exit-reconnect` — `fight|exit`, затем restart и повторный hunt;
 - `combat-restart` — restart посреди боя прекращает active fight, не меняет
   HP/bag и не создаёт finished history;
-- `finished-fights` — после terminal hunt в PostgreSQL ровно одна строка
-  старого `arena|finished_fights` shape; повторная запись не дублирует;
+- `finished-fights` — после terminal hunt в PostgreSQL ровно одна строка с
+  numeric `teams.1[].id`; повторная идентичная запись не дублирует;
 - `concurrent-heroes` — два уникальных slot параллельно, разные hero/fight id;
 - `protocol-errors` — no-session `status:4`, malformed `204`, unknown OA/fproxy
   `203`.

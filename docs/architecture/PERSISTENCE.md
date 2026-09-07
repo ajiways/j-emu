@@ -50,7 +50,8 @@ FK и общая транзакция не дают права обходить 
 6. `combat_create_fights_and_participants`;
 7. `issue_database_identifiers`;
 8. `content_create_publication_and_versioned_projections`;
-9. `combat_replace_state_with_finished_history`.
+9. `combat_replace_state_with_finished_history`;
+10. `identity_numeric_ids_and_combat_id_policy`.
 
 `drizzle-kit` читает module-owned schema files из `drizzle.config.ts`. Общего
 runtime barrel `db/schema.ts` нет.

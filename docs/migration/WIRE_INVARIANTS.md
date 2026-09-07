@@ -158,20 +158,28 @@ CEF ненадёжно сохраняет `Set-Cookie` из HTTP 302. Обяза
 
 ## Предметы и идентификаторы
 
+### Общая ID policy
+
+Persistent ID выдаёт PostgreSQL identity/sequence с `1`. Крупные live ID не
+являются зарезервированными floors. Human participant ID равен numeric
+`heroes.id`; fight bot ID существует только в RAM боя и начинается с
+`1_000_000`. Ноль запрещён, кроме `answer_id=0` (доска) и `instance_id=0`
+(мир); верх wire integer — `2_147_483_647`.
+
+Map hunt ID равен `area × 100 + index`; dungeon hunt ID уникален в том же
+`common|hunt`. BG и dungeon instance copies различаются типом, а не диапазоном.
+Полный канон: [`docs/ID_RANGES.md`](../../../jgr-emu/docs/ID_RANGES.md) и
+[ADR-0016](../adr/ADR-0016-live-derived-id-allocation.md).
+
 ### Bag shape
 
 Ключ предмета в `user|bag.bag` — строковое представление instance id. Предмет в рюкзаке имеет `action:"bag"`. Для корректной вкладки и изображения необходимы подтверждённые `type_id`, `kind_id`, `picture`; `artikul_id` ссылается на шаблон, а `actions`, `artifact_actions`, `artifact_skills` управляют доступными действиями и отображением. Пустой `artifact_actions` не должен порождать кнопку USE. Источник: [`docs/PROTOCOL.md`](../../../jgr-emu/docs/PROTOCOL.md).
 
 ### Безопасный диапазон instance id
 
-`items.id` карманных расходников должен быть `>= 1_000_000_000`; sequence начинается с того же порога. `persSpells.srcId` равен реальному `items.id`.
+`persSpells.srcId` равен реальному `items.id`. Клиент ищет инстанс **без** `srcType`, поэтому id не должен совпадать с native 1/2/3/5/6/7/10 и с artikul перчатки. Миллиард не контракт Flash; целевой пол **100_000**, потолок int32. Канон: [`docs/ID_RANGES.md`](../../../jgr-emu/docs/ID_RANGES.md).
 
-Причина: малые serial id пересекаются с native fight `srcId` 5/6/7. Клиент ищет pocket instance по `persSpells.srcId`; несовпадение с уже полученным init/pocket состоянием вызывает ошибочные ограничения. Подъём id выполняется до выдачи `user|bag`/`user|pocket`, а не только при входе в бой. Источники: [`docs/POCKET.md`](../../../jgr-emu/docs/POCKET.md), старое schema-ограничение в [`src/db/schema.ts`](../../../jgr-emu/src/db/schema.ts).
-
-Новый runtime не «поднимает» уже выданный ID арифметикой. PostgreSQL sequence
-сразу выдаёт значение из зарегистрированного диапазона и ограничена DB
-constraint. Все подтверждённые и ещё не назначенные namespaces перечислены в
-[ID_POLICY.md](../architecture/ID_POLICY.md).
+Новый runtime не «поднимает» уже выданный ID арифметикой. PostgreSQL sequence сразу выдаёт значение из зарегистрированного диапазона. Namespaces: [ID_POLICY.md](../architecture/ID_POLICY.md).
 
 ## `rs`, strike и клиентские счётчики
 
