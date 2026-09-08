@@ -1,30 +1,87 @@
+import type { ArtifactSkillBonus } from "../../catalog/domain/artifact-skill-bonus.ts";
+import type { CatalogProgression } from "../../catalog/ports/catalog-progression.ts";
+import type { ProgressionSnapshot } from "../../catalog/domain/progression-snapshot.ts";
+import type { UnitOfWork } from "../../../shared/kernel/unit-of-work.ts";
 import type { Hero, HeroCreationPolicy } from "../domain/hero.ts";
 import { PersonalDetails } from "../domain/personal-details.ts";
 import { requiredSkillTotal, totalHeroSkills } from "../domain/equipment-skill-totals.ts";
 import { requireHeroSkills, type HeroSkill } from "../domain/hero-skill.ts";
-import type { ArtifactSkillBonus } from "../../catalog/domain/artifact-skill-bonus.ts";
+import { ProgressionContentError } from "../domain/progression-content-error.ts";
+import type { EquippedModifiers } from "../ports/equipped-modifiers.ts";
 import type { HeroRepository } from "../ports/hero-repository.ts";
 import type { HeroSkillRepository } from "../ports/hero-skill-repository.ts";
 import type { PersonalDetailsRepository } from "../ports/personal-details-repository.ts";
+import { ExperienceGrantService } from "./experience-grant-service.ts";
+import type { ExperienceGrantCommand } from "../domain/experience-grant-command.ts";
+import type { ExperienceGrantResult } from "../domain/experience-grant-result.ts";
+import type { CharacterProgression } from "../ports/character-progression.ts";
+import type { ExperienceGrantRepository } from "../ports/experience-grant-repository.ts";
 
-export class CharacterService {
+export class CharacterService implements CharacterProgression {
+  private readonly grants: ExperienceGrantService;
+
   constructor(
+    private readonly unitOfWork: UnitOfWork,
     private readonly heroes: HeroRepository,
     private readonly skills: HeroSkillRepository,
     private readonly personalDetailsStore: PersonalDetailsRepository,
     private readonly creationPolicy: HeroCreationPolicy,
-  ) {}
+    private readonly progression: CatalogProgression,
+    equipment: EquippedModifiers,
+    grantStore: ExperienceGrantRepository,
+  ) {
+    this.grants = new ExperienceGrantService(
+      unitOfWork,
+      heroes,
+      skills,
+      grantStore,
+      progression,
+      equipment,
+    );
+  }
+
+  grantExperience(command: ExperienceGrantCommand): Promise<ExperienceGrantResult> {
+    return this.grants.grantExperience(command);
+  }
 
   async getOrCreateForAccount(accountId: number, nick: string): Promise<Hero> {
-    const existing = await this.heroes.findByAccountId(accountId);
-    if (existing) return existing;
-    const hero = await this.heroes.create(accountId, nick, this.creationPolicy);
-    await this.skills.replace(hero.id, this.creationPolicy.skills);
-    await this.personalDetailsStore.save(
-      hero.id,
-      PersonalDetails.fromStored({ ...this.creationPolicy.tutorialInfo }),
-    );
-    return hero;
+    return this.unitOfWork.run(async () => {
+      const existing = await this.heroes.findByAccountId(accountId);
+      if (existing) return existing;
+      const snapshot = await this.requireSnapshot();
+      const levelOne = snapshot.requireLevel(1);
+      const vit = requiredManaged(levelOne.managedSkills, "VIT");
+      const mpMax = requiredManaged(levelOne.managedSkills, "MPMAX");
+      const hero = await this.heroes.create({
+        accountId,
+        nick,
+        level: 1,
+        hp: vit,
+        maxHp: vit,
+        mp: mpMax,
+        maxMp: mpMax,
+        exp: this.creationPolicy.exp,
+        areaId: this.creationPolicy.areaId,
+        moneyMinor: this.creationPolicy.moneyMinor,
+        moneyGoldMinor: this.creationPolicy.moneyGoldMinor,
+        kind: this.creationPolicy.kind,
+        gender: this.creationPolicy.gender,
+        language: this.creationPolicy.language,
+        body: this.creationPolicy.body,
+        sk: this.creationPolicy.sk,
+        honor: this.creationPolicy.honor,
+        hpTime: this.creationPolicy.hpTime,
+      });
+      await this.skills.replace(hero.id, [
+        ...levelOne.managedSkills.map((skill) => ({ id: skill.id, value: skill.value })),
+        ...this.creationPolicy.skills,
+      ]);
+      await this.personalDetailsStore.save(
+        hero.id,
+        PersonalDetails.fromStored({ ...this.creationPolicy.tutorialInfo }),
+      );
+      return hero;
+    });
   }
 
   async getByAccountId(accountId: number): Promise<Hero | null> {
@@ -80,4 +137,21 @@ export class CharacterService {
     if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
     return hero;
   }
+
+  private async requireSnapshot(): Promise<ProgressionSnapshot> {
+    try {
+      return await this.progression.progressionSnapshot();
+    } catch (error) {
+      throw new ProgressionContentError(
+        error instanceof Error ? error.message : "Progression content is invalid",
+      );
+    }
+  }
+}
+
+function requiredManaged(skills: readonly { id: string; value: number }[], id: string): number {
+  const skill = skills.find((entry) => entry.id === id);
+  if (!skill) throw new ProgressionContentError(`Progression L1 is missing ${id}`);
+  if (skill.value < 1) throw new ProgressionContentError(`Progression L1 ${id} must be positive`);
+  return skill.value;
 }

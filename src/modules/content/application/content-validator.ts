@@ -1,5 +1,6 @@
 import { digestCanonical } from "../domain/canonical-digest.ts";
 import { BOOTSTRAP_CHROME_REQUIRED_KEYS } from "../domain/bootstrap-content.ts";
+import { collectProgressionCurveIssues } from "../domain/progression-curve.ts";
 import {
   CONTENT_VALIDATOR_VERSION,
   PLAYABLE_SLICE_SCHEMA_VERSION,
@@ -104,6 +105,7 @@ export class ContentValidator {
     if (!bundle.levels.some((level) => level.level === 1)) {
       issues.push("level 1 boundary is required");
     }
+    issues.push(...collectProgressionCurveIssues(bundle.levels, skillIds));
     if (!bundle.appearances.some((row) => row.kind === 1 && row.gender === 1)) {
       issues.push("appearance for kind 1 gender 1 is required");
     }

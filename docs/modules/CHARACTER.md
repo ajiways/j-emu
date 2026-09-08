@@ -28,9 +28,10 @@ skills, conf, personal details, book trio, unitframe, chat, area и chrome-бл�
 Hero identity:
 
 - `heroes.id` — numeric PostgreSQL identity и `user|conf.id`;
-- starter HP/MP/EXP, body, kind/gender/language, honor и skills приходят из
+- starter EXP 1, body, kind/gender/language, honor и misc skills приходят из
   versioned `HeroCreationPolicy`;
-- VIT в policy обязан равняться naked `maxHp`, MPMAX — naked `maxMp`;
+- L1 level, naked VIT/MPMAX, current/max HP/MP и шесть managed skills читаются
+  из transaction-pinned progression snapshot;
 - equipment totals (`user|skills`, `hpMax`) считаются из naked + надетых
   `artifact_skills` на PUT_ON/OFF и при чтении skills;
 - tutorial flags пишутся в `hero_personal_details` при создании и больше не

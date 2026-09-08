@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v4",
+  "schemaVersion": "playable-slice/v5",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -181,7 +181,16 @@
       "honorRank": 0,
       "honorMin": 0,
       "honorMax": 100,
-      "honorStatus": 0
+      "honorStatus": 0,
+      "evidenceKind": "confirmed",
+      "managedSkills": [
+        { "id": "STR", "value": 12 },
+        { "id": "RAG", "value": 8 },
+        { "id": "DEX", "value": 8 },
+        { "id": "DEF", "value": 8 },
+        { "id": "VIT", "value": 10 },
+        { "id": "MPMAX", "value": 12 }
+      ]
     },
     {
       "level": 2,
@@ -191,7 +200,16 @@
       "honorRank": 0,
       "honorMin": 0,
       "honorMax": 100,
-      "honorStatus": 0
+      "honorStatus": 0,
+      "evidenceKind": "confirmed",
+      "managedSkills": [
+        { "id": "STR", "value": 13 },
+        { "id": "RAG", "value": 9 },
+        { "id": "DEX", "value": 9 },
+        { "id": "DEF", "value": 9 },
+        { "id": "VIT", "value": 11 },
+        { "id": "MPMAX", "value": 13 }
+      ]
     },
     {
       "level": 3,
@@ -201,7 +219,16 @@
       "honorRank": 0,
       "honorMin": 0,
       "honorMax": 100,
-      "honorStatus": 0
+      "honorStatus": 0,
+      "evidenceKind": "confirmed",
+      "managedSkills": [
+        { "id": "STR", "value": 14 },
+        { "id": "RAG", "value": 10 },
+        { "id": "DEX", "value": 10 },
+        { "id": "DEF", "value": 10 },
+        { "id": "VIT", "value": 12 },
+        { "id": "MPMAX", "value": 14 }
+      ]
     },
     {
       "level": 4,
@@ -211,7 +238,16 @@
       "honorRank": 0,
       "honorMin": 0,
       "honorMax": 100,
-      "honorStatus": 0
+      "honorStatus": 0,
+      "evidenceKind": "confirmed",
+      "managedSkills": [
+        { "id": "STR", "value": 16 },
+        { "id": "RAG", "value": 11 },
+        { "id": "DEX", "value": 11 },
+        { "id": "DEF", "value": 11 },
+        { "id": "VIT", "value": 13 },
+        { "id": "MPMAX", "value": 16 }
+      ]
     },
     {
       "level": 5,
@@ -221,7 +257,16 @@
       "honorRank": 0,
       "honorMin": 0,
       "honorMax": 100,
-      "honorStatus": 0
+      "honorStatus": 0,
+      "evidenceKind": "confirmed",
+      "managedSkills": [
+        { "id": "STR", "value": 17 },
+        { "id": "RAG", "value": 12 },
+        { "id": "DEX", "value": 12 },
+        { "id": "DEF", "value": 12 },
+        { "id": "VIT", "value": 14 },
+        { "id": "MPMAX", "value": 17 }
+      ]
     },
     {
       "level": 6,
@@ -231,7 +276,16 @@
       "honorRank": 0,
       "honorMin": 0,
       "honorMax": 100,
-      "honorStatus": 0
+      "honorStatus": 0,
+      "evidenceKind": "confirmed",
+      "managedSkills": [
+        { "id": "STR", "value": 19 },
+        { "id": "RAG", "value": 13 },
+        { "id": "DEX", "value": 13 },
+        { "id": "DEF", "value": 13 },
+        { "id": "VIT", "value": 16 },
+        { "id": "MPMAX", "value": 19 }
+      ]
     },
     {
       "level": 7,
@@ -241,7 +295,16 @@
       "honorRank": 0,
       "honorMin": 0,
       "honorMax": 100,
-      "honorStatus": 0
+      "honorStatus": 0,
+      "evidenceKind": "legacy_extrapolated",
+      "managedSkills": [
+        { "id": "STR", "value": 20 },
+        { "id": "RAG", "value": 14 },
+        { "id": "DEX", "value": 14 },
+        { "id": "DEF", "value": 14 },
+        { "id": "VIT", "value": 17 },
+        { "id": "MPMAX", "value": 20 }
+      ]
     },
     {
       "level": 8,
@@ -251,7 +314,16 @@
       "honorRank": 0,
       "honorMin": 0,
       "honorMax": 100,
-      "honorStatus": 0
+      "honorStatus": 0,
+      "evidenceKind": "legacy_extrapolated",
+      "managedSkills": [
+        { "id": "STR", "value": 21 },
+        { "id": "RAG", "value": 15 },
+        { "id": "DEX", "value": 15 },
+        { "id": "DEF", "value": 15 },
+        { "id": "VIT", "value": 18 },
+        { "id": "MPMAX", "value": 21 }
+      ]
     }
   ],
   "appearances": [

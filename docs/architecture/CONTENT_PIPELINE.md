@@ -29,11 +29,11 @@ counts/checksums и completeness gates:
 
 ## Текущий playable slice
 
-Текущая `playable-slice/v4` release — только минимальный bundle: 1 artifact,
-1 bot, 1 area, 1 hunt spawn, 11 skills, 8 levels, 1 appearance и
-common-conf/chrome/HUD/welcome документы в составе текущего bundle. Реализованы
-их draft/release/runtime contracts; это нельзя называть полным игровым
-контентом или полным контентом цикла 1–8.
+Текущая `playable-slice/v5` release — только минимальный bundle: 1 artifact,
+1 bot, 1 area, 1 hunt spawn, 11 skills, 8 levels с normalized managed skills,
+1 appearance и common-conf/chrome/HUD/welcome документы в составе текущего
+bundle. Реализованы их draft/release/runtime contracts; это нельзя называть
+полным игровым контентом или полным контентом цикла 1–8.
 
 Seed: `npm run db:publish:development` с `CONTENT_BUNDLE_FILE` и `DATABASE_URL`
 из `.env` в корне пакета. Повтор с тем же checksum не создаёт новый release.
@@ -116,7 +116,8 @@ DATA/EDT capabilities.
 обычная новая release обязана сохранить тот же digest. Изменённая curve
 отклоняется до переключения pointer и требует отдельной player-state migration
 capability. Unrelated content может менять общий release checksum, не меняя
-progression digest.
+progression digest. Runtime publication уже применяет этот gate вместе с
+additive artifact-skill compatibility.
 
 Для equipment-derived character maxima действует additive compatibility:
 artifact ID из предыдущей active release обязан сохраниться с теми же

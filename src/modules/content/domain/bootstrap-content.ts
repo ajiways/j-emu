@@ -56,6 +56,11 @@ export type SkillDocument = Readonly<{
   valueKind: "number" | "string";
 }>;
 
+type ManagedSkillDocument = Readonly<{
+  id: string;
+  value: number;
+}>;
+
 export type LevelBoundaryDocument = Readonly<{
   level: number;
   expMin: number;
@@ -65,6 +70,8 @@ export type LevelBoundaryDocument = Readonly<{
   honorMin: number;
   honorMax: number;
   honorStatus: number;
+  managedSkills: readonly ManagedSkillDocument[];
+  evidenceKind: "confirmed" | "legacy_extrapolated";
 }>;
 
 export type AppearanceDocument = Readonly<{

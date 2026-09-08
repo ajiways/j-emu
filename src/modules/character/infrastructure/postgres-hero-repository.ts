@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
-import { Hero, type HeroCreationPolicy, type HeroRecord } from "../domain/hero.ts";
+import { Hero, type HeroRecord, type NewHero } from "../domain/hero.ts";
 import type { HeroRepository } from "../ports/hero-repository.ts";
 import { heroes } from "./schema.ts";
 
@@ -20,34 +20,43 @@ export class PostgresHeroRepository implements HeroRepository {
     return this.loadByAccountId(accountId, true);
   }
 
-  async create(accountId: number, nick: string, policy: HeroCreationPolicy): Promise<Hero> {
-    Hero.assertCreationPolicy(policy);
+  async lockById(id: number): Promise<Hero | null> {
+    const rows = await this.database
+      .session()
+      .select()
+      .from(heroes)
+      .where(eq(heroes.id, id))
+      .for("update");
+    return this.single(rows, `hero id ${id}`);
+  }
+
+  async create(values: NewHero): Promise<Hero> {
     const rows = await this.database
       .session()
       .insert(heroes)
       .values({
-        accountId,
-        nick,
-        level: policy.level,
-        hp: policy.hp,
-        maxHp: policy.maxHp,
-        mp: policy.mp,
-        maxMp: policy.maxMp,
-        exp: policy.exp,
-        areaId: policy.areaId,
-        moneyMinor: BigInt(policy.moneyMinor),
-        moneyGoldMinor: BigInt(policy.moneyGoldMinor),
-        kind: policy.kind,
-        gender: policy.gender,
-        language: policy.language,
-        body: policy.body,
-        sk: policy.sk,
-        honor: policy.honor,
-        hpTime: BigInt(policy.hpTime),
+        accountId: values.accountId,
+        nick: values.nick,
+        level: values.level,
+        hp: values.hp,
+        maxHp: values.maxHp,
+        mp: values.mp,
+        maxMp: values.maxMp,
+        exp: values.exp,
+        areaId: values.areaId,
+        moneyMinor: BigInt(values.moneyMinor),
+        moneyGoldMinor: BigInt(values.moneyGoldMinor),
+        kind: values.kind,
+        gender: values.gender,
+        language: values.language,
+        body: values.body,
+        sk: values.sk,
+        honor: values.honor,
+        hpTime: BigInt(values.hpTime),
         version: 1,
       })
       .returning();
-    const hero = this.single(rows, `created hero for account ${accountId}`);
+    const hero = this.single(rows, `created hero for account ${values.accountId}`);
     if (!hero) throw new Error("Hero insert did not return an id");
     return hero;
   }

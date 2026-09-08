@@ -1,4 +1,6 @@
 import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
+import type { ArtifactSkillBonus } from "../../catalog/domain/artifact-skill-bonus.ts";
+import type { ReleaseArtifacts } from "../../catalog/ports/release-artifacts.ts";
 import type { InventoryItem, ItemLocation } from "./inventory-item.ts";
 import type { InventoryRepository } from "../ports/inventory-repository.ts";
 import { requireEquippedItem, requireWearablePaperdoll, type WearHero } from "./wear-paperdoll.ts";
@@ -13,6 +15,7 @@ export class InventoryService {
   constructor(
     private readonly inventory: InventoryRepository,
     private readonly starterItems: readonly StarterItemSpec[],
+    private readonly artifacts: ReleaseArtifacts,
   ) {
     if (starterItems.length === 0) throw new Error("Starter inventory policy is required");
   }
@@ -51,6 +54,26 @@ export class InventoryService {
     const item = requireHeroItem(items, heroId, itemId);
     requireEquippedItem(item, heroId);
     await this.inventory.save(item.withLocation({ kind: "bag" }));
+  }
+
+  async modifiersForHero(
+    characterId: number,
+    releaseId: string,
+  ): Promise<readonly ArtifactSkillBonus[]> {
+    const items = await this.inventory.lockForHero(characterId);
+    const equipped = items.filter((item) => item.location.kind === "equipment");
+    const ids = [...new Set(equipped.map((item) => item.artifactId))];
+    const definitions = await this.artifacts.definitionsFor(releaseId, ids);
+    const byId = new Map(definitions.map((definition) => [definition.id, definition]));
+    const bonuses: ArtifactSkillBonus[] = [];
+    for (const item of equipped) {
+      const definition = byId.get(item.artifactId);
+      if (!definition) {
+        throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
+      }
+      bonuses.push(...definition.skills);
+    }
+    return bonuses;
   }
 }
 

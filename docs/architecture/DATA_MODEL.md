@@ -23,7 +23,8 @@ Playerbot-таблиц и признаков `is_bot` нет.
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и цепочка `drizzle/0000_foundation_init`, `drizzle/0001_character_add_hero_personal_details`,
 `drizzle/0002_world_location_scalars`, `drizzle/0003_character_bootstrap_state`,
-`drizzle/0004_catalog_artifact_wear_and_equipment_slot`.
+`drizzle/0004_catalog_artifact_wear_and_equipment_slot`,
+`drizzle/0005_character_experience_progression`.
 Поля ниже совпадают с runtime.
 
 ### `identity`
@@ -42,14 +43,19 @@ money_gold_minor, kind, gender, language, body, sk, honor, hp_time, version)`.
 - `hero_personal_details(hero_id PK FK → heroes ON DELETE CASCADE, info jsonb, schema_version=1)`.
 - `hero_skills(hero_id FK → heroes ON DELETE CASCADE, skill_id, value)` с PK
   `(hero_id, skill_id)`.
+- `experience_grants(hero_id, operation_id, amount, exp_before, exp_after,
+level_before, level_after, content_release_id, progression_digest, created_at)`
+  с PK `(hero_id, operation_id)`, FK на `heroes` и `content.releases`;
+  `operation_id` 1…128, `amount > 0`. Persisted exactly-once result для
+  `grantExperience`, не combat state.
 
 `area_id` — текстовая ссылка на authored area; FK на `world.areas` в этом срезе
 нет. `info` — sparse wire-объект `user|personal_details.info` / form
 `user|save_personal_details`. Строка обязательна для каждого героя; её
 отсутствие является ошибкой целостности, а не пустым объектом. Merge пишет
 целиком, без `jsonb_set`. HP/MP/EXP и naked max values хранятся скалярами героя,
-naked skills — отдельными строками `hero_skills`. Полной модели regeneration,
-progression и репутаций ещё нет.
+naked skills — отдельными строками `hero_skills`. Regeneration timestamps и
+репутации ещё нет.
 
 ### `inventory`
 
@@ -74,6 +80,10 @@ hunt_scale, hunt_fps, hunt_speed, hunt_avatar, hunt_kind, hunt_hide_on_map)`
 image, value_kind)` PK `(release_id, id)`.
 - `level_boundaries(release_id, level, exp_min, exp_max, bag_cnt, honor_rank,
 honor_min, honor_max, honor_status)` PK `(release_id, level)`.
+- `level_skill_values(release_id, level, skill_id, value, evidence_kind,
+source_digest)` PK `(release_id, level, skill_id)`; FK на boundary и
+  `skill_definitions` той же release. Managed naked values L1–L8, не runtime
+  formula.
 - `appearance_presets(release_id, kind, gender, avatar_big, avatar_small)` PK
   `(release_id, kind, gender)`.
 - `game_wide_documents(release_id, document_key, document jsonb)` PK
@@ -91,7 +101,10 @@ Migration `0003_character_bootstrap_state` добавила persisted hero state
 `0004_catalog_artifact_wear_and_equipment_slot` добавила wear constraints и
 `skills` artifact-а, а также unique occupancy equipment slot. Equipment totals
 считаются из naked `hero_skills` и `artifacts.skills`; это derived read/mutation
-state, не отдельная таблица.
+state, не отдельная таблица. Migration
+`0005_character_experience_progression` добавила `experience_grants` и
+normalized `level_skill_values`. Hero creation читает L1 из pinned progression
+snapshot; policy хранит только EXP 1 и misc skills.
 
 ### `world`
 
@@ -155,17 +168,9 @@ hud_defaults|chrome|common_conf|welcome_message`.
 
 ### `character`
 
-CHR-01 добавляет `experience_grants(hero_id, operation_id, amount, exp_before,
-exp_after, level_before, level_after, content_release_id, progression_digest,
-created_at)` с PK `(hero_id, operation_id)`, FK на `heroes` и immutable content
-release; `operation_id` имеет длину 1…128, `amount > 0`, EXP/level/release/digest
-обязательны. Это persisted idempotency result character operation, а не combat
-state/history. Reuse ключа с другим amount является conflict; hero, managed
-skills и result пишутся одной transaction.
-
 Полная regeneration policy, reputations и расширенная statistics model остаются
-планом. `hero_skills`, HP/MP/EXP и appearance bootstrap уже находятся в runtime
-и не являются будущими таблицами.
+планом. `experience_grants`, `hero_skills`, HP/MP/EXP и appearance bootstrap
+уже находятся в runtime и не являются будущими таблицами.
 
 ### `inventory`
 
@@ -174,11 +179,8 @@ containers, item_modifiers, container_slots, equipment_slots, item_reservations.
 ### `catalog`
 
 item_actions, item_stat_modifiers, creature_stats/loot, spell_definitions,
-level_curves — отдельные таблицы поверх текущих `artifacts`/`bots`. CHR-01
-добавляет normalized
-`level_skill_values(release_id, level, skill_id, value, evidence_kind,
-source_digest)` с PK `(release_id, level, skill_id)` и FK на boundary/skill той
-же release. Managed values не хранятся JSONB и не вычисляются runtime-формулой.
+level_curves — отдельные таблицы поверх текущих `artifacts`/`bots`.
+`level_skill_values` уже в runtime и не является будущей таблицей.
 
 ### `world`
 

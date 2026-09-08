@@ -22,6 +22,17 @@ export const levelBoundaryDocumentSchema = z
     honorMin: z.number().int().nonnegative(),
     honorMax: z.number().int().nonnegative(),
     honorStatus: z.number().int().nonnegative(),
+    managedSkills: z
+      .array(
+        z
+          .object({
+            id: z.string().min(1),
+            value: z.number().int(),
+          })
+          .strict(),
+      )
+      .min(1),
+    evidenceKind: z.union([z.literal("confirmed"), z.literal("legacy_extrapolated")]),
   })
   .strict()
   .refine((row) => row.expMax > row.expMin, { message: "expMax must be greater than expMin" })

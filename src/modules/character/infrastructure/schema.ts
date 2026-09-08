@@ -1,5 +1,16 @@
 import { sql } from "drizzle-orm";
-import { bigint, check, integer, jsonb, pgSchema, primaryKey, text } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  check,
+  integer,
+  jsonb,
+  pgSchema,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
+import { releases } from "../../content/infrastructure/schema.ts";
 
 export const characterSchema = pgSchema("character");
 
@@ -63,6 +74,42 @@ export const heroPersonalDetails = characterSchema.table(
     check("hero_personal_details_schema_version_check", sql`${table.schemaVersion} = 1`),
     check("hero_personal_details_info_object_check", sql`jsonb_typeof(${table.info}) = 'object'`),
     check("hero_personal_details_info_size_check", sql`octet_length(${table.info}::text) <= 16384`),
+  ],
+);
+
+export const experienceGrants = characterSchema.table(
+  "experience_grants",
+  {
+    heroId: integer("hero_id")
+      .notNull()
+      .references(() => heroes.id, { onDelete: "cascade" }),
+    operationId: text("operation_id").notNull(),
+    amount: integer("amount").notNull(),
+    expBefore: integer("exp_before").notNull(),
+    expAfter: integer("exp_after").notNull(),
+    levelBefore: integer("level_before").notNull(),
+    levelAfter: integer("level_after").notNull(),
+    contentReleaseId: uuid("content_release_id")
+      .notNull()
+      .references(() => releases.id, { onDelete: "restrict" }),
+    progressionDigest: text("progression_digest").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.heroId, table.operationId] }),
+    check(
+      "experience_grants_operation_id_check",
+      sql`char_length(${table.operationId}) BETWEEN 1 AND 128`,
+    ),
+    check("experience_grants_amount_check", sql`${table.amount} > 0`),
+    check("experience_grants_exp_before_check", sql`${table.expBefore} >= 0`),
+    check("experience_grants_exp_after_check", sql`${table.expAfter} >= ${table.expBefore}`),
+    check("experience_grants_level_before_check", sql`${table.levelBefore} > 0`),
+    check("experience_grants_level_after_check", sql`${table.levelAfter} >= ${table.levelBefore}`),
+    check(
+      "experience_grants_progression_digest_check",
+      sql`char_length(${table.progressionDigest}) = 64`,
+    ),
   ],
 );
 

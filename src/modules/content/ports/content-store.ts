@@ -1,7 +1,7 @@
 import type { PublishedRelease, ValidatedContentBundle } from "../domain/content-document.ts";
 
 export interface ContentStore {
-  lockPublication(): Promise<void>;
+  lockPublication(): Promise<string | null>;
   findBootstrap(digest: string): Promise<PublishedRelease | null>;
   hasAnyRelease(): Promise<boolean>;
   findByChecksum(checksum: string): Promise<PublishedRelease | null>;

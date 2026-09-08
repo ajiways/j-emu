@@ -31,7 +31,7 @@ capabilities. После его выполнения продуктовый ст
 
 ### `ARC-DATA` — от одного bootstrap bundle к corpus manifests
 
-**Сейчас:** один `playable-slice/v4` parser публикует минимальные catalog/world
+**Сейчас:** один `playable-slice/v5` parser публикует минимальные catalog/world
 rows.
 
 **Давление:** DATA-02…DATA-06 требуют нескольких независимых binary/JSON

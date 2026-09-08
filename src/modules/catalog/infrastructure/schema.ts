@@ -1,5 +1,14 @@
 import { sql } from "drizzle-orm";
-import { check, integer, jsonb, pgSchema, primaryKey, text, uuid } from "drizzle-orm/pg-core";
+import {
+  check,
+  foreignKey,
+  integer,
+  jsonb,
+  pgSchema,
+  primaryKey,
+  text,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { releases } from "../../content/infrastructure/schema.ts";
 
 export const catalogSchema = pgSchema("catalog");
@@ -111,6 +120,39 @@ export const levelBoundaries = catalogSchema.table(
       "level_boundaries_honor_check",
       sql`${table.honorRank} >= 0 AND ${table.honorMin} >= 0 AND ${table.honorMax} >= ${table.honorMin} AND ${table.honorStatus} >= 0`,
     ),
+  ],
+);
+
+export const levelSkillValues = catalogSchema.table(
+  "level_skill_values",
+  {
+    releaseId: uuid("release_id")
+      .notNull()
+      .references(() => releases.id, { onDelete: "restrict" }),
+    level: integer("level").notNull(),
+    skillId: text("skill_id").notNull(),
+    value: integer("value").notNull(),
+    evidenceKind: text("evidence_kind").notNull(),
+    sourceDigest: text("source_digest").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.releaseId, table.level, table.skillId] }),
+    foreignKey({
+      columns: [table.releaseId, table.level],
+      foreignColumns: [levelBoundaries.releaseId, levelBoundaries.level],
+      name: "level_skill_values_boundary_fk",
+    }).onDelete("restrict"),
+    foreignKey({
+      columns: [table.releaseId, table.skillId],
+      foreignColumns: [skillDefinitions.releaseId, skillDefinitions.id],
+      name: "level_skill_values_skill_fk",
+    }).onDelete("restrict"),
+    check("level_skill_values_value_check", sql`${table.value} >= 0`),
+    check(
+      "level_skill_values_evidence_kind_check",
+      sql`${table.evidenceKind} IN ('confirmed', 'legacy_extrapolated')`,
+    ),
+    check("level_skill_values_source_digest_check", sql`char_length(${table.sourceDigest}) = 64`),
   ],
 );
 

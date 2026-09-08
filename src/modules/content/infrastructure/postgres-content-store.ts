@@ -15,9 +15,12 @@ import {
 export class PostgresContentStore implements ContentStore {
   constructor(private readonly database: PostgresDatabase) {}
 
-  async lockPublication(): Promise<void> {
+  async lockPublication(): Promise<string | null> {
     const rows = await this.database.session().select().from(activeRelease).for("update");
     if (rows.length !== 1) throw new Error("content.active_release singleton is missing");
+    const row = rows[0];
+    if (!row) throw new Error("content.active_release singleton is missing");
+    return row.releaseId;
   }
 
   async findBootstrap(digest: string): Promise<PublishedRelease | null> {

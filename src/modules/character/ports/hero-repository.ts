@@ -1,9 +1,10 @@
-import type { Hero, HeroCreationPolicy } from "../domain/hero.ts";
+import type { Hero, NewHero } from "../domain/hero.ts";
 
 export interface HeroRepository {
   findById(id: number): Promise<Hero | null>;
   findByAccountId(accountId: number): Promise<Hero | null>;
   lockByAccountId(accountId: number): Promise<Hero | null>;
-  create(accountId: number, nick: string, policy: HeroCreationPolicy): Promise<Hero>;
+  lockById(id: number): Promise<Hero | null>;
+  create(values: NewHero): Promise<Hero>;
   save(hero: Hero): Promise<void>;
 }

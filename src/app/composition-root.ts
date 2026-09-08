@@ -22,18 +22,21 @@ export class CompositionRoot {
       closers.push(database);
       const identity = IdentityModule.create({ database });
       closers.push(identity);
-      const characters = CharacterModule.create({
-        database,
-        creationPolicy: policy.heroCreation,
-      });
-      closers.push(characters);
+      const catalog = await CatalogModule.create({ database });
+      closers.push(catalog);
       const inventory = InventoryModule.create({
         database,
         starterItems: policy.starterItems,
+        releaseArtifacts: catalog.releaseArtifacts,
       });
       closers.push(inventory);
-      const catalog = await CatalogModule.create({ database });
-      closers.push(catalog);
+      const characters = CharacterModule.create({
+        database,
+        creationPolicy: policy.heroCreation,
+        progression: catalog.progression,
+        equipmentModifiers: inventory.service,
+      });
+      closers.push(characters);
       const world = await WorldModule.create({ database });
       closers.push(world);
       const combat = CombatModule.create({ database, rules: policy.combat });
@@ -68,7 +71,7 @@ export class CompositionRoot {
         unitOfWork: database,
       });
       closers.push(wire);
-      return new Application(wire.http, async () => {
+      return new Application(wire.http, characters.service, async () => {
         await closeAll(closers);
       });
     } catch (error) {

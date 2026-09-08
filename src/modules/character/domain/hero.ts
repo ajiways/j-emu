@@ -1,13 +1,9 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
+import { isProgressionManagedSkillId } from "../../content/domain/progression-managed-skills.ts";
 
 type StarterSkill = Readonly<{ id: string; value: number }>;
 
 export type HeroCreationPolicy = Readonly<{
-  level: number;
-  hp: number;
-  maxHp: number;
-  mp: number;
-  maxMp: number;
   exp: number;
   areaId: string;
   moneyMinor: number;
@@ -48,6 +44,8 @@ export type HeroRecord = Readonly<{
   hpTime: number;
 }>;
 
+export type NewHero = Omit<HeroRecord, "id">;
+
 export class Hero {
   private constructor(
     readonly id: number,
@@ -72,14 +70,7 @@ export class Hero {
   ) {}
 
   static assertCreationPolicy(policy: HeroCreationPolicy): void {
-    if (policy.level < 1) throw new Error("Hero creation level must be positive");
-    if (policy.maxHp < 1 || policy.hp < 0 || policy.hp > policy.maxHp) {
-      throw new Error("Hero creation HP policy is invalid");
-    }
-    if (policy.maxMp < 1 || policy.mp < 0 || policy.mp > policy.maxMp) {
-      throw new Error("Hero creation MP policy is invalid");
-    }
-    if (policy.exp < 0) throw new Error("Hero creation EXP cannot be negative");
+    if (policy.exp !== 1) throw new Error("Hero creation EXP must be 1");
     if (!policy.areaId) throw new Error("Hero creation area is required");
     if (policy.moneyMinor < 0 || policy.moneyGoldMinor < 0) {
       throw new Error("Hero creation money cannot be negative");
@@ -103,17 +94,10 @@ export class Hero {
         throw new Error(`Hero creation skill ${skill.id} value is invalid`);
       }
       if (ids.has(skill.id)) throw new Error(`Duplicate hero creation skill ${skill.id}`);
+      if (isProgressionManagedSkillId(skill.id)) {
+        throw new Error(`Hero creation policy must not include managed skill ${skill.id}`);
+      }
       ids.add(skill.id);
-    }
-    const vit = policy.skills.find((skill) => skill.id === "VIT");
-    if (!vit) throw new Error("Hero creation skills must include VIT");
-    if (vit.value !== policy.maxHp) {
-      throw new Error("Hero creation VIT must equal maxHp");
-    }
-    const mpMax = policy.skills.find((skill) => skill.id === "MPMAX");
-    if (!mpMax) throw new Error("Hero creation skills must include MPMAX");
-    if (mpMax.value !== policy.maxMp) {
-      throw new Error("Hero creation MPMAX must equal maxMp");
     }
   }
 
@@ -188,6 +172,18 @@ export class Hero {
   }
   get hpTime(): number {
     return this.hpTimeValue;
+  }
+
+  applyProgression(exp: number, level: number, maxHp: number, maxMp: number): void {
+    if (!Number.isInteger(exp) || exp < 0) {
+      throw new Error("Hero EXP must be a non-negative integer");
+    }
+    if (!Number.isInteger(level) || level < 1) {
+      throw new Error("Hero level must be a positive integer");
+    }
+    this.expValue = exp;
+    this.levelValue = level;
+    this.applyVitals(maxHp, maxMp);
   }
 
   applyVitals(maxHp: number, maxMp: number): void {

@@ -8,6 +8,7 @@ import type {
   SkillDocument,
   WelcomeMessageDocument,
 } from "../../content/domain/bootstrap-content.ts";
+import { managedSkillSourceDigest } from "../../content/domain/progression-curve.ts";
 import type { ArtifactDocument, BotDocument } from "../../content/domain/content-document.ts";
 import type { CatalogMaterialization, CatalogProjection } from "../ports/catalog-projection.ts";
 import {
@@ -16,6 +17,7 @@ import {
   bots,
   gameWideDocuments,
   levelBoundaries,
+  levelSkillValues,
   skillDefinitions,
 } from "./schema.ts";
 
@@ -28,6 +30,7 @@ export class PostgresCatalogProjection implements CatalogProjection {
     await insertBots(session, releaseId, documents.bots);
     await insertSkills(session, releaseId, documents.skills);
     await insertLevels(session, releaseId, documents.levels);
+    await insertLevelSkills(session, releaseId, documents.levels);
     await insertAppearances(session, releaseId, documents.appearances);
     await session
       .insert(gameWideDocuments)
@@ -138,6 +141,33 @@ async function insertLevels(
       honorStatus: level.honorStatus,
     })),
   );
+}
+
+async function insertLevelSkills(
+  session: ReturnType<PostgresDatabase["session"]>,
+  releaseId: string,
+  rows: readonly LevelBoundaryDocument[],
+): Promise<void> {
+  for (const level of rows) {
+    if (level.managedSkills.length < 1) {
+      throw new Error(`Progression managed skills for level ${level.level} are missing`);
+    }
+  }
+  const values = rows.flatMap((level) => {
+    const sourceDigest = managedSkillSourceDigest(level);
+    return level.managedSkills.map((skill) => ({
+      releaseId,
+      level: level.level,
+      skillId: skill.id,
+      value: skill.value,
+      evidenceKind: level.evidenceKind,
+      sourceDigest,
+    }));
+  });
+  if (values.length === 0) {
+    throw new Error("Progression managed skill rows are missing");
+  }
+  await session.insert(levelSkillValues).values(values);
 }
 
 async function insertAppearances(

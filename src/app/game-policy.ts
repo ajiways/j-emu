@@ -9,12 +9,7 @@ const location = z.discriminatedUnion("kind", [
 
 const schema = z.object({
   heroCreation: z.object({
-    level: z.number().int().positive(),
-    hp: z.number().int().nonnegative(),
-    maxHp: z.number().int().positive(),
-    mp: z.number().int().nonnegative(),
-    maxMp: z.number().int().positive(),
-    exp: z.number().int().nonnegative(),
+    exp: z.literal(1),
     areaId: z.string().min(1),
     moneyMinor: z.number().int().nonnegative(),
     moneyGoldMinor: z.number().int().nonnegative(),
