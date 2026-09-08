@@ -53,16 +53,19 @@ bootstrap.
 Не перенесено:
 
 - regeneration timestamps как живой ticker и ghost/injury state;
-- equipment-derived view/stats (перчатка 9095 остаётся в bag до среза
-  inventory/equipment);
-- level-up, honor progression и recalculation после экипа.
+- level-up и honor progression.
+
+Equipment-derived `user|skills` / `hpMax` считаются из naked skills + надетых
+предметов (перчатка 9095 даёт VIT+5). Без экипа HUD показывает naked L1.
 
 ## Inventory — частично
 
-Есть catalog projection, stable item instance IDs, starter items и чтение bag.
+Есть catalog projection, stable item instance IDs, starter items, чтение bag и
+paperdoll `PUT_ON`/`PUT_OFF` (перчатка 9095, slot 32, reconnect/restart, raw-AMF
+E2E). Статус **готово** не ставится до реального клиентского прогона.
 
-Не перенесены PUT_ON, PUT_OFF, DROP, stack/capacity rules, stat recalculation,
-durability и USE pipelines.
+Не перенесены DROP, stack/capacity rules, durability, pocket merge и USE
+pipelines.
 
 ## World и hunt — частично
 

@@ -17,6 +17,7 @@ import type { IdentityService } from "../../../src/modules/identity/application/
 import type { InventoryService } from "../../../src/modules/inventory/domain/inventory-service.ts";
 import type { WorldService } from "../../../src/modules/world/domain/world-service.ts";
 import type { Clock } from "../../../src/shared/kernel/clock.ts";
+import type { UnitOfWork } from "../../../src/shared/kernel/unit-of-work.ts";
 import { PLAYABLE_HERO_CREATION } from "../../support/hero-fixtures.ts";
 
 const database = undefined as unknown as PostgresDatabase;
@@ -38,7 +39,7 @@ describe("module factories", () => {
     expect(() =>
       CharacterModule.create({
         database: {} as PostgresDatabase,
-        creationPolicy: { ...PLAYABLE_HERO_CREATION, hp: 28, maxHp: 27 },
+        creationPolicy: { ...PLAYABLE_HERO_CREATION, hp: 11, maxHp: 10 },
       }),
     ).toThrow(/HP policy/);
   });
@@ -95,6 +96,7 @@ describe("module factories", () => {
         bootstrap: undefined as never,
         fightWire: undefined as never,
         meleeSourceIds: undefined as never,
+        unitOfWork: undefined as never,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -175,6 +177,7 @@ describe("module factories", () => {
           flags: "0",
         },
         meleeSourceIds: { left: 1, center: 2, right: 3 },
+        unitOfWork: {} as UnitOfWork,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

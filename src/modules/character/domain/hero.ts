@@ -190,6 +190,19 @@ export class Hero {
     return this.hpTimeValue;
   }
 
+  applyVitals(maxHp: number, maxMp: number): void {
+    if (!Number.isInteger(maxHp) || maxHp < 1) {
+      throw new Error("Hero maxHp must be a positive integer");
+    }
+    if (!Number.isInteger(maxMp) || maxMp < 1) {
+      throw new Error("Hero maxMp must be a positive integer");
+    }
+    this.hpValue = scaleResource(this.hpValue, this.maxHpValue, maxHp);
+    this.mpValue = scaleResource(this.mpValue, this.maxMpValue, maxMp);
+    this.maxHpValue = maxHp;
+    this.maxMpValue = maxMp;
+  }
+
   takeDamage(amount: number): void {
     this.hpValue = Math.max(0, this.hpValue - Math.max(0, Math.floor(amount)));
   }
@@ -197,4 +210,9 @@ export class Hero {
   healFully(): void {
     this.hpValue = this.maxHpValue;
   }
+}
+
+function scaleResource(current: number, previousMax: number, nextMax: number): number {
+  if (previousMax > 0) return Math.min(nextMax, Math.round((current / previousMax) * nextMax));
+  return Math.min(current, nextMax);
 }

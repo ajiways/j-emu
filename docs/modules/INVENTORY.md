@@ -2,8 +2,12 @@
 
 ## Статус
 
-Перенесены catalog projection, stable item IDs, starter items и чтение bag.
-Inventory mutations и USE pipelines ещё не перенесены.
+Перенесены catalog projection, stable item IDs, starter items, чтение bag и
+paperdoll `PUT_ON`/`PUT_OFF` для перчатки 9095. Статус **готово** в
+[CAPABILITIES.md](../CAPABILITIES.md) требует подтверждённый клиентский прогон.
+
+Не перенесены DROP/void-sell, stack/capacity, durability/repair, pocket
+merge/split/swap и USE pipelines.
 
 ## Источники поведения
 
@@ -20,46 +24,58 @@ Catalog artifact и item instance — разные сущности:
 
 - authored `artikul_id` сохраняется из content;
 - runtime `items.id` выдаёт PostgreSQL sequence с `100_000`;
-- instance хранит quantity, location, slots, durability и прочий mutable state;
-- presentation, type/kind, actions и базовые ограничения приходят из catalog
+- instance хранит quantity, location, slots и прочий mutable state;
+- presentation, type/kind, wear limits и `artifact_skills` приходят из catalog
   active release.
 
 Bag item обязан иметь подтверждённые `type_id`, `kind_id`, `picture` и
-`action:"bag"`. Пустой `artifact_actions` не создаёт USE. Отсутствующий catalog
-artifact является ошибкой, а не поводом отдать неполную карточку.
+`action:"bag"`. Wearable paperdoll в bag имеет `actions` с `PUT_ON` (8).
+Пустой `artifact_actions` не создаёт USE. Отсутствующий catalog artifact
+является ошибкой, а не поводом отдать неполную карточку.
 
 ## Mutations
 
-Core переносится в таком порядке:
+Этот срез:
 
-1. PUT_ON/PUT_OFF для paperdoll;
-2. pocket merge/split/swap;
-3. DROP/void-sell;
-4. stack limits и bag capacity;
-5. stat/body recalculation;
-6. USE food/HP/MP и необходимые quest/item pipelines;
-7. durability/repair/upgrade только при наличии core dependency.
+1. `PUT_ON` / `PUT_OFF` для paperdoll;
+2. occupancy displaces the previous occupant of the same slot bit back to bag;
+3. level / gender / non-paperdoll type → `status:203` + `error`;
+4. missing hero/item/catalog → fail-fast `status:204` + `error`, не пустой `100`.
 
-Успешная equip mutation возвращает полный flat response с согласованными bag,
-view, pocket, skills, state и `sq`. Один пустой success block недостаточен.
+Следующий inventory capability, не этот срез:
 
-DROP сохраняет wire code `DROP`. Sellable/void behavior переносится по legacy
-правилам; сервер не заменяет запрещённый sell молчаливым discard.
+- pocket merge/split/swap;
+- DROP/void-sell;
+- stack limits и bag capacity;
+- durability/repair/upgrade;
+- USE food/HP/MP и quest/item pipelines.
+
+Успешная equip mutation возвращает полный flat response: `common|action`,
+`user|bag`, `user|view`, `user|pocket`, `user|skills`, `user|unitframe`,
+`user|conf`, `state` и `sq`. Один пустой success block недостаточен. Equipped
+wire `cnt` is `0`; instance quantity remains `1`.
+
+Glove 9095 occupies paperdoll slot `32` from catalog `slot_mask`. Live starter
+armor 20/26/103 is not invented in this playable slice.
 
 ## Fight boundary
 
 Pocket/glove definitions принадлежат inventory/catalog, а active count/effects
 во время боя — combat. `persSpells.srcId` не должен столкнуться с `items.id`.
-Packet ordering `rs`/strike задаётся [COMBAT.md](COMBAT.md).
+Packet ordering `rs`/strike задаётся [COMBAT.md](COMBAT.md). World `user|magic`
+glove spells не входят в этот срез.
 
 ## Persistence
 
 Каждая mutation:
 
-- блокирует или version-checks затронутые instances;
-- меняет inventory и character-derived state атомарно;
+- блокирует hero и item rows в одной PostgreSQL-транзакции;
+- меняет inventory location и character vitals атомарно;
 - не читает fixture JSON;
-- подтверждается повторным bootstrap после reconnect.
+- подтверждается повторным bootstrap/view после reconnect.
+
+Naked skills остаются в `hero_skills`. Totals и `hpMax`/`mpMax` считаются из
+надетых `artifact_skills` на mutation и при чтении `user|skills`.
 
 ## Acceptance
 
@@ -67,4 +83,5 @@ Packet ordering `rs`/strike задаётся [COMBAT.md](COMBAT.md).
 - повтор/гонка не дублирует, не теряет и не создаёт item;
 - item IDs остаются стабильными после restart;
 - malformed/missing catalog data дают explicit error;
-- raw-AMF response сохраняет legacy flat shape.
+- raw-AMF response сохраняет legacy flat shape;
+- статус **готово** требует реальный клиентский PUT_ON 9095.

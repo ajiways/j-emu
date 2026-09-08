@@ -13,12 +13,11 @@ export class PostgresHeroRepository implements HeroRepository {
   }
 
   async findByAccountId(accountId: number): Promise<Hero | null> {
-    const rows = await this.database
-      .session()
-      .select()
-      .from(heroes)
-      .where(eq(heroes.accountId, accountId));
-    return this.single(rows, `hero account ${accountId}`);
+    return this.loadByAccountId(accountId, false);
+  }
+
+  async lockByAccountId(accountId: number): Promise<Hero | null> {
+    return this.loadByAccountId(accountId, true);
   }
 
   async create(accountId: number, nick: string, policy: HeroCreationPolicy): Promise<Hero> {
@@ -81,6 +80,16 @@ export class PostgresHeroRepository implements HeroRepository {
     if (updated.length !== 1) {
       throw new Error(`Hero ${hero.id} was not updated`);
     }
+  }
+
+  private async loadByAccountId(accountId: number, lock: boolean): Promise<Hero | null> {
+    const query = this.database
+      .session()
+      .select()
+      .from(heroes)
+      .where(eq(heroes.accountId, accountId));
+    const rows = lock ? await query.for("update") : await query;
+    return this.single(rows, `hero account ${accountId}`);
   }
 
   private single(

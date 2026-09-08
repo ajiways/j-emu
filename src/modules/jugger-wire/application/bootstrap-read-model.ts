@@ -1,5 +1,6 @@
 import type { SkillDefinition } from "../../catalog/domain/skill-definition.ts";
 import type { Catalog } from "../../catalog/ports/catalog.ts";
+import { totalHeroSkills } from "../../character/domain/equipment-skill-totals.ts";
 import type { CharacterService } from "../../character/application/character-service.ts";
 import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
@@ -13,6 +14,8 @@ import {
 } from "./area-conf-block.ts";
 import { emptyBookTrio } from "./book-quest-blocks.ts";
 import { overlayCaptureAreaId, overlayChromeAreaId } from "./chrome-area-overlay.ts";
+import { buildEquippedArtifact } from "./equipped-artifact-block.ts";
+import { equippedSkillBonuses } from "./equipped-skill-bonuses.ts";
 import { buildHeroState, type HeroStateBlock } from "./hero-state-block.ts";
 import { buildHuntBlock, type HuntBlock } from "./hunt-block.ts";
 import { buildMenuLinkStatus } from "./menu-link-status-block.ts";
@@ -22,6 +25,7 @@ import { buildUserConf } from "./user-conf-block.ts";
 import { emptyUserMagic } from "./user-magic-block.ts";
 import { buildUserSkills, skillsExpireBlock, type UserSkillsBlock } from "./user-skills-block.ts";
 import { buildUserUnitframe, type UserUnitframeBlock } from "./user-unitframe-block.ts";
+import { buildUserView, type UserViewBlock } from "./user-view-block.ts";
 import { buildWelcomeMessage } from "./welcome-message-block.ts";
 
 export type { HuntBlock, UserUnitframeBlock, HeroStateBlock };
@@ -66,12 +70,46 @@ export class BootstrapReadModel {
   }
 
   async skills(accountId: number): Promise<UserSkillsBlock> {
-    const heroSkills = await this.characters.skillsFor(accountId);
+    const hero = await this.requireHero(accountId);
+    const naked = await this.characters.skillsFor(accountId);
+    const totals = totalHeroSkills(
+      naked,
+      await equippedSkillBonuses(this.inventory, this.catalog, hero.id),
+    );
     const definitions = new Map<string, SkillDefinition>();
-    for (const skill of heroSkills) {
+    for (const skill of totals) {
       definitions.set(skill.id, await this.catalog.skill(skill.id));
     }
-    return buildUserSkills(heroSkills, definitions, this.policy.bagCapacity);
+    return buildUserSkills(totals, definitions, this.policy.bagCapacity);
+  }
+
+  async view(accountId: number): Promise<UserViewBlock> {
+    const hero = await this.requireHero(accountId);
+    const level = await this.catalog.level(hero.level);
+    const appearance = await this.catalog.appearance(hero.kind, hero.gender);
+    const artifacts = [];
+    for (const item of await this.inventory.list(hero.id)) {
+      if (item.location.kind !== "equipment") continue;
+      const definition = await this.catalog.artifact(item.artifactId);
+      if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
+      artifacts.push(buildEquippedArtifact(item, definition));
+    }
+    return buildUserView(hero, appearance, level, artifacts);
+  }
+
+  async equipmentMutation(accountId: number): Promise<Readonly<Record<string, unknown>>> {
+    const hero = await this.requireHero(accountId);
+    const level = await this.catalog.level(hero.level);
+    return {
+      "common|action": statusOk(),
+      "user|bag": await buildUserBag(hero, this.inventory, this.catalog, this.policy.bagCapacity),
+      "user|view": await this.view(accountId),
+      "user|pocket": buildUserPocket(this.policy.pocketCapacity),
+      "user|skills": await this.skills(accountId),
+      "user|unitframe": await this.unitframe(accountId),
+      "user|conf": buildUserConf(hero, level),
+      state: buildHeroState(hero, this.clock),
+    };
   }
 
   async init(accountId: number): Promise<Readonly<Record<string, unknown>>> {

@@ -7,8 +7,8 @@ describe("Hero", () => {
     expect(() =>
       Hero.assertCreationPolicy({
         ...PLAYABLE_HERO_CREATION,
-        hp: 28,
-        maxHp: 27,
+        hp: 11,
+        maxHp: 10,
       }),
     ).toThrow(/HP policy/);
   });

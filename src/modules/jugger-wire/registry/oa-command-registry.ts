@@ -11,6 +11,8 @@ export class OaCommandRegistry {
     "common|init2",
     "common|menu_link_status",
     "common|object:ATTACK_BOT",
+    "common|object:PUT_OFF",
+    "common|object:PUT_ON",
     "companion|list_user_companions",
     "craft|user_recipes_list",
     "jail|list",

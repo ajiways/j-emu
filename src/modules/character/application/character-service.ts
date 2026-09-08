@@ -1,6 +1,8 @@
 import type { Hero, HeroCreationPolicy } from "../domain/hero.ts";
 import { PersonalDetails } from "../domain/personal-details.ts";
+import { requiredSkillTotal, totalHeroSkills } from "../domain/equipment-skill-totals.ts";
 import { requireHeroSkills, type HeroSkill } from "../domain/hero-skill.ts";
+import type { ArtifactSkillBonus } from "../../catalog/domain/artifact-skill-bonus.ts";
 import type { HeroRepository } from "../ports/hero-repository.ts";
 import type { HeroSkillRepository } from "../ports/hero-skill-repository.ts";
 import type { PersonalDetailsRepository } from "../ports/personal-details-repository.ts";
@@ -27,6 +29,20 @@ export class CharacterService {
 
   async getByAccountId(accountId: number): Promise<Hero | null> {
     return this.heroes.findByAccountId(accountId);
+  }
+
+  async lockByAccountId(accountId: number): Promise<Hero> {
+    const hero = await this.heroes.lockByAccountId(accountId);
+    if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
+    return hero;
+  }
+
+  async applyEquipmentVitals(hero: Hero, bonuses: readonly ArtifactSkillBonus[]): Promise<Hero> {
+    const naked = requireHeroSkills(await this.skills.list(hero.id));
+    const totals = totalHeroSkills(naked, bonuses);
+    hero.applyVitals(requiredSkillTotal(totals, "VIT"), requiredSkillTotal(totals, "MPMAX"));
+    await this.heroes.save(hero);
+    return hero;
   }
 
   async save(hero: Hero): Promise<void> {

@@ -3,6 +3,7 @@ import type { CharacterService } from "../../character/application/character-ser
 import type { CombatPort } from "../../combat/ports/combat-port.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import type { WorldService } from "../../world/domain/world-service.ts";
+import type { UnitOfWork } from "../../../shared/kernel/unit-of-work.ts";
 import type { BootstrapReadModel } from "../application/bootstrap-read-model.ts";
 import type { HeroSheetReadModel } from "../application/hero-sheet-read-model.ts";
 import type { FightWireMapper } from "../application/fight-wire-mapper.ts";
@@ -14,6 +15,8 @@ import { CommonInitCommand } from "../commands/oa/common-init-command.ts";
 import { CommonInit2Command } from "../commands/oa/common-init2-command.ts";
 import { CommonMenuLinkStatusCommand } from "../commands/oa/common-menu-link-status-command.ts";
 import { EmptyCollectionOaCommand } from "../commands/oa/empty-collection-oa-command.ts";
+import { PutOffCommand } from "../commands/oa/put-off-command.ts";
+import { PutOnCommand } from "../commands/oa/put-on-command.ts";
 import { UserBagCommand } from "../commands/oa/user-bag-command.ts";
 import { UserFlashMessageCommand } from "../commands/oa/user-flash-message-command.ts";
 import { UserMagicCommand } from "../commands/oa/user-magic-command.ts";
@@ -42,6 +45,7 @@ export class JuggerCommandModule {
     combat: CombatPort,
     fightWire: FightWireMapper,
     meleeSourceIds: Readonly<{ left: number; center: number; right: number }>,
+    unitOfWork: UnitOfWork,
   ) {
     this.fightWire = fightWire;
     this.oa = new OaCommandRegistry([
@@ -54,7 +58,7 @@ export class JuggerCommandModule {
       new UserSavePersonalDetailsCommand(characters, bootstrap),
       new UserSkillsCommand(bootstrap),
       new UserUnitframeCommand(bootstrap),
-      new UserViewCommand(bootstrap, sheet),
+      new UserViewCommand(bootstrap),
       new UserMagicCommand(bootstrap, sheet),
       new UserFlashMessageCommand(bootstrap),
       new ChatConfCommand(bootstrap, sheet),
@@ -64,6 +68,8 @@ export class JuggerCommandModule {
       new EmptyCollectionOaCommand("battlepass|list", "list", bootstrap),
       new EmptyCollectionOaCommand("jail|list", "punishments", bootstrap),
       new AttackBotCommand(bootstrap, characters, inventory, world, catalog, combat, fightWire),
+      new PutOnCommand(unitOfWork, bootstrap, characters, inventory, catalog),
+      new PutOffCommand(unitOfWork, bootstrap, characters, inventory, catalog),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     this.esrv = EsrvCommandRegistry.create(combat, fightWire);

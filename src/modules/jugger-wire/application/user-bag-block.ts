@@ -1,6 +1,8 @@
 import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { Hero } from "../../character/domain/hero.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
+import { isPaperdollSlotMask } from "../../inventory/domain/paperdoll-slot.ts";
+import { FLAG_PUT_ON } from "./item-action-flags.ts";
 
 type BagItemBlock = Readonly<{
   id: number;
@@ -12,6 +14,7 @@ type BagItemBlock = Readonly<{
   slot_mask: number;
   cnt: number;
   action: "bag";
+  actions: number;
 }>;
 
 export type UserBagBlock = Readonly<{
@@ -50,6 +53,7 @@ export async function buildUserBag(
       slot_mask: definition.slotMask,
       cnt: item.quantity,
       action: "bag",
+      actions: isPaperdollSlotMask(definition.slotMask) ? FLAG_PUT_ON : 0,
     };
   }
   return {

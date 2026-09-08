@@ -92,7 +92,7 @@ describe("character bootstrap", () => {
     expect(skillIds).toEqual(expect.arrayContaining(["STR", "VIT", "MPMAX", "HPREG", "ORATORY"]));
     expect(skillIds).not.toContain("MONEYMOD");
     const vit = skillFrom(skills, "VIT");
-    expect(vit.value).toBe(27);
+    expect(vit.value).toBe(10);
     const hpReg = skillFrom(skills, "HPREG");
     expect(hpReg.value).toBe("700");
 
@@ -107,8 +107,8 @@ describe("character bootstrap", () => {
     const unitframe = objectBlock(init2["user|unitframe"]);
     expect(unitframe).toMatchObject({
       status: 100,
-      hp: 27,
-      hpMax: 27,
+      hp: 10,
+      hpMax: 10,
       mp: 12,
       mpMax: 12,
       exp: 1,
@@ -132,7 +132,7 @@ describe("character bootstrap", () => {
     expect(objectBlock(after["user|conf"]).id).toBe(heroId);
     expect(skillFrom(objectBlock(after["user|skills"]), "VIT").value).toBe(vit);
     const init2 = await again.objectAction({ object: "common", action: "init2", sq: 21 });
-    expect(objectBlock(init2["user|unitframe"])).toMatchObject({ hp: 27, mp: 12, exp: 1 });
+    expect(objectBlock(init2["user|unitframe"])).toMatchObject({ hp: 10, mp: 12, exp: 1 });
   });
 });
 

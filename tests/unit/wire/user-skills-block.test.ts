@@ -17,7 +17,7 @@ describe("buildUserSkills", () => {
     ]);
     const block = buildUserSkills(
       [
-        { id: "VIT", value: 27 },
+        { id: "VIT", value: 10 },
         { id: "HPREG", value: 700 },
         { id: "MONEYMOD", value: 0 },
       ],
@@ -30,7 +30,7 @@ describe("buildUserSkills", () => {
   });
 
   it("fails when a skill catalog row is missing", () => {
-    expect(() => buildUserSkills([{ id: "VIT", value: 27 }], new Map(), 20)).toThrow(
+    expect(() => buildUserSkills([{ id: "VIT", value: 10 }], new Map(), 20)).toThrow(
       /Skill catalog entry VIT is missing/,
     );
   });

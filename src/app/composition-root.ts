@@ -65,6 +65,7 @@ export class CompositionRoot {
         bootstrap: policy.bootstrap,
         fightWire: policy.fightWire,
         meleeSourceIds: policy.combat.meleeSourceIds,
+        unitOfWork: database,
       });
       closers.push(wire);
       return new Application(wire.http, async () => {

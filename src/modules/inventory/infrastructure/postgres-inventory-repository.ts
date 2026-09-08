@@ -9,22 +9,11 @@ export class PostgresInventoryRepository implements InventoryRepository {
   constructor(private readonly database: PostgresDatabase) {}
 
   async listForHero(heroId: number): Promise<readonly InventoryItem[]> {
-    const rows = await this.database
-      .session()
-      .select()
-      .from(items)
-      .where(eq(items.heroId, heroId))
-      .orderBy(items.id);
-    return rows.map(
-      (row) =>
-        new InventoryItem(
-          requireFightSafeItemId(row.id),
-          row.heroId,
-          row.artifactId,
-          row.quantity,
-          this.location(row),
-        ),
-    );
+    return this.loadHeroItems(heroId, false);
+  }
+
+  async lockForHero(heroId: number): Promise<readonly InventoryItem[]> {
+    return this.loadHeroItems(heroId, true);
   }
 
   async create(item: NewInventoryItem): Promise<InventoryItem> {
@@ -80,6 +69,26 @@ export class PostgresInventoryRepository implements InventoryRepository {
           version: sql`${items.version} + 1`,
         },
       });
+  }
+
+  private async loadHeroItems(heroId: number, lock: boolean): Promise<readonly InventoryItem[]> {
+    const query = this.database
+      .session()
+      .select()
+      .from(items)
+      .where(eq(items.heroId, heroId))
+      .orderBy(items.id);
+    const rows = lock ? await query.for("update") : await query;
+    return rows.map(
+      (row) =>
+        new InventoryItem(
+          requireFightSafeItemId(row.id),
+          row.heroId,
+          row.artifactId,
+          row.quantity,
+          this.location(row),
+        ),
+    );
   }
 
   private location(row: {

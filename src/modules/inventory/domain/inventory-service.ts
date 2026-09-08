@@ -1,5 +1,7 @@
+import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
 import type { InventoryItem, ItemLocation } from "./inventory-item.ts";
 import type { InventoryRepository } from "../ports/inventory-repository.ts";
+import { requireEquippedItem, requireWearablePaperdoll, type WearHero } from "./wear-paperdoll.ts";
 
 export type StarterItemSpec = Readonly<{
   artifactId: number;
@@ -30,4 +32,48 @@ export class InventoryService {
       });
     }
   }
+
+  async putOn(hero: WearHero, itemId: number, definition: ArtifactDefinition): Promise<void> {
+    const items = await this.inventory.lockForHero(hero.id);
+    const item = requireHeroItem(items, hero.id, itemId);
+    const occupied = occupiedEquipmentSlots(items, itemId);
+    const slot = requireWearablePaperdoll(hero, item, definition, occupied);
+    for (const occupant of items) {
+      if (occupant.id === item.id || occupant.location.kind !== "equipment") continue;
+      if (occupant.location.slot !== slot && (occupant.location.slot & slot) === 0) continue;
+      await this.inventory.save(occupant.withLocation({ kind: "bag" }));
+    }
+    await this.inventory.save(item.withLocation({ kind: "equipment", slot }));
+  }
+
+  async putOff(heroId: number, itemId: number): Promise<void> {
+    const items = await this.inventory.lockForHero(heroId);
+    const item = requireHeroItem(items, heroId, itemId);
+    requireEquippedItem(item, heroId);
+    await this.inventory.save(item.withLocation({ kind: "bag" }));
+  }
+}
+
+function requireHeroItem(
+  items: readonly InventoryItem[],
+  heroId: number,
+  itemId: number,
+): InventoryItem {
+  const matches = items.filter((item) => item.id === itemId);
+  if (matches.length > 1) throw new Error(`Multiple items found for ${itemId}`);
+  const item = matches[0];
+  if (!item) throw new Error(`Item ${itemId} for hero ${heroId} is missing`);
+  return item;
+}
+
+function occupiedEquipmentSlots(
+  items: readonly InventoryItem[],
+  exceptItemId: number,
+): Set<number> {
+  const occupied = new Set<number>();
+  for (const item of items) {
+    if (item.id === exceptItemId || item.location.kind !== "equipment") continue;
+    occupied.add(item.location.slot);
+  }
+  return occupied;
 }

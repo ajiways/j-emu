@@ -4,6 +4,7 @@ import type { PlayableAccountRegistration } from "../../app/playable-account-reg
 import type { PlayableDevelopmentIdentity } from "../../app/playable-development-identity.ts";
 import { requirePresent } from "../../shared/kernel/require-present.ts";
 import type { Clock } from "../../shared/kernel/clock.ts";
+import type { UnitOfWork } from "../../shared/kernel/unit-of-work.ts";
 import type { Catalog } from "../catalog/ports/catalog.ts";
 import type { CharacterService } from "../character/application/character-service.ts";
 import type { CombatPort } from "../combat/ports/combat-port.ts";
@@ -58,6 +59,7 @@ export class JuggerWireModule {
     bootstrap: JuggerWireBootstrapPolicy;
     fightWire: JuggerWireFightPolicy;
     meleeSourceIds: Readonly<{ left: number; center: number; right: number }>;
+    unitOfWork: UnitOfWork;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -87,6 +89,10 @@ export class JuggerWireModule {
       input.meleeSourceIds,
       "Jugger-wire module requires melee source ids",
     );
+    const unitOfWork = requirePresent(
+      input.unitOfWork,
+      "Jugger-wire module requires a unit of work",
+    );
     const longPoll = new LongPollCoordinator();
     try {
       const fightWire = new FightWireMapper(
@@ -99,7 +105,7 @@ export class JuggerWireModule {
       );
       const commands = new JuggerCommandModule(
         new BootstrapReadModel(characters, inventory, catalog, world, clock, bootstrapPolicy),
-        new HeroSheetReadModel(characters, catalog, {
+        new HeroSheetReadModel({
           chat: bootstrapPolicy.chat,
           menuLinks: bootstrapPolicy.menuLinks,
         }),
@@ -110,6 +116,7 @@ export class JuggerWireModule {
         combat,
         fightWire,
         meleeSourceIds,
+        unitOfWork,
       );
       const http = await new JuggerHttpServer({
         config,

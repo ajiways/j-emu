@@ -3,9 +3,10 @@
 ## Статус
 
 Bootstrap закрыт: raw-AMF E2E и реальный CEF smoke-test показывают HUD и
-локацию после cold login. Character progression (экип-статы, regen, level-up)
-ещё частичный. Inventory mutations, world transitions, combat mechanics и
-quests в bootstrap-срез не входят. Точный статус:
+локацию после cold login. Character progression (regen, level-up) ещё
+частичный. Equipment-derived VIT/hpMax считаются после PUT_ON; без экипа HUD
+показывает naked L1 (VIT 10). Inventory mutations, world transitions, combat
+mechanics и quests в bootstrap-срез не входят. Точный статус:
 [CAPABILITIES.md](../CAPABILITIES.md).
 
 ## Источники поведения
@@ -29,8 +30,9 @@ Hero identity:
 - `heroes.id` — numeric PostgreSQL identity и `user|conf.id`;
 - starter HP/MP/EXP, body, kind/gender/language, honor и skills приходят из
   versioned `HeroCreationPolicy`;
-- VIT в policy обязан равняться `maxHp`, MPMAX — `maxMp` (этот срез не считает
-  экип);
+- VIT в policy обязан равняться naked `maxHp`, MPMAX — naked `maxMp`;
+- equipment totals (`user|skills`, `hpMax`) считаются из naked + надетых
+  `artifact_skills` на PUT_ON/OFF и при чтении skills;
 - tutorial flags пишутся в `hero_personal_details` при создании и больше не
   overlay-ятся на чтении.
 
@@ -43,8 +45,8 @@ Player state:
 - `common|conf` и empty chrome (professions/pets/friends/bank/…) читаются из
   `catalog.game_wide_documents`.
 
-Out of scope here: PUT_ON, area travel, fight resume, party, mail, presence
-roster и quest book contents.
+Out of scope here: area travel, fight resume, party, mail, presence roster и
+quest book contents. Paperdoll `PUT_ON`/`PUT_OFF` — [INVENTORY.md](INVENTORY.md).
 
 ## Persistence
 
@@ -60,4 +62,5 @@ Registration/dev-slot создаёт hero+skills+tutorial details+starter invent
 - отсутствующий обязательный catalog/hero block не маскируется пустым
   `status:100`;
 - bootstrap **готово** в CAPABILITIES подтверждён CEF HUD/location smoke-test;
-  character progression остаётся частичной.
+  character progression остаётся частичной. Equipment totals проверяются E2E
+  PUT_ON, не CEF-прогоном.

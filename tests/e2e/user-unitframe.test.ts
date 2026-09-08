@@ -26,8 +26,8 @@ describe("user unitframe", () => {
     expect(unitframe).toMatchObject({
       status: 100,
       level: 1,
-      hp: 27,
-      hpMax: 27,
+      hp: 10,
+      hpMax: 10,
       mp: 12,
       mpMax: 12,
       exp: 1,

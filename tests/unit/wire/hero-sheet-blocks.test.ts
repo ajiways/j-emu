@@ -14,6 +14,7 @@ describe("jgr-emu bootstrap sheet builders", () => {
         hero,
         new AppearancePreset(1, 1, "avatar_m_set_0_gray.png", "avatar_m_set_0_gray_sm.png"),
         new LevelBoundary(1, 0, 68, 2, 0, 0, 100, 0),
+        [],
       ),
     ).toMatchObject({
       status: 100,

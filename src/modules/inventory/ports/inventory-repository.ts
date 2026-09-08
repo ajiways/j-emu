@@ -9,6 +9,7 @@ export type NewInventoryItem = Readonly<{
 
 export interface InventoryRepository {
   listForHero(heroId: number): Promise<readonly InventoryItem[]>;
+  lockForHero(heroId: number): Promise<readonly InventoryItem[]>;
   create(item: NewInventoryItem): Promise<InventoryItem>;
   save(item: InventoryItem): Promise<void>;
 }

@@ -1,8 +1,8 @@
 {
   "heroCreation": {
     "level": 1,
-    "hp": 27,
-    "maxHp": 27,
+    "hp": 10,
+    "maxHp": 10,
     "mp": 12,
     "maxMp": 12,
     "exp": 1,
@@ -27,7 +27,7 @@
       { "id": "RAG", "value": 8 },
       { "id": "DEX", "value": 8 },
       { "id": "DEF", "value": 8 },
-      { "id": "VIT", "value": 27 },
+      { "id": "VIT", "value": 10 },
       { "id": "MPMAX", "value": 12 },
       { "id": "MONEYMOD", "value": 0 }
     ]
