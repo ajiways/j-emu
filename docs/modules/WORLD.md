@@ -16,15 +16,19 @@ Transitions, presence, movement/respawn и locks ещё не перенесен�
 
 ## Контракт мира
 
-Area definitions, links и hunt spawns — authored content active release.
-Текущая area героя и durable progression — player state.
+В текущем runtime area definitions и hunt spawns — authored content active
+release. Текущая area героя хранится как `character.heroes.area_id`.
+Area links, отдельная world-owned character location и durable world
+progression ещё не реализованы.
 
 `common|area_conf` отвечает за location configuration/sidebar.
 `common|hunt` содержит только подтверждённые client fields. Map hunt ID
 вычисляется как `area × 100 + index`; dungeon IDs в будущем обязаны быть
 уникальны в том же response.
 
-COME_IN/exit переносит:
+## Transitions — план
+
+Будущий COME_IN/exit slice должен включать:
 
 - проверку существующей authored link;
 - travel time и ограничения inventory/fight;
@@ -37,13 +41,15 @@ historical bot не подставляется.
 
 ## Hunt lifecycle
 
-Authored spawn задаёт bot, position, route и respawn policy. Runtime ownership,
-busy state и timers не записываются обратно в content.
+Текущий authored spawn задаёт bot, position и hunt mask для area 503.
+Route/respawn policy, runtime ownership, busy state и timers — план; после
+реализации ephemeral state не должен записываться обратно в content.
 
 ATTACK с карты использует конкретный hunt spawn. Quest/menu attack использует
-quest bot reference и не подменяется map spawn.
+quest bot reference и не подменяется map spawn. В текущем срезе реализован
+только минимальный `ATTACK_BOT`; quest/menu flow отсутствует.
 
-Hunt lock:
+Будущий hunt lock:
 
 - не допускает два успешных attack одного spawn;
 - снимается после завершения/отмены/timeout;
@@ -52,11 +58,20 @@ Hunt lock:
 
 ## Presence и channels
 
-Переносятся personal `2:`, party `4:` только после появления party и area
-`131:` channels. Presence различает area/instance identity и доставляет
+Presence, area `131:` channels и party `4:` в runtime отсутствуют. При их
+переносе presence должен различать area/instance identity и доставлять
 enter/leave/update без playerbot shortcuts.
 
-## Acceptance
+## Architecture checkpoint — план
+
+Перед общим refactor location/presence/hunt locks нужно определить владельца
+hero location, ephemeral lease semantics, restart cleanup и границу будущих
+instances. Этот документ не задаёт target tables. Выбранный vertical slice
+проходит checkpoints `WLD-01`, `RTM-01`, `WLD-02` в
+[ROADMAP.md](../migration/ROADMAP.md) по
+[PLAYBOOK.md](../migration/PLAYBOOK.md).
+
+## Acceptance будущей полной world wave
 
 - два героя согласованно видят roster и hunt busy;
 - concurrent attack имеет одного победителя;

@@ -51,7 +51,9 @@ Bag item обязан иметь подтверждённые `type_id`, `kind_i
 - DROP/void-sell;
 - stack limits и bag capacity;
 - durability/repair/upgrade;
-- USE food/HP/MP и quest/item pipelines.
+- USE food/HP/MP;
+- quest/item scripts и dialog actions — отдельный `IUS-01` после появления
+  quest application ports.
 
 Успешная equip mutation возвращает полный flat response: `common|action`,
 `user|bag`, `user|view`, `user|pocket`, `user|skills`, `user|unitframe`,
@@ -79,6 +81,18 @@ glove spells не входят в этот срез.
 
 Naked skills остаются в `hero_skills`. Totals и `hpMax`/`mpMax` считаются из
 надетых `artifact_skills` на mutation и при чтении `user|skills`.
+
+## Architecture checkpoint — план
+
+Перед глобальным inventory refactor или интеграцией с будущими
+economy/social/quests нужно отдельно зафиксировать public mutation/reservation
+ports, владельца блокировок и атомарность consume/grant/settlement. До такого
+checkpoint containers, reservations и durability schema не считаются
+спроектированными. Ближайшие checkpoints — `INV-02`–`INV-04`; quest-aware
+item actions отдельно проходят `IUS-01`, чтобы inventory не зависел от
+несуществующего quest runtime. Процесс capability slices:
+[ROADMAP.md](../migration/ROADMAP.md) и
+[PLAYBOOK.md](../migration/PLAYBOOK.md).
 
 ## Acceptance
 

@@ -101,11 +101,26 @@ parity.
 - [CHAT.md](../../../jgr-emu/docs/CHAT.md) — только обязательные system
   notifications.
 
-## Отложенные источники
+## Post-core и deferred источники
 
-Не адаптировать до отдельного решения: `PARTY`, `MAIL`, `AUCTION`, `TRADE`,
-`DUNGEON`, `BATTLEGROUNDS`, professions, achievements, daily quests, heroism,
-gear spells, info pages и editor docs.
+Эти источники уже привязаны к capability IDs в
+[ROADMAP.md](ROADMAP.md), но не адаптируются до статуса `next`:
+
+- `CHAT.md`, `PARTY.md`, `FIGHT_JOIN.md` → `SOC-01…SOC-03`;
+- `STORE.md`, `INVENTORY_USE.md` → `ECO-02`, `ECO-03`;
+- `MAIL.md` → `MAIL-01`, `MAIL-02`;
+- `AUCTION.md` → `AUC-01`, `AUC-02`;
+- `TRADE.md` → `TRD-01`, `TRD-02`;
+- `DUNGEON.md`, `fixtures/dungeons/*.json` → `DNG-01…DNG-03`;
+- profession/craft docs, Pub1 catalogs, `area_farms.json` →
+  `PRF-01…PRF-03`;
+- `BATTLEGROUNDS.md`, `HEROISM.md`, `bg_raskop_areas.json` → `BG-01`,
+  `HERO-01`;
+- `BESTIARY.md`, `INFO_PAGES.md` → `BOOK-01`, `INFO-01`;
+- `GEAR_SPELL.md`, `DAILY_QUESTS.md`, `ACHIEVEMENTS.md` → `GEAR-01`,
+  `DAY-01`, `ACH-01`;
+- legacy content UI/editor docs → только UX evidence для `EDT-01/02`; target
+  publication contract задаёт `j-emu`.
 
 `PLAYERBOT*`, generated playerbot catalogs и clan behavior исключены полностью.
 

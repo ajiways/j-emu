@@ -36,13 +36,20 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 ### `character`
 
-- `heroes(id integer GENERATED ALWAYS AS IDENTITY START 1, account_id UNIQUE, nick, level, hp, max_hp, area_id, money_minor, version)`.
+- `heroes(id integer GENERATED ALWAYS AS IDENTITY START 1, account_id UNIQUE,
+nick, level, hp, max_hp, mp, max_mp, exp, area_id, money_minor,
+money_gold_minor, kind, gender, language, body, sk, honor, hp_time, version)`.
 - `hero_personal_details(hero_id PK FK → heroes ON DELETE CASCADE, info jsonb, schema_version=1)`.
+- `hero_skills(hero_id FK → heroes ON DELETE CASCADE, skill_id, value)` с PK
+  `(hero_id, skill_id)`.
 
 `area_id` — текстовая ссылка на authored area; FK на `world.areas` в этом срезе
 нет. `info` — sparse wire-объект `user|personal_details.info` / form
-`user|save_personal_details`. Нет строки = пустой объект; merge пишет целиком,
-без `jsonb_set`. Ресурсы, навыки и репутации не выделены.
+`user|save_personal_details`. Строка обязательна для каждого героя; её
+отсутствие является ошибкой целостности, а не пустым объектом. Merge пишет
+целиком, без `jsonb_set`. HP/MP/EXP и naked max values хранятся скалярами героя,
+naked skills — отдельными строками `hero_skills`. Полной модели regeneration,
+progression и репутаций ещё нет.
 
 ### `inventory`
 
@@ -63,17 +70,28 @@ level_min, level_max, gender, skills jsonb)` PK `(release_id, id)`.
 hunt_scale, hunt_fps, hunt_speed, hunt_avatar, hunt_kind, hunt_hide_on_map)`
   PK `(release_id, id)`. Hunt look — спрайт на карте (`area_conf.hunt_bots`),
   не fight `sk`/`body`.
+- `skill_definitions(release_id, id, title, group_key, sort_order, weight,
+image, value_kind)` PK `(release_id, id)`.
+- `level_boundaries(release_id, level, exp_min, exp_max, bag_cnt, honor_rank,
+honor_min, honor_max, honor_status)` PK `(release_id, level)`.
+- `appearance_presets(release_id, kind, gender, avatar_big, avatar_small)` PK
+  `(release_id, kind, gender)`.
+- `game_wide_documents(release_id, document_key, document jsonb)` PK
+  `(release_id, document_key)`; допустимые ключи: `hud_defaults`, `chrome`,
+  `common_conf`, `welcome_message`.
 
-Spell/loot/level-curve таблиц нет. Game-wide `common|conf` в этом срезе — не
-таблица, а обязательный файл `content/common-conf.json` (путь
-`bootstrap.commonConfFile`). Ключи совпадают с live dump; отсутствие файла или
-ключа — ошибка startup.
+Spell/loot таблиц нет. `common|conf`, empty chrome и HUD defaults читаются из
+`catalog.game_wide_documents` активной release; level/appearance metadata — из
+versioned catalog tables той же release. Исходные bootstrap-файлы являются
+import input publication pipeline, а не runtime source gameplay-запроса.
+Chat/menu links пока остаются в обязательной game policy.
 
-HUD-константы `user|unitframe` (mp/exp/honor/avatar), которых нет на `heroes`,
-лежат в `bootstrap.unitframe` game policy, не в отдельной таблице.
-Paperdoll/chat/menu_links — `bootstrap.view` / `bootstrap.chat` /
-`bootstrap.menuLinks` (значения jgr-emu `DEFAULT_BODY`, `buildChatConf`,
-seed `menu_link_status`).
+Migration `0003_character_bootstrap_state` добавила persisted hero state,
+`hero_skills` и bootstrap catalog projection. Migration
+`0004_catalog_artifact_wear_and_equipment_slot` добавила wear constraints и
+`skills` artifact-а, а также unique occupancy equipment slot. Equipment totals
+считаются из naked `hero_skills` и `artifacts.skills`; это derived read/mutation
+state, не отдельная таблица.
 
 ### `world`
 
@@ -120,7 +138,8 @@ finish/read request path. Полный контракт:
 ### `content`
 
 - `drafts(id, content_type, content_key)` UNIQUE `(content_type, content_key)`;
-  `content_type` ∈ `artifact|bot|area|hunt_spawn`.
+  текущий `content_type` ∈ `artifact|bot|area|hunt_spawn|skill|level|appearance|
+hud_defaults|chrome|common_conf|welcome_message`.
 - `draft_versions(id, draft_id, version, schema_version, document jsonb, created_at)`.
 - `releases(id, version UNIQUE nextval, checksum UNIQUE, schema_version, validator_version, created_at, activated_at)`.
 - `release_entries(release_id, content_type, content_key, draft_version_id, digest)`.
@@ -136,7 +155,9 @@ finish/read request path. Полный контракт:
 
 ### `character`
 
-skills, resources, reputations, statistics, appearance.
+Полная regeneration/progression policy, reputations и расширенная statistics
+model. `hero_skills`, HP/MP/EXP и appearance bootstrap уже находятся в runtime
+и не являются будущими таблицами.
 
 ### `inventory`
 
@@ -162,6 +183,14 @@ Durable sides/turns/effects, active participants и JSONB event log не
 Модулей в runtime нет. Целевые API — в [MODULES.md](MODULES.md). Схемы
 появляются вместе с первым подтверждённым OA этого модуля.
 
+Перед глобальным изменением границ character/inventory/world/combat или началом
+economy/social/instances нужен отдельный architecture checkpoint: подтвердить
+владельца данных, public ports, transaction/saga boundary и restart/concurrency
+semantics для выбранного vertical slice. Процесс и gates задаёт
+[ROADMAP.md](../migration/ROADMAP.md), повторяемый workflow —
+[PLAYBOOK.md](../migration/PLAYBOOK.md); checkpoint не является разрешением
+заранее придумывать таблицы.
+
 ## Политика JSONB
 
 JSONB запрещён по умолчанию. В текущем срезе он есть только в:
@@ -173,7 +202,10 @@ JSONB запрещён по умолчанию. В текущем срезе о�
    `pondViewLast`, `tutorial2`, …). Владелец: `character`. Версия:
    `schema_version=1`. Validation до записи: JSON object, конечные числа,
    без функций/bigint, лимит 16384 байт. Partial update через `jsonb_set`
-   запрещён: read → merge → write целого объекта.
+   запрещён: read → merge → write целого объекта;
+4. `catalog.artifacts.skills` — validated immutable bonuses конкретной release;
+5. `catalog.game_wide_documents.document` — validated immutable
+   `hud_defaults`/`chrome`/`common_conf`/`welcome_message` конкретной release.
 
 Для каждого JSONB обязательны владелец, версия, validation до записи, лимит
 размера и запрет частичных business-update через `jsonb_set`. Если ключ

@@ -37,6 +37,11 @@ Request-by-request reverse engineering не является штатным сп
 После импорта provenance сохраняется как metadata/digest, но runtime зависит
 только от активной release в PostgreSQL.
 
+Канонический перечень source groups, их владельцы, зависимости, target
+projections, проверяемые counts/checksums и этапы `DATA-01`…`DATA-06` находится
+в [CONTENT_MATRIX.md](CONTENT_MATRIX.md). Перечень ниже описывает границу
+допустимых источников и не означает, что перечисленные данные уже импортированы.
+
 ## Старые входы `jgr-emu`
 
 Ниже перечислены входные группы, которые должны получить явный importer и
@@ -60,6 +65,9 @@ schema. Первая волна ограничена данными, необх�
 только отдельным решением после core 1–8. Clan и встроенные playerbots не
 переносятся.
 
+Текущая БД `j-emu` содержит только минимальный `playable-slice/v4`; наличие
+publication pipeline не является свидетельством полного импорта этой границы.
+
 ## Приоритет доказательств
 
 Для обычного переноса подтверждённое клиентом поведение `jgr-emu` является
@@ -82,37 +90,19 @@ error с обоими источниками и отклоняет весь cand
 
 ## Граф переноса
 
-Каждая стрелка означает: левая группа полностью импортирована и провалидирована до проверки правой.
+Канонический состав source groups, порядок DATA/POST и dependency DAG ведутся
+только в [CONTENT_MATRIX.md](CONTENT_MATRIX.md). Эта граница задаёт два
+неизменных правила:
 
-```text
-Pub1 item artifacts ──→ items ─────────→ loot
-                          ├─────────────→ stores
-                          └─────────────→ bonuses
+- referenced authored document существует в том же complete candidate и
+  проходит typed validation до activation;
+- runtime-модуль не дочитывает отсутствующий тип из fixtures, старого runtime
+  или предыдущей release.
 
-Pub1 bestiary ────────→ bots ──────────→ loot
-
-dialogs ──┐
-          ├──→ quests
-NPC ──────┘
-
-areas ────┬──→ world spawns/routes
-          └──→ stores required by quests
-
-spell book ─┬──→ spell definitions
-spell damage┘
-
-reputation tracks ──→ reputation kills/gates/rewards ──→ quests
-```
-
-Граф дополняется конкретными foreign references в manifest. Общие правила:
-
-- item artifacts и bestiary из Pub1 импортируются независимо; item/bot
-  definitions существуют до проверки loot;
-- dialogs и NPC существуют до quests;
-- areas существуют до world и требуемых квестами stores;
-- spell book, spell damage и требуемые reputation tracks публикуются как
-  обычные versioned данные;
-- ни один runtime-модуль не дочитывает отсутствующий тип из fixtures.
+Base entity и зависимая policy разделяются, если объединение создаёт цикл:
+например, base artifact не ссылается на action policy, base bot публикуется до
+bot spell policy, base NPC — до board/dialog/quest bindings, а reputation track
+не ссылается обратно на использующий его quest.
 
 ## Правила одного importer
 

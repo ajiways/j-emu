@@ -4,13 +4,18 @@
 
 1. [Запуск сервера и клиента](RUN.md)
 2. [Что уже работает](CAPABILITIES.md)
-3. [Текущий порядок переноса](migration/ROADMAP.md)
-4. [Источники jgr-emu по срезам](migration/EVIDENCE_INDEX.md)
+3. [Очередь capabilities](migration/ROADMAP.md)
+4. [Процесс одной capability](migration/PLAYBOOK.md)
+5. [Источники jgr-emu по срезам](migration/EVIDENCE_INDEX.md)
 
 ## Перенос поведения
 
+- [Каноническая очередь](migration/ROADMAP.md)
+- [Роли, gates и CEF-процесс](migration/PLAYBOOK.md)
 - [Граница старого runtime и content corpus](migration/SOURCE_BOUNDARY.md)
 - [Wire-инварианты](migration/WIRE_INVARIANTS.md)
+- [Матрица переноса authored content](migration/CONTENT_MATRIX.md)
+- [Точки архитектурного перепланирования](migration/ARCHITECTURE_EVOLUTION.md)
 - [Character/bootstrap](modules/CHARACTER.md)
 - [Inventory](modules/INVENTORY.md)
 - [World/hunt](modules/WORLD.md)
@@ -44,6 +49,9 @@
 
 - продуктовый статус — `CAPABILITIES.md`;
 - порядок работ — `migration/ROADMAP.md`;
+- процесс и роли — `migration/PLAYBOOK.md`;
+- состав и полнота content import — `migration/CONTENT_MATRIX.md`;
+- точки глобального refactor — `migration/ARCHITECTURE_EVOLUTION.md`;
 - wire — `migration/WIRE_INVARIANTS.md` и соответствующий модульный документ;
 - текущая схема — `architecture/DATA_MODEL.md`;
 - правила разработки агентов — корневой `AGENTS.md`;

@@ -1,0 +1,207 @@
+# Матрица переноса authored content
+
+Этот документ — канонический инвентарь и порядок переноса authored content из
+read-only corpus `jgr-emu` и Pub1 в PostgreSQL `j-emu`:
+
+```text
+source document + provenance
+  → versioned draft
+  → complete validated candidate
+  → immutable release bundle
+  → versioned runtime projections
+  → atomic activation
+```
+
+Архитектурные правила публикации задаёт
+[CONTENT_PIPELINE.md](../architecture/CONTENT_PIPELINE.md), а допустимое
+использование legacy-источников — [SOURCE_BOUNDARY.md](SOURCE_BOUNDARY.md).
+Эта матрица отвечает на вопросы «что входит», «в какой очереди», «кто владеет» и
+«как доказать полноту». Статус capability по-прежнему ведётся только в
+[CAPABILITIES.md](../CAPABILITIES.md).
+
+## Текущая граница правды
+
+Текущая БД содержит только **минимальный playable slice v4**, а не полный
+контент игры или цикла 1–8:
+
+- 1 artifact: `9095`;
+- 1 bot: `2`;
+- 1 area: `503`;
+- 1 hunt spawn: `50310`;
+- 11 skill definitions;
+- 8 level boundaries;
+- 1 appearance preset;
+- `common_conf`, HUD defaults, welcome message и bootstrap chrome в составе,
+  представленном текущим `content/playable-slice.json` и
+  `content/common-conf.json`.
+
+Фраза «content publication реализован» означает только наличие механизма
+drafts/releases/projections и публикацию этого минимального bundle. Она не
+означает, что импортированы каталоги Pub1, legacy fixtures или полный core
+content.
+
+## Легенда статусов
+
+| Статус        | Значение                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `ACTIVE-MIN`  | Тип материализуется из активной playable-slice/v4 release, но данных только для минимального bootstrap/fight smoke |
+| `CORPUS`      | Read-only source найден и учтён; importer и target projection ещё не готовы                                        |
+| `IMPORTER`    | Decoder/importer выдаёт versioned drafts с provenance, но complete candidate ещё не публикуется                    |
+| `VALIDATED`   | Schema, references, counts и checksums проверяются на полном source set                                            |
+| `PUBLISHABLE` | Тип входит в materialization и clean-DB candidate; активация атомарна                                              |
+| `DEFERRED`    | Post-core набор; не блокирует цикл 1–8                                                                             |
+| `EXCLUDED`    | Не authored content или запрещён для переноса                                                                      |
+
+Статус применяется к `j-emu`, а не к работоспособности legacy runtime.
+
+## Правила manifest, count и checksum
+
+Для каждого запуска decoder создаёт source manifest до записи drafts. Запись
+manifest содержит logical source group, относительный путь, размер, digest
+исходных bytes, decoder/schema version, число принятых документов и
+отсортированный список authored keys с digest нормализованного документа.
+
+- `expected_count` равен числу документов в зафиксированном decoder-produced
+  manifest, а не приблизительной цифре из документации.
+- Для каталога файлов дополнительно фиксируются `file_count` и digest
+  отсортированного списка `relative_path + file_digest`.
+- Для контейнерного AMF/JSON фиксируются digest контейнера и count декодированных
+  записей. Неизвестная или недекодируемая запись — ошибка всего source set.
+- Release checksum покрывает canonical manifest, содержимое документов,
+  authoring/runtime schema versions и validator version.
+- Материализованные counts по типу обязаны в точности совпасть с manifest.
+  Допустимы несколько runtime rows на authored document только по явному,
+  версионированному правилу materializer с отдельными expected row counts.
+- Числа, помеченные `VERIFY`, информационные и не являются publication gate,
+  пока их не подтвердит decoder-produced manifest на фактическом Pub1/corpus.
+
+## Этапы core 1–8
+
+| Этап      | Полный набор                                                                            | Зависимости                                   | Критерий завершения                                                                                                                   |
+| --------- | --------------------------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATA-01` | Bootstrap dictionaries: common-conf/chrome, skills, levels, appearances, HUD/welcome    | нет                                           | Текущий v4 slice воспроизводимо публикуется; затем источники bootstrap заменяются полными manifest-backed наборами без изменения wire |
+| `DATA-02` | Pub1 artifacts/artikuls, item field overlays и обязательные starter/quest/store items   | DATA-01                                       | Все base item references core существуют; type/kind/picture/skill/price/assets валидны                                                |
+| `DATA-03` | Bestiary/bot overlays, spell definitions и loot core                                    | DATA-02 для item loot; DATA-01 для skill refs | Все core bots и их spell/loot refs замкнуты внутри candidate                                                                          |
+| `DATA-04` | Areas, links, client presentation, hunt bots/spawns/routes core                         | DATA-03 для bot refs                          | Все точки/переходы цикла 1–8 достижимы и ссылаются только на candidate                                                                |
+| `DATA-05` | Bonuses, consumable actions, required stores/currencies и reputation subset             | DATA-02, DATA-04                              | Все base item/store/reputation definitions для approved core существуют                                                               |
+| `DATA-06` | NPC, dialogs, quest item scripts, approved 1–8 quests, world facts/rules и core release | DATA-01…DATA-05                               | Clean DB публикует один полный core candidate; новый герой проходит 1–8 без legacy/runtime fallback                                   |
+
+Этап — publication gate, а не разрешение временно активировать частичный набор.
+Во время реализации decoder может создать drafts для одного этапа, но новая core
+release активируется только после прохождения всех обязательных зависимостей
+этого candidate.
+
+## Core source groups
+
+`Owner` — модуль-владелец authoring contract и runtime projection. `Target`
+описывает состояние в `j-emu` на момент создания матрицы.
+
+| Этап / source group                   | Source и provenance                                                                                                                                                                                      | Owner                                                                      | Target projection / статус                                                                                               | Authored IDs и references                                                                                          | Importer / validator                                                                                                                                         | Dependencies                                                    | Expected count / checksum                                                                                                                                                                                                                                                                            | Первый consumer                                                | Текущая правда                                                                                   |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| DATA-01 / bootstrap bundle            | `j-emu/content/playable-slice.json`, `common-conf.json`; вручную выделенный baseline с schema `playable-slice/v4`                                                                                        | `catalog` + content publication                                            | `catalog.artifacts`, `bots`, `skill_definitions`, `level_boundaries`, `appearance_presets`, game-wide docs; `ACTIVE-MIN` | IDs перечислены в bundle; artifact skill refs должны существовать в skills; area/hunt refs — ниже                  | v4 parser/validator/materializer существуют; проверяют текущий ограниченный contract                                                                         | нет                                                             | Ровно 1 artifact, 1 bot, 1 area, 1 spawn, 11 skills, 8 levels, 1 appearance и singleton docs; checksum текущего bundle                                                                                                                                                                               | bootstrap, bag/equipment, minimal hunt fight                   | Только минимальный playable v4 slice; не full content                                            |
+| DATA-01 / legacy common/init catalogs | `jgr-emu/fixtures/common_conf.json`, `common_init_slim.json`, `common_init2_slim.json`, `user_skills.json`, `user_view_slim.json`; provenance должен указывать исходный live/Pub1 dump, если он известен | `catalog`                                                                  | Расширение versioned game-wide/bootstrap projections; `CORPUS`                                                           | Skill IDs, level rows, appearance/body IDs, common-conf embedded catalog refs                                      | Нужны отдельные decoders вместо копирования whole player snapshots; validator запрещает player-specific values и неявные defaults                            | DATA-01 schema evolution                                        | `VERIFY`: counts только из decoder manifest; каждый singleton/container получает source digest                                                                                                                                                                                                       | bootstrap wire builders                                        | Legacy snapshots смешивают authored и player data; целиком не импортируются                      |
+| DATA-02 / Pub1 base item artifacts    | `Pub1/images/locale/ru/amf/artifact_artikul_*.amf`; binary client catalog, bytes digest и Pub1 build identity обязательны                                                                                | `catalog`                                                                  | Расширение `catalog.artifacts`; сейчас только 9095, поэтому `CORPUS`                                                     | Wire `artikul_id` сохраняется; refs: type/kind, picture/assets, skills, set, prices/restrictions; no action policy | Нужен AMF decoder + validator обязательных base fields, ranges, duplicate IDs, skill and asset refs                                                          | DATA-01 skills                                                  | `VERIFY`: legacy docs оценивают каталог примерно в 22 560 файлов, но точные file/record counts и checksum обязан выдать decoder manifest фактического Pub1                                                                                                                                           | starter inventory, bag/pocket/equipment, quest rewards, stores | Bonus/action policy is a dependent DATA-05 document, not a base artifact dependency              |
+| DATA-02 / item overlays and fields    | `jgr-emu/fixtures/artikul_weights.json` и item-field evidence; authored legacy overlays с file digest                                                                                                    | `catalog`                                                                  | Planned versioned artifact fields/projections; `CORPUS`                                                                  | Artifact IDs, weight/presentation/stat fields; overlay не создаёт отсутствующий Pub1 artifact                      | Нужны per-file JSON decoders; validator отклоняет unknown artifact и конфликтующие field overlays                                                            | Pub1 artifacts                                                  | `VERIFY`: exact document/entry counts и per-file digests из decoder manifest                                                                                                                                                                                                                         | inventory stack/capacity and item cards                        | Bonus/action execution definitions относятся к DATA-05                                           |
+| DATA-03 / bestiary and bot overlays   | `Pub1/.../amf/bestiary.amf`; `jgr-emu/fixtures/bestiary_bots.json`, `bots_overlay.json`, `radvei_hunt_bots.json`, quest/event bot evidence; Pub1 bytes + overlay digests                                 | `catalog`                                                                  | Расширение `catalog.bots`; сейчас только bot 2, поэтому `CORPUS`                                                         | Base bot artikul IDs/stats/look сохраняются без spell policy; spell/loot policy — отдельные dependent documents    | Decoder сначала выдаёт base bot drafts; ordered overlays не используют fallback, а spell/loot policies валидируются после соответствующих definitions        | DATA-01; DATA-02 для loot; spell policy после spell definitions | `VERIFY`: exact bestiary/base-overlay/policy records из manifest; digest каждого слоя и deterministic composition digest                                                                                                                                                                             | hunt/combat, bestiary UI, quest fights                         | Разделение base bot и policy устраняет bot↔spell dependency cycle                                |
+| DATA-03 / spell definitions           | `bot_spell_book.json`, `spell_catalog_overlay.json`, `spell_damage.json` и необходимые Pub1 spell artifacts                                                                                              | `catalog`                                                                  | Planned versioned spell projections; `CORPUS`                                                                            | Spell/artifact IDs, caster bot IDs, effects, summon `botArtikulId`; все refs обязаны существовать                  | Нужны decoders и composition validator, который требует полную формулу и presentation                                                                        | DATA-02 artifacts, DATA-03 bots                                 | `VERIFY`: exact spell/policy/damage counts; checksum покрывает все три слоя и Pub1 definitions                                                                                                                                                                                                       | combat AI, glove/pocket/gear spell paths                       | Legacy умеет часть spells с invented tuning; это provenance `legacy behavior`, не live parity    |
+| DATA-03 / base loot                   | Bestiary drops и `bots_overlay.json` loot; provenance каждой строки до исходного container                                                                                                               | `catalog`                                                                  | Planned base bot-loot projection; `CORPUS`                                                                               | Bot ID → artifact IDs, quantities and weights; no quest/reputation policy references                               | Validator запускается после items и bots; unknown item and malformed quantity/weight reject candidate                                                        | DATA-02 artifacts, DATA-03 base bots                            | `VERIFY`: manifest entry counts + deterministic normalized loot checksum; materialized bot/header/entry counts сверяются отдельно                                                                                                                                                                    | fight settlement and ordinary item loot                        | Quest/reputation-conditioned loot policies are separate DATA-05/06 documents                     |
+| DATA-04 / areas and links             | `radvei_areas.json`, `radvei_client_data.json`, `common_init2_slim.json` только как evidence; provenance указывает Pub1 `world_map.amf` и live area-conf dumps                                           | `world`                                                                    | Расширение `world.areas`; сейчас только area 503, поэтому `CORPUS`                                                       | Stable area IDs; parent/to-area, map/SWF/sound/fight background; NPC/store hotspots are dependent documents        | Нужен area decoder; validator разделяет authored area data и snapshot/player state, проверяет unique links и asset refs                                      | DATA-01; store refs close in DATA-05, NPC refs in DATA-06       | `VERIFY`: exact area/link counts из decoder manifest; source and normalized checksums                                                                                                                                                                                                                | bootstrap area-conf, travel, quest AREA                        | Legacy `radvei_areas.json` большой authored aggregate; `j-emu` не публикует его полностью        |
+| DATA-04 / hunt definitions            | `hunt_spawns.json`, `radvei_hunt_bots.json`, `hunt_permanent_canon.json`, `hunt_event_artikuls.json`; authored JSON/evidence with digest                                                                 | `world`                                                                    | Расширение `world.hunt_spawns` и planned route/zone projection; сейчас только 50310, поэтому `CORPUS`                    | Spawn ID, area ID, bot ID, mask, position, route/zone; map hunt ID policy сохраняется                              | Validator требует существующие area/bot, unique spawn IDs, valid map coordinates/masks; event/permanent sets не сливаются молча                              | DATA-03 bots, DATA-04 areas                                     | `VERIFY`: exact spawn/route/event counts и per-source checksums                                                                                                                                                                                                                                      | common hunt, attack, wander/respawn                            | Авторасстановка legacy runtime не является authored fallback и не переносится                    |
+| DATA-05 / required stores             | `jgr-emu/fixtures/stores/*.json`; authored store dumps, один файл на area, file digest                                                                                                                   | `economy`                                                                  | Planned versioned store/type/lot projections; `CORPUS`                                                                   | Area ID, store/type IDs, artifact IDs, currency, stock/price/requires                                              | Decoder + validator должны проверять area/item refs, currency и no-default price; пустой legacy list остаётся явным контентом, не успехом «полного магазина» | DATA-02 items, DATA-04 areas                                    | **23 JSON files** safely counted in current fixture inventory; exact lot/type counts and set checksum from decoder manifest                                                                                                                                                                          | quest buy goals and required shops; later full store           | 23 files не означают 23 complete shops; legacy отмечает 984/1102/1113 как пустые                 |
+| DATA-05 / reputation core subset      | `reputation_tracks.json`, `reputation_kills.json`, Pub1 `common.amf` evidence; source/digest and evidence rank                                                                                           | `catalog` owns authored tracks/rules; `character` later owns player values | Planned versioned tracks/gates/grants projection; `CORPUS`                                                               | Stable track `object_id`; derived SUM 36 не grant target; quest documents later reference tracks, not the reverse  | Validator требует declared track, valid thresholds/unlock flags и существующие bot refs; quest reward/gate refs проверяет DATA-06 validator                  | DATA-03 bots                                                    | `VERIFY`: exact track/kill-rule counts and checksums from decoder; only manifest-declared 1–8 subset is core                                                                                                                                                                                         | quest gates/rewards, kill grants, user stats                   | Player reputation rows are runtime state and never enter release; REP-01 fixes their port/schema |
+| DATA-05 / bonuses and consumable USE  | `bonuses.json`, non-quest entries of `artifact_use.json` and required Pub1 action/effect evidence                                                                                                        | `catalog` + inventory action contract                                      | Planned versioned bonus/consumable-action projections; `CORPUS`                                                          | Artifact IDs, `bonus_id` and HP/MP/DRINK effect refs; no NPC/quest/dialog references                               | Decoders reject unknown operation/reference and validate typed arguments; no generic JSON effect fallback                                                    | DATA-02 items                                                   | `VERIFY`: exact bonus/consumable document counts and per-file checksums from decoder manifest                                                                                                                                                                                                        | INV-04 consumables                                             | Quest-aware scripts are DATA-06 so DATA-05 never depends forward on quest content                |
+| DATA-06 / base NPC catalog            | `npc_catalog.json`, `radvei_npcs.json`; generated-from metadata and file digests                                                                                                                         | `quests`                                                                   | Planned base NPC projections; `CORPUS`                                                                                   | Distinct catalog `npc_id`, presentation and portrait refs; no dialog/quest/board binding                           | Decoder обязан сохранить различие IDs; validator проверяет uniqueness and required presentation/assets                                                       | DATA-02 assets                                                  | `VERIFY`: `npc_catalog.json` сообщает union 450 и 59 live click refs, но publication counts подтверждает decoder manifest                                                                                                                                                                            | NPC identity and dialog presentation                           | Board/map/dialog bindings are separate dependent documents                                       |
+| DATA-06 / standalone dialogs          | `dialogs.json`, затем применимые записи `strangers_quest_dialogs.json`; authored graph + source digests                                                                                                  | `quests`                                                                   | Planned dialog/steps projections; `CORPUS`                                                                               | Dialog key, base NPC ID, point/wire IDs, graph screens/answers and item consume declaration; no item-policy ref    | Graph/schema validator проверяет reachability, unique IDs, NPC/item refs; fallback dialog не принимается при конфликте                                       | DATA-02 items, DATA-06 base NPC                                 | `VERIFY`: exact graph/screen/step counts из decoder manifest                                                                                                                                                                                                                                         | `npc\|answer`, item-open dialog                                | Standalone dialogs не следует смешивать с quest graphs                                           |
+| DATA-06 / curated quests              | Corpus содержит `quests_curated/q_1.json` … `q_14.json`; `_inventory.json` — provenance/coverage metadata, не quest document                                                                             | `quests`                                                                   | Planned quest graph/runtime projections; `CORPUS`                                                                        | Quest keys/book IDs → base NPC/points, areas, bots, items, stores, reputation, dialogs and embedded quest ops      | Per-file decoder + graph/domain validator; все cross-refs замкнуты; unknown embedded quest operation fails candidate                                         | DATA-02…DATA-05, DATA-06 base NPC/dialogs                       | **14 authored quest JSON files + 1 metadata file** safely counted in corpus. Core manifest includes only the explicitly approved 1–8 path (q_1, q_4…q_9 and any separately justified QA prerequisite); q_3 professions and q_10+ instance/extended content remain post-core until dependencies exist | quest board/book/dialog/progress                               | Quest-aware item policy may reference this quest, but quest never references that policy         |
+| DATA-06 / quest item scripts          | Quest/dialog-aware entries from `artifact_use.json`, item dialog mappings and curated script evidence                                                                                                    | `quests` contract orchestrated through inventory public port               | Planned typed quest-item action projection; `CORPUS`                                                                     | Item/bonus IDs → existing quest, dialog, NPC and grant/consume references                                          | Validator runs after DATA-06 NPC/dialog/quest documents and rejects unknown operations or forward refs                                                       | DATA-02 items, DATA-05 bonuses, DATA-06 NPC/dialogs/quests      | `VERIFY`: exact quest-aware script count and normalized operation checksum                                                                                                                                                                                                                           | IUS-01 quest item actions                                      | Separate from DATA-05 consumables to preserve an acyclic publication order                       |
+| DATA-06 / NPC board and map bindings  | Live click refs, curated board actions and area sidebar evidence                                                                                                                                         | `quests` with `world` references                                           | Planned NPC board/action binding projection; `CORPUS`                                                                    | Area/hotspot → existing base NPC, dialog and quest keys                                                            | Validator runs last in DATA-06 and rejects unknown or ambiguous area/NPC/dialog/quest refs                                                                   | DATA-04 areas, DATA-06 base NPC/dialogs/quests                  | `VERIFY`: exact binding count and normalized ordering checksum                                                                                                                                                                                                                                       | NPC board/sidebar/markers                                      | Dependent binding avoids base NPC → dialog/quest reverse references                              |
+| DATA-06 / world facts and quest rules | `world_facts.json` and quest AREA/script data in curated files; file/quest provenance                                                                                                                    | `quests` + public `world` ports                                            | Planned versioned facts/rules projection; `CORPUS`                                                                       | Fact/rule IDs; refs to area, base NPC, quest step, flags and waiting actions                                       | Validator rejects rules targeting absent entity/step and cycles/ambiguous precedence                                                                         | DATA-04 areas, DATA-06 base NPC, DATA-06 quests                 | `VERIFY`: exact facts/rules count + normalized rule-order checksum                                                                                                                                                                                                                                   | quest map/sidebar and AREA actions                             | Legacy world rule tables are behavior evidence, not runtime dependency                           |
+
+`strangers_quest_dialogs.json` may be used as lower-priority evidence where a
+curated document lacks a proven graph. It is never an implicit fallback and a
+conflict rejects the candidate with both provenances recorded.
+
+## Post-core sets
+
+Post-core data uses the same drafts/releases path but does not enter the core
+completeness denominator.
+
+| Set / source group                            | Source / provenance                                                       | Owner and target               | IDs / dependencies                                   | Expected count / checksum                                                                                            | First consumer / current truth                      |
+| --------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------ | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `POST-01` full economy/bonuses                | Remaining `stores/*.json`, `bonuses.json`, Pub1 artifacts                 | `economy` + `catalog`; planned | items, areas, currencies, bonus/effects              | Store corpus has 23 files total; core subset membership and all entry counts are `VERIFY` via manifest               | Full store and USE; deferred, no `j-emu` projection |
+| `POST-02` professions/resources/recipes       | Pub1 profession/assistant/resource/recipe AMF plus `area_farms.json`      | `professions`; planned         | profession, assistant, artifact, recipe and area IDs | `VERIFY` all container/record counts and Pub1 build digest                                                           | professions; explicitly deferred                    |
+| `POST-03` dungeons/instances                  | Pub1 `instance.amf` plus `fixtures/dungeons/*.json`                       | `instances`; planned           | instance/area/room/bot/loot/checkpoint refs          | **8 dungeon JSON files** safely counted; AMF records and all room/spawn/loot counts `VERIFY` via manifest            | book/instance runtime; deferred                     |
+| `POST-04` battlegrounds                       | `bg_raskop_areas.json`, Pub1 `bg.amf`, maps/assets and legacy BG evidence | dedicated BG owner; planned    | BG/instance/area/bot/reward refs                     | `VERIFY` via decoder manifest                                                                                        | battleground queue/instance; deferred               |
+| `POST-05` broader quests/reputation           | `_inventory.json` pending corpus and additional research/dumps            | `quests`/reputation; planned   | same graph as DATA-05/06, beyond approved 1–8 set    | Metadata currently reports 201 total, 9 seeded, 192 pending across 55 NPCs; all are `VERIFY`, not publication counts | Later quest slices; deferred                        |
+| `POST-06` achievements/talents/other catalogs | `talent_list.json`, Pub1 achievements and related evidence                | future catalog/domain owners   | artifact, skill, quest and reward refs               | `VERIFY` after a scoped decision and decoder exists                                                                  | Deferred capabilities                               |
+
+Mail, auction, trade, chat, party and social state are primarily behavior or
+player/runtime data, not automatically authored content sets. A future feature
+may add versioned templates/catalogs, but operational rows are not imported.
+Clan and generated playerbots are excluded.
+
+## Explicit exclusions
+
+- `jgr-emu/fixtures/generated/playerbot_profession_index.json` and
+  `playerbot_acquisition_index.json`: generated playerbot files, excluded from
+  every count and release.
+- Accounts, heroes, inventory instances, quest progress, sessions, fights,
+  mail, auction listings, queues, locks, worker output and process state.
+- Whole `common_init*.bin/json` or user snapshots as authored documents.
+- Runtime reading of Pub1 AMF, legacy JSON, `_research`, dumps or generated
+  manifests after publication.
+- Silent gap filling from `bestiary_bots.json`, auto hunt placement, defaults,
+  another source group or a previous release.
+- Static media bytes as PostgreSQL blobs. Their metadata/path/digest may be
+  validated content references; serving/synchronizing Pub1 assets is a separate
+  concern.
+
+## Clean-DB publication gate
+
+A core content migration is complete only when this procedure passes from an
+empty PostgreSQL database:
+
+1. Apply the current Drizzle schema without legacy DB or filesystem runtime
+   dependencies.
+2. Decode every manifest-declared DATA-01…DATA-06 source using pinned decoder
+   and schema versions. Source missing, extra, unreadable or changed without an
+   approved manifest update fails before drafts are published.
+3. Write immutable draft versions with path/build/evidence provenance and bytes
+   digest. No decoder may catch-and-skip a record.
+4. Freeze one candidate containing the complete approved core manifest.
+5. Validate schemas, stable authored IDs, uniqueness, ranges, dependency DAG,
+   every cross-reference, assets required by wire, expected document counts and
+   deterministic checksums.
+6. Reject the whole candidate on any error. There is no «imported 99 of 100»,
+   placeholder entity, previous-release lookup, fixture fallback or temporary
+   nullable reference.
+7. Create one immutable release bundle, materialize every owner projection with
+   its `release_id`, and compare exact projection row counts/checksums with the
+   candidate report.
+8. In one transaction re-check validation/materialization state and atomically
+   activate the release. Before commit runtime sees the previous release; after
+   commit every module sees the new one.
+9. Restart the process with legacy paths unavailable and prove bootstrap,
+   inventory, hunt/combat and curated quest flow read only the active release.
+10. Run the new-hero client scenario through levels 1–8. Only then may docs call
+    the core content complete.
+
+## Completeness report
+
+Every candidate validation report must expose at least:
+
+- source groups required/present and their digests;
+- authored document counts by group and type;
+- duplicate, rejected and skipped counts, all required to be zero except
+  duplicate source bytes explicitly deduplicated before drafts by a declared
+  rule;
+- unresolved references by target type, required to be zero;
+- runtime rows expected/materialized by owner and projection;
+- validator, decoder, authoring schema and runtime schema versions;
+- canonical manifest checksum, bundle checksum and materialization checksum;
+- explicit core/post-core membership.
+
+Approximate legacy totals, including the Pub1 artifact estimate and metadata
+coverage numbers, never satisfy this report. They remain marked `VERIFY` until
+the corresponding decoder emits a manifest from the exact corpus intended for
+publication.

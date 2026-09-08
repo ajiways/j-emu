@@ -54,6 +54,19 @@ Account, hero, personal details и `hero_skills` находятся в PostgreSQ
 Registration/dev-slot создаёт hero+skills+tutorial details+starter inventory в
 одной Unit of Work. Reconnect и process restart строят bootstrap из БД.
 
+## Следующая волна — план
+
+Level-up, regeneration и honor progression не реализованы. `CHR-01` сначала
+задаёт persisted EXP/level progression и границу combat settlement; `CHR-02`
+после него задаёт authoritative regeneration timestamps и lazy calculation.
+Ghost/injury/RESURRECT зависят от подтверждённого terminal combat lifecycle и
+относятся к `CMB-04`, а не блокируют character progression. Перед общим
+refactor character state architecture checkpoint обязан определить владельца
+данных и транзакционную границу; новые таблицы из этого документа не следуют.
+Порядок vertical slices и gates:
+[ROADMAP.md](../migration/ROADMAP.md), workflow —
+[PLAYBOOK.md](../migration/PLAYBOOK.md).
+
 ## Acceptance
 
 - raw-AMF E2E покрывает полный init/init2 inventory, skills, HUD numbers и

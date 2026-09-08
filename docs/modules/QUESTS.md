@@ -18,12 +18,13 @@ Quest/NPC runtime и curated chain ещё не перенесены.
 `TEMP_QUEST_ITEM_AND_MARKER_BUGS.md` описывает известные дефекты, а не
 переносимое рабочее поведение.
 
-## Content model
+## Planned content model
 
-NPC, dialogs, quests, steps, goals и scripts импортируются как typed versioned
-content. Runtime читает только active release.
+Целевая модель: NPC, dialogs, quests, steps, goals и scripts импортируются как
+typed versioned content, а runtime читает только active release. Эти content
+types и их projection в текущем runtime отсутствуют.
 
-Importer обязан проверить:
+Будущий importer обязан проверить:
 
 - уникальность IDs/keys;
 - dialog/NPC/quest/area/item/bot references;
@@ -35,13 +36,14 @@ Importer обязан проверить:
 Невалидная запись отменяет candidate. Handler не читает legacy JSON и не
 подставляет отсутствующий NPC, item, area или bot.
 
-## Runtime model
+## Planned runtime model
 
-Persistent player quest state включает active step, goal progress, flags,
-waiting state и полученные/сданные rewards. Content definition не копируется в
-player row.
+Целевая persistent player quest state включает active step, goal progress,
+flags, waiting state и полученные/сданные rewards. Схема player progress ещё не
+создана; этот документ не задаёт её таблицы. Content definition не должна
+копироваться в player state.
 
-Core surfaces:
+Planned core surfaces:
 
 - NPC board и offer/remind/finish markers;
 - dialog answers и cursor;
@@ -56,11 +58,11 @@ AREA quest fight запускается после waiting. Progress bump вып
 `mode:"quest"` не меняет quest progress. Последний step gate проверяется на
 `on_step`, если это задано legacy contract.
 
-## Transactions
+## Planned transaction boundary
 
-Quest transition, inventory consume/grant, rewards и flags изменяются одной
-orchestration transaction через public ports владельцев. Chat/esrv notification
-публикуется только после commit.
+Целевое требование: quest transition, inventory consume/grant, rewards и flags
+изменяются одной orchestration transaction через public ports владельцев.
+Chat/esrv notification публикуется только после commit.
 
 Повтор команды не должен повторно выдать reward или consume item.
 
@@ -69,11 +71,22 @@ orchestration transaction через public ports владельцев. Chat/esr
 1. NPC catalog и board/dialog wire.
 2. Quest definitions и player progress schema.
 3. Базовые goal types и scripts.
-4. Inventory/world/combat integration.
-5. Curated chain по одному завершённому quest capability.
-6. Markers и system messages.
+4. Quest-aware item USE через отдельный `IUS-01` поверх public inventory port.
+5. Inventory/world/combat integration и post-commit system messages.
+6. Markers/known regressions.
+7. Curated chain по одному `STORY-*` capability, затем `CORE-GATE`.
 
-## Acceptance
+## Architecture checkpoint — план
+
+До первого quest schema/content refactor checkpoint обязан подтвердить
+ownership definitions и player progress, QuestSignal boundary с
+inventory/world/combat, reward orchestration и idempotency повторных команд.
+Конкретные таблицы выбираются только вместе с первым vertical slice по
+checkpoints `QST-01`–`QST-04`, `IUS-01` и `STORY-*` в
+[ROADMAP.md](../migration/ROADMAP.md) и workflow из
+[PLAYBOOK.md](../migration/PLAYBOOK.md), а не выводятся из целевой модели выше.
+
+## Acceptance будущей quest wave
 
 - чистый герой проходит утверждённую цепочку 1–8;
 - restart сохраняет cursor/progress/waiting;

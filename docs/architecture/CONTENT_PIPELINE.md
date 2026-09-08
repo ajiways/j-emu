@@ -2,7 +2,7 @@
 
 ## Цель
 
-Весь игровой контент проходит один путь:
+Целевой путь всего игрового контента:
 
 ```text
 import corpus / editor
@@ -16,18 +16,51 @@ versioned runtime tables
 active release
 ```
 
-Все стадии находятся в одном PostgreSQL. Runtime обслуживает игровые запросы только из активных версий runtime-таблиц.
+Все стадии целевой модели находятся в одном PostgreSQL. Runtime обслуживает
+игровые запросы только из активных версий runtime-таблиц. Реализованная часть
+этого пути перечислена отдельно ниже; схема не означает, что editor,
+independent candidates или validation reports уже существуют.
+
+Канонический инвентарь source groups, этапы `DATA-01`…`DATA-06`, ownership,
+counts/checksums и completeness gates:
+[CONTENT_MATRIX.md](../migration/CONTENT_MATRIX.md). Этот документ задаёт
+механику публикации, но сам по себе не утверждает полноту импортированных
+данных.
 
 ## Текущий playable slice
 
-Реализованы типы `artifact`, `bot`, `area`, `hunt_spawn` (`playable-slice/v2`).
+Текущая `playable-slice/v4` release — только минимальный bundle: 1 artifact,
+1 bot, 1 area, 1 hunt spawn, 11 skills, 8 levels, 1 appearance и
+common-conf/chrome/HUD/welcome документы в составе текущего bundle. Реализованы
+их draft/release/runtime contracts; это нельзя называть полным игровым
+контентом или полным контентом цикла 1–8.
+
 Seed: `npm run db:publish:development` с `CONTENT_BUNDLE_FILE` и `DATABASE_URL`
 из `.env` в корне пакета. Повтор с тем же checksum не создаёт новый release.
 Новый checksum на уже опубликованной БД создаёт и активирует следующую release
 через `publish` (тот же npm-скрипт).
-Остальные типы из карты import contracts ниже — план.
+Остальные типы и расширение текущих минимальных каталогов из матрицы — план.
 
-## Состояния и ответственность
+## Что реализовано сейчас
+
+`ContentPublicationService.publish/seed`:
+
+1. синхронно валидирует один typed bundle в памяти;
+2. в одной Unit of Work блокирует singleton `active_release`;
+3. записывает release, drafts/draft_versions и release entries;
+4. материализует текущие catalog/world projections;
+5. переключает active release pointer.
+
+`seed` идемпотентен только для matching bootstrap checksum и запрещает
+bootstrap поверх другой существующей release. Обычный `publish` отклоняет уже
+существующий checksum.
+
+Отдельных editor-команд `saveDraft`, persisted candidate, validation report,
+publication audit record, manifest import/export и rollback command сейчас нет.
+Они относятся к целевому контракту ниже и реализуются только соответствующими
+DATA/EDT capabilities.
+
+## Целевой publication contract — план
 
 ### Черновики
 
@@ -83,58 +116,40 @@ Seed: `npm run db:publish:development` с `CONTENT_BUNDLE_FILE` и `DATABASE_URL
 
 ## Порядок зависимостей
 
-Граф импорта задаётся явно и является частью validator:
+Единственный канонический граф source groups и стадий DATA/POST находится в
+[CONTENT_MATRIX.md](../migration/CONTENT_MATRIX.md). Этот документ фиксирует
+только механический инвариант: validator строит dependency DAG из manifest;
+цикл является ошибкой candidate и не обходится временной nullable reference,
+вторым проходом или lookup в предыдущей release.
 
-```text
-Pub1 item artifacts ───→ items ───┬──→ loot
-                                  ├──→ stores
-                                  └──→ bonuses
-
-Pub1 bestiary ─────────→ bots ────┬──→ loot
-                                  └──→ dungeons
-
-dialogs + NPC ─────────→ quests
-
-areas
-├── professions / resource nodes
-├── world / spawns / links
-└── stores
-
-spell book + spell damage ─→ combat-ready spell definitions
-
-bots + loot + areas ───────→ dungeons
-
-reputation tracks
-├── reputation rewards / gates
-└── quests / kill grants
-```
-
-Практические правила:
-
-- item artifacts и bestiary из `Pub1` импортируются независимо; item/bot
-  definitions должны существовать до совместной проверки loot;
-- item/creature/spell reference не может указывать на отсутствующий Pub1 artifact;
-- dialogs и NPC валидируются до quests;
-- areas валидируются до professions, world spawns/routes и stores;
-- spell book и spell damage входят в release, а не загружаются runtime из fixtures;
-- dungeons и reputation tracks входят в тот же candidate и проверяются со всеми внешними ссылками.
-
-Цикл зависимостей является ошибкой модели candidate. Его нельзя обходить вторым проходом с временными пустыми ссылками.
+Чтобы не создавать циклы, base entity и зависимая policy являются разными
+typed documents. Например, base bot не зависит от spell; bot spell policy
+валидируется после base bots и spell definitions. Quest ссылается на
+reputation track, но authored track не ссылается обратно на quest.
 
 ## Карта import contracts
+
+Эта карта задаёт правила contracts. Состав, стадия и текущий статус каждой
+source group ведутся только в
+[CONTENT_MATRIX.md](../migration/CONTENT_MATRIX.md).
 
 Каждый importer имеет одного владельца, отдельный decoder и validator:
 
 - `catalog`: Pub1 artifact/artikul AMF и item overlays; decoder сохраняет wire
   ID без перенумерации, validator проверяет обязательные type/kind/picture,
-  действия, цены и ссылки на assets.
+  skills, цены и ссылки на assets. Bonus/action policies — отдельные dependent
+  documents DATA-05 и не являются обратной ссылкой base artifact.
 - `catalog`: Pub1 bestiary, `bots_overlay.json`, hunt/event/quest bot sources;
-  validator проверяет bot ID, stats, presentation и ссылки на spells/loot.
-- `catalog`: loot/drop sources; validator запускается после items и bots и
-  проверяет item references, количества, веса и условия.
+  base validator проверяет bot ID, stats и presentation. Spell/loot policies
+  валидируются отдельными documents после base bots и соответствующих
+  definitions.
+- `catalog`: base loot/drop sources; validator запускается после items и bots
+  и проверяет item references, количества и веса. Quest/reputation conditions
+  являются отдельными dependent policies DATA-05/06.
 - `quests`: `dialogs.json`, `strangers_quest_dialogs.json`,
   `npc_catalog.json`, `radvei_npcs.json`, затем `quests_curated/*.json`;
-  validator проверяет graph, step/dialog/NPC/item/area references и rewards.
+  base NPC не ссылается на dialog/quest; validator проверяет dialogs и quests
+  после base NPC, а board/map bindings — последними.
 - `world`: `radvei_areas.json`, `hunt_spawns.json` и authored links/routes;
   validator проверяет уникальность area/point/spawn IDs, bot references и
   достижимость ссылок.
@@ -150,7 +165,9 @@ reputation tracks
 - `instances`: `dungeons/*.json`; validator проверяет areas, encounters,
   bots, loot и checkpoint graph.
 - `catalog`: `reputation_tracks.json` и `reputation_kills.json`; validator
-  проверяет track levels, rewards/gates и ссылки quests/bots.
+  проверяет track levels, thresholds/rewards и bot refs. Quest reward/gate refs
+  проверяет quest validator, поэтому authored reputation не зависит обратно от
+  quests.
 
 Имя файла не определяет порядок. Manifest объявляет типы и references, а
 validator строит и проверяет dependency graph. Decoder не импортирует старые
@@ -194,4 +211,7 @@ Import release:
 - broker для координации стадий;
 - отдельный content service.
 
-Для начального масштаба транзакции, блокировки, ограничения и audit-таблицы одного PostgreSQL дают необходимую атомарность без дополнительной распределённой инфраструктуры.
+Для текущего масштаба одна PostgreSQL transaction, блокировка active pointer и
+ограничения существующих release/draft tables дают необходимую атомарность без
+распределённой инфраструктуры. Publication audit record появится только вместе
+с целевым publication contract.

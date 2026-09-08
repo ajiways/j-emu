@@ -6,6 +6,26 @@
 `professions` и `instances` ниже являются планом, а не возможностями runtime.
 Фактический статус находится в [CAPABILITIES.md](../CAPABILITIES.md).
 
+## Текущий runtime checkpoint
+
+Текущий проверенный срез после готовых bootstrap и equipment
+`PUT_ON`/`PUT_OFF` capabilities:
+
+- `character` хранит hero scalars, personal details и naked `hero_skills`;
+- `inventory` хранит bag/pocket/equipment instances и выполняет подтверждённые
+  `PUT_ON`/`PUT_OFF`;
+- `catalog` и `world` читают artifacts, skills, levels, appearance,
+  game-wide bootstrap documents, area 503 и hunt rows из active release;
+- equipment-derived skills/vitals считаются из persisted naked skills и
+  artifact bonuses; migration `0004` закрепляет wear fields и occupancy slot;
+- `combat` предоставляет только минимальный hunt lifecycle и finished history;
+  `quests`, `social`, `economy`, `professions`, `instances` в runtime нет.
+
+Во всех разделах ниже **API**, **события** и **шов извлечения** описывают
+целевую границу. Они не доказывают регистрацию команды, наличие таблиц или
+готовый сценарий; текущую реализацию определяют этот checkpoint и
+[CAPABILITIES.md](../CAPABILITIES.md).
+
 ## Базовая форма
 
 Система начинается как модульный монолит. Каждый модуль имеет:
@@ -179,10 +199,32 @@ registry `object|action`; registry вызывает небольшой typed han
 
 ## Сценарии между модулями
 
+Следующие сценарии — planned architecture, не текущие runtime flows:
+
 - **Покупка:** wire → economy; economy резервирует деньги, вызывает inventory grant, затем проводит ledger. Повтор запроса безопасен по operation ID.
 - **Завершение боя:** combat фиксирует результат → подписчики character/quests/instances; отдельный reward orchestrator вызывает economy/inventory. Combat не знает, человек перед ним или автоматический клиент.
 - **Почта/аукцион:** social/economy резервируют item IDs через inventory; владение меняется только командой inventory после settlement.
 - **`init/init2`:** jugger-wire запрашивает один bootstrap read model, а не вызывает последовательно все модули и не читает их таблицы.
+
+Последний пункт уже действует для bootstrap read model; остальные появляются
+только вместе с соответствующим capability slice.
+
+## Architecture checkpoints для будущих волн
+
+Перед глобальным refactor существующих модулей или первой реализацией
+`economy`, `social` либо `instances` отдельный checkpoint обязан зафиксировать:
+
+1. владельца durable и ephemeral state;
+2. минимальные public ports и orchestration/transaction boundary;
+3. idempotency, restart и concurrency semantics;
+4. подтверждённый wire vertical slice и необходимые content references.
+
+Checkpoint фиксируется в соответствующей записи
+[ROADMAP.md](../migration/ROADMAP.md): `SOC-*`, `ECO-*`, `MAIL-01`, `AUC-01`,
+`TRD-01`, `DNG-01` или `BG-01`, и проходит workflow из
+[PLAYBOOK.md](../migration/PLAYBOOK.md). До него этот документ задаёт только
+границу ответственности: он не задаёт target tables и не разрешает добавлять
+outbox, ledger, reservations или instance schema «на будущее».
 
 ## Запрещённые сокращения
 

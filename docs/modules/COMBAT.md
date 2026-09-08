@@ -27,24 +27,24 @@ Active combat целиком process-local:
 
 - participants, teams, HP, turns, effects и RNG state;
 - command and outbound packet queues;
-- reconnect data до restart;
 - ephemeral bot IDs от `1_000_000`.
 
 PostgreSQL выдаёт fight ID, но не хранит active fight. Terminal settlement
-атомарно меняет durable hero/inventory/reward state. Finished history записывается
-best-effort на 72 часа и не является source of truth результата.
+HP/EXP/level, loot и inventory/reward state в текущем minimal slice не
+реализован. Finished history записывается best-effort на 72 часа и не является
+source of truth результата.
 
 ## Wire lifecycle
 
-Core hunt flow:
+Текущий minimal hunt flow:
 
 1. ATTACK_BOT создаёт battle и возвращает `fight|conf`.
 2. fproxy auth связывает client с process-owned fight.
-3. Poll получает MULTI packets; cast acknowledgement и effects приходят в
-   подтверждённом порядке.
-4. Terminal outcome применяет settlement.
-5. esrv отправляет loot/exit в legacy order.
-6. Bootstrap после reconnect показывает durable result.
+3. Poll получает minimal terminal packet flow.
+4. Terminal result добавляется в finished history.
+
+Полный cast/effects packet flow, loot/exit ordering, durable settlement,
+reconnect и fight locks относятся к будущей combat wave.
 
 SINGLE/MULTI framing, exact `sq`, source IDs и packet order менять нельзя.
 
@@ -61,14 +61,28 @@ SINGLE/MULTI framing, exact `sq`, source IDs и packet order менять нел
 
 ## Границы модулей
 
-Combat получает immutable combat-ready snapshots через public ports. Catalog и
-inventory не импортируются как repositories внутрь fight engine. Settlement
-вызывает owning application ports после terminal outcome.
+Целевая граница: combat получает immutable combat-ready snapshots через public
+ports; catalog и inventory не импортируются как repositories внутрь fight
+engine. Будущий settlement вызывает owning application ports после terminal
+outcome. Это boundary requirement, а не утверждение, что reward settlement уже
+работает.
 
 Не создавать generic «будущий» battle abstraction ценой изменения работающего
 legacy flow. Механики переносятся capability за capability.
 
-## Acceptance
+## Architecture checkpoint — план
+
+Перед глобальным refactor terminal flow нужно определить combat result
+contract, идемпотентность reward orchestrator, transaction boundaries владельцев
+и reconnect/restart semantics. Active combat остаётся process-local согласно
+[ADR-0020](../adr/ADR-0020-ephemeral-combat.md); checkpoint не вводит active
+fight tables. Ghost/injury/RESURRECT закрываются вместе с reconnect/terminal
+guards в `CMB-04`, а не до появления полного combat lifecycle. Порядок
+`CMB-01`–`CMB-04` и gates:
+[ROADMAP.md](../migration/ROADMAP.md), workflow —
+[PLAYBOOK.md](../migration/PLAYBOOK.md).
+
+## Acceptance будущей полной combat wave
 
 - полный hunt fight проходит в клиенте без timeout/hang;
 - pocket/glove/native counters не списываются дважды;
