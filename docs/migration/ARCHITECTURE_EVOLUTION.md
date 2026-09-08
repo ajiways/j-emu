@@ -6,8 +6,9 @@
 
 Текущий проверенный checkpoint — готовые bootstrap, paperdoll PUT_ON/PUT_OFF,
 internal CHR-01 `grantExperience`, internal CHR-02 `syncResources`/`noteHp` и
-INV-02 bag DROP/`creditMoney`: persistent state находится в PostgreSQL; active
-content читается через release projections; active combat остаётся в RAM.
+INV-02 bag DROP/`creditMoney` и зафиксированный INV-03 pocket contract (ещё не
+coded): persistent state находится в PostgreSQL; active content читается через
+release projections; active combat остаётся в RAM.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение

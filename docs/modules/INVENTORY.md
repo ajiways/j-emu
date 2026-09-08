@@ -5,8 +5,8 @@
 Paperdoll `PUT_ON`/`PUT_OFF` и bag DROP для перчатки 9095 **готово**: raw-AMF
 E2E и реальный CEF-прогон. Точный статус: [CAPABILITIES.md](../CAPABILITIES.md).
 
-INV-03 (pocket) — следующий workflow-срез. Не перенесены durability/repair,
-pocket merge/split/swap и USE pipelines.
+INV-03 (pocket layout) — следующий workflow-срез. Не перенесены durability,
+fight cast/`persSpells`, USE pipelines и патронташ.
 
 ## Источники поведения
 
@@ -48,11 +48,10 @@ Bag item обязан иметь подтверждённые `type_id`, `kind_i
 5. `DROP` / `SELL` из bag; throw-away 9095; deny equipped и SELL без
    `sell_price>0` → `status:204` + `error`.
 
-Следующий inventory capability, не этот срез:
+Следующий inventory capability после INV-03, не этот срез:
 
-- pocket merge/split/swap (`INV-03`);
 - durability/repair/upgrade;
-- USE food/HP/MP (`INV-04`);
+- USE food/HP/MP и pocket fight cast (`INV-04` / `CMB-02`);
 - quest/item scripts и dialog actions — отдельный `IUS-01` после появления
   quest application ports.
 
@@ -66,10 +65,10 @@ armor 20/26/103 is not invented in this playable slice.
 
 ## Fight boundary
 
-Pocket/glove definitions принадлежат inventory/catalog, а active count/effects
-во время боя — combat. `persSpells.srcId` не должен столкнуться с `items.id`.
-Packet ordering `rs`/strike задаётся [COMBAT.md](COMBAT.md). World `user|magic`
-glove spells не входят в этот срез.
+Pocket layout (INV-03) принадлежит inventory; active count/effects во время боя
+— combat (`INV-04`/`CMB-02`). `persSpells.srcId` не должен столкнуться с
+`items.id`. Packet ordering `rs`/strike задаётся [COMBAT.md](COMBAT.md). World
+`user|magic` glove spells не входят в этот срез.
 
 ## Persistence
 
@@ -230,11 +229,114 @@ Pocket, USE, durability, mail GIVE, COME_IN overload, store buy, grant/merge
   **подтверждено**;
 - нет fake OA кроме реального DROP/SELL; нет ticker; нет travel gate.
 
+## INV-03 — pocket layout
+
+### Architecture decision
+
+Отдельный `ARC-INV` не нужен. Пояс — те же `items` с `location_kind=pocket` и
+`pocket_position` 1…capacity. Новых OA нет: клиент шлёт существующие
+`PUT_ON`/`PUT_OFF`. Combat не читает pocket в этом срезе; порт `listPocket`
+готовит CMB-02 без `persSpells` и без fight RAM.
+
+Live стартовый пояс (93×2, 99×10, 209) **не копируем**. Slice выдаёт 93 и 99
+в bag, pocket на login пустой — чтобы CEF проверял PUT_ON.
+
+### Wire
+
+`PUT_ON`: `in.slot_num` — ячейка 1…capacity; значение `67108864` (SLOT_EFFECT)
+или omitted → auto (merge в неполный стак того же artikul, иначе первая
+свободная). `in.slot` — только paperdoll, не пояс.
+
+Успех — тот же flat набор, что paperdoll PUT_ON/OFF (`equipmentMutation`), но
+`user|pocket.pocket` больше не пустой массив.
+
+`user|pocket`: `{ status:100, capacity:4, pocket:[] }`. Элемент — массив, не
+map. Dump `_research/from_register/interesting_full.json`: `slot=67108864`,
+`slot_num` 1-based, `cnt` = quantity, `actions=16` (PUT_OFF), без
+`action:"bag"`. Пустые ячейки в массив не входят; клиент рисует их по
+`capacity`.
+
+Deny пояса — **`204`** + `error` (live `putOn` pocket). Paperdoll WearDenied
+остаётся **`203`**. Не смешивать.
+
+| Исход                          | `error`                                      |
+| ------------------------------ | -------------------------------------------- |
+| нет свободной ячейки           | `Нет свободных ячеек в боевом инвентаре`     |
+| не pocket-маска / 9095 на пояс | `Этот предмет нельзя надеть`                 |
+| DROP не из bag                 | `Не удалось выполнить действие "Выбросить"!` |
+
+PUT_ON/OFF **разрешены в бою** (legacy не ставит `fightBusy` на PUT_ON).
+
+### Правила слота
+
+Pocketable: `(slot_mask & 67108864) !== 0` и paperdoll-биты 0…19 чисты.
+93: `slot_mask=67108864`. 99: `slot_mask=603979776` (EFFECT + extra bit).
+
+`pocketCntMax = max(1, floor(100 / weight))`. Provenance `ARCHITECTURE.md`.
+93 `weight=100` → 1; 99 `weight=10` → 10. Weight обязателен и > 0; не копировать
+legacy `weight || 100`.
+
+Сценарии `putOnPocket`:
+
+1. bag → пустой слот (split, если `cnt > pocketCntMax`);
+2. bag → занятый тот же artikul → merge до max, остаток в bag;
+3. bag → занятый другой artikul → displace старого в bag, положить новый;
+4. pocket → pocket тот же artikul → merge;
+5. pocket → pocket разные → SWAP.
+
+PUT_OFF: `pocket → bag`, затем merge одинаковых bag-стаков до `bagStack`.
+Патронташ / orb-only слот / `SLOT_CNT` — не в срезе. `capacity` = policy **4**.
+
+### Content
+
+`playable-slice/v6` → **v7**. Миграция `0008_inventory_pocket_position_unique`.
+
+| id  | title                 | picture                  | typeId | kindId | slotMask  | weight | priceMinor | flags | bagStack |
+| --- | --------------------- | ------------------------ | ------ | ------ | --------- | ------ | ---------- | ----- | -------- |
+| 93  | Малый эликсир жизни   | `bottles_live1_2712.png` | `"7"`  | 154    | 67108864  | 100    | 100        | 0     | 99       |
+| 99  | Малый усиливающий орб | `bottles_sila1.png`      | `"7"`  | 152    | 603979776 | 10     | 15         | 0     | 999      |
+
+Dump: `interesting_full.json` `user|pocket` (price 1.0 / 0.15, flags 0, empty
+skills). Weight/bagStack: `ARCHITECTURE.md` примеры. `levelMin=1`, `levelMax=0`,
+`skills=[]`. Spell/`artifact_actions` не публиковать — INV-04.
+
+Starter: 9095×1 bag, 93×2 bag, 99×10 bag. Не выдавать 209, броню 20/26/103,
+сундук 1518.
+
+### Public ports
+
+- расширить `putOn` (или соседний `putOnPocket`) опциональным `pocketPosition`;
+- `putOff` уже существующий — уметь pocket→bag;
+- `listPocket({ characterId })` — ordered snapshot для wire и будущего CMB-02.
+
+OA: decode `slot_num` на существующем `PutOnCommand`. Новых `requiredKeys` нет.
+
+Lock: hero + `lockForHero` + `syncResources`, как PUT_ON. Не
+`applyEquipmentVitals` для пояса (нет `artifact_skills`).
+
+### Out of scope
+
+Fight `castSpell` / `persSpells` / `rs` ordering, refill after fight, USE из
+bag, медальон 209, патронташ, TEMPEFFECT drinks, durability.
+
+### INV-03 acceptance
+
+- unit: `isLeftPocket` (EFFECT set, paperdoll clear), `pocketCntMax`
+  (`floor(100/weight)` → 93→1, 99→10), amount coerce/split, swap vs merge;
+- integration: unique pocket_position, concurrent PUT_ON same slot, rollback,
+  bag merge on PUT_OFF;
+- raw-AMF: init empty pocket `capacity=4`; PUT_ON 93 → `slot_num` 1,
+  `slot=67108864`, `cnt=1`, `actions=16`; leftover bag stack; PUT_OFF back;
+  merge/split 99; swap 93↔99; 9095 into pocket `204`; DROP from pocket `204`;
+  reconnect;
+- CEF: перетащить эликсир 93 на пояс, reconnect, снять в bag; без каста в бою;
+- нет fake OA; нет spell blob; нет 209/патронташа.
+
 ## Architecture checkpoint — план
 
 Containers, reservations и durability schema по-прежнему не спроектированы.
-Следующие inventory checkpoints — `INV-03`/`INV-04`; quest-aware item actions
-— `IUS-01`. Процесс: [ROADMAP.md](../migration/ROADMAP.md) и
+Следующий inventory checkpoint — `INV-04`; quest-aware item actions — `IUS-01`.
+Процесс: [ROADMAP.md](../migration/ROADMAP.md) и
 [PLAYBOOK.md](../migration/PLAYBOOK.md).
 
 ## Acceptance

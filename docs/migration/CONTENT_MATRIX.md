@@ -22,8 +22,9 @@ source document + provenance
 ## Текущая граница правды
 
 Текущая БД содержит только **минимальный playable slice v6**, а не полный
-контент игры или цикла 1–8. Artifact 9095 несёт `priceMinor`/`flags`/`bagStack`;
-второго артикула нет:
+контент игры или цикла 1–8. Artifact 9095 несёт `priceMinor`/`flags`/`bagStack`.
+INV-03 coding публикует `v7` с dump-proven **93** и **99**; медальон 209 и
+патронташ не входят:
 
 - 1 artifact: `9095`;
 - 1 bot: `2`;

@@ -68,7 +68,9 @@ naked skills — отдельными строками `hero_skills`. `hp_time` 
 
 `location_kind` ∈ `bag|pocket|equipment` с CHECK взаимоисключения slot-колонок.
 Частичный unique `(hero_id, equipment_slot) WHERE location_kind = 'equipment'`.
-Отдельных containers/reservations нет.
+INV-03 добавит частичный unique `(hero_id, pocket_position) WHERE location_kind
+= 'pocket'` (`0008_inventory_pocket_position_unique`). Отдельных
+containers/reservations нет.
 
 ### `catalog`
 

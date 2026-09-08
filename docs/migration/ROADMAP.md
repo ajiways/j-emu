@@ -165,14 +165,26 @@
 
 - **ID:** `INV-03`
 - **depends_on:** `INV-02`
-- **Behavior evidence:** legacy `POCKET.md`, `TRAVEL_BAG.md`, `items.ts` and
-  [INVENTORY.md](../modules/INVENTORY.md).
-- **Content set:** pocket types, max counts, slot metadata and compatible
-  artifact actions for the core slice.
-- **Architecture checkpoint / decision:** pending — define pocket slot
-  invariants and public inventory snapshot port for combat.
-- **Acceptance:** merge/split/swap and quick-slot persistence match the client,
-  reject invalid races and survive reconnect/restart.
+- **Behavior evidence:** legacy `POCKET.md` (world layout, not fight cast),
+  `ARCHITECTURE.md` pocket rules, `items.ts` `putOnPocket`/`putOff`,
+  `pocketLayout.ts` and [INVENTORY.md](../modules/INVENTORY.md).
+- **Content set:** bump `playable-slice/v6` → `v7`. Publish dump-proven
+  pocketables **93** (Малый эликсир жизни) and **99** (Малый усиливающий орб)
+  from `_research/from_register/interesting_full.json` +
+  `jgr-emu/docs/CHARACTER_STATS.md`. Starter: both in **bag**, empty pocket
+  (live belt is not copied). Weight 100/10 from `ARCHITECTURE.md` pocket
+  `floor(100/weight)`. No 209, no bandolier, no spell blob.
+- **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
+  no `ARC-INV`. Same `PUT_ON`/`PUT_OFF` OA; pocket is `location_kind=pocket`
+  - unique `(hero_id, pocket_position)`. Combat does not consume a snapshot
+    yet; `listPocket` is a read port for CMB-02. Fight cast/USE/`persSpells`
+    stay `INV-04`/`CMB-02`. Full contract:
+    [INVENTORY.md](../modules/INVENTORY.md).
+- **Acceptance:** bag→empty slot, bag→merge/split, pocket→pocket merge/swap,
+  PUT_OFF to bag, unique slot occupancy, `user|pocket` array + `capacity=4`
+  survive reconnect/restart. Pocket deny is `204` with live Russian `error`.
+  Paperdoll 9095 cannot enter pocket. DROP from pocket remains `204`. CEF:
+  drag elixir 93 onto the belt, reconnect, PUT_OFF. No fight cast.
 - **Status:** `next`
 
 ### INV-04 — Core consumable USE
