@@ -99,6 +99,47 @@ describe("content publication", () => {
     expect(first?.id).toBe(9095);
   });
 
+  it("activates an additive artifact release and rejects changed progression or artifact skills", async () => {
+    const publication = createPostgresContentPublication(database);
+    await publication.seed(playable, playablePath);
+    const changedCurve: ContentBundle = {
+      ...playable,
+      levels: playable.levels.map((level) =>
+        level.level === 2
+          ? {
+              ...level,
+              managedSkills: level.managedSkills.map((skill) =>
+                skill.id === "STR" ? { ...skill, value: skill.value + 1 } : skill,
+              ),
+            }
+          : level,
+      ),
+    };
+    await expect(publication.publish(changedCurve)).rejects.toBeInstanceOf(ContentValidationError);
+    const removedGlove: ContentBundle = {
+      ...playable,
+      artifacts: [],
+    };
+    await expect(publication.publish(removedGlove)).rejects.toBeInstanceOf(ContentValidationError);
+    const changedSkills: ContentBundle = {
+      ...playable,
+      artifacts: playable.artifacts.map((artifact) => ({
+        ...artifact,
+        skills: artifact.skills.map((skill) =>
+          skill.id === "VIT" ? { ...skill, value: skill.value + 1 } : skill,
+        ),
+      })),
+    };
+    await expect(publication.publish(changedSkills)).rejects.toBeInstanceOf(ContentValidationError);
+    const extraArtifact: ContentBundle = {
+      ...playable,
+      artifacts: [...playable.artifacts, { ...playable.artifacts[0]!, id: 9096, title: "Другая" }],
+    };
+    await expect(publication.publish(extraArtifact)).resolves.toMatchObject({
+      checksum: expect.stringMatching(/^[0-9a-f]{64}$/),
+    });
+  });
+
   it("refuses to start without a published revision", async () => {
     const sourceName = testDatabaseName(databaseUrl).replace(/_test$/, "");
     await withIsolatedTestDatabase(`${sourceName}_nopublish_test`, async (isolatedUrl) => {

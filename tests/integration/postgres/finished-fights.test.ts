@@ -10,7 +10,7 @@ import { PostgresFightIdSource } from "../../../src/modules/combat/infrastructur
 import { PostgresFinishedFightStore } from "../../../src/modules/combat/infrastructure/postgres-finished-fight-store.ts";
 import { PostgresHeroRepository } from "../../../src/modules/character/infrastructure/postgres-hero-repository.ts";
 import { PostgresAccountRepository } from "../../../src/modules/identity/infrastructure/postgres-account-repository.ts";
-import { PLAYABLE_HERO_CREATION } from "../../support/hero-fixtures.ts";
+import { playableNewHero } from "../../support/hero-fixtures.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
@@ -179,7 +179,7 @@ describe("finished fight history storage", () => {
     const accounts = new PostgresAccountRepository(database);
     const heroes = new PostgresHeroRepository(database);
     const account = await accounts.create(`hist-${slug}`, `Hist-${slug}`, null);
-    const hero = await heroes.create(account.id, account.nick, PLAYABLE_HERO_CREATION);
+    const hero = await heroes.create(playableNewHero(account.id, account.nick));
     return { account, hero };
   }
 });

@@ -11,9 +11,11 @@ import {
   bots,
   gameWideDocuments,
   levelBoundaries,
+  levelSkillValues,
   skillDefinitions,
 } from "../../../src/modules/catalog/infrastructure/schema.ts";
 import {
+  experienceGrants,
   heroes,
   heroPersonalDetails,
   heroSkills,
@@ -74,7 +76,9 @@ describe("Drizzle migrations", () => {
         "catalog.bots",
         "catalog.game_wide_documents",
         "catalog.level_boundaries",
+        "catalog.level_skill_values",
         "catalog.skill_definitions",
+        "character.experience_grants",
         "character.hero_personal_details",
         "character.hero_skills",
         "character.heroes",
@@ -102,6 +106,7 @@ describe("Drizzle migrations", () => {
       bots,
       skillDefinitions,
       levelBoundaries,
+      levelSkillValues,
       appearancePresets,
       gameWideDocuments,
       areas,
@@ -109,6 +114,7 @@ describe("Drizzle migrations", () => {
       heroes,
       heroPersonalDetails,
       heroSkills,
+      experienceGrants,
       items,
       finishedFights,
       drafts,
@@ -117,7 +123,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(21);
+    ]).toHaveLength(23);
 
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -128,8 +134,9 @@ describe("Drizzle migrations", () => {
       "0002_world_location_scalars",
       "0003_character_bootstrap_state",
       "0004_catalog_artifact_wear_and_equipment_slot",
+      "0005_character_experience_progression",
     ]);
-    expect(await appliedCount()).toBe(5);
+    expect(await appliedCount()).toBe(6);
 
     const singleton = await database
       .session()

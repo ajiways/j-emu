@@ -11,6 +11,9 @@ import type { AppConfig } from "../../../src/app/config.ts";
 import type { PlayableAccountRegistration } from "../../../src/app/playable-account-registration.ts";
 import type { PlayableDevelopmentIdentity } from "../../../src/app/playable-development-identity.ts";
 import type { Catalog } from "../../../src/modules/catalog/ports/catalog.ts";
+import type { CatalogProgression } from "../../../src/modules/catalog/ports/catalog-progression.ts";
+import type { ReleaseArtifacts } from "../../../src/modules/catalog/ports/release-artifacts.ts";
+import type { EquippedModifiers } from "../../../src/modules/character/ports/equipped-modifiers.ts";
 import type { CharacterService } from "../../../src/modules/character/application/character-service.ts";
 import type { CombatPort } from "../../../src/modules/combat/ports/combat-port.ts";
 import type { IdentityService } from "../../../src/modules/identity/application/identity-service.ts";
@@ -21,6 +24,9 @@ import type { UnitOfWork } from "../../../src/shared/kernel/unit-of-work.ts";
 import { PLAYABLE_HERO_CREATION } from "../../support/hero-fixtures.ts";
 
 const database = undefined as unknown as PostgresDatabase;
+const progression = {} as CatalogProgression;
+const equipmentModifiers = {} as EquippedModifiers;
+const releaseArtifacts = {} as ReleaseArtifacts;
 
 describe("module factories", () => {
   it("fails fast when required identity dependencies are missing", () => {
@@ -34,14 +40,18 @@ describe("module factories", () => {
       CharacterModule.create({
         database,
         creationPolicy: PLAYABLE_HERO_CREATION,
+        progression,
+        equipmentModifiers,
       }),
     ).toThrow(/Character module requires a database/);
     expect(() =>
       CharacterModule.create({
         database: {} as PostgresDatabase,
-        creationPolicy: { ...PLAYABLE_HERO_CREATION, hp: 11, maxHp: 10 },
+        creationPolicy: { ...PLAYABLE_HERO_CREATION, exp: 2 },
+        progression,
+        equipmentModifiers,
       }),
-    ).toThrow(/HP policy/);
+    ).toThrow(/EXP must be 1/);
   });
 
   it("fails fast when required inventory dependencies are missing", () => {
@@ -49,10 +59,15 @@ describe("module factories", () => {
       InventoryModule.create({
         database,
         starterItems: [{ artifactId: 1, quantity: 1, location: { kind: "bag" } }],
+        releaseArtifacts,
       }),
     ).toThrow(/Inventory module requires a database/);
     expect(() =>
-      InventoryModule.create({ database: {} as PostgresDatabase, starterItems: [] }),
+      InventoryModule.create({
+        database: {} as PostgresDatabase,
+        starterItems: [],
+        releaseArtifacts,
+      }),
     ).toThrow(/Starter inventory policy is required/);
   });
 
@@ -118,11 +133,14 @@ describe("module factories", () => {
     const characters = CharacterModule.create({
       database: {} as PostgresDatabase,
       creationPolicy: PLAYABLE_HERO_CREATION,
+      progression,
+      equipmentModifiers,
     });
     await expect(characters.close()).resolves.toBeUndefined();
     const inventory = InventoryModule.create({
       database: {} as PostgresDatabase,
       starterItems: [{ artifactId: 1, quantity: 1, location: { kind: "bag" } }],
+      releaseArtifacts,
     });
     await expect(inventory.close()).resolves.toBeUndefined();
   });

@@ -5,7 +5,7 @@ import { PostgresFightIdSource } from "../../../src/modules/combat/infrastructur
 import { PostgresAccountRepository } from "../../../src/modules/identity/infrastructure/postgres-account-repository.ts";
 import { items } from "../../../src/modules/inventory/infrastructure/schema.ts";
 import { PostgresInventoryRepository } from "../../../src/modules/inventory/infrastructure/postgres-inventory-repository.ts";
-import { PLAYABLE_HERO_CREATION } from "../../support/hero-fixtures.ts";
+import { playableNewHero } from "../../support/hero-fixtures.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
@@ -127,7 +127,7 @@ describe("PostgreSQL identifiers", () => {
     const heroes = new PostgresHeroRepository(database);
     const inventory = new PostgresInventoryRepository(database);
     const account = await accounts.create(`id-${slug}`, `Id-${slug}`, null);
-    const hero = await heroes.create(account.id, account.nick, PLAYABLE_HERO_CREATION);
+    const hero = await heroes.create(playableNewHero(account.id, account.nick));
     return { hero, inventory };
   }
 });

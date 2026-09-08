@@ -7,25 +7,18 @@ describe("Hero", () => {
     expect(() =>
       Hero.assertCreationPolicy({
         ...PLAYABLE_HERO_CREATION,
-        hp: 11,
-        maxHp: 10,
+        exp: 0,
       }),
-    ).toThrow(/HP policy/);
+    ).toThrow(/EXP must be 1/);
+    expect(() =>
+      Hero.assertCreationPolicy({
+        ...PLAYABLE_HERO_CREATION,
+        skills: [...PLAYABLE_HERO_CREATION.skills, { id: "VIT", value: 10 }],
+      }),
+    ).toThrow(/managed skill VIT/);
   });
 
-  it("uses every value from the supplied policy", () => {
-    const policy = {
-      ...PLAYABLE_HERO_CREATION,
-      level: 3,
-      hp: 42,
-      maxHp: 50,
-      areaId: "777",
-      moneyMinor: 1234,
-      skills: PLAYABLE_HERO_CREATION.skills.map((skill) =>
-        skill.id === "VIT" ? { ...skill, value: 50 } : skill,
-      ),
-    };
-    Hero.assertCreationPolicy(policy);
+  it("uses every value from the supplied restore record", () => {
     const hero = testHero({
       level: 3,
       hp: 42,
@@ -40,5 +33,16 @@ describe("Hero", () => {
       areaId: hero.areaId,
       moneyMinor: hero.moneyMinor,
     }).toEqual({ level: 3, hp: 42, maxHp: 50, areaId: "777", moneyMinor: 1234 });
+  });
+
+  it("keeps a zero resource at zero when maxima change", () => {
+    const hero = testHero({ hp: 0, maxHp: 10, mp: 0, maxMp: 12 });
+    hero.applyProgression(68, 2, 11, 13);
+    expect(hero.hp).toBe(0);
+    expect(hero.mp).toBe(0);
+    expect(hero.level).toBe(2);
+    expect(hero.exp).toBe(68);
+    expect(hero.maxHp).toBe(11);
+    expect(hero.maxMp).toBe(13);
   });
 });

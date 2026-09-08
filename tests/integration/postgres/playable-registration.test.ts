@@ -3,6 +3,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PlayableAccountRegistration } from "../../../src/app/playable-account-registration.ts";
 import { loadGamePolicy } from "../../../src/app/game-policy.ts";
 import { PostgresDatabase } from "../../../src/infrastructure/postgres/database.ts";
+import { publishDevelopmentContent } from "../../../src/infrastructure/postgres/publish-development-content.ts";
+import { CatalogModule } from "../../../src/modules/catalog/catalog-module.ts";
 import { CharacterModule } from "../../../src/modules/character/character-module.ts";
 import { DuplicateAccountError } from "../../../src/modules/identity/domain/duplicate-account-error.ts";
 import { IdentityModule } from "../../../src/modules/identity/identity-module.ts";
@@ -20,16 +22,24 @@ describe("playable account registration", () => {
   let inventory: InventoryModule;
   let registration: PlayableAccountRegistration;
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    await publishDevelopmentContent(
+      databaseUrl,
+      path.resolve(process.cwd(), "content/playable-slice.json"),
+    );
     database = new PostgresDatabase(databaseUrl);
     identity = IdentityModule.create({ database });
-    characters = CharacterModule.create({
-      database,
-      creationPolicy: policy.heroCreation,
-    });
+    const catalog = await CatalogModule.create({ database });
     inventory = InventoryModule.create({
       database,
       starterItems: policy.starterItems,
+      releaseArtifacts: catalog.releaseArtifacts,
+    });
+    characters = CharacterModule.create({
+      database,
+      creationPolicy: policy.heroCreation,
+      progression: catalog.progression,
+      equipmentModifiers: inventory.service,
     });
     registration = new PlayableAccountRegistration(
       identity.service,
@@ -56,6 +66,7 @@ describe("playable account registration", () => {
 
     const hero = await characters.service.getByAccountId(authenticated.account.id);
     if (!hero) throw new Error("Registered account has no hero");
+    expect(hero).toMatchObject({ level: 1, exp: 1, hp: 10, maxHp: 10, mp: 12, maxMp: 12 });
     const items = await inventory.service.list(hero.id);
     expect(items).toHaveLength(policy.starterItems.length);
 
