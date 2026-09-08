@@ -56,11 +56,11 @@
 - После завершения боя сохраняется только совместимая со старым
   `finished_fights` history row. Retention — 72 часа; cleanup выполняется
   отдельными batches вне finish/read request path. Источник контракта и
-  допустимая нормализация: ADR-0015.
+  допустимая нормализация: ADR-0020.
 - Все runtime ID выдаёт PostgreSQL через identity/sequence/default. Запрещены
   process counters, `max + 1`, ручное смещение ID и генерация persisted ID в
   domain/application.
-- Канон ID: `jgr-emu/docs/ID_RANGES.md`, ADR-0016 и
+- Канон ID: `jgr-emu/docs/ID_RANGES.md`, ADR-0018 и
   `docs/architecture/ID_POLICY.md`. Не копировать исторические floors из старого
   кода.
 - Persistent identity начинается с `1`. Исключение: `items.id` экземпляра
@@ -79,8 +79,12 @@
 
 ## Контент
 
-- `jgr-emu`, `_research`, dumps и fixtures — только read-only evidence/import
-  corpus. Код старого runtime не переносится.
+- `jgr-emu` — read-only поведенческий baseline цикла 1–8. Переносить рабочие
+  сценарии целиком, но переписывать их через архитектуру `j-emu`; old runtime
+  не становится dependency и его module/DB/fallback design не копируется.
+- Request-by-request research нужен только при конфликте evidence, неизвестном
+  wire, регрессе или старой пометке stub/bug.
+- `_research`, dumps и fixtures — read-only evidence/import corpus.
 - Editor и importer работают с versioned drafts в PostgreSQL. Publish создаёт
   immutable release и атомарно активирует runtime projection.
 - SQLite, файловый dual-write и runtime-чтение fixtures запрещены.
@@ -99,6 +103,22 @@
   вместе только для одного небольшого контракта.
 - Handwritten production-файл пересматривается при 250 строках и не может
   превышать 400 строк. Исключения: generated codec и миграции.
+
+## Перенос capability из jgr-emu
+
+1. Выбрать рабочую строку legacy `docs/CAPABILITIES.md` в текущем срезе
+   `j-emu/docs/migration/ROADMAP.md`.
+2. Прочитать связанный old flow целиком: routes, rules, persistence, wire,
+   документацию и content inputs.
+3. Зафиксировать адаптированный контракт в `j-emu/docs/modules/`.
+4. Переписать vertical path через public ports, typed DTO, Drizzle и static
+   registry; не переносить old module/DB/fallback design.
+5. Проверить raw-AMF E2E, persistence/reconnect и реальный client scenario.
+6. Обновить статус только в `j-emu/docs/CAPABILITIES.md`.
+
+Не разбирать заново каждый запрос работающего legacy-сценария. Точечный
+research выполняется при конфликте evidence, неизвестном wire, регрессе или
+старой пометке stub/bug.
 
 ## Тестирование
 

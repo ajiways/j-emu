@@ -1,6 +1,6 @@
 # ADR-0011: Публикация контента через PostgreSQL
 
-- Status: Accepted
+- Status: Superseded by [ADR-0018](ADR-0018-postgres-content-and-identifiers.md)
 - Date: 2026-09-07
 - Supersedes: [ADR-0005](ADR-0005-content-storage.md)
 

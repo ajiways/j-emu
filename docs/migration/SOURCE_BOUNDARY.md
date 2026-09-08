@@ -1,23 +1,46 @@
-# Граница источников миграции контента
+# Граница переноса из jgr-emu
 
 ## Нормативная граница
 
-`jgr-emu`, `_research`, live/CEF dumps и старые fixtures — read-only корпус доказательств и вход для контролируемого импорта. Они помогают восстановить данные и подтвердить wire-семантику, но не являются компонентами нового runtime.
+`jgr-emu` — рабочий поведенческий baseline для цикла персонажа 1–8.
+Подтверждённые в старом клиенте сценарии переносятся целиком, но реализуются
+заново через модули, typed DTO и PostgreSQL-модель `j-emu`.
+
+`jgr-emu`, `_research`, live/CEF dumps и старые fixtures остаются read-only
+корпусом. Новый runtime не зависит от них после импорта и публикации контента.
 
 Запрещено:
 
-- портировать старый runtime-код как реализацию нового домена;
+- копировать старую структуру модулей, handlers, DB-модель или process state как
+  архитектуру нового runtime;
 - импортировать пакеты, handlers, seed-функции или DB-модели из `jgr-emu`;
 - читать старые JSON, AMF, `.bin`, дампы или `_research` во время игрового запроса;
-- считать старый runtime более сильным доказательством, чем воспроизводимый live dump или клиентский parser;
 - исправлять старый корпус из нового редактора;
 - сохранять fallback на fixture при отсутствии строки в PostgreSQL.
 
-После импорта происхождение сохраняется как metadata/digest, но runtime зависит только от активной release в PostgreSQL.
+Разрешено и обязательно:
+
+- читать старый код, документацию и fixtures для восстановления полного
+  сценария, а не одного запроса;
+- переносить подтверждённые wire shapes, порядок side effects, бизнес-правила и
+  authored content;
+- сохранять legacy behavior без повторного research, если оно работает в
+  клиенте, не противоречит более сильному evidence и не помечено старым проектом
+  как stub или известная ошибка;
+- переосмысливать persistence, transactions, module boundaries и API ports под
+  архитектуру `j-emu`.
+
+Request-by-request reverse engineering не является штатным способом миграции.
+Он применяется только при конфликте источников, неизвестном wire, клиентском
+регрессе или явно отмеченной дыре старого runtime.
+
+После импорта provenance сохраняется как metadata/digest, но runtime зависит
+только от активной release в PostgreSQL.
 
 ## Старые входы `jgr-emu`
 
-Ниже перечислены входные группы, которые должны получить явный importer и schema. Перечень задаёт границу миграции, а не разрешение копировать старую реализацию.
+Ниже перечислены входные группы, которые должны получить явный importer и
+schema. Первая волна ограничена данными, необходимыми для цикла 1–8.
 
 - **Pub1 и каталоги:** AMF/бинарные клиентские artifacts, artikuls, изображения и стабильные клиентские идентификаторы.
 - **Предметы и действия:** artifact definitions, `artifact_use.json`, веса/цены и отображаемые поля.
@@ -28,29 +51,34 @@
 - **Квесты:** `quests_curated/*.json`, inventory цепочки, AREA-цели, rewards и scripts.
 - **Магазины и бонусы:** `stores/*.json`, `bonuses.json`.
 - **Заклинания:** `bot_spell_book.json`, `spell_catalog_overlay.json`, `spell_damage.json`.
-- **Профессии:** определения профессий, рецепты, resource nodes, результаты и требования.
-- **Данжи:** `dungeons/*.json`, templates, encounters и ссылки на areas/bots/loot.
-- **Репутация:** `reputation_tracks.json`, `reputation_kills.json`, gates и rewards.
+- **Репутация:** только tracks, gates и rewards, которые требуются квестам 1–8.
 - **Исследовательские материалы:** `_research`, протокольные samples, dumps и извлечённые наблюдения используются для сверки, карантина неизвестных полей и provenance.
 
 Персональные runtime-данные, bot-generated state, сессии, очереди, locks и результаты старых фоновых workers не являются authored-контентом и в этот импорт не входят.
 
+Профессии, данжи, battlegrounds, достижения и полный social/economy переносятся
+только отдельным решением после core 1–8. Clan и встроенные playerbots не
+переносятся.
+
 ## Приоритет доказательств
 
-При конфликте источников используется порядок:
+Для обычного переноса подтверждённое клиентом поведение `jgr-emu` является
+готовой спецификацией. При конфликте используется порядок:
 
 1. воспроизводимый live dump;
 2. фактический parser/поведение клиента;
-3. binary fixture с известным происхождением;
-4. согласованные независимые дампы;
-5. authored fixture старого `jgr-emu`;
-6. поведение старого runtime;
-7. документация;
-8. гипотеза.
+3. поведение `jgr-emu`, воспроизведённое в клиенте;
+4. binary fixture с известным происхождением;
+5. согласованные независимые дампы;
+6. authored fixture и тематическая документация `jgr-emu`;
+7. гипотеза.
 
-Конфликт не разрешается молча. Importer записывает validation error с обоими
-источниками и отклоняет весь candidate release. Отдельная «карантинная» запись
-не считается успешно импортированным draft.
+Формулы, помеченные в старом проекте как invented/empirical, можно перенести как
+`legacy behavior`, но нельзя называть live parity. Stub `status:100` не
+переносится: неподдержанная операция отвечает документированным `203`.
+
+Конфликт не разрешается молча. Для контента importer записывает validation
+error с обоими источниками и отклоняет весь candidate release.
 
 ## Граф переноса
 
@@ -67,14 +95,11 @@ dialogs ──┐
           ├──→ quests
 NPC ──────┘
 
-areas ────┬──→ professions
-          ├──→ world spawns/routes
-          └──→ stores
+areas ────┬──→ world spawns/routes
+          └──→ stores required by quests
 
 spell book ─┬──→ spell definitions
 spell damage┘
-
-areas + bots + loot ──→ dungeons
 
 reputation tracks ──→ reputation kills/gates/rewards ──→ quests
 ```
@@ -84,8 +109,9 @@ reputation tracks ──→ reputation kills/gates/rewards ──→ quests
 - item artifacts и bestiary из Pub1 импортируются независимо; item/bot
   definitions существуют до проверки loot;
 - dialogs и NPC существуют до quests;
-- areas существуют до professions, world и stores;
-- spell book, spell damage, dungeons и reputation tracks публикуются как обычные versioned данные;
+- areas существуют до world и требуемых квестами stores;
+- spell book, spell damage и требуемые reputation tracks публикуются как
+  обычные versioned данные;
 - ни один runtime-модуль не дочитывает отсутствующий тип из fixtures.
 
 ## Правила одного importer
@@ -102,15 +128,15 @@ Importer конкретного типа:
 
 Если одна строка файла невалидна, не импортируется весь candidate source set. Допустим отдельный исправленный draft с новой версией; недопустим «успешный импорт 99 из 100».
 
-## Этапы вывода старых источников
+## Цикл переноса capability
 
-1. Зафиксировать corpus, provenance и digest без изменения оригиналов.
-2. Создать import profile с точным перечнем файлов и ожидаемых типов.
-3. Импортировать versioned drafts в пустой PostgreSQL.
-4. Провести полную schema/reference validation по графу.
-5. Создать immutable bundle, материализовать runtime-таблицы и атомарно активировать release.
-6. Проверить клиентские contract-сценарии против новой release.
-7. Запретить filesystem access к старому corpus в runtime deployment.
-8. Сохранить исходный corpus только как архив доказательств и средство повторяемого bootstrap/research.
+1. Выбрать строку из legacy `CAPABILITIES.md` внутри текущего среза.
+2. Собрать связанные old routes, domain rules, docs и content inputs.
+3. Зафиксировать адаптированный контракт в модульном документе `j-emu`.
+4. Реализовать сценарий заново через public ports и static command registry.
+5. Импортировать authored data через drafts → release → publication.
+6. Проверить raw-AMF E2E, persistence/reconnect и один сценарий в клиенте.
+7. Обновить только `j-emu/docs/CAPABILITIES.md`.
 
-Завершение миграции типа означает, что его активные runtime-таблицы полностью строятся из release bundle, а удаление доступа к `jgr-emu`, `_research`, dumps и fixtures не меняет поведение запущенного сервера.
+Capability перенесена, когда runtime работает без доступа к старому corpus, а
+удаление этого доступа не меняет поведение.

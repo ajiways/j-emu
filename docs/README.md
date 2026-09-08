@@ -1,53 +1,53 @@
 # Документация j-emu
 
-## С чего начинать
+## Начать работу
 
-1. [Дорожная карта миграции](migration/ROADMAP.md)
-2. [План foundation-рефакторинга](refactoring/FOUNDATION_REFACTOR.md)
-3. [Границы модулей](architecture/MODULES.md)
-4. [Правила зависимостей](architecture/DEPENDENCY_RULES.md)
-5. [Инварианты wire-протокола](migration/WIRE_INVARIANTS.md)
+1. [Запуск сервера и клиента](RUN.md)
+2. [Что уже работает](CAPABILITIES.md)
+3. [Текущий порядок переноса](migration/ROADMAP.md)
+4. [Источники jgr-emu по срезам](migration/EVIDENCE_INDEX.md)
 
-## Архитектура
+## Перенос поведения
 
-- [Persistence и Drizzle](architecture/PERSISTENCE.md)
+- [Граница старого runtime и content corpus](migration/SOURCE_BOUNDARY.md)
+- [Wire-инварианты](migration/WIRE_INVARIANTS.md)
+- [Character/bootstrap](modules/CHARACTER.md)
+- [Inventory](modules/INVENTORY.md)
+- [World/hunt](modules/WORLD.md)
+- [Combat](modules/COMBAT.md)
+- [Quests/NPC](modules/QUESTS.md)
+
+`jgr-emu` — поведенческий baseline цикла 1–8. Его код не является зависимостью
+или архитектурным шаблоном. Повторный research нужен только при конфликте,
+неизвестном wire, регрессе или старой пометке stub/bug.
+
+## Архитектура реализации
+
+- [Модули](architecture/MODULES.md)
+- [Правила зависимостей](architecture/DEPENDENCY_RULES.md)
+- [Команды клиента](architecture/CLIENT_COMMANDS.md)
 - [Модель данных](architecture/DATA_MODEL.md)
-- [Политика идентификаторов](architecture/ID_POLICY.md)
-- [Публикация игрового контента](architecture/CONTENT_PIPELINE.md)
-- [Команды клиента и wire DTO](architecture/CLIENT_COMMANDS.md)
-- [Структура кода и файлов](architecture/CODE_STRUCTURE.md)
-- [Граница старого проекта](migration/SOURCE_BOUNDARY.md)
+- [Persistence и миграции](architecture/PERSISTENCE.md)
+- [ID policy](architecture/ID_POLICY.md)
+- [Content publication](architecture/CONTENT_PIPELINE.md)
+- [Структура кода](architecture/CODE_STRUCTURE.md)
+
+Краткие причины действующих решений: [ADR index](adr/README.md). Старые ADR и
+завершённые планы находятся только в историческом разделе.
 
 ## Проверка
 
 - [E2E-first тестирование](TESTING.md)
-- [ADR index](adr/README.md)
+- [Локальный и client запуск](RUN.md)
 
-## Приоритет документов
+## Единственный источник факта
 
-Подтверждённый live dump и поведение клиента сильнее документации. Затем идут
-wire fixtures, принятые ADR, architecture docs и roadmap. При расхождении код
-приводится к документированному контракту.
+- продуктовый статус — `CAPABILITIES.md`;
+- порядок работ — `migration/ROADMAP.md`;
+- wire — `migration/WIRE_INVARIANTS.md` и соответствующий модульный документ;
+- текущая схема — `architecture/DATA_MODEL.md`;
+- правила разработки агентов — корневой `AGENTS.md`;
+- причины долгоживущих решений — актуальные ADR.
 
-## Локальный запуск
-
-`.env` читается из каталога `package.json`, а не из `cwd` и не из `dist/`.
-`npm run build` пишет `dist/main.js`.
-
-```text
-cp .env.example .env
-npm run build
-npm start
-```
-
-`npm run dev`, `db:migrate` и `db:publish:development` загружают тот же файл.
-
-## Требования к документации
-
-- Обновлять вместе с изменением контракта, конфигурации или процедуры.
-- Хранить один канонический источник каждого факта и ссылаться на него.
-- Отделять реализованное поведение от планов.
-- Оставлять только сведения, необходимые для решения, реализации или проверки.
-- Удалять устаревшее описание вместо накопления противоречивых версий.
-
-Документ без конкретного читателя и проверяемой пользы не создаётся.
+Документ обновляется вместе с поведением, которое он описывает. Future behavior
+помечается явно; завершённый план не остаётся в основном маршруте чтения.

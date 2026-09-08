@@ -4,7 +4,7 @@
 
 Поведение клиента проверяется E2E-first: реальные Fastify routes, raw AMF и
 изолированный PostgreSQL. Подробное решение — в
-[`ADR-0012`](adr/ADR-0012-e2e-first-testing.md).
+[`ADR-0019`](adr/ADR-0019-wire-dispatch-and-acceptance.md).
 
 Тестовые уровни не обозначают каталоги ради каталогов. У каждого уровня узкая
 задача:
@@ -134,7 +134,7 @@ Integration-тест всегда использует PostgreSQL и реаль�
 - commit/rollback и вложенного Unit of Work;
 - optimistic/pessimistic locking, race и idempotency;
 - migrations: clean install полной схемы, повторный migrate как no-op,
-  checksum применённого SQL, identity/sequences по ADR-0016;
+  checksum применённого SQL, identity/sequences по ADR-0018;
 - content validation, staging, atomic publication и отказ без partial revision.
 - finished fight history: idempotent insert, area/account query и bounded
   cleanup записей старше 72 часов.

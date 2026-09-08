@@ -1,6 +1,6 @@
 # ADR-0010: Drizzle как стандарт persistence
 
-- Статус: Accepted
+- Статус: Superseded by [ADR-0018](ADR-0018-postgres-content-and-identifiers.md)
 - Дата: 2026-09-07
 
 ## Контекст

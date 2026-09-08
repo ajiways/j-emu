@@ -1,6 +1,6 @@
 # ADR-0016: Распределение ID по подтверждённому клиентскому контракту
 
-- Статус: Accepted
+- Статус: Superseded by [ADR-0018](ADR-0018-postgres-content-and-identifiers.md)
 - Дата: 2026-09-07
 - Заменяет: [ADR-0013](ADR-0013-database-generated-identifiers.md)
 

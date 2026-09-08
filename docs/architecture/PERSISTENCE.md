@@ -42,7 +42,7 @@ pre-baseline init `foundation_init`: одна миграция на весь pla
 Одна миграция содержит одно когезионное изменение либо минимальный набор,
 который нельзя применить раздельно из-за FK.
 
-Текущая схема — `drizzle/0000_foundation_init.sql` (ADR-0016 identity и
+Текущая схема — `drizzle/0000_foundation_init.sql` (ADR-0018 identity и
 sequences, `finished_fights`, content publication). Snapshot и journal
 перегенерированы из schema files. В SQL после generate добавлен только
 `INSERT` singleton-строки `content.active_release`: kit не умеет выразить
@@ -89,4 +89,5 @@ Raw SQL — исключение, а не второй способ persistence.
 - Production composition не может подключить test fake вместо Postgres
   repository.
 
-Основное решение: [ADR-0010](../adr/ADR-0010-drizzle-persistence.md).
+Основное решение:
+[ADR-0018](../adr/ADR-0018-postgres-content-and-identifiers.md).

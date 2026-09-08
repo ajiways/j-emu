@@ -1,6 +1,6 @@
 # ADR-0015: Активный бой в памяти, в PostgreSQL только завершённая история
 
-- Статус: Accepted
+- Статус: Superseded by [ADR-0020](ADR-0020-ephemeral-combat.md)
 - Дата: 2026-09-07
 - Заменяет: [ADR-0006](ADR-0006-combat-runtime-seam.md)
 

@@ -108,4 +108,4 @@ Runtime-сущности, созданные по authored content, получа
 fallback и повтор с вычисленным ID запрещены.
 
 Основное решение:
-[ADR-0016](../adr/ADR-0016-live-derived-id-allocation.md).
+[ADR-0018](../adr/ADR-0018-postgres-content-and-identifiers.md).

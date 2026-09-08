@@ -1,6 +1,6 @@
 # ADR-0012: E2E-first стратегия тестирования
 
-- Статус: Accepted
+- Статус: Superseded by [ADR-0019](ADR-0019-wire-dispatch-and-acceptance.md)
 - Дата: 2026-09-07
 - Заменяет: [ADR-0007](ADR-0007-testing-strategy.md)
 

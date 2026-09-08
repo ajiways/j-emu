@@ -1,6 +1,6 @@
 # ADR-0004: Domain events and transactional outbox
 
-- Status: Accepted
+- Status: Superseded by [ADR-0017](ADR-0017-runtime-boundaries-and-fail-fast.md)
 - Date: 2026-09-07
 
 ## Context

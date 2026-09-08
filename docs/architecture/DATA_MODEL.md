@@ -112,7 +112,7 @@ History не является source of truth для rewards, quests, HP или 
 terminal combat packets (явная best-effort policy). Retention 72 часа;
 cleanup — single-flight bounded batches по индексу `finished_at`, не на
 finish/read request path. Полный контракт:
-[ADR-0015](../adr/ADR-0015-ephemeral-combat-and-finished-history.md).
+[ADR-0020](../adr/ADR-0020-ephemeral-combat.md).
 
 ### `content`
 

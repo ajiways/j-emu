@@ -169,7 +169,7 @@ Persistent ID выдаёт PostgreSQL identity/sequence с `1`. Крупные l
 Map hunt ID равен `area × 100 + index`; dungeon hunt ID уникален в том же
 `common|hunt`. BG и dungeon instance copies различаются типом, а не диапазоном.
 Полный канон: [`docs/ID_RANGES.md`](../../../jgr-emu/docs/ID_RANGES.md) и
-[ADR-0016](../adr/ADR-0016-live-derived-id-allocation.md).
+[ADR-0018](../adr/ADR-0018-postgres-content-and-identifiers.md).
 
 ### Bag shape
 

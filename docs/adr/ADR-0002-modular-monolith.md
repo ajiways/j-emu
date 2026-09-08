@@ -1,6 +1,6 @@
 # ADR-0002: Modular monolith boundaries
 
-- Status: Accepted
+- Status: Superseded by [ADR-0017](ADR-0017-runtime-boundaries-and-fail-fast.md)
 - Date: 2026-09-07
 
 ## Context

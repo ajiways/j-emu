@@ -1,5 +1,11 @@
 # Модули
 
+Документ описывает ownership target. Реализованы `identity`, `character`,
+`inventory`, `catalog`, `world`, `combat`, `content` и `jugger-wire`, но их
+полный target API ещё не перенесён. `quests`, `social`, `economy`,
+`professions` и `instances` ниже являются планом, а не возможностями runtime.
+Фактический статус находится в [CAPABILITIES.md](../CAPABILITIES.md).
+
 ## Базовая форма
 
 Система начинается как модульный монолит. Каждый модуль имеет:
@@ -87,9 +93,9 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 **Шов извлечения:** единственный вход — transport-neutral commands; единственный
 выход — packets, terminal result и `CombatView`. Active state при restart не
 восстанавливается. Формат history берётся из старого эмулятора; решение —
-[ADR-0015](../adr/ADR-0015-ephemeral-combat-and-finished-history.md).
+[ADR-0020](../adr/ADR-0020-ephemeral-combat.md).
 
-### `quests`
+### `quests` — план
 
 **Владеет:** опубликованными определениями квестов/диалогов, прогрессом персонажа, целями и квестовыми фактами. Ссылается на catalog/world ID, но не владеет ими.
 
@@ -99,7 +105,7 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 
 **Шов извлечения:** входные `QuestSignal` создаются адаптерами событий combat/world/inventory. Награда исполняется saga через публичные API character/inventory/economy.
 
-### `social`
+### `social` — после core
 
 **Владеет:** друзьями/игнором, группами, приглашениями, каналами и сообщениями, mailbox как социальной доставкой. Вложения письма — reservation/reference, не JSON-копия предмета.
 
@@ -109,7 +115,7 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 
 **Шов извлечения:** realtime gateway подписан на события; chat/presence можно вынести отдельно без доступа к таблицам character/world.
 
-### `economy`
+### `economy` — после core
 
 **Владеет:** кошельками, неизменяемым ledger, торговыми предложениями, ставками, магазинами и денежными резервами. Названия валют доменные (`gold_coin`, `diamond`), live-поля преобразует wire.
 
@@ -119,7 +125,7 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 
 **Шов извлечения:** settlement — saga с inventory reservations и идемпотентными ключами. Аналитика рынка строит проекцию событий, не расширяет transactional schema.
 
-### `professions`
+### `professions` — отложено
 
 **Владеет:** изученными профессиями/рецептами, помощниками, работами на ресурсных узлах, мастерством и cooldown.
 
@@ -129,7 +135,7 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 
 **Шов извлечения:** каталог рецептов и узлов читается через catalog/world ports; ингредиенты и результат проходят атомарную orchestration с inventory.
 
-### `instances`
+### `instances` — отложено
 
 **Владеет:** копиями подземелий/BG, membership, checkpoint, bind, lifecycle и итоговой историей инстанса. Не владеет party и combat.
 

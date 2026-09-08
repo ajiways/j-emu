@@ -77,7 +77,7 @@ repositories, in-memory ID sources и passthrough Unit of Work запрещен�
 выбирает fake по config/env.
 
 Process memory разрешена для явно описанного ephemeral transport state и hot
-state активного боя по ADR-0015. Для каждого такого объекта документируются:
+state активного боя по ADR-0020. Для каждого такого объекта документируются:
 
 - почему потеря при restart безопасна;
 - существует ли persisted source of truth;
