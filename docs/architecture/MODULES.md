@@ -11,7 +11,9 @@
 Текущий проверенный срез после готовых bootstrap и equipment
 `PUT_ON`/`PUT_OFF` capabilities:
 
-- `character` хранит hero scalars, personal details и naked `hero_skills`;
+- `character` хранит hero scalars, personal details, naked `hero_skills`,
+  `hp_time` и `regen_at`; internal ports `grantExperience`, `syncResources` и
+  `noteHp` пишут этот state;
 - `inventory` хранит bag/pocket/equipment instances и выполняет подтверждённые
   `PUT_ON`/`PUT_OFF`;
 - `catalog` и `world` читают artifacts, skills, levels, appearance,

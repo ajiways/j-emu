@@ -36,8 +36,8 @@ source of truth результата.
 
 CHR-02 читает только `ActiveFightQuery.isHeroInActiveFight(characterId)` через
 account-keyed `CombatPort.activeFightId`. Combat не пишет `heroes.hp` /
-`hp_time` в этом срезе; `noteHp` появится у character как будущий CMB-03
-input.
+`hp_time` в этом срезе; CMB-03 будет вызывать character `noteHp` на
+settlement.
 
 ## Wire lifecycle
 

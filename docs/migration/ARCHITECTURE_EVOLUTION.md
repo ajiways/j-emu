@@ -4,10 +4,10 @@
 потребовать изменения общей архитектуры. Он не задаёт будущие private classes
 или таблицы и не разрешает refactor заранее.
 
-Текущий проверенный checkpoint — готовые bootstrap, paperdoll PUT_ON/PUT_OFF и
-internal CHR-01 `grantExperience`: persistent state находится в PostgreSQL;
-active content читается через release projections; active combat остаётся в
-RAM. Фактическая схема описана в
+Текущий проверенный checkpoint — готовые bootstrap, paperdoll PUT_ON/PUT_OFF,
+internal CHR-01 `grantExperience` и internal CHR-02 `syncResources`/`noteHp`:
+persistent state находится в PostgreSQL; active content читается через release
+projections; active combat остаётся в RAM. Фактическая схема описана в
 [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение

@@ -7,7 +7,9 @@ Bootstrap закрыт: raw-AMF E2E и реальный CEF smoke-test пока�
 port: EXP/level и managed skills пишутся в PostgreSQL, raw-AMF init/init2
 показывают final boundary после reconnect/restart. Клиентского OA и CEF
 level-up нет до CMB-03/quests, поэтому character progression остаётся
-частичным. CHR-02 (lazy HP regen) ещё не реализован. Honor и ghost/injury не
+частичным. CHR-02 lazy HP regen реализован как internal ports `syncResources` /
+`noteHp`: wounded HP начисляется с `regen_at` на resource reads и мутациях,
+`hp_time` уходит в `user|unitframe`, CEF gate нет до CMB-03. Honor и ghost/injury не
 входят. Equipment-derived VIT/hpMax считаются после PUT_ON; без экипа HUD
 показывает naked L1 (VIT 10). Точный статус:
 [CAPABILITIES.md](../CAPABILITIES.md).
@@ -324,12 +326,11 @@ Restart теста с fake clock обязан передать тот же clock
 
 ### Persistence
 
-CHR-02 добавляет `character.heroes.regen_at timestamptz NOT NULL`. `hp_time`
-уже есть и остаётся remaining seconds для `user|unitframe`. Creation: полные
-naked HP/MP, `hp_time=0`, `regen_at` = unix-second truncated now. Policy больше
-не хранит startup `hpTime`. Миграция backfill существующих hero: `regen_at` =
-момент migrate (unix-second truncated now). Колонки `updated_at` нет — её не
-выдумывать.
+`character.heroes.regen_at` — `timestamptz NOT NULL`. `hp_time` — remaining
+seconds для `user|unitframe`. Creation: полные naked HP/MP, `hp_time=0`,
+`regen_at` = unix-second truncated now. Policy не хранит startup `hpTime`.
+Миграция `0006` backfill существующих hero: `regen_at` = момент migrate
+(unix-second truncated now). Колонки `updated_at` нет.
 
 ### CHR-02 acceptance
 
@@ -348,6 +349,12 @@ naked HP/MP, `hp_time=0`, `regen_at` = unix-second truncated now. Policy бол�
 
 Первый consumer, который пишет HP с боя (CMB-03), наследует CEF acceptance
 регена.
+
+CHR-02 implementation закрыт как internal enabling capability: production
+client не видит отдельного regen OA, а CEF не подтверждает HP после боя.
+Workflow-статус `done` не повышает character до `готово`. Clock regression на
+init/unitframe мапится в `204` через общий Error path, без отдельного
+ProtocolError.
 
 ## Acceptance
 

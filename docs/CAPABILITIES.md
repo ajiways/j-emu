@@ -49,11 +49,13 @@
 
 Есть persisted naked HP/MP/EXP, skills и appearance, достаточные для HUD после
 bootstrap. Internal `grantExperience` атомарно применяет DATA-01 L1–L8 curve,
-переживает reconnect/restart и не имеет production OA/CEF consumer.
+переживает reconnect/restart и не имеет production OA/CEF consumer. Internal
+`syncResources` / `noteHp` применяют lazy HP regen с `regen_at` и `hp_time`
+без ticker и без CEF gate; `mp_time` остаётся HUD `0`.
 
 Не перенесено:
 
-- regeneration timestamps (CHR-02);
+- CEF confirmation of regen until combat persists HP (CMB-03);
 - ghost/injury/RESURRECT (CMB-04);
 - honor progression;
 - клиентский EXP grant через бой/квест (CMB-03 / quests).

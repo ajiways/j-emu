@@ -13,7 +13,7 @@
   `depends_on`.
 - Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
   `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **CHR-02**.
+- Ровно одна запись имеет статус `next`: **INV-02**.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -131,7 +131,7 @@
   fake clock (same instance across harness restart) are required. No
   per-hero ticker, no invented MP formula, no fake OA, no CEF gate until
   combat persists HP.
-- **Status:** `next`
+- **Status:** `done`
 
 ### INV-02 — Bag rules and DROP
 
@@ -145,7 +145,7 @@
   locking and void-sell transaction ownership.
 - **Acceptance:** DROP/void-sell, stack limits, capacity and concurrent
   mutations neither duplicate nor lose items and keep exact flat wire shapes.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### INV-03 — Pocket mutations and quick access
 
