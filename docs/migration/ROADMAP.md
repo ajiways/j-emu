@@ -125,7 +125,7 @@
 - **Acceptance:** wounded HP regenerates from persisted `regen_at` on
   resource reads and mutations; `hp_time` is remaining seconds from
   `max(1, round(deficit * 250 / HPREG))` while deficit > 0; full HP and
-  active fight yield `hp_time=0` without writing `regen_at`; missing or
+  active fight yield `hp_time=0` without writing `hp_time` or `regen_at`; missing or
   non-positive `HPREG` while wounded and clock regression fail without
   mutation. ATTACK_BOT syncs before `startHunt`. Reconnect/restart and a
   fake clock (same instance across harness restart) are required. No

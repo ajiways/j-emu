@@ -158,6 +158,31 @@ describe("HP regeneration persistence", () => {
     expect(stored?.regenAt.getTime()).toBe(noted.regenAt.getTime());
   });
 
+  it("does not persist hp_time when vitals change during an active fight", async () => {
+    const hero = await createHero();
+    const noted = await characters.service.noteHp({ characterId: hero.id, hp: 1 });
+    await combat.combat.startHunt({
+      accountId: hero.accountId,
+      heroId: hero.id,
+      heroNick: hero.nick,
+      heroLevel: hero.level,
+      heroKind: hero.kind,
+      heroHp: noted.hp,
+      botId: 2,
+      botNick: "Gryzl",
+      botLevel: 1,
+      botHp: 20,
+      arena: "2_1",
+      areaId: "503",
+    });
+    const locked = await characters.service.lockByAccountId(hero.accountId);
+    await characters.service.applyEquipmentVitals(locked, []);
+    const stored = await characters.service.getByAccountId(hero.accountId);
+    expect(stored?.hp).toBe(1);
+    expect(stored?.hpTime).toBe(noted.hpTime);
+    expect(stored?.regenAt.getTime()).toBe(noted.regenAt.getTime());
+  });
+
   async function createHero() {
     const slot = uniqueDevelopmentSlot();
     const account = await identity.service.register(`u${slot}`, `N${slot}`, "secret1");

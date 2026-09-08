@@ -23,7 +23,7 @@ describe("character HP regeneration", () => {
     await harness.stop();
   });
 
-  it("shows noted HP and remaining hp_time on init and unitframe", async () => {
+  it("shows noted HP and remaining hp_time on init, init2 and unitframe", async () => {
     const client = await AuthenticatedClient.login(application);
     const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
     const characterId = heroIdFrom(init);
@@ -32,7 +32,14 @@ describe("character HP regeneration", () => {
 
     const afterNote = await client.objectAction({ object: "common", action: "init", sq: 2 });
     expect(objectBlock(afterNote.state)).toMatchObject({ hp: 1 });
-    const frame = await client.objectAction({ object: "user", action: "unitframe", sq: 3 });
+    const init2 = await client.objectAction({ object: "common", action: "init2", sq: 3 });
+    expect(objectBlock(init2["user|unitframe"])).toMatchObject({
+      hp: 1,
+      hpMax: 10,
+      hp_time: 3,
+      mp_time: 0,
+    });
+    const frame = await client.objectAction({ object: "user", action: "unitframe", sq: 4 });
     expect(objectBlock(frame["user|unitframe"])).toMatchObject({
       hp: 1,
       hpMax: 10,
@@ -93,6 +100,26 @@ describe("character HP regeneration", () => {
     expect(frame.hp).toBeLessThan(frame.hpMax as number);
     expect(frame.hp_time).toBeGreaterThan(0);
     expect(frame.mp_time).toBe(0);
+  });
+
+  it("returns status 204 when the clock goes before regen_at", async () => {
+    const client = await AuthenticatedClient.login(application);
+    const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
+    const characterId = heroIdFrom(init);
+    await application.characterResources.noteHp({ characterId, hp: 1 });
+    clock.rewindSeconds(1);
+    const regression = {
+      status: 204,
+      error: "Clock regression: unix second 1699999999 is before regen_at 1700000000",
+    };
+    expect(await client.objectAction({ object: "common", action: "init", sq: 6 })).toEqual({
+      "common|init": regression,
+      sq: 6,
+    });
+    expect(await client.objectAction({ object: "user", action: "unitframe", sq: 7 })).toEqual({
+      "user|unitframe": regression,
+      sq: 7,
+    });
   });
 });
 

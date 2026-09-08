@@ -66,6 +66,15 @@ describe("ResourceService", () => {
     expect(hero.hpTime).toBe(remainingHpSeconds(42, 400, PLAYABLE_REGEN_POLICY.k, hero.id));
     expect(hero.regenAt.getTime()).toBe(START_MS);
   });
+
+  it("does not change hp_time or regen_at when equipment mutates during a fight", async () => {
+    const hero = woundedHero({ hp: 8, maxHp: 50, hpTime: 35, hpreg: 300 });
+    const { service } = resources(hero, { inFight: true, hpreg: 400 });
+    await service.recomputeHpTimeAfterMutation(hero);
+    expect(hero.hp).toBe(8);
+    expect(hero.hpTime).toBe(35);
+    expect(hero.regenAt.getTime()).toBe(START_MS);
+  });
 });
 
 function woundedHero(input: { hp: number; maxHp: number; hpTime: number; hpreg?: number }): Hero {

@@ -85,13 +85,9 @@ export class ResourceService implements CharacterResources {
   }
 
   async recomputeHpTimeAfterMutation(hero: Hero): Promise<void> {
-    const inFight = await this.activeFight.isHeroInActiveFight(hero.id);
+    if (await this.activeFight.isHeroInActiveFight(hero.id)) return;
     const hpreg = await this.hpregFor(hero, hero.maxHp - hero.hp);
     const hpTime = remainingHpSeconds(hero.maxHp - hero.hp, hpreg, this.policy.k, hero.id);
-    if (inFight) {
-      hero.setHpTime(hpTime);
-      return;
-    }
     hero.applyResourceClock(hero.hp, hpTime, truncatedUnixDate(this.clock));
   }
 

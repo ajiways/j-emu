@@ -14,7 +14,16 @@ export class FakeClock implements Clock {
   }
 
   advanceSeconds(seconds: number): void {
-    if (!Number.isFinite(seconds)) throw new Error("FakeClock advance requires a finite number");
+    if (!Number.isFinite(seconds) || seconds < 0) {
+      throw new Error("FakeClock advance requires a non-negative finite number");
+    }
     this.currentMs += seconds * 1000;
+  }
+
+  rewindSeconds(seconds: number): void {
+    if (!Number.isFinite(seconds) || seconds <= 0) {
+      throw new Error("FakeClock rewind requires a positive finite number");
+    }
+    this.currentMs -= seconds * 1000;
   }
 }

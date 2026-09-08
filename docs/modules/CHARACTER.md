@@ -295,8 +295,9 @@ authority.
 не OA). Идемпотентный replay `grantExperience` всё равно вызывает
 `syncResources` после lock: duplicate grant — не no-op для регена.
 
-`inActiveFight=true`: HP и `regen_at` не меняются и не персистятся; для wire
-`hp_time=0` overlay. Нельзя сдвигать `regen_at` в бою. Следствие: после выхода
+`inActiveFight=true`: HP, `hp_time` и `regen_at` не меняются и не персистятся;
+для wire `hp_time=0` overlay. PUT_ON/grant в бою могут записать maxima, но
+`recomputeHpTimeAfterMutation` не трогает часы регена. Следствие: после выхода
 из боя следующий `syncResources` начислит elapsed, включая длительность боя,
 пока CMB-03 не сделает `noteHp` и не сбросит часы. Это legacy persist, не баг
 CHR-02.
@@ -338,13 +339,16 @@ seconds для `user|unitframe`. Creation: полные naked HP/MP, `hp_time=0`
   `hp_time` floor 1 при deficit 1 / HPREG 700, full HP, leftover `hp_time` at
   full, in-fight pause without `regen_at` write, sub-HP elapsed does not move
   `regen_at`, clock regression, missing HPREG while wounded, HPREG gear
-  change updates `hp_time` without instant full heal;
+  change updates `hp_time` without instant full heal, in-fight equipment
+  mutation leaves `hp_time`/`regen_at` untouched;
 - integration: persist `regen_at`, backfill, reconnect/restart, concurrent
   sync, rollback, grant replay still syncs, equip after wound, active fight
-  via account-keyed `ActiveFightQuery`;
-- raw-AMF: `noteHp` then `init`/`user|unitframe` show `hp`/`hp_time`; fake
-  clock advances; harness restart передаёт тот же clock; `mp_time` остаётся
-  HUD `0`; ATTACK_BOT sync-before-start;
+  via account-keyed `ActiveFightQuery`, in-fight vitals save without regen
+  clock write;
+- raw-AMF: `noteHp` then `init`/`init2`/`user|unitframe` show `hp`/`hp_time`;
+  fake clock advances; harness restart передаёт тот же clock; `mp_time`
+  остаётся HUD `0`; ATTACK_BOT sync-before-start; clock regression on
+  init/unitframe is `204`;
 - нет ticker, нет fake OA, нет CEF gate (бой ещё не персистит HP).
 
 Первый consumer, который пишет HP с боя (CMB-03), наследует CEF acceptance
