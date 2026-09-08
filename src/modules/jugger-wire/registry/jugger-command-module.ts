@@ -3,6 +3,7 @@ import type { CharacterService } from "../../character/application/character-ser
 import type { CombatPort } from "../../combat/ports/combat-port.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import type { WorldService } from "../../world/domain/world-service.ts";
+import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../shared/kernel/unit-of-work.ts";
 import type { BootstrapReadModel } from "../application/bootstrap-read-model.ts";
 import type { HeroSheetReadModel } from "../application/hero-sheet-read-model.ts";
@@ -18,6 +19,8 @@ import { CommonMenuLinkStatusCommand } from "../commands/oa/common-menu-link-sta
 import { EmptyCollectionOaCommand } from "../commands/oa/empty-collection-oa-command.ts";
 import { PutOffCommand } from "../commands/oa/put-off-command.ts";
 import { PutOnCommand } from "../commands/oa/put-on-command.ts";
+import { ComeInCommand } from "../commands/oa/come-in-command.ts";
+import { CommonExitCommand } from "../commands/oa/common-exit-command.ts";
 import { UseArtifactCommand } from "../commands/oa/use-artifact-command.ts";
 import { UserBagCommand } from "../commands/oa/user-bag-command.ts";
 import { UserFlashMessageCommand } from "../commands/oa/user-flash-message-command.ts";
@@ -48,6 +51,7 @@ export class JuggerCommandModule {
     fightWire: FightWireMapper,
     meleeSourceIds: Readonly<{ left: number; center: number; right: number }>,
     unitOfWork: UnitOfWork,
+    clock: Clock,
   ) {
     this.fightWire = fightWire;
     this.oa = new OaCommandRegistry([
@@ -100,6 +104,8 @@ export class JuggerCommandModule {
         combat,
       ),
       new UseArtifactCommand(unitOfWork, bootstrap, characters, inventory, combat),
+      new ComeInCommand(unitOfWork, bootstrap, characters, inventory, world, combat, clock),
+      new CommonExitCommand(unitOfWork, bootstrap, characters, inventory, world, combat, clock),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     this.esrv = EsrvCommandRegistry.create(combat, fightWire);

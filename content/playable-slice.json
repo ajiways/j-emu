@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v8",
+  "schemaVersion": "playable-slice/v9",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -108,6 +108,7 @@
     {
       "id": "503",
       "title": "Горное поселение",
+      "parentId": "",
       "map": "forestvillage.swf",
       "fightBackground": "2_1",
       "regionMap": "radvei_map.swf",
@@ -122,6 +123,114 @@
       "hideFinishedFights": 0,
       "hideRunningFights": 1,
       "noClanChat": 0
+    },
+    {
+      "id": "501",
+      "title": "Ущелье разлуки",
+      "parentId": "",
+      "map": "uschelierazluki.swf",
+      "fightBackground": "2_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 15,
+      "code": "",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 0,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0
+    },
+    {
+      "id": "504",
+      "title": "Деревенская лавка",
+      "parentId": "503",
+      "map": "forestvillage.swf",
+      "fightBackground": "2_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 0,
+      "code": "store",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 0,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0
+    }
+  ],
+  "areaLinks": [
+    {
+      "fromAreaId": "503",
+      "itemId": 5,
+      "toAreaId": "504",
+      "title": "Деревенская лавка",
+      "picture": "images/data/area_links/alt_villadgeshop.jpg?ux=1265882902",
+      "description": "В этой лавке вы можете приобрести товары необходимые каждому начинающему путешественнику и воину.",
+      "flags": 8,
+      "direction": 0,
+      "confirmQuestion": "",
+      "toId": "504",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": { "code": "COME_IN", "area_id": 504 }
+      }
+    },
+    {
+      "fromAreaId": "503",
+      "itemId": 7,
+      "toAreaId": "501",
+      "title": "Ущелье разлуки",
+      "picture": "images/data/area_links/alt_ushelie.jpg?ux=1265823135",
+      "description": "Здесь обитают <b>Заблудший дух [2]</b>, <b>Хисса [2]</b> и <b>Рыжий грызл [3]</b>.\r\n<br>Здесь добываются <b>Хрусталь [1]</b>, <b>Эссенция кислоты [1]</b>.",
+      "flags": 0,
+      "direction": 2,
+      "confirmQuestion": "",
+      "toId": "501",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": { "code": "COME_IN", "area_id": 501 }
+      }
+    },
+    {
+      "fromAreaId": "501",
+      "itemId": 2,
+      "toAreaId": "503",
+      "title": "В Горное поселение",
+      "picture": "images/data/area_links/alt_gornaya_derevnya.jpg?ux=1265823097",
+      "description": "Здесь обитают <b>Грызл [1]</b> и <b>Хисса [2]</b>.",
+      "flags": 0,
+      "direction": 1,
+      "confirmQuestion": "",
+      "toId": "503",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": { "code": "COME_IN", "area_id": 503 }
+      }
+    },
+    {
+      "fromAreaId": "504",
+      "itemId": 0,
+      "toAreaId": "503",
+      "title": "",
+      "picture": "",
+      "description": "",
+      "flags": 0,
+      "direction": 0,
+      "confirmQuestion": "",
+      "toId": "503",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": { "code": "COME_IN", "area_id": 503 }
+      }
     }
   ],
   "huntSpawns": [

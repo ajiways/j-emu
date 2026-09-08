@@ -65,8 +65,8 @@ schema. Первая волна ограничена данными, необх�
 только отдельным решением после core 1–8. Clan и встроенные playerbots не
 переносятся.
 
-Текущая БД `j-emu` содержит минимальный `playable-slice/v8` (artifacts 9095,
-93, 99, 77 с `priceMinor`/`flags`/`bagStack`/`artifact_actions`). DATA-02 импорт корпуса ещё не сделан.
+Текущая БД `j-emu` содержит минимальный `playable-slice/v9` (artifacts 9095,
+93, 99, 77; areas 503/501/504 и travel `area_links`). DATA-02 импорт корпуса ещё не сделан.
 
 ## Приоритет доказательств
 

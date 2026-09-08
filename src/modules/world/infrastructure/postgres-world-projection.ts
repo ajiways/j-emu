@@ -1,7 +1,11 @@
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
-import type { AreaDocument, HuntSpawnDocument } from "../../content/domain/content-document.ts";
+import type {
+  AreaDocument,
+  AreaLinkDocument,
+  HuntSpawnDocument,
+} from "../../content/domain/content-document.ts";
 import type { WorldProjection } from "../ports/world-projection.ts";
-import { areas, huntSpawns } from "./schema.ts";
+import { areaLinks, areas, huntSpawns } from "./schema.ts";
 
 export class PostgresWorldProjection implements WorldProjection {
   constructor(private readonly database: PostgresDatabase) {}
@@ -9,6 +13,7 @@ export class PostgresWorldProjection implements WorldProjection {
   async materialize(
     releaseId: string,
     areaDocuments: readonly AreaDocument[],
+    linkDocuments: readonly AreaLinkDocument[],
     spawnDocuments: readonly HuntSpawnDocument[],
   ): Promise<void> {
     const session = this.database.session();
@@ -18,6 +23,7 @@ export class PostgresWorldProjection implements WorldProjection {
           releaseId,
           id: area.id,
           title: area.title,
+          parentId: area.parentId,
           mapAsset: area.map,
           fightBackground: area.fightBackground,
           regionMap: area.regionMap,
@@ -32,6 +38,21 @@ export class PostgresWorldProjection implements WorldProjection {
           hideFinishedFights: area.hideFinishedFights,
           hideRunningFights: area.hideRunningFights,
           noClanChat: area.noClanChat,
+        })),
+      );
+    }
+    if (linkDocuments.length > 0) {
+      await session.insert(areaLinks).values(
+        linkDocuments.map((link) => ({
+          releaseId,
+          fromAreaId: link.fromAreaId,
+          itemId: link.itemId,
+          toAreaId: link.toAreaId,
+          title: link.title,
+          picture: link.picture,
+          description: link.description,
+          flags: link.flags,
+          direction: link.direction,
         })),
       );
     }

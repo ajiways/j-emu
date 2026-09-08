@@ -2,9 +2,10 @@ import { and, asc, eq } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import type { ActiveContentRevision } from "../../content/ports/active-content-revision.ts";
 import { Area } from "../domain/area.ts";
+import { AreaLink } from "../domain/area-link.ts";
 import { HuntSpawn } from "../domain/hunt-spawn.ts";
 import type { WorldRepository } from "../ports/world-repository.ts";
-import { areas, huntSpawns } from "./schema.ts";
+import { areaLinks, areas, huntSpawns } from "./schema.ts";
 
 export class PostgresWorldRepository implements WorldRepository {
   constructor(
@@ -36,6 +37,7 @@ export class PostgresWorldRepository implements WorldRepository {
       area.regionMap,
       area.ftimeMax,
       area.code,
+      area.parentId,
       area.context,
       area.soundIntro,
       area.soundBg,
@@ -51,4 +53,58 @@ export class PostgresWorldRepository implements WorldRepository {
       ),
     );
   }
+
+  async listLinksFrom(areaId: string): Promise<readonly AreaLink[]> {
+    const releaseId = await this.revision.requireId();
+    const rows = await this.database
+      .session()
+      .select()
+      .from(areaLinks)
+      .where(and(eq(areaLinks.releaseId, releaseId), eq(areaLinks.fromAreaId, areaId)))
+      .orderBy(asc(areaLinks.itemId));
+    return rows.map(linkFromRow);
+  }
+
+  async findLink(fromAreaId: string, toAreaId: string): Promise<AreaLink | null> {
+    const releaseId = await this.revision.requireId();
+    const rows = await this.database
+      .session()
+      .select()
+      .from(areaLinks)
+      .where(
+        and(
+          eq(areaLinks.releaseId, releaseId),
+          eq(areaLinks.fromAreaId, fromAreaId),
+          eq(areaLinks.toAreaId, toAreaId),
+        ),
+      );
+    if (rows.length > 1) {
+      throw new Error(`Multiple area links found for ${fromAreaId} → ${toAreaId}`);
+    }
+    const row = rows[0];
+    if (!row) return null;
+    return linkFromRow(row);
+  }
+}
+
+function linkFromRow(row: {
+  fromAreaId: string;
+  itemId: number;
+  toAreaId: string;
+  title: string;
+  picture: string;
+  description: string;
+  flags: number;
+  direction: number;
+}): AreaLink {
+  return new AreaLink(
+    row.fromAreaId,
+    row.itemId,
+    row.toAreaId,
+    row.title,
+    row.picture,
+    row.description,
+    row.flags,
+    row.direction,
+  );
 }

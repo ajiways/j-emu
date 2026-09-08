@@ -241,6 +241,9 @@
   CEF: shop and gorge from 503 sidebar. No fake OA.
 - **Status:** `next`
 
+  Implementation is on `cap/wld-01-travel`. CEF shop/gorge travel pending.
+  Architecture product close still pending.
+
 ### RTM-01 — Personal and area realtime
 
 - **ID:** `RTM-01`

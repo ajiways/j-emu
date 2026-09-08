@@ -9,6 +9,7 @@ export class Area {
     readonly regionMap: string,
     readonly ftimeMax: number,
     readonly code: string,
+    readonly parentId: string,
     readonly context: string,
     readonly soundIntro: string,
     readonly soundBg: string,

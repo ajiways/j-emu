@@ -42,6 +42,7 @@ export const heroes = characterSchema.table(
     honor: integer("honor").notNull(),
     hpTime: bigint("hp_time", { mode: "bigint" }).notNull(),
     regenAt: timestamp("regen_at", { withTimezone: true, mode: "date" }).notNull(),
+    moveReadyAt: timestamp("move_ready_at", { withTimezone: true, mode: "date" }),
     version: integer("version").notNull(),
   },
   (table) => [

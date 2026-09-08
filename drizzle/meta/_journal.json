@@ -71,6 +71,20 @@
       "when": 1788878464463,
       "tag": "0009_catalog_artifact_actions",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788880781163,
+      "tag": "0010_character_move_ready_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1788880803747,
+      "tag": "0011_world_area_links",
+      "breakpoints": true
     }
   ]
 }

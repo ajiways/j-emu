@@ -16,6 +16,8 @@ export class OaCommandRegistry {
     "common|object:PUT_ON",
     "common|object:SELL",
     "common|object:USE",
+    "common|object:COME_IN",
+    "common|exit",
     "companion|list_user_companions",
     "craft|user_recipes_list",
     "jail|list",

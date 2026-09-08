@@ -76,7 +76,12 @@ export class ContentPublicationService {
       commonConf: validated.commonConf,
       welcomeMessage: validated.welcomeMessage,
     });
-    await this.world.materialize(release.id, validated.areas, validated.huntSpawns);
+    await this.world.materialize(
+      release.id,
+      validated.areas,
+      validated.areaLinks,
+      validated.huntSpawns,
+    );
     await this.store.activate(release.id);
     return release;
   }

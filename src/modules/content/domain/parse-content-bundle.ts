@@ -78,6 +78,7 @@ const areaSchema = z
   .object({
     id: z.string().min(1),
     title: z.string().min(1),
+    parentId: z.string(),
     map: z.string().min(1),
     fightBackground: z.string().min(1),
     regionMap: z.string().min(1),
@@ -92,6 +93,33 @@ const areaSchema = z
     hideFinishedFights: flag,
     hideRunningFights: flag,
     noClanChat: flag,
+  })
+  .strict();
+
+const areaLinkSchema = z
+  .object({
+    fromAreaId: z.string().min(1),
+    itemId: z.number().int().nonnegative(),
+    toAreaId: z.string().min(1),
+    title: z.string(),
+    picture: z.string(),
+    description: z.string(),
+    flags: z.number().int().nonnegative(),
+    direction: z.number().int().nonnegative(),
+    confirmQuestion: z.literal(""),
+    toId: z.string().min(1),
+    href: z
+      .object({
+        object: z.literal("common"),
+        action: z.literal("action"),
+        form: z
+          .object({
+            code: z.literal("COME_IN"),
+            area_id: z.number().int().positive(),
+          })
+          .strict(),
+      })
+      .strict(),
   })
   .strict();
 
@@ -112,6 +140,7 @@ const bundleSchema = z
     artifacts: z.array(artifactSchema),
     bots: z.array(botSchema),
     areas: z.array(areaSchema),
+    areaLinks: z.array(areaLinkSchema),
     huntSpawns: z.array(huntSpawnSchema),
     skills: z.array(skillDocumentSchema).min(1),
     levels: z.array(levelBoundaryDocumentSchema).min(1),

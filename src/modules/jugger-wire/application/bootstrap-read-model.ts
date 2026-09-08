@@ -6,20 +6,15 @@ import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import type { WorldService } from "../../world/domain/world-service.ts";
 import type { CombatPort } from "../../combat/ports/combat-port.ts";
-import type { BotDefinition } from "../../catalog/domain/bot-definition.ts";
 import type { CommonConfBlock } from "../../content/domain/bootstrap-content.ts";
-import {
-  buildLocationAreaConf,
-  huntBotsForArea,
-  type LocationAreaConfBlock,
-} from "./area-conf-block.ts";
 import { emptyBookTrio } from "./book-quest-blocks.ts";
 import { overlayCaptureAreaId, overlayChromeAreaId } from "./chrome-area-overlay.ts";
 import { artifactSkillWireMap } from "./artifact-skill-wire.ts";
 import { buildEquippedArtifact } from "./equipped-artifact-block.ts";
 import { equippedSkillBonuses } from "./equipped-skill-bonuses.ts";
 import { buildHeroState, type HeroStateBlock } from "./hero-state-block.ts";
-import { buildHuntBlock, type HuntBlock } from "./hunt-block.ts";
+import { type HuntBlock } from "./hunt-block.ts";
+import { locationAreaBlocks } from "./location-area-read.ts";
 import { buildMenuLinkStatus } from "./menu-link-status-block.ts";
 import { buildChatConf, type ChatConfPolicy } from "./chat-conf-block.ts";
 import { buildUserBag } from "./user-bag-block.ts";
@@ -31,10 +26,9 @@ import { buildUserUnitframe, type UserUnitframeBlock } from "./user-unitframe-bl
 import { buildUserView, type UserViewBlock } from "./user-view-block.ts";
 import { buildWelcomeMessage } from "./welcome-message-block.ts";
 import { buildUseMutation } from "./use-mutation-block.ts";
+import { buildTravelMutation } from "./travel-mutation-block.ts";
 
 export type { HuntBlock, UserUnitframeBlock, HeroStateBlock };
-
-type StatusOkBlock = Readonly<{ status: 100 }>;
 
 export class BootstrapReadModel {
   constructor(
@@ -60,10 +54,28 @@ export class BootstrapReadModel {
     return buildHeroState(await this.requireHero(accountId), this.clock);
   }
 
+  async travelMutation(
+    accountId: number,
+    kind: "COME_IN" | "exit",
+  ): Promise<Readonly<Record<string, unknown>>> {
+    const chrome = await this.catalog.chrome();
+    return buildTravelMutation({
+      accountId,
+      actionKey: kind === "COME_IN" ? "common|action" : "common|exit",
+      actionBlock: kind === "COME_IN" ? { status: 100, action: "COME_IN" } : { status: 100 },
+      characters: this.characters,
+      catalog: this.catalog,
+      world: this.world,
+      chromePopulation: chrome.block("chat|area_population"),
+      unitframe: await this.unitframe(accountId),
+      skills: await this.skills(accountId),
+      clock: this.clock,
+    });
+  }
+
   async hunt(accountId: number): Promise<HuntBlock> {
     const hero = await this.requireHero(accountId);
-    const area = await this.world.area(hero.areaId);
-    return buildHuntBlock(area.spawns);
+    return (await locationAreaBlocks(this.world, this.catalog, hero, this.clock)).hunt;
   }
 
   async unitframe(accountId: number): Promise<UserUnitframeBlock> {
@@ -113,7 +125,7 @@ export class BootstrapReadModel {
     const hero = await this.requireHero(accountId);
     const level = await this.catalog.level(hero.level);
     return {
-      "common|action": statusOk(),
+      "common|action": { status: 100 },
       "user|bag": await buildUserBag(hero, this.inventory, this.catalog),
       "user|view": await this.view(accountId),
       "user|pocket": await buildUserPocket(
@@ -162,7 +174,7 @@ export class BootstrapReadModel {
     const chrome = await this.catalog.chrome();
     const book = emptyBookTrio("started");
     return {
-      "common|init": statusOk(),
+      "common|init": { status: 100 },
       "common|conf": await this.catalog.commonConf(),
       state: buildHeroState(hero, this.clock),
       "user|bag": await buildUserBag(hero, this.inventory, this.catalog),
@@ -189,20 +201,10 @@ export class BootstrapReadModel {
 
   async init2(accountId: number): Promise<Readonly<Record<string, unknown>>> {
     const hero = await this.requireHero(accountId);
-    const area = await this.world.area(hero.areaId);
-    const bots = new Map<number, BotDefinition>();
-    for (const spawn of area.spawns) {
-      const definition = await this.catalog.bot(spawn.botId);
-      if (!definition) throw new Error(`Bot catalog entry ${spawn.botId} is missing`);
-      bots.set(definition.id, definition);
-    }
+    const location = await locationAreaBlocks(this.world, this.catalog, hero, this.clock);
     const chrome = await this.catalog.chrome();
-    const areaConf: LocationAreaConfBlock = buildLocationAreaConf(
-      area,
-      huntBotsForArea(area.spawns, bots),
-    );
     return {
-      "common|init2": statusOk(),
+      "common|init2": { status: 100 },
       state: buildHeroState(hero, this.clock),
       "user|unitframe": await this.unitframe(accountId),
       "chat|conf": buildChatConf(hero.accountId, this.policy.chat),
@@ -218,8 +220,8 @@ export class BootstrapReadModel {
         hero.areaId,
         "assistant|farm_info",
       ),
-      "common|area_conf": areaConf,
-      "common|hunt": buildHuntBlock(area.spawns),
+      "common|area_conf": location.areaConf,
+      "common|hunt": location.hunt,
       "bank|info": chrome.block("bank|info"),
       "user|smiles": chrome.block("user|smiles"),
       "common|antimat": chrome.block("common|antimat"),
@@ -240,8 +242,4 @@ export class BootstrapReadModel {
     if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
     return hero;
   }
-}
-
-function statusOk(): StatusOkBlock {
-  return { status: 100 };
 }

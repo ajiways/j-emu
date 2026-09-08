@@ -45,6 +45,11 @@ export class ContentValidator {
     );
     collectDuplicateIds(
       issues,
+      "area_link",
+      bundle.areaLinks.map((link) => `${link.fromAreaId}:${link.itemId}`),
+    );
+    collectDuplicateIds(
+      issues,
       "hunt_spawn",
       bundle.huntSpawns.map((spawn) => String(spawn.id)),
     );
@@ -64,6 +69,29 @@ export class ContentValidator {
       bundle.appearances.map((row) => `${row.kind}:${row.gender}`),
     );
     const areaIds = new Set(bundle.areas.map((area) => area.id));
+    for (const area of bundle.areas) {
+      if (area.parentId && !areaIds.has(area.parentId)) {
+        issues.push(`area ${area.id} parent ${area.parentId} is not in the bundle`);
+      }
+    }
+    for (const link of bundle.areaLinks) {
+      if (!areaIds.has(link.fromAreaId)) {
+        issues.push(`area_link ${link.fromAreaId}:${link.itemId} from-area is missing`);
+      }
+      if (!areaIds.has(link.toAreaId)) {
+        issues.push(
+          `area_link ${link.fromAreaId}:${link.itemId} to-area ${link.toAreaId} is missing`,
+        );
+      }
+      if (link.toId !== link.toAreaId) {
+        issues.push(`area_link ${link.fromAreaId}:${link.itemId} toId does not match toAreaId`);
+      }
+      if (link.href.form.area_id !== Number(link.toAreaId)) {
+        issues.push(
+          `area_link ${link.fromAreaId}:${link.itemId} href area_id does not match toAreaId`,
+        );
+      }
+    }
     const botIds = new Set(bundle.bots.map((bot) => bot.id));
     for (const spawn of bundle.huntSpawns) {
       if (!areaIds.has(spawn.areaId)) {
@@ -130,6 +158,9 @@ export class ContentValidator {
       ...bundle.artifacts.map((document) => entry("artifact", String(document.id), document)),
       ...bundle.bots.map((document) => entry("bot", String(document.id), document)),
       ...bundle.areas.map((document) => entry("area", document.id, document)),
+      ...bundle.areaLinks.map((document) =>
+        entry("area_link", `${document.fromAreaId}:${document.itemId}`, document),
+      ),
       ...bundle.huntSpawns.map((document) => entry("hunt_spawn", String(document.id), document)),
       ...bundle.skills.map((document) => entry("skill", document.id, document)),
       ...bundle.levels.map((document) => entry("level", String(document.level), document)),
@@ -159,6 +190,7 @@ export class ContentValidator {
       artifacts: bundle.artifacts,
       bots: bundle.bots,
       areas: bundle.areas,
+      areaLinks: bundle.areaLinks,
       huntSpawns: bundle.huntSpawns,
       skills: bundle.skills,
       levels: bundle.levels,

@@ -1,51 +1,9 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { isProgressionManagedSkillId } from "../../content/domain/progression-managed-skills.ts";
+import { type HeroCreationPolicy, type HeroRecord, type NewHero } from "./hero-record.ts";
 import { nextMoneyMinor } from "./next-money-minor.ts";
 
-type StarterSkill = Readonly<{ id: string; value: number }>;
-
-export type HeroCreationPolicy = Readonly<{
-  exp: number;
-  areaId: string;
-  moneyMinor: number;
-  moneyGoldMinor: number;
-  kind: number;
-  gender: number;
-  language: string;
-  body: string;
-  sk: number;
-  honor: number;
-  tutorialInfo: Readonly<{
-    finished_first_fight: string;
-    tutorial2: string;
-  }>;
-  skills: readonly StarterSkill[];
-}>;
-
-export type HeroRecord = Readonly<{
-  id: number;
-  accountId: number;
-  nick: string;
-  level: number;
-  hp: number;
-  maxHp: number;
-  mp: number;
-  maxMp: number;
-  exp: number;
-  areaId: string;
-  moneyMinor: number;
-  moneyGoldMinor: number;
-  kind: number;
-  gender: number;
-  language: string;
-  body: string;
-  sk: number;
-  honor: number;
-  hpTime: number;
-  regenAt: Date;
-}>;
-
-export type NewHero = Omit<HeroRecord, "id">;
+export type { HeroCreationPolicy, HeroRecord, NewHero };
 
 export class Hero {
   private constructor(
@@ -69,6 +27,7 @@ export class Hero {
     private honorValue: number,
     private hpTimeValue: number,
     private regenAtValue: Date,
+    private moveReadyAtValue: Date | null,
   ) {}
 
   static assertCreationPolicy(policy: HeroCreationPolicy): void {
@@ -125,6 +84,7 @@ export class Hero {
       values.honor,
       values.hpTime,
       values.regenAt,
+      values.moveReadyAt,
     );
   }
 
@@ -178,6 +138,20 @@ export class Hero {
   }
   get regenAt(): Date {
     return this.regenAtValue;
+  }
+  get moveReadyAt(): Date | null {
+    return this.moveReadyAtValue;
+  }
+
+  setArea(areaId: string, moveReadyAt: Date | null): void {
+    if (!areaId) throw new Error("Hero area is required");
+    if (moveReadyAt !== null) {
+      if (!(moveReadyAt instanceof Date) || !Number.isFinite(moveReadyAt.getTime())) {
+        throw new Error("Hero move_ready_at must be a valid timestamp");
+      }
+    }
+    this.areaIdValue = areaId;
+    this.moveReadyAtValue = moveReadyAt;
   }
 
   applyResourceClock(hp: number, hpTime: number, regenAt: Date): void {

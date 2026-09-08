@@ -27,9 +27,12 @@ import type {
   ResourceSnapshot,
   SyncResourcesCommand,
 } from "../ports/character-resources.ts";
+import type { CharacterLocation, SetAreaCommand } from "../ports/character-location.ts";
 import type { ExperienceGrantRepository } from "../ports/experience-grant-repository.ts";
 
-export class CharacterService implements CharacterProgression, CharacterResources, CharacterMoney {
+export class CharacterService
+  implements CharacterProgression, CharacterResources, CharacterMoney, CharacterLocation
+{
   private readonly grants: ExperienceGrantService;
   private readonly resources: ResourceService;
 
@@ -88,6 +91,13 @@ export class CharacterService implements CharacterProgression, CharacterResource
     });
   }
 
+  async setArea(command: SetAreaCommand): Promise<void> {
+    const hero = await this.heroes.lockById(command.characterId);
+    if (!hero) throw new Error(`Hero ${command.characterId} is missing`);
+    hero.setArea(command.areaId, command.moveReadyAt);
+    await this.heroes.save(hero);
+  }
+
   async getOrCreateForAccount(accountId: number, nick: string): Promise<Hero> {
     return this.unitOfWork.run(async () => {
       const existing = await this.heroes.findByAccountId(accountId);
@@ -116,6 +126,7 @@ export class CharacterService implements CharacterProgression, CharacterResource
         honor: this.creationPolicy.honor,
         hpTime: 0,
         regenAt: truncatedUnixDate(this.clock),
+        moveReadyAt: null,
       });
       await this.skills.replace(hero.id, [
         ...levelOne.managedSkills.map((skill) => ({ id: skill.id, value: skill.value })),

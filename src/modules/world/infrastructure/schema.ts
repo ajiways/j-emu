@@ -27,6 +27,7 @@ export const areas = worldSchema.table(
       .references(() => releases.id, { onDelete: "restrict" }),
     id: text("id").notNull(),
     title: text("title").notNull(),
+    parentId: text("parent_id").notNull().default(""),
     mapAsset: text("map_asset").notNull(),
     fightBackground: text("fight_background").notNull(),
     regionMap: text("region_map").notNull(),
@@ -81,5 +82,39 @@ export const huntSpawns = worldSchema.table(
       foreignColumns: [bots.releaseId, bots.id],
     }).onDelete("restrict"),
     index("world_hunt_spawns_area_idx").on(table.releaseId, table.areaId),
+  ],
+);
+
+export const areaLinks = worldSchema.table(
+  "area_links",
+  {
+    releaseId: uuid("release_id")
+      .notNull()
+      .references(() => releases.id, { onDelete: "restrict" }),
+    fromAreaId: text("from_area_id").notNull(),
+    itemId: integer("item_id").notNull(),
+    toAreaId: text("to_area_id").notNull(),
+    title: text("title").notNull(),
+    picture: text("picture").notNull(),
+    description: text("description").notNull(),
+    flags: integer("flags").notNull(),
+    direction: integer("direction").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.releaseId, table.fromAreaId, table.itemId] }),
+    check("area_links_item_id_check", sql`${table.itemId} >= 0`),
+    check("area_links_flags_check", sql`${table.flags} >= 0`),
+    check("area_links_direction_check", sql`${table.direction} >= 0`),
+    foreignKey({
+      name: "area_links_from_area_fk",
+      columns: [table.releaseId, table.fromAreaId],
+      foreignColumns: [areas.releaseId, areas.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "area_links_to_area_fk",
+      columns: [table.releaseId, table.toAreaId],
+      foreignColumns: [areas.releaseId, areas.id],
+    }).onDelete("restrict"),
+    index("world_area_links_from_idx").on(table.releaseId, table.fromAreaId),
   ],
 );

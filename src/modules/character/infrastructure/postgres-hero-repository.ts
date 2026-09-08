@@ -54,6 +54,7 @@ export class PostgresHeroRepository implements HeroRepository {
         honor: values.honor,
         hpTime: BigInt(values.hpTime),
         regenAt: values.regenAt,
+        moveReadyAt: values.moveReadyAt,
         version: 1,
       })
       .returning();
@@ -84,6 +85,7 @@ export class PostgresHeroRepository implements HeroRepository {
         honor: hero.honor,
         hpTime: BigInt(hero.hpTime),
         regenAt: hero.regenAt,
+        moveReadyAt: hero.moveReadyAt,
         version: sql`${heroes.version} + 1`,
       })
       .where(eq(heroes.id, hero.id))
@@ -125,6 +127,7 @@ export class PostgresHeroRepository implements HeroRepository {
       honor: number;
       hpTime: bigint;
       regenAt: Date;
+      moveReadyAt: Date | null;
     }>,
     key: string,
   ): Hero | null {
@@ -157,6 +160,7 @@ function recordFromRow(
     honor: number;
     hpTime: bigint;
     regenAt: Date;
+    moveReadyAt: Date | null;
   },
   key: string,
 ): HeroRecord {
@@ -181,7 +185,13 @@ function recordFromRow(
     honor: row.honor,
     hpTime: safeInteger(row.hpTime, `hpTime for ${key}`),
     regenAt: requireTimestamp(row.regenAt, `regen_at for ${key}`),
+    moveReadyAt: optionalTimestamp(row.moveReadyAt, `move_ready_at for ${key}`),
   };
+}
+
+function optionalTimestamp(value: Date | null, label: string): Date | null {
+  if (value === null) return null;
+  return requireTimestamp(value, label);
 }
 
 function requireTimestamp(value: Date, label: string): Date {

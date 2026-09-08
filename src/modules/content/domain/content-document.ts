@@ -8,8 +8,8 @@ import type {
   WelcomeMessageDocument,
 } from "./bootstrap-content.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v8";
-export const CONTENT_VALIDATOR_VERSION = "8";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v9";
+export const CONTENT_VALIDATOR_VERSION = "9";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;
@@ -66,6 +66,7 @@ export type BotDocument = Readonly<{
 export type AreaDocument = Readonly<{
   id: string;
   title: string;
+  parentId: string;
   map: string;
   fightBackground: string;
   regionMap: string;
@@ -82,6 +83,26 @@ export type AreaDocument = Readonly<{
   noClanChat: number;
 }>;
 
+type AreaLinkHrefDocument = Readonly<{
+  object: "common";
+  action: "action";
+  form: Readonly<{ code: "COME_IN"; area_id: number }>;
+}>;
+
+export type AreaLinkDocument = Readonly<{
+  fromAreaId: string;
+  itemId: number;
+  toAreaId: string;
+  title: string;
+  picture: string;
+  description: string;
+  flags: number;
+  direction: number;
+  confirmQuestion: "";
+  toId: string;
+  href: AreaLinkHrefDocument;
+}>;
+
 export type HuntSpawnDocument = Readonly<{
   id: number;
   areaId: string;
@@ -96,6 +117,7 @@ export type ContentBundle = Readonly<{
   artifacts: readonly ArtifactDocument[];
   bots: readonly BotDocument[];
   areas: readonly AreaDocument[];
+  areaLinks: readonly AreaLinkDocument[];
   huntSpawns: readonly HuntSpawnDocument[];
   skills: readonly SkillDocument[];
   levels: readonly LevelBoundaryDocument[];
@@ -111,6 +133,7 @@ export type ContentEntry = Readonly<{
     | "artifact"
     | "bot"
     | "area"
+    | "area_link"
     | "hunt_spawn"
     | "skill"
     | "level"
@@ -125,6 +148,7 @@ export type ContentEntry = Readonly<{
     | ArtifactDocument
     | BotDocument
     | AreaDocument
+    | AreaLinkDocument
     | HuntSpawnDocument
     | SkillDocument
     | LevelBoundaryDocument
@@ -142,6 +166,7 @@ export type ValidatedContentBundle = Readonly<{
   artifacts: readonly ArtifactDocument[];
   bots: readonly BotDocument[];
   areas: readonly AreaDocument[];
+  areaLinks: readonly AreaLinkDocument[];
   huntSpawns: readonly HuntSpawnDocument[];
   skills: readonly SkillDocument[];
   levels: readonly LevelBoundaryDocument[];

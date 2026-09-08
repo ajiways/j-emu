@@ -1,6 +1,7 @@
 import type { BotDefinition } from "../../catalog/domain/bot-definition.ts";
 import type { Area } from "../../world/domain/area.ts";
 import type { HuntSpawn } from "../../world/domain/hunt-spawn.ts";
+import type { AreaConfItem } from "./area-conf-item-wire.ts";
 
 export type AreaHuntBotLook = Readonly<{
   id: number;
@@ -19,7 +20,7 @@ type LocationAreaConf = Readonly<{
   area_id: string;
   title: string;
   ftime_max: number;
-  items: readonly [];
+  items: readonly AreaConfItem[];
   code: string;
   client_data: "";
   swf: string;
@@ -72,15 +73,20 @@ export function huntBotsForArea(
 export function buildLocationAreaConf(
   area: Area,
   huntBots: Readonly<Record<string, AreaHuntBotLook>>,
+  items: readonly AreaConfItem[],
+  areaFtime: number,
 ): LocationAreaConfBlock {
+  if (!Number.isInteger(areaFtime) || areaFtime < 0) {
+    throw new Error("area_ftime must be a non-negative integer");
+  }
   return {
     status: 100,
-    area_ftime: 0,
+    area_ftime: areaFtime,
     area_conf: {
       area_id: area.id,
       title: area.title,
       ftime_max: area.ftimeMax,
-      items: [],
+      items,
       code: area.code,
       client_data: "",
       swf: area.map,

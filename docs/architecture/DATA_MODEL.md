@@ -28,7 +28,9 @@ Playerbot-таблиц и признаков `is_bot` нет.
 `drizzle/0006_character_hp_regeneration`,
 `drizzle/0007_catalog_artifact_bag_economy`,
 `drizzle/0008_inventory_pocket_position_unique`,
-`drizzle/0009_catalog_artifact_actions`.
+`drizzle/0009_catalog_artifact_actions`,
+`drizzle/0010_character_move_ready_at`,
+`drizzle/0011_world_area_links`.
 Поля ниже совпадают с runtime.
 
 ### `identity`
@@ -43,8 +45,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 - `heroes(id integer GENERATED ALWAYS AS IDENTITY START 1, account_id UNIQUE,
 nick, level, hp, max_hp, mp, max_mp, exp, area_id, money_minor,
-money_gold_minor, kind, gender, language, body, sk, honor, hp_time,
-regen_at timestamptz, version)`.
+money_gold_minor, kind, gender, language, body, sk, honor, hp_time, regen_at timestamptz, move_ready_at timestamptz NULL, version)`.
 - `hero_personal_details(hero_id PK FK → heroes ON DELETE CASCADE, info jsonb, schema_version=1)`.
 - `hero_skills(hero_id FK → heroes ON DELETE CASCADE, skill_id, value)` с PK
   `(hero_id, skill_id)`.
@@ -55,8 +56,8 @@ level_before, level_after, content_release_id, progression_digest, created_at)`
   `grantExperience`, не combat state.
 
 `area_id` — текстовая ссылка на authored area; FK на `world.areas` в этом срезе
-нет. WLD-01 добавляет nullable `move_ready_at timestamptz` (travel lock; NULL =
-можно COME_IN/`exit`) на том же `heroes` row, без `character_locations`. `info` — sparse wire-объект `user|personal_details.info` / form
+нет. `move_ready_at` — travel lock (NULL = можно COME_IN/`exit`) на том же
+`heroes` row, без `character_locations`. `info` — sparse wire-объект `user|personal_details.info` / form
 `user|save_personal_details`. Строка обязательна для каждого героя; её
 отсутствие является ошибкой целостности, а не пустым объектом. Merge пишет
 целиком, без `jsonb_set`. HP/MP/EXP и naked max values хранятся скалярами героя,
@@ -120,21 +121,22 @@ snapshot; policy хранит только EXP 1 и misc skills.
 
 ### `world`
 
-- `areas(release_id, id, title, map_asset, fight_background, region_map,
+- `areas(release_id, id, title, parent_id, map_asset, fight_background, region_map,
 ftime_max, code, context, sound_intro, sound_bg, inst_artikul_id,
 have_trade_channel, have_kind_channel, hide_finished_fights,
 hide_running_fights, no_clan_chat)` PK `(release_id, id)`.
-  `map_asset` — SWF большой карты (`area_conf.swf`). Скалярные поля wire —
-  колонки. `client_data` и `hunt_farm` mapper собирает пустыми. `items` в
-  текущем runtime пустой массив; WLD-01 собирает travel rows из
-  `world.area_links` и добавляет `areas.parent_id`.
+  `parent_id` — пустая строка = нет родителя в slice. `map_asset` — SWF большой карты (`area_conf.swf`). Скалярные поля wire —
+  колонки. `client_data` и `hunt_farm` mapper собирает пустыми. `area_conf.items`
+  собираются из `world.area_links`.
+- `area_links(release_id, from_area_id, item_id, to_area_id, title, picture,
+description, flags, direction)` PK `(release_id, from_area_id, item_id)`;
+  FK from/to `areas` той же release. Не JSONB.
 - `hunt_spawns(release_id, id, area_id, bot_id, position_x, position_y, hunt_mask)`
   PK `(release_id, id)`; FK на `areas` и `catalog.bots` в той же release.
   `id` — authored integer `area × 100 + index` (для Gryzl на 503 — `50310`).
 
 `position_x/y` — authored map coordinates (`double precision`). Presence и
-spawn leases не выделены. Текущая локация героя — `heroes.area_id`. WLD-01
-добавляет typed `world.area_links` (не JSONB `items`).
+spawn leases не выделены. Текущая локация героя — `heroes.area_id`.
 
 ### `combat`
 
@@ -165,7 +167,7 @@ finish/read request path. Полный контракт:
 ### `content`
 
 - `drafts(id, content_type, content_key)` UNIQUE `(content_type, content_key)`;
-  текущий `content_type` ∈ `artifact|bot|area|hunt_spawn|skill|level|appearance|
+  текущий `content_type` ∈ `artifact|bot|area|area_link|hunt_spawn|skill|level|appearance|
 hud_defaults|chrome|common_conf|welcome_message`.
 - `draft_versions(id, draft_id, version, schema_version, document jsonb, created_at)`.
 - `releases(id, version UNIQUE nextval, checksum UNIQUE, schema_version, validator_version, created_at, activated_at)`.

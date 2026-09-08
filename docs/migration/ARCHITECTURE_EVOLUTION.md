@@ -6,8 +6,9 @@
 
 Текущий проверенный checkpoint — готовые bootstrap, paperdoll PUT_ON/PUT_OFF,
 internal CHR-01 `grantExperience`, internal CHR-02 `syncResources`/`noteHp` и
-INV-02 bag DROP/`creditMoney`, INV-03 pocket layout 93/99 и INV-04 world USE
-77 ADD_HP: persistent state находится в PostgreSQL; active content читается
+INV-02 bag DROP/`creditMoney`, INV-03 pocket layout 93/99, INV-04 world USE
+77 ADD_HP и WLD-01 area transitions на `cap/wld-01-travel` (CEF pending,
+workflow still `next`): persistent state находится в PostgreSQL; active content читается
 через release projections; active combat остаётся в RAM. Inventory layout
 mutations in fight are named `FightRules`, not live parity.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).

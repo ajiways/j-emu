@@ -2,9 +2,10 @@
 
 ## Статус
 
-Перенесены published area 503, authored hunt rows и минимальный ATTACK_BOT.
-WLD-01 (COME_IN / `common|exit`) — следующий vertical slice, ещё не в
-runtime. Presence, spawn movement/respawn и hunt locks не перенесены.
+Перенесены published areas 501/503/504, authored hunt rows на 503, travel
+`area_links` и OA COME_IN/`common|exit` (ветка `cap/wld-01-travel`). Product
+«готово» — за CEF и architecture close; ROADMAP пока `next`. Presence, spawn
+movement/respawn и hunt locks не перенесены.
 Точный статус: [CAPABILITIES.md](../CAPABILITIES.md).
 
 ## Источники поведения

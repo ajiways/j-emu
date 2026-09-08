@@ -125,6 +125,7 @@ export class JuggerWireModule {
         fightWire,
         meleeSourceIds,
         unitOfWork,
+        clock,
       );
       const http = await new JuggerHttpServer({
         config,

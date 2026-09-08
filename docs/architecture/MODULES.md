@@ -13,19 +13,21 @@
 
 - `character` хранит hero scalars, personal details, naked `hero_skills`,
   `hp_time` и `regen_at`; internal ports `grantExperience`, `syncResources`,
-  `noteHp` и `creditMoney` пишут этот state; WLD-01 добавит `move_ready_at` и
-  `setArea` на том же aggregate (`area_id` не переезжает в `world`);
+  `noteHp` и `creditMoney` пишут этот state; `move_ready_at` и `setArea`
+  на том же aggregate (`area_id` не переезжает в `world`);
 - `inventory` хранит bag/pocket/equipment instances и выполняет
   `PUT_ON`/`PUT_OFF` (paperdoll и пояс), `drop`, `useFromBag`, `bagLoad` и
   `listPocket`;
 - `catalog` и `world` читают artifacts, skills, levels, appearance,
-  game-wide bootstrap documents, area 503 и hunt rows из active release;
-  WLD-01 публикует 501/504 и `area_links`;
+  game-wide bootstrap documents, areas 503/501/504, travel `area_links` и hunt
+  rows на 503 из active release;
 - equipment-derived skills/vitals считаются из persisted naked skills и
   artifact bonuses; migration `0004` закрепляет wear fields и occupancy slot;
   `0007` — artifact `price_minor`/`flags`/`bag_stack`;
   `0008` — partial unique pocket occupancy;
   `0009` — catalog `artifact_actions`;
+  `0010` — `heroes.move_ready_at`;
+  `0011` — `areas.parent_id` и `world.area_links`;
 - `combat` предоставляет только минимальный hunt lifecycle и finished history;
   `quests`, `social`, `economy`, `professions`, `instances` в runtime нет.
 
