@@ -44,7 +44,7 @@ E2E harness, quality gates и process-local active combat уже заданы.
 Исторический план находится в
 [archive/FOUNDATION_REFACTOR.md](../archive/FOUNDATION_REFACTOR.md).
 
-### 1. Client, auth и bootstrap — в работе
+### 1. Client, auth и bootstrap — готово
 
 Перенос:
 

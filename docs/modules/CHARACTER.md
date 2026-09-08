@@ -2,10 +2,10 @@
 
 ## Статус
 
-Перенесены cold login и reconnect bootstrap: полный flat `common|init` /
-`common|init2`, persisted HP/MP/EXP/appearance/skills и game-wide chrome из
-active content release. Inventory mutations, world transitions, combat
-mechanics и quests в этот срез не входят. Точный статус:
+Bootstrap закрыт: raw-AMF E2E и реальный CEF smoke-test показывают HUD и
+локацию после cold login. Character progression (экип-статы, regen, level-up)
+ещё частичный. Inventory mutations, world transitions, combat mechanics и
+quests в bootstrap-срез не входят. Точный статус:
 [CAPABILITIES.md](../CAPABILITIES.md).
 
 ## Источники поведения
@@ -59,5 +59,5 @@ Registration/dev-slot создаёт hero+skills+tutorial details+starter invent
 - money — строка в `state`, число в `user|conf`; `money_gold` — алмазы;
 - отсутствующий обязательный catalog/hero block не маскируется пустым
   `status:100`;
-- статус **готово** в CAPABILITIES требует подтверждённый сценарий в реальном
-  клиенте.
+- bootstrap **готово** в CAPABILITIES подтверждён CEF HUD/location smoke-test;
+  character progression остаётся частичной.

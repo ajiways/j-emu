@@ -28,9 +28,10 @@
 - root Pub1 client paths;
 - реальный клиент открывает Flash shell и отправляет OA.
 
-## Bootstrap и character — частично
+## Bootstrap — готово
 
-Есть:
+Есть raw-AMF E2E и подтверждённый CEF smoke-test: после cold login экран
+загружается, HUD и локация 503 видны, bootstrap не отдаёт `203/204`.
 
 - numeric account/hero identity;
 - persisted hero, skills, HP/MP/EXP, appearance и personal details;
@@ -42,13 +43,19 @@
 - starter bag/pocket;
 - area 503 и authored hunt rows;
 - persisted tutorial completion flags;
-- cold login, reconnect и process restart bootstrap (raw-AMF E2E).
+- cold login, reconnect и process restart bootstrap.
+
+## Character — частично
+
+Есть persisted naked HP/MP/EXP, skills и appearance, достаточные для HUD после
+bootstrap.
 
 Не перенесено:
 
-- подтверждённый вход до полностью отрисованного HUD/локации в реальном клиенте;
 - regeneration timestamps как живой ticker и ghost/injury state;
-- equipment-derived view/stats (перчатка 9095 остаётся в bag).
+- equipment-derived view/stats (перчатка 9095 остаётся в bag до среза
+  inventory/equipment);
+- level-up, honor progression и recalculation после экипа.
 
 ## Inventory — частично
 
