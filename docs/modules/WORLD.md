@@ -32,6 +32,7 @@ progression ещё не реализованы.
 
 - проверку существующей authored link;
 - travel time и ограничения inventory/fight;
+- overload gate по INV-02 `bagLoad` (`amount > amountMax`; 20/20 ходит);
 - атомарное изменение hero area;
 - согласованные state/area/hunt blocks;
 - reconnect в новой location.

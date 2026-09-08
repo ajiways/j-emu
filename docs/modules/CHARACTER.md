@@ -315,7 +315,16 @@ ATTACK_BOT: `syncResources` при ещё отсутствующем fight (`inF
 `startHunt` проглотил бы pre-fight elapsed вместе с fight wall-clock.
 
 PUT_ON/grant: сначала `syncResources`, потом мутация maxima/HP, потом пересчёт
-`hp_time` как после `noteHp`.
+`hp_time` как после `noteHp`. DROP/SELL так же оборачивают lock +
+`syncResources`, но не пересчитывают equipment vitals.
+
+### INV-02 — creditMoney
+
+Отдельный wallet-модуль не создаётся. Character владеет `money_minor`. Public
+operation `creditMoney({ characterId, minorUnits })`: положительное целое;
+итог в `[0, 2_147_483_647]`; та же hero-row lock и Unit of Work, что DROP.
+Inventory не пишет `heroes`. Wire: строка в `state`, число в `user|conf`.
+Полный DROP-контракт: [INVENTORY.md](INVENTORY.md).
 
 Clock: один экземпляр из composition root в character, identity, combat и
 wire. CharacterModule создаётся после CombatModule (нужен query) и принимает

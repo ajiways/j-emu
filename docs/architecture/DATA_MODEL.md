@@ -24,8 +24,11 @@ Playerbot-таблиц и признаков `is_bot` нет.
 и цепочка `drizzle/0000_foundation_init`, `drizzle/0001_character_add_hero_personal_details`,
 `drizzle/0002_world_location_scalars`, `drizzle/0003_character_bootstrap_state`,
 `drizzle/0004_catalog_artifact_wear_and_equipment_slot`,
-`drizzle/0005_character_experience_progression`.
-Поля ниже совпадают с runtime.
+`drizzle/0005_character_experience_progression`,
+`drizzle/0006_character_hp_regeneration`.
+INV-02 добавит `0007_catalog_artifact_bag_economy` (`price_minor`, `flags`,
+`bag_stack` на `catalog.artifacts`). Поля ниже совпадают с runtime до этой
+миграции.
 
 ### `identity`
 
@@ -74,6 +77,8 @@ Versioned projection активной content release:
 
 - `artifacts(release_id, id, title, picture, type_id, kind_id, slot_mask, weight,
 level_min, level_max, gender, skills jsonb)` PK `(release_id, id)`.
+  INV-02 добавляет обязательные `price_minor` (integer cents ≥ 0), `flags`
+  (integer ≥ 0) и `bag_stack` (integer ≥ 1). `price_minor = 0` валиден.
 - `bots(release_id, id, title, level, max_hp, strength, hunt_nick, hunt_swf,
 hunt_scale, hunt_fps, hunt_speed, hunt_avatar, hunt_kind, hunt_hide_on_map)`
   PK `(release_id, id)`. Hunt look — спрайт на карте (`area_conf.hunt_bots`),

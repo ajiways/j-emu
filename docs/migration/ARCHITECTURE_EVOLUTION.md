@@ -5,9 +5,10 @@
 или таблицы и не разрешает refactor заранее.
 
 Текущий проверенный checkpoint — готовые bootstrap, paperdoll PUT_ON/PUT_OFF,
-internal CHR-01 `grantExperience` и internal CHR-02 `syncResources`/`noteHp`:
-persistent state находится в PostgreSQL; active content читается через release
-projections; active combat остаётся в RAM. Фактическая схема описана в
+internal CHR-01 `grantExperience`, internal CHR-02 `syncResources`/`noteHp` и
+зафиксированный INV-02 contract (ещё не coded): persistent state находится в
+PostgreSQL; active content читается через release projections; active combat
+остаётся в RAM. Фактическая схема описана в
 [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение
@@ -33,7 +34,8 @@ capabilities. После его выполнения продуктовый ст
 ### `ARC-DATA` — от одного bootstrap bundle к corpus manifests
 
 **Сейчас:** один `playable-slice/v5` parser публикует минимальные catalog/world
-rows.
+rows. INV-02 coding bumps the same parser to `v6` and adds artifact
+`priceMinor`/`flags`/`bagStack`; DATA-02 remains the later corpus importer.
 
 **Давление:** DATA-02…DATA-06 требуют нескольких независимых binary/JSON
 decoders, dependency DAG, provenance, exact counts и нескольких projection
@@ -113,6 +115,11 @@ architecture относит wallets/ledger/store/auction к economy, котор�
 
 **Давление:** ECO-01 вводит покупку, затем mail COD, auction и trade требуют
 reservations, ledger и race-safe settlement.
+
+**Решение INV-02:** текущих границ достаточно; отдельный economy-модуль и
+вторая сумма запрещены. Void-sell кредитует `heroes.money_minor` через
+`creditMoney` в той же UoW, что и удаление предмета. Inventory не пишет
+`heroes`.
 
 **Checkpoint:** до ECO-01 выбрать долгоживущего владельца balance. Нельзя
 сначала создать вторую сумму в economy и синхронизировать её с hero dual-write.

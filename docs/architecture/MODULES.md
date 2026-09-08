@@ -13,9 +13,10 @@
 
 - `character` хранит hero scalars, personal details, naked `hero_skills`,
   `hp_time` и `regen_at`; internal ports `grantExperience`, `syncResources` и
-  `noteHp` пишут этот state;
+  `noteHp` пишут этот state; INV-02 добавит `creditMoney` на том же hero
+  aggregate;
 - `inventory` хранит bag/pocket/equipment instances и выполняет подтверждённые
-  `PUT_ON`/`PUT_OFF`;
+  `PUT_ON`/`PUT_OFF`; INV-02 добавит `drop` и `bagLoad`;
 - `catalog` и `world` читают artifacts, skills, levels, appearance,
   game-wide bootstrap documents, area 503 и hunt rows из active release;
 - equipment-derived skills/vitals считаются из persisted naked skills и
@@ -60,7 +61,7 @@
 
 **Владеет:** персонажем, именем и внешностью, уровнем/опытом, базовыми ресурсами, навыками, репутациями, настройками, текущим состоянием жизни. Координата персонажа хранится в `world`.
 
-**API:** `createCharacter`, `getCharacter`, `getCharacterSheet`, `grantExperience`, `syncResources`, `noteHp`, `setAppearance`, `setPreference`, `grantReputation`.
+**API:** `createCharacter`, `getCharacter`, `getCharacterSheet`, `grantExperience`, `syncResources`, `noteHp`, `creditMoney`, `setAppearance`, `setPreference`, `grantReputation`.
 
 **События:** `character.created.v1`, `character.level-changed.v1`, `character.sheet-changed.v1`, `character.defeated.v1`.
 
@@ -70,7 +71,9 @@
 
 **Владеет:** экземплярами предметов, стаками, контейнерами, экипировкой, поясом, прочностью и резервированием предметов.
 
-**API:** `getInventory`, `grantItems`, `consumeItems`, `moveItem`, `equip`, `unequip`, `changeDurability`, `reserveItems`, `commitReservation`, `releaseReservation`.
+**API:** `getInventory`, `grantItems`, `consumeItems`, `moveItem`, `equip`,
+`unequip`, `drop`, `bagLoad`, `changeDurability`, `reserveItems`,
+`commitReservation`, `releaseReservation`.
 
 **События:** `inventory.changed.v1`, `inventory.item-equipped.v1`, `inventory.items-reserved.v1`, `inventory.reservation-released.v1`.
 

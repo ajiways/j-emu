@@ -137,14 +137,27 @@
 
 - **ID:** `INV-02`
 - **depends_on:** `CHR-01`
-- **Behavior evidence:** legacy `TRAVEL_BAG.md`, `items.ts`, `bagSlots.ts` and
+- **Behavior evidence:** legacy `TRAVEL_BAG.md`, `items.ts`, `bagWeight.ts`,
+  `routes/oa/commonObject.ts` and [INVENTORY.md](../modules/INVENTORY.md).
+- **Content set:** bump `playable-slice/v5` → `v6`. Artifact 9095 gains
+  `priceMinor: 0`, `flags: 40`, `bagStack: 1` from live dump
+  `_research/from_register/interesting_full.json`. No second artifact unless
+  dump-proven L1–8 stackable/sellable is found; otherwise stop and replan.
+  Capacity base 20 stays in `GamePolicy`, not a hero column.
+- **Architecture checkpoint / decision:** complete — existing ADRs and
+  `ARC-ECO` are sufficient; no `ARC-INV`. Inventory owns items; character owns
+  `money_minor` and `creditMoney` in the same UoW; catalog supplies
+  price/flags/bagStack from the pinned release. Wire OA is always `code=DROP`
+  (SELL is a registered thin alias). Full contract:
   [INVENTORY.md](../modules/INVENTORY.md).
-- **Content set:** artifact stack, weight, price, flags and bag-capacity fields
-  required by levels 1–8.
-- **Architecture checkpoint / decision:** pending — confirm inventory aggregate,
-  locking and void-sell transaction ownership.
-- **Acceptance:** DROP/void-sell, stack limits, capacity and concurrent
-  mutations neither duplicate nor lose items and keep exact flat wire shapes.
+- **Acceptance:** DROP throw-away of 9095 removes the instance, leaves money
+  `"25.00"`, and returns the flat DROP block set (`common|action`, `user|bag`,
+  `user|skills`, `user|mount_list`, `state`). Bag `amount` counts weighted rows
+  only (`9095` → `amount=0`, `total=1`); `amount_max=20`. Equipped DROP and
+  missing item are `204` with the live Russian `error`. Concurrent DROP neither
+  duplicates nor loses the row. Reconnect/restart and CEF throw-away from bag
+  are required. Overload travel gate stays `WLD-01`. No invented loot IDs, no
+  fake OA besides DROP/SELL.
 - **Status:** `next`
 
 ### INV-03 — Pocket mutations and quick access
@@ -186,9 +199,12 @@
   `areaActions.ts` and [WORLD.md](../modules/WORLD.md).
 - **Content set:** level 1–8 areas, links, travel policy and area sidebar data.
 - **Architecture checkpoint / decision:** pending — confirm world-owned
-  location state and inventory/fight guard ports.
+  location state and inventory/fight guard ports. Overload uses INV-02
+  `bagLoad` (`amount > amountMax`); INV-02 does not implement COME_IN.
 - **Acceptance:** COME_IN/exit validates authored links, applies travel time and
   persists the destination with matching state/area/hunt wire after restart.
+  Overloaded bag (`amount > amount_max`) is `204` with the live Russian error;
+  20/20 still walks.
 - **Status:** `queued`
 
 ### RTM-01 — Personal and area realtime
