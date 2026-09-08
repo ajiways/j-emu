@@ -131,7 +131,7 @@ Orchestration в OA command (как INV-04 USE): fight → bagLoad → world lin
 - `common|area_conf` (dest, `items` = linksFrom dest, `area_ftime` remaining);
 - `common|hunt`;
 - `state`, `user|unitframe`, `user|skills`;
-- `chat|area_population` — тот же chrome empty, что init2.
+- `chat|area_population` — полный roster dest area (RTM-01), не chrome empty.
 
 Не добавлять `common|instance_conf`, farm piggyback, presence announce.
 

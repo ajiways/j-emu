@@ -9,6 +9,7 @@ import { CharacterModule } from "../../../src/modules/character/character-module
 import { DuplicateAccountError } from "../../../src/modules/identity/domain/duplicate-account-error.ts";
 import { IdentityModule } from "../../../src/modules/identity/identity-module.ts";
 import { InventoryModule } from "../../../src/modules/inventory/inventory-module.ts";
+import type { PresenceFanout } from "../../../src/modules/jugger-wire/application/presence-fanout.ts";
 import { uniqueDevelopmentSlot } from "../../support/harness/unique-development-slot.ts";
 import { playableCharacterModuleInput } from "../../support/playable-character-module-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
@@ -50,6 +51,7 @@ describe("playable account registration", () => {
       characters.service,
       inventory.service,
       database,
+      silentPresence(),
     );
   });
 
@@ -82,3 +84,11 @@ describe("playable account registration", () => {
     ).rejects.toBeInstanceOf(DuplicateAccountError);
   });
 });
+
+function silentPresence(): PresenceFanout {
+  return {
+    afterSessionCommitted: async () => {},
+    afterLogout: async () => {},
+    afterMove: async () => {},
+  } as unknown as PresenceFanout;
+}

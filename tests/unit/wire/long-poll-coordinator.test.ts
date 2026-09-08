@@ -21,4 +21,22 @@ describe("LongPollCoordinator", () => {
     coordinator.shutdown();
     await expect(waiting).resolves.toBe("shutdown");
   });
+
+  it("wakes only the named account waiter", async () => {
+    const coordinator = new LongPollCoordinator();
+    const first = coordinator.wait(10_000, new AbortController().signal, 1);
+    const second = coordinator.wait(10_000, new AbortController().signal, 2);
+    const unscoped = coordinator.wait(10_000, new AbortController().signal);
+    coordinator.wake(1);
+    await expect(first).resolves.toBe("woken");
+    coordinator.shutdown();
+    await expect(second).resolves.toBe("shutdown");
+    await expect(unscoped).resolves.toBe("shutdown");
+  });
+
+  it("rejects an invalid account id instead of inventing one", () => {
+    const coordinator = new LongPollCoordinator();
+    expect(() => coordinator.wait(10, new AbortController().signal, 0)).toThrow(/positive integer/);
+    expect(() => coordinator.wake(0)).toThrow(/positive integer/);
+  });
 });

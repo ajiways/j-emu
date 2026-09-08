@@ -21,7 +21,17 @@ describe("esrv exit and reconnect", () => {
     const client = await AuthenticatedClient.login(application);
     await completeMeleeHunt(client);
     const packets = await client.pollEsrv();
-    expect(packets[0]).toMatchObject({
+    const exitPacket = packets.find(
+      (packet) =>
+        packet !== null &&
+        typeof packet === "object" &&
+        !Array.isArray(packet) &&
+        packet.object !== null &&
+        typeof packet.object === "object" &&
+        !Array.isArray(packet.object) &&
+        "fight|exit" in packet.object,
+    );
+    expect(exitPacket).toMatchObject({
       object: { "fight|exit": { status: 100, type: 0 } },
     });
 

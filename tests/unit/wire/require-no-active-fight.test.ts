@@ -25,5 +25,6 @@ function fakeCombat(fightId: string | null): CombatPort {
     activeFightId: async () => fightId,
     accountForFight: async () => null,
     takeExit: async () => null,
+    peekExit: async () => null,
   };
 }

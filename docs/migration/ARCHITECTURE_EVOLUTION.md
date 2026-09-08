@@ -93,8 +93,11 @@ World владеет authored `areas`/`area_links` (и `parent_id`). Travel lock
 
 ### `ARC-RTM` — realtime delivery и social
 
-**Сейчас:** esrv отдаёт только `fight|exit` (и пустой poll). `chat|area_population`
-— empty chrome. Long-poll waiter глобальный, не per-account.
+**Сейчас:** esrv MULTI несёт обязательный кадр `131:<area>` `common|hunt` и
+личный `2:` (`fight|exit`, `chat|area_population_diff`). Полный roster —
+OA `chat|area_population` из Postgres `sessions` ⨝ `heroes.area_id`. Delivery
+queue process-local. Chat auth `{rc:"auth", eid:1}` → пустое HTTP body.
+Long-poll wait per-account; fproxy wait остаётся unscoped.
 
 **Давление:** area presence, system chat, party, trade invitations и BG
 используют разные legacy channels и lifetime.

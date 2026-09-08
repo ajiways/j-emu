@@ -7,11 +7,28 @@ import {
 import { decodeFrames } from "../../../src/modules/jugger-wire/amf/framing.ts";
 import { uniqueDevelopmentSlot } from "./unique-development-slot.ts";
 
+export async function createIsolatedHero(
+  application: Application,
+  slot = uniqueDevelopmentSlot(),
+): Promise<AuthenticatedClient> {
+  return AuthenticatedClient.login(application, slot);
+}
+
 export class AuthenticatedClient {
   constructor(
     private readonly application: Application,
     readonly cookie: string,
   ) {}
+
+  get accountId(): number {
+    const match = /(?:^|;\s*)cid=(\d+)/.exec(this.cookie);
+    if (!match) throw new Error("cid cookie is missing");
+    const accountId = Number(match[1]);
+    if (!Number.isInteger(accountId) || accountId < 1) {
+      throw new Error("cid cookie is not a wire identity");
+    }
+    return accountId;
+  }
 
   static async login(
     application: Application,
@@ -66,6 +83,27 @@ export class AuthenticatedClient {
 
   async pollEsrv(): Promise<AmfValue[]> {
     return this.postFramed("/esrv/poll", Buffer.alloc(0));
+  }
+
+  async esrvAuth(): Promise<{ statusCode: number; payload: Buffer }> {
+    const response = await this.application.http.inject({
+      method: "POST",
+      url: "/esrv/auth",
+      headers: { cookie: this.cookie, "content-type": "application/octet-stream" },
+      payload: encodeAmf3({ rc: "auth", eid: 1 }),
+    });
+    return { statusCode: response.statusCode, payload: response.rawPayload };
+  }
+
+  async logout(): Promise<void> {
+    const response = await this.application.http.inject({
+      method: "GET",
+      url: "/logout",
+      headers: { cookie: this.cookie },
+    });
+    if (response.statusCode !== 302) {
+      throw new Error(`/logout returned ${response.statusCode}`);
+    }
   }
 
   private async postFramed(url: string, payload: Buffer): Promise<AmfValue[]> {

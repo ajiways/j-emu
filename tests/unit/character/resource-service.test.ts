@@ -110,6 +110,7 @@ function memoryHeroes(hero: Hero, saves: Hero[]): HeroRepository {
   return {
     findById: async (id) => (id === hero.id ? hero : null),
     findByAccountId: async () => hero,
+    listByAreaId: async (areaId) => (hero.areaId === areaId ? [hero] : []),
     lockByAccountId: async () => hero,
     lockById: async (id) => (id === hero.id ? hero : null),
     create: async () => {

@@ -18,7 +18,11 @@ import type { CharacterService } from "../../../src/modules/character/applicatio
 import type { CombatPort } from "../../../src/modules/combat/ports/combat-port.ts";
 import type { IdentityService } from "../../../src/modules/identity/application/identity-service.ts";
 import type { InventoryService } from "../../../src/modules/inventory/domain/inventory-service.ts";
+import type { PresenceService } from "../../../src/modules/world/application/presence-service.ts";
 import type { WorldService } from "../../../src/modules/world/domain/world-service.ts";
+import type { EsrvOutbox } from "../../../src/modules/jugger-wire/application/esrv-outbox.ts";
+import { LongPollCoordinator } from "../../../src/modules/jugger-wire/application/long-poll-coordinator.ts";
+import type { PresenceFanout } from "../../../src/modules/jugger-wire/application/presence-fanout.ts";
 import type { Clock } from "../../../src/shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../src/shared/kernel/unit-of-work.ts";
 import {
@@ -187,6 +191,10 @@ describe("module factories", () => {
         fightWire: undefined as never,
         meleeSourceIds: undefined as never,
         unitOfWork: undefined as never,
+        presence: {} as PresenceService,
+        presenceFanout: {} as PresenceFanout,
+        outbox: {} as EsrvOutbox,
+        longPoll: {} as LongPollCoordinator,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -272,6 +280,10 @@ describe("module factories", () => {
         },
         meleeSourceIds: { left: 1, center: 2, right: 3 },
         unitOfWork: {} as UnitOfWork,
+        presence: {} as PresenceService,
+        presenceFanout: {} as PresenceFanout,
+        outbox: {} as EsrvOutbox,
+        longPoll: new LongPollCoordinator(),
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });
