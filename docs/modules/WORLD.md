@@ -2,11 +2,11 @@
 
 ## Статус
 
-Перенесены published areas 501/503/504, authored hunt rows на 503, travel
-`area_links` и OA COME_IN/`common|exit` (ветка `cap/wld-01-travel`). Product
-«готово» — за CEF и architecture close; ROADMAP пока `next`. Presence, spawn
-movement/respawn и hunt locks не перенесены.
+Переходы 503↔504 и 503↔501 **готово**: raw-AMF E2E и реальный CEF-прогон.
 Точный статус: [CAPABILITIES.md](../CAPABILITIES.md).
+
+Presence/esrv roster — **RTM-01**. Spawn movement/respawn и hunt locks —
+**WLD-02**.
 
 ## Источники поведения
 
@@ -15,7 +15,8 @@ movement/respawn и hunt locks не перенесены.
 - world-часть `jgr-emu/docs/TRAVEL_BAG.md`;
 - `jgr-emu/docs/BESTIARY.md`;
 - `jgr-emu/src/travel.ts`, `areaActions.ts`, `routes/oa/commonObject.ts`
-  (`COME_IN`), `routes/oa/common.ts` (`exit`);
+  (`COME_IN`), `routes/oa/common.ts` (`exit`), `presence.ts`, `esrvOutbox.ts`,
+  `routes/esrv.ts`;
 - authored `jgr-emu/fixtures/radvei_areas.json` (areas 501, 503, 504).
 
 ## Контракт мира
@@ -203,11 +204,80 @@ quest bot reference и не подменяется map spawn. В текущем 
 - stale state очищается после process restart;
 - изменение `fight_id` доставляется через area realtime.
 
-## Presence и channels
+## Presence и channels — RTM-01
 
-Presence, area `131:` channels и party `4:` в runtime отсутствуют. При их
-переносе presence должен различать area/instance identity и доставлять
-enter/leave/update без playerbot shortcuts.
+### Architecture decision
+
+Отдельный `ARC-RTM` не нужен. ADR-0017 достаточны: durable outbox table не
+создаём «на будущее». Social-модуля нет; party `4:` и `chat|add` не в срезе.
+
+**Roster (gameplay state)** — PostgreSQL: `identity.sessions` ⨝
+`character.heroes.area_id`. Кто онлайн в локации переживает restart процесса.
+Нет `presence_leases` и нет world-owned location table.
+
+**Delivery (transport)** — process-local per-account queue в `jugger-wire`.
+Потеря при restart допустима: клиент на init2/reconnect получает полный
+`chat|area_population`. Это именованная политика, не fallback live Map.
+
+**Каналы (live `esrv.ts`):**
+
+| Канал           | RTM-01                                                                   |
+| --------------- | ------------------------------------------------------------------------ |
+| `2:<accountId>` | `chat\|area_population_diff` add/remove другим в той же area             |
+| `131:<areaId>`  | каждый poll: `common\|hunt` snapshot текущей area (authored, без wander) |
+| `4:<partyId>`   | нет                                                                      |
+
+Population **diff** едет на личный `2:` (live `enqueueEsrv` без `__channel`).
+Полный roster — OA `chat|area_population` `{ status:100, population:[...] }`,
+не chrome empty. `instance_id` всегда `0` (копий нет).
+
+`jugger-wire` не считает presence: world/application отдаёт typed notify +
+roster DTO; wire кодирует packet `{ channel, ctime, object }`. Fastify long-poll
+остаётся adapter. Per-account wake — ограниченный refactor
+`LongPollCoordinator` (сейчас глобальный wait без account id).
+
+Post-commit: enqueue и wake **после** UoW travel/login/logout, не внутри
+транзакции.
+
+### CharacterInfo wire
+
+Dump-proven поля live `presence.ts` `buildCharacterInfo`:
+
+`id` = **accountId** (не `heroes.id`), `nick`, `level`, `kind`,
+`instance_id: 0`, `dead: 0`, `injury_time: 0`, `injury_artikul_id: 0`,
+`body`, `sk`, `avatar_small` из appearance catalog.
+
+Ghost/injury колонок нет — CMB-04. Поля на wire обязательны и в этом срезе
+равны 0, не omit. Экип в roster не пушить. `change` (level/ghost) не слать,
+пока нет consumer-сценария в срезе.
+
+Logout / `replaceForAccount` (новая сессия вытесняет старую): remove в старой
+area, если сессии больше нет. Login / session create: add соседям.
+
+COME_IN/`exit` после `setArea`: remove в from, add в to (если from≠to).
+
+### Chat auth
+
+`{rc:"auth", eid:1, ...}` на `/esrv/*` — HTTP пустое тело, не MULTI
+([WIRE_INVARIANTS.md](../migration/WIRE_INVARIANTS.md)). Сейчас registrar этого
+не делает — добавить в RTM-01.
+
+### Out of scope
+
+`chat|add` / area chat fan-out; party `4:`; hunt wander и `fight_id` на spawn
+(WLD-02); ghost/injury change; playerbots; dungeon/BG shards; transactional
+outbox; durable cursors.
+
+### Acceptance
+
+- два `createIsolatedHero` на 503: init2 `population` содержит обоих;
+- A COME_IN 504: B на esrv получает `2:` diff `remove` (nick/id A); A init2 на
+  504 без B; возврат `exit` → B видит `add`;
+- logout A → B `remove`;
+- каждый poll после auth несёт MULTI-кадр `131:<areaId>` с `common|hunt`;
+- chat auth → пустой body;
+- restart процесса: очередь пуста, init2 roster снова из sessions;
+- нет fake OA, нет bot shortcuts.
 
 ## Acceptance будущей полной world wave
 

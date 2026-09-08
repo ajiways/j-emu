@@ -9,7 +9,7 @@
 ## Текущий runtime checkpoint
 
 Текущий проверенный срез после готовых bootstrap, equipment
-`PUT_ON`/`PUT_OFF`, bag DROP, pocket layout и world USE:
+`PUT_ON`/`PUT_OFF`, bag DROP, pocket layout, world USE и area transitions:
 
 - `character` хранит hero scalars, personal details, naked `hero_skills`,
   `hp_time` и `regen_at`; internal ports `grantExperience`, `syncResources`,

@@ -13,7 +13,7 @@
   `depends_on`.
 - Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
   `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **WLD-01**.
+- Ровно одна запись имеет статус `next`: **RTM-01**.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -239,23 +239,29 @@
   `amount > amountMax` 204 (20/20 walks); missing link 203 `некуда идти`;
   outdoor exit 204; fight 203; dest `area_conf.items` + hunt + reconnect.
   CEF: shop and gorge from 503 sidebar. No fake OA.
-- **Status:** `next`
-
-  Implementation is on `cap/wld-01-travel`. CEF shop/gorge travel pending.
-  Architecture product close still pending.
+- **Status:** `done`
 
 ### RTM-01 — Personal and area realtime
 
 - **ID:** `RTM-01`
 - **depends_on:** `WLD-01`
-- **Behavior evidence:** legacy `SYNC.md`, `routes/esrv.ts`,
+- **Behavior evidence:** legacy `SYNC.md` phases 0–2 (roster only), `CHAT.md`
+  `area_population`, `presence.ts`, `esrvOutbox.ts`, `routes/esrv.ts`,
   [WIRE_INVARIANTS.md](WIRE_INVARIANTS.md) and [WORLD.md](../modules/WORLD.md).
-- **Content set:** none; channels and presence are runtime state.
-- **Architecture checkpoint / decision:** pending — define outbox ownership,
-  delivery lifetime and area/instance channel identity.
-- **Acceptance:** two heroes receive correctly framed personal `2:` and area
-  `131:` enter/leave/update events without playerbot shortcuts.
-- **Status:** `queued`
+- **Content set:** none; roster is runtime (`identity.sessions` +
+  `heroes.area_id`). Hunt snapshot on `131:` uses already published spawns.
+- **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
+  no `ARC-RTM`. Roster is durable Postgres (sessions ⨝ area_id). Delivery
+  queue is process-local (lost on restart; init2 rebuilds). No transactional
+  outbox table. `jugger-wire` owns MULTI/`2:`/`131:`/chat-auth; world owns
+  presence notify ports. Per-account long-poll wake is in-capability
+  jugger-wire refactor. Ghost/injury `change`, hunt wander, `chat|add`,
+  party `4:` stay out. Full contract: [WORLD.md](../modules/WORLD.md).
+- **Acceptance:** two isolated heroes in 503 see each other in
+  `chat|area_population`; B's esrv gets `2:` `area_population_diff` add/remove
+  when A enters/leaves/COME_IN; `131:<area>` hunt snapshot on poll; chat auth
+  empty body; restart rebuilds roster from sessions. No playerbots.
+- **Status:** `next`
 
 ### WLD-02 — Hunt spawn lifecycle and locks
 

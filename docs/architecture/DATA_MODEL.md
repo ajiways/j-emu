@@ -201,8 +201,8 @@ level_curves — отдельные таблицы поверх текущих `
 
 ### `world`
 
-character_locations (не в WLD-01), presence_leases, spawn_leases, facts.
-`area_links` и `areas.parent_id` появляются в WLD-01, не заранее.
+character_locations, presence_leases, spawn_leases, facts. `area_links` и
+`areas.parent_id` уже в runtime (WLD-01).
 
 ### `combat`
 

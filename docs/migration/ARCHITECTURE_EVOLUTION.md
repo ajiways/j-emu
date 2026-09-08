@@ -7,10 +7,10 @@
 Текущий проверенный checkpoint — готовые bootstrap, paperdoll PUT_ON/PUT_OFF,
 internal CHR-01 `grantExperience`, internal CHR-02 `syncResources`/`noteHp` и
 INV-02 bag DROP/`creditMoney`, INV-03 pocket layout 93/99, INV-04 world USE
-77 ADD_HP и WLD-01 area transitions на `cap/wld-01-travel` (CEF pending,
-workflow still `next`): persistent state находится в PostgreSQL; active content читается
-через release projections; active combat остаётся в RAM. Inventory layout
-mutations in fight are named `FightRules`, not live parity.
+77 ADD_HP и WLD-01 area transitions 503↔501/504: persistent state находится в
+PostgreSQL; active content читается через release projections; active combat
+остаётся в RAM. Inventory layout mutations in fight are named `FightRules`,
+not live parity.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение
@@ -93,14 +93,19 @@ World владеет authored `areas`/`area_links` (и `parent_id`). Travel lock
 
 ### `ARC-RTM` — realtime delivery и social
 
-**Сейчас:** полного esrv outbox/presence/social runtime нет.
+**Сейчас:** esrv отдаёт только `fight|exit` (и пустой poll). `chat|area_population`
+— empty chrome. Long-poll waiter глобальный, не per-account.
 
 **Давление:** area presence, system chat, party, trade invitations и BG
 используют разные legacy channels и lifetime.
 
-**Checkpoint:** RTM-01 определяет transport-neutral delivery contract,
-process-local/durable границу и cursors. Social modules не должны владеть
-Fastify long-poll или AMF packets; `jugger-wire` остаётся delivery adapter.
+**Решение RTM-01:** текущих границ достаточно; отдельный `ARC-RTM` не нужен.
+Roster живёт в Postgres (`sessions` + `area_id`). Delivery queue и waiters —
+process-local в `jugger-wire`. Durable outbox table не создаётся. Party/chat
+не владеют Fastify. `4:` и `chat|add` остаются post-core.
+
+Отдельный `ARC-RTM` потребуется позже только если доставка diffs должна
+пережить restart процесса или social-модуль заберёт channel policy.
 
 ### `ARC-CMB` — terminal settlement
 

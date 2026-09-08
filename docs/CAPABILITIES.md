@@ -121,12 +121,23 @@ bag, деньги остаются `25.00`, bag пуст, reconnect совпад
 Не перенесены durability/repair, DRINK/TEMPEFFECT, ADD_MP и fight
 cast/`persSpells` (CMB-02).
 
+## World transitions — готово
+
+Есть raw-AMF E2E и подтверждённый CEF-прогон: из 503 сайдбар ведёт в лавку
+504 и ущелье 501, `common|exit` возвращает из лавки, таймер 15с на 501
+соблюдается, reconnect на dest совпадает с PostgreSQL.
+
+- `playable-slice/v9`: areas 501/503/504 и четыре travel `area_links`;
+- OA `COME_IN` / `common|exit`; `heroes.move_ready_at`; overload 21/20 → 204;
+- в бою travel `FightRules` `203`; нет ребра → `203` «некуда идти».
+
 ## World и hunt — частично
 
-Есть published area/hunt content и минимальный `ATTACK_BOT`.
+Есть published area/hunt content, transitions 503↔501/504 и минимальный
+`ATTACK_BOT`.
 
-Не перенесены area transitions, travel time, presence, spawn movement/respawn,
-hunt locks и полный realtime flow.
+Не перенесены presence/esrv roster, spawn movement/respawn, hunt locks и
+полный realtime flow.
 
 ## Combat — частично
 
