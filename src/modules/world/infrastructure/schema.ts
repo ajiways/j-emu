@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   check,
   doublePrecision,
+  type ExtraConfigColumn,
   foreignKey,
   index,
   integer,
@@ -15,7 +16,7 @@ import { releases } from "../../content/infrastructure/schema.ts";
 
 export const worldSchema = pgSchema("world");
 
-const flagCheck = (column: ReturnType<typeof integer>, name: string) =>
+const flagCheck = (column: ExtraConfigColumn, name: string) =>
   check(name, sql`${column} IN (0, 1)`);
 
 export const areas = worldSchema.table(

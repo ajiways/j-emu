@@ -172,12 +172,14 @@ npm run lint
 DB suite.
 
 `test:integration` и `test:e2e` требуют `TEST_DATABASE_URL` на отдельную БД с
-суффиксом `_test`. Конфиги `vitest.db.config.ts` и `vitest.e2e.config.ts`
-вызывают `requireTestDatabaseUrl()` при загрузке, поэтому отсутствие URL,
-имя без `_test` или совпадение с `DATABASE_URL` завершает процесс до первого
-теста. Скрипты сначала применяют Drizzle migrations с нуля через
-`reset-test-database.ts`. `ApplicationHarness` строит production composition и
-не имеет memory fallback.
+суффиксом `_test`. Скрипты сначала вызывают `reset-test-database.ts`, который
+падает без URL. Сами suite падают через Vitest `setupFiles`
+(`require-test-database-url.setup.ts`) до первого теста, если URL отсутствует,
+имя без `_test` или совпадает с `DATABASE_URL`. Конфиги `vitest.db.config.ts` и
+`vitest.e2e.config.ts` при импорте БД не требуют: `npm run dead-code` / Knip
+анализируют проект без `TEST_DATABASE_URL` и без подключения к PostgreSQL.
+Подставлять fake/default URL запрещено. `ApplicationHarness` строит production
+composition и не имеет memory fallback.
 
 Каждый E2E логинится через публичный `GET /soc_auth.php?slot=N` со случайным
 слотом (`crypto.randomInt`). Фиксированный `slot=0` запрещён.
