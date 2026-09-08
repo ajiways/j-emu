@@ -14,7 +14,7 @@ export async function buildTravelMutation(input: {
   characters: CharacterService;
   catalog: Catalog;
   world: WorldService;
-  chromePopulation: unknown;
+  areaPopulation: object;
   unitframe: UserUnitframeBlock;
   skills: UserSkillsBlock;
   clock: Clock;
@@ -29,6 +29,6 @@ export async function buildTravelMutation(input: {
     state: buildHeroState(hero, input.clock),
     "user|unitframe": input.unitframe,
     "user|skills": input.skills,
-    "chat|area_population": input.chromePopulation,
+    "chat|area_population": input.areaPopulation,
   };
 }

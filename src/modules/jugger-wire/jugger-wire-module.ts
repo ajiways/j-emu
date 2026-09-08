@@ -11,11 +11,15 @@ import type { CombatPort } from "../combat/ports/combat-port.ts";
 import type { IdentityService } from "../identity/application/identity-service.ts";
 import type { InventoryService } from "../inventory/domain/inventory-service.ts";
 import type { WorldService } from "../world/domain/world-service.ts";
+import type { PresenceService } from "../world/application/presence-service.ts";
 import { BootstrapReadModel } from "./application/bootstrap-read-model.ts";
 import { HeroSheetReadModel } from "./application/hero-sheet-read-model.ts";
 import type { ChatConfPolicy } from "./application/chat-conf-block.ts";
+import { EsrvPollAssembler } from "./application/esrv-poll-assembler.ts";
 import { FightWireMapper } from "./application/fight-wire-mapper.ts";
-import { LongPollCoordinator } from "./application/long-poll-coordinator.ts";
+import type { EsrvOutbox } from "./application/esrv-outbox.ts";
+import type { LongPollCoordinator } from "./application/long-poll-coordinator.ts";
+import type { PresenceFanout } from "./application/presence-fanout.ts";
 import { JuggerHttpServer } from "./infrastructure/http/jugger-http-server.ts";
 import { JuggerCommandModule } from "./registry/jugger-command-module.ts";
 
@@ -60,6 +64,10 @@ export class JuggerWireModule {
     fightWire: JuggerWireFightPolicy;
     meleeSourceIds: Readonly<{ left: number; center: number; right: number }>;
     unitOfWork: UnitOfWork;
+    presence: PresenceService;
+    presenceFanout: PresenceFanout;
+    outbox: EsrvOutbox;
+    longPoll: LongPollCoordinator;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -93,7 +101,13 @@ export class JuggerWireModule {
       input.unitOfWork,
       "Jugger-wire module requires a unit of work",
     );
-    const longPoll = new LongPollCoordinator();
+    const presence = requirePresent(input.presence, "Jugger-wire module requires presence");
+    const presenceFanout = requirePresent(
+      input.presenceFanout,
+      "Jugger-wire module requires presence fanout",
+    );
+    const outbox = requirePresent(input.outbox, "Jugger-wire module requires esrv outbox");
+    const longPoll = requirePresent(input.longPoll, "Jugger-wire module requires long-poll");
     try {
       const fightWire = new FightWireMapper(
         {
@@ -111,6 +125,7 @@ export class JuggerWireModule {
           world,
           combat,
           clock,
+          presence,
           bootstrapPolicy,
         ),
         new HeroSheetReadModel({
@@ -126,6 +141,16 @@ export class JuggerWireModule {
         meleeSourceIds,
         unitOfWork,
         clock,
+        presenceFanout,
+      );
+      const esrvPoll = new EsrvPollAssembler(
+        characters,
+        world,
+        catalog,
+        combat,
+        fightWire,
+        outbox,
+        clock,
       );
       const http = await new JuggerHttpServer({
         config,
@@ -137,6 +162,8 @@ export class JuggerWireModule {
         commands,
         combat,
         longPoll,
+        esrvPoll,
+        presence: presenceFanout,
       }).build();
       return new JuggerWireModule(http, longPoll);
     } catch (error) {

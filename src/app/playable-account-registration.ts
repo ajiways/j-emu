@@ -1,9 +1,10 @@
 import type { CharacterService } from "../modules/character/application/character-service.ts";
 import type {
-  AuthenticatedSession,
+  EstablishedSession,
   IdentityService,
 } from "../modules/identity/application/identity-service.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
+import type { PresenceFanout } from "../modules/jugger-wire/application/presence-fanout.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
 
 export class PlayableAccountRegistration {
@@ -12,17 +13,23 @@ export class PlayableAccountRegistration {
     private readonly characters: CharacterService,
     private readonly inventory: InventoryService,
     private readonly unitOfWork: UnitOfWork,
+    private readonly presence: PresenceFanout,
   ) {}
 
-  async register(login: unknown, nick: unknown, password: unknown): Promise<AuthenticatedSession> {
-    return this.unitOfWork.run(async () => {
-      const authenticated = await this.identity.register(login, nick, password);
+  async register(login: unknown, nick: unknown, password: unknown): Promise<EstablishedSession> {
+    const authenticated = await this.unitOfWork.run(async () => {
+      const session = await this.identity.register(login, nick, password);
       const hero = await this.characters.getOrCreateForAccount(
-        authenticated.account.id,
-        authenticated.account.nick,
+        session.account.id,
+        session.account.nick,
       );
       await this.inventory.ensureStarterInventory(hero.id);
-      return authenticated;
+      return session;
     });
+    await this.presence.afterSessionCommitted(
+      authenticated.account.id,
+      authenticated.replacedExisting,
+    );
+    return authenticated;
   }
 }

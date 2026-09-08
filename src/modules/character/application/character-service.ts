@@ -28,10 +28,16 @@ import type {
   SyncResourcesCommand,
 } from "../ports/character-resources.ts";
 import type { CharacterLocation, SetAreaCommand } from "../ports/character-location.ts";
+import type { CharacterPresence, PresenceHero } from "../ports/character-presence.ts";
 import type { ExperienceGrantRepository } from "../ports/experience-grant-repository.ts";
 
 export class CharacterService
-  implements CharacterProgression, CharacterResources, CharacterMoney, CharacterLocation
+  implements
+    CharacterProgression,
+    CharacterResources,
+    CharacterMoney,
+    CharacterLocation,
+    CharacterPresence
 {
   private readonly grants: ExperienceGrantService;
   private readonly resources: ResourceService;
@@ -144,6 +150,16 @@ export class CharacterService
     return this.heroes.findByAccountId(accountId);
   }
 
+  async listInArea(areaId: string): Promise<readonly PresenceHero[]> {
+    if (!areaId) throw new Error("Area id is required");
+    return (await this.heroes.listByAreaId(areaId)).map(toPresenceHero);
+  }
+
+  async requirePresence(accountId: number): Promise<PresenceHero> {
+    const hero = await this.requireHero(accountId);
+    return toPresenceHero(hero);
+  }
+
   async lockByAccountId(accountId: number): Promise<Hero> {
     const hero = await this.heroes.lockByAccountId(accountId);
     if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
@@ -204,6 +220,19 @@ export class CharacterService
       );
     }
   }
+}
+
+function toPresenceHero(hero: Hero): PresenceHero {
+  return {
+    accountId: hero.accountId,
+    nick: hero.nick,
+    level: hero.level,
+    kind: hero.kind,
+    gender: hero.gender,
+    body: hero.body,
+    sk: hero.sk,
+    areaId: hero.areaId,
+  };
 }
 
 function requiredManaged(skills: readonly { id: string; value: number }[], id: string): number {

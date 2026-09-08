@@ -144,6 +144,10 @@ export class CombatService implements CombatPort {
     return value;
   }
 
+  async peekExit(accountId: number) {
+    return this.pendingExits.get(accountId) ?? null;
+  }
+
   shutdown(): void {
     this.byAccount.clear();
     this.accountByFight.clear();

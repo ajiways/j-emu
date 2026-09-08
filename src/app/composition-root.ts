@@ -15,6 +15,10 @@ import type { AppConfig } from "./config.ts";
 import { loadGamePolicy } from "./game-policy.ts";
 import { PlayableAccountRegistration } from "./playable-account-registration.ts";
 import { PlayableDevelopmentIdentity } from "./playable-development-identity.ts";
+import { PresenceService } from "../modules/world/application/presence-service.ts";
+import { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.ts";
+import { LongPollCoordinator } from "../modules/jugger-wire/application/long-poll-coordinator.ts";
+import { PresenceFanout } from "../modules/jugger-wire/application/presence-fanout.ts";
 
 export class CompositionRoot {
   async build(config: AppConfig, clock: Clock = new SystemClock()): Promise<Application> {
@@ -54,17 +58,28 @@ export class CompositionRoot {
         ),
       });
       closers.push(characters);
+      const presence = new PresenceService(
+        world.service,
+        identity.service,
+        characters.service,
+        catalog.catalog,
+      );
+      const longPoll = new LongPollCoordinator();
+      const outbox = new EsrvOutbox();
+      const presenceFanout = new PresenceFanout(presence, outbox, longPoll);
       const registration = new PlayableAccountRegistration(
         identity.service,
         characters.service,
         inventory.service,
         database,
+        presenceFanout,
       );
       const developmentIdentity = new PlayableDevelopmentIdentity(
         identity.service,
         characters.service,
         inventory.service,
         database,
+        presenceFanout,
       );
       const wire = await JuggerWireModule.create({
         config,
@@ -81,6 +96,10 @@ export class CompositionRoot {
         fightWire: policy.fightWire,
         meleeSourceIds: policy.combat.meleeSourceIds,
         unitOfWork: database,
+        presence,
+        presenceFanout,
+        outbox,
+        longPoll,
       });
       closers.push(wire);
       return new Application(wire.http, characters.service, characters.service, async () => {

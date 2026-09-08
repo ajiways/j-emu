@@ -12,6 +12,7 @@ import {
 } from "../../../world/domain/travel-ftime.ts";
 import type { BootstrapReadModel } from "../../application/bootstrap-read-model.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
+import type { PresenceFanout } from "../../application/presence-fanout.ts";
 import type { OaCommand, OaEncodedResponse } from "./oa-command.ts";
 import { requireNoActiveFight } from "./require-no-active-fight.ts";
 
@@ -30,10 +31,11 @@ export class CommonExitCommand implements OaCommand {
     private readonly world: WorldService,
     private readonly combat: CombatPort,
     private readonly clock: Clock,
+    private readonly presence: PresenceFanout,
   ) {}
 
   async execute(accountId: number): Promise<OaEncodedResponse> {
-    const blocks = await this.unitOfWork.run(async () => {
+    const moved = await this.unitOfWork.run(async () => {
       const locked = await this.characters.lockByAccountId(accountId);
       await requireNoActiveFight(this.combat, accountId);
       const load = await this.inventory.bagLoad({ characterId: locked.id });
@@ -46,13 +48,19 @@ export class CommonExitCommand implements OaCommand {
       if (!canExitInterior(current)) throw new ProtocolError(204, CANNOT_MOVE);
       const parent = await this.world.area(current.parentId);
       await this.characters.syncResources({ characterId: locked.id });
+      const fromAreaId = locked.areaId;
       await this.characters.setArea({
         characterId: locked.id,
         areaId: parent.id,
         moveReadyAt: locked.moveReadyAt,
       });
-      return this.bootstrap.travelMutation(accountId, "exit");
+      return {
+        fromAreaId,
+        toAreaId: parent.id,
+        blocks: await this.bootstrap.travelMutation(accountId, "exit"),
+      };
     });
-    return { kind: "flat", blocks };
+    await this.presence.afterMove(accountId, moved.fromAreaId, moved.toAreaId);
+    return { kind: "flat", blocks: moved.blocks };
   }
 }

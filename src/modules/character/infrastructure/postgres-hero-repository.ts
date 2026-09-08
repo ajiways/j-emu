@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import { Hero, type HeroRecord, type NewHero } from "../domain/hero.ts";
 import type { HeroRepository } from "../ports/hero-repository.ts";
@@ -14,6 +14,17 @@ export class PostgresHeroRepository implements HeroRepository {
 
   async findByAccountId(accountId: number): Promise<Hero | null> {
     return this.loadByAccountId(accountId, false);
+  }
+
+  async listByAreaId(areaId: string): Promise<readonly Hero[]> {
+    if (!areaId) throw new Error("Area id is required");
+    const rows = await this.database
+      .session()
+      .select()
+      .from(heroes)
+      .where(eq(heroes.areaId, areaId))
+      .orderBy(asc(heroes.accountId));
+    return rows.map((row) => Hero.restore(recordFromRow(row, `hero area ${areaId}`)));
   }
 
   async lockByAccountId(accountId: number): Promise<Hero | null> {

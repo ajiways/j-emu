@@ -40,6 +40,10 @@ export class AuthRouteRegistrar {
           return reply.type(html).send(pages.login("Неверный логин или пароль."));
         }
         await this.requireHero(authenticated.account.id, authenticated.account.nick);
+        await this.dependencies.presence.afterSessionCommitted(
+          authenticated.account.id,
+          authenticated.replacedExisting,
+        );
         return reply.redirect(gameHandoffUrl(authenticated.session));
       });
       auth.post("/register", async (request, reply) => {
@@ -66,7 +70,8 @@ export class AuthRouteRegistrar {
         }
       });
       auth.get("/logout", async (request, reply) => {
-        await this.dependencies.identity.logout(request.cookies.PHPSESSID);
+        const accountId = await this.dependencies.identity.logout(request.cookies.PHPSESSID);
+        if (accountId) await this.dependencies.presence.afterLogout(accountId);
         clearSessionCookies(reply);
         return reply.redirect("/login");
       });

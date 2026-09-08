@@ -33,6 +33,7 @@ import { UserViewCommand } from "../commands/oa/user-view-command.ts";
 import { EsrvCommandRegistry } from "./esrv-command-registry.ts";
 import { FproxyCommandRegistry } from "./fproxy-command-registry.ts";
 import { OaCommandRegistry } from "./oa-command-registry.ts";
+import type { PresenceFanout } from "../application/presence-fanout.ts";
 
 export class JuggerCommandModule {
   readonly oa: OaCommandRegistry;
@@ -52,6 +53,7 @@ export class JuggerCommandModule {
     meleeSourceIds: Readonly<{ left: number; center: number; right: number }>,
     unitOfWork: UnitOfWork,
     clock: Clock,
+    presence: PresenceFanout,
   ) {
     this.fightWire = fightWire;
     this.oa = new OaCommandRegistry([
@@ -104,8 +106,26 @@ export class JuggerCommandModule {
         combat,
       ),
       new UseArtifactCommand(unitOfWork, bootstrap, characters, inventory, combat),
-      new ComeInCommand(unitOfWork, bootstrap, characters, inventory, world, combat, clock),
-      new CommonExitCommand(unitOfWork, bootstrap, characters, inventory, world, combat, clock),
+      new ComeInCommand(
+        unitOfWork,
+        bootstrap,
+        characters,
+        inventory,
+        world,
+        combat,
+        clock,
+        presence,
+      ),
+      new CommonExitCommand(
+        unitOfWork,
+        bootstrap,
+        characters,
+        inventory,
+        world,
+        combat,
+        clock,
+        presence,
+      ),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     this.esrv = EsrvCommandRegistry.create(combat, fightWire);

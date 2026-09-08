@@ -6,6 +6,7 @@ import type { PasswordHasher } from "../domain/password-hasher.ts";
 import { RegistrationCredentials } from "../domain/registration-credentials.ts";
 import { Session } from "../domain/session.ts";
 import type { AccountRepository } from "../ports/account-repository.ts";
+import type { SessionPresence } from "../ports/session-presence.ts";
 import type { SessionRepository } from "../ports/session-repository.ts";
 
 export type AuthenticatedSession = Readonly<{
@@ -13,7 +14,12 @@ export type AuthenticatedSession = Readonly<{
   session: Session;
 }>;
 
-export class IdentityService {
+export type EstablishedSession = AuthenticatedSession &
+  Readonly<{
+    replacedExisting: boolean;
+  }>;
+
+export class IdentityService implements SessionPresence {
   constructor(
     private readonly accounts: AccountRepository,
     private readonly sessions: SessionRepository,
@@ -22,7 +28,7 @@ export class IdentityService {
     private readonly passwords: PasswordHasher,
   ) {}
 
-  async register(login: unknown, nick: unknown, password: unknown): Promise<AuthenticatedSession> {
+  async register(login: unknown, nick: unknown, password: unknown): Promise<EstablishedSession> {
     const credentials = RegistrationCredentials.parse(login, nick, password);
     return this.unitOfWork.run(async () => {
       if (await this.accounts.findByLogin(credentials.login)) {
@@ -35,21 +41,22 @@ export class IdentityService {
       const account = await this.accounts.create(credentials.login, credentials.nick, passwordHash);
       const session = Session.create(account.id, this.clock.now());
       await this.sessions.replaceForAccount(session);
-      return { account, session };
+      return { account, session, replacedExisting: false };
     });
   }
 
-  async login(login: string, password: string): Promise<AuthenticatedSession | null> {
+  async login(login: string, password: string): Promise<EstablishedSession | null> {
     const account = await this.accounts.findByLogin(login.trim().toLowerCase());
     if (!account?.passwordHash || !(await this.passwords.verify(password, account.passwordHash))) {
       return null;
     }
+    const existing = await this.sessions.findByAccountId(account.id);
     const session = Session.create(account.id, this.clock.now());
     await this.sessions.replaceForAccount(session);
-    return { account, session };
+    return { account, session, replacedExisting: existing !== null };
   }
 
-  async createDevelopmentIdentity(slot: number): Promise<AuthenticatedSession> {
+  async createDevelopmentIdentity(slot: number): Promise<EstablishedSession> {
     if (!Number.isInteger(slot) || slot < 1) {
       throw new Error("Development slot must be a positive integer");
     }
@@ -59,10 +66,15 @@ export class IdentityService {
       if (!account) {
         account = await this.accounts.create(login, `Player${slot + 1}`, null);
       }
+      const existing = await this.sessions.findByAccountId(account.id);
       const session = Session.create(account.id, this.clock.now());
       await this.sessions.replaceForAccount(session);
-      return { account, session };
+      return { account, session, replacedExisting: existing !== null };
     });
+  }
+
+  listAccountIdsWithSession(): Promise<readonly number[]> {
+    return this.sessions.listAccountIds();
   }
 
   async sessionById(sessionId: string): Promise<AuthenticatedSession | null> {
@@ -79,10 +91,11 @@ export class IdentityService {
     return found?.account ?? null;
   }
 
-  async logout(sessionId: string | undefined): Promise<void> {
-    if (!sessionId) return;
+  async logout(sessionId: string | undefined): Promise<number | null> {
+    if (!sessionId) return null;
     const session = await this.sessions.findById(sessionId);
-    if (!session) return;
+    if (!session) return null;
     await this.sessions.removeForAccount(session.accountId);
+    return session.accountId;
   }
 }

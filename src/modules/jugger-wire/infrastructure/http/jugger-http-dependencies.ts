@@ -5,7 +5,9 @@ import type { CharacterService } from "../../../character/application/character-
 import type { CombatPort } from "../../../combat/ports/combat-port.ts";
 import type { IdentityService } from "../../../identity/application/identity-service.ts";
 import type { InventoryService } from "../../../inventory/domain/inventory-service.ts";
+import type { EsrvPollAssembler } from "../../application/esrv-poll-assembler.ts";
 import type { LongPollCoordinator } from "../../application/long-poll-coordinator.ts";
+import type { PresenceFanout } from "../../application/presence-fanout.ts";
 import type { JuggerCommandModule } from "../../registry/jugger-command-module.ts";
 
 export type JuggerHttpDependencies = Readonly<{
@@ -18,4 +20,6 @@ export type JuggerHttpDependencies = Readonly<{
   commands: JuggerCommandModule;
   combat: CombatPort;
   longPoll: LongPollCoordinator;
+  esrvPoll: EsrvPollAssembler;
+  presence: PresenceFanout;
 }>;

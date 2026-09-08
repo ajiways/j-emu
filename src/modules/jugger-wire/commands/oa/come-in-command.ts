@@ -17,6 +17,7 @@ import { ProtocolError } from "../../application/protocol-error.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
 import { requireNoActiveFight } from "./require-no-active-fight.ts";
+import type { PresenceFanout } from "../../application/presence-fanout.ts";
 
 const SLICE_SPEED = 0;
 const OVERLOAD_ERROR = "Вы не можете перемещаться, т.к. рюкзак перегружен!";
@@ -35,6 +36,7 @@ export class ComeInCommand implements OaCommand {
     private readonly world: WorldService,
     private readonly combat: CombatPort,
     private readonly clock: Clock,
+    private readonly presence: PresenceFanout,
   ) {}
 
   decode(envelope: ObjectActionEnvelope): ComeInRequest {
@@ -51,7 +53,7 @@ export class ComeInCommand implements OaCommand {
 
   async handle(context: OaCommandContext, request: ComeInRequest): Promise<object> {
     try {
-      return await this.unitOfWork.run(async () => {
+      const moved = await this.unitOfWork.run(async () => {
         const locked = await this.characters.lockByAccountId(context.accountId);
         await requireNoActiveFight(this.combat, context.accountId);
         const load = await this.inventory.bagLoad({ characterId: locked.id });
@@ -64,13 +66,20 @@ export class ComeInCommand implements OaCommand {
         const dest = await this.world.area(request.areaId);
         await this.characters.syncResources({ characterId: locked.id });
         const ftime = travelFtime(dest.ftimeMax, SLICE_SPEED);
+        const fromAreaId = locked.areaId;
         await this.characters.setArea({
           characterId: locked.id,
           areaId: dest.id,
           moveReadyAt: ftime > 0 ? addTravelSeconds(this.clock.now(), ftime) : null,
         });
-        return this.bootstrap.travelMutation(context.accountId, "COME_IN");
+        return {
+          fromAreaId,
+          toAreaId: dest.id,
+          blocks: await this.bootstrap.travelMutation(context.accountId, "COME_IN"),
+        };
       });
+      await this.presence.afterMove(context.accountId, moved.fromAreaId, moved.toAreaId);
+      return moved.blocks;
     } catch (error) {
       if (error instanceof MissingLinkError) throw new ProtocolError(203, error.message);
       throw error;

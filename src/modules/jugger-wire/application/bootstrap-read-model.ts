@@ -27,6 +27,7 @@ import { buildUserView, type UserViewBlock } from "./user-view-block.ts";
 import { buildWelcomeMessage } from "./welcome-message-block.ts";
 import { buildUseMutation } from "./use-mutation-block.ts";
 import { buildTravelMutation } from "./travel-mutation-block.ts";
+import type { PresenceService } from "../../world/application/presence-service.ts";
 
 export type { HuntBlock, UserUnitframeBlock, HeroStateBlock };
 
@@ -38,6 +39,7 @@ export class BootstrapReadModel {
     private readonly world: WorldService,
     private readonly combat: CombatPort,
     private readonly clock: Clock,
+    private readonly presence: PresenceService,
     private readonly policy: Readonly<{
       bagCapacity: number;
       pocketCapacity: number;
@@ -58,7 +60,7 @@ export class BootstrapReadModel {
     accountId: number,
     kind: "COME_IN" | "exit",
   ): Promise<Readonly<Record<string, unknown>>> {
-    const chrome = await this.catalog.chrome();
+    const hero = await this.requireHero(accountId);
     return buildTravelMutation({
       accountId,
       actionKey: kind === "COME_IN" ? "common|action" : "common|exit",
@@ -66,7 +68,7 @@ export class BootstrapReadModel {
       characters: this.characters,
       catalog: this.catalog,
       world: this.world,
-      chromePopulation: chrome.block("chat|area_population"),
+      areaPopulation: await this.presence.listPopulation(hero.areaId),
       unitframe: await this.unitframe(accountId),
       skills: await this.skills(accountId),
       clock: this.clock,
@@ -208,7 +210,7 @@ export class BootstrapReadModel {
       state: buildHeroState(hero, this.clock),
       "user|unitframe": await this.unitframe(accountId),
       "chat|conf": buildChatConf(hero.accountId, this.policy.chat),
-      "chat|area_population": chrome.block("chat|area_population"),
+      "chat|area_population": await this.presence.listPopulation(hero.areaId),
       "chat|message": buildWelcomeMessage(hero, chrome.welcomeTemplate, this.clock),
       "friend|info": chrome.block("friend|info"),
       "user|action_stats": chrome.block("user|action_stats"),

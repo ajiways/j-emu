@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import { Session } from "../domain/session.ts";
 import type { SessionRepository } from "../ports/session-repository.ts";
@@ -12,6 +12,26 @@ export class PostgresSessionRepository implements SessionRepository {
     if (rows.length > 1) throw new Error(`Multiple sessions found for id ${id}`);
     const row = rows[0];
     return row ? Session.restore(row.id, row.accountId, row.sessionKey, row.createdAt) : null;
+  }
+
+  async findByAccountId(accountId: number): Promise<Session | null> {
+    const rows = await this.database
+      .session()
+      .select()
+      .from(sessions)
+      .where(eq(sessions.accountId, accountId));
+    if (rows.length > 1) throw new Error(`Multiple sessions found for account ${accountId}`);
+    const row = rows[0];
+    return row ? Session.restore(row.id, row.accountId, row.sessionKey, row.createdAt) : null;
+  }
+
+  async listAccountIds(): Promise<readonly number[]> {
+    const rows = await this.database
+      .session()
+      .select({ accountId: sessions.accountId })
+      .from(sessions)
+      .orderBy(asc(sessions.accountId));
+    return rows.map((row) => row.accountId);
   }
 
   async replaceForAccount(session: Session): Promise<void> {

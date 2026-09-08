@@ -46,4 +46,5 @@ export interface CombatPort {
   activeFightId(accountId: number): Promise<string | null>;
   accountForFight(fightId: string): Promise<number | null>;
   takeExit(accountId: number): Promise<FightExit | null>;
+  peekExit(accountId: number): Promise<FightExit | null>;
 }
