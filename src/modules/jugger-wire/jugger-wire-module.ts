@@ -3,6 +3,7 @@ import type { AppConfig } from "../../app/config.ts";
 import type { PlayableAccountRegistration } from "../../app/playable-account-registration.ts";
 import type { PlayableDevelopmentIdentity } from "../../app/playable-development-identity.ts";
 import { requirePresent } from "../../shared/kernel/require-present.ts";
+import type { Clock } from "../../shared/kernel/clock.ts";
 import type { Catalog } from "../catalog/ports/catalog.ts";
 import type { CharacterService } from "../character/application/character-service.ts";
 import type { CombatPort } from "../combat/ports/combat-port.ts";
@@ -10,28 +11,16 @@ import type { IdentityService } from "../identity/application/identity-service.t
 import type { InventoryService } from "../inventory/domain/inventory-service.ts";
 import type { WorldService } from "../world/domain/world-service.ts";
 import { BootstrapReadModel } from "./application/bootstrap-read-model.ts";
-import type { CommonConfBlock } from "./application/common-conf-document.ts";
 import { HeroSheetReadModel } from "./application/hero-sheet-read-model.ts";
 import type { ChatConfPolicy } from "./application/chat-conf-block.ts";
-import type { PaperdollPolicy } from "./application/user-view-block.ts";
-import type { UnitframeHudPolicy } from "./application/user-unitframe-block.ts";
 import { FightWireMapper } from "./application/fight-wire-mapper.ts";
 import { LongPollCoordinator } from "./application/long-poll-coordinator.ts";
 import { JuggerHttpServer } from "./infrastructure/http/jugger-http-server.ts";
 import { JuggerCommandModule } from "./registry/jugger-command-module.ts";
 
 export type JuggerWireBootstrapPolicy = Readonly<{
-  diamonds: string;
   bagCapacity: number;
   pocketCapacity: number;
-  heroKind: number;
-  tutorialInfo: Readonly<{
-    finished_first_fight: string;
-    tutorial2: string;
-  }>;
-  commonConf: CommonConfBlock;
-  unitframe: UnitframeHudPolicy;
-  view: PaperdollPolicy;
   chat: ChatConfPolicy;
   menuLinks: Readonly<Record<string, string>>;
 }>;
@@ -65,6 +54,7 @@ export class JuggerWireModule {
     catalog: Catalog;
     world: WorldService;
     combat: CombatPort;
+    clock: Clock;
     bootstrap: JuggerWireBootstrapPolicy;
     fightWire: JuggerWireFightPolicy;
     meleeSourceIds: Readonly<{ left: number; center: number; right: number }>;
@@ -84,6 +74,7 @@ export class JuggerWireModule {
     const catalog = requirePresent(input.catalog, "Jugger-wire module requires catalog");
     const world = requirePresent(input.world, "Jugger-wire module requires world");
     const combat = requirePresent(input.combat, "Jugger-wire module requires combat");
+    const clock = requirePresent(input.clock, "Jugger-wire module requires clock");
     const bootstrapPolicy = requirePresent(
       input.bootstrap,
       "Jugger-wire module requires bootstrap policy",
@@ -107,9 +98,8 @@ export class JuggerWireModule {
         fightWirePolicy,
       );
       const commands = new JuggerCommandModule(
-        new BootstrapReadModel(characters, inventory, catalog, world, bootstrapPolicy),
-        new HeroSheetReadModel(characters, {
-          view: bootstrapPolicy.view,
+        new BootstrapReadModel(characters, inventory, catalog, world, clock, bootstrapPolicy),
+        new HeroSheetReadModel(characters, catalog, {
           chat: bootstrapPolicy.chat,
           menuLinks: bootstrapPolicy.menuLinks,
         }),

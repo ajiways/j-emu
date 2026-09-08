@@ -5,10 +5,18 @@ import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PostgresDatabase } from "../../../src/infrastructure/postgres/database.ts";
 import { migrateDatabase } from "../../../src/infrastructure/postgres/migration-runner.ts";
-import { artifacts, bots } from "../../../src/modules/catalog/infrastructure/schema.ts";
+import {
+  appearancePresets,
+  artifacts,
+  bots,
+  gameWideDocuments,
+  levelBoundaries,
+  skillDefinitions,
+} from "../../../src/modules/catalog/infrastructure/schema.ts";
 import {
   heroes,
   heroPersonalDetails,
+  heroSkills,
 } from "../../../src/modules/character/infrastructure/schema.ts";
 import { finishedFights } from "../../../src/modules/combat/infrastructure/schema.ts";
 import {
@@ -61,9 +69,14 @@ describe("Drizzle migrations", () => {
     );
     expect(tables.sort()).toEqual(
       [
+        "catalog.appearance_presets",
         "catalog.artifacts",
         "catalog.bots",
+        "catalog.game_wide_documents",
+        "catalog.level_boundaries",
+        "catalog.skill_definitions",
         "character.hero_personal_details",
+        "character.hero_skills",
         "character.heroes",
         "combat.finished_fights",
         "content.active_release",
@@ -87,10 +100,15 @@ describe("Drizzle migrations", () => {
       sessions,
       artifacts,
       bots,
+      skillDefinitions,
+      levelBoundaries,
+      appearancePresets,
+      gameWideDocuments,
       areas,
       huntSpawns,
       heroes,
       heroPersonalDetails,
+      heroSkills,
       items,
       finishedFights,
       drafts,
@@ -99,7 +117,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(16);
+    ]).toHaveLength(21);
 
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -108,8 +126,9 @@ describe("Drizzle migrations", () => {
       "0000_foundation_init",
       "0001_character_add_hero_personal_details",
       "0002_world_location_scalars",
+      "0003_character_bootstrap_state",
     ]);
-    expect(await appliedCount()).toBe(3);
+    expect(await appliedCount()).toBe(4);
 
     const singleton = await database
       .session()

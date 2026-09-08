@@ -1,5 +1,14 @@
 import { z } from "zod";
 import { PLAYABLE_SLICE_SCHEMA_VERSION, type ContentBundle } from "./content-document.ts";
+import {
+  appearanceDocumentSchema,
+  bootstrapChromeDocumentSchema,
+  commonConfDocumentSchema,
+  hudDefaultsDocumentSchema,
+  levelBoundaryDocumentSchema,
+  skillDocumentSchema,
+  welcomeMessageDocumentSchema,
+} from "./parse-bootstrap-content.ts";
 
 const flag = z.union([z.literal(0), z.literal(1)]);
 
@@ -78,6 +87,13 @@ const bundleSchema = z
     bots: z.array(botSchema),
     areas: z.array(areaSchema),
     huntSpawns: z.array(huntSpawnSchema),
+    skills: z.array(skillDocumentSchema).min(1),
+    levels: z.array(levelBoundaryDocumentSchema).min(1),
+    appearances: z.array(appearanceDocumentSchema).min(1),
+    hudDefaults: hudDefaultsDocumentSchema,
+    chrome: bootstrapChromeDocumentSchema,
+    commonConf: commonConfDocumentSchema,
+    welcomeMessage: welcomeMessageDocumentSchema,
   })
   .strict();
 

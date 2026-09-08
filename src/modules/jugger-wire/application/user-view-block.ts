@@ -1,11 +1,6 @@
+import type { AppearancePreset } from "../../catalog/domain/appearance-preset.ts";
+import type { LevelBoundary } from "../../catalog/domain/level-boundary.ts";
 import type { Hero } from "../../character/domain/hero.ts";
-
-export type PaperdollPolicy = Readonly<{
-  sk: number;
-  body: string;
-  avatar_big: string;
-  bag_cnt: number;
-}>;
 
 export type UserViewBlock = Readonly<{
   status: 100;
@@ -23,20 +18,22 @@ export type UserViewBlock = Readonly<{
   campaigns: readonly [];
 }>;
 
-export function buildUserView(hero: Hero, paperdoll: PaperdollPolicy): UserViewBlock {
-  if (!paperdoll.body) throw new Error("Paperdoll body is required");
-  if (!paperdoll.avatar_big) throw new Error("Paperdoll avatar_big is required");
-  if (paperdoll.bag_cnt < 1) throw new Error("Paperdoll bag_cnt must be positive");
+export function buildUserView(
+  hero: Hero,
+  appearance: AppearancePreset,
+  level: LevelBoundary,
+): UserViewBlock {
+  if (!hero.body) throw new Error("Hero body is required");
   return {
     status: 100,
     nick: hero.nick,
     uid: hero.accountId,
     lvl: hero.level,
-    sk: paperdoll.sk,
-    body: paperdoll.body,
-    avatar_big: paperdoll.avatar_big,
+    sk: hero.sk,
+    body: hero.body,
+    avatar_big: appearance.avatarBig,
     avatar_dtime: null,
-    bag_cnt: paperdoll.bag_cnt,
+    bag_cnt: level.bagCnt,
     artifacts: [],
     temp_effects: null,
     juggernaut_armor: 0,

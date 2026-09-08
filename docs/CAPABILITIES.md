@@ -33,18 +33,22 @@
 Есть:
 
 - numeric account/hero identity;
-- persisted hero и personal details;
-- `common|init`, `common|init2`, state, unitframe;
+- persisted hero, skills, HP/MP/EXP, appearance и personal details;
+- полный flat состав `common|init` и `common|init2` из jgr-emu baseline
+  (без party restore, presence announce и fight resume);
+- `user|skills`, magic, view, conf, unitframe, bag/pocket;
+- authored `common|conf`, empty chrome и level/appearance catalog из active
+  release;
 - starter bag/pocket;
 - area 503 и authored hunt rows;
-- tutorial completion flags.
+- persisted tutorial completion flags;
+- cold login, reconnect и process restart bootstrap (raw-AMF E2E).
 
 Не перенесено:
 
-- полный состав legacy init/init2;
-- skills, magic, paperdoll/view и полный character state;
-- HP/MP/EXP progression и regeneration;
-- подтверждённый вход до полностью отрисованного HUD/локации.
+- подтверждённый вход до полностью отрисованного HUD/локации в реальном клиенте;
+- regeneration timestamps как живой ticker и ghost/injury state;
+- equipment-derived view/stats (перчатка 9095 остаётся в bag).
 
 ## Inventory — частично
 

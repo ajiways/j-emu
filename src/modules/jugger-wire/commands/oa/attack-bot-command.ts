@@ -74,7 +74,7 @@ export class AttackBotCommand implements OaCommand {
       heroId: hero.id,
       heroNick: hero.nick,
       heroLevel: hero.level,
-      heroKind: this.bootstrap.heroKind,
+      heroKind: hero.kind,
       heroHp: hero.hp,
       botId: bot.id,
       botNick: bot.title,
@@ -83,13 +83,12 @@ export class AttackBotCommand implements OaCommand {
       arena: area.fightBackground,
       areaId: area.id,
     });
-    const init2 = await this.bootstrap.init2(context.accountId);
     return {
       "common|action": { status: 100 },
       "fight|conf": this.fightWire.fightConfiguration(fight),
-      "common|hunt": init2["common|hunt"],
-      "user|unitframe": init2["user|unitframe"],
-      state: init2.state,
+      "common|hunt": await this.bootstrap.hunt(context.accountId),
+      "user|unitframe": await this.bootstrap.unitframe(context.accountId),
+      state: await this.bootstrap.state(context.accountId),
     };
   }
 

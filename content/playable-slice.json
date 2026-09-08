@@ -1,5 +1,6 @@
 {
-  "schemaVersion": "playable-slice/v2",
+  "schemaVersion": "playable-slice/v3",
+  "commonConfFile": "common-conf.json",
   "artifacts": [
     {
       "id": 9095,
@@ -59,5 +60,279 @@
       "y": 1499,
       "huntMask": "bot_1"
     }
-  ]
+  ],
+  "skills": [
+    {
+      "id": "HPREG",
+      "title": "Скорость регенерации",
+      "group": "6",
+      "order": "0",
+      "weight": "900",
+      "image": "",
+      "valueKind": "string"
+    },
+    {
+      "id": "ORATORY",
+      "title": "Красноречие",
+      "group": "3",
+      "order": "0",
+      "weight": "300",
+      "image": "krasnorechiye.png",
+      "valueKind": "string"
+    },
+    {
+      "id": "STR",
+      "title": "Сила",
+      "group": "1",
+      "order": "0",
+      "weight": "900",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "RAG",
+      "title": "Неистовство",
+      "group": "1",
+      "order": "0",
+      "weight": "800",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "DEX",
+      "title": "Ловкость",
+      "group": "1",
+      "order": "0",
+      "weight": "801",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "DEF",
+      "title": "Защита",
+      "group": "1",
+      "order": "0",
+      "weight": "802",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "VIT",
+      "title": "Здоровье",
+      "group": "1",
+      "order": "0",
+      "weight": "950",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MPMAX",
+      "title": "Уровень маны",
+      "group": "1",
+      "order": "0",
+      "weight": "910",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MONEYMOD",
+      "title": "Увеличенный дроп денег",
+      "group": "6",
+      "order": "0",
+      "weight": "300",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "AGRILKA_MOBOV",
+      "title": "Умение злить противников",
+      "group": "3",
+      "order": "0",
+      "weight": "500",
+      "image": "zlost.png",
+      "valueKind": "string"
+    },
+    {
+      "id": "SPEED",
+      "title": "Скорость, %",
+      "group": "6",
+      "order": "0",
+      "weight": "990",
+      "image": "",
+      "valueKind": "number"
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "expMin": 0,
+      "expMax": 68,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0
+    },
+    {
+      "level": 2,
+      "expMin": 68,
+      "expMax": 203,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0
+    },
+    {
+      "level": 3,
+      "expMin": 203,
+      "expMax": 473,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0
+    },
+    {
+      "level": 4,
+      "expMin": 473,
+      "expMax": 1013,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0
+    },
+    {
+      "level": 5,
+      "expMin": 1013,
+      "expMax": 1823,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0
+    },
+    {
+      "level": 6,
+      "expMin": 1823,
+      "expMax": 3623,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0
+    },
+    {
+      "level": 7,
+      "expMin": 3623,
+      "expMax": 10373,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0
+    },
+    {
+      "level": 8,
+      "expMin": 10373,
+      "expMax": 23873,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0
+    }
+  ],
+  "appearances": [
+    {
+      "kind": 1,
+      "gender": 1,
+      "avatarBig": "avatar_m_set_0_gray.png",
+      "avatarSmall": "avatar_m_set_0_gray_sm.png"
+    }
+  ],
+  "hudDefaults": {
+    "fightId": 0,
+    "gagTime": 0,
+    "mpTime": 0,
+    "epicValue": 0,
+    "expStatus": 0,
+    "revenge": 0,
+    "revengeMin": 0,
+    "revengeMax": "300",
+    "revengeStatus": 0,
+    "energyPercentMax": 100,
+    "energyPercentCurrent": 100,
+    "injuryTime": 0,
+    "injuryArtikulId": 0
+  },
+  "welcomeMessage": {
+    "template": "<font color=\"#007ba7\"><b>jugg-emu:</b> добро пожаловать, {nick}! Сервер в разработке.</font>"
+  },
+  "chrome": {
+    "user|professions": {
+      "status": 100,
+      "professions": [
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 },
+        { "value": 0 }
+      ],
+      "max_profession_skill": 0
+    },
+    "pet|list": { "status": 100, "pets": [] },
+    "user|mount_list": { "status": 100, "mounts": [] },
+    "user|campaigns": { "status": 100, "macros_list": [], "campaigns": [] },
+    "chat|area_population": { "status": 100, "population": [] },
+    "friend|info": {
+      "status": 100,
+      "friends": [],
+      "opponents": [],
+      "requests": [],
+      "requests_out": []
+    },
+    "user|action_stats": { "status": 100, "action_stats": [] },
+    "arena|great_fights": { "status": 100, "fight_ids": [] },
+    "user|time_to_next_achievement": {
+      "status": 100,
+      "show_chest": "0",
+      "next_value": 0,
+      "online_achievement_left": 0
+    },
+    "assistant|farm_info": { "status": 100, "area_id": 503, "farm_list": {} },
+    "bank|info": { "status": 100, "bank_info": [], "goldpool_vars": {} },
+    "user|smiles": { "status": 100, "smiles": [] },
+    "common|antimat": { "status": 100, "words": [] },
+    "common|event_conf": { "status": 100, "event_conf": { "events": [] } },
+    "common|front_status": { "status": 100, "front_status": true },
+    "common|area_capture_info": {
+      "status": 100,
+      "area_capture_info": {
+        "area_id": "503",
+        "kind": 0,
+        "capture_info": "",
+        "can_capture": 0,
+        "cooldown": 0,
+        "capture_cooldown": null,
+        "cooldown_scope": "0",
+        "capture_cooldown_scope": "0"
+      },
+      "macros_list": []
+    },
+    "common|occurrences_conf": { "status": 100, "occurrences_conf": [] },
+    "common|farm_agregate": { "status": 100, "areas_farm": {} }
+  }
 }

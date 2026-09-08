@@ -19,9 +19,8 @@
 
 Текущий playable slice покрыт независимыми файлами в `tests/e2e/`:
 
-- `auth-init` — cookie на `game.php` 200, flat `init`/`init2`, nested `user|bag`,
-  numeric `user|conf.id`, tutorial flags в `user|personal_details`, item id ≥ 100000,
-  restart hero/bag;
+- `character-bootstrap` — полный flat init/init2 inventory, skills, HUD
+  HP/MP/EXP, welcome `{nick}`, reconnect/restart character state;
 - `personal-details` — `user|save_personal_details` flat `status:100` + `state`,
   persist `pondViewLast` после restart, overlay tutorial flags, nested getter;
 - `browser-auth` — HTML login/register, 302 handoff, пять cookies только в 200,

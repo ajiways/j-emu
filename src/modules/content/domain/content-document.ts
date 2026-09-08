@@ -1,5 +1,15 @@
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v2";
-export const CONTENT_VALIDATOR_VERSION = "2";
+import type {
+  AppearanceDocument,
+  BootstrapChromeDocument,
+  CommonConfBlock,
+  HudDefaultsDocument,
+  LevelBoundaryDocument,
+  SkillDocument,
+  WelcomeMessageDocument,
+} from "./bootstrap-content.ts";
+
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v3";
+export const CONTENT_VALIDATOR_VERSION = "3";
 
 export type ArtifactDocument = Readonly<{
   id: number;
@@ -65,13 +75,42 @@ export type ContentBundle = Readonly<{
   bots: readonly BotDocument[];
   areas: readonly AreaDocument[];
   huntSpawns: readonly HuntSpawnDocument[];
+  skills: readonly SkillDocument[];
+  levels: readonly LevelBoundaryDocument[];
+  appearances: readonly AppearanceDocument[];
+  hudDefaults: HudDefaultsDocument;
+  chrome: BootstrapChromeDocument;
+  commonConf: CommonConfBlock;
+  welcomeMessage: WelcomeMessageDocument;
 }>;
 
 export type ContentEntry = Readonly<{
-  type: "artifact" | "bot" | "area" | "hunt_spawn";
+  type:
+    | "artifact"
+    | "bot"
+    | "area"
+    | "hunt_spawn"
+    | "skill"
+    | "level"
+    | "appearance"
+    | "hud_defaults"
+    | "chrome"
+    | "common_conf"
+    | "welcome_message";
   key: string;
   digest: string;
-  document: ArtifactDocument | BotDocument | AreaDocument | HuntSpawnDocument;
+  document:
+    | ArtifactDocument
+    | BotDocument
+    | AreaDocument
+    | HuntSpawnDocument
+    | SkillDocument
+    | LevelBoundaryDocument
+    | AppearanceDocument
+    | HudDefaultsDocument
+    | BootstrapChromeDocument
+    | CommonConfBlock
+    | WelcomeMessageDocument;
 }>;
 
 export type ValidatedContentBundle = Readonly<{
@@ -82,6 +121,13 @@ export type ValidatedContentBundle = Readonly<{
   bots: readonly BotDocument[];
   areas: readonly AreaDocument[];
   huntSpawns: readonly HuntSpawnDocument[];
+  skills: readonly SkillDocument[];
+  levels: readonly LevelBoundaryDocument[];
+  appearances: readonly AppearanceDocument[];
+  hudDefaults: HudDefaultsDocument;
+  chrome: BootstrapChromeDocument;
+  commonConf: CommonConfBlock;
+  welcomeMessage: WelcomeMessageDocument;
   entries: readonly ContentEntry[];
 }>;
 

@@ -5,7 +5,6 @@ import { CharacterModule } from "../../../src/modules/character/character-module
 import { CombatModule } from "../../../src/modules/combat/combat-module.ts";
 import { IdentityModule } from "../../../src/modules/identity/identity-module.ts";
 import { InventoryModule } from "../../../src/modules/inventory/inventory-module.ts";
-import type { CommonConfBlock } from "../../../src/modules/jugger-wire/application/common-conf-document.ts";
 import { JuggerWireModule } from "../../../src/modules/jugger-wire/jugger-wire-module.ts";
 import { WorldModule } from "../../../src/modules/world/world-module.ts";
 import type { AppConfig } from "../../../src/app/config.ts";
@@ -17,6 +16,8 @@ import type { CombatPort } from "../../../src/modules/combat/ports/combat-port.t
 import type { IdentityService } from "../../../src/modules/identity/application/identity-service.ts";
 import type { InventoryService } from "../../../src/modules/inventory/domain/inventory-service.ts";
 import type { WorldService } from "../../../src/modules/world/domain/world-service.ts";
+import type { Clock } from "../../../src/shared/kernel/clock.ts";
+import { PLAYABLE_HERO_CREATION } from "../../support/hero-fixtures.ts";
 
 const database = undefined as unknown as PostgresDatabase;
 
@@ -31,13 +32,13 @@ describe("module factories", () => {
     expect(() =>
       CharacterModule.create({
         database,
-        creationPolicy: { level: 1, hp: 1, maxHp: 1, areaId: "503", moneyMinor: 0 },
+        creationPolicy: PLAYABLE_HERO_CREATION,
       }),
     ).toThrow(/Character module requires a database/);
     expect(() =>
       CharacterModule.create({
         database: {} as PostgresDatabase,
-        creationPolicy: { level: 1, hp: 28, maxHp: 27, areaId: "503", moneyMinor: 0 },
+        creationPolicy: { ...PLAYABLE_HERO_CREATION, hp: 28, maxHp: 27 },
       }),
     ).toThrow(/HP policy/);
   });
@@ -90,6 +91,7 @@ describe("module factories", () => {
         catalog: {} as Catalog,
         world: {} as WorldService,
         combat: {} as CombatPort,
+        clock: {} as Clock,
         bootstrap: undefined as never,
         fightWire: undefined as never,
         meleeSourceIds: undefined as never,
@@ -113,7 +115,7 @@ describe("module factories", () => {
     await expect(combat.close()).resolves.toBeUndefined();
     const characters = CharacterModule.create({
       database: {} as PostgresDatabase,
-      creationPolicy: { level: 1, hp: 27, maxHp: 27, areaId: "503", moneyMinor: 0 },
+      creationPolicy: PLAYABLE_HERO_CREATION,
     });
     await expect(characters.close()).resolves.toBeUndefined();
     const inventory = InventoryModule.create({
@@ -149,44 +151,10 @@ describe("module factories", () => {
         catalog: {} as Catalog,
         world: {} as WorldService,
         combat: {} as CombatPort,
+        clock: {} as Clock,
         bootstrap: {
-          diamonds: "0.00",
           bagCapacity: 1,
           pocketCapacity: 1,
-          heroKind: 1,
-          tutorialInfo: { finished_first_fight: "1", tutorial2: "{}" },
-          commonConf: { status: 100 } as CommonConfBlock,
-          unitframe: {
-            rank: 0,
-            fight_id: 0,
-            gag_time: 0,
-            hp_time: 0,
-            mp_time: 0,
-            epic_value: 0,
-            mp: 12,
-            mpMax: 12,
-            exp: 1,
-            expMin: 0,
-            expMax: 68,
-            expStatus: 0,
-            honor: 0,
-            honorMin: 0,
-            honorMax: 100,
-            honorStatus: 0,
-            revenge: 0,
-            revengeMin: 0,
-            revengeMax: "300",
-            revengeStatus: 0,
-            energy_percent_max: 100,
-            energy_percent_current: 100,
-            avatar_small: "avatar_m_set_0_gray_sm.png",
-          },
-          view: {
-            sk: 1,
-            body: "armor();head(0,0,8,152);skin()",
-            avatar_big: "avatar_m_set_0_gray.png",
-            bag_cnt: 2,
-          },
           chat: {
             protocol: "mpd",
             key: "EMUKEY1",

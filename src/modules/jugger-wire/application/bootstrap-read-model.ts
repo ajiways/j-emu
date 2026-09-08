@@ -1,93 +1,32 @@
-import type { BotDefinition } from "../../catalog/domain/bot-definition.ts";
+import type { SkillDefinition } from "../../catalog/domain/skill-definition.ts";
 import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../character/application/character-service.ts";
+import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import type { WorldService } from "../../world/domain/world-service.ts";
+import type { BotDefinition } from "../../catalog/domain/bot-definition.ts";
+import type { CommonConfBlock } from "../../content/domain/bootstrap-content.ts";
 import {
   buildLocationAreaConf,
   huntBotsForArea,
   type LocationAreaConfBlock,
 } from "./area-conf-block.ts";
-import type { CommonConfBlock } from "./common-conf-document.ts";
+import { emptyBookTrio } from "./book-quest-blocks.ts";
+import { overlayCaptureAreaId, overlayChromeAreaId } from "./chrome-area-overlay.ts";
+import { buildHeroState, type HeroStateBlock } from "./hero-state-block.ts";
 import { buildHuntBlock, type HuntBlock } from "./hunt-block.ts";
-import {
-  buildUserUnitframe,
-  type UnitframeHudPolicy,
-  type UserUnitframeBlock,
-} from "./user-unitframe-block.ts";
+import { buildMenuLinkStatus } from "./menu-link-status-block.ts";
+import { buildChatConf, type ChatConfPolicy } from "./chat-conf-block.ts";
+import { buildUserBag, buildUserPocket } from "./user-bag-block.ts";
+import { buildUserConf } from "./user-conf-block.ts";
+import { emptyUserMagic } from "./user-magic-block.ts";
+import { buildUserSkills, skillsExpireBlock, type UserSkillsBlock } from "./user-skills-block.ts";
+import { buildUserUnitframe, type UserUnitframeBlock } from "./user-unitframe-block.ts";
+import { buildWelcomeMessage } from "./welcome-message-block.ts";
 
-export type { HuntBlock, UserUnitframeBlock };
+export type { HuntBlock, UserUnitframeBlock, HeroStateBlock };
 
 type StatusOkBlock = Readonly<{ status: 100 }>;
-
-export type HeroStateBlock = Readonly<{
-  area_id: string;
-  level: number;
-  hp: number;
-  hp_max: number;
-  money: string;
-  money_gold: string;
-}>;
-
-type BagItemBlock = Readonly<{
-  id: number;
-  artikul_id: number;
-  title: string;
-  picture: string;
-  type_id: string;
-  kind_id: number;
-  slot_mask: number;
-  cnt: number;
-  action: "bag";
-}>;
-
-type UserBagBlock = Readonly<{
-  status: 100;
-  bag: Readonly<Record<string, BagItemBlock>>;
-  amount: number;
-  amount_max: number;
-}>;
-
-type UserPocketBlock = Readonly<{
-  status: 100;
-  capacity: number;
-  pocket: readonly [];
-}>;
-
-type UserConfBlock = Readonly<{
-  status: 100;
-  id: number;
-  nick: string;
-  level: number;
-  kind: number;
-}>;
-
-type UserPersonalDetailsBlock = Readonly<{
-  status: 100;
-  info: Readonly<Record<string, unknown>>;
-}>;
-
-type InitBlocks = Readonly<{
-  "common|init": StatusOkBlock;
-  state: HeroStateBlock;
-  "user|bag": UserBagBlock;
-  "user|pocket": UserPocketBlock;
-  "user|conf": UserConfBlock;
-  "user|personal_details": UserPersonalDetailsBlock;
-}>;
-
-type Init2Blocks = Readonly<{
-  "common|init2": StatusOkBlock;
-  state: HeroStateBlock;
-  "user|unitframe": UserUnitframeBlock;
-  "common|area_conf": LocationAreaConfBlock;
-  "common|hunt": HuntBlock;
-}>;
-
-function moneyFromMinorUnits(value: number): string {
-  if (!Number.isInteger(value) || value < 0) throw new Error("Invalid money amount");
-  return (value / 100).toFixed(2);
-}
 
 export class BootstrapReadModel {
   constructor(
@@ -95,86 +34,73 @@ export class BootstrapReadModel {
     private readonly inventory: InventoryService,
     private readonly catalog: Catalog,
     private readonly world: WorldService,
+    private readonly clock: Clock,
     private readonly policy: Readonly<{
-      diamonds: string;
       bagCapacity: number;
       pocketCapacity: number;
-      heroKind: number;
-      tutorialInfo: Readonly<{
-        finished_first_fight: string;
-        tutorial2: string;
-      }>;
-      commonConf: CommonConfBlock;
-      unitframe: UnitframeHudPolicy;
+      chat: ChatConfPolicy;
+      menuLinks: Readonly<Record<string, string>>;
     }>,
   ) {}
 
-  get heroKind(): number {
-    return this.policy.heroKind;
+  async commonConf(): Promise<CommonConfBlock> {
+    return this.catalog.commonConf();
   }
 
-  get commonConf(): CommonConfBlock {
-    return this.policy.commonConf;
+  async state(accountId: number): Promise<HeroStateBlock> {
+    return buildHeroState(await this.requireHero(accountId), this.clock);
+  }
+
+  async hunt(accountId: number): Promise<HuntBlock> {
+    const hero = await this.requireHero(accountId);
+    const area = await this.world.area(hero.areaId);
+    return buildHuntBlock(area.spawns);
   }
 
   async unitframe(accountId: number): Promise<UserUnitframeBlock> {
-    return buildUserUnitframe(await this.requireHero(accountId), this.policy.unitframe);
+    const hero = await this.requireHero(accountId);
+    const level = await this.catalog.level(hero.level);
+    const appearance = await this.catalog.appearance(hero.kind, hero.gender);
+    const hud = await this.catalog.hudDefaults();
+    return buildUserUnitframe(hero, level, appearance, hud);
   }
 
-  async init(accountId: number): Promise<InitBlocks> {
-    const hero = await this.requireHero(accountId);
-    const storedInfo = await this.characters.personalDetails(accountId);
-    const items = await this.inventory.list(hero.id);
-    const bag: Record<string, BagItemBlock> = {};
-    for (const item of items) {
-      if (item.location.kind !== "bag") continue;
-      const definition = await this.catalog.artifact(item.artifactId);
-      if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
-      bag[String(item.id)] = {
-        id: item.id,
-        artikul_id: definition.id,
-        title: definition.title,
-        picture: definition.picture,
-        type_id: definition.typeId,
-        kind_id: definition.kindId,
-        slot_mask: definition.slotMask,
-        cnt: item.quantity,
-        action: "bag",
-      };
+  async skills(accountId: number): Promise<UserSkillsBlock> {
+    const heroSkills = await this.characters.skillsFor(accountId);
+    const definitions = new Map<string, SkillDefinition>();
+    for (const skill of heroSkills) {
+      definitions.set(skill.id, await this.catalog.skill(skill.id));
     }
+    return buildUserSkills(heroSkills, definitions, this.policy.bagCapacity);
+  }
 
+  async init(accountId: number): Promise<Readonly<Record<string, unknown>>> {
+    const hero = await this.requireHero(accountId);
+    const level = await this.catalog.level(hero.level);
+    const chrome = await this.catalog.chrome();
+    const book = emptyBookTrio("started");
     return {
-      "common|init": { status: 100 },
-      state: {
-        area_id: hero.areaId,
-        level: hero.level,
-        hp: hero.hp,
-        hp_max: hero.maxHp,
-        money: moneyFromMinorUnits(hero.moneyMinor),
-        money_gold: this.policy.diamonds,
-      },
-      "user|bag": {
-        status: 100,
-        bag,
-        amount: Object.keys(bag).length,
-        amount_max: this.policy.bagCapacity,
-      },
-      "user|pocket": { status: 100, capacity: this.policy.pocketCapacity, pocket: [] },
-      "user|conf": {
-        status: 100,
-        id: hero.id,
-        nick: hero.nick,
-        level: hero.level,
-        kind: this.policy.heroKind,
-      },
+      "common|init": statusOk(),
+      "common|conf": await this.catalog.commonConf(),
+      state: buildHeroState(hero, this.clock),
+      "user|bag": await buildUserBag(hero, this.inventory, this.catalog, this.policy.bagCapacity),
+      "user|pocket": buildUserPocket(this.policy.pocketCapacity),
+      "user|magic": emptyUserMagic(),
+      "user|conf": buildUserConf(hero, level),
       "user|personal_details": {
         status: 100,
-        info: { ...storedInfo, ...this.policy.tutorialInfo },
+        info: await this.characters.personalDetails(accountId),
       },
+      "user|skills": await this.skills(accountId),
+      "user|professions": chrome.block("user|professions"),
+      "pet|list": chrome.block("pet|list"),
+      "user|mount_list": chrome.block("user|mount_list"),
+      ...book,
+      "user|campaigns": chrome.block("user|campaigns"),
     };
   }
 
-  async init2(accountId: number): Promise<Init2Blocks> {
+  async init2(accountId: number): Promise<Readonly<Record<string, unknown>>> {
     const hero = await this.requireHero(accountId);
     const area = await this.world.area(hero.areaId);
     const bots = new Map<number, BotDefinition>();
@@ -183,20 +109,42 @@ export class BootstrapReadModel {
       if (!definition) throw new Error(`Bot catalog entry ${spawn.botId} is missing`);
       bots.set(definition.id, definition);
     }
-
+    const chrome = await this.catalog.chrome();
+    const areaConf: LocationAreaConfBlock = buildLocationAreaConf(
+      area,
+      huntBotsForArea(area.spawns, bots),
+    );
     return {
-      "common|init2": { status: 100 },
-      state: {
-        area_id: hero.areaId,
-        level: hero.level,
-        hp: hero.hp,
-        hp_max: hero.maxHp,
-        money: moneyFromMinorUnits(hero.moneyMinor),
-        money_gold: this.policy.diamonds,
-      },
-      "user|unitframe": buildUserUnitframe(hero, this.policy.unitframe),
-      "common|area_conf": buildLocationAreaConf(area, huntBotsForArea(area.spawns, bots)),
+      "common|init2": statusOk(),
+      state: buildHeroState(hero, this.clock),
+      "user|unitframe": await this.unitframe(accountId),
+      "chat|conf": buildChatConf(hero.accountId, this.policy.chat),
+      "chat|area_population": chrome.block("chat|area_population"),
+      "chat|message": buildWelcomeMessage(hero, chrome.welcomeTemplate, this.clock),
+      "friend|info": chrome.block("friend|info"),
+      "user|action_stats": chrome.block("user|action_stats"),
+      "arena|great_fights": chrome.block("arena|great_fights"),
+      "user|skills": skillsExpireBlock(),
+      "user|time_to_next_achievement": chrome.block("user|time_to_next_achievement"),
+      "assistant|farm_info": overlayChromeAreaId(
+        chrome.block("assistant|farm_info"),
+        hero.areaId,
+        "assistant|farm_info",
+      ),
+      "common|area_conf": areaConf,
       "common|hunt": buildHuntBlock(area.spawns),
+      "bank|info": chrome.block("bank|info"),
+      "user|smiles": chrome.block("user|smiles"),
+      "common|antimat": chrome.block("common|antimat"),
+      "common|event_conf": chrome.block("common|event_conf"),
+      "common|menu_link_status": buildMenuLinkStatus(this.policy.menuLinks),
+      "common|front_status": chrome.block("common|front_status"),
+      "common|area_capture_info": overlayCaptureAreaId(
+        chrome.block("common|area_capture_info"),
+        hero.areaId,
+      ),
+      "common|occurrences_conf": chrome.block("common|occurrences_conf"),
+      "common|farm_agregate": chrome.block("common|farm_agregate"),
     };
   }
 
@@ -205,4 +153,8 @@ export class BootstrapReadModel {
     if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
     return hero;
   }
+}
+
+function statusOk(): StatusOkBlock {
+  return { status: 100 };
 }

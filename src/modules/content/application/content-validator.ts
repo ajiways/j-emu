@@ -1,4 +1,5 @@
 import { digestCanonical } from "../domain/canonical-digest.ts";
+import { BOOTSTRAP_CHROME_REQUIRED_KEYS } from "../domain/bootstrap-content.ts";
 import {
   CONTENT_VALIDATOR_VERSION,
   PLAYABLE_SLICE_SCHEMA_VERSION,
@@ -7,6 +8,18 @@ import {
   type ValidatedContentBundle,
 } from "../domain/content-document.ts";
 import { ContentValidationError } from "./content-validation-error.ts";
+
+const REQUIRED_SKILL_IDS = [
+  "HPREG",
+  "ORATORY",
+  "STR",
+  "RAG",
+  "DEX",
+  "DEF",
+  "VIT",
+  "MPMAX",
+  "MONEYMOD",
+] as const;
 
 export class ContentValidator {
   validate(bundle: ContentBundle): ValidatedContentBundle {
@@ -34,6 +47,21 @@ export class ContentValidator {
       "hunt_spawn",
       bundle.huntSpawns.map((spawn) => String(spawn.id)),
     );
+    collectDuplicateIds(
+      issues,
+      "skill",
+      bundle.skills.map((skill) => skill.id),
+    );
+    collectDuplicateIds(
+      issues,
+      "level",
+      bundle.levels.map((level) => String(level.level)),
+    );
+    collectDuplicateIds(
+      issues,
+      "appearance",
+      bundle.appearances.map((row) => `${row.kind}:${row.gender}`),
+    );
     const areaIds = new Set(bundle.areas.map((area) => area.id));
     const botIds = new Set(bundle.bots.map((bot) => bot.id));
     for (const spawn of bundle.huntSpawns) {
@@ -54,6 +82,22 @@ export class ContentValidator {
         }
       }
     }
+    const skillIds = new Set(bundle.skills.map((skill) => skill.id));
+    for (const skillId of REQUIRED_SKILL_IDS) {
+      if (!skillIds.has(skillId)) issues.push(`missing required skill ${skillId}`);
+    }
+    if (!bundle.levels.some((level) => level.level === 1)) {
+      issues.push("level 1 boundary is required");
+    }
+    if (!bundle.appearances.some((row) => row.kind === 1 && row.gender === 1)) {
+      issues.push("appearance for kind 1 gender 1 is required");
+    }
+    if (!bundle.welcomeMessage.template.includes("{nick}")) {
+      issues.push("welcome template must contain {nick}");
+    }
+    for (const key of BOOTSTRAP_CHROME_REQUIRED_KEYS) {
+      if (!(key in bundle.chrome)) issues.push(`chrome is missing ${key}`);
+    }
     if (issues.length > 0) throw new ContentValidationError(issues);
 
     const entries: ContentEntry[] = [
@@ -61,6 +105,15 @@ export class ContentValidator {
       ...bundle.bots.map((document) => entry("bot", String(document.id), document)),
       ...bundle.areas.map((document) => entry("area", document.id, document)),
       ...bundle.huntSpawns.map((document) => entry("hunt_spawn", String(document.id), document)),
+      ...bundle.skills.map((document) => entry("skill", document.id, document)),
+      ...bundle.levels.map((document) => entry("level", String(document.level), document)),
+      ...bundle.appearances.map((document) =>
+        entry("appearance", `${document.kind}:${document.gender}`, document),
+      ),
+      entry("hud_defaults", "hud_defaults", bundle.hudDefaults),
+      entry("chrome", "chrome", bundle.chrome),
+      entry("common_conf", "common_conf", bundle.commonConf),
+      entry("welcome_message", "welcome_message", bundle.welcomeMessage),
     ].sort((left, right) => {
       const typeOrder = left.type.localeCompare(right.type);
       return typeOrder !== 0 ? typeOrder : left.key.localeCompare(right.key);
@@ -81,6 +134,13 @@ export class ContentValidator {
       bots: bundle.bots,
       areas: bundle.areas,
       huntSpawns: bundle.huntSpawns,
+      skills: bundle.skills,
+      levels: bundle.levels,
+      appearances: bundle.appearances,
+      hudDefaults: bundle.hudDefaults,
+      chrome: bundle.chrome,
+      commonConf: bundle.commonConf,
+      welcomeMessage: bundle.welcomeMessage,
       entries,
     };
   }

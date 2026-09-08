@@ -30,7 +30,7 @@ export const drafts = contentSchema.table(
     unique("drafts_type_key_unique").on(table.contentType, table.contentKey),
     check(
       "drafts_content_type_check",
-      sql`${table.contentType} IN ('artifact', 'bot', 'area', 'hunt_spawn')`,
+      sql`${table.contentType} IN ('artifact', 'bot', 'area', 'hunt_spawn', 'skill', 'level', 'appearance', 'hud_defaults', 'chrome', 'common_conf', 'welcome_message')`,
     ),
   ],
 );

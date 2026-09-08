@@ -3,8 +3,34 @@
     "level": 1,
     "hp": 27,
     "maxHp": 27,
+    "mp": 12,
+    "maxMp": 12,
+    "exp": 1,
     "areaId": "503",
-    "moneyMinor": 2500
+    "moneyMinor": 2500,
+    "moneyGoldMinor": 0,
+    "kind": 1,
+    "gender": 1,
+    "language": "ru",
+    "body": "armor();head(0,0,8,152);skin()",
+    "sk": 1,
+    "honor": 0,
+    "hpTime": 0,
+    "tutorialInfo": {
+      "finished_first_fight": "1",
+      "tutorial2": "{\"finished\":true}"
+    },
+    "skills": [
+      { "id": "HPREG", "value": 700 },
+      { "id": "ORATORY", "value": 1 },
+      { "id": "STR", "value": 12 },
+      { "id": "RAG", "value": 8 },
+      { "id": "DEX", "value": 8 },
+      { "id": "DEF", "value": 8 },
+      { "id": "VIT", "value": 27 },
+      { "id": "MPMAX", "value": 12 },
+      { "id": "MONEYMOD", "value": 0 }
+    ]
   },
   "starterItems": [
     {
@@ -14,46 +40,8 @@
     }
   ],
   "bootstrap": {
-    "diamonds": "0.00",
     "bagCapacity": 20,
     "pocketCapacity": 4,
-    "heroKind": 1,
-    "tutorialInfo": {
-      "finished_first_fight": "1",
-      "tutorial2": "{\"finished\":true}"
-    },
-    "commonConfFile": "../content/common-conf.json",
-    "unitframe": {
-      "rank": 0,
-      "fight_id": 0,
-      "gag_time": 0,
-      "hp_time": 0,
-      "mp_time": 0,
-      "epic_value": 0,
-      "mp": 12,
-      "mpMax": 12,
-      "exp": 1,
-      "expMin": 0,
-      "expMax": 68,
-      "expStatus": 0,
-      "honor": 0,
-      "honorMin": 0,
-      "honorMax": 100,
-      "honorStatus": 0,
-      "revenge": 0,
-      "revengeMin": 0,
-      "revengeMax": "300",
-      "revengeStatus": 0,
-      "energy_percent_max": 100,
-      "energy_percent_current": 100,
-      "avatar_small": "avatar_m_set_0_gray_sm.png"
-    },
-    "view": {
-      "sk": 1,
-      "body": "armor();head(0,0,8,152);skin()",
-      "avatar_big": "avatar_m_set_0_gray.png",
-      "bag_cnt": 2
-    },
     "chat": {
       "protocol": "mpd",
       "key": "EMUKEY1",

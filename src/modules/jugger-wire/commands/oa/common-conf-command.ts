@@ -1,5 +1,5 @@
 import type { BootstrapReadModel, HeroStateBlock } from "../../application/bootstrap-read-model.ts";
-import type { CommonConfBlock } from "../../application/common-conf-document.ts";
+import type { CommonConfBlock } from "../../../content/domain/bootstrap-content.ts";
 import type { OaCommand, OaEncodedResponse } from "./oa-command.ts";
 
 type CommonConfBlocks = Readonly<{
@@ -14,10 +14,9 @@ export class CommonConfCommand implements OaCommand {
   constructor(private readonly bootstrap: BootstrapReadModel) {}
 
   async execute(accountId: number): Promise<OaEncodedResponse> {
-    const init = await this.bootstrap.init(accountId);
     const blocks: CommonConfBlocks = {
-      "common|conf": this.bootstrap.commonConf,
-      state: init.state,
+      "common|conf": await this.bootstrap.commonConf(),
+      state: await this.bootstrap.state(accountId),
     };
     return { kind: "flat", blocks };
   }

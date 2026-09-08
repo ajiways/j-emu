@@ -32,10 +32,9 @@ export class UserSavePersonalDetailsCommand implements OaCommand {
     request: SavePersonalDetailsRequest,
   ): Promise<SavePersonalDetailsBlocks> {
     await this.characters.mergePersonalDetails(context.accountId, request.patch);
-    const init = await this.bootstrap.init(context.accountId);
     return {
       "user|save_personal_details": { status: 100 },
-      state: init.state,
+      state: await this.bootstrap.state(context.accountId),
     };
   }
 

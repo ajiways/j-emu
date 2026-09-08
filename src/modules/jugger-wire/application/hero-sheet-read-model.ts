@@ -1,3 +1,4 @@
+import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../character/application/character-service.ts";
 import type { ChatConfBlock, ChatConfPolicy } from "./chat-conf-block.ts";
 import { buildChatConf } from "./chat-conf-block.ts";
@@ -6,10 +7,9 @@ import { emptyBookTrio } from "./book-quest-blocks.ts";
 import type { MenuLinkStatusBlock } from "./menu-link-status-block.ts";
 import { buildMenuLinkStatus } from "./menu-link-status-block.ts";
 import { emptyUserMagic, type UserMagicBlock } from "./user-magic-block.ts";
-import { buildUserView, type PaperdollPolicy, type UserViewBlock } from "./user-view-block.ts";
+import { buildUserView, type UserViewBlock } from "./user-view-block.ts";
 
 type HeroSheetPolicy = Readonly<{
-  view: PaperdollPolicy;
   chat: ChatConfPolicy;
   menuLinks: Readonly<Record<string, string>>;
 }>;
@@ -17,6 +17,7 @@ type HeroSheetPolicy = Readonly<{
 export class HeroSheetReadModel {
   constructor(
     private readonly characters: CharacterService,
+    private readonly catalog: Catalog,
     private readonly policy: HeroSheetPolicy,
   ) {}
 
@@ -37,7 +38,10 @@ export class HeroSheetReadModel {
   }
 
   async view(accountId: number): Promise<UserViewBlock> {
-    return buildUserView(await this.requireHero(accountId), this.policy.view);
+    const hero = await this.requireHero(accountId);
+    const level = await this.catalog.level(hero.level);
+    const appearance = await this.catalog.appearance(hero.kind, hero.gender);
+    return buildUserView(hero, appearance, level);
   }
 
   private async requireHero(accountId: number) {

@@ -50,7 +50,17 @@ export class ContentPublicationService {
     validated: ValidatedContentBundle,
   ): Promise<PublishedRelease> {
     const release = await this.store.persistValidatedBundle(validated);
-    await this.catalog.materialize(release.id, validated.artifacts, validated.bots);
+    await this.catalog.materialize(release.id, {
+      artifacts: validated.artifacts,
+      bots: validated.bots,
+      skills: validated.skills,
+      levels: validated.levels,
+      appearances: validated.appearances,
+      hudDefaults: validated.hudDefaults,
+      chrome: validated.chrome,
+      commonConf: validated.commonConf,
+      welcomeMessage: validated.welcomeMessage,
+    });
     await this.world.materialize(release.id, validated.areas, validated.huntSpawns);
     await this.store.activate(release.id);
     return release;

@@ -19,6 +19,7 @@ import { UserFlashMessageCommand } from "../commands/oa/user-flash-message-comma
 import { UserMagicCommand } from "../commands/oa/user-magic-command.ts";
 import { UserPersonalDetailsCommand } from "../commands/oa/user-personal-details-command.ts";
 import { UserSavePersonalDetailsCommand } from "../commands/oa/user-save-personal-details-command.ts";
+import { UserSkillsCommand } from "../commands/oa/user-skills-command.ts";
 import { UserUnitframeCommand } from "../commands/oa/user-unitframe-command.ts";
 import { UserViewCommand } from "../commands/oa/user-view-command.ts";
 import { EsrvCommandRegistry } from "./esrv-command-registry.ts";
@@ -51,6 +52,7 @@ export class JuggerCommandModule {
       new UserBagCommand(bootstrap),
       new UserPersonalDetailsCommand(bootstrap),
       new UserSavePersonalDetailsCommand(characters, bootstrap),
+      new UserSkillsCommand(bootstrap),
       new UserUnitframeCommand(bootstrap),
       new UserViewCommand(bootstrap, sheet),
       new UserMagicCommand(bootstrap, sheet),

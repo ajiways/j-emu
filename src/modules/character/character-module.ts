@@ -4,6 +4,7 @@ import { CharacterService } from "./application/character-service.ts";
 import type { HeroCreationPolicy } from "./domain/hero.ts";
 import { Hero } from "./domain/hero.ts";
 import { PostgresHeroRepository } from "./infrastructure/postgres-hero-repository.ts";
+import { PostgresHeroSkillRepository } from "./infrastructure/postgres-hero-skill-repository.ts";
 import { PostgresPersonalDetailsRepository } from "./infrastructure/postgres-personal-details-repository.ts";
 
 export class CharacterModule {
@@ -22,6 +23,7 @@ export class CharacterModule {
     return new CharacterModule(
       new CharacterService(
         new PostgresHeroRepository(database),
+        new PostgresHeroSkillRepository(database),
         new PostgresPersonalDetailsRepository(database),
         creationPolicy,
       ),

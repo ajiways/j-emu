@@ -12,8 +12,31 @@ const schema = z.object({
     level: z.number().int().positive(),
     hp: z.number().int().nonnegative(),
     maxHp: z.number().int().positive(),
+    mp: z.number().int().nonnegative(),
+    maxMp: z.number().int().positive(),
+    exp: z.number().int().nonnegative(),
     areaId: z.string().min(1),
     moneyMinor: z.number().int().nonnegative(),
+    moneyGoldMinor: z.number().int().nonnegative(),
+    kind: z.number().int().positive(),
+    gender: z.number().int().positive(),
+    language: z.string().min(1),
+    body: z.string().min(1),
+    sk: z.number().int().nonnegative(),
+    honor: z.number().int().nonnegative(),
+    hpTime: z.number().int().nonnegative(),
+    tutorialInfo: z.object({
+      finished_first_fight: z.string().min(1),
+      tutorial2: z.string().min(1),
+    }),
+    skills: z
+      .array(
+        z.object({
+          id: z.string().min(1),
+          value: z.number().int().nonnegative(),
+        }),
+      )
+      .min(1),
   }),
   starterItems: z
     .array(
@@ -25,46 +48,8 @@ const schema = z.object({
     )
     .min(1),
   bootstrap: z.object({
-    diamonds: z.string().regex(/^\d+\.\d{2}$/),
     bagCapacity: z.number().int().positive(),
     pocketCapacity: z.number().int().positive(),
-    heroKind: z.number().int().positive(),
-    tutorialInfo: z.object({
-      finished_first_fight: z.string().min(1),
-      tutorial2: z.string().min(1),
-    }),
-    commonConfFile: z.string().min(1),
-    unitframe: z.object({
-      rank: z.number().int().nonnegative(),
-      fight_id: z.number().int().nonnegative(),
-      gag_time: z.number().int().nonnegative(),
-      hp_time: z.number().int().nonnegative(),
-      mp_time: z.number().int().nonnegative(),
-      epic_value: z.number().int().nonnegative(),
-      mp: z.number().int().nonnegative(),
-      mpMax: z.number().int().positive(),
-      exp: z.number().int().nonnegative(),
-      expMin: z.number().int().nonnegative(),
-      expMax: z.number().int().positive(),
-      expStatus: z.number().int().nonnegative(),
-      honor: z.number().int().nonnegative(),
-      honorMin: z.number().int().nonnegative(),
-      honorMax: z.number().int().positive(),
-      honorStatus: z.number().int().nonnegative(),
-      revenge: z.number().int().nonnegative(),
-      revengeMin: z.number().int().nonnegative(),
-      revengeMax: z.string().min(1),
-      revengeStatus: z.number().int().nonnegative(),
-      energy_percent_max: z.number().positive(),
-      energy_percent_current: z.number().nonnegative(),
-      avatar_small: z.string().min(1),
-    }),
-    view: z.object({
-      sk: z.number().int().nonnegative(),
-      body: z.string().min(1),
-      avatar_big: z.string().min(1),
-      bag_cnt: z.number().int().positive(),
-    }),
     chat: z.object({
       protocol: z.string().min(1),
       key: z.string().min(1),

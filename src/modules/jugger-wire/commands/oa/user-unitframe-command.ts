@@ -14,10 +14,9 @@ export class UserUnitframeCommand implements OaCommand {
   constructor(private readonly bootstrap: BootstrapReadModel) {}
 
   async execute(accountId: number): Promise<OaEncodedResponse> {
-    const init = await this.bootstrap.init(accountId);
     const blocks: UserUnitframeBlocks = {
       "user|unitframe": await this.bootstrap.unitframe(accountId),
-      state: init.state,
+      state: await this.bootstrap.state(accountId),
     };
     return { kind: "flat", blocks };
   }

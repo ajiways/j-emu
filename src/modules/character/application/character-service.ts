@@ -1,11 +1,14 @@
 import type { Hero, HeroCreationPolicy } from "../domain/hero.ts";
 import { PersonalDetails } from "../domain/personal-details.ts";
+import { requireHeroSkills, type HeroSkill } from "../domain/hero-skill.ts";
 import type { HeroRepository } from "../ports/hero-repository.ts";
+import type { HeroSkillRepository } from "../ports/hero-skill-repository.ts";
 import type { PersonalDetailsRepository } from "../ports/personal-details-repository.ts";
 
 export class CharacterService {
   constructor(
     private readonly heroes: HeroRepository,
+    private readonly skills: HeroSkillRepository,
     private readonly personalDetailsStore: PersonalDetailsRepository,
     private readonly creationPolicy: HeroCreationPolicy,
   ) {}
@@ -13,7 +16,13 @@ export class CharacterService {
   async getOrCreateForAccount(accountId: number, nick: string): Promise<Hero> {
     const existing = await this.heroes.findByAccountId(accountId);
     if (existing) return existing;
-    return this.heroes.create(accountId, nick, this.creationPolicy);
+    const hero = await this.heroes.create(accountId, nick, this.creationPolicy);
+    await this.skills.replace(hero.id, this.creationPolicy.skills);
+    await this.personalDetailsStore.save(
+      hero.id,
+      PersonalDetails.fromStored({ ...this.creationPolicy.tutorialInfo }),
+    );
+    return hero;
   }
 
   async getByAccountId(accountId: number): Promise<Hero | null> {
@@ -22,6 +31,11 @@ export class CharacterService {
 
   async save(hero: Hero): Promise<void> {
     await this.heroes.save(hero);
+  }
+
+  async skillsFor(accountId: number): Promise<readonly HeroSkill[]> {
+    const hero = await this.requireHero(accountId);
+    return requireHeroSkills(await this.skills.list(hero.id));
   }
 
   async personalDetails(accountId: number): Promise<Readonly<Record<string, unknown>>> {
@@ -41,7 +55,7 @@ export class CharacterService {
 
   private async storedDetails(heroId: number): Promise<PersonalDetails> {
     const stored = await this.personalDetailsStore.findByHeroId(heroId);
-    if (!stored) return PersonalDetails.empty();
+    if (!stored) throw new Error(`Personal details for hero ${heroId} are missing`);
     return stored;
   }
 

@@ -8,10 +8,9 @@ export async function flatBlockWithState(
   block: object,
 ): Promise<OaEncodedResponse> {
   if (!key) throw new Error("OA response key is required");
-  const init = await bootstrap.init(accountId);
   const blocks: Record<string, object> & { state: HeroStateBlock } = {
     [key]: block,
-    state: init.state,
+    state: await bootstrap.state(accountId),
   };
   return { kind: "flat", blocks };
 }

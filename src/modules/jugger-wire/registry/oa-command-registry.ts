@@ -19,6 +19,7 @@ export class OaCommandRegistry {
     "user|magic",
     "user|personal_details",
     "user|save_personal_details",
+    "user|skills",
     "user|unitframe",
     "user|view",
   ] as const;

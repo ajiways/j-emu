@@ -1,28 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { Hero } from "../../../src/modules/character/domain/hero.ts";
+import { AppearancePreset } from "../../../src/modules/catalog/domain/appearance-preset.ts";
+import { LevelBoundary } from "../../../src/modules/catalog/domain/level-boundary.ts";
 import { buildUserView } from "../../../src/modules/jugger-wire/application/user-view-block.ts";
 import { emptyBookTrio } from "../../../src/modules/jugger-wire/application/book-quest-blocks.ts";
 import { buildChatConf } from "../../../src/modules/jugger-wire/application/chat-conf-block.ts";
+import { testHero } from "../../support/hero-fixtures.ts";
 
 describe("jgr-emu bootstrap sheet builders", () => {
   it("builds a naked paperdoll with live empty collections", () => {
-    const hero = Hero.restore({
-      id: 1,
-      accountId: 9,
-      nick: "Ada",
-      level: 1,
-      hp: 27,
-      maxHp: 27,
-      areaId: "503",
-      moneyMinor: 2500,
-    });
+    const hero = testHero({ id: 1, accountId: 9, nick: "Ada" });
     expect(
-      buildUserView(hero, {
-        sk: 1,
-        body: "armor();head(0,0,8,152);skin()",
-        avatar_big: "avatar_m_set_0_gray.png",
-        bag_cnt: 2,
-      }),
+      buildUserView(
+        hero,
+        new AppearancePreset(1, 1, "avatar_m_set_0_gray.png", "avatar_m_set_0_gray_sm.png"),
+        new LevelBoundary(1, 0, 68, 2, 0, 0, 100, 0),
+      ),
     ).toMatchObject({
       status: 100,
       nick: "Ada",

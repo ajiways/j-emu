@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
-import { Hero, type HeroCreationPolicy } from "../domain/hero.ts";
+import { Hero, type HeroCreationPolicy, type HeroRecord } from "../domain/hero.ts";
 import type { HeroRepository } from "../ports/hero-repository.ts";
 import { heroes } from "./schema.ts";
 
@@ -32,8 +32,19 @@ export class PostgresHeroRepository implements HeroRepository {
         level: policy.level,
         hp: policy.hp,
         maxHp: policy.maxHp,
+        mp: policy.mp,
+        maxMp: policy.maxMp,
+        exp: policy.exp,
         areaId: policy.areaId,
         moneyMinor: BigInt(policy.moneyMinor),
+        moneyGoldMinor: BigInt(policy.moneyGoldMinor),
+        kind: policy.kind,
+        gender: policy.gender,
+        language: policy.language,
+        body: policy.body,
+        sk: policy.sk,
+        honor: policy.honor,
+        hpTime: BigInt(policy.hpTime),
         version: 1,
       })
       .returning();
@@ -50,8 +61,19 @@ export class PostgresHeroRepository implements HeroRepository {
         level: hero.level,
         hp: hero.hp,
         maxHp: hero.maxHp,
+        mp: hero.mp,
+        maxMp: hero.maxMp,
+        exp: hero.exp,
         areaId: hero.areaId,
         moneyMinor: BigInt(hero.moneyMinor),
+        moneyGoldMinor: BigInt(hero.moneyGoldMinor),
+        kind: hero.kind,
+        gender: hero.gender,
+        language: hero.language,
+        body: hero.body,
+        sk: hero.sk,
+        honor: hero.honor,
+        hpTime: BigInt(hero.hpTime),
         version: sql`${heroes.version} + 1`,
       })
       .where(eq(heroes.id, hero.id))
@@ -69,25 +91,78 @@ export class PostgresHeroRepository implements HeroRepository {
       level: number;
       hp: number;
       maxHp: number;
+      mp: number;
+      maxMp: number;
+      exp: number;
       areaId: string;
       moneyMinor: bigint;
+      moneyGoldMinor: bigint;
+      kind: number;
+      gender: number;
+      language: string;
+      body: string;
+      sk: number;
+      honor: number;
+      hpTime: bigint;
     }>,
     key: string,
   ): Hero | null {
     if (rows.length > 1) throw new Error(`Multiple rows found for ${key}`);
     const row = rows[0];
     if (!row) return null;
-    const moneyMinor = Number(row.moneyMinor);
-    if (!Number.isSafeInteger(moneyMinor)) throw new Error(`Unsafe money value for ${key}`);
-    return Hero.restore({
-      id: row.id,
-      accountId: row.accountId,
-      nick: row.nick,
-      level: row.level,
-      hp: row.hp,
-      maxHp: row.maxHp,
-      areaId: row.areaId,
-      moneyMinor,
-    });
+    return Hero.restore(recordFromRow(row, key));
   }
+}
+
+function recordFromRow(
+  row: {
+    id: number;
+    accountId: number;
+    nick: string;
+    level: number;
+    hp: number;
+    maxHp: number;
+    mp: number;
+    maxMp: number;
+    exp: number;
+    areaId: string;
+    moneyMinor: bigint;
+    moneyGoldMinor: bigint;
+    kind: number;
+    gender: number;
+    language: string;
+    body: string;
+    sk: number;
+    honor: number;
+    hpTime: bigint;
+  },
+  key: string,
+): HeroRecord {
+  return {
+    id: row.id,
+    accountId: row.accountId,
+    nick: row.nick,
+    level: row.level,
+    hp: row.hp,
+    maxHp: row.maxHp,
+    mp: row.mp,
+    maxMp: row.maxMp,
+    exp: row.exp,
+    areaId: row.areaId,
+    moneyMinor: safeInteger(row.moneyMinor, `money for ${key}`),
+    moneyGoldMinor: safeInteger(row.moneyGoldMinor, `diamonds for ${key}`),
+    kind: row.kind,
+    gender: row.gender,
+    language: row.language,
+    body: row.body,
+    sk: row.sk,
+    honor: row.honor,
+    hpTime: safeInteger(row.hpTime, `hpTime for ${key}`),
+  };
+}
+
+function safeInteger(value: bigint, label: string): number {
+  const converted = Number(value);
+  if (!Number.isSafeInteger(converted)) throw new Error(`Unsafe ${label}`);
+  return converted;
 }

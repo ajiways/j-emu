@@ -16,10 +16,9 @@ export class BookQuestListCommand implements OaCommand {
   ) {}
 
   async execute(accountId: number, envelope: ObjectActionEnvelope): Promise<OaEncodedResponse> {
-    const init = await this.bootstrap.init(accountId);
     const blocks: BookQuestListResponse = {
       ...this.sheet.bookTrio(filterTypeOf(envelope)),
-      state: init.state,
+      state: await this.bootstrap.state(accountId),
     };
     return { kind: "flat", blocks };
   }
