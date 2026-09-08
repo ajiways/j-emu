@@ -10,7 +10,9 @@ import { DuplicateAccountError } from "../../../src/modules/identity/domain/dupl
 import { IdentityModule } from "../../../src/modules/identity/identity-module.ts";
 import { InventoryModule } from "../../../src/modules/inventory/inventory-module.ts";
 import { uniqueDevelopmentSlot } from "../../support/harness/unique-development-slot.ts";
+import { playableCharacterModuleInput } from "../../support/playable-character-module-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
+import { SystemClock } from "../../../src/shared/kernel/system-clock.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
 const policy = loadGamePolicy(path.resolve(process.cwd(), "config/development.json"));
@@ -28,19 +30,18 @@ describe("playable account registration", () => {
       path.resolve(process.cwd(), "content/playable-slice.json"),
     );
     database = new PostgresDatabase(databaseUrl);
-    identity = IdentityModule.create({ database });
+    identity = IdentityModule.create({ database, clock: new SystemClock() });
     const catalog = await CatalogModule.create({ database });
     inventory = InventoryModule.create({
       database,
       starterItems: policy.starterItems,
       releaseArtifacts: catalog.releaseArtifacts,
     });
-    characters = CharacterModule.create({
-      database,
-      creationPolicy: policy.heroCreation,
-      progression: catalog.progression,
-      equipmentModifiers: inventory.service,
-    });
+    characters = CharacterModule.create(
+      playableCharacterModuleInput(database, catalog.progression, inventory.service, {
+        creationPolicy: policy.heroCreation,
+      }),
+    );
     registration = new PlayableAccountRegistration(
       identity.service,
       characters.service,

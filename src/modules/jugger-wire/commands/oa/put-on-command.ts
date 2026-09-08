@@ -31,6 +31,8 @@ export class PutOnCommand implements OaCommand {
   async handle(context: OaCommandContext, request: PutOnRequest): Promise<object> {
     try {
       return await this.unitOfWork.run(async () => {
+        const locked = await this.characters.lockByAccountId(context.accountId);
+        await this.characters.syncResources({ characterId: locked.id });
         const hero = await this.characters.lockByAccountId(context.accountId);
         await this.inventory.ensureStarterInventory(hero.id);
         const items = await this.inventory.list(hero.id);

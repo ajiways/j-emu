@@ -5,6 +5,7 @@ import type { CharacterService } from "../../character/application/character-ser
 import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import type { WorldService } from "../../world/domain/world-service.ts";
+import type { CombatPort } from "../../combat/ports/combat-port.ts";
 import type { BotDefinition } from "../../catalog/domain/bot-definition.ts";
 import type { CommonConfBlock } from "../../content/domain/bootstrap-content.ts";
 import {
@@ -39,6 +40,7 @@ export class BootstrapReadModel {
     private readonly inventory: InventoryService,
     private readonly catalog: Catalog,
     private readonly world: WorldService,
+    private readonly combat: CombatPort,
     private readonly clock: Clock,
     private readonly policy: Readonly<{
       bagCapacity: number;
@@ -67,7 +69,8 @@ export class BootstrapReadModel {
     const level = await this.catalog.level(hero.level);
     const appearance = await this.catalog.appearance(hero.kind, hero.gender);
     const hud = await this.catalog.hudDefaults();
-    return buildUserUnitframe(hero, level, appearance, hud);
+    const inActiveFight = (await this.combat.activeFightId(accountId)) !== null;
+    return buildUserUnitframe(hero, level, appearance, hud, inActiveFight);
   }
 
   async skills(accountId: number): Promise<UserSkillsBlock> {

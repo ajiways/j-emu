@@ -10,6 +10,7 @@ import {
   testDatabaseName,
 } from "../../support/postgres/test-database-url.ts";
 import { withIsolatedTestDatabase } from "../../support/postgres/isolated-test-database.ts";
+import { SystemClock } from "../../../src/shared/kernel/system-clock.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
 
@@ -25,7 +26,8 @@ describe("module factory lifecycle", () => {
   });
 
   it("creates and closes identity and combat modules against PostgreSQL", async () => {
-    const identity = IdentityModule.create({ database });
+    const clock = new SystemClock();
+    const identity = IdentityModule.create({ database, clock });
     await expect(identity.close()).resolves.toBeUndefined();
     const combat = CombatModule.create({
       database,
@@ -36,6 +38,7 @@ describe("module factory lifecycle", () => {
         botDamageMax: 4,
         turnTimeoutSeconds: 20,
       },
+      clock,
     });
     await expect(combat.close()).resolves.toBeUndefined();
   });

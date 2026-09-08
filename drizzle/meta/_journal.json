@@ -43,6 +43,13 @@
       "when": 1788859759955,
       "tag": "0005_character_experience_progression",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788863293132,
+      "tag": "0006_character_hp_regeneration",
+      "breakpoints": true
     }
   ]
 }

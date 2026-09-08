@@ -4,6 +4,7 @@ import path from "node:path";
 import { CompositionRoot } from "../../../src/app/composition-root.ts";
 import type { Application } from "../../../src/app/application.ts";
 import type { AppConfig } from "../../../src/app/config.ts";
+import type { Clock } from "../../../src/shared/kernel/clock.ts";
 import { publishDevelopmentContent } from "../../../src/infrastructure/postgres/publish-development-content.ts";
 import { migrateDatabase } from "../../../src/infrastructure/postgres/migration-runner.ts";
 import { writeClientStaticStubs } from "./client-static-stubs.ts";
@@ -15,6 +16,8 @@ export class ApplicationHarness {
   private readonly staticDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "j-emu-pub1-"));
   private applicationValue: Application | null = null;
 
+  constructor(private readonly clock?: Clock) {}
+
   async start(): Promise<Application> {
     if (this.applicationValue) throw new Error("Application harness is already started");
     writeClientStaticStubs(this.staticDirectory);
@@ -23,14 +26,14 @@ export class ApplicationHarness {
       testDatabaseUrl,
       path.resolve(process.cwd(), "content/playable-slice.json"),
     );
-    this.applicationValue = await new CompositionRoot().build(this.config());
+    this.applicationValue = await new CompositionRoot().build(this.config(), this.clock);
     return this.applicationValue;
   }
 
   async restart(): Promise<Application> {
     if (!this.applicationValue) throw new Error("Application harness was not started");
     await this.applicationValue.close();
-    this.applicationValue = await new CompositionRoot().build(this.config());
+    this.applicationValue = await new CompositionRoot().build(this.config(), this.clock);
     return this.applicationValue;
   }
 

@@ -49,15 +49,15 @@ export class JuggerCommandModule {
   ) {
     this.fightWire = fightWire;
     this.oa = new OaCommandRegistry([
-      new CommonInitCommand(bootstrap),
-      new CommonInit2Command(bootstrap),
+      new CommonInitCommand(unitOfWork, characters, bootstrap),
+      new CommonInit2Command(unitOfWork, characters, bootstrap),
       new CommonConfCommand(bootstrap),
       new CommonMenuLinkStatusCommand(sheet),
       new UserBagCommand(bootstrap),
       new UserPersonalDetailsCommand(bootstrap),
       new UserSavePersonalDetailsCommand(characters, bootstrap),
       new UserSkillsCommand(bootstrap),
-      new UserUnitframeCommand(bootstrap),
+      new UserUnitframeCommand(unitOfWork, characters, bootstrap),
       new UserViewCommand(bootstrap),
       new UserMagicCommand(bootstrap, sheet),
       new UserFlashMessageCommand(bootstrap),
@@ -67,7 +67,16 @@ export class JuggerCommandModule {
       new EmptyCollectionOaCommand("craft|user_recipes_list", "recipes", bootstrap),
       new EmptyCollectionOaCommand("battlepass|list", "list", bootstrap),
       new EmptyCollectionOaCommand("jail|list", "punishments", bootstrap),
-      new AttackBotCommand(bootstrap, characters, inventory, world, catalog, combat, fightWire),
+      new AttackBotCommand(
+        unitOfWork,
+        bootstrap,
+        characters,
+        inventory,
+        world,
+        catalog,
+        combat,
+        fightWire,
+      ),
       new PutOnCommand(unitOfWork, bootstrap, characters, inventory, catalog),
       new PutOffCommand(unitOfWork, bootstrap, characters, inventory, catalog),
     ]);

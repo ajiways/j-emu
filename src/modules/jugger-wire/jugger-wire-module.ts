@@ -104,7 +104,15 @@ export class JuggerWireModule {
         fightWirePolicy,
       );
       const commands = new JuggerCommandModule(
-        new BootstrapReadModel(characters, inventory, catalog, world, clock, bootstrapPolicy),
+        new BootstrapReadModel(
+          characters,
+          inventory,
+          catalog,
+          world,
+          combat,
+          clock,
+          bootstrapPolicy,
+        ),
         new HeroSheetReadModel({
           chat: bootstrapPolicy.chat,
           menuLinks: bootstrapPolicy.menuLinks,

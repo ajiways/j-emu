@@ -14,7 +14,6 @@ export type HeroCreationPolicy = Readonly<{
   body: string;
   sk: number;
   honor: number;
-  hpTime: number;
   tutorialInfo: Readonly<{
     finished_first_fight: string;
     tutorial2: string;
@@ -42,6 +41,7 @@ export type HeroRecord = Readonly<{
   sk: number;
   honor: number;
   hpTime: number;
+  regenAt: Date;
 }>;
 
 export type NewHero = Omit<HeroRecord, "id">;
@@ -67,6 +67,7 @@ export class Hero {
     private skValue: number,
     private honorValue: number,
     private hpTimeValue: number,
+    private regenAtValue: Date,
   ) {}
 
   static assertCreationPolicy(policy: HeroCreationPolicy): void {
@@ -80,8 +81,8 @@ export class Hero {
     if (!policy.language) throw new Error("Hero creation language is required");
     if (!policy.body) throw new Error("Hero creation body is required");
     if (policy.sk < 0) throw new Error("Hero creation sk cannot be negative");
-    if (policy.honor < 0 || policy.hpTime < 0) {
-      throw new Error("Hero creation honor and hpTime cannot be negative");
+    if (policy.honor < 0) {
+      throw new Error("Hero creation honor cannot be negative");
     }
     if (!policy.tutorialInfo.finished_first_fight || !policy.tutorialInfo.tutorial2) {
       throw new Error("Hero creation tutorial flags are required");
@@ -122,6 +123,7 @@ export class Hero {
       values.sk,
       values.honor,
       values.hpTime,
+      values.regenAt,
     );
   }
 
@@ -173,6 +175,25 @@ export class Hero {
   get hpTime(): number {
     return this.hpTimeValue;
   }
+  get regenAt(): Date {
+    return this.regenAtValue;
+  }
+
+  applyResourceClock(hp: number, hpTime: number, regenAt: Date): void {
+    this.setHp(hp);
+    this.setHpTime(hpTime);
+    if (!(regenAt instanceof Date) || !Number.isFinite(regenAt.getTime())) {
+      throw new Error("Hero regen_at must be a valid timestamp");
+    }
+    this.regenAtValue = regenAt;
+  }
+
+  setHpTime(hpTime: number): void {
+    if (!Number.isInteger(hpTime) || hpTime < 0) {
+      throw new Error("Hero hpTime must be a non-negative integer");
+    }
+    this.hpTimeValue = hpTime;
+  }
 
   applyProgression(exp: number, level: number, maxHp: number, maxMp: number): void {
     if (!Number.isInteger(exp) || exp < 0) {
@@ -205,6 +226,13 @@ export class Hero {
 
   healFully(): void {
     this.hpValue = this.maxHpValue;
+  }
+
+  private setHp(hp: number): void {
+    if (!Number.isInteger(hp) || hp < 0 || hp > this.maxHpValue) {
+      throw new Error("Hero HP must be an integer in [0, maxHp]");
+    }
+    this.hpValue = hp;
   }
 }
 

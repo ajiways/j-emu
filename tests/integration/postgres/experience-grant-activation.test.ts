@@ -10,7 +10,9 @@ import { createPostgresContentPublication } from "../../../src/modules/content/i
 import { loadContentBundleFile } from "../../../src/modules/content/infrastructure/load-content-bundle-file.ts";
 import { IdentityModule } from "../../../src/modules/identity/identity-module.ts";
 import { InventoryModule } from "../../../src/modules/inventory/inventory-module.ts";
+import { SystemClock } from "../../../src/shared/kernel/system-clock.ts";
 import { uniqueDevelopmentSlot } from "../../support/harness/unique-development-slot.ts";
+import { playableCharacterModuleInput } from "../../support/playable-character-module-input.ts";
 import { withIsolatedTestDatabase } from "../../support/postgres/isolated-test-database.ts";
 import {
   requireTestDatabaseUrl,
@@ -33,19 +35,18 @@ describe("experience grant activation races", () => {
       try {
         const publication = createPostgresContentPublication(database);
         const seeded = await publication.seed(playable, playablePath);
-        const identity = IdentityModule.create({ database });
+        const identity = IdentityModule.create({ database, clock: new SystemClock() });
         const catalog = await CatalogModule.create({ database });
         const inventory = InventoryModule.create({
           database,
           starterItems: policy.starterItems,
           releaseArtifacts: catalog.releaseArtifacts,
         });
-        const characters = CharacterModule.create({
-          database,
-          creationPolicy: policy.heroCreation,
-          progression: catalog.progression,
-          equipmentModifiers: inventory.service,
-        });
+        const characters = CharacterModule.create(
+          playableCharacterModuleInput(database, catalog.progression, inventory.service, {
+            creationPolicy: policy.heroCreation,
+          }),
+        );
         const slot = uniqueDevelopmentSlot();
         const account = await identity.service.register(`u${slot}`, `N${slot}`, "secret1");
         const hero = await characters.service.getOrCreateForAccount(
@@ -64,12 +65,16 @@ describe("experience grant activation races", () => {
           starterItems: policy.starterItems,
           releaseArtifacts: grantCatalog.releaseArtifacts,
         });
-        const grantCharacters = CharacterModule.create({
-          database: grantClient,
-          creationPolicy: policy.heroCreation,
-          progression: grantCatalog.progression,
-          equipmentModifiers: grantInventory.service,
-        });
+        const grantCharacters = CharacterModule.create(
+          playableCharacterModuleInput(
+            grantClient,
+            grantCatalog.progression,
+            grantInventory.service,
+            {
+              creationPolicy: policy.heroCreation,
+            },
+          ),
+        );
         const [granted, published] = await Promise.all([
           grantCharacters.service.grantExperience({
             characterId: hero.id,

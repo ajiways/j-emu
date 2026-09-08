@@ -1,3 +1,4 @@
+import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
 import type { Catalog } from "../../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../../character/application/character-service.ts";
 import type { CombatPort } from "../../../combat/ports/combat-port.ts";
@@ -32,6 +33,7 @@ export class AttackBotCommand implements OaCommand {
   readonly key = AttackBotCommand.key;
 
   constructor(
+    private readonly unitOfWork: UnitOfWork,
     private readonly bootstrap: BootstrapReadModel,
     private readonly characters: CharacterService,
     private readonly inventory: InventoryService,
@@ -56,8 +58,13 @@ export class AttackBotCommand implements OaCommand {
   }
 
   async handle(context: OaCommandContext, request: AttackBotRequest): Promise<AttackBotBlocks> {
-    const hero = await this.characters.getByAccountId(context.accountId);
-    if (!hero) throw new Error(`Hero for account ${context.accountId} is missing`);
+    const hero = await this.unitOfWork.run(async () => {
+      const locked = await this.characters.lockByAccountId(context.accountId);
+      await this.characters.syncResources({ characterId: locked.id });
+      const current = await this.characters.getByAccountId(context.accountId);
+      if (!current) throw new Error(`Hero for account ${context.accountId} is missing`);
+      return current;
+    });
     const area = await this.world.area(hero.areaId);
     const matchingSpawns = area.spawns.filter((spawn) => spawn.botId === request.botId);
     if (matchingSpawns.length === 0) {

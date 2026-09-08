@@ -41,6 +41,7 @@ export function buildUserUnitframe(
   level: LevelBoundary,
   appearance: AppearancePreset,
   hud: HudDefaults,
+  inActiveFight = false,
 ): UserUnitframeBlock {
   return {
     status: 100,
@@ -49,7 +50,7 @@ export function buildUserUnitframe(
     rank: level.honorRank,
     fight_id: hud.fightId,
     gag_time: hud.gagTime,
-    hp_time: hero.hpTime,
+    hp_time: inActiveFight ? 0 : hero.hpTime,
     mp_time: hud.mpTime,
     epic_value: hud.epicValue,
     hp: hero.hp,

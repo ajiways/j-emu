@@ -21,18 +21,37 @@ import type { InventoryService } from "../../../src/modules/inventory/domain/inv
 import type { WorldService } from "../../../src/modules/world/domain/world-service.ts";
 import type { Clock } from "../../../src/shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../src/shared/kernel/unit-of-work.ts";
-import { PLAYABLE_HERO_CREATION } from "../../support/hero-fixtures.ts";
+import {
+  IdleActiveFightQuery,
+  PLAYABLE_HERO_CREATION,
+  PLAYABLE_REGEN_POLICY,
+} from "../../support/hero-fixtures.ts";
 
 const database = undefined as unknown as PostgresDatabase;
 const progression = {} as CatalogProgression;
 const equipmentModifiers = {} as EquippedModifiers;
 const releaseArtifacts = {} as ReleaseArtifacts;
+const clock = {} as Clock;
+const activeFight = new IdleActiveFightQuery();
+const combatRules = {
+  playerDamageMin: 1,
+  playerDamageMax: 2,
+  botDamageMin: 1,
+  botDamageMax: 2,
+  turnTimeoutSeconds: 20,
+};
 
 describe("module factories", () => {
   it("fails fast when required identity dependencies are missing", () => {
-    expect(() => IdentityModule.create({ database })).toThrow(
+    expect(() => IdentityModule.create({ database, clock })).toThrow(
       /Identity module requires a database/,
     );
+    expect(() =>
+      IdentityModule.create({
+        database: {} as PostgresDatabase,
+        clock: undefined as unknown as Clock,
+      }),
+    ).toThrow(/Identity module requires a clock/);
   });
 
   it("fails fast when required character dependencies are missing", () => {
@@ -42,14 +61,42 @@ describe("module factories", () => {
         creationPolicy: PLAYABLE_HERO_CREATION,
         progression,
         equipmentModifiers,
+        clock,
+        regenPolicy: PLAYABLE_REGEN_POLICY,
+        activeFight,
       }),
     ).toThrow(/Character module requires a database/);
+    expect(() =>
+      CharacterModule.create({
+        database: {} as PostgresDatabase,
+        creationPolicy: PLAYABLE_HERO_CREATION,
+        progression,
+        equipmentModifiers,
+        clock: undefined as unknown as Clock,
+        regenPolicy: PLAYABLE_REGEN_POLICY,
+        activeFight,
+      }),
+    ).toThrow(/Character module requires a clock/);
+    expect(() =>
+      CharacterModule.create({
+        database: {} as PostgresDatabase,
+        creationPolicy: PLAYABLE_HERO_CREATION,
+        progression,
+        equipmentModifiers,
+        clock,
+        regenPolicy: PLAYABLE_REGEN_POLICY,
+        activeFight: undefined as never,
+      }),
+    ).toThrow(/Character module requires an active-fight query/);
     expect(() =>
       CharacterModule.create({
         database: {} as PostgresDatabase,
         creationPolicy: { ...PLAYABLE_HERO_CREATION, exp: 2 },
         progression,
         equipmentModifiers,
+        clock,
+        regenPolicy: PLAYABLE_REGEN_POLICY,
+        activeFight,
       }),
     ).toThrow(/EXP must be 1/);
   });
@@ -84,15 +131,17 @@ describe("module factories", () => {
     expect(() =>
       CombatModule.create({
         database,
-        rules: {
-          playerDamageMin: 1,
-          playerDamageMax: 2,
-          botDamageMin: 1,
-          botDamageMax: 2,
-          turnTimeoutSeconds: 20,
-        },
+        rules: combatRules,
+        clock,
       }),
     ).toThrow(/Combat module requires a database/);
+    expect(() =>
+      CombatModule.create({
+        database: {} as PostgresDatabase,
+        rules: combatRules,
+        clock: undefined as unknown as Clock,
+      }),
+    ).toThrow(/Combat module requires a clock/);
   });
 
   it("fails fast when required jugger-wire dependencies are missing", async () => {
@@ -117,17 +166,12 @@ describe("module factories", () => {
   });
 
   it("closes modules that own no process resources", async () => {
-    const identity = IdentityModule.create({ database: {} as PostgresDatabase });
+    const identity = IdentityModule.create({ database: {} as PostgresDatabase, clock });
     await expect(identity.close()).resolves.toBeUndefined();
     const combat = CombatModule.create({
       database: {} as PostgresDatabase,
-      rules: {
-        playerDamageMin: 1,
-        playerDamageMax: 2,
-        botDamageMin: 1,
-        botDamageMax: 2,
-        turnTimeoutSeconds: 20,
-      },
+      rules: combatRules,
+      clock,
     });
     await expect(combat.close()).resolves.toBeUndefined();
     const characters = CharacterModule.create({
@@ -135,6 +179,9 @@ describe("module factories", () => {
       creationPolicy: PLAYABLE_HERO_CREATION,
       progression,
       equipmentModifiers,
+      clock,
+      regenPolicy: PLAYABLE_REGEN_POLICY,
+      activeFight,
     });
     await expect(characters.close()).resolves.toBeUndefined();
     const inventory = InventoryModule.create({

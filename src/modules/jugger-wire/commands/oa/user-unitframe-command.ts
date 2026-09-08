@@ -1,5 +1,8 @@
 import type { BootstrapReadModel, HeroStateBlock } from "../../application/bootstrap-read-model.ts";
 import type { UserUnitframeBlock } from "../../application/user-unitframe-block.ts";
+import { withSyncedResources } from "../../application/with-synced-resources.ts";
+import type { CharacterService } from "../../../character/application/character-service.ts";
+import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
 import type { OaCommand, OaEncodedResponse } from "./oa-command.ts";
 
 type UserUnitframeBlocks = Readonly<{
@@ -11,13 +14,22 @@ export class UserUnitframeCommand implements OaCommand {
   static readonly key = "user|unitframe";
   readonly key = UserUnitframeCommand.key;
 
-  constructor(private readonly bootstrap: BootstrapReadModel) {}
+  constructor(
+    private readonly unitOfWork: UnitOfWork,
+    private readonly characters: CharacterService,
+    private readonly bootstrap: BootstrapReadModel,
+  ) {}
 
   async execute(accountId: number): Promise<OaEncodedResponse> {
-    const blocks: UserUnitframeBlocks = {
-      "user|unitframe": await this.bootstrap.unitframe(accountId),
-      state: await this.bootstrap.state(accountId),
-    };
+    const blocks: UserUnitframeBlocks = await withSyncedResources(
+      this.unitOfWork,
+      this.characters,
+      accountId,
+      async () => ({
+        "user|unitframe": await this.bootstrap.unitframe(accountId),
+        state: await this.bootstrap.state(accountId),
+      }),
+    );
     return { kind: "flat", blocks };
   }
 }

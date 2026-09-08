@@ -15,6 +15,7 @@ import type { EquippedModifiers } from "../ports/equipped-modifiers.ts";
 import type { ExperienceGrantRepository } from "../ports/experience-grant-repository.ts";
 import type { HeroRepository } from "../ports/hero-repository.ts";
 import type { HeroSkillRepository } from "../ports/hero-skill-repository.ts";
+import type { ResourceService } from "./resource-service.ts";
 
 export class ExperienceGrantService implements CharacterProgression {
   constructor(
@@ -24,6 +25,7 @@ export class ExperienceGrantService implements CharacterProgression {
     private readonly grants: ExperienceGrantRepository,
     private readonly progression: CatalogProgression,
     private readonly equipment: EquippedModifiers,
+    private readonly resources: ResourceService,
   ) {}
 
   grantExperience(command: ExperienceGrantCommand): Promise<ExperienceGrantResult> {
@@ -32,13 +34,14 @@ export class ExperienceGrantService implements CharacterProgression {
   }
 
   private async apply(command: ExperienceGrantCommand): Promise<ExperienceGrantResult> {
-    const hero = await this.heroes.lockById(command.characterId);
-    if (!hero) throw new CharacterNotFoundError(command.characterId);
-    const existing = await this.grants.find(hero.id, command.operationId);
+    const locked = await this.heroes.lockById(command.characterId);
+    if (!locked) throw new CharacterNotFoundError(command.characterId);
+    const existing = await this.grants.find(locked.id, command.operationId);
+    if (existing && existing.amount !== command.amount) {
+      throw new ExperienceGrantConflictError(command.operationId);
+    }
+    await this.resources.syncResources({ characterId: locked.id });
     if (existing) {
-      if (existing.amount !== command.amount) {
-        throw new ExperienceGrantConflictError(command.operationId);
-      }
       return {
         expBefore: existing.expBefore,
         expAfter: existing.expAfter,
@@ -49,6 +52,8 @@ export class ExperienceGrantService implements CharacterProgression {
         progressionDigest: existing.progressionDigest,
       };
     }
+    const hero = await this.heroes.lockById(command.characterId);
+    if (!hero) throw new CharacterNotFoundError(command.characterId);
     const snapshot = await this.requireSnapshot();
     const expBefore = hero.exp;
     const levelBefore = hero.level;
@@ -68,6 +73,7 @@ export class ExperienceGrantService implements CharacterProgression {
       requiredSkillTotal(totals, "VIT"),
       requiredSkillTotal(totals, "MPMAX"),
     );
+    await this.resources.recomputeHpTimeAfterMutation(hero);
     const result: ExperienceGrantResult = {
       expBefore,
       expAfter: transition.expAfter,

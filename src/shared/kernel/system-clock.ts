@@ -6,6 +6,6 @@ export class SystemClock implements Clock {
   }
 
   unixSeconds(): number {
-    return Math.floor(Date.now() / 1000);
+    return Math.floor(this.now().getTime() / 1000);
   }
 }

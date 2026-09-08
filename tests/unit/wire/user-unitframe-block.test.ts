@@ -36,6 +36,19 @@ describe("buildUserUnitframe", () => {
     expect(block).not.toHaveProperty("maxHp");
   });
 
+  it("overlays hp_time to 0 while in an active fight", () => {
+    const block = buildUserUnitframe(
+      testHero({ nick: "Ada", hp: 8, maxHp: 10, hpTime: 3 }),
+      level,
+      appearance,
+      hud,
+      true,
+    );
+    expect(block.hp_time).toBe(0);
+    expect(block.hp).toBe(8);
+    expect(block.mp_time).toBe(0);
+  });
+
   it("fails when avatar_small is missing", () => {
     expect(() => new AppearancePreset(1, 1, "avatar_m_set_0_gray.png", "")).toThrow(
       /avatar_small is required/,

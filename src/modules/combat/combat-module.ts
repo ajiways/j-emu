@@ -1,5 +1,5 @@
 import type { PostgresDatabase } from "../../infrastructure/postgres/database.ts";
-import { SystemClock } from "../../shared/kernel/system-clock.ts";
+import type { Clock } from "../../shared/kernel/clock.ts";
 import { requirePresent } from "../../shared/kernel/require-present.ts";
 import { CombatService } from "./application/combat-service.ts";
 import { FinishedFightCleanup } from "./application/finished-fight-cleanup.ts";
@@ -26,10 +26,14 @@ export class CombatModule {
     private readonly historyWrites: HistoryWriteObserver,
   ) {}
 
-  static create(input: { database: PostgresDatabase; rules: BattleRules }): CombatModule {
+  static create(input: {
+    database: PostgresDatabase;
+    rules: BattleRules;
+    clock: Clock;
+  }): CombatModule {
     const database = requirePresent(input.database, "Combat module requires a database");
     const rules = requirePresent(input.rules, "Combat module requires battle rules");
-    const clock = new SystemClock();
+    const clock = requirePresent(input.clock, "Combat module requires a clock");
     const history = new PostgresFinishedFightStore(database);
     const historyWrites = new StructuredHistoryWriteObserver((event) => {
       process.stderr.write(`${JSON.stringify(event)}\n`);

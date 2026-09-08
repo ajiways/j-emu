@@ -1,24 +1,36 @@
 import type { ArtifactSkillBonus } from "../../catalog/domain/artifact-skill-bonus.ts";
 import type { CatalogProgression } from "../../catalog/ports/catalog-progression.ts";
 import type { ProgressionSnapshot } from "../../catalog/domain/progression-snapshot.ts";
+import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../shared/kernel/unit-of-work.ts";
 import type { Hero, HeroCreationPolicy } from "../domain/hero.ts";
+import { truncatedUnixDate } from "../domain/hp-regen.ts";
 import { PersonalDetails } from "../domain/personal-details.ts";
 import { requiredSkillTotal, totalHeroSkills } from "../domain/equipment-skill-totals.ts";
 import { requireHeroSkills, type HeroSkill } from "../domain/hero-skill.ts";
 import { ProgressionContentError } from "../domain/progression-content-error.ts";
+import type { RegenPolicy } from "../domain/regen-policy.ts";
+import type { ActiveFightQuery } from "../ports/active-fight-query.ts";
 import type { EquippedModifiers } from "../ports/equipped-modifiers.ts";
 import type { HeroRepository } from "../ports/hero-repository.ts";
 import type { HeroSkillRepository } from "../ports/hero-skill-repository.ts";
 import type { PersonalDetailsRepository } from "../ports/personal-details-repository.ts";
 import { ExperienceGrantService } from "./experience-grant-service.ts";
+import { ResourceService } from "./resource-service.ts";
 import type { ExperienceGrantCommand } from "../domain/experience-grant-command.ts";
 import type { ExperienceGrantResult } from "../domain/experience-grant-result.ts";
 import type { CharacterProgression } from "../ports/character-progression.ts";
+import type {
+  CharacterResources,
+  NoteHpCommand,
+  ResourceSnapshot,
+  SyncResourcesCommand,
+} from "../ports/character-resources.ts";
 import type { ExperienceGrantRepository } from "../ports/experience-grant-repository.ts";
 
-export class CharacterService implements CharacterProgression {
+export class CharacterService implements CharacterProgression, CharacterResources {
   private readonly grants: ExperienceGrantService;
+  private readonly resources: ResourceService;
 
   constructor(
     private readonly unitOfWork: UnitOfWork,
@@ -29,7 +41,20 @@ export class CharacterService implements CharacterProgression {
     private readonly progression: CatalogProgression,
     equipment: EquippedModifiers,
     grantStore: ExperienceGrantRepository,
+    private readonly clock: Clock,
+    regenPolicy: RegenPolicy,
+    activeFight: ActiveFightQuery,
   ) {
+    this.resources = new ResourceService(
+      unitOfWork,
+      heroes,
+      skills,
+      progression,
+      equipment,
+      clock,
+      regenPolicy,
+      activeFight,
+    );
     this.grants = new ExperienceGrantService(
       unitOfWork,
       heroes,
@@ -37,11 +62,20 @@ export class CharacterService implements CharacterProgression {
       grantStore,
       progression,
       equipment,
+      this.resources,
     );
   }
 
   grantExperience(command: ExperienceGrantCommand): Promise<ExperienceGrantResult> {
     return this.grants.grantExperience(command);
+  }
+
+  syncResources(command: SyncResourcesCommand): Promise<ResourceSnapshot> {
+    return this.resources.syncResources(command);
+  }
+
+  noteHp(command: NoteHpCommand): Promise<ResourceSnapshot> {
+    return this.resources.noteHp(command);
   }
 
   async getOrCreateForAccount(accountId: number, nick: string): Promise<Hero> {
@@ -70,7 +104,8 @@ export class CharacterService implements CharacterProgression {
         body: this.creationPolicy.body,
         sk: this.creationPolicy.sk,
         honor: this.creationPolicy.honor,
-        hpTime: this.creationPolicy.hpTime,
+        hpTime: 0,
+        regenAt: truncatedUnixDate(this.clock),
       });
       await this.skills.replace(hero.id, [
         ...levelOne.managedSkills.map((skill) => ({ id: skill.id, value: skill.value })),
@@ -98,6 +133,7 @@ export class CharacterService implements CharacterProgression {
     const naked = requireHeroSkills(await this.skills.list(hero.id));
     const totals = totalHeroSkills(naked, bonuses);
     hero.applyVitals(requiredSkillTotal(totals, "VIT"), requiredSkillTotal(totals, "MPMAX"));
+    await this.resources.recomputeHpTimeAfterMutation(hero);
     await this.heroes.save(hero);
     return hero;
   }

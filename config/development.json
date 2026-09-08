@@ -10,7 +10,6 @@
     "body": "armor();head(0,0,8,152);skin()",
     "sk": 1,
     "honor": 0,
-    "hpTime": 0,
     "tutorialInfo": {
       "finished_first_fight": "1",
       "tutorial2": "{\"finished\":true}"
@@ -20,6 +19,10 @@
       { "id": "ORATORY", "value": 1 },
       { "id": "MONEYMOD", "value": 0 }
     ]
+  },
+  "regen": {
+    "k": 250,
+    "provenance": "legacy behavior / empirical"
   },
   "starterItems": [
     {

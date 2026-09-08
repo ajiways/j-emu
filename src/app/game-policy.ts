@@ -19,7 +19,6 @@ const schema = z.object({
     body: z.string().min(1),
     sk: z.number().int().nonnegative(),
     honor: z.number().int().nonnegative(),
-    hpTime: z.number().int().nonnegative(),
     tutorialInfo: z.object({
       finished_first_fight: z.string().min(1),
       tutorial2: z.string().min(1),
@@ -32,6 +31,10 @@ const schema = z.object({
         }),
       )
       .min(1),
+  }),
+  regen: z.object({
+    k: z.literal(250),
+    provenance: z.literal("legacy behavior / empirical"),
   }),
   starterItems: z
     .array(
