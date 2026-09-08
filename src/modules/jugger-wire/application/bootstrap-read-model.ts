@@ -112,12 +112,27 @@ export class BootstrapReadModel {
     const level = await this.catalog.level(hero.level);
     return {
       "common|action": statusOk(),
-      "user|bag": await buildUserBag(hero, this.inventory, this.catalog, this.policy.bagCapacity),
+      "user|bag": await buildUserBag(hero, this.inventory, this.catalog),
       "user|view": await this.view(accountId),
       "user|pocket": buildUserPocket(this.policy.pocketCapacity),
       "user|skills": await this.skills(accountId),
       "user|unitframe": await this.unitframe(accountId),
       "user|conf": buildUserConf(hero, level),
+      state: buildHeroState(hero, this.clock),
+    };
+  }
+
+  async bagDropMutation(
+    accountId: number,
+    action: "DROP" | "SELL",
+  ): Promise<Readonly<Record<string, unknown>>> {
+    const hero = await this.requireHero(accountId);
+    const chrome = await this.catalog.chrome();
+    return {
+      "common|action": { status: 100, action },
+      "user|bag": await buildUserBag(hero, this.inventory, this.catalog),
+      "user|skills": await this.skills(accountId),
+      "user|mount_list": chrome.block("user|mount_list"),
       state: buildHeroState(hero, this.clock),
     };
   }
@@ -131,7 +146,7 @@ export class BootstrapReadModel {
       "common|init": statusOk(),
       "common|conf": await this.catalog.commonConf(),
       state: buildHeroState(hero, this.clock),
-      "user|bag": await buildUserBag(hero, this.inventory, this.catalog, this.policy.bagCapacity),
+      "user|bag": await buildUserBag(hero, this.inventory, this.catalog),
       "user|pocket": buildUserPocket(this.policy.pocketCapacity),
       "user|magic": emptyUserMagic(),
       "user|conf": buildUserConf(hero, level),

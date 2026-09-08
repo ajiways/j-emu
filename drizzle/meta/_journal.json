@@ -50,6 +50,13 @@
       "when": 1788863293132,
       "tag": "0006_character_hp_regeneration",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788866979648,
+      "tag": "0007_catalog_artifact_bag_economy",
+      "breakpoints": true
     }
   ]
 }

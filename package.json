@@ -28,6 +28,7 @@
     "prepare": "husky",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/infrastructure/postgres/migrate.ts",
+    "db:reset": "tsx src/infrastructure/postgres/reset-development-database.ts",
     "db:publish:development": "tsx src/infrastructure/postgres/publish-development-content.ts",
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down"

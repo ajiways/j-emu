@@ -71,6 +71,17 @@ export class PostgresInventoryRepository implements InventoryRepository {
       });
   }
 
+  async delete(item: InventoryItem): Promise<void> {
+    const deleted = await this.database
+      .session()
+      .delete(items)
+      .where(eq(items.id, BigInt(item.id)))
+      .returning({ id: items.id });
+    if (deleted.length !== 1) {
+      throw new Error(`Item ${item.id} was not deleted`);
+    }
+  }
+
   private async loadHeroItems(heroId: number, lock: boolean): Promise<readonly InventoryItem[]> {
     const query = this.database
       .session()

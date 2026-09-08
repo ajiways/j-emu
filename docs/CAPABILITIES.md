@@ -76,10 +76,23 @@ Equipment-derived `user|skills` / `hpMax` считаются из naked skills +
 - согласованный flat bag/view/pocket/skills/unitframe/conf/state;
 - equipment vitals на mutation, bootstrap и reconnect/restart.
 
+## Inventory bag DROP — готово
+
+Есть raw-AMF E2E и подтверждённый CEF-прогон: перчатку 9095 выбрасывают из
+bag, деньги остаются `25.00`, bag пуст, reconnect совпадает с PostgreSQL.
+
+- catalog v6: `priceMinor`/`flags`/`bagStack` на 9095 (`0`/`40`/`1`);
+- `user|bag.amount` считает только взвешенные слоты (`9095` → `amount=0`,
+  `total=1`); `amount_max=20`;
+- OA `DROP` (и alias `SELL`) → flat `common|action` + bag/skills/mount_list/state;
+- throw-away 9095 не меняет деньги; equipped DROP и SELL без `sell_price>0` —
+  `204` с live `error`;
+- DROP в активном hunt-бою разрешён;
+- `creditMoney` на character в той же UoW; inventory не пишет `heroes`.
+
 ## Inventory — частично
 
-Не перенесены DROP, stack/capacity rules, durability, pocket merge и USE
-pipelines.
+Не перенесены durability/repair, pocket merge/split/swap и USE pipelines.
 
 ## World и hunt — частично
 

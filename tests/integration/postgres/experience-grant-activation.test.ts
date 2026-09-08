@@ -41,6 +41,8 @@ describe("experience grant activation races", () => {
           database,
           starterItems: policy.starterItems,
           releaseArtifacts: catalog.releaseArtifacts,
+          catalog: catalog.catalog,
+          bagCapacity: policy.bootstrap.bagCapacity,
         });
         const characters = CharacterModule.create(
           playableCharacterModuleInput(database, catalog.progression, inventory.service, {
@@ -64,6 +66,8 @@ describe("experience grant activation races", () => {
           database: grantClient,
           starterItems: policy.starterItems,
           releaseArtifacts: grantCatalog.releaseArtifacts,
+          catalog: grantCatalog.catalog,
+          bagCapacity: policy.bootstrap.bagCapacity,
         });
         const grantCharacters = CharacterModule.create(
           playableCharacterModuleInput(

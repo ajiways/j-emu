@@ -8,19 +8,19 @@
 
 ## Текущий runtime checkpoint
 
-Текущий проверенный срез после готовых bootstrap и equipment
-`PUT_ON`/`PUT_OFF` capabilities:
+Текущий проверенный срез после готовых bootstrap, equipment
+`PUT_ON`/`PUT_OFF` и bag DROP:
 
 - `character` хранит hero scalars, personal details, naked `hero_skills`,
-  `hp_time` и `regen_at`; internal ports `grantExperience`, `syncResources` и
-  `noteHp` пишут этот state; INV-02 добавит `creditMoney` на том же hero
-  aggregate;
-- `inventory` хранит bag/pocket/equipment instances и выполняет подтверждённые
-  `PUT_ON`/`PUT_OFF`; INV-02 добавит `drop` и `bagLoad`;
+  `hp_time` и `regen_at`; internal ports `grantExperience`, `syncResources`,
+  `noteHp` и `creditMoney` пишут этот state;
+- `inventory` хранит bag/pocket/equipment instances и выполняет
+  `PUT_ON`/`PUT_OFF`, `drop` и `bagLoad`;
 - `catalog` и `world` читают artifacts, skills, levels, appearance,
   game-wide bootstrap documents, area 503 и hunt rows из active release;
 - equipment-derived skills/vitals считаются из persisted naked skills и
   artifact bonuses; migration `0004` закрепляет wear fields и occupancy slot;
+  `0007` — artifact `price_minor`/`flags`/`bag_stack`;
 - `combat` предоставляет только минимальный hunt lifecycle и finished history;
   `quests`, `social`, `economy`, `professions`, `instances` в runtime нет.
 

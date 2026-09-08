@@ -320,11 +320,11 @@ PUT_ON/grant: сначала `syncResources`, потом мутация maxima/H
 
 ### INV-02 — creditMoney
 
-Отдельный wallet-модуль не создаётся. Character владеет `money_minor`. Public
-operation `creditMoney({ characterId, minorUnits })`: положительное целое;
-итог в `[0, 2_147_483_647]`; та же hero-row lock и Unit of Work, что DROP.
-Inventory не пишет `heroes`. Wire: строка в `state`, число в `user|conf`.
-Полный DROP-контракт: [INVENTORY.md](INVENTORY.md).
+Реализовано. Отдельный wallet-модуль не создаётся. Character владеет
+`money_minor`. Public operation `creditMoney({ characterId, minorUnits })`:
+положительное целое; итог в `[0, 2_147_483_647]`; та же hero-row lock и Unit
+of Work, что DROP. Inventory не пишет `heroes`. Wire: строка в `state`, число
+в `user|conf`. Полный DROP-контракт: [INVENTORY.md](INVENTORY.md).
 
 Clock: один экземпляр из composition root в character, identity, combat и
 wire. CharacterModule создаётся после CombatModule (нужен query) и принимает

@@ -13,6 +13,18 @@ npm run db:publish:development
 
 `db:migrate` накатывает схему. `db:publish:development` публикует `content/playable-slice.json`. Без обоих шагов runtime не стартует с пустой БД.
 
+Если `db:migrate` падает с `was modified` / missing journal, SQL миграций не
+правят. Development база из `DATABASE_URL` пересоздаётся целиком:
+
+```text
+npm run db:reset
+```
+
+`db:reset` делает `DROP DATABASE` + `CREATE DATABASE` для имени в `DATABASE_URL`,
+затем migrate и publish. Это уничтожает героев и активный release. Команда
+отказывается трогать БД с суффиксом `_test` и URL, равный `TEST_DATABASE_URL`.
+Тестовая БД сбрасывается только `npm run test:integration` / `test:e2e`.
+
 Тот же publish-скрипт на уже заполненной БД: совпавший checksum — no-op;
 новый checksum — новая активная release. После миграции `0002_world_location_scalars`
 сначала migrate, затем publish: миграция очищает устаревшие `world`/`catalog.bots`

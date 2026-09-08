@@ -29,6 +29,9 @@ export const artifacts = catalogSchema.table(
     levelMin: integer("level_min").notNull(),
     levelMax: integer("level_max").notNull(),
     gender: integer("gender").notNull(),
+    priceMinor: integer("price_minor").notNull(),
+    flags: integer("flags").notNull(),
+    bagStack: integer("bag_stack").notNull(),
     skills: jsonb("skills").notNull(),
   },
   (table) => [
@@ -37,6 +40,9 @@ export const artifacts = catalogSchema.table(
     check("artifacts_level_min_check", sql`${table.levelMin} >= 0`),
     check("artifacts_level_max_check", sql`${table.levelMax} >= 0`),
     check("artifacts_gender_check", sql`${table.gender} >= 0`),
+    check("artifacts_price_minor_check", sql`${table.priceMinor} >= 0`),
+    check("artifacts_flags_check", sql`${table.flags} >= 0`),
+    check("artifacts_bag_stack_check", sql`${table.bagStack} >= 1`),
   ],
 );
 

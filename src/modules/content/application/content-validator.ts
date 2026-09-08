@@ -91,6 +91,15 @@ export class ContentValidator {
       if (artifact.levelMax > 0 && artifact.levelMax < artifact.levelMin) {
         issues.push(`artifact ${artifact.id} levelMax is below levelMin`);
       }
+      if (!Number.isInteger(artifact.priceMinor) || artifact.priceMinor < 0) {
+        issues.push(`artifact ${artifact.id} priceMinor is invalid`);
+      }
+      if (!Number.isInteger(artifact.flags) || artifact.flags < 0) {
+        issues.push(`artifact ${artifact.id} flags are invalid`);
+      }
+      if (!Number.isInteger(artifact.bagStack) || artifact.bagStack < 1) {
+        issues.push(`artifact ${artifact.id} bagStack is invalid`);
+      }
       const artifactSkills = new Set<string>();
       for (const skill of artifact.skills) {
         if (!skillIds.has(skill.id)) {

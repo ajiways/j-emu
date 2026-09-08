@@ -20,6 +20,7 @@ import { ResourceService } from "./resource-service.ts";
 import type { ExperienceGrantCommand } from "../domain/experience-grant-command.ts";
 import type { ExperienceGrantResult } from "../domain/experience-grant-result.ts";
 import type { CharacterProgression } from "../ports/character-progression.ts";
+import type { CharacterMoney, CreditMoneyCommand } from "../ports/character-money.ts";
 import type {
   CharacterResources,
   NoteHpCommand,
@@ -28,7 +29,7 @@ import type {
 } from "../ports/character-resources.ts";
 import type { ExperienceGrantRepository } from "../ports/experience-grant-repository.ts";
 
-export class CharacterService implements CharacterProgression, CharacterResources {
+export class CharacterService implements CharacterProgression, CharacterResources, CharacterMoney {
   private readonly grants: ExperienceGrantService;
   private readonly resources: ResourceService;
 
@@ -76,6 +77,15 @@ export class CharacterService implements CharacterProgression, CharacterResource
 
   noteHp(command: NoteHpCommand): Promise<ResourceSnapshot> {
     return this.resources.noteHp(command);
+  }
+
+  async creditMoney(command: CreditMoneyCommand): Promise<void> {
+    await this.unitOfWork.run(async () => {
+      const hero = await this.heroes.lockById(command.characterId);
+      if (!hero) throw new Error(`Hero ${command.characterId} is missing`);
+      hero.creditMoney(command.minorUnits);
+      await this.heroes.save(hero);
+    });
   }
 
   async getOrCreateForAccount(accountId: number, nick: string): Promise<Hero> {

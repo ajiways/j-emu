@@ -1,8 +1,8 @@
 import { and, eq, inArray } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
-import { ArtifactDefinition } from "../domain/artifact-definition.ts";
+import type { ArtifactDefinition } from "../domain/artifact-definition.ts";
 import type { ReleaseArtifacts } from "../ports/release-artifacts.ts";
-import { artifactSkillsFromJson } from "./artifact-skills-from-json.ts";
+import { artifactDefinitionFromRow } from "./artifact-definition-from-row.ts";
 import { artifacts } from "./schema.ts";
 
 export class PostgresReleaseArtifacts implements ReleaseArtifacts {
@@ -25,21 +25,6 @@ export class PostgresReleaseArtifacts implements ReleaseArtifacts {
       const missing = uniqueIds.filter((id) => !found.has(id));
       throw new Error(`Artifact catalog entry ${missing[0]} is missing from release ${releaseId}`);
     }
-    return rows.map(
-      (row) =>
-        new ArtifactDefinition(
-          row.id,
-          row.title,
-          row.picture,
-          row.typeId,
-          row.kindId,
-          row.slotMask,
-          row.weight,
-          row.levelMin,
-          row.levelMax,
-          row.gender,
-          artifactSkillsFromJson(row.id, row.skills),
-        ),
-    );
+    return rows.map((row) => artifactDefinitionFromRow(row));
   }
 }

@@ -31,6 +31,8 @@ export class CompositionRoot {
         database,
         starterItems: policy.starterItems,
         releaseArtifacts: catalog.releaseArtifacts,
+        catalog: catalog.catalog,
+        bagCapacity: policy.bootstrap.bagCapacity,
       });
       closers.push(inventory);
       const world = await WorldModule.create({ database });

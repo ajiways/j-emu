@@ -2,13 +2,11 @@
 
 ## Статус
 
-Paperdoll `PUT_ON`/`PUT_OFF` для перчатки 9095 **готово**: raw-AMF E2E и
-реальный CEF-прогон (экип, статы, пересчёт места в bag). Точный статус:
-[CAPABILITIES.md](../CAPABILITIES.md).
+Paperdoll `PUT_ON`/`PUT_OFF` и bag DROP для перчатки 9095 **готово**: raw-AMF
+E2E и реальный CEF-прогон. Точный статус: [CAPABILITIES.md](../CAPABILITIES.md).
 
-INV-02 (bag load, DROP/void-sell) — следующий workflow-срез; product status
-Inventory остаётся **частично**, пока coding agent не закроет acceptance.
-Не перенесены durability/repair, pocket merge/split/swap и USE pipelines.
+INV-03 (pocket) — следующий workflow-срез. Не перенесены durability/repair,
+pocket merge/split/swap и USE pipelines.
 
 ## Источники поведения
 
@@ -33,8 +31,8 @@ Catalog artifact и item instance — разные сущности:
 Bag item обязан иметь подтверждённые `type_id`, `kind_id`, `picture` и
 `action:"bag"`. Карточка 9095 использует live-имя `greyset5_lhand.png` и
 `artifact_skills` с title из skill catalog. Wearable paperdoll в bag имеет
-`actions` с `PUT_ON` (8) и `slot/slot2/slot_num=0`. После INV-02 те же карточки
-добавляют `DROP`/`SELL`, `sell_price`, `noweight`, `price` и catalog `flags`.
+`actions` с `PUT_ON` (8) и `slot/slot2/slot_num=0`. Те же карточки несут
+`DROP`/`SELL`, `sell_price`, `noweight`, `price` и catalog `flags`.
 Пустой `artifact_actions` не создаёт USE. Отсутствующий catalog artifact
 является ошибкой, а не поводом отдать неполную карточку.
 
@@ -46,9 +44,11 @@ Bag item обязан иметь подтверждённые `type_id`, `kind_i
    `common|object`, ответ всегда под `common|action`;
 2. occupancy displaces the previous occupant of the same slot bit back to bag;
 3. level / gender / non-paperdoll type → `status:203` + `error`;
-4. missing hero/item/catalog → fail-fast `status:204` + `error`, не пустой `100`.
+4. missing hero/item/catalog → fail-fast `status:204` + `error`, не пустой `100`;
+5. `DROP` / `SELL` из bag; throw-away 9095; deny equipped и SELL без
+   `sell_price>0` → `status:204` + `error`.
 
-Следующий inventory capability после INV-02, не этот срез:
+Следующий inventory capability, не этот срез:
 
 - pocket merge/split/swap (`INV-03`);
 - durability/repair/upgrade;
@@ -102,9 +102,9 @@ DROP не идемпотентен по `operation_id`: повтор клиен�
 «Выкинуть» вызывают `UserBagDrop` → на wire **всегда** `code=DROP`. Кнопки
 взаимоисключающие: `CAN_SELL && sell_price>0` → void-sell; иначе throw-away.
 
-`SELL` live bag UI не шлёт. Срез всё равно регистрирует тонкий alias: та же
-мутация, `{ action: "SELL" }`, строки ошибки «Продать». Иначе `requiredKeys`
-оставит `SELL` как `203 unimplemented`.
+`SELL` live bag UI не шлёт. Alias зарегистрирован: та же мутация,
+`{ action: "SELL" }`, строки ошибки «Продать». SELL без `sell_price>0`
+(9095) — `204`, не throw-away: live UI этот код не отправляет.
 
 Успешный DROP — **flat**, не набор PUT_ON:
 
@@ -140,7 +140,7 @@ DROP **разрешён в бою** (legacy не ставит `fightBusy` на D
 wire = `flags & 8 ? 1 : 0`. Стартовая 9095: `flags: 40`
 (NOWEIGHT\|NOGIVE) из live dump `_research/from_register/interesting_full.json`
 (instance `flags: 40`, `price: 0`). После INV-02 init `amount` для одной 9095
-становится **0**, `total` **1** (сейчас e2e ошибочно ждёт `amount: 1`).
+становится **0**, `total` **1**.
 
 20/20 ещё можно ходить; 21/20 нельзя — это **WLD-01** (`COME_IN` 204). INV-02
 отдаёт query `{ amount, total, amountMax }` и сам travel не реализует.
@@ -157,14 +157,11 @@ wire = `flags & 8 ? 1 : 0`. Стартовая 9095: `flags: 40`
 Unique paperdoll/bag: `bagStack = 1`, стакать нельзя. `priceMinor` missing ≠ 0.
 
 9095: `priceMinor: 0`, `flags: 40`, `bagStack: 1`. Provenance: live dump
-instance flags/price; unique wearable. Bundle `playable-slice/v5` → **v6**,
+instance flags/price; unique wearable. Bundle `playable-slice/v6`,
 миграция `0007_catalog_artifact_bag_economy`.
 
-Второго stackable/sellable артикула в slice нет. Не выдумывать ID и не
-подставлять лут. Coding agent ищет dump-proven L1–8 artifact (`priceMinor>0`,
-`slotMask=0`, `bagStack>1`) с provenance; если нет — **stop and replan**,
-а не fake OA и не test-only content без dump. Unit-тесты sell_price/flags/amount
-могут использовать fake catalog. E2E/CEF этого среза — throw-away 9095.
+Второго stackable/sellable артикула в slice нет. E2E/CEF — throw-away 9095.
+Void-sell без dump-proven priced artifact не выдумывался.
 
 ### Sell price
 
@@ -229,7 +226,8 @@ Pocket, USE, durability, mail GIVE, COME_IN overload, store buy, grant/merge
 - raw-AMF: DROP 9095 throw-away, empty bag `amount=0` `total=0`, money
   unchanged `"25.00"`, equipped DROP 204, SELL alias shape, reconnect;
   init/user|bag после публикации 9095: `amount=0`, `total=1`;
-- CEF: выкинуть перчатку из bag, деньги те же, bag пуст, reconnect;
+- CEF: выкинуть перчатку из bag, деньги те же, bag пуст, reconnect —
+  **подтверждено**;
 - нет fake OA кроме реального DROP/SELL; нет ticker; нет travel gate.
 
 ## Architecture checkpoint — план
@@ -247,4 +245,4 @@ Containers, reservations и durability schema по-прежнему не спр�
 - malformed/missing catalog data дают explicit error;
 - raw-AMF response сохраняет legacy flat shape;
 - paperdoll 9095 **готово** подтверждён CEF PUT_ON (статы и bag);
-- DROP/void-sell 9095 — после закрытия INV-02 (CEF throw-away из bag).
+- DROP throw-away 9095 **готово** подтверждён CEF из bag.

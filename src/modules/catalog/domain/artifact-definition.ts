@@ -12,6 +12,9 @@ export class ArtifactDefinition {
     readonly levelMin: number,
     readonly levelMax: number,
     readonly gender: number,
+    readonly priceMinor: number,
+    readonly flags: number,
+    readonly bagStack: number,
     readonly skills: readonly ArtifactSkillBonus[],
   ) {
     if (!Number.isInteger(id) || id <= 0) throw new Error("Invalid artifact id");
@@ -38,6 +41,15 @@ export class ArtifactDefinition {
     }
     if (!Number.isInteger(gender) || gender < 0) {
       throw new Error(`Artifact ${id} gender is invalid`);
+    }
+    if (!Number.isInteger(priceMinor) || priceMinor < 0) {
+      throw new Error(`Artifact ${id} priceMinor is invalid`);
+    }
+    if (!Number.isInteger(flags) || flags < 0) {
+      throw new Error(`Artifact ${id} flags are invalid`);
+    }
+    if (!Number.isInteger(bagStack) || bagStack < 1) {
+      throw new Error(`Artifact ${id} bagStack is invalid`);
     }
     const ids = new Set<string>();
     for (const skill of skills) {

@@ -3,8 +3,8 @@ import type { PostgresDatabase } from "../../../infrastructure/postgres/database
 import type { CommonConfBlock } from "../../content/domain/bootstrap-content.ts";
 import type { ActiveContentRevision } from "../../content/ports/active-content-revision.ts";
 import { AppearancePreset } from "../domain/appearance-preset.ts";
-import { ArtifactDefinition } from "../domain/artifact-definition.ts";
-import { artifactSkillsFromJson } from "./artifact-skills-from-json.ts";
+import type { ArtifactDefinition } from "../domain/artifact-definition.ts";
+import { artifactDefinitionFromRow } from "./artifact-definition-from-row.ts";
 import { BootstrapChrome } from "../domain/bootstrap-chrome.ts";
 import { BotDefinition } from "../domain/bot-definition.ts";
 import { HudDefaults } from "../domain/hud-defaults.ts";
@@ -36,21 +36,7 @@ export class PostgresCatalog implements Catalog {
       .where(and(eq(artifacts.releaseId, releaseId), eq(artifacts.id, id)));
     if (rows.length > 1) throw new Error(`Multiple artifact definitions found for ${id}`);
     const row = rows[0];
-    return row
-      ? new ArtifactDefinition(
-          row.id,
-          row.title,
-          row.picture,
-          row.typeId,
-          row.kindId,
-          row.slotMask,
-          row.weight,
-          row.levelMin,
-          row.levelMax,
-          row.gender,
-          artifactSkillsFromJson(row.id, row.skills),
-        )
-      : null;
+    return row ? artifactDefinitionFromRow(row) : null;
   }
 
   async bot(id: number): Promise<BotDefinition | null> {

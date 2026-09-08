@@ -8,6 +8,7 @@ import type { BootstrapReadModel } from "../application/bootstrap-read-model.ts"
 import type { HeroSheetReadModel } from "../application/hero-sheet-read-model.ts";
 import type { FightWireMapper } from "../application/fight-wire-mapper.ts";
 import { AttackBotCommand } from "../commands/oa/attack-bot-command.ts";
+import { BagDropCommand } from "../commands/oa/bag-drop-command.ts";
 import { BookQuestListCommand } from "../commands/oa/book-quest-list-command.ts";
 import { ChatConfCommand } from "../commands/oa/chat-conf-command.ts";
 import { CommonConfCommand } from "../commands/oa/common-conf-command.ts";
@@ -79,6 +80,22 @@ export class JuggerCommandModule {
       ),
       new PutOnCommand(unitOfWork, bootstrap, characters, inventory, catalog),
       new PutOffCommand(unitOfWork, bootstrap, characters, inventory, catalog),
+      new BagDropCommand(
+        "common|object:DROP",
+        "drop",
+        unitOfWork,
+        bootstrap,
+        characters,
+        inventory,
+      ),
+      new BagDropCommand(
+        "common|object:SELL",
+        "sell",
+        unitOfWork,
+        bootstrap,
+        characters,
+        inventory,
+      ),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     this.esrv = EsrvCommandRegistry.create(combat, fightWire);

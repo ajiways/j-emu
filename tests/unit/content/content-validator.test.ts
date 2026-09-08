@@ -61,6 +61,31 @@ describe("parseContentBundle", () => {
     ).toThrow();
   });
 
+  it("rejects an artifact missing bag economy fields", () => {
+    const artifact = playable.artifacts[0];
+    if (!artifact) throw new Error("playable bundle has no artifacts");
+    expect(() =>
+      parseContentBundle({
+        ...playable,
+        artifacts: [
+          {
+            id: artifact.id,
+            title: artifact.title,
+            picture: artifact.picture,
+            typeId: artifact.typeId,
+            kindId: artifact.kindId,
+            slotMask: artifact.slotMask,
+            weight: artifact.weight,
+            levelMin: artifact.levelMin,
+            levelMax: artifact.levelMax,
+            gender: artifact.gender,
+            skills: artifact.skills,
+          },
+        ],
+      }),
+    ).toThrow();
+  });
+
   it("rejects an area without region_map", () => {
     const area = playable.areas[0];
     if (!area) throw new Error("playable bundle has no areas");

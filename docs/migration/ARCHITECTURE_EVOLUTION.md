@@ -6,10 +6,9 @@
 
 Текущий проверенный checkpoint — готовые bootstrap, paperdoll PUT_ON/PUT_OFF,
 internal CHR-01 `grantExperience`, internal CHR-02 `syncResources`/`noteHp` и
-зафиксированный INV-02 contract (ещё не coded): persistent state находится в
-PostgreSQL; active content читается через release projections; active combat
-остаётся в RAM. Фактическая схема описана в
-[DATA_MODEL.md](../architecture/DATA_MODEL.md).
+INV-02 bag DROP/`creditMoney`: persistent state находится в PostgreSQL; active
+content читается через release projections; active combat остаётся в RAM.
+Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение
 
@@ -33,9 +32,9 @@ capabilities. После его выполнения продуктовый ст
 
 ### `ARC-DATA` — от одного bootstrap bundle к corpus manifests
 
-**Сейчас:** один `playable-slice/v5` parser публикует минимальные catalog/world
-rows. INV-02 coding bumps the same parser to `v6` and adds artifact
-`priceMinor`/`flags`/`bagStack`; DATA-02 remains the later corpus importer.
+**Сейчас:** один `playable-slice/v6` parser публикует минимальные catalog/world
+rows с обязательными artifact `priceMinor`/`flags`/`bagStack`. DATA-02 remains
+the later corpus importer.
 
 **Давление:** DATA-02…DATA-06 требуют нескольких независимых binary/JSON
 decoders, dependency DAG, provenance, exact counts и нескольких projection

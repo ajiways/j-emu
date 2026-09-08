@@ -146,6 +146,8 @@ DB suites используют только отдельный `TEST_DATABASE_UR
 ### 8. CEF acceptance
 
 1. Применить migrations и опубликовать development content штатными командами.
+   Если `db:migrate` отказывает из-за `was modified` / missing journal —
+   `npm run db:reset`, не править применённый SQL.
 2. Запустить HTTPS `s1.jugger.ru:443` через `npm run start:https` с
    доверенным сертификатом и правильными hosts/Pub1 paths.
 3. Использовать нового героя/чистый сценарий, не существующий dev-прогресс и не

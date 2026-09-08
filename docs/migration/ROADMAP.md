@@ -13,7 +13,7 @@
   `depends_on`.
 - Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
   `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **INV-02**.
+- Ровно одна запись имеет статус `next`: **INV-03**.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -100,8 +100,9 @@
   skills, equipment-derived maxima and HP/MP scaled exactly once. Duplicate
   operation IDs return the same persisted result, conflicting reuse fails, and
   concurrency/rollback/reconnect/restart are covered. Published `bag_cnt` is
-  resolved from the resulting boundary and remains 2 throughout L1–L8; actual
-  capacity enforcement belongs to `INV-02`. CHR-01 adds no fake OA: until
+  resolved from the resulting boundary and remains 2 throughout L1–L8; bag
+  `amount`/`total`/`amount_max` belong to `INV-02`. Travel overload gate stays
+  `WLD-01`. CHR-01 adds no fake OA: until
   CMB-03 or a quest flow consumes the port, character progression remains
   product-status `partial` and has no independent CEF gate.
 - **Status:** `done`
@@ -158,7 +159,7 @@
   duplicates nor loses the row. Reconnect/restart and CEF throw-away from bag
   are required. Overload travel gate stays `WLD-01`. No invented loot IDs, no
   fake OA besides DROP/SELL.
-- **Status:** `next`
+- **Status:** `done`
 
 ### INV-03 — Pocket mutations and quick access
 
@@ -172,7 +173,7 @@
   invariants and public inventory snapshot port for combat.
 - **Acceptance:** merge/split/swap and quick-slot persistence match the client,
   reject invalid races and survive reconnect/restart.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### INV-04 — Core consumable USE
 

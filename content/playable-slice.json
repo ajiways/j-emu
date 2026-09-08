@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v5",
+  "schemaVersion": "playable-slice/v6",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -13,6 +13,9 @@
       "levelMin": 1,
       "levelMax": 0,
       "gender": 0,
+      "priceMinor": 0,
+      "flags": 40,
+      "bagStack": 1,
       "skills": [
         { "id": "STR", "value": 6, "flags": 0 },
         { "id": "RAG", "value": 2, "flags": 0 },

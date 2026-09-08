@@ -32,6 +32,9 @@ const artifactSchema = z
     levelMin: z.number().int().nonnegative(),
     levelMax: z.number().int().nonnegative(),
     gender: z.number().int().nonnegative(),
+    priceMinor: z.number().int().nonnegative(),
+    flags: z.number().int().nonnegative(),
+    bagStack: z.number().int().positive(),
     skills: z.array(artifactSkillSchema),
   })
   .strict();

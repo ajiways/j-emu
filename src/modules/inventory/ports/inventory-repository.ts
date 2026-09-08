@@ -12,4 +12,5 @@ export interface InventoryRepository {
   lockForHero(heroId: number): Promise<readonly InventoryItem[]>;
   create(item: NewInventoryItem): Promise<InventoryItem>;
   save(item: InventoryItem): Promise<void>;
+  delete(item: InventoryItem): Promise<void>;
 }

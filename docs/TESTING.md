@@ -23,6 +23,9 @@
   HP/MP/EXP, welcome `{nick}`, reconnect/restart character state;
 - `inventory-equipment` — raw-AMF `PUT_ON`/`PUT_OFF` glove 9095, paperdoll
   slot/view/stats, same instance back to bag, restart, `203`/`204`;
+- `inventory-drop` — raw-AMF `DROP` throw-away 9095, empty bag `amount=0`
+  `total=0`, money `"25.00"`, equipped DROP `204`, SELL alias `204`, DROP during
+  hunt fight, reconnect;
 - `personal-details` — `user|save_personal_details` flat `status:100` + `state`,
   persist `pondViewLast` после restart, overlay tutorial flags, nested getter;
 - `browser-auth` — HTML login/register, 302 handoff, пять cookies только в 200,

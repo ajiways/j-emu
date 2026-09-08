@@ -71,6 +71,9 @@ async function insertArtifacts(
       levelMin: artifact.levelMin,
       levelMax: artifact.levelMax,
       gender: artifact.gender,
+      priceMinor: artifact.priceMinor,
+      flags: artifact.flags,
+      bagStack: artifact.bagStack,
       skills: artifact.skills,
     })),
   );

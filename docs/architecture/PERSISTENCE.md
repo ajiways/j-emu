@@ -60,6 +60,11 @@ runtime barrel `db/schema.ts` нет.
 entry неизменяемы: файл не редактируется и не переименовывается.
 Исправление — новая миграция. Схлопывание запрещено.
 
+Локальный ledger, который не совпадает с файлами (`was modified`, missing
+journal), тоже не чинят руками. Development `DATABASE_URL` без суффикса
+`_test` пересоздаётся `npm run db:reset` (DROP DATABASE, migrate, publish).
+`TEST_DATABASE_URL` сбрасывают только test scripts.
+
 Модуль меняет только свои Drizzle schema files. Межмодульный FK согласуется с
 владельцем обеих сторон и создаётся миграцией владельца зависимой таблицы.
 

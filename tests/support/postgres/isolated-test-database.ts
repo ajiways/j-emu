@@ -1,4 +1,4 @@
-import postgres from "postgres";
+import { recreateDatabase } from "../../../src/infrastructure/postgres/recreate-database.ts";
 import { requireTestDatabaseUrl, testDatabaseName } from "./test-database-url.ts";
 
 export async function withIsolatedTestDatabase(
@@ -18,28 +18,11 @@ export async function withIsolatedTestDatabase(
   }
   const isolatedUrl = new URL(baseUrl.toString());
   isolatedUrl.pathname = `/${name}`;
-  const adminUrl = new URL(baseUrl.toString());
-  adminUrl.pathname = "/postgres";
-  const admin = postgres(adminUrl.toString(), { max: 1 });
+  const isolated = isolatedUrl.toString();
   try {
-    await recreate(admin, name);
-    await work(isolatedUrl.toString());
+    await recreateDatabase(isolated, "recreate");
+    await work(isolated);
   } finally {
-    try {
-      await recreate(admin, name, true);
-    } finally {
-      await admin.end({ timeout: 5 });
-    }
+    await recreateDatabase(isolated, "drop");
   }
-}
-
-async function recreate(admin: postgres.Sql, name: string, dropOnly = false): Promise<void> {
-  await admin`
-    SELECT pg_terminate_backend(pid)
-    FROM pg_stat_activity
-    WHERE datname = ${name} AND pid <> pg_backend_pid()
-  `;
-  // Drizzle has no CREATE/DROP DATABASE; this is a test-only admin command.
-  await admin.unsafe(`DROP DATABASE IF EXISTS "${name}"`);
-  if (!dropOnly) await admin.unsafe(`CREATE DATABASE "${name}"`);
 }

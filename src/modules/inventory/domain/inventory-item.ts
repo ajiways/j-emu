@@ -26,4 +26,8 @@ export class InventoryItem {
   withLocation(location: ItemLocation): InventoryItem {
     return new InventoryItem(this.id, this.heroId, this.artifactId, this.quantityValue, location);
   }
+
+  withQuantity(quantity: number): InventoryItem {
+    return new InventoryItem(this.id, this.heroId, this.artifactId, quantity, this.location);
+  }
 }

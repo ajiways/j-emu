@@ -1,5 +1,6 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { isProgressionManagedSkillId } from "../../content/domain/progression-managed-skills.ts";
+import { nextMoneyMinor } from "./next-money-minor.ts";
 
 type StarterSkill = Readonly<{ id: string; value: number }>;
 
@@ -226,6 +227,10 @@ export class Hero {
 
   healFully(): void {
     this.hpValue = this.maxHpValue;
+  }
+
+  creditMoney(minorUnits: number): void {
+    this.moneyMinorValue = nextMoneyMinor(this.moneyMinorValue, minorUnits);
   }
 
   private setHp(hp: number): void {
