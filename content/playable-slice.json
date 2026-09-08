@@ -1,15 +1,25 @@
 {
-  "schemaVersion": "playable-slice/v3",
+  "schemaVersion": "playable-slice/v4",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
       "id": 9095,
-      "title": "Перчатка новичка",
+      "title": "Ветхая магическая перчатка",
       "picture": "artifact_9095.png",
       "typeId": "2",
-      "kindId": 0,
-      "slotMask": 16,
-      "weight": 0
+      "kindId": 44,
+      "slotMask": 32,
+      "weight": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "gender": 0,
+      "skills": [
+        { "id": "STR", "value": 6, "flags": 0 },
+        { "id": "RAG", "value": 2, "flags": 0 },
+        { "id": "DEX", "value": 1, "flags": 0 },
+        { "id": "DEF", "value": 1, "flags": 0 },
+        { "id": "VIT", "value": 5, "flags": 0 }
+      ]
     }
   ],
   "bots": [

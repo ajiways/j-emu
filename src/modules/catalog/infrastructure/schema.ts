@@ -17,10 +17,17 @@ export const artifacts = catalogSchema.table(
     kindId: integer("kind_id").notNull(),
     slotMask: integer("slot_mask").notNull(),
     weight: integer("weight").notNull(),
+    levelMin: integer("level_min").notNull(),
+    levelMax: integer("level_max").notNull(),
+    gender: integer("gender").notNull(),
+    skills: jsonb("skills").notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.releaseId, table.id] }),
     check("artifacts_weight_check", sql`${table.weight} >= 0`),
+    check("artifacts_level_min_check", sql`${table.levelMin} >= 0`),
+    check("artifacts_level_max_check", sql`${table.levelMax} >= 0`),
+    check("artifacts_gender_check", sql`${table.gender} >= 0`),
   ],
 );
 

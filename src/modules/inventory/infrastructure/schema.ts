@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { bigint, check, index, integer, pgSchema, text } from "drizzle-orm/pg-core";
+import { bigint, check, index, integer, pgSchema, text, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const inventorySchema = pgSchema("inventory");
 
@@ -41,5 +41,8 @@ export const items = inventorySchema.table(
       )`,
     ),
     index("inventory_items_hero_idx").on(table.heroId),
+    uniqueIndex("inventory_items_hero_equipment_slot_uidx")
+      .on(table.heroId, table.equipmentSlot)
+      .where(sql`${table.locationKind} = 'equipment'`),
   ],
 );

@@ -22,7 +22,8 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и цепочка `drizzle/0000_foundation_init`, `drizzle/0001_character_add_hero_personal_details`,
-`drizzle/0002_world_location_scalars`.
+`drizzle/0002_world_location_scalars`, `drizzle/0003_character_bootstrap_state`,
+`drizzle/0004_catalog_artifact_wear_and_equipment_slot`.
 Поля ниже совпадают с runtime.
 
 ### `identity`
@@ -49,13 +50,15 @@ Playerbot-таблиц и признаков `is_bot` нет.
 - `items(id bigint DEFAULT nextval, hero_id integer, artifact_id, quantity, location_kind, pocket_position, equipment_slot, version)`.
 
 `location_kind` ∈ `bag|pocket|equipment` с CHECK взаимоисключения slot-колонок.
+Частичный unique `(hero_id, equipment_slot) WHERE location_kind = 'equipment'`.
 Отдельных containers/reservations нет.
 
 ### `catalog`
 
 Versioned projection активной content release:
 
-- `artifacts(release_id, id, title, picture, type_id, kind_id, slot_mask, weight)` PK `(release_id, id)`.
+- `artifacts(release_id, id, title, picture, type_id, kind_id, slot_mask, weight,
+level_min, level_max, gender, skills jsonb)` PK `(release_id, id)`.
 - `bots(release_id, id, title, level, max_hp, strength, hunt_nick, hunt_swf,
 hunt_scale, hunt_fps, hunt_speed, hunt_avatar, hunt_kind, hunt_hide_on_map)`
   PK `(release_id, id)`. Hunt look — спрайт на карте (`area_conf.hunt_bots`),

@@ -65,6 +65,10 @@ async function insertArtifacts(
       kindId: artifact.kindId,
       slotMask: artifact.slotMask,
       weight: artifact.weight,
+      levelMin: artifact.levelMin,
+      levelMax: artifact.levelMax,
+      gender: artifact.gender,
+      skills: artifact.skills,
     })),
   );
 }

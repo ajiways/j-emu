@@ -4,6 +4,7 @@ import type { CommonConfBlock } from "../../content/domain/bootstrap-content.ts"
 import type { ActiveContentRevision } from "../../content/ports/active-content-revision.ts";
 import { AppearancePreset } from "../domain/appearance-preset.ts";
 import { ArtifactDefinition } from "../domain/artifact-definition.ts";
+import { artifactSkillsFromJson } from "./artifact-skills-from-json.ts";
 import { BootstrapChrome } from "../domain/bootstrap-chrome.ts";
 import { BotDefinition } from "../domain/bot-definition.ts";
 import { HudDefaults } from "../domain/hud-defaults.ts";
@@ -44,6 +45,10 @@ export class PostgresCatalog implements Catalog {
           row.kindId,
           row.slotMask,
           row.weight,
+          row.levelMin,
+          row.levelMax,
+          row.gender,
+          artifactSkillsFromJson(row.id, row.skills),
         )
       : null;
   }

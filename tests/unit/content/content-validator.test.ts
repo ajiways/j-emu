@@ -32,14 +32,16 @@ describe("ContentValidator", () => {
     expect(() => new ContentValidator().validate(bundle)).toThrow(/missing bot 999/);
   });
 
-  it("rejects duplicate artifact ids", () => {
+  it("rejects an artifact skill missing from the skill catalog", () => {
     const artifact = playable.artifacts[0];
     if (!artifact) throw new Error("playable bundle has no artifacts");
     const bundle: ContentBundle = {
       ...playable,
-      artifacts: [artifact, { ...artifact }],
+      artifacts: [
+        { ...artifact, skills: [...artifact.skills, { id: "NOPE", value: 1, flags: 0 }] },
+      ],
     };
-    expect(() => new ContentValidator().validate(bundle)).toThrow(/duplicate artifact id/);
+    expect(() => new ContentValidator().validate(bundle)).toThrow(/missing skill NOPE/);
   });
 });
 

@@ -12,6 +12,14 @@ import {
 
 const flag = z.union([z.literal(0), z.literal(1)]);
 
+const artifactSkillSchema = z
+  .object({
+    id: z.string().min(1),
+    value: z.number().int(),
+    flags: z.number().int().nonnegative(),
+  })
+  .strict();
+
 const artifactSchema = z
   .object({
     id: z.number().int().positive(),
@@ -21,6 +29,10 @@ const artifactSchema = z
     kindId: z.number().int().nonnegative(),
     slotMask: z.number().int().nonnegative(),
     weight: z.number().int().nonnegative(),
+    levelMin: z.number().int().nonnegative(),
+    levelMax: z.number().int().nonnegative(),
+    gender: z.number().int().nonnegative(),
+    skills: z.array(artifactSkillSchema),
   })
   .strict();
 

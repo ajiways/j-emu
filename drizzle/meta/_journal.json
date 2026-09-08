@@ -29,6 +29,13 @@
       "when": 1788849048337,
       "tag": "0003_character_bootstrap_state",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788850573264,
+      "tag": "0004_catalog_artifact_wear_and_equipment_slot",
+      "breakpoints": true
     }
   ]
 }

@@ -8,8 +8,14 @@ import type {
   WelcomeMessageDocument,
 } from "./bootstrap-content.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v3";
-export const CONTENT_VALIDATOR_VERSION = "3";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v4";
+export const CONTENT_VALIDATOR_VERSION = "4";
+
+type ArtifactSkillDocument = Readonly<{
+  id: string;
+  value: number;
+  flags: number;
+}>;
 
 export type ArtifactDocument = Readonly<{
   id: number;
@@ -19,6 +25,10 @@ export type ArtifactDocument = Readonly<{
   kindId: number;
   slotMask: number;
   weight: number;
+  levelMin: number;
+  levelMax: number;
+  gender: number;
+  skills: readonly ArtifactSkillDocument[];
 }>;
 
 type HuntLookDocument = Readonly<{

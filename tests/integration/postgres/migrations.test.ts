@@ -127,8 +127,9 @@ describe("Drizzle migrations", () => {
       "0001_character_add_hero_personal_details",
       "0002_world_location_scalars",
       "0003_character_bootstrap_state",
+      "0004_catalog_artifact_wear_and_equipment_slot",
     ]);
-    expect(await appliedCount()).toBe(4);
+    expect(await appliedCount()).toBe(5);
 
     const singleton = await database
       .session()

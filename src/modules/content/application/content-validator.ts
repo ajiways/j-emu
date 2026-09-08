@@ -86,6 +86,21 @@ export class ContentValidator {
     for (const skillId of REQUIRED_SKILL_IDS) {
       if (!skillIds.has(skillId)) issues.push(`missing required skill ${skillId}`);
     }
+    for (const artifact of bundle.artifacts) {
+      if (artifact.levelMax > 0 && artifact.levelMax < artifact.levelMin) {
+        issues.push(`artifact ${artifact.id} levelMax is below levelMin`);
+      }
+      const artifactSkills = new Set<string>();
+      for (const skill of artifact.skills) {
+        if (!skillIds.has(skill.id)) {
+          issues.push(`artifact ${artifact.id} references missing skill ${skill.id}`);
+        }
+        if (artifactSkills.has(skill.id)) {
+          issues.push(`artifact ${artifact.id} has duplicate skill ${skill.id}`);
+        }
+        artifactSkills.add(skill.id);
+      }
+    }
     if (!bundle.levels.some((level) => level.level === 1)) {
       issues.push("level 1 boundary is required");
     }
