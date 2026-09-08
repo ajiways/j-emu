@@ -3,11 +3,13 @@
 ## Статус
 
 Bootstrap закрыт: raw-AMF E2E и реальный CEF smoke-test показывают HUD и
-локацию после cold login. Character progression (regen, level-up) ещё
-частичный. Equipment-derived VIT/hpMax считаются после PUT_ON; без экипа HUD
-показывает naked L1 (VIT 10). Inventory mutations, world transitions, combat
-mechanics и quests в bootstrap-срез не входят. Точный статус:
-[CAPABILITIES.md](../CAPABILITIES.md).
+локацию после cold login. CHR-01 `grantExperience` реализован как internal
+port: EXP/level и managed skills пишутся в PostgreSQL, raw-AMF init/init2
+показывают final boundary после reconnect/restart. Клиентского OA и CEF
+level-up нет до CMB-03/quests, поэтому character progression остаётся
+частичным. Regeneration, honor и ghost/injury не входят. Equipment-derived
+VIT/hpMax считаются после PUT_ON; без экипа HUD показывает naked L1 (VIT 10).
+Точный статус: [CAPABILITIES.md](../CAPABILITIES.md).
 
 ## Источники поведения
 
@@ -217,10 +219,11 @@ notification не входит в CHR-01: realtime owner появляется в
 - отсутствуют dev OA, runtime fixture read, combat import и duplicated
   progression formula.
 
-CHR-01 — internal enabling capability: production-клиент пока не может создать
-EXP grant без CMB-03/quest consumer. Поэтому завершение implementation item не
-повышает character progression до `готово` и не требует бессодержательного CEF
-сценария. Первый реальный consumer обязан добавить raw-AMF и CEF acceptance.
+CHR-01 implementation закрыт как internal enabling capability: production-клиент
+пока не может создать EXP grant без CMB-03/quest consumer. Workflow-статус
+`done` не повышает character progression до `готово` и не требует
+бессодержательного CEF сценария. Первый реальный consumer обязан добавить
+raw-AMF и CEF acceptance.
 
 `CHR-02` после него задаёт authoritative regeneration timestamps и lazy
 calculation. Ghost/injury/RESURRECT относятся к `CMB-04`; honor progression — к

@@ -48,12 +48,15 @@
 ## Character — частично
 
 Есть persisted naked HP/MP/EXP, skills и appearance, достаточные для HUD после
-bootstrap.
+bootstrap. Internal `grantExperience` атомарно применяет DATA-01 L1–L8 curve,
+переживает reconnect/restart и не имеет production OA/CEF consumer.
 
 Не перенесено:
 
-- regeneration timestamps как живой ticker и ghost/injury state;
-- level-up и honor progression.
+- regeneration timestamps (CHR-02);
+- ghost/injury/RESURRECT (CMB-04);
+- honor progression;
+- клиентский EXP grant через бой/квест (CMB-03 / quests).
 
 Equipment-derived `user|skills` / `hpMax` считаются из naked skills + надетых
 предметов (перчатка 9095 даёт VIT+5). Без экипа HUD показывает naked L1.

@@ -13,7 +13,7 @@
   `depends_on`.
 - Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
   `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **CHR-01**.
+- Ровно одна запись имеет статус `next`: **CHR-02**.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -104,7 +104,7 @@
   capacity enforcement belongs to `INV-02`. CHR-01 adds no fake OA: until
   CMB-03 or a quest flow consumes the port, character progression remains
   product-status `partial` and has no independent CEF gate.
-- **Status:** `next`
+- **Status:** `done`
 
 ### CHR-02 — HP/MP regeneration
 
@@ -120,7 +120,7 @@
 - **Acceptance:** HP/MP regeneration is deterministic from persisted time
   across reconnect/restart, clamps to current maxima and pauses in combat
   without requiring a per-hero background ticker.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### INV-02 — Bag rules and DROP
 
