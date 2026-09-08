@@ -26,7 +26,8 @@ Playerbot-таблиц и признаков `is_bot` нет.
 `drizzle/0004_catalog_artifact_wear_and_equipment_slot`,
 `drizzle/0005_character_experience_progression`,
 `drizzle/0006_character_hp_regeneration`,
-`drizzle/0007_catalog_artifact_bag_economy`.
+`drizzle/0007_catalog_artifact_bag_economy`,
+`drizzle/0008_inventory_pocket_position_unique`.
 Поля ниже совпадают с runtime.
 
 ### `identity`
@@ -68,9 +69,8 @@ naked skills — отдельными строками `hero_skills`. `hp_time` 
 
 `location_kind` ∈ `bag|pocket|equipment` с CHECK взаимоисключения slot-колонок.
 Частичный unique `(hero_id, equipment_slot) WHERE location_kind = 'equipment'`.
-INV-03 добавит частичный unique `(hero_id, pocket_position) WHERE location_kind
-= 'pocket'` (`0008_inventory_pocket_position_unique`). Отдельных
-containers/reservations нет.
+Частичный unique `(hero_id, pocket_position) WHERE location_kind = 'pocket'`
+(`0008_inventory_pocket_position_unique`). Отдельных containers/reservations нет.
 
 ### `catalog`
 

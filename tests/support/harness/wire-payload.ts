@@ -15,6 +15,19 @@ export function bagItemIdFrom(payload: Record<string, AmfValue>): number {
   return bagItem.id;
 }
 
+export function bagItemByArtikulId(
+  payload: Record<string, AmfValue>,
+  artikulId: number,
+): Record<string, AmfValue> {
+  const bagBlock = requireRecord(payload["user|bag"], "user|bag");
+  const bag = requireRecord(bagBlock["bag"], "user|bag.bag");
+  for (const value of Object.values(bag)) {
+    const item = requireRecord(value, "user|bag.bag item");
+    if (item.artikul_id === artikulId) return item;
+  }
+  throw new Error(`bag item artikul_id ${artikulId} is missing`);
+}
+
 export function firstBagItemFrom(payload: Record<string, AmfValue>): Record<string, AmfValue> {
   const bagBlock = requireRecord(payload["user|bag"], "user|bag");
   const bag = requireRecord(bagBlock["bag"], "user|bag.bag");

@@ -40,6 +40,7 @@ describe("experience grants", () => {
       releaseArtifacts: catalog.releaseArtifacts,
       catalog: catalog.catalog,
       bagCapacity: policy.bootstrap.bagCapacity,
+      pocketCapacity: policy.bootstrap.pocketCapacity,
     });
     characters = CharacterModule.create(
       playableCharacterModuleInput(database, catalog.progression, inventory.service, {
@@ -223,6 +224,7 @@ async function modulesFor(database: PostgresDatabase) {
     releaseArtifacts: catalog.releaseArtifacts,
     catalog: catalog.catalog,
     bagCapacity: policy.bootstrap.bagCapacity,
+    pocketCapacity: policy.bootstrap.pocketCapacity,
   });
   const characters = CharacterModule.create(
     playableCharacterModuleInput(database, catalog.progression, inventory.service, {

@@ -23,7 +23,7 @@ describe("auth and init", () => {
   it("serves cookies on game.php 200 and a flat init with nested bag", async () => {
     const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
     expect(init["common|init"]).toEqual({ status: 100 });
-    expect(init["user|bag"]).toMatchObject({ status: 100, amount: 0, total: 1 });
+    expect(init["user|bag"]).toMatchObject({ status: 100, amount: 2, total: 3 });
     expect((init["common|init"] as Record<string, AmfValue>)["user|bag"]).toBeUndefined();
     const bagItem = firstBagItemFrom(init);
     if (typeof bagItem.id !== "number") throw new Error("bag item id must be a number");
@@ -35,7 +35,7 @@ describe("auth and init", () => {
     expect(conf.id).toBeGreaterThanOrEqual(1);
 
     const bagOnly = await client.objectAction({ object: "user", action: "bag", sq: 11 });
-    expect(bagOnly["user|bag"]).toMatchObject({ status: 100, amount: 0, total: 1 });
+    expect(bagOnly["user|bag"]).toMatchObject({ status: 100, amount: 2, total: 3 });
     expect(bagOnly["common|init"]).toBeUndefined();
 
     const init2 = await client.objectAction({ object: "common", action: "init2", sq: 2 });

@@ -1,6 +1,9 @@
 import type { Catalog } from "../../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../../character/application/character-service.ts";
+import type { CombatPort } from "../../../combat/ports/combat-port.ts";
+import { PocketDeniedError } from "../../../inventory/domain/pocket-denied-error.ts";
 import type { InventoryService } from "../../../inventory/domain/inventory-service.ts";
+import type { PocketTarget } from "../../../inventory/domain/put-on-pocket.ts";
 import { WearDeniedError } from "../../../inventory/domain/wear-denied-error.ts";
 import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
 import type { BootstrapReadModel } from "../../application/bootstrap-read-model.ts";
@@ -9,8 +12,10 @@ import { ProtocolError } from "../../application/protocol-error.ts";
 import { artifactInstanceIdFrom } from "./artifact-instance-id.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
+import { pocketTargetFromEnvelope } from "./pocket-target-from-envelope.ts";
+import { requireNoActiveFight } from "./require-no-active-fight.ts";
 
-type PutOnRequest = Readonly<{ itemId: number }>;
+type PutOnRequest = Readonly<{ itemId: number; pocketTarget?: PocketTarget }>;
 
 export class PutOnCommand implements OaCommand {
   static readonly key = "common|object:PUT_ON";
@@ -22,10 +27,14 @@ export class PutOnCommand implements OaCommand {
     private readonly characters: CharacterService,
     private readonly inventory: InventoryService,
     private readonly catalog: Catalog,
+    private readonly combat: CombatPort,
   ) {}
 
   decode(envelope: ObjectActionEnvelope): PutOnRequest {
-    return { itemId: artifactInstanceIdFrom(envelope) };
+    const pocketTarget = pocketTargetFromEnvelope(envelope);
+    return pocketTarget === undefined
+      ? { itemId: artifactInstanceIdFrom(envelope) }
+      : { itemId: artifactInstanceIdFrom(envelope), pocketTarget };
   }
 
   async handle(context: OaCommandContext, request: PutOnRequest): Promise<object> {
@@ -34,6 +43,7 @@ export class PutOnCommand implements OaCommand {
         const locked = await this.characters.lockByAccountId(context.accountId);
         await this.characters.syncResources({ characterId: locked.id });
         const hero = await this.characters.lockByAccountId(context.accountId);
+        await requireNoActiveFight(this.combat, context.accountId);
         await this.inventory.ensureStarterInventory(hero.id);
         const items = await this.inventory.list(hero.id);
         const matches = items.filter((item) => item.id === request.itemId);
@@ -42,15 +52,23 @@ export class PutOnCommand implements OaCommand {
         if (!item) throw new Error(`Item ${request.itemId} for hero ${hero.id} is missing`);
         const definition = await this.catalog.artifact(item.artifactId);
         if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
-        await this.inventory.putOn(hero, request.itemId, definition);
-        await this.characters.applyEquipmentVitals(
+        const kind = await this.inventory.putOn(
           hero,
-          await equippedSkillBonuses(this.inventory, this.catalog, hero.id),
+          request.itemId,
+          definition,
+          request.pocketTarget,
         );
+        if (kind === "paperdoll") {
+          await this.characters.applyEquipmentVitals(
+            hero,
+            await equippedSkillBonuses(this.inventory, this.catalog, hero.id),
+          );
+        }
         return this.bootstrap.equipmentMutation(context.accountId);
       });
     } catch (error) {
       if (error instanceof WearDeniedError) throw new ProtocolError(203, error.message);
+      if (error instanceof PocketDeniedError) throw new ProtocolError(204, error.message);
       throw error;
     }
   }
@@ -60,6 +78,11 @@ export class PutOnCommand implements OaCommand {
   }
 
   async execute(accountId: number, envelope: ObjectActionEnvelope): Promise<OaEncodedResponse> {
-    return this.encode(await this.handle({ accountId }, this.decode(envelope)));
+    try {
+      return this.encode(await this.handle({ accountId }, this.decode(envelope)));
+    } catch (error) {
+      if (error instanceof PocketDeniedError) throw new ProtocolError(204, error.message);
+      throw error;
+    }
   }
 }

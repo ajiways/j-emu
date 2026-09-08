@@ -3,7 +3,7 @@ import type { Application } from "../../src/app/application.ts";
 import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
-import { bagItemIdFrom, firstBagItemFrom } from "../support/harness/wire-payload.ts";
+import { bagItemByArtikulId } from "../support/harness/wire-payload.ts";
 
 describe("inventory DROP", () => {
   let harness: ApplicationHarness;
@@ -18,16 +18,16 @@ describe("inventory DROP", () => {
     await harness.stop();
   });
 
-  it("throws away glove 9095, leaves money unchanged, and reconnects empty", async () => {
+  it("throws away glove 9095, leaves money unchanged, and reconnects with remaining bag", async () => {
     const client = await AuthenticatedClient.login(application);
     const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
     expect(objectBlock(init["user|bag"])).toMatchObject({
       status: 100,
-      amount: 0,
-      total: 1,
+      amount: 2,
+      total: 3,
       amount_max: 20,
     });
-    const glove = firstBagItemFrom(init);
+    const glove = bagItemByArtikulId(init, 9095);
     expect(glove).toMatchObject({
       artikul_id: 9095,
       flags: 40,
@@ -36,7 +36,7 @@ describe("inventory DROP", () => {
       sell_price: 0,
       actions: 11,
     });
-    const itemId = bagItemIdFrom(init);
+    const itemId = requireNumber(glove.id);
     expect(objectBlock(init.state).money).toBe("25.00");
 
     const dropped = await client.objectAction({
@@ -48,10 +48,10 @@ describe("inventory DROP", () => {
     expect(dropped["common|action"]).toEqual({ status: 100, action: "DROP" });
     expect(objectBlock(dropped["user|bag"])).toMatchObject({
       status: 100,
-      amount: 0,
-      total: 0,
-      bag: {},
+      amount: 2,
+      total: 2,
     });
+    expect(() => bagItemByArtikulId(dropped, 9095)).toThrow(/9095 is missing/);
     expect(dropped["user|skills"]).toBeTypeOf("object");
     expect(dropped["user|mount_list"]).toMatchObject({ status: 100, mounts: [] });
     expect(objectBlock(dropped.state).money).toBe("25.00");
@@ -64,17 +64,17 @@ describe("inventory DROP", () => {
     const again = new AuthenticatedClient(application, client.cookie);
     const afterRestart = await again.objectAction({ object: "common", action: "init", sq: 20 });
     expect(objectBlock(afterRestart["user|bag"])).toMatchObject({
-      amount: 0,
-      total: 0,
-      bag: {},
+      amount: 2,
+      total: 2,
     });
+    expect(() => bagItemByArtikulId(afterRestart, 9095)).toThrow(/9095 is missing/);
     expect(objectBlock(afterRestart.state).money).toBe("25.00");
   });
 
   it("denies equipped DROP and SELL of unsellable 9095", async () => {
     const client = await AuthenticatedClient.login(application);
     const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
-    const itemId = bagItemIdFrom(init);
+    const itemId = requireNumber(bagItemByArtikulId(init, 9095).id);
 
     const sell = await client.objectAction({
       object: "common",
@@ -108,10 +108,10 @@ describe("inventory DROP", () => {
     });
   });
 
-  it("allows DROP while a hunt fight is active", async () => {
+  it("denies DROP and SELL while a hunt fight is active", async () => {
     const client = await AuthenticatedClient.login(application);
     const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
-    const itemId = bagItemIdFrom(init);
+    const itemId = requireNumber(bagItemByArtikulId(init, 9095).id);
     const start = await client.objectAction({
       object: "common",
       action: "object",
@@ -125,9 +125,28 @@ describe("inventory DROP", () => {
       form: { code: "DROP", artifact_id: itemId },
       sq: 3,
     });
-    expect(dropped["common|action"]).toEqual({ status: 100, action: "DROP" });
-    expect(objectBlock(dropped["user|bag"])).toMatchObject({ amount: 0, total: 0, bag: {} });
-    expect(objectBlock(dropped.state).money).toBe("25.00");
+    expect(dropped["common|action"]).toEqual({
+      status: 203,
+      error: "нельзя во время боя",
+    });
+    expect(dropped["user|bag"]).toBeUndefined();
+    const sold = await client.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "SELL", artifact_id: itemId },
+      sq: 4,
+    });
+    expect(sold["common|action"]).toEqual({
+      status: 203,
+      error: "нельзя во время боя",
+    });
+    const bag = await client.objectAction({ object: "user", action: "bag", sq: 5 });
+    expect(objectBlock(bag["user|bag"])).toMatchObject({
+      status: 100,
+      amount: 2,
+      total: 3,
+    });
+    expect(bagItemByArtikulId(bag, 9095).id).toBe(itemId);
   });
 });
 
@@ -135,5 +154,10 @@ function objectBlock(value: AmfValue | undefined): Record<string, AmfValue> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("expected object block");
   }
+  return value;
+}
+
+function requireNumber(value: AmfValue | undefined): number {
+  if (typeof value !== "number") throw new Error("expected a number");
   return value;
 }

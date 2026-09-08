@@ -37,6 +37,7 @@ describe("inventory drop persistence", () => {
       releaseArtifacts: catalog.releaseArtifacts,
       catalog: catalog.catalog,
       bagCapacity: policy.bootstrap.bagCapacity,
+      pocketCapacity: policy.bootstrap.pocketCapacity,
     });
     characters = CharacterModule.create(
       playableCharacterModuleInput(database, catalog.progression, inventory.service, {
@@ -55,11 +56,13 @@ describe("inventory drop persistence", () => {
 
   it("serializes concurrent DROP so one delete wins", async () => {
     const hero = await createHero();
-    const [item] = await inventory.service.list(hero.id);
-    if (!item) throw new Error("starter item is missing");
+    const [glove] = (await inventory.service.list(hero.id)).filter(
+      (item) => item.artifactId === 9095,
+    );
+    if (!glove) throw new Error("starter glove is missing");
     const results = await Promise.allSettled([
-      database.run(async () => inventory.service.drop({ characterId: hero.id, itemId: item.id })),
-      database.run(async () => inventory.service.drop({ characterId: hero.id, itemId: item.id })),
+      database.run(async () => inventory.service.drop({ characterId: hero.id, itemId: glove.id })),
+      database.run(async () => inventory.service.drop({ characterId: hero.id, itemId: glove.id })),
     ]);
     const accepted = results.filter((result) => result.status === "fulfilled");
     const denied = results.filter(
@@ -67,7 +70,9 @@ describe("inventory drop persistence", () => {
     );
     expect(accepted).toHaveLength(1);
     expect(denied).toHaveLength(1);
-    expect(await inventory.service.list(hero.id)).toEqual([]);
+    const remaining = await inventory.service.list(hero.id);
+    expect(remaining).toHaveLength(2);
+    expect(remaining.some((item) => item.artifactId === 9095)).toBe(false);
   });
 
   it("rolls back DROP in a failed unit of work", async () => {
@@ -81,7 +86,7 @@ describe("inventory drop persistence", () => {
       }),
     ).rejects.toThrow(/forced rollback/);
     const remaining = await inventory.service.list(hero.id);
-    expect(remaining).toHaveLength(1);
+    expect(remaining).toHaveLength(3);
     expect(remaining[0]?.id).toBe(item.id);
   });
 

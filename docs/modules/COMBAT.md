@@ -49,8 +49,14 @@ settlement.
 3. Poll получает minimal terminal packet flow.
 4. Terminal result добавляется в finished history.
 
-Полный cast/effects packet flow, loot/exit ordering, durable settlement,
-reconnect и fight locks относятся к будущей combat wave.
+Полный cast/effects packet flow, loot/exit ordering, durable settlement и
+reconnect относятся к будущей combat wave.
+
+Inventory layout lock (`PUT_ON`/`PUT_OFF`/`DROP`/`SELL` → `203` в бою) —
+именованное `FightRules` в [INVENTORY.md](INVENTORY.md), не live. Live
+[FIGHT_LOCK.md](../../../jgr-emu/docs/FIGHT_LOCK.md) эти коды не режет.
+Трата из кармана — fproxy (`CMB-02`). World USE/travel/ATTACK уже live
+`fightBusy`.
 
 SINGLE/MULTI framing, exact `sq`, source IDs и packet order менять нельзя.
 

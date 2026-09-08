@@ -8,8 +8,8 @@ import type {
   WelcomeMessageDocument,
 } from "./bootstrap-content.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v6";
-export const CONTENT_VALIDATOR_VERSION = "6";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v7";
+export const CONTENT_VALIDATOR_VERSION = "7";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;

@@ -4,7 +4,7 @@ import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { FakeClock } from "../support/fake-clock.ts";
-import { bagItemIdFrom, heroIdFrom } from "../support/harness/wire-payload.ts";
+import { bagItemByArtikulId, heroIdFrom } from "../support/harness/wire-payload.ts";
 
 const START_MS = 1_700_000_000_000;
 
@@ -88,7 +88,8 @@ describe("character HP regeneration", () => {
     const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
     const characterId = heroIdFrom(init);
     await application.characterResources.noteHp({ characterId, hp: 1 });
-    const itemId = bagItemIdFrom(init);
+    const itemId = bagItemByArtikulId(init, 9095).id;
+    if (typeof itemId !== "number") throw new Error("glove id is missing");
     const worn = await client.objectAction({
       object: "common",
       action: "action",

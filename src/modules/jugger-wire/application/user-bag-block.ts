@@ -39,12 +39,6 @@ export type UserBagBlock = Readonly<{
   amount_max: number;
 }>;
 
-export type UserPocketBlock = Readonly<{
-  status: 100;
-  capacity: number;
-  pocket: readonly [];
-}>;
-
 export async function buildUserBag(
   hero: Hero,
   inventory: InventoryService,
@@ -88,9 +82,4 @@ export async function buildUserBag(
     total: load.total,
     amount_max: load.amountMax,
   };
-}
-
-export function buildUserPocket(pocketCapacity: number): UserPocketBlock {
-  if (pocketCapacity < 1) throw new Error("Pocket capacity must be positive");
-  return { status: 100, capacity: pocketCapacity, pocket: [] };
 }

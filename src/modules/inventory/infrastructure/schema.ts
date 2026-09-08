@@ -44,5 +44,8 @@ export const items = inventorySchema.table(
     uniqueIndex("inventory_items_hero_equipment_slot_uidx")
       .on(table.heroId, table.equipmentSlot)
       .where(sql`${table.locationKind} = 'equipment'`),
+    uniqueIndex("inventory_items_hero_pocket_position_uidx")
+      .on(table.heroId, table.pocketPosition)
+      .where(sql`${table.locationKind} = 'pocket'`),
   ],
 );

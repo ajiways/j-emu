@@ -1,4 +1,5 @@
 import type { CharacterService } from "../../../character/application/character-service.ts";
+import type { CombatPort } from "../../../combat/ports/combat-port.ts";
 import type { InventoryService } from "../../../inventory/domain/inventory-service.ts";
 import { DropDeniedError } from "../../../inventory/domain/drop-denied-error.ts";
 import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
@@ -6,6 +7,7 @@ import type { BootstrapReadModel } from "../../application/bootstrap-read-model.
 import { ProtocolError } from "../../application/protocol-error.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
+import { requireNoActiveFight } from "./require-no-active-fight.ts";
 
 type BagDropRequest = Readonly<{
   itemId: number;
@@ -20,6 +22,7 @@ export class BagDropCommand implements OaCommand {
     private readonly bootstrap: BootstrapReadModel,
     private readonly characters: CharacterService,
     private readonly inventory: InventoryService,
+    private readonly combat: CombatPort,
   ) {}
 
   decode(envelope: ObjectActionEnvelope): BagDropRequest {
@@ -43,6 +46,7 @@ export class BagDropCommand implements OaCommand {
         const locked = await this.characters.lockByAccountId(context.accountId);
         await this.characters.syncResources({ characterId: locked.id });
         const hero = await this.characters.lockByAccountId(context.accountId);
+        await requireNoActiveFight(this.combat, context.accountId);
         const settlement = await this.inventory.drop({
           characterId: hero.id,
           itemId: request.itemId,

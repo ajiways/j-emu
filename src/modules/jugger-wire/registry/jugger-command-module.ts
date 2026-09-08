@@ -78,8 +78,8 @@ export class JuggerCommandModule {
         combat,
         fightWire,
       ),
-      new PutOnCommand(unitOfWork, bootstrap, characters, inventory, catalog),
-      new PutOffCommand(unitOfWork, bootstrap, characters, inventory, catalog),
+      new PutOnCommand(unitOfWork, bootstrap, characters, inventory, catalog, combat),
+      new PutOffCommand(unitOfWork, bootstrap, characters, inventory, catalog, combat),
       new BagDropCommand(
         "common|object:DROP",
         "drop",
@@ -87,6 +87,7 @@ export class JuggerCommandModule {
         bootstrap,
         characters,
         inventory,
+        combat,
       ),
       new BagDropCommand(
         "common|object:SELL",
@@ -95,6 +96,7 @@ export class JuggerCommandModule {
         bootstrap,
         characters,
         inventory,
+        combat,
       ),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);

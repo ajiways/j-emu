@@ -29,12 +29,12 @@ counts/checksums и completeness gates:
 
 ## Текущий playable slice
 
-Текущая `playable-slice/v6` release — только минимальный bundle: 1 artifact
-(9095 с `priceMinor:0`, `flags:40`, `bagStack:1`), 1 bot, 1 area, 1 hunt spawn,
-11 skills, 8 levels с normalized managed skills, 1 appearance и
-common-conf/chrome/HUD/welcome документы в составе текущего bundle. INV-03
-coding публикует `v7` с артикулами 93 и 99. Это нельзя называть полным игровым
-контентом или полным контентом цикла 1–8.
+Текущая `playable-slice/v7` release — минимальный bundle: 3 artifacts
+(9095, dump-proven pocketables **93** и **99**; без 209 и патронташа), 1 bot,
+1 area, 1 hunt spawn, 11 skills, 8 levels с normalized managed skills,
+1 appearance и common-conf/chrome/HUD/welcome документы в составе текущего
+bundle. Это нельзя называть полным игровым контентом или полным контентом
+цикла 1–8.
 
 Seed: `npm run db:publish:development` с `CONTENT_BUNDLE_FILE` и `DATABASE_URL`
 из `.env` в корне пакета. Повтор с тем же checksum не создаёт новый release.

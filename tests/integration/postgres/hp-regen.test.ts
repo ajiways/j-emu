@@ -44,6 +44,7 @@ describe("HP regeneration persistence", () => {
       releaseArtifacts: catalog.releaseArtifacts,
       catalog: catalog.catalog,
       bagCapacity: policy.bootstrap.bagCapacity,
+      pocketCapacity: policy.bootstrap.pocketCapacity,
     });
     combat = CombatModule.create({ database, rules: policy.combat, clock });
     characters = CharacterModule.create(

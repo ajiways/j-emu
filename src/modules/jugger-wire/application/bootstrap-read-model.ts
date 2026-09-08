@@ -22,7 +22,8 @@ import { buildHeroState, type HeroStateBlock } from "./hero-state-block.ts";
 import { buildHuntBlock, type HuntBlock } from "./hunt-block.ts";
 import { buildMenuLinkStatus } from "./menu-link-status-block.ts";
 import { buildChatConf, type ChatConfPolicy } from "./chat-conf-block.ts";
-import { buildUserBag, buildUserPocket } from "./user-bag-block.ts";
+import { buildUserBag } from "./user-bag-block.ts";
+import { buildUserPocket } from "./user-pocket-block.ts";
 import { buildUserConf } from "./user-conf-block.ts";
 import { emptyUserMagic } from "./user-magic-block.ts";
 import { buildUserSkills, skillsExpireBlock, type UserSkillsBlock } from "./user-skills-block.ts";
@@ -114,7 +115,12 @@ export class BootstrapReadModel {
       "common|action": statusOk(),
       "user|bag": await buildUserBag(hero, this.inventory, this.catalog),
       "user|view": await this.view(accountId),
-      "user|pocket": buildUserPocket(this.policy.pocketCapacity),
+      "user|pocket": await buildUserPocket(
+        this.inventory,
+        this.catalog,
+        hero.id,
+        this.policy.pocketCapacity,
+      ),
       "user|skills": await this.skills(accountId),
       "user|unitframe": await this.unitframe(accountId),
       "user|conf": buildUserConf(hero, level),
@@ -147,7 +153,12 @@ export class BootstrapReadModel {
       "common|conf": await this.catalog.commonConf(),
       state: buildHeroState(hero, this.clock),
       "user|bag": await buildUserBag(hero, this.inventory, this.catalog),
-      "user|pocket": buildUserPocket(this.policy.pocketCapacity),
+      "user|pocket": await buildUserPocket(
+        this.inventory,
+        this.catalog,
+        hero.id,
+        this.policy.pocketCapacity,
+      ),
       "user|magic": emptyUserMagic(),
       "user|conf": buildUserConf(hero, level),
       "user|personal_details": {

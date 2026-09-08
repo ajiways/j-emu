@@ -109,6 +109,7 @@ describe("module factories", () => {
         releaseArtifacts,
         catalog: {} as Catalog,
         bagCapacity: 20,
+        pocketCapacity: 4,
       }),
     ).toThrow(/Inventory module requires a database/);
     expect(() =>
@@ -118,6 +119,7 @@ describe("module factories", () => {
         releaseArtifacts,
         catalog: {} as Catalog,
         bagCapacity: 20,
+        pocketCapacity: 4,
       }),
     ).toThrow(/Starter inventory policy is required/);
     expect(() =>
@@ -127,8 +129,19 @@ describe("module factories", () => {
         releaseArtifacts,
         catalog: undefined as unknown as Catalog,
         bagCapacity: 20,
+        pocketCapacity: 4,
       }),
     ).toThrow(/Inventory module requires a catalog/);
+    expect(() =>
+      InventoryModule.create({
+        database: {} as PostgresDatabase,
+        starterItems: [{ artifactId: 1, quantity: 1, location: { kind: "bag" } }],
+        releaseArtifacts,
+        catalog: {} as Catalog,
+        bagCapacity: 20,
+        pocketCapacity: undefined as unknown as number,
+      }),
+    ).toThrow(/Inventory module requires pocket capacity/);
   });
 
   it("fails fast when required catalog and world dependencies are missing", async () => {
@@ -203,6 +216,7 @@ describe("module factories", () => {
       releaseArtifacts,
       catalog: {} as Catalog,
       bagCapacity: 20,
+      pocketCapacity: 4,
     });
     await expect(inventory.close()).resolves.toBeUndefined();
   });

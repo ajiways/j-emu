@@ -38,6 +38,7 @@ describe("playable account registration", () => {
       releaseArtifacts: catalog.releaseArtifacts,
       catalog: catalog.catalog,
       bagCapacity: policy.bootstrap.bagCapacity,
+      pocketCapacity: policy.bootstrap.pocketCapacity,
     });
     characters = CharacterModule.create(
       playableCharacterModuleInput(database, catalog.progression, inventory.service, {

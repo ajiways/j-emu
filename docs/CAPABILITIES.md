@@ -87,7 +87,8 @@ bag, деньги остаются `25.00`, bag пуст, reconnect совпад
 - OA `DROP` (и alias `SELL`) → flat `common|action` + bag/skills/mount_list/state;
 - throw-away 9095 не меняет деньги; equipped DROP и SELL без `sell_price>0` —
   `204` с live `error`;
-- DROP в активном hunt-бою разрешён;
+- DROP в активном hunt-бою запрещён (`FightRules` `203`; live сервер это не
+  режет, j-emu закрывает дыру из [FIGHT_LOCK.md](../../jgr-emu/docs/FIGHT_LOCK.md));
 - `creditMoney` на character в той же UoW; inventory не пишет `heroes`.
 
 ## Inventory — частично

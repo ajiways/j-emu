@@ -57,6 +57,13 @@
       "when": 1788866979648,
       "tag": "0007_catalog_artifact_bag_economy",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788872747772,
+      "tag": "0008_inventory_pocket_position_unique",
+      "breakpoints": true
     }
   ]
 }

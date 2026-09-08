@@ -65,10 +65,43 @@ armor 20/26/103 is not invented in this playable slice.
 
 ## Fight boundary
 
+Именованное `FightRules` (не live parity, не fallback). Пока
+`CombatPort.activeFightId(accountId)` не `null`, layout-мутации инвентаря
+запрещены: `PUT_ON`, `PUT_OFF`, `DROP`, `SELL` → **`status:203`** +
+`error: "нельзя во время боя"`. Чтение bag/view/pocket/init не блокируется.
+
+Смысл: в бою нельзя докладывать расходку на пояс и менять экип/сумку. Трата из
+кармана — fproxy `castSpell` (`CMB-02`), не PUT_ON. World `USE` из bag live уже
+`fightBusy`. Добор ячеек после боя (`POCKET.md` refill) — не этот срез.
+
+Live `jgr-emu` `commonObject.ts` эти коды **не** блокирует; в
+[FIGHT_LOCK.md](../../../jgr-emu/docs/FIGHT_LOCK.md) строка стоит как
+«⬜ не блок (желательно позже)». j-emu закрывает эту дыру сознательно.
+
+В бою `syncResources` по-прежнему не персистит regen clocks (CHR-02).
+
 Pocket layout (INV-03) принадлежит inventory; active count/effects во время боя
 — combat (`INV-04`/`CMB-02`). `persSpells.srcId` не должен столкнуться с
 `items.id`. Packet ordering `rs`/strike задаётся [COMBAT.md](COMBAT.md). World
 `user|magic` glove spells не входят в этот срез.
+
+### CEF observation — 2026-09-08
+
+Новый CEF-герой (`register` → `accountId` 1). Bootstrap `common|init`
+`status:100` с `user|pocket`. Happy-path `PUT_ON`/`PUT_OFF` — все
+`status:100`, в flat-ответе есть `user|pocket`. Инвентарных `203`/`204` нет.
+Картинки `bottles_live1_2712.png` / `bottles_sila1.png` на wire приняты.
+
+Postgres после сессии: 9095 paperdoll slot 32; 99×10 пояс слот 1; два 93×1
+на слотах 2 и 3 (оба стартовых эликсира на поясе — leftover в bag нет,
+потому что надели оба, не один из стака). Layout живёт в PostgreSQL.
+
+Второй cold `game.php` / `common|init` в этом прогоне не было. Restart
+покрыт raw-AMF e2e. Product «готово» — за architecture close (ROADMAP
+`next`).
+
+Побочное: `ATTACK_BOT` 203 `Bot 50310 is not present in area 503` (spawn id
+вместо `bot_id` 2). Не inventory. Каста в бою не было.
 
 ## Persistence
 
@@ -113,17 +146,20 @@ DROP не идемпотентен по `operation_id`: повтор клиен�
 - `user|mount_list` (пустой `mounts` допустим, блок обязателен);
 - `state`.
 
-Не включать `user|view` / `pocket` / `unitframe` / `conf`. Deny — **`status:204`**
-и поле `error` с точной русской строкой. Не «улучшать» до `203`.
+Не включать `user|view` / `pocket` / `unitframe` / `conf`. Deny bag-правил —
+**`status:204`** и поле `error` с точной русской строкой. Не «улучшать» bag-deny
+до `203`. Активный бой — `FightRules`, не bag-правило: **`203`** +
+`нельзя во время боя`.
 
 | Исход                                               | `error`                                      |
 | --------------------------------------------------- | -------------------------------------------- |
 | DROP throw-away / missing / equipped / no FLAG_DROP | `Не удалось выполнить действие "Выбросить"!` |
 | SELL OA / void-sell deny                            | `Не удалось выполнить действие "Продать"!`   |
+| активный бой (`PUT_ON`/`PUT_OFF`/`DROP`/`SELL`)     | `нельзя во время боя`                        |
 
-DROP **разрешён в бою** (legacy не ставит `fightBusy` на DROP). DROP **разрешён
-при перегрузе**: это способ снять overload; `amount > amount_max` DROP не
-блокирует. Equipped (`location.kind !== "bag"`) DROP нельзя.
+DROP **запрещён в бою** (`FightRules`). Вне боя DROP **разрешён при перегрузе**:
+это способ снять overload; `amount > amount_max` DROP не блокирует. Equipped
+(`location.kind !== "bag"`) DROP нельзя.
 
 `in.amount` / `form.amount`: omitted / non-positive / non-finite → весь стак
 (именованное правило, не catalog fallback). `take = min(floor(amount), have)`.
@@ -225,6 +261,7 @@ Pocket, USE, durability, mail GIVE, COME_IN overload, store buy, grant/merge
 - raw-AMF: DROP 9095 throw-away, empty bag `amount=0` `total=0`, money
   unchanged `"25.00"`, equipped DROP 204, SELL alias shape, reconnect;
   init/user|bag после публикации 9095: `amount=0`, `total=1`;
+  DROP/SELL в активном hunt — `203` `нельзя во время боя`, bag без изменений;
 - CEF: выкинуть перчатку из bag, деньги те же, bag пуст, reconnect —
   **подтверждено**;
 - нет fake OA кроме реального DROP/SELL; нет ticker; нет travel gate.
@@ -264,8 +301,10 @@ Deny пояса — **`204`** + `error` (live `putOn` pocket). Paperdoll WearDen
 | нет свободной ячейки           | `Нет свободных ячеек в боевом инвентаре`     |
 | не pocket-маска / 9095 на пояс | `Этот предмет нельзя надеть`                 |
 | DROP не из bag                 | `Не удалось выполнить действие "Выбросить"!` |
+| активный бой                   | `нельзя во время боя` (`203`)                |
 
-PUT_ON/OFF **разрешены в бою** (legacy не ставит `fightBusy` на PUT_ON).
+PUT_ON/OFF **запрещены в бою** — тот же `FightRules` `203`, что DROP/SELL.
+Трата из кармана в бою — `CMB-02`, не эта мутация.
 
 ### Правила слота
 
@@ -328,7 +367,7 @@ bag, медальон 209, патронташ, TEMPEFFECT drinks, durability.
 - raw-AMF: init empty pocket `capacity=4`; PUT_ON 93 → `slot_num` 1,
   `slot=67108864`, `cnt=1`, `actions=16`; leftover bag stack; PUT_OFF back;
   merge/split 99; swap 93↔99; 9095 into pocket `204`; DROP from pocket `204`;
-  reconnect;
+  PUT_ON/OFF в активном hunt — `203` `нельзя во время боя`; reconnect;
 - CEF: перетащить эликсир 93 на пояс, reconnect, снять в bag; без каста в бою;
 - нет fake OA; нет spell blob; нет 209/патронташа.
 

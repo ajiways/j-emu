@@ -14,6 +14,7 @@ export class InventoryModule {
     releaseArtifacts: ReleaseArtifacts;
     catalog: Catalog;
     bagCapacity: number;
+    pocketCapacity: number;
   }): InventoryModule {
     const database = requirePresent(input.database, "Inventory module requires a database");
     const starterItems = requirePresent(
@@ -26,6 +27,10 @@ export class InventoryModule {
     );
     const catalog = requirePresent(input.catalog, "Inventory module requires a catalog");
     const bagCapacity = requirePresent(input.bagCapacity, "Inventory module requires bag capacity");
+    const pocketCapacity = requirePresent(
+      input.pocketCapacity,
+      "Inventory module requires pocket capacity",
+    );
     return new InventoryModule(
       new InventoryService(
         new PostgresInventoryRepository(database),
@@ -33,6 +38,7 @@ export class InventoryModule {
         releaseArtifacts,
         catalog,
         bagCapacity,
+        pocketCapacity,
       ),
     );
   }

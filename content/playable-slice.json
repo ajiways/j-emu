@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v6",
+  "schemaVersion": "playable-slice/v7",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -23,6 +23,38 @@
         { "id": "DEF", "value": 1, "flags": 0 },
         { "id": "VIT", "value": 5, "flags": 0 }
       ]
+    },
+    {
+      "id": 93,
+      "title": "Малый эликсир жизни",
+      "picture": "bottles_live1_2712.png",
+      "typeId": "7",
+      "kindId": 154,
+      "slotMask": 67108864,
+      "weight": 100,
+      "levelMin": 1,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 100,
+      "flags": 0,
+      "bagStack": 99,
+      "skills": []
+    },
+    {
+      "id": 99,
+      "title": "Малый усиливающий орб",
+      "picture": "bottles_sila1.png",
+      "typeId": "7",
+      "kindId": 152,
+      "slotMask": 603979776,
+      "weight": 10,
+      "levelMin": 1,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 15,
+      "flags": 0,
+      "bagStack": 999,
+      "skills": []
     }
   ],
   "bots": [

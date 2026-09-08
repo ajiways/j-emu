@@ -22,6 +22,7 @@
 - equipment-derived skills/vitals считаются из persisted naked skills и
   artifact bonuses; migration `0004` закрепляет wear fields и occupancy slot;
   `0007` — artifact `price_minor`/`flags`/`bag_stack`;
+  `0008` — partial unique pocket occupancy;
 - `combat` предоставляет только минимальный hunt lifecycle и finished history;
   `quests`, `social`, `economy`, `professions`, `instances` в runtime нет.
 

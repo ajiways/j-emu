@@ -1,5 +1,6 @@
 import type { Catalog } from "../../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../../character/application/character-service.ts";
+import type { CombatPort } from "../../../combat/ports/combat-port.ts";
 import type { InventoryService } from "../../../inventory/domain/inventory-service.ts";
 import { WearDeniedError } from "../../../inventory/domain/wear-denied-error.ts";
 import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
@@ -9,6 +10,7 @@ import { ProtocolError } from "../../application/protocol-error.ts";
 import { artifactInstanceIdFrom } from "./artifact-instance-id.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
+import { requireNoActiveFight } from "./require-no-active-fight.ts";
 
 type PutOffRequest = Readonly<{ itemId: number }>;
 
@@ -22,6 +24,7 @@ export class PutOffCommand implements OaCommand {
     private readonly characters: CharacterService,
     private readonly inventory: InventoryService,
     private readonly catalog: Catalog,
+    private readonly combat: CombatPort,
   ) {}
 
   decode(envelope: ObjectActionEnvelope): PutOffRequest {
@@ -34,11 +37,14 @@ export class PutOffCommand implements OaCommand {
         const locked = await this.characters.lockByAccountId(context.accountId);
         await this.characters.syncResources({ characterId: locked.id });
         const hero = await this.characters.lockByAccountId(context.accountId);
-        await this.inventory.putOff(hero.id, request.itemId);
-        await this.characters.applyEquipmentVitals(
-          hero,
-          await equippedSkillBonuses(this.inventory, this.catalog, hero.id),
-        );
+        await requireNoActiveFight(this.combat, context.accountId);
+        const kind = await this.inventory.putOff(hero.id, request.itemId);
+        if (kind === "paperdoll") {
+          await this.characters.applyEquipmentVitals(
+            hero,
+            await equippedSkillBonuses(this.inventory, this.catalog, hero.id),
+          );
+        }
         return this.bootstrap.equipmentMutation(context.accountId);
       });
     } catch (error) {

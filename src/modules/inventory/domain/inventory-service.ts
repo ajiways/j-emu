@@ -4,9 +4,13 @@ import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { ReleaseArtifacts } from "../../catalog/ports/release-artifacts.ts";
 import type { InventoryItem, ItemLocation } from "./inventory-item.ts";
 import type { InventoryRepository } from "../ports/inventory-repository.ts";
+import { applyInventoryMutation } from "./apply-inventory-mutation.ts";
 import { bagActionsFor, FLAG_DROP, FLAG_SELL } from "./bag-actions.ts";
 import { computeBagLoad, type BagLoad } from "./bag-load.ts";
 import { DropDeniedError } from "./drop-denied-error.ts";
+import { planMergeBagStacks } from "./merge-bag-stacks.ts";
+import { isLeftPocket, requirePocketCapacity } from "./pocket-slot.ts";
+import { planPutOnPocket, type PocketTarget } from "./put-on-pocket.ts";
 import { requireQuantityWithinStack } from "./require-quantity-within-stack.ts";
 import { sellPriceMinor } from "./sell-price.ts";
 import { takeDropQuantity } from "./take-drop-quantity.ts";
@@ -30,6 +34,8 @@ export type DropSettlement = Readonly<{
   creditMinor: number;
 }>;
 
+type WearKind = "paperdoll" | "pocket";
+
 export class InventoryService {
   constructor(
     private readonly inventory: InventoryRepository,
@@ -37,15 +43,24 @@ export class InventoryService {
     private readonly artifacts: ReleaseArtifacts,
     private readonly catalog: Catalog,
     private readonly bagCapacity: number,
+    private readonly pocketCapacity: number,
   ) {
     if (starterItems.length === 0) throw new Error("Starter inventory policy is required");
     if (!Number.isInteger(bagCapacity) || bagCapacity < 1) {
       throw new Error("Bag capacity must be a positive integer");
     }
+    requirePocketCapacity(pocketCapacity);
   }
 
   list(heroId: number): Promise<readonly InventoryItem[]> {
     return this.inventory.listForHero(heroId);
+  }
+
+  async listPocket(command: { characterId: number }): Promise<readonly InventoryItem[]> {
+    const items = await this.inventory.listForHero(command.characterId);
+    return items
+      .filter((item) => item.location.kind === "pocket")
+      .sort((left, right) => pocketPosition(left) - pocketPosition(right));
   }
 
   async ensureStarterInventory(heroId: number): Promise<void> {
@@ -60,9 +75,27 @@ export class InventoryService {
     }
   }
 
-  async putOn(hero: WearHero, itemId: number, definition: ArtifactDefinition): Promise<void> {
+  async putOn(
+    hero: WearHero,
+    itemId: number,
+    definition: ArtifactDefinition,
+    pocketTarget?: PocketTarget,
+  ): Promise<WearKind> {
     const items = await this.inventory.lockForHero(hero.id);
     const item = requireHeroItem(items, hero.id, itemId);
+    if (pocketTarget !== undefined || isLeftPocket(definition.slotMask)) {
+      await applyInventoryMutation(
+        this.inventory,
+        planPutOnPocket({
+          items,
+          itemId: item.id,
+          definition,
+          capacity: this.pocketCapacity,
+          target: pocketTarget ?? "auto",
+        }),
+      );
+      return "pocket";
+    }
     const occupied = occupiedEquipmentSlots(items, itemId);
     const slot = requireWearablePaperdoll(hero, item, definition, occupied);
     for (const occupant of items) {
@@ -71,13 +104,27 @@ export class InventoryService {
       await this.inventory.save(occupant.withLocation({ kind: "bag" }));
     }
     await this.inventory.save(item.withLocation({ kind: "equipment", slot }));
+    return "paperdoll";
   }
 
-  async putOff(heroId: number, itemId: number): Promise<void> {
+  async putOff(heroId: number, itemId: number): Promise<WearKind> {
     const items = await this.inventory.lockForHero(heroId);
     const item = requireHeroItem(items, heroId, itemId);
+    if (item.location.kind === "pocket") {
+      const definition = await this.catalog.artifact(item.artifactId);
+      if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
+      const toBag = item.withLocation({ kind: "bag" });
+      const merged = planMergeBagStacks(
+        items.map((row) => (row.id === item.id ? toBag : row)),
+        toBag,
+        definition.bagStack,
+      );
+      await applyInventoryMutation(this.inventory, { ...merged, create: [] });
+      return "pocket";
+    }
     requireEquippedItem(item, heroId);
     await this.inventory.save(item.withLocation({ kind: "bag" }));
+    return "paperdoll";
   }
 
   async drop(command: DropCommand): Promise<DropSettlement> {
@@ -171,4 +218,11 @@ function occupiedEquipmentSlots(
     occupied.add(item.location.slot);
   }
   return occupied;
+}
+
+function pocketPosition(item: InventoryItem): number {
+  if (item.location.kind !== "pocket") {
+    throw new Error(`Item ${item.id} is not in the pocket`);
+  }
+  return item.location.position;
 }

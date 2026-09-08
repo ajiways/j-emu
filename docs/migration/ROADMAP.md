@@ -185,7 +185,13 @@
   survive reconnect/restart. Pocket deny is `204` with live Russian `error`.
   Paperdoll 9095 cannot enter pocket. DROP from pocket remains `204`. CEF:
   drag elixir 93 onto the belt, reconnect, PUT_OFF. No fight cast.
+  PUT_ON/PUT_OFF/DROP/SELL in fight are `FightRules` `203` (named j-emu lock,
+  not live parity; pocket spend stays `CMB-02`).
 - **Status:** `next`
+
+  CEF PUT_ON/OFF on a new hero observed 2026-09-08; second cold reconnect
+  init was not in that run. Architecture product close still pending.
+  Fight layout lock is in-contract.
 
 ### INV-04 — Core consumable USE
 

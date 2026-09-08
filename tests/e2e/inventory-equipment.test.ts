@@ -3,7 +3,7 @@ import type { Application } from "../../src/app/application.ts";
 import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
-import { bagItemIdFrom, firstBagItemFrom } from "../support/harness/wire-payload.ts";
+import { bagItemByArtikulId } from "../support/harness/wire-payload.ts";
 
 describe("inventory equipment", () => {
   let harness: ApplicationHarness;
@@ -21,11 +21,12 @@ describe("inventory equipment", () => {
   it("equips glove 9095, updates stats, and returns the same instance on PUT_OFF", async () => {
     const client = await AuthenticatedClient.login(application);
     const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
-    const itemId = bagItemIdFrom(init);
-    expect(firstBagItemFrom(init).artikul_id).toBe(9095);
-    expect(firstBagItemFrom(init).picture).toBe("greyset5_lhand.png");
-    expect(firstBagItemFrom(init).slot).toBe(0);
-    expect(objectBlock(firstBagItemFrom(init).artifact_skills).VIT).toMatchObject({
+    const glove = bagItemByArtikulId(init, 9095);
+    const itemId = requireNumber(glove.id);
+    expect(glove.artikul_id).toBe(9095);
+    expect(glove.picture).toBe("greyset5_lhand.png");
+    expect(glove.slot).toBe(0);
+    expect(objectBlock(glove.artifact_skills).VIT).toMatchObject({
       title: "Здоровье",
       skill_id: "VIT",
       value: 5,
@@ -39,7 +40,7 @@ describe("inventory equipment", () => {
       sq: 2,
     });
     expect(putOn["common|action"]).toEqual({ status: 100 });
-    expect(objectBlock(putOn["user|bag"])).toMatchObject({ status: 100, amount: 0 });
+    expect(objectBlock(putOn["user|bag"])).toMatchObject({ status: 100, amount: 2, total: 2 });
     const equipped = firstArtifact(putOn["user|view"]);
     expect(equipped).toMatchObject({
       id: itemId,
@@ -72,7 +73,7 @@ describe("inventory equipment", () => {
     application = await harness.restart();
     const again = new AuthenticatedClient(application, client.cookie);
     const afterRestart = await again.objectAction({ object: "common", action: "init", sq: 20 });
-    expect(objectBlock(afterRestart["user|bag"]).amount).toBe(0);
+    expect(objectBlock(afterRestart["user|bag"]).amount).toBe(2);
     expect(skillValue(afterRestart["user|skills"], "VIT")).toBe(15);
     const viewAfter = await again.objectAction({ object: "user", action: "view", sq: 21 });
     expect(firstArtifact(viewAfter["user|view"])).toMatchObject({
@@ -90,7 +91,7 @@ describe("inventory equipment", () => {
       sq: 23,
     });
     expect(putOff["common|action"]).toEqual({ status: 100 });
-    expect(bagItemIdFrom(putOff)).toBe(itemId);
+    expect(bagItemByArtikulId(putOff, 9095).id).toBe(itemId);
     expect(objectBlock(putOff["user|view"]).artifacts).toEqual([]);
     expect(skillValue(putOff["user|skills"], "VIT")).toBe(10);
     expect(objectBlock(putOff["user|unitframe"])).toMatchObject({ hp: 10, hpMax: 10 });
@@ -99,7 +100,7 @@ describe("inventory equipment", () => {
   it("returns status 203 for a forbidden wear and 204 when the item is missing", async () => {
     const client = await AuthenticatedClient.login(application);
     const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
-    const itemId = bagItemIdFrom(init);
+    const itemId = requireNumber(bagItemByArtikulId(init, 9095).id);
 
     const missingId = await client.objectAction({
       object: "common",
@@ -134,6 +135,48 @@ describe("inventory equipment", () => {
     expect(String(error.error)).toMatch(/Item 100001 .* is missing/);
     expect(missingItem["user|bag"]).toBeUndefined();
   });
+
+  it("denies paperdoll PUT_ON and PUT_OFF while a hunt fight is active", async () => {
+    const client = await AuthenticatedClient.login(application);
+    const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
+    const itemId = requireNumber(bagItemByArtikulId(init, 9095).id);
+    const equipped = await client.objectAction({
+      object: "common",
+      action: "action",
+      form: { code: "PUT_ON", artifact_id: itemId },
+      sq: 2,
+    });
+    expect(equipped["common|action"]).toEqual({ status: 100 });
+    const start = await client.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: 2 },
+      sq: 3,
+    });
+    expect(start["common|action"]).toEqual({ status: 100 });
+    const putOff = await client.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "PUT_OFF", artifact_id: itemId },
+      sq: 4,
+    });
+    expect(putOff["common|action"]).toEqual({
+      status: 203,
+      error: "нельзя во время боя",
+    });
+    const putOn = await client.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "PUT_ON", artifact_id: itemId },
+      sq: 5,
+    });
+    expect(putOn["common|action"]).toEqual({
+      status: 203,
+      error: "нельзя во время боя",
+    });
+    const view = await client.objectAction({ object: "user", action: "view", sq: 6 });
+    expect(firstArtifact(view["user|view"])).toMatchObject({ id: itemId, slot: 32 });
+  });
 });
 
 function objectBlock(value: AmfValue | undefined): Record<string, AmfValue> {
@@ -162,4 +205,9 @@ function firstArtifact(block: AmfValue | undefined): Record<string, AmfValue> {
     throw new Error("user|view.artifacts is empty");
   }
   return objectBlock(artifacts[0]);
+}
+
+function requireNumber(value: AmfValue | undefined): number {
+  if (typeof value !== "number") throw new Error("expected a number");
+  return value;
 }
