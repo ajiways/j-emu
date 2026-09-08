@@ -88,7 +88,7 @@ describe("command protocol errors", () => {
     const client = await AuthenticatedClient.login(application);
     const missingForm = await client.objectAction({
       object: "common",
-      action: "object",
+      action: "action",
       sq: 10,
     });
     expect(missingForm).toEqual({

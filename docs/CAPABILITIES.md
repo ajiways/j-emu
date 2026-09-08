@@ -61,8 +61,9 @@ Equipment-derived `user|skills` / `hpMax` считаются из naked skills +
 ## Inventory — частично
 
 Есть catalog projection, stable item instance IDs, starter items, чтение bag и
-paperdoll `PUT_ON`/`PUT_OFF` (перчатка 9095, slot 32, reconnect/restart, raw-AMF
-E2E). Статус **готово** не ставится до реального клиентского прогона.
+paperdoll `PUT_ON`/`PUT_OFF` (перчатка 9095, live picture `greyset5_lhand.png`,
+slot 32, `common|action`/`common|object`, reconnect/restart, raw-AMF E2E).
+Статус **готово** не ставится до подтверждённого клиентского прогона.
 
 Не перенесены DROP, stack/capacity rules, durability, pocket merge и USE
 pipelines.

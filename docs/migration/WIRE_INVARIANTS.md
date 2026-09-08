@@ -78,7 +78,9 @@ MULTI — это конкатенация нуля или более кадро�
 }
 ```
 
-Исключение старого клиента: запрос `object=common, action=object` отвечает блоком `common|action`, а не `common|object`. Источник: [`src/routes/entryPoint.ts`](../../../jgr-emu/src/routes/entryPoint.ts).
+Исключение старого клиента: запрос `object=common` с `action=object` **или**
+`action=action` отвечает блоком `common|action`, а не `common|object`. CEF
+экипировка шлёт `action=action`. Источник: [`src/routes/oa/common.ts`](../../../jgr-emu/src/routes/oa/common.ts).
 
 ### `common|init` и `common|init2`
 

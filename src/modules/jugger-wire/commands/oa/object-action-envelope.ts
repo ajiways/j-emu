@@ -39,7 +39,7 @@ export function decodeObjectActionEnvelope(value: unknown): ObjectActionEnvelope
 }
 
 export function oaRegistryKey(envelope: ObjectActionEnvelope): string {
-  if (envelope.object === "common" && envelope.action === "object") {
+  if (isCommonObjectMutation(envelope)) {
     if (!envelope.form) throw new ProtocolError(203, "common|object requires form");
     return `common|object:${String(envelope.form["code"])}`;
   }
@@ -47,8 +47,14 @@ export function oaRegistryKey(envelope: ObjectActionEnvelope): string {
 }
 
 export function oaResponseKey(envelope: ObjectActionEnvelope): string {
-  if (envelope.object === "common" && envelope.action === "object") return "common|action";
+  if (isCommonObjectMutation(envelope)) return "common|action";
   return `${envelope.object}|${envelope.action}`;
+}
+
+function isCommonObjectMutation(envelope: ObjectActionEnvelope): boolean {
+  return (
+    envelope.object === "common" && (envelope.action === "object" || envelope.action === "action")
+  );
 }
 
 function optionalObject(

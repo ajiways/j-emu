@@ -85,6 +85,17 @@ describe("object-action envelope decoder", () => {
     expect(oaResponseKey(envelope)).toBe("common|action");
   });
 
+  it("treats common|action the same as common|object", () => {
+    const envelope = decodeObjectActionEnvelope({
+      object: "common",
+      action: "action",
+      form: { code: "PUT_ON", artifact_id: 100_000 },
+      sq: 49,
+    });
+    expect(oaRegistryKey(envelope)).toBe("common|object:PUT_ON");
+    expect(oaResponseKey(envelope)).toBe("common|action");
+  });
+
   it("requires form for common|object lookup", () => {
     const envelope = decodeObjectActionEnvelope({
       object: "common",

@@ -23,11 +23,18 @@ describe("inventory equipment", () => {
     const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
     const itemId = bagItemIdFrom(init);
     expect(firstBagItemFrom(init).artikul_id).toBe(9095);
+    expect(firstBagItemFrom(init).picture).toBe("greyset5_lhand.png");
+    expect(firstBagItemFrom(init).slot).toBe(0);
+    expect(objectBlock(firstBagItemFrom(init).artifact_skills).VIT).toMatchObject({
+      title: "Здоровье",
+      skill_id: "VIT",
+      value: 5,
+    });
     expect(skillValue(init["user|skills"], "VIT")).toBe(10);
 
     const putOn = await client.objectAction({
       object: "common",
-      action: "object",
+      action: "action",
       form: { code: "PUT_ON", artifact_id: itemId },
       sq: 2,
     });
@@ -37,9 +44,15 @@ describe("inventory equipment", () => {
     expect(equipped).toMatchObject({
       id: itemId,
       artikul_id: 9095,
+      picture: "greyset5_lhand.png",
       slot: 32,
       cnt: 0,
       actions: 16,
+    });
+    expect(objectBlock(equipped.artifact_skills).STR).toMatchObject({
+      title: "Сила",
+      skill_id: "STR",
+      value: 6,
     });
     expect(skillValue(putOn["user|skills"], "VIT")).toBe(15);
     expect(skillValue(putOn["user|skills"], "STR")).toBe(18);

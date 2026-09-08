@@ -2,6 +2,7 @@ import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { Hero } from "../../character/domain/hero.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import { isPaperdollSlotMask } from "../../inventory/domain/paperdoll-slot.ts";
+import { artifactSkillWireMap, type ArtifactSkillWireBlock } from "./artifact-skill-wire.ts";
 import { FLAG_PUT_ON } from "./item-action-flags.ts";
 
 type BagItemBlock = Readonly<{
@@ -11,10 +12,17 @@ type BagItemBlock = Readonly<{
   picture: string;
   type_id: string;
   kind_id: number;
+  slot: 0;
+  slot2: 0;
+  slot_num: 0;
   slot_mask: number;
+  level_min: number;
+  level_max: number;
   cnt: number;
   action: "bag";
   actions: number;
+  artifact_skills: Readonly<Record<string, ArtifactSkillWireBlock>>;
+  artifact_actions: Readonly<Record<string, never>>;
 }>;
 
 export type UserBagBlock = Readonly<{
@@ -50,10 +58,17 @@ export async function buildUserBag(
       picture: definition.picture,
       type_id: definition.typeId,
       kind_id: definition.kindId,
+      slot: 0,
+      slot2: 0,
+      slot_num: 0,
       slot_mask: definition.slotMask,
+      level_min: definition.levelMin,
+      level_max: definition.levelMax,
       cnt: item.quantity,
       action: "bag",
       actions: isPaperdollSlotMask(definition.slotMask) ? FLAG_PUT_ON : 0,
+      artifact_skills: await artifactSkillWireMap(definition.skills, catalog),
+      artifact_actions: {},
     };
   }
   return {

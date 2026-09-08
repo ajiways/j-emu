@@ -14,6 +14,7 @@ import {
 } from "./area-conf-block.ts";
 import { emptyBookTrio } from "./book-quest-blocks.ts";
 import { overlayCaptureAreaId, overlayChromeAreaId } from "./chrome-area-overlay.ts";
+import { artifactSkillWireMap } from "./artifact-skill-wire.ts";
 import { buildEquippedArtifact } from "./equipped-artifact-block.ts";
 import { equippedSkillBonuses } from "./equipped-skill-bonuses.ts";
 import { buildHeroState, type HeroStateBlock } from "./hero-state-block.ts";
@@ -92,7 +93,13 @@ export class BootstrapReadModel {
       if (item.location.kind !== "equipment") continue;
       const definition = await this.catalog.artifact(item.artifactId);
       if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
-      artifacts.push(buildEquippedArtifact(item, definition));
+      artifacts.push(
+        buildEquippedArtifact(
+          item,
+          definition,
+          await artifactSkillWireMap(definition.skills, this.catalog),
+        ),
+      );
     }
     return buildUserView(hero, appearance, level, artifacts);
   }

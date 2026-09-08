@@ -29,15 +29,18 @@ Catalog artifact и item instance — разные сущности:
   active release.
 
 Bag item обязан иметь подтверждённые `type_id`, `kind_id`, `picture` и
-`action:"bag"`. Wearable paperdoll в bag имеет `actions` с `PUT_ON` (8).
-Пустой `artifact_actions` не создаёт USE. Отсутствующий catalog artifact
-является ошибкой, а не поводом отдать неполную карточку.
+`action:"bag"`. Карточка 9095 использует live-имя `greyset5_lhand.png` и
+`artifact_skills` с title из skill catalog. Wearable paperdoll в bag имеет
+`actions` с `PUT_ON` (8) и `slot/slot2/slot_num=0`. Пустой `artifact_actions`
+не создаёт USE. Отсутствующий catalog artifact является ошибкой, а не поводом
+отдать неполную карточку.
 
 ## Mutations
 
 Этот срез:
 
-1. `PUT_ON` / `PUT_OFF` для paperdoll;
+1. `PUT_ON` / `PUT_OFF` для paperdoll; клиент шлёт `common|action` или
+   `common|object`, ответ всегда под `common|action`;
 2. occupancy displaces the previous occupant of the same slot bit back to bag;
 3. level / gender / non-paperdoll type → `status:203` + `error`;
 4. missing hero/item/catalog → fail-fast `status:204` + `error`, не пустой `100`.

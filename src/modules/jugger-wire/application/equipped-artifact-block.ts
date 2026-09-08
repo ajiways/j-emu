@@ -1,13 +1,7 @@
 import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
-import type { ArtifactSkillBonus } from "../../catalog/domain/artifact-skill-bonus.ts";
 import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
+import type { ArtifactSkillWireBlock } from "./artifact-skill-wire.ts";
 import { FLAG_PUT_OFF } from "./item-action-flags.ts";
-
-type EquippedArtifactSkillBlock = Readonly<{
-  skill_id: string;
-  value: number;
-  skill_flags: number;
-}>;
 
 export type EquippedArtifactBlock = Readonly<{
   id: number;
@@ -20,14 +14,18 @@ export type EquippedArtifactBlock = Readonly<{
   slot2: 0;
   slot_num: 0;
   slot_mask: number;
+  level_min: number;
+  level_max: number;
   cnt: 0;
   actions: typeof FLAG_PUT_OFF;
-  artifact_skills: Readonly<Record<string, EquippedArtifactSkillBlock>>;
+  artifact_skills: Readonly<Record<string, ArtifactSkillWireBlock>>;
+  artifact_actions: Readonly<Record<string, never>>;
 }>;
 
 export function buildEquippedArtifact(
   item: InventoryItem,
   definition: ArtifactDefinition,
+  artifactSkills: Readonly<Record<string, ArtifactSkillWireBlock>>,
 ): EquippedArtifactBlock {
   if (item.location.kind !== "equipment") {
     throw new Error(`Item ${item.id} is not equipped`);
@@ -48,22 +46,11 @@ export function buildEquippedArtifact(
     slot2: 0,
     slot_num: 0,
     slot_mask: definition.slotMask,
+    level_min: definition.levelMin,
+    level_max: definition.levelMax,
     cnt: 0,
     actions: FLAG_PUT_OFF,
-    artifact_skills: skillBlocks(definition.skills),
+    artifact_skills: artifactSkills,
+    artifact_actions: {},
   };
-}
-
-function skillBlocks(
-  skills: readonly ArtifactSkillBonus[],
-): Readonly<Record<string, EquippedArtifactSkillBlock>> {
-  const blocks: Record<string, EquippedArtifactSkillBlock> = {};
-  for (const skill of skills) {
-    blocks[skill.id] = {
-      skill_id: skill.id,
-      value: skill.value,
-      skill_flags: skill.flags,
-    };
-  }
-  return blocks;
 }
