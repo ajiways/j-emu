@@ -155,8 +155,16 @@ hud_defaults|chrome|common_conf|welcome_message`.
 
 ### `character`
 
-Полная regeneration/progression policy, reputations и расширенная statistics
-model. `hero_skills`, HP/MP/EXP и appearance bootstrap уже находятся в runtime
+CHR-01 добавляет `experience_grants(hero_id, operation_id, amount, exp_before,
+exp_after, level_before, level_after, content_release_id, progression_digest,
+created_at)` с PK `(hero_id, operation_id)`, FK на `heroes` и immutable content
+release; `operation_id` имеет длину 1…128, `amount > 0`, EXP/level/release/digest
+обязательны. Это persisted idempotency result character operation, а не combat
+state/history. Reuse ключа с другим amount является conflict; hero, managed
+skills и result пишутся одной transaction.
+
+Полная regeneration policy, reputations и расширенная statistics model остаются
+планом. `hero_skills`, HP/MP/EXP и appearance bootstrap уже находятся в runtime
 и не являются будущими таблицами.
 
 ### `inventory`
@@ -166,7 +174,11 @@ containers, item_modifiers, container_slots, equipment_slots, item_reservations.
 ### `catalog`
 
 item_actions, item_stat_modifiers, creature_stats/loot, spell_definitions,
-level_curves — отдельные таблицы поверх текущих `artifacts`/`bots`.
+level_curves — отдельные таблицы поверх текущих `artifacts`/`bots`. CHR-01
+добавляет normalized
+`level_skill_values(release_id, level, skill_id, value, evidence_kind,
+source_digest)` с PK `(release_id, level, skill_id)` и FK на boundary/skill той
+же release. Managed values не хранятся JSONB и не вычисляются runtime-формулой.
 
 ### `world`
 

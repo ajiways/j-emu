@@ -112,6 +112,19 @@ DATA/EDT capabilities.
 
 До commit весь runtime видит предыдущую release; после commit — новую. Смешивание версий в одном запросе запрещено. Длительная игровая операция сохраняет свой `release_id`, если изменение контента способно повлиять на её результат.
 
+После DATA-01 `progressionDigest` является activation compatibility gate:
+обычная новая release обязана сохранить тот же digest. Изменённая curve
+отклоняется до переключения pointer и требует отдельной player-state migration
+capability. Unrelated content может менять общий release checksum, не меняя
+progression digest.
+
+Для equipment-derived character maxima действует additive compatibility:
+artifact ID из предыдущей active release обязан сохраниться с теми же
+stat-affecting skills; новый ID допустим. Удаление или изменение существующей
+skill semantics отклоняет activation до отдельной player-state
+migration/recalculation capability. Проверка сравнивает immutable active и
+candidate projections и не читает player inventory.
+
 Откат — такая же отдельная атомарная активация ранее опубликованной совместимой release. Строки старых release остаются immutable до управляемой retention-очистки.
 
 ## Порядок зависимостей
@@ -135,6 +148,10 @@ source group ведутся только в
 
 Каждый importer имеет одного владельца, отдельный decoder и validator:
 
+- `catalog`: DATA-01 level boundaries и per-level managed naked skills;
+  validator проверяет одну непрерывную curve, одинаковый полный skill set,
+  evidence kind и source digest. Runtime formula, clamping и смешивание release
+  запрещены.
 - `catalog`: Pub1 artifact/artikul AMF и item overlays; decoder сохраняет wire
   ID без перенумерации, validator проверяет обязательные type/kind/picture,
   skills, цены и ссылки на assets. Bonus/action policies — отдельные dependent

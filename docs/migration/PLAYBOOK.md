@@ -158,6 +158,14 @@ DB suites используют только отдельный `TEST_DATABASE_UR
 CEF не заменяет raw-AMF assertions, а raw-AMF E2E не заменяет CEF для статуса
 «готово».
 
+Исключение допустимо только для явно помеченной в roadmap `internal enabling
+capability`, у которой ещё нет production wire consumer. Для неё запрещено
+добавлять test/dev OA ради CEF; application port проверяется integration-тестом,
+а persisted result — существующим read path через raw-AMF, reconnect и restart.
+Такой implementation item может получить workflow-статус `done`, но product
+status остаётся `partial`. Первый production consumer наследует обязательные
+raw-AMF и CEF acceptance этого поведения.
+
 ### 9. Закрытие
 
 1. Architecture agent сверяет boundary, ADR/checkpoint и отсутствие

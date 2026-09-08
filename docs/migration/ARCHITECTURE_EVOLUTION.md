@@ -51,10 +51,17 @@ skills — в `hero_skills`; equipment totals вычисляются на чте
 **Давление:** multi-level EXP, regeneration, death/injury и combat settlement
 должны менять один согласованный character state.
 
-**Checkpoint:** CHR-01 задаёт public progression/resource ports и optimistic
-locking. Отдельный `ARC-CHAR` нужен только если текущий hero aggregate не может
-атомарно выполнить acceptance без cross-module write или дублирования
-authoritative maxima.
+**Решение CHR-01:** текущих границ достаточно; отдельный `ARC-CHAR` не нужен.
+Character владеет idempotent EXP operation, hero row lock, managed naked skills
+и persisted operation result. Catalog отдаёт один immutable progression
+snapshot, inventory — read-only equipped modifier snapshot. Все character
+writes выполняются в одной Unit of Work; active combat state и combat history
+не участвуют. Optimistic `version` не заменяет row lock и persisted idempotency
+key.
+
+Отдельный `ARC-CHAR` потребуется позже только если regeneration/death/settlement
+невозможно добавить без второго authoritative maxima, cross-module write из
+character или циклической module dependency.
 
 ### `ARC-WORLD` — ownership местоположения
 

@@ -85,14 +85,25 @@
 - **depends_on:** `BST-01`, `INV-01`
 - **Behavior evidence:** legacy `CHARACTER_STATS.md`, `FIGHT_LOOT.md` and
   [CHARACTER.md](../modules/CHARACTER.md).
-- **Content set:** complete level 1–8 boundaries and progression skill policy.
-- **Architecture checkpoint / decision:** pending — define progression service
-  ownership, multi-level transition and settlement port without coupling
-  character to combat.
-- **Acceptance:** explicit EXP grant crosses one or more levels atomically,
-  recalculates naked skills/vitals and published `bag_cnt` metadata once and
-  survives retry, reconnect and restart. Enforcement of actual inventory
-  capacity belongs to `INV-02`.
+- **Content set:** contiguous DATA-01 level boundaries and normalized naked
+  progression skill values. L1–L6 skill values are confirmed evidence; higher
+  values keep explicit legacy-extrapolation provenance.
+- **Architecture checkpoint / decision:** complete — existing ADRs and module
+  boundaries are sufficient; no `ARC-CHAR` and no combat dependency. Character
+  owns the idempotent EXP operation and its persisted result; catalog supplies
+  one immutable progression snapshot; inventory supplies a read-only equipped
+  modifier snapshot. The hero row is the lock and all character writes are one
+  Unit of Work. Full contract: [CHARACTER.md](../modules/CHARACTER.md).
+- **Acceptance:** `grantExperience` rejects invalid, conflicting, overflowing,
+  inconsistent or out-of-published-curve input without mutation; no-level,
+  one-level and multi-level grants atomically persist EXP/level, managed naked
+  skills, equipment-derived maxima and HP/MP scaled exactly once. Duplicate
+  operation IDs return the same persisted result, conflicting reuse fails, and
+  concurrency/rollback/reconnect/restart are covered. Published `bag_cnt` is
+  resolved from the resulting boundary and remains 2 throughout L1–L8; actual
+  capacity enforcement belongs to `INV-02`. CHR-01 adds no fake OA: until
+  CMB-03 or a quest flow consumes the port, character progression remains
+  product-status `partial` and has no independent CEF gate.
 - **Status:** `next`
 
 ### CHR-02 — HP/MP regeneration
