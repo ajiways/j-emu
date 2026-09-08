@@ -290,6 +290,9 @@ authority.
   тестов: lock, записать `hp` в `[0, maxHp]`, пересчитать `hp_time` от нового
   deficit, `regen_at` = unix-second truncated now. Elapsed старого дефицита не
   применяется поверх нового HP.
+- `setArea({ characterId, areaId, moveReadyAt })` — WLD-01: lock hero, записать
+  dest и `move_ready_at` (`Date | null`). Граф переходов валидирует world
+  `requireLink`, не character. Контракт: [WORLD.md](WORLD.md).
 
 Оба порта на `Application` рядом с `grantExperience` (test/composition façade,
 не OA). Идемпотентный replay `grantExperience` всё равно вызывает

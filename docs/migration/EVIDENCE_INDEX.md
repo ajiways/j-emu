@@ -46,7 +46,8 @@ dual-write редактора и runtime-чтение fixture JSON.
 - world-часть [TRAVEL_BAG.md](../../../jgr-emu/docs/TRAVEL_BAG.md);
 - [BESTIARY.md](../../../jgr-emu/docs/BESTIARY.md);
 - `jgr-emu/src/huntWorld.ts`, `huntSpawns.ts`, `huntWander.ts`,
-  `areaActions.ts`, `routes/esrv.ts`;
+  `travel.ts`, `areaActions.ts`, `routes/oa/commonObject.ts`,
+  `routes/oa/common.ts`, `routes/esrv.ts`;
 - `radvei_areas.json` и `hunt_spawns.json` как authored inputs.
 
 Playerbot presence и bot-generated market/world state исключаются.

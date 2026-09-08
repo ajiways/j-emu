@@ -55,8 +55,8 @@ reconnect относятся к будущей combat wave.
 Inventory layout lock (`PUT_ON`/`PUT_OFF`/`DROP`/`SELL` → `203` в бою) —
 именованное `FightRules` в [INVENTORY.md](INVENTORY.md), не live. Live
 [FIGHT_LOCK.md](../../../jgr-emu/docs/FIGHT_LOCK.md) эти коды не режет.
-Трата из кармана — fproxy (`CMB-02`). World USE/travel/ATTACK уже live
-`fightBusy`.
+Трата из кармана — fproxy (`CMB-02`). World USE, COME_IN/`common|exit` и
+ATTACK — live `fightBusy`; WLD-01 применяет то же `FightRules` `203`.
 
 SINGLE/MULTI framing, exact `sq`, source IDs и packet order менять нельзя.
 

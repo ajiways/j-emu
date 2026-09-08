@@ -105,10 +105,21 @@ bag, деньги остаются `25.00`, bag пуст, reconnect совпад
 - unique `(hero_id, pocket_position)`; порт `listPocket` для CMB-02;
 - в бою PUT_ON/OFF/DROP/SELL — `FightRules` `203`. Трата из кармана не в срезе.
 
+## Inventory USE — готово
+
+Есть raw-AMF E2E и подтверждённый CEF-прогон: мясо 77 съедается из bag,
+стек падает, `artifact_actions` ADD_HP на wire, reconnect совпадает с PostgreSQL.
+
+- catalog v8: **77** (`rawmeat_grey.png`, type 10, `actions=7`, map `"20"`);
+- OA `object_class=ARTIFACT` без `code` → `common|object:USE`;
+- `ADD_HP` по каталогу (`param2=0` → % от hpMax), не хардкод id 77;
+- полный HP всё равно consume; в бою и без action — `203`;
+- 9095/93/99 без USE. DRINK / ADD_MP / `bonus_id` не в срезе.
+
 ## Inventory — частично
 
-Не перенесены durability/repair, world USE (INV-04) и fight cast/`persSpells`
-(CMB-02).
+Не перенесены durability/repair, DRINK/TEMPEFFECT, ADD_MP и fight
+cast/`persSpells` (CMB-02).
 
 ## World и hunt — частично
 

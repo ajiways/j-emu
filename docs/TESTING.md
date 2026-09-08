@@ -28,6 +28,8 @@
   during hunt fight → `203`, reconnect;
 - `inventory-pocket` — raw-AMF belt PUT_ON/OFF 93/99, leftover/merge/swap,
   glove and pocket DROP `204`, hunt layout lock `203`, reconnect;
+- `inventory-use` — raw-AMF bag USE 77 ADD_HP, consume at full HP, fight `203`,
+  empty actions `203`, reconnect;
 - `personal-details` — `user|save_personal_details` flat `status:100` + `state`,
   persist `pondViewLast` после restart, overlay tutorial flags, nested getter;
 - `browser-auth` — HTML login/register, 302 handoff, пять cookies только в 200,

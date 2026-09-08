@@ -6,11 +6,10 @@
 
 Текущий проверенный checkpoint — готовые bootstrap, paperdoll PUT_ON/PUT_OFF,
 internal CHR-01 `grantExperience`, internal CHR-02 `syncResources`/`noteHp` и
-INV-02 bag DROP/`creditMoney`, INV-03 pocket layout 93/99 и INV-04 world USE на `cap/inv-04-use` (CEF eat-meat observed 2026-09-08;
-workflow still `next`): persistent state
-находится в PostgreSQL; active content читается через release projections;
-active combat остаётся в RAM. Inventory layout mutations in fight are named
-`FightRules`, not live parity.
+INV-02 bag DROP/`creditMoney`, INV-03 pocket layout 93/99 и INV-04 world USE
+77 ADD_HP: persistent state находится в PostgreSQL; active content читается
+через release projections; active combat остаётся в RAM. Inventory layout
+mutations in fight are named `FightRules`, not live parity.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение
@@ -81,10 +80,15 @@ ownership принадлежит `world`.
 **Давление:** travel, presence, instances и world facts требуют единого
 location identity и guards.
 
-**Checkpoint:** WLD-01 обязан решить, остаётся ли колонка временным storage за
-world port или переносится в world-owned projection. Если меняется owner,
-создаётся `ARC-WORLD` с migration/backfill order. Character и wire не получают
-прямой доступ к world tables.
+**Решение WLD-01:** текущих границ достаточно; отдельный `ARC-WORLD` не нужен.
+`heroes.area_id` остаётся persisted location за character port `setArea`.
+World владеет authored `areas`/`area_links` (и `parent_id`). Travel lock —
+`heroes.move_ready_at`. Character/wire не читают world tables. Отдельная
+`character_locations` не создаётся.
+
+Отдельный `ARC-WORLD` потребуется позже только если presence/instances нельзя
+добавить без world-owned location projection, второго writer `area_id` или
+циклической module dependency.
 
 ### `ARC-RTM` — realtime delivery и social
 

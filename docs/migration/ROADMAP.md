@@ -13,7 +13,7 @@
   `depends_on`.
 - Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
   `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **INV-04**.
+- Ровно одна запись имеет статус `next`: **WLD-01**.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -211,11 +211,7 @@
   clamps to hpMax, consumes 1, returns flat USE blocks; full-HP USE still
   consumes; in-fight USE `203`; 9095/93/99 USE `203` no action; reconnect.
   CEF: eat meat from bag, stack drops. No fake OA.
-- **Status:** `next`
-
-  Implementation is on `cap/inv-04-use`. CEF eat-meat observed 2026-09-08
-  (`accountId` 2, four USE `100`, stack gone). Architecture product close
-  still pending.
+- **Status:** `done`
 
 ## Wave 2 — world, hunt and realtime
 
@@ -224,16 +220,26 @@
 - **ID:** `WLD-01`
 - **depends_on:** `INV-02`
 - **Behavior evidence:** legacy `TRAVEL_BAG.md`, `AREA_SIDEBAR.md`,
-  `areaActions.ts` and [WORLD.md](../modules/WORLD.md).
-- **Content set:** level 1–8 areas, links, travel policy and area sidebar data.
-- **Architecture checkpoint / decision:** pending — confirm world-owned
-  location state and inventory/fight guard ports. Overload uses INV-02
-  `bagLoad` (`amount > amountMax`); INV-02 does not implement COME_IN.
-- **Acceptance:** COME_IN/exit validates authored links, applies travel time and
-  persists the destination with matching state/area/hunt wire after restart.
-  Overloaded bag (`amount > amount_max`) is `204` with the live Russian error;
-  20/20 still walks.
-- **Status:** `queued`
+  `travel.ts`, `areaActions.ts`, `commonObject.ts` COME_IN, `common.ts` exit
+  and [WORLD.md](../modules/WORLD.md).
+- **Content set:** `playable-slice/v9` dump-proven **503 ↔ 504** (store interior)
+  and **503 ↔ 501** (outdoor `ftime_max=15`). Authored travel `area_links` only
+  (503 items 5 and 7, 501 item 2, 504 item 0). No 498/502/542, no NPC/AREA-attack
+  sidebar rows, no store lots. Full L1–8 atlas stays DATA-04.
+- **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
+  no `ARC-WORLD`. Location stays `heroes.area_id`; add `heroes.move_ready_at`
+  (NULL = free). World owns `areas` + `area_links` + `areas.parent_id`; no
+  `character_locations`. OA orchestrates world `requireLink` / `linksFrom`,
+  inventory `bagLoad`, character `setArea`, combat `FightRules`. SPEED=0 in
+  slice; `ftime = floor(ftime_max × (100 − SPEED) / 100)`. Exit from
+  `code=store` does not set the lock. Store buy stays ECO-01; presence RTM-01;
+  hunt locks WLD-02. Full contract: [WORLD.md](../modules/WORLD.md).
+- **Acceptance:** COME_IN 503→504 and `common|exit`→503; COME_IN 503→501 with
+  15s lock then return; wait 204 with live `&nbsp;` error; overload
+  `amount > amountMax` 204 (20/20 walks); missing link 203 `некуда идти`;
+  outdoor exit 204; fight 203; dest `area_conf.items` + hunt + reconnect.
+  CEF: shop and gorge from 503 sidebar. No fake OA.
+- **Status:** `next`
 
 ### RTM-01 — Personal and area realtime
 

@@ -9,16 +9,18 @@
 ## Текущий runtime checkpoint
 
 Текущий проверенный срез после готовых bootstrap, equipment
-`PUT_ON`/`PUT_OFF`, bag DROP и pocket layout:
+`PUT_ON`/`PUT_OFF`, bag DROP, pocket layout и world USE:
 
 - `character` хранит hero scalars, personal details, naked `hero_skills`,
   `hp_time` и `regen_at`; internal ports `grantExperience`, `syncResources`,
-  `noteHp` и `creditMoney` пишут этот state;
+  `noteHp` и `creditMoney` пишут этот state; WLD-01 добавит `move_ready_at` и
+  `setArea` на том же aggregate (`area_id` не переезжает в `world`);
 - `inventory` хранит bag/pocket/equipment instances и выполняет
   `PUT_ON`/`PUT_OFF` (paperdoll и пояс), `drop`, `useFromBag`, `bagLoad` и
   `listPocket`;
 - `catalog` и `world` читают artifacts, skills, levels, appearance,
   game-wide bootstrap documents, area 503 и hunt rows из active release;
+  WLD-01 публикует 501/504 и `area_links`;
 - equipment-derived skills/vitals считаются из persisted naked skills и
   artifact bonuses; migration `0004` закрепляет wear fields и occupancy slot;
   `0007` — artifact `price_minor`/`flags`/`bag_stack`;
@@ -64,7 +66,7 @@
 
 **Владеет:** персонажем, именем и внешностью, уровнем/опытом, базовыми ресурсами, навыками, репутациями, настройками, текущим состоянием жизни. Координата персонажа хранится в `world`.
 
-**API:** `createCharacter`, `getCharacter`, `getCharacterSheet`, `grantExperience`, `syncResources`, `noteHp`, `creditMoney`, `setAppearance`, `setPreference`, `grantReputation`.
+**API:** `createCharacter`, `getCharacter`, `getCharacterSheet`, `grantExperience`, `syncResources`, `noteHp`, `creditMoney`, `setArea`, `setAppearance`, `setPreference`, `grantReputation`.
 
 **События:** `character.created.v1`, `character.level-changed.v1`, `character.sheet-changed.v1`, `character.defeated.v1`.
 
@@ -94,9 +96,14 @@
 
 ### `world`
 
-**Владеет:** локациями и переходами, текущим местоположением персонажа, presence, hunt-spawn и их блокировками, мировыми фактами/флагами.
+**Владеет:** authored локациями и переходами (`areas`, `area_links`), hunt-spawn
+и (позже) presence/locks/фактами. Persisted координата героя в срезе WLD-01
+остаётся `character.heroes.area_id` + `move_ready_at`; отдельной
+world-owned location table нет.
 
-**API:** `enterWorld`, `moveCharacter`, `getLocation`, `getAreaView`, `setFact`, `acquireSpawn`, `releaseSpawn`, `listPresence`.
+**API:** `area`, `linksFrom`, `requireLink`, `enterWorld`, `moveCharacter`, `getLocation`, `getAreaView`, `setFact`, `acquireSpawn`, `releaseSpawn`, `listPresence`.
+Текущий WLD-01 срез использует `area` / `linksFrom` / `requireLink`;
+location write идёт через character `setArea`, не через world table.
 
 **События:** `world.character-entered.v1`, `world.character-moved.v1`, `world.fact-changed.v1`, `world.spawn-acquired.v1`.
 

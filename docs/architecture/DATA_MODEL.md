@@ -55,7 +55,8 @@ level_before, level_after, content_release_id, progression_digest, created_at)`
   `grantExperience`, не combat state.
 
 `area_id` — текстовая ссылка на authored area; FK на `world.areas` в этом срезе
-нет. `info` — sparse wire-объект `user|personal_details.info` / form
+нет. WLD-01 добавляет nullable `move_ready_at timestamptz` (travel lock; NULL =
+можно COME_IN/`exit`) на том же `heroes` row, без `character_locations`. `info` — sparse wire-объект `user|personal_details.info` / form
 `user|save_personal_details`. Строка обязательна для каждого героя; её
 отсутствие является ошибкой целостности, а не пустым объектом. Merge пишет
 целиком, без `jsonb_set`. HP/MP/EXP и naked max values хранятся скалярами героя,
@@ -124,14 +125,16 @@ ftime_max, code, context, sound_intro, sound_bg, inst_artikul_id,
 have_trade_channel, have_kind_channel, hide_finished_fights,
 hide_running_fights, no_clan_chat)` PK `(release_id, id)`.
   `map_asset` — SWF большой карты (`area_conf.swf`). Скалярные поля wire —
-  колонки. `items`, `client_data` и `hunt_farm` mapper собирает пустыми, пока
-  нет дочерних таблиц.
+  колонки. `client_data` и `hunt_farm` mapper собирает пустыми. `items` в
+  текущем runtime пустой массив; WLD-01 собирает travel rows из
+  `world.area_links` и добавляет `areas.parent_id`.
 - `hunt_spawns(release_id, id, area_id, bot_id, position_x, position_y, hunt_mask)`
   PK `(release_id, id)`; FK на `areas` и `catalog.bots` в той же release.
   `id` — authored integer `area × 100 + index` (для Gryzl на 503 — `50310`).
 
-`position_x/y` — authored map coordinates (`double precision`). Presence, area
-links и spawn leases не выделены. Текущая локация героя — `heroes.area_id`.
+`position_x/y` — authored map coordinates (`double precision`). Presence и
+spawn leases не выделены. Текущая локация героя — `heroes.area_id`. WLD-01
+добавляет typed `world.area_links` (не JSONB `items`).
 
 ### `combat`
 
@@ -196,7 +199,8 @@ level_curves — отдельные таблицы поверх текущих `
 
 ### `world`
 
-area_links, character_locations, presence_leases, spawn_leases, facts.
+character_locations (не в WLD-01), presence_leases, spawn_leases, facts.
+`area_links` и `areas.parent_id` появляются в WLD-01, не заранее.
 
 ### `combat`
 

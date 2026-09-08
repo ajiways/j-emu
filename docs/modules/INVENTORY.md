@@ -2,11 +2,11 @@
 
 ## Статус
 
-Paperdoll `PUT_ON`/`PUT_OFF`, bag DROP 9095 и pocket layout 93/99 **готово**:
-raw-AMF E2E и реальный CEF-прогон. Точный статус:
+Paperdoll `PUT_ON`/`PUT_OFF`, bag DROP 9095, pocket 93/99 и world USE 77
+**готово**: raw-AMF E2E и реальный CEF-прогон. Точный статус:
 [CAPABILITIES.md](../CAPABILITIES.md).
 
-Не перенесены durability, fight cast/`persSpells`, world USE и патронташ.
+Не перенесены durability, fight cast/`persSpells`, DRINK/ADD_MP и патронташ.
 
 ## Источники поведения
 
@@ -47,10 +47,10 @@ Bag item обязан иметь подтверждённые `type_id`, `kind_i
 4. missing hero/item/catalog → fail-fast `status:204` + `error`, не пустой `100`;
 5. `DROP` / `SELL` из bag; throw-away 9095; deny equipped и SELL без
    `sell_price>0` → `status:204` + `error`;
-6. pocket `PUT_ON`/`PUT_OFF` для 93/99: merge/split/swap, `listPocket`.
+6. pocket `PUT_ON`/`PUT_OFF` для 93/99: merge/split/swap, `listPocket`;
+7. world USE из bag по `artifact_actions` (`ADD_HP`, мясо 77).
 
-Следующий inventory capability — `INV-04` world USE мяса 77, не этот срез
-до реализации; после него:
+Дальше не этот срез:
 
 - durability/repair/upgrade;
 - ADD_MP / DRINK / TEMPEFFECT и pocket fight cast (`CMB-02`);
@@ -209,7 +209,7 @@ Inventory:
 - `drop({ characterId, itemId, amount? })` — lock items, throw-away или
   сигнал void-sell (без записи `heroes`);
 - `bagLoad({ characterId })` → `{ amount, total, amountMax }` для bag wire и
-  будущего WLD-01.
+  WLD-01 travel overload.
 
 Character, тот же UoW:
 
@@ -325,7 +325,8 @@ PUT_OFF: `pocket → bag`, затем merge одинаковых bag-стако�
 
 Dump: `interesting_full.json` `user|pocket` (price 1.0 / 0.15, flags 0, empty
 skills). Weight/bagStack: `ARCHITECTURE.md` примеры. `levelMin=1`, `levelMax=0`,
-`skills=[]`. Spell/`artifact_actions` не публиковать — INV-04.
+`skills=[]`. Spell blob не публиковать. `artifact_actions` у 93/99 пустые;
+USE мяса 77 — INV-04.
 
 Starter: 9095×1 bag, 93×2 bag, 99×10 bag. Не выдавать 209, броню 20/26/103,
 сундук 1518.
@@ -454,24 +455,14 @@ ghost, pocket cast, refill after fight, durability.
   rollback leaves HP and cnt;
 - raw-AMF: wounded USE 77 → HP +gain, cnt−1, flat USE; full HP consumes;
   fight `203`; 9095/93/99 `203`; reconnect;
-- CEF: съесть мясо из bag, стак падает; без каста в бою;
+- CEF: съесть мясо из bag, стак падает; без каста в бою — **подтверждено**
+  (4× USE `100`, 77 съеден целиком);
 - нет fake OA; нет хлеба/маны/DRINK.
 
-### CEF observation — 2026-09-08
+### CEF 2026-09-08
 
-Новый CEF-герой (`POST /register` → `accountId` 2). Init `status:100` с
-`user|bag`. Четыре `common|object:USE` (sq 20, 21, 23, 24) — все
-`status:100`, `outcome:ok`. Flat: `common|action`, `user|bag`, `user|pocket`,
-`user|skills`, `user|unitframe`, `state`. Нет `user|view`. Инвентарных
-`203`/`204` на этом пути нет.
-
-Postgres после сессии: 77 нет (стак съеден целиком, 4 заряда). 9095 paperdoll;
-93×1+93×1 и 99×10 на поясе. HP 15/15 (перчатка надета). Картинка
-`rawmeat_grey.png` на wire; HUD не падал. Каста в бою не было.
-
-Побочное: `assistant|info` 203 unsupported. Не inventory.
-
-Product «готово» — за architecture close (ROADMAP `next`).
+Новый герой, четыре USE мяса, `status:100`, без `user|view`, стек в PostgreSQL
+пуст. Restart покрыт raw-AMF e2e.
 
 ## Architecture checkpoint — план
 
@@ -490,4 +481,5 @@ ADD_MP — отдельный срез, когда появится dump-proven 
 - raw-AMF response сохраняет legacy flat shape;
 - paperdoll 9095 **готово** подтверждён CEF PUT_ON (статы и bag);
 - DROP throw-away 9095 **готово** подтверждён CEF из bag;
-- pocket 93/99 **готово** подтверждён CEF PUT_ON на пояс.
+- pocket 93/99 **готово** подтверждён CEF PUT_ON на пояс;
+- world USE 77 **готово** подтверждён CEF из bag.
