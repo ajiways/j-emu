@@ -31,7 +31,7 @@ import {
 } from "../../../src/modules/content/infrastructure/schema.ts";
 import { accounts, sessions } from "../../../src/modules/identity/infrastructure/schema.ts";
 import { items } from "../../../src/modules/inventory/infrastructure/schema.ts";
-import { areas, huntSpawns } from "../../../src/modules/world/infrastructure/schema.ts";
+import { areaLinks, areas, huntSpawns } from "../../../src/modules/world/infrastructure/schema.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
@@ -92,6 +92,7 @@ describe("Drizzle migrations", () => {
         "identity.accounts",
         "identity.sessions",
         "inventory.items",
+        "world.area_links",
         "world.areas",
         "world.hunt_spawns",
       ].sort(),
@@ -110,6 +111,7 @@ describe("Drizzle migrations", () => {
       appearancePresets,
       gameWideDocuments,
       areas,
+      areaLinks,
       huntSpawns,
       heroes,
       heroPersonalDetails,
@@ -123,7 +125,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(23);
+    ]).toHaveLength(24);
 
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -139,8 +141,10 @@ describe("Drizzle migrations", () => {
       "0007_catalog_artifact_bag_economy",
       "0008_inventory_pocket_position_unique",
       "0009_catalog_artifact_actions",
+      "0010_character_move_ready_at",
+      "0011_world_area_links",
     ]);
-    expect(await appliedCount()).toBe(10);
+    expect(await appliedCount()).toBe(12);
 
     const singleton = await database
       .session()

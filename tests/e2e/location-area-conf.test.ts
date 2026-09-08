@@ -34,7 +34,23 @@ describe("location area_conf", () => {
       context: "4",
       hide_running_fights: 1,
     });
-    expect(nested.items).toEqual([]);
+    expect(nested.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: 5,
+          title: "Деревенская лавка",
+          flags: 8,
+          to_id: "504",
+        }),
+        expect.objectContaining({
+          id: 7,
+          title: "Ущелье разлуки",
+          flags: 0,
+          to_id: "501",
+        }),
+      ]),
+    );
+    expect(Array.isArray(nested.items) ? nested.items : []).toHaveLength(2);
     expect(nested.hunt_farm).toEqual([]);
     const huntBots = requireRecord(nested["hunt_bots"], "area_conf.hunt_bots");
     expect(huntBots["2"]).toMatchObject({

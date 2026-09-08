@@ -32,6 +32,37 @@ describe("ContentValidator", () => {
     expect(() => new ContentValidator().validate(bundle)).toThrow(/missing bot 999/);
   });
 
+  it("rejects an area_link whose destination is not in the bundle", () => {
+    const link = playable.areaLinks[0];
+    if (!link) throw new Error("playable bundle has no area links");
+    const bundle: ContentBundle = {
+      ...playable,
+      areaLinks: [
+        {
+          ...link,
+          toAreaId: "502",
+          toId: "502",
+          href: { object: "common", action: "action", form: { code: "COME_IN", area_id: 502 } },
+        },
+      ],
+    };
+    expect(() => new ContentValidator().validate(bundle)).toThrow(/to-area 502 is missing/);
+  });
+
+  it("rejects an area whose parent is not in the bundle", () => {
+    const area = playable.areas.find((entry) => entry.id === "503");
+    if (!area) throw new Error("playable bundle is missing area 503");
+    const bundle: ContentBundle = {
+      ...playable,
+      areas: playable.areas.map((entry) =>
+        entry.id === "503" ? { ...entry, parentId: "498" } : entry,
+      ),
+    };
+    expect(() => new ContentValidator().validate(bundle)).toThrow(
+      /parent 498 is not in the bundle/,
+    );
+  });
+
   it("rejects an artifact skill missing from the skill catalog", () => {
     const artifact = playable.artifacts[0];
     if (!artifact) throw new Error("playable bundle has no artifacts");
@@ -95,6 +126,22 @@ describe("parseContentBundle", () => {
       parseContentBundle({
         ...playable,
         artifacts: [withoutActions],
+      }),
+    ).toThrow();
+  });
+
+  it("rejects an NPC href in an area_link", () => {
+    const link = playable.areaLinks[0];
+    if (!link) throw new Error("playable bundle has no area links");
+    expect(() =>
+      parseContentBundle({
+        ...playable,
+        areaLinks: [
+          {
+            ...link,
+            href: { object: "npc", action: "quests", ref: 1617 },
+          },
+        ],
       }),
     ).toThrow();
   });

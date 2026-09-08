@@ -19,6 +19,7 @@ const area = new Area(
   "radvei_map.swf",
   0,
   "",
+  "",
   "4",
   "Ambience_village.mp3",
   "Ambience_village.mp3",
@@ -34,7 +35,7 @@ const area = new Area(
 describe("buildLocationAreaConf", () => {
   it("nests live area_conf scalars and empty click/overlay collections", () => {
     const huntBots = huntBotsForArea([spawn], new Map([[2, gryzl]]));
-    expect(buildLocationAreaConf(area, huntBots)).toEqual({
+    expect(buildLocationAreaConf(area, huntBots, [], 0)).toEqual({
       status: 100,
       area_ftime: 0,
       area_conf: {
