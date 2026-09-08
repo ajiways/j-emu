@@ -1,5 +1,6 @@
 import { ArtifactDefinition } from "../../src/modules/catalog/domain/artifact-definition.ts";
 import { ArtifactSkillBonus } from "../../src/modules/catalog/domain/artifact-skill-bonus.ts";
+import type { ArtifactUseAction } from "../../src/modules/catalog/domain/artifact-use-action.ts";
 
 export function testArtifact(
   overrides: {
@@ -17,6 +18,7 @@ export function testArtifact(
     flags?: number;
     bagStack?: number;
     skills?: readonly ArtifactSkillBonus[];
+    useActions?: Readonly<Record<string, ArtifactUseAction>>;
   } = {},
 ): ArtifactDefinition {
   return new ArtifactDefinition(
@@ -34,5 +36,6 @@ export function testArtifact(
     overrides.flags ?? 40,
     overrides.bagStack ?? 1,
     overrides.skills ?? [new ArtifactSkillBonus("VIT", 5, 0)],
+    overrides.useActions ?? {},
   );
 }

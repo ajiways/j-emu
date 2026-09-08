@@ -213,6 +213,10 @@
   CEF: eat meat from bag, stack drops. No fake OA.
 - **Status:** `next`
 
+  Implementation is on `cap/inv-04-use`. CEF eat-meat observed 2026-09-08
+  (`accountId` 2, four USE `100`, stack gone). Architecture product close
+  still pending.
+
 ## Wave 2 — world, hunt and realtime
 
 ### WLD-01 — Area transitions

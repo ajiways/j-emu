@@ -64,6 +64,13 @@
       "when": 1788872747772,
       "tag": "0008_inventory_pocket_position_unique",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788878464463,
+      "tag": "0009_catalog_artifact_actions",
+      "breakpoints": true
     }
   ]
 }

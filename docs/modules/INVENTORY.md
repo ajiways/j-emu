@@ -179,8 +179,9 @@ wire = `flags & 8 ? 1 : 0`. Стартовая 9095: `flags: 40`
 Unique paperdoll/bag: `bagStack = 1`, стакать нельзя. `priceMinor` missing ≠ 0.
 
 9095: `priceMinor: 0`, `flags: 40`, `bagStack: 1`. Provenance: live dump
-instance flags/price; unique wearable. Bundle сейчас `playable-slice/v7`
-(INV-03 добавил 93/99); миграция bag-полей — `0007_catalog_artifact_bag_economy`.
+instance flags/price; unique wearable. Bundle сейчас `playable-slice/v8`
+(INV-04 добавил 77; INV-03 добавил 93/99); миграция bag-полей —
+`0007_catalog_artifact_bag_economy`, `artifact_actions` — `0009`.
 
 Второго stackable/sellable артикула в slice нет. E2E/CEF — throw-away 9095.
 Void-sell без dump-proven priced artifact не выдумывался.
@@ -455,6 +456,22 @@ ghost, pocket cast, refill after fight, durability.
   fight `203`; 9095/93/99 `203`; reconnect;
 - CEF: съесть мясо из bag, стак падает; без каста в бою;
 - нет fake OA; нет хлеба/маны/DRINK.
+
+### CEF observation — 2026-09-08
+
+Новый CEF-герой (`POST /register` → `accountId` 2). Init `status:100` с
+`user|bag`. Четыре `common|object:USE` (sq 20, 21, 23, 24) — все
+`status:100`, `outcome:ok`. Flat: `common|action`, `user|bag`, `user|pocket`,
+`user|skills`, `user|unitframe`, `state`. Нет `user|view`. Инвентарных
+`203`/`204` на этом пути нет.
+
+Postgres после сессии: 77 нет (стак съеден целиком, 4 заряда). 9095 paperdoll;
+93×1+93×1 и 99×10 на поясе. HP 15/15 (перчатка надета). Картинка
+`rawmeat_grey.png` на wire; HUD не падал. Каста в бою не было.
+
+Побочное: `assistant|info` 203 unsupported. Не inventory.
+
+Product «готово» — за architecture close (ROADMAP `next`).
 
 ## Architecture checkpoint — план
 

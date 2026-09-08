@@ -18,6 +18,7 @@ import { CommonMenuLinkStatusCommand } from "../commands/oa/common-menu-link-sta
 import { EmptyCollectionOaCommand } from "../commands/oa/empty-collection-oa-command.ts";
 import { PutOffCommand } from "../commands/oa/put-off-command.ts";
 import { PutOnCommand } from "../commands/oa/put-on-command.ts";
+import { UseArtifactCommand } from "../commands/oa/use-artifact-command.ts";
 import { UserBagCommand } from "../commands/oa/user-bag-command.ts";
 import { UserFlashMessageCommand } from "../commands/oa/user-flash-message-command.ts";
 import { UserMagicCommand } from "../commands/oa/user-magic-command.ts";
@@ -98,6 +99,7 @@ export class JuggerCommandModule {
         inventory,
         combat,
       ),
+      new UseArtifactCommand(unitOfWork, bootstrap, characters, inventory, combat),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     this.esrv = EsrvCommandRegistry.create(combat, fightWire);

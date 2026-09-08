@@ -4,6 +4,7 @@ import { bagActionsFor } from "../../inventory/domain/bag-actions.ts";
 import { noweightWire } from "../../inventory/domain/artifact-flags.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import { sellPriceMinor } from "../../inventory/domain/sell-price.ts";
+import { artifactActionsWire, type ArtifactActionWireBlock } from "./artifact-actions-wire.ts";
 import { artifactSkillWireMap, type ArtifactSkillWireBlock } from "./artifact-skill-wire.ts";
 import { moneyNumberFromMinorUnits } from "./money-from-minor-units.ts";
 
@@ -28,7 +29,7 @@ type BagItemBlock = Readonly<{
   price: number;
   sell_price: number;
   artifact_skills: Readonly<Record<string, ArtifactSkillWireBlock>>;
-  artifact_actions: Readonly<Record<string, never>>;
+  artifact_actions: Readonly<Record<string, ArtifactActionWireBlock>>;
 }>;
 
 export type UserBagBlock = Readonly<{
@@ -66,13 +67,13 @@ export async function buildUserBag(
       level_max: definition.levelMax,
       cnt: item.quantity,
       action: "bag",
-      actions: bagActionsFor(definition.slotMask),
+      actions: bagActionsFor(definition.slotMask, definition.useAction !== undefined),
       flags: definition.flags,
       noweight: noweightWire(definition.flags),
       price: moneyNumberFromMinorUnits(definition.priceMinor),
       sell_price: moneyNumberFromMinorUnits(sellPriceMinor(definition.priceMinor)),
       artifact_skills: await artifactSkillWireMap(definition.skills, catalog),
-      artifact_actions: {},
+      artifact_actions: artifactActionsWire(definition.useActions),
     };
   }
   return {

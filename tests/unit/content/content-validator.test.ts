@@ -86,6 +86,19 @@ describe("parseContentBundle", () => {
     ).toThrow();
   });
 
+  it("rejects an artifact missing artifact_actions", () => {
+    const artifact = playable.artifacts[0];
+    if (!artifact) throw new Error("playable bundle has no artifacts");
+    const withoutActions = { ...artifact } as { artifact_actions?: unknown };
+    delete withoutActions.artifact_actions;
+    expect(() =>
+      parseContentBundle({
+        ...playable,
+        artifacts: [withoutActions],
+      }),
+    ).toThrow();
+  });
+
   it("rejects an area without region_map", () => {
     const area = playable.areas[0];
     if (!area) throw new Error("playable bundle has no areas");

@@ -75,6 +75,7 @@ async function insertArtifacts(
       flags: artifact.flags,
       bagStack: artifact.bagStack,
       skills: artifact.skills,
+      artifactActions: artifact.artifact_actions,
     })),
   );
 }

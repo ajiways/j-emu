@@ -40,7 +40,7 @@ describe("inventory equipment", () => {
       sq: 2,
     });
     expect(putOn["common|action"]).toEqual({ status: 100 });
-    expect(objectBlock(putOn["user|bag"])).toMatchObject({ status: 100, amount: 2, total: 2 });
+    expect(objectBlock(putOn["user|bag"])).toMatchObject({ status: 100, amount: 2, total: 3 });
     const equipped = firstArtifact(putOn["user|view"]);
     expect(equipped).toMatchObject({
       id: itemId,

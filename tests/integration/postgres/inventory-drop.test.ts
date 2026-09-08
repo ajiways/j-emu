@@ -71,7 +71,7 @@ describe("inventory drop persistence", () => {
     expect(accepted).toHaveLength(1);
     expect(denied).toHaveLength(1);
     const remaining = await inventory.service.list(hero.id);
-    expect(remaining).toHaveLength(2);
+    expect(remaining).toHaveLength(3);
     expect(remaining.some((item) => item.artifactId === 9095)).toBe(false);
   });
 
@@ -86,7 +86,7 @@ describe("inventory drop persistence", () => {
       }),
     ).rejects.toThrow(/forced rollback/);
     const remaining = await inventory.service.list(hero.id);
-    expect(remaining).toHaveLength(3);
+    expect(remaining).toHaveLength(4);
     expect(remaining[0]?.id).toBe(item.id);
   });
 

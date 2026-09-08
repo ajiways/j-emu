@@ -30,6 +30,7 @@ import { buildUserSkills, skillsExpireBlock, type UserSkillsBlock } from "./user
 import { buildUserUnitframe, type UserUnitframeBlock } from "./user-unitframe-block.ts";
 import { buildUserView, type UserViewBlock } from "./user-view-block.ts";
 import { buildWelcomeMessage } from "./welcome-message-block.ts";
+import { buildUseMutation } from "./use-mutation-block.ts";
 
 export type { HuntBlock, UserUnitframeBlock, HeroStateBlock };
 
@@ -126,6 +127,18 @@ export class BootstrapReadModel {
       "user|conf": buildUserConf(hero, level),
       state: buildHeroState(hero, this.clock),
     };
+  }
+
+  async useMutation(accountId: number): Promise<Readonly<Record<string, unknown>>> {
+    return buildUseMutation({
+      hero: await this.requireHero(accountId),
+      inventory: this.inventory,
+      catalog: this.catalog,
+      pocketCapacity: this.policy.pocketCapacity,
+      unitframe: await this.unitframe(accountId),
+      skills: await this.skills(accountId),
+      clock: this.clock,
+    });
   }
 
   async bagDropMutation(

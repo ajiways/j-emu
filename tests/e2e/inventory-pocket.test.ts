@@ -26,7 +26,7 @@ describe("inventory pocket", () => {
       capacity: 4,
       pocket: [],
     });
-    expect(objectBlock(init["user|bag"])).toMatchObject({ amount: 2, total: 3 });
+    expect(objectBlock(init["user|bag"])).toMatchObject({ amount: 2, total: 4 });
     const elixirId = requireId(bagItemByArtikulId(init, 93));
 
     const putOn = await client.objectAction({
@@ -48,7 +48,7 @@ describe("inventory pocket", () => {
     });
     expect(pocket[0]).not.toHaveProperty("action");
     expect(bagItemByArtikulId(putOn, 93)).toMatchObject({ cnt: 1, action: "bag" });
-    expect(objectBlock(putOn["user|bag"])).toMatchObject({ amount: 2, total: 3 });
+    expect(objectBlock(putOn["user|bag"])).toMatchObject({ amount: 2, total: 4 });
     expect(putOn["user|view"]).toBeTypeOf("object");
     expect(putOn["user|skills"]).toBeTypeOf("object");
     expect(putOn["user|unitframe"]).toBeTypeOf("object");
@@ -188,7 +188,7 @@ describe("inventory pocket", () => {
       error: "нельзя во время боя",
     });
     const bag = await client.objectAction({ object: "user", action: "bag", sq: 6 });
-    expect(objectBlock(bag["user|bag"])).toMatchObject({ status: 100, amount: 2, total: 3 });
+    expect(objectBlock(bag["user|bag"])).toMatchObject({ status: 100, amount: 2, total: 4 });
     expect(bagItemByArtikulId(bag, 93)).toMatchObject({ id: leftoverId, cnt: 1 });
   });
 });

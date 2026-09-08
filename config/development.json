@@ -39,6 +39,11 @@
       "artifactId": 99,
       "quantity": 10,
       "location": { "kind": "bag" }
+    },
+    {
+      "artifactId": 77,
+      "quantity": 4,
+      "location": { "kind": "bag" }
     }
   ],
   "bootstrap": {

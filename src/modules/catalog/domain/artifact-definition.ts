@@ -1,4 +1,5 @@
 import type { ArtifactSkillBonus } from "./artifact-skill-bonus.ts";
+import type { ArtifactUseAction } from "./artifact-use-action.ts";
 
 export class ArtifactDefinition {
   constructor(
@@ -16,6 +17,7 @@ export class ArtifactDefinition {
     readonly flags: number,
     readonly bagStack: number,
     readonly skills: readonly ArtifactSkillBonus[],
+    readonly useActions: Readonly<Record<string, ArtifactUseAction>>,
   ) {
     if (!Number.isInteger(id) || id <= 0) throw new Error("Invalid artifact id");
     if (!title) throw new Error(`Artifact ${id} title is required`);
@@ -56,5 +58,9 @@ export class ArtifactDefinition {
       if (ids.has(skill.id)) throw new Error(`Artifact ${id} has duplicate skill ${skill.id}`);
       ids.add(skill.id);
     }
+  }
+
+  get useAction(): ArtifactUseAction | undefined {
+    return Object.values(this.useActions)[0];
   }
 }

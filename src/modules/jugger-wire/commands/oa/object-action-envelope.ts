@@ -41,7 +41,15 @@ export function decodeObjectActionEnvelope(value: unknown): ObjectActionEnvelope
 export function oaRegistryKey(envelope: ObjectActionEnvelope): string {
   if (isCommonObjectMutation(envelope)) {
     if (!envelope.form) throw new ProtocolError(203, "common|object requires form");
-    return `common|object:${String(envelope.form["code"])}`;
+    const code = envelope.form["code"];
+    if (code === undefined || code === null || code === "") {
+      if (envelope.form["object_class"] === "ARTIFACT") return "common|object:USE";
+      throw new ProtocolError(203, "common|object requires code");
+    }
+    if (typeof code !== "string" && typeof code !== "number") {
+      throw new ProtocolError(203, "common|object code is invalid");
+    }
+    return `common|object:${code}`;
   }
   return `${envelope.object}|${envelope.action}`;
 }

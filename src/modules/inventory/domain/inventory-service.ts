@@ -14,6 +14,7 @@ import { planPutOnPocket, type PocketTarget } from "./put-on-pocket.ts";
 import { requireQuantityWithinStack } from "./require-quantity-within-stack.ts";
 import { sellPriceMinor } from "./sell-price.ts";
 import { takeDropQuantity } from "./take-drop-quantity.ts";
+import { useFromBag, type UseFromBagCommand, type UseFromBagResult } from "./use-from-bag.ts";
 import { requireEquippedItem, requireWearablePaperdoll, type WearHero } from "./wear-paperdoll.ts";
 
 export type StarterItemSpec = Readonly<{
@@ -135,7 +136,7 @@ export class InventoryService {
     const definition = await this.catalog.artifact(item.artifactId);
     if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
     requireQuantityWithinStack(definition, item.quantity);
-    const actions = bagActionsFor(definition.slotMask);
+    const actions = bagActionsFor(definition.slotMask, definition.useAction !== undefined);
     const unit = sellPriceMinor(definition.priceMinor);
     const voidSell = (actions & FLAG_SELL) !== 0 && unit > 0;
     if (intent === "sell") {
@@ -148,6 +149,10 @@ export class InventoryService {
     if (remaining < 1) await this.inventory.delete(item);
     else await this.inventory.save(item.withQuantity(remaining));
     return { take, creditMinor: voidSell ? unit * take : 0 };
+  }
+
+  useFromBag(command: UseFromBagCommand): Promise<UseFromBagResult> {
+    return useFromBag(this.inventory, this.catalog, command);
   }
 
   async bagLoad(command: { characterId: number }): Promise<BagLoad> {

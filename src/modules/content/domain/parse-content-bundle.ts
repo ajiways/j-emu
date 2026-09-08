@@ -20,6 +20,16 @@ const artifactSkillSchema = z
   })
   .strict();
 
+const artifactActionSchema = z
+  .object({
+    code: z.string().min(1),
+    param1: z.number().int().positive(),
+    param2: z.number().int().nonnegative(),
+    dispose: z.union([z.literal(0), z.literal(1)]),
+    title: z.string().min(1),
+  })
+  .strict();
+
 const artifactSchema = z
   .object({
     id: z.number().int().positive(),
@@ -36,6 +46,7 @@ const artifactSchema = z
     flags: z.number().int().nonnegative(),
     bagStack: z.number().int().positive(),
     skills: z.array(artifactSkillSchema),
+    artifact_actions: z.record(z.string().min(1), artifactActionSchema),
   })
   .strict();
 

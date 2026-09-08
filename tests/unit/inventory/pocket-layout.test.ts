@@ -58,8 +58,9 @@ describe("pocket slot rules", () => {
   });
 
   it("adds PUT_ON to bag actions for pocketables", () => {
-    expect(bagActionsFor(SLOT_EFFECT)).toBe(11);
-    expect(bagActionsFor(32)).toBe(11);
+    expect(bagActionsFor(SLOT_EFFECT, false)).toBe(11);
+    expect(bagActionsFor(32, false)).toBe(11);
+    expect(bagActionsFor(0, true)).toBe(7);
   });
 });
 

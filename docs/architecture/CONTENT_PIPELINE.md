@@ -29,8 +29,9 @@ counts/checksums и completeness gates:
 
 ## Текущий playable slice
 
-Текущая `playable-slice/v7` release — минимальный bundle: 3 artifacts
-(9095, dump-proven pocketables **93** и **99**; без 209 и патронташа), 1 bot,
+Текущая `playable-slice/v8` release — минимальный bundle: 4 artifacts
+(9095, dump-proven pocketables **93** и **99**, food **77**; без 209 и
+патронташа), 1 bot,
 1 area, 1 hunt spawn, 11 skills, 8 levels с normalized managed skills,
 1 appearance и common-conf/chrome/HUD/welcome документы в составе текущего
 bundle. Это нельзя называть полным игровым контентом или полным контентом

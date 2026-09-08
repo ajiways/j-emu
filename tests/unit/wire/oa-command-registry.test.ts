@@ -96,6 +96,27 @@ describe("object-action envelope decoder", () => {
     expect(oaResponseKey(envelope)).toBe("common|action");
   });
 
+  it("maps ARTIFACT without code to common|object:USE", () => {
+    const envelope = decodeObjectActionEnvelope({
+      object: "common",
+      action: "action",
+      form: { object_class: "ARTIFACT", object_id: 100_000 },
+      sq: 8,
+    });
+    expect(oaRegistryKey(envelope)).toBe("common|object:USE");
+    expect(oaResponseKey(envelope)).toBe("common|action");
+  });
+
+  it("does not stringify a missing code as undefined", () => {
+    const envelope = decodeObjectActionEnvelope({
+      object: "common",
+      action: "object",
+      form: { object_id: 100_000 },
+      sq: 9,
+    });
+    expect(() => oaRegistryKey(envelope)).toThrow(/common\|object requires code/);
+  });
+
   it("requires form for common|object lookup", () => {
     const envelope = decodeObjectActionEnvelope({
       object: "common",

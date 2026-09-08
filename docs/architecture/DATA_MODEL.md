@@ -27,7 +27,8 @@ Playerbot-таблиц и признаков `is_bot` нет.
 `drizzle/0005_character_experience_progression`,
 `drizzle/0006_character_hp_regeneration`,
 `drizzle/0007_catalog_artifact_bag_economy`,
-`drizzle/0008_inventory_pocket_position_unique`.
+`drizzle/0008_inventory_pocket_position_unique`,
+`drizzle/0009_catalog_artifact_actions`.
 Поля ниже совпадают с runtime.
 
 ### `identity`
@@ -77,9 +78,11 @@ naked skills — отдельными строками `hero_skills`. `hp_time` 
 Versioned projection активной content release:
 
 - `artifacts(release_id, id, title, picture, type_id, kind_id, slot_mask, weight,
-level_min, level_max, gender, price_minor, flags, bag_stack, skills jsonb)`
+level_min, level_max, gender, price_minor, flags, bag_stack, skills jsonb,
+artifact_actions jsonb)`
   PK `(release_id, id)`. `price_minor` — integer cents ≥ 0 (`0` валиден);
-  `flags` integer ≥ 0; `bag_stack` integer ≥ 1.
+  `flags` integer ≥ 0; `bag_stack` integer ≥ 1; `artifact_actions` — typed map
+  (пустой объект = нет USE).
 - `bots(release_id, id, title, level, max_hp, strength, hunt_nick, hunt_swf,
 hunt_scale, hunt_fps, hunt_speed, hunt_avatar, hunt_kind, hunt_hide_on_map)`
   PK `(release_id, id)`. Hunt look — спрайт на карте (`area_conf.hunt_bots`),

@@ -33,6 +33,7 @@ export const artifacts = catalogSchema.table(
     flags: integer("flags").notNull(),
     bagStack: integer("bag_stack").notNull(),
     skills: jsonb("skills").notNull(),
+    artifactActions: jsonb("artifact_actions").notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.releaseId, table.id] }),

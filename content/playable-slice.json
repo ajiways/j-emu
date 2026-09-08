@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v7",
+  "schemaVersion": "playable-slice/v8",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -22,7 +22,8 @@
         { "id": "DEX", "value": 1, "flags": 0 },
         { "id": "DEF", "value": 1, "flags": 0 },
         { "id": "VIT", "value": 5, "flags": 0 }
-      ]
+      ],
+      "artifact_actions": {}
     },
     {
       "id": 93,
@@ -38,7 +39,8 @@
       "priceMinor": 100,
       "flags": 0,
       "bagStack": 99,
-      "skills": []
+      "skills": [],
+      "artifact_actions": {}
     },
     {
       "id": 99,
@@ -54,7 +56,33 @@
       "priceMinor": 15,
       "flags": 0,
       "bagStack": 999,
-      "skills": []
+      "skills": [],
+      "artifact_actions": {}
+    },
+    {
+      "id": 77,
+      "title": "Кусок мяса",
+      "picture": "rawmeat_grey.png",
+      "typeId": "10",
+      "kindId": 48,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 0,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 3,
+      "flags": 40,
+      "bagStack": 99,
+      "skills": [],
+      "artifact_actions": {
+        "20": {
+          "code": "ADD_HP",
+          "param1": 30,
+          "param2": 0,
+          "dispose": 1,
+          "title": "Съесть мясо"
+        }
+      }
     }
   ],
   "bots": [
