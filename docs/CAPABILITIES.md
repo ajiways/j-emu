@@ -91,9 +91,24 @@ bag, деньги остаются `25.00`, bag пуст, reconnect совпад
   режет, j-emu закрывает дыру из [FIGHT_LOCK.md](../../jgr-emu/docs/FIGHT_LOCK.md));
 - `creditMoney` на character в той же UoW; inventory не пишет `heroes`.
 
+## Inventory pocket — готово
+
+Есть raw-AMF E2E и подтверждённый CEF-прогон: эликсир 93 и орб 99 надеваются
+на пояс, иконки видны, leftover/merge/swap живут в PostgreSQL после reconnect.
+
+- catalog v7: **93** (`bottles_live1_2712.png`, `pocketCntMax=1`) и **99**
+  (`bottles_sila1.png`, `pocketCntMax=10`); starter в bag, пояс на login пустой;
+- `user|pocket`: `capacity=4`, массив с `slot=67108864`, `slot_num` 1-based,
+  `cnt`, `actions=16`, без `action:"bag"`;
+- те же OA `PUT_ON`/`PUT_OFF`; pocket deny **`204`**; перчатка 9095 на пояс
+  и DROP из pocket — `204`;
+- unique `(hero_id, pocket_position)`; порт `listPocket` для CMB-02;
+- в бою PUT_ON/OFF/DROP/SELL — `FightRules` `203`. Трата из кармана не в срезе.
+
 ## Inventory — частично
 
-Не перенесены durability/repair, pocket merge/split/swap и USE pipelines.
+Не перенесены durability/repair, world USE (INV-04) и fight cast/`persSpells`
+(CMB-02).
 
 ## World и hunt — частично
 

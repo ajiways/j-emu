@@ -9,14 +9,13 @@
 ## Текущий runtime checkpoint
 
 Текущий проверенный срез после готовых bootstrap, equipment
-`PUT_ON`/`PUT_OFF` и bag DROP:
+`PUT_ON`/`PUT_OFF`, bag DROP и pocket layout:
 
 - `character` хранит hero scalars, personal details, naked `hero_skills`,
   `hp_time` и `regen_at`; internal ports `grantExperience`, `syncResources`,
   `noteHp` и `creditMoney` пишут этот state;
 - `inventory` хранит bag/pocket/equipment instances и выполняет
-  `PUT_ON`/`PUT_OFF`, `drop` и `bagLoad`; INV-03 расширяет PUT_ON/OFF на
-  пояс (`location_kind=pocket`) и `listPocket`;
+  `PUT_ON`/`PUT_OFF` (paperdoll и пояс), `drop`, `bagLoad` и `listPocket`;
 - `catalog` и `world` читают artifacts, skills, levels, appearance,
   game-wide bootstrap documents, area 503 и hunt rows из active release;
 - equipment-derived skills/vitals считаются из persisted naked skills и

@@ -13,7 +13,7 @@
   `depends_on`.
 - Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
   `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **INV-03**.
+- Ровно одна запись имеет статус `next`: **INV-04**.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -187,11 +187,7 @@
   drag elixir 93 onto the belt, reconnect, PUT_OFF. No fight cast.
   PUT_ON/PUT_OFF/DROP/SELL in fight are `FightRules` `203` (named j-emu lock,
   not live parity; pocket spend stays `CMB-02`).
-- **Status:** `next`
-
-  CEF PUT_ON/OFF on a new hero observed 2026-09-08; second cold reconnect
-  init was not in that run. Architecture product close still pending.
-  Fight layout lock is in-contract.
+- **Status:** `done`
 
 ### INV-04 — Core consumable USE
 
@@ -199,14 +195,23 @@
 - **depends_on:** `INV-02`, `INV-03`
 - **Behavior evidence:** legacy `INVENTORY_USE.md`, `bonuses.ts` and
   [INVENTORY.md](../modules/INVENTORY.md).
-- **Content set:** food, ADD_HP, ADD_MP and DRINK actions required by the core
-  hunt loop.
-- **Architecture checkpoint / decision:** pending — define typed inventory
-  action registry, resource-change port and consume/apply atomicity.
-- **Acceptance:** supported consumables atomically change HP/MP/effects and
-  consume the item; unsupported or context-invalid actions return exact
-  `203 + error`. Quest scripts and dialog-opening items remain `IUS-01`.
-- **Status:** `queued`
+- **Content set:** bump `playable-slice/v7` → **v8**. Publish dump-proven
+  food **77** (Кусок мяса) from `_research/from_register/interesting_full.json`
+  / `jgr-emu/fixtures/common_init_slim.json`. Typed `artifact_actions` ADD_HP
+  only. No ADD_MP, DRINK, books, `bonus_id` pipelines, 93/99 spell blobs.
+  Starter: **77×4** in bag (dump `cnt`).
+- **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
+  no `ARC-INV`. World USE is bag-only `common|object` with
+  `object_class=ARTIFACT` and **no** `code`; inventory consumes; character
+  `noteHp` in the same UoW after `syncResources`. Unknown action codes are
+  `203`, not empty `100`. Fight layout lock already covers USE (live
+  `fightBusy`). Pocket fight cast stays `CMB-02`; quest scripts stay `IUS-01`.
+  Full contract: [INVENTORY.md](../modules/INVENTORY.md).
+- **Acceptance:** wounded hero USE 77 heals `max(1, floor(hpMax*30/100))`,
+  clamps to hpMax, consumes 1, returns flat USE blocks; full-HP USE still
+  consumes; in-fight USE `203`; 9095/93/99 USE `203` no action; reconnect.
+  CEF: eat meat from bag, stack drops. No fake OA.
+- **Status:** `next`
 
 ## Wave 2 — world, hunt and realtime
 

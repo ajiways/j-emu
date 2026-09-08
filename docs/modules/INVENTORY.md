@@ -2,11 +2,11 @@
 
 ## Статус
 
-Paperdoll `PUT_ON`/`PUT_OFF` и bag DROP для перчатки 9095 **готово**: raw-AMF
-E2E и реальный CEF-прогон. Точный статус: [CAPABILITIES.md](../CAPABILITIES.md).
+Paperdoll `PUT_ON`/`PUT_OFF`, bag DROP 9095 и pocket layout 93/99 **готово**:
+raw-AMF E2E и реальный CEF-прогон. Точный статус:
+[CAPABILITIES.md](../CAPABILITIES.md).
 
-INV-03 (pocket layout) — следующий workflow-срез. Не перенесены durability,
-fight cast/`persSpells`, USE pipelines и патронташ.
+Не перенесены durability, fight cast/`persSpells`, world USE и патронташ.
 
 ## Источники поведения
 
@@ -46,12 +46,14 @@ Bag item обязан иметь подтверждённые `type_id`, `kind_i
 3. level / gender / non-paperdoll type → `status:203` + `error`;
 4. missing hero/item/catalog → fail-fast `status:204` + `error`, не пустой `100`;
 5. `DROP` / `SELL` из bag; throw-away 9095; deny equipped и SELL без
-   `sell_price>0` → `status:204` + `error`.
+   `sell_price>0` → `status:204` + `error`;
+6. pocket `PUT_ON`/`PUT_OFF` для 93/99: merge/split/swap, `listPocket`.
 
-Следующий inventory capability после INV-03, не этот срез:
+Следующий inventory capability — `INV-04` world USE мяса 77, не этот срез
+до реализации; после него:
 
 - durability/repair/upgrade;
-- USE food/HP/MP и pocket fight cast (`INV-04` / `CMB-02`);
+- ADD_MP / DRINK / TEMPEFFECT и pocket fight cast (`CMB-02`);
 - quest/item scripts и dialog actions — отдельный `IUS-01` после появления
   quest application ports.
 
@@ -67,7 +69,7 @@ armor 20/26/103 is not invented in this playable slice.
 
 Именованное `FightRules` (не live parity, не fallback). Пока
 `CombatPort.activeFightId(accountId)` не `null`, layout-мутации инвентаря
-запрещены: `PUT_ON`, `PUT_OFF`, `DROP`, `SELL` → **`status:203`** +
+запрещены: `PUT_ON`, `PUT_OFF`, `DROP`, `SELL`, world `USE` → **`status:203`** +
 `error: "нельзя во время боя"`. Чтение bag/view/pocket/init не блокируется.
 
 Смысл: в бою нельзя докладывать расходку на пояс и менять экип/сумку. Трата из
@@ -85,23 +87,8 @@ Pocket layout (INV-03) принадлежит inventory; active count/effects в
 `items.id`. Packet ordering `rs`/strike задаётся [COMBAT.md](COMBAT.md). World
 `user|magic` glove spells не входят в этот срез.
 
-### CEF observation — 2026-09-08
-
-Новый CEF-герой (`register` → `accountId` 1). Bootstrap `common|init`
-`status:100` с `user|pocket`. Happy-path `PUT_ON`/`PUT_OFF` — все
-`status:100`, в flat-ответе есть `user|pocket`. Инвентарных `203`/`204` нет.
-Картинки `bottles_live1_2712.png` / `bottles_sila1.png` на wire приняты.
-
-Postgres после сессии: 9095 paperdoll slot 32; 99×10 пояс слот 1; два 93×1
-на слотах 2 и 3 (оба стартовых эликсира на поясе — leftover в bag нет,
-потому что надели оба, не один из стака). Layout живёт в PostgreSQL.
-
-Второй cold `game.php` / `common|init` в этом прогоне не было. Restart
-покрыт raw-AMF e2e. Product «готово» — за architecture close (ROADMAP
-`next`).
-
-Побочное: `ATTACK_BOT` 203 `Bot 50310 is not present in area 503` (spawn id
-вместо `bot_id` 2). Не inventory. Каста в бою не было.
+CEF 2026-09-08: новый герой, 93 и 99 на пояс, `status:100`, иконки приняты,
+строки в PostgreSQL. Restart/reconnect покрыт raw-AMF e2e.
 
 ## Persistence
 
@@ -192,8 +179,8 @@ wire = `flags & 8 ? 1 : 0`. Стартовая 9095: `flags: 40`
 Unique paperdoll/bag: `bagStack = 1`, стакать нельзя. `priceMinor` missing ≠ 0.
 
 9095: `priceMinor: 0`, `flags: 40`, `bagStack: 1`. Provenance: live dump
-instance flags/price; unique wearable. Bundle `playable-slice/v6`,
-миграция `0007_catalog_artifact_bag_economy`.
+instance flags/price; unique wearable. Bundle сейчас `playable-slice/v7`
+(INV-03 добавил 93/99); миграция bag-полей — `0007_catalog_artifact_bag_economy`.
 
 Второго stackable/sellable артикула в slice нет. E2E/CEF — throw-away 9095.
 Void-sell без dump-proven priced artifact не выдумывался.
@@ -368,13 +355,112 @@ bag, медальон 209, патронташ, TEMPEFFECT drinks, durability.
   `slot=67108864`, `cnt=1`, `actions=16`; leftover bag stack; PUT_OFF back;
   merge/split 99; swap 93↔99; 9095 into pocket `204`; DROP from pocket `204`;
   PUT_ON/OFF в активном hunt — `203` `нельзя во время боя`; reconnect;
-- CEF: перетащить эликсир 93 на пояс, reconnect, снять в bag; без каста в бою;
+- CEF: перетащить эликсир 93 на пояс, reconnect, снять в bag; без каста в бою
+  — **подтверждено** (в прогоне надели оба 93 и 99; leftover/restart — e2e);
 - нет fake OA; нет spell blob; нет 209/патронташа.
+
+## INV-04 — world USE (ADD_HP meat)
+
+### Architecture decision
+
+Отдельный `ARC-INV` не нужен. World USE — bag-only OA на существующих
+`common|object` / `common|action`. Клиент (`UseArtifact.as`) шлёт
+`object_class: "ARTIFACT"`, `object_id` = `items.id`, часто **без** `code`.
+Сервер берёт **первую** запись каталожного `artifact_actions`. Текст описания
+не парсить.
+
+Трата из кармана в бою — fproxy (`CMB-02`), не этот OA. Quest `bonus_id`
+pipelines / `openDialog` — `IUS-01`. LEARN_RECIPE — профессии. DRINK /
+TEMPEFFECT / ADD_MP — нет dump-proven L1 артикула в slice; неизвестный `code`
+→ `203`, не выдумывать хлеб/ману.
+
+### Wire
+
+Реестр: не `common|object:undefined`. Если `object_class=ARTIFACT` и `code`
+пустой — ключ **`common|object:USE`**. `FightRules`: активный бой → **`203`**
+`нельзя во время боя` (live `fightBusy` на USE).
+
+Успех — **flat**, `common|action` = `{ action: "USE" }` без `msg_text` для
+мяса 77 (live ADD_HP meat не ставит plaque):
+
+- `common|action`;
+- `user|bag`;
+- `user|pocket`;
+- `user|unitframe`;
+- `user|skills`;
+- `state`.
+
+`user|view` только если mutation грязнит view (DRINK — не этот срез). Deny —
+**`203`** + `error` (live `notPossible`), не bag-`204`.
+
+| Исход                       | `error`                                 |
+| --------------------------- | --------------------------------------- |
+| активный бой                | `нельзя во время боя`                   |
+| нет / чужой предмет         | `предмет не найден`                     |
+| не bag (pocket / paperdoll) | `снимите предмет чтобы использовать`    |
+| нет `artifact_actions`      | `у предмета нет действия использования` |
+| неизвестный `code`          | `действие «CODE» пока не поддержано`    |
+| ADD_HP gain ≤ 0             | `некорректный эффект`                   |
+
+Полный HP USE **не** deny: consume всё равно, HP не меняется.
+
+### Правила ADD_HP
+
+`gain = param2=="0" ? max(1, floor(hpMax * param1 / 100)) : param1`.
+Provenance `artifactUse.ts` `amountFromParams`. `param1` обязателен и > 0;
+не `Number(param1) || 0` как маскировка missing. Затем
+`hp' = min(hpMax, hp + gain)`. Сначала `syncResources` (CHR-02), потом consume
+
+- `noteHp` в той же UoW. `dispose=1`: `cnt<=1` удаляет строку, иначе `cnt-1`.
+  `cnt=0` unique (сундук 1518) — не в срезе.
+
+### Content
+
+`playable-slice/v7` → **v8**. Каталог: обязательный typed `artifact_actions`
+(пустой объект валиден = нет USE). 9095/93/99 остаются `{}`.
+
+| id  | title      | picture            | typeId | kindId | slotMask | weight | priceMinor | flags | bagStack |
+| --- | ---------- | ------------------ | ------ | ------ | -------- | ------ | ---------- | ----- | -------- |
+| 77  | Кусок мяса | `rawmeat_grey.png` | `"10"` | 48     | 0        | 0      | 3          | 40    | 99       |
+
+Dump instance: `flags: 40`, `price: 0.03`, `actions: 7`, `noweight: 1`,
+`artifact_actions["20"].code=ADD_HP`, `param1=30`, `param2=0`, `dispose=1`,
+`title` «Съесть мясо». `level_min=0`; `level_max` live-сентинел `536870911`
+**не копировать** → `0`. `bagStack=99`: dump доказывает stack (`cnt=4`); 99 —
+именованный food-stack, не `9999`. Wire `artifact_actions` — **map**, не
+array; ключ `"20"` как в dump.
+
+Bag `actions` = `FLAG_DROP\|FLAG_SELL\|FLAG_USE` = **7**, без PUT_ON.
+Starter: 9095×1, 93×2, 99×10, **77×4** bag.
+
+### Public ports
+
+- `useFromBag({ characterId, itemId })` — lock items, consume по `dispose`;
+- catalog `artifact(id).useAction` — первая typed action или отсутствует;
+- character: `syncResources` + `noteHp` на locked hero в OA UoW.
+
+OA: новый `UseArtifactCommand`, не ветка внутри PUT_ON. Новых URL нет.
+
+### Out of scope
+
+ADD_MP, DRINK/TEMPEFFECT, books/`bonus_id`, waiting, openDialog, recipes,
+ghost, pocket cast, refill after fight, durability.
+
+### INV-04 acceptance
+
+- unit: percent/abs ADD_HP, missing param fail-fast, actions=7 vs empty `{}`;
+- integration: consume last charge deletes row; concurrent USE one winner;
+  rollback leaves HP and cnt;
+- raw-AMF: wounded USE 77 → HP +gain, cnt−1, flat USE; full HP consumes;
+  fight `203`; 9095/93/99 `203`; reconnect;
+- CEF: съесть мясо из bag, стак падает; без каста в бою;
+- нет fake OA; нет хлеба/маны/DRINK.
 
 ## Architecture checkpoint — план
 
 Containers, reservations и durability schema по-прежнему не спроектированы.
-Следующий inventory checkpoint — `INV-04`; quest-aware item actions — `IUS-01`.
+Следующий inventory checkpoint после INV-04 — quest-aware `IUS-01`; DRINK /
+ADD_MP — отдельный срез, когда появится dump-proven артикул.
 Процесс: [ROADMAP.md](../migration/ROADMAP.md) и
 [PLAYBOOK.md](../migration/PLAYBOOK.md).
 
@@ -386,4 +472,5 @@ Containers, reservations и durability schema по-прежнему не спр�
 - malformed/missing catalog data дают explicit error;
 - raw-AMF response сохраняет legacy flat shape;
 - paperdoll 9095 **готово** подтверждён CEF PUT_ON (статы и bag);
-- DROP throw-away 9095 **готово** подтверждён CEF из bag.
+- DROP throw-away 9095 **готово** подтверждён CEF из bag;
+- pocket 93/99 **готово** подтверждён CEF PUT_ON на пояс.
