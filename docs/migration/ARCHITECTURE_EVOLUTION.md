@@ -60,9 +60,14 @@ writes выполняются в одной Unit of Work; active combat state и
 не участвуют. Optimistic `version` не заменяет row lock и persisted idempotency
 key.
 
-Отдельный `ARC-CHAR` потребуется позже только если regeneration/death/settlement
-невозможно добавить без второго authoritative maxima, cross-module write из
-character или циклической module dependency.
+**Решение CHR-02:** текущих границ достаточно. Lazy HP regen живёт на том же
+hero aggregate с `regen_at` и injected `Clock`. Combat отдаёт только
+`isHeroInActiveFight`; character не пишет fight RAM и не читает combat tables.
+`mp_time` не получает invented formula. Ghost/injury по-прежнему `CMB-04`.
+
+Отдельный `ARC-CHAR` потребуется позже только если death/settlement невозможно
+добавить без второго authoritative maxima, cross-module write из character
+или циклической module dependency.
 
 ### `ARC-WORLD` — ownership местоположения
 

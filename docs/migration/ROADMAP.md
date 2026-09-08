@@ -106,20 +106,31 @@
   product-status `partial` and has no independent CEF gate.
 - **Status:** `done`
 
-### CHR-02 — HP/MP regeneration
+### CHR-02 — out-of-combat HP regeneration
 
 - **ID:** `CHR-02`
 - **depends_on:** `CHR-01`
-- **Behavior evidence:** legacy `HP_REGEN.md`, fight lifecycle and
+- **Behavior evidence:** legacy `HP_REGEN.md`, `src/regen.ts` and
   [CHARACTER.md](../modules/CHARACTER.md).
-- **Content set:** validated HPREG policy fields; runtime timestamps are player
-  state, not content.
-- **Architecture checkpoint / decision:** pending — decide clock ownership,
-  persisted timestamps, lazy calculation and combat resource snapshot
-  boundary. Ghost/injury/resurrection remain `CMB-04`.
-- **Acceptance:** HP/MP regeneration is deterministic from persisted time
-  across reconnect/restart, clamps to current maxima and pauses in combat
-  without requiring a per-hero background ticker.
+- **Content set:** existing published `HPREG` skill; `RegenPolicy.k=250` in
+  game policy with provenance `legacy behavior / empirical`. Runtime
+  `hp`/`hp_time`/`regen_at` are player state, not content. `MPREG` / mana
+  regen is a documented research gap: `mp_time` stays the HUD default `0`.
+- **Architecture checkpoint / decision:** complete — existing ADRs and the
+  hero aggregate are sufficient; no `ARC-CHAR`. Character owns lazy HP regen
+  under the hero row lock; a shared injected `Clock` is authoritative;
+  combat supplies a read-only active-fight query so character does not import
+  fight RAM. Ghost/injury/resurrection remain `CMB-04`. Full contract:
+  [CHARACTER.md](../modules/CHARACTER.md).
+- **Acceptance:** wounded HP regenerates from persisted `regen_at` on
+  resource reads and mutations; `hp_time` is remaining seconds from
+  `max(1, round(deficit * 250 / HPREG))` while deficit > 0; full HP and
+  active fight yield `hp_time=0` without writing `regen_at`; missing or
+  non-positive `HPREG` while wounded and clock regression fail without
+  mutation. ATTACK_BOT syncs before `startHunt`. Reconnect/restart and a
+  fake clock (same instance across harness restart) are required. No
+  per-hero ticker, no invented MP formula, no fake OA, no CEF gate until
+  combat persists HP.
 - **Status:** `next`
 
 ### INV-02 — Bag rules and DROP
@@ -241,7 +252,7 @@
 ### CMB-03 — Terminal settlement and loot
 
 - **ID:** `CMB-03`
-- **depends_on:** `CMB-01`, `CMB-02`, `CHR-01`, `RTM-01`
+- **depends_on:** `CMB-01`, `CMB-02`, `CHR-01`, `CHR-02`, `RTM-01`
 - **Behavior evidence:** legacy `FIGHT_LOOT.md`, `FIGHT_MODEL.md`,
   `CHARACTER_STATS.md`, wire finish evidence and
   [COMBAT.md](../modules/COMBAT.md).
@@ -249,8 +260,9 @@
 - **Architecture checkpoint / decision:** pending — define one terminal
   orchestration transaction across character/inventory ports and post-commit
   realtime delivery.
-- **Acceptance:** win/loss/leave settles exactly once, persists HP/EXP/level and
-  loot, then emits ordered loot/exit without ResultWaiting.
+- **Acceptance:** win/loss/leave settles exactly once, persists HP via
+  `noteHp`, EXP/level and loot, then emits ordered loot/exit without
+  ResultWaiting.
 - **Status:** `queued`
 
 ### CMB-04 — Reconnect, locks and history

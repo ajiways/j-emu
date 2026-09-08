@@ -7,9 +7,10 @@ Bootstrap закрыт: raw-AMF E2E и реальный CEF smoke-test пока�
 port: EXP/level и managed skills пишутся в PostgreSQL, raw-AMF init/init2
 показывают final boundary после reconnect/restart. Клиентского OA и CEF
 level-up нет до CMB-03/quests, поэтому character progression остаётся
-частичным. Regeneration, honor и ghost/injury не входят. Equipment-derived
-VIT/hpMax считаются после PUT_ON; без экипа HUD показывает naked L1 (VIT 10).
-Точный статус: [CAPABILITIES.md](../CAPABILITIES.md).
+частичным. CHR-02 (lazy HP regen) ещё не реализован. Honor и ghost/injury не
+входят. Equipment-derived VIT/hpMax считаются после PUT_ON; без экипа HUD
+показывает naked L1 (VIT 10). Точный статус:
+[CAPABILITIES.md](../CAPABILITIES.md).
 
 ## Источники поведения
 
@@ -225,10 +226,128 @@ CHR-01 implementation закрыт как internal enabling capability: producti
 бессодержательного CEF сценария. Первый реальный consumer обязан добавить
 raw-AMF и CEF acceptance.
 
-`CHR-02` после него задаёт authoritative regeneration timestamps и lazy
-calculation. Ghost/injury/RESURRECT относятся к `CMB-04`; honor progression — к
-его собственной capability. Порядок: [ROADMAP.md](../migration/ROADMAP.md),
-workflow — [PLAYBOOK.md](../migration/PLAYBOOK.md).
+## CHR-02 — out-of-combat HP regeneration
+
+### Architecture decision
+
+Отдельный `ARC-CHAR` не нужен. Authoritative HP/maxima уже на hero;
+`HPREG` — naked skill + equipped modifiers, как VIT. Clock — shared kernel
+`Clock`, один экземпляр из composition root (character, wire, combat).
+Background ticker на героя запрещён.
+
+Mana regen **не изобретается**. Live/legacy `mp_time` формула не закрыта
+(`HP_REGEN.md`); текущий wire берёт `mp_time` из HUD defaults (`0`). CHR-02
+оставляет это как явный research gap, а не копирует HP-формулу на MP.
+
+Ghost/injury/RESURRECT не входят: колонки и ветки ghost нет, 0 HP регенится
+как обычный deficit до `CMB-04`.
+
+Character не импортирует combat domain. Composition передаёт read-only
+`ActiveFightQuery.isHeroInActiveFight(characterId)`. Реализация — адаптер
+`characterId → accountId → CombatPort.activeFightId` (account↔hero 1:1).
+Второй RAM index по `heroId` не нужен. Отсутствующий port — ошибка сборки
+модуля, не `inFight=false`.
+
+### Formula and policy
+
+Происхождение `K=250` — empirical live dump, метка `legacy behavior / empirical`,
+не live PHP-константа. Значение живёт в versioned `RegenPolicy` game policy,
+не в catalog и не как скрытый литерал в нескольких файлах.
+
+```
+rate = HPREG / K HP/sec
+hp_time = deficit <= 0 ? 0 : max(1, round(deficit * K / HPREG))
+```
+
+`hp_time=0` на клиенте значит «не регенится». Пока deficit > 0, remaining
+seconds не может округлиться в 0 (иначе starter HPREG 700 и deficit 1
+выглядят как полный HP). Это named client contract, не fallback для
+отсутствующего HPREG.
+
+`HPREG` — `requiredSkillTotal` naked+equipment той же pinned release, что и
+другие totals. `Math.max(1, hpreg)` legacy fallback запрещён: при deficit>0
+отсутствие или non-positive total — typed error без мутации.
+
+Elapsed считается целыми unix-секундами `Clock.unixSeconds() - regen_at`.
+`now < regen_at` — ошибка часов/состояния (init/unitframe тогда `204`),
+elapsed не клампится в 0. Начисление:
+`hp = min(hpMax, floor(hp + rate * elapsed))`, затем `hp_time` от нового
+deficit. Клиентский UI (`deficit / hp_time` раз в секунду) не является
+authority.
+
+Дробный прогресс живёт в непреписанном `regen_at`. Persist только если
+изменились `hp` или `hp_time`; тогда `regen_at = truncated now`. Sync,
+который не дал целого HP и оставил тот же `hp_time`, **не** двигает
+`regen_at` — иначе `floor(rate * elapsed)` никогда не накопит 1 HP.
+
+### Public ports
+
+- `syncResources({ characterId })` — lock hero, спросить active fight, применить
+  elapsed либо pause; persist только при изменении `hp` или `hp_time`;
+- `noteHp({ characterId, hp })` — authoritative HP write для будущего CMB-03 и
+  тестов: lock, записать `hp` в `[0, maxHp]`, пересчитать `hp_time` от нового
+  deficit, `regen_at` = unix-second truncated now. Elapsed старого дефицита не
+  применяется поверх нового HP.
+
+Оба порта на `Application` рядом с `grantExperience` (test/composition façade,
+не OA). Идемпотентный replay `grantExperience` всё равно вызывает
+`syncResources` после lock: duplicate grant — не no-op для регена.
+
+`inActiveFight=true`: HP и `regen_at` не меняются и не персистятся; для wire
+`hp_time=0` overlay. Нельзя сдвигать `regen_at` в бою. Следствие: после выхода
+из боя следующий `syncResources` начислит elapsed, включая длительность боя,
+пока CMB-03 не сделает `noteHp` и не сбросит часы. Это legacy persist, не баг
+CHR-02.
+
+`ActiveFightQuery` реализуется адаптером `characterId → accountId →
+CombatPort.activeFightId`. Account↔hero 1:1; второй RAM index по heroId не
+нужен. Отсутствующий port — ошибка сборки модуля.
+
+Read model не пишет domain state. OA `init`/`init2`/`user|unitframe`/PUT_ON/OFF
+и ATTACK_BOT оборачивают lock + `syncResources` в Unit of Work, затем
+BootstrapReadModel только читает.
+
+ATTACK_BOT: `syncResources` при ещё отсутствующем fight (`inFight=false`),
+затем `startHunt`, затем unitframe с overlay `hp_time=0`. Sync после
+`startHunt` проглотил бы pre-fight elapsed вместе с fight wall-clock.
+
+PUT_ON/grant: сначала `syncResources`, потом мутация maxima/HP, потом пересчёт
+`hp_time` как после `noteHp`.
+
+Clock: один экземпляр из composition root в character, identity, combat и
+wire. CharacterModule создаётся после CombatModule (нужен query) и принимает
+`Clock` + `RegenPolicy` + `ActiveFightQuery`. `ApplicationHarness` /
+`CompositionRoot.build` принимают optional `Clock` для fake-clock E2E.
+Restart теста с fake clock обязан передать тот же clock; иначе новый
+`SystemClock` ломает timeline. Fake реализует и `now()`, и `unixSeconds()`
+согласованно.
+
+### Persistence
+
+CHR-02 добавляет `character.heroes.regen_at timestamptz NOT NULL`. `hp_time`
+уже есть и остаётся remaining seconds для `user|unitframe`. Creation: полные
+naked HP/MP, `hp_time=0`, `regen_at` = unix-second truncated now. Policy больше
+не хранит startup `hpTime`. Миграция backfill существующих hero: `regen_at` =
+момент migrate (unix-second truncated now). Колонки `updated_at` нет — её не
+выдумывать.
+
+### CHR-02 acceptance
+
+- unit: K=250 samples из `HP_REGEN.md` (deficit 42/40/14/2 при HPREG=300),
+  `hp_time` floor 1 при deficit 1 / HPREG 700, full HP, leftover `hp_time` at
+  full, in-fight pause without `regen_at` write, sub-HP elapsed does not move
+  `regen_at`, clock regression, missing HPREG while wounded, HPREG gear
+  change updates `hp_time` without instant full heal;
+- integration: persist `regen_at`, backfill, reconnect/restart, concurrent
+  sync, rollback, grant replay still syncs, equip after wound, active fight
+  via account-keyed `ActiveFightQuery`;
+- raw-AMF: `noteHp` then `init`/`user|unitframe` show `hp`/`hp_time`; fake
+  clock advances; harness restart передаёт тот же clock; `mp_time` остаётся
+  HUD `0`; ATTACK_BOT sync-before-start;
+- нет ticker, нет fake OA, нет CEF gate (бой ещё не персистит HP).
+
+Первый consumer, который пишет HP с боя (CMB-03), наследует CEF acceptance
+регена.
 
 ## Acceptance
 

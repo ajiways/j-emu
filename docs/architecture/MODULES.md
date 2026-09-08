@@ -58,7 +58,7 @@
 
 **Владеет:** персонажем, именем и внешностью, уровнем/опытом, базовыми ресурсами, навыками, репутациями, настройками, текущим состоянием жизни. Координата персонажа хранится в `world`.
 
-**API:** `createCharacter`, `getCharacter`, `getCharacterSheet`, `grantExperience`, `changeResource`, `setAppearance`, `setPreference`, `grantReputation`.
+**API:** `createCharacter`, `getCharacter`, `getCharacterSheet`, `grantExperience`, `syncResources`, `noteHp`, `setAppearance`, `setPreference`, `grantReputation`.
 
 **События:** `character.created.v1`, `character.level-changed.v1`, `character.sheet-changed.v1`, `character.defeated.v1`.
 

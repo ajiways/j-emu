@@ -54,8 +54,8 @@ level_before, level_after, content_release_id, progression_digest, created_at)`
 `user|save_personal_details`. Строка обязательна для каждого героя; её
 отсутствие является ошибкой целостности, а не пустым объектом. Merge пишет
 целиком, без `jsonb_set`. HP/MP/EXP и naked max values хранятся скалярами героя,
-naked skills — отдельными строками `hero_skills`. Regeneration timestamps и
-репутации ещё нет.
+naked skills — отдельными строками `hero_skills`. `hp_time` уже колонка
+remaining seconds, но runtime пока отдаёт 0. Репутации ещё нет.
 
 ### `inventory`
 
@@ -168,9 +168,11 @@ hud_defaults|chrome|common_conf|welcome_message`.
 
 ### `character`
 
-Полная regeneration policy, reputations и расширенная statistics model остаются
-планом. `experience_grants`, `hero_skills`, HP/MP/EXP и appearance bootstrap
-уже находятся в runtime и не являются будущими таблицами.
+Mana regen (`MPREG`/`mp_time` formula), ghost/injury timestamps, reputations и
+расширенная statistics model остаются планом. CHR-02 добавляет
+`heroes.regen_at timestamptz NOT NULL` и делает `hp_time` живым remaining-time
+полем. `experience_grants`, `hero_skills`, HP/MP/EXP и appearance bootstrap
+уже находятся в runtime.
 
 ### `inventory`
 

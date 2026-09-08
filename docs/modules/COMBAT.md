@@ -34,11 +34,17 @@ HP/EXP/level, loot и inventory/reward state в текущем minimal slice н�
 реализован. Finished history записывается best-effort на 72 часа и не является
 source of truth результата.
 
+CHR-02 читает только `ActiveFightQuery.isHeroInActiveFight(characterId)` через
+account-keyed `CombatPort.activeFightId`. Combat не пишет `heroes.hp` /
+`hp_time` в этом срезе; `noteHp` появится у character как будущий CMB-03
+input.
+
 ## Wire lifecycle
 
 Текущий minimal hunt flow:
 
-1. ATTACK_BOT создаёт battle и возвращает `fight|conf`.
+1. ATTACK_BOT сначала `syncResources` (боя ещё нет), затем создаёт battle и
+   возвращает `fight|conf` и unitframe с overlay `hp_time=0`.
 2. fproxy auth связывает client с process-owned fight.
 3. Poll получает minimal terminal packet flow.
 4. Terminal result добавляется в finished history.
