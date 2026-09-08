@@ -67,9 +67,9 @@ E2E harness, quality gates и process-local active combat уже заданы.
 - PUT_ON, PUT_OFF, DROP, stacks, capacity и stat recalculation;
 - подтверждённые USE pipelines, нужные циклу 1–8.
 
-Текущий срез: paperdoll `PUT_ON`/`PUT_OFF` для перчатки 9095 есть в runtime и
-raw-AMF E2E. Inventory остаётся **частично** до реального CEF-прогона. DROP,
-stack/capacity, durability и USE — следующий inventory capability.
+Текущий срез: paperdoll `PUT_ON`/`PUT_OFF` для перчатки 9095 **готово** (E2E и
+CEF). DROP, stack/capacity, durability и USE — следующий inventory capability.
+Character progression (regen, level-up) остаётся частичной.
 
 Готово, когда мутации совпадают в текущем UI и после reconnect.
 

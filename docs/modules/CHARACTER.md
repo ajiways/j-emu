@@ -62,5 +62,5 @@ Registration/dev-slot создаёт hero+skills+tutorial details+starter invent
 - отсутствующий обязательный catalog/hero block не маскируется пустым
   `status:100`;
 - bootstrap **готово** в CAPABILITIES подтверждён CEF HUD/location smoke-test;
-  character progression остаётся частичной. Equipment totals проверяются E2E
-  PUT_ON, не CEF-прогоном.
+  character progression остаётся частичной. Equipment totals 9095 подтверждены
+  CEF PUT_ON.

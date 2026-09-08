@@ -58,12 +58,20 @@ bootstrap.
 Equipment-derived `user|skills` / `hpMax` считаются из naked skills + надетых
 предметов (перчатка 9095 даёт VIT+5). Без экипа HUD показывает naked L1.
 
-## Inventory — частично
+## Inventory equipment — готово
 
-Есть catalog projection, stable item instance IDs, starter items, чтение bag и
-paperdoll `PUT_ON`/`PUT_OFF` (перчатка 9095, live picture `greyset5_lhand.png`,
-slot 32, `common|action`/`common|object`, reconnect/restart, raw-AMF E2E).
-Статус **готово** не ставится до подтверждённого клиентского прогона.
+Есть raw-AMF E2E и подтверждённый CEF-прогон: перчатка 9095 надевается,
+иконка/статы карточки видны, paperdoll slot 32, bag освобождается, HUD stats
+меняются.
+
+- catalog projection и stable item instance IDs;
+- starter 9095 в bag (`greyset5_lhand.png`, `artifact_skills`);
+- `PUT_ON`/`PUT_OFF` через `common|action` и `common|object`;
+- occupancy displace, level/gender/type gates (`203` + `error`);
+- согласованный flat bag/view/pocket/skills/unitframe/conf/state;
+- equipment vitals на mutation, bootstrap и reconnect/restart.
+
+## Inventory — частично
 
 Не перенесены DROP, stack/capacity rules, durability, pocket merge и USE
 pipelines.

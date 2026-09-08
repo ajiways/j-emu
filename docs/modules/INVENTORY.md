@@ -2,9 +2,9 @@
 
 ## Статус
 
-Перенесены catalog projection, stable item IDs, starter items, чтение bag и
-paperdoll `PUT_ON`/`PUT_OFF` для перчатки 9095. Статус **готово** в
-[CAPABILITIES.md](../CAPABILITIES.md) требует подтверждённый клиентский прогон.
+Paperdoll `PUT_ON`/`PUT_OFF` для перчатки 9095 **готово**: raw-AMF E2E и
+реальный CEF-прогон (экип, статы, пересчёт места в bag). Точный статус:
+[CAPABILITIES.md](../CAPABILITIES.md).
 
 Не перенесены DROP/void-sell, stack/capacity, durability/repair, pocket
 merge/split/swap и USE pipelines.
@@ -87,4 +87,4 @@ Naked skills остаются в `hero_skills`. Totals и `hpMax`/`mpMax` счи
 - item IDs остаются стабильными после restart;
 - malformed/missing catalog data дают explicit error;
 - raw-AMF response сохраняет legacy flat shape;
-- статус **готово** требует реальный клиентский PUT_ON 9095.
+- paperdoll 9095 **готово** подтверждён CEF PUT_ON (статы и bag).
