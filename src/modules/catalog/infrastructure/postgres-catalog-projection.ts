@@ -95,6 +95,8 @@ async function insertArtifacts(
       priceMinor: artifact.priceMinor,
       flags: artifact.flags,
       bagStack: artifact.bagStack,
+      durability: artifact.durability,
+      durabilityMax: artifact.durabilityMax,
       skills: artifact.skills,
       artifactActions: artifact.artifact_actions,
       extra: artifact.extra,

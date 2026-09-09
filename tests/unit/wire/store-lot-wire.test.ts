@@ -22,6 +22,8 @@ describe("storeLotWire", () => {
       levelMin: 2,
       levelMax: 0,
       flags: 0,
+      durability: 30,
+      durabilityMax: 30,
       skills: {},
     });
     expect(wire.title).toBe("Простая магическая перчатка");
@@ -29,6 +31,8 @@ describe("storeLotWire", () => {
     expect(wire.lot_id).toBe(80);
     expect(wire.cnt).toBe(0);
     expect(wire.price).toBe(1);
+    expect(wire.durability).toBe(30);
+    expect(wire.durability_max).toBe(30);
   });
 
   it("rejects a missing catalog title instead of substituting Артикул", () => {
@@ -42,6 +46,8 @@ describe("storeLotWire", () => {
         levelMin: 2,
         levelMax: 0,
         flags: 0,
+        durability: 30,
+        durabilityMax: 30,
         skills: {},
       }),
     ).toThrow(/title is required/);

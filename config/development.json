@@ -31,6 +31,21 @@
       "location": { "kind": "bag" }
     },
     {
+      "artifactId": 20,
+      "quantity": 1,
+      "location": { "kind": "bag" }
+    },
+    {
+      "artifactId": 21,
+      "quantity": 1,
+      "location": { "kind": "bag" }
+    },
+    {
+      "artifactId": 26,
+      "quantity": 1,
+      "location": { "kind": "bag" }
+    },
+    {
       "artifactId": 93,
       "quantity": 2,
       "location": { "kind": "bag" }

@@ -118,6 +118,8 @@ function placeIntoSlot(item: InventoryItem, slot: number, maxCnt: number): Pocke
           artifactId: item.artifactId,
           quantity: move,
           location: { kind: "pocket", position: slot },
+          durability: item.durability,
+          durabilityMax: item.durabilityMax,
         },
       ],
       delete: [],

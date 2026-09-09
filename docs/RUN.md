@@ -26,23 +26,10 @@ npm run db:reset
 Тестовая БД сбрасывается только `npm run test:integration` / `test:e2e`.
 
 Тот же publish-скрипт на уже заполненной БД: совпавший checksum — no-op;
-новый checksum — новая активная release. После миграции `0002_world_location_scalars`
-сначала migrate, затем publish: миграция очищает устаревшие `world`/`catalog.bots`
-projection-строки. После `0013_catalog_artifact_extra` migrate ставит
-`extra = {}` на старые строки; hunt с эликсиром 93/орбом 99 падает, пока не
-опубликован `playable-slice/v11` с dump-proven `extra.spell`. После
-`0014_catalog_bot_loot` migrate ставит reward scalars `0` на старые `bots`;
-охота с CMB-03 наградой падает, пока не опубликован `playable-slice/v12`.
-После `0015_character_ghost_injury` migrate ставит `ghost=false` и injury `0`
-на старые `heroes`; runtime всё равно пишет явные значения. После
-`0016_catalog_store_types_lots` migrate создаёт пустые `store_types`/`store_lots`;
-лавка 504 list/buy пуста, пока не опубликован `playable-slice/v13` или новее.
-После `0017_catalog_reputation_tracks` migrate создаёт пустые
-`reputation_tracks` / `hero_reputations`; `user|stats` без опубликованного
-track 5 не содержит type:2, грант падает, пока не опубликован
-`playable-slice/v14`. Смена
-checksum витрины (например, только type `-131`) требует повторный
-`npm run db:publish:development`.
+новый checksum — новая активная release. Смена checksum витрины (например,
+только type `-131`) требует повторный `npm run db:publish:development`.
+До baseline схема — одна `0000_foundation_init`; несовпавший ledger —
+`db:reset`, не правка SQL.
 
 ## HTTP :8080 (браузер без CEF)
 

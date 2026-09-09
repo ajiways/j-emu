@@ -4,8 +4,8 @@
 
 Срез REP-01 реализован на raw-AMF: catalog track **5**, `grantReputation`, OA
 `user|stats`. CEF экран репутации не обязателен. Product-status остаётся
-**частично**: [CAPABILITIES.md](../CAPABILITIES.md). ROADMAP `next` не
-меняется в этом срезе.
+**частично**: [CAPABILITIES.md](../CAPABILITIES.md). Workflow-статус в
+[ROADMAP.md](../migration/ROADMAP.md) — `done`.
 
 ## Источники поведения
 
@@ -32,7 +32,7 @@ Pred `REPUTATION` в q_1…q_8 нет. `reputation_kills.json` не содерж
 
 ## Content set
 
-`playable-slice/v14`: один track **5** из `reputation_tracks.json` (title
+`playable-slice/v15` (track **5** с v14): один track **5** из `reputation_tracks.json` (title
 «Репутация Радвея», image `rep_radvey_sm.png`, type 2, без unlock_flag). Track
 **36** в catalog не публиковать. Остальные треки и `reputation_kills` — DATA-05
 / позже.

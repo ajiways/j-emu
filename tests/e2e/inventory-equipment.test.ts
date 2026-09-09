@@ -41,7 +41,7 @@ describe("inventory equipment", () => {
       sq: 2,
     });
     expect(putOn["common|action"]).toEqual({ status: 100 });
-    expect(objectBlock(putOn["user|bag"])).toMatchObject({ status: 100, amount: 2, total: 3 });
+    expect(objectBlock(putOn["user|bag"])).toMatchObject({ status: 100, amount: 5, total: 6 });
     const equipped = firstArtifact(putOn["user|view"]);
     expect(equipped).toMatchObject({
       id: itemId,
@@ -74,7 +74,7 @@ describe("inventory equipment", () => {
     application = await harness.restart();
     const again = new AuthenticatedClient(application, client.cookie);
     const afterRestart = await again.objectAction({ object: "common", action: "init", sq: 20 });
-    expect(objectBlock(afterRestart["user|bag"]).amount).toBe(2);
+    expect(objectBlock(afterRestart["user|bag"]).amount).toBe(5);
     expect(skillValue(afterRestart["user|skills"], "VIT")).toBe(15);
     const viewAfter = await again.objectAction({ object: "user", action: "view", sq: 21 });
     expect(firstArtifact(viewAfter["user|view"])).toMatchObject({

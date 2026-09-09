@@ -47,6 +47,8 @@ export async function grantToBag(
       artifactId: command.artifactId,
       quantity: take,
       location: { kind: "bag" },
+      durability: definition.durability,
+      durabilityMax: definition.durabilityMax,
     });
     items.push(created);
     remaining -= take;

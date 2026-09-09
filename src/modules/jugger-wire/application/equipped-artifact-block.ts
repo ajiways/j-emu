@@ -17,6 +17,8 @@ export type EquippedArtifactBlock = Readonly<{
   level_min: number;
   level_max: number;
   cnt: 0;
+  durability: number;
+  durability_max: number;
   actions: typeof FLAG_PUT_OFF;
   artifact_skills: Readonly<Record<string, ArtifactSkillWireBlock>>;
   artifact_actions: Readonly<Record<string, never>>;
@@ -49,6 +51,8 @@ export function buildEquippedArtifact(
     level_min: definition.levelMin,
     level_max: definition.levelMax,
     cnt: 0,
+    durability: item.durability,
+    durability_max: item.durabilityMax,
     actions: FLAG_PUT_OFF,
     artifact_skills: artifactSkills,
     artifact_actions: {},

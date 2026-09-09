@@ -35,6 +35,8 @@ export async function buildStoreListBlock(
         levelMin: artifact.levelMin,
         levelMax: artifact.levelMax,
         flags: artifact.flags,
+        durability: artifact.durability,
+        durabilityMax: artifact.durabilityMax,
         skills: await artifactSkillWireMap(artifact.skills, catalog),
       }),
     );

@@ -20,6 +20,8 @@ export function artifactDefinitionFromRow(row: {
   skills: unknown;
   artifactActions: unknown;
   extra: unknown;
+  durability: number;
+  durabilityMax: number;
 }): ArtifactDefinition {
   return new ArtifactDefinition(
     row.id,
@@ -38,5 +40,7 @@ export function artifactDefinitionFromRow(row: {
     artifactSkillsFromJson(row.id, row.skills),
     artifactUseActionsFromJson(row.id, row.artifactActions),
     artifactExtraFromJson(row.id, row.extra),
+    row.durability,
+    row.durabilityMax,
   );
 }

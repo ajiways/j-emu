@@ -29,6 +29,8 @@ export class PostgresInventoryRepository implements InventoryRepository {
         locationKind: item.location.kind,
         pocketPosition,
         equipmentSlot,
+        durability: item.durability,
+        durabilityMax: item.durabilityMax,
         version: 1,
       })
       .returning();
@@ -40,6 +42,8 @@ export class PostgresInventoryRepository implements InventoryRepository {
       row.artifactId,
       row.quantity,
       this.location(row),
+      row.durability,
+      row.durabilityMax,
     );
   }
 
@@ -57,6 +61,8 @@ export class PostgresInventoryRepository implements InventoryRepository {
         locationKind: item.location.kind,
         pocketPosition,
         equipmentSlot,
+        durability: item.durability,
+        durabilityMax: item.durabilityMax,
         version: 1,
       })
       .onConflictDoUpdate({
@@ -66,6 +72,8 @@ export class PostgresInventoryRepository implements InventoryRepository {
           locationKind: item.location.kind,
           pocketPosition,
           equipmentSlot,
+          durability: item.durability,
+          durabilityMax: item.durabilityMax,
           version: sql`${items.version} + 1`,
         },
       });
@@ -98,6 +106,8 @@ export class PostgresInventoryRepository implements InventoryRepository {
           row.artifactId,
           row.quantity,
           this.location(row),
+          row.durability,
+          row.durabilityMax,
         ),
     );
   }

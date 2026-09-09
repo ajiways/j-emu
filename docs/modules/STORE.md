@@ -121,8 +121,17 @@ Dump-proven отказы **status 2** + `error` (это live store, не 203/204
 
 Ghost buy: **203** + `error` (не status 2). Fight: не блокировать.
 
-`store|repair`, OPEN_STORE, NPC board, diamond `price_type:3`, bag-artikul
-currency, dual-badge — out of scope.
+OPEN_STORE, NPC board, diamond `price_type:3`, bag-artikul currency,
+dual-badge — out of scope.
+
+## INV-05 — `store|repair`
+
+OA уже существует как `store|*`; ремонт — inventory state + character
+`debitMoney`, не новый store catalog. Live `handleStoreRepair` не требует
+`area.code=store`. Composition `StoreRepair` в `src/app`. Контракт
+формулы и ошибок — [INVENTORY.md](INVENTORY.md) INV-05.
+
+`store|list` durability/durability_max — catalog template на лоте.
 
 ## Fail-fast
 
@@ -140,7 +149,7 @@ currency, dual-badge — out of scope.
 ## Out of scope
 
 ECO-02 полный `stores/*.json`; DATA-02 catalog; RANK/REPUTATION; diamonds;
-dungeon coins 724; `store|repair`; quest signals; economy ledger; `assertStoreEntry`.
+dungeon coins 724; quest signals; economy ledger; `assertStoreEntry`.
 Пустые вкладки `159`/`10`/`21` без лотов. SQL FK `store_types` → `world.areas`
 нет: area проверяет publication. Ghost `203` несёт `GhostHeroError` message
 (английский `cannot debitMoney while ghosted`); dump-proven русский toast
@@ -156,5 +165,8 @@ row lock, как DROP.
 - raw-AMF: COME_IN 504 → `store|list` type `-131`, лоты 23 и 24; buy обоих
   (starter `25.00` → `23.00`), bag instances, reconnect/restart; buy в 503 →
   2; пустая корзина → 2; неизвестный лот → 2; ghost → 203;
+- raw-AMF `store|repair`: 9095 0/3 → 2/2 без списания; 20 → 29/29 и `24.98`;
+  already-full 203; ghost не блокирует;
 - CEF: лавка, купить перчатку и наруч, иконки в bag — обязательно для
-  product **готово**; до CEF store остаётся неперенесённым / частичным.
+  product **готово**; до CEF store остаётся частичным. Мастерская INV-05
+  тоже без CEF.

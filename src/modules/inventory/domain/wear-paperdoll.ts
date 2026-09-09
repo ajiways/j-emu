@@ -1,6 +1,8 @@
 import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
 import type { InventoryItem } from "./inventory-item.ts";
 import { isPaperdollSlotMask, pickPaperdollSlot } from "./paperdoll-slot.ts";
+import { BrokenItemError } from "./broken-item-error.ts";
+import { instanceDurability, isBroken } from "./durability.ts";
 import { WearDeniedError } from "./wear-denied-error.ts";
 
 export type WearHero = Readonly<{
@@ -25,6 +27,9 @@ export function requireWearablePaperdoll(
   }
   if (item.location.kind !== "bag") {
     throw new WearDeniedError("Этот предмет нельзя надеть");
+  }
+  if (isBroken(instanceDurability(item.durability, item.durabilityMax, definition.flags))) {
+    throw new BrokenItemError();
   }
   if (!isPaperdollSlotMask(definition.slotMask)) {
     throw new WearDeniedError("Этот предмет нельзя надеть");

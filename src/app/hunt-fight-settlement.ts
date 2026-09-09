@@ -1,5 +1,7 @@
 import type { ArtifactDefinition } from "../modules/catalog/domain/artifact-definition.ts";
+import type { ArtifactSkillBonus } from "../modules/catalog/domain/artifact-skill-bonus.ts";
 import type { Catalog } from "../modules/catalog/ports/catalog.ts";
+import type { Hero } from "../modules/character/domain/hero.ts";
 import type { CharacterMoney } from "../modules/character/ports/character-money.ts";
 import type { CharacterProgression } from "../modules/character/ports/character-progression.ts";
 import type { CharacterResources } from "../modules/character/ports/character-resources.ts";
@@ -29,7 +31,13 @@ import type {
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
 
-type SettlementCharacters = CharacterResources & CharacterProgression & CharacterMoney;
+type SettlementCharacters = CharacterResources &
+  CharacterProgression &
+  CharacterMoney &
+  Readonly<{
+    lockById(characterId: number): Promise<Hero>;
+    applyEquipmentVitals(hero: Hero, bonuses: readonly ArtifactSkillBonus[]): Promise<Hero>;
+  }>;
 
 export class HuntFightSettlement implements FightSettlement {
   private readonly finished = new Map<string, Map<number, FightLootBlock>>();
@@ -49,6 +57,7 @@ export class HuntFightSettlement implements FightSettlement {
     this.left.add(key);
     return this.unitOfWork.run(async () => {
       await persistFightHp(this.characters, snapshot.characterId, snapshot.hp);
+      await this.applyDeathIfDefeated(snapshot.characterId, snapshot.hp);
       await this.inventory.refillPocketAfterFight({
         characterId: snapshot.characterId,
         cells: snapshot.pocket,
@@ -95,6 +104,7 @@ export class HuntFightSettlement implements FightSettlement {
         const drops = isTop ? rolled : [];
         if (!human.leftLive) {
           await persistFightHp(this.characters, human.characterId, human.hp);
+          await this.applyDeathIfDefeated(human.characterId, human.hp);
           await this.inventory.refillPocketAfterFight({
             characterId: human.characterId,
             cells: human.pocket,
@@ -134,6 +144,20 @@ export class HuntFightSettlement implements FightSettlement {
     });
     this.finished.set(outcome.fightId, lootByAccount);
     return lootByAccount;
+  }
+
+  private async applyDeathIfDefeated(characterId: number, hp: number): Promise<void> {
+    if (hp !== 0) return;
+    const result = await this.inventory.applyDeathDurability({
+      characterId,
+      random: this.random,
+    });
+    if (!result.paperdollChanged) return;
+    const hero = await this.characters.lockById(characterId);
+    await this.characters.applyEquipmentVitals(
+      hero,
+      await this.inventory.equippedSkillBonuses(characterId),
+    );
   }
 
   private async artikulList(

@@ -33,6 +33,8 @@ export const artifacts = catalogSchema.table(
     priceMinor: integer("price_minor").notNull(),
     flags: integer("flags").notNull(),
     bagStack: integer("bag_stack").notNull(),
+    durability: integer("durability").notNull(),
+    durabilityMax: integer("durability_max").notNull(),
     skills: jsonb("skills").notNull(),
     artifactActions: jsonb("artifact_actions").notNull(),
     extra: jsonb("extra").notNull(),
@@ -46,6 +48,9 @@ export const artifacts = catalogSchema.table(
     check("artifacts_price_minor_check", sql`${table.priceMinor} >= 0`),
     check("artifacts_flags_check", sql`${table.flags} >= 0`),
     check("artifacts_bag_stack_check", sql`${table.bagStack} >= 1`),
+    check("artifacts_durability_check", sql`${table.durability} >= 0`),
+    check("artifacts_durability_max_check", sql`${table.durabilityMax} >= 0`),
+    check("artifacts_durability_range_check", sql`${table.durability} <= ${table.durabilityMax}`),
   ],
 );
 

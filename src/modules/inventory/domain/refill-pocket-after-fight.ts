@@ -39,6 +39,8 @@ export async function refillPocketAfterFight(
         artifactId: cell.artifactId,
         quantity: taken,
         location: { kind: "pocket", position: cell.position },
+        durability: definition.durability,
+        durabilityMax: definition.durabilityMax,
       }),
     );
   }

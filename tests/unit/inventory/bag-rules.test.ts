@@ -50,8 +50,8 @@ describe("bag load", () => {
       skills: [],
     });
     const items = [
-      new InventoryItem(100_000, 1, 9095, 1, { kind: "bag" }),
-      new InventoryItem(100_001, 1, 1, 2, { kind: "bag" }),
+      new InventoryItem(100_000, 1, 9095, 1, { kind: "bag" }, 3, 3),
+      new InventoryItem(100_001, 1, 1, 2, { kind: "bag" }, 0, 0),
     ];
     const load = computeBagLoad(
       items,
@@ -71,7 +71,7 @@ describe("bag load", () => {
       flags: 0,
       skills: [new ArtifactSkillBonus("CAPACITY", 5, 0)],
     });
-    const items = [new InventoryItem(100_000, 1, 80, 1, { kind: "equipment", slot: 1 })];
+    const items = [new InventoryItem(100_000, 1, 80, 1, { kind: "equipment", slot: 1 }, 0, 0)];
     expect(computeBagLoad(items, new Map([[80, bag]]), 20)).toEqual({
       amount: 0,
       total: 0,

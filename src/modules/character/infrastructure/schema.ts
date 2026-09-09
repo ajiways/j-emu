@@ -45,7 +45,10 @@ export const heroes = characterSchema.table(
     regenAt: timestamp("regen_at", { withTimezone: true, mode: "date" }).notNull(),
     moveReadyAt: timestamp("move_ready_at", { withTimezone: true, mode: "date" }),
     ghost: boolean("ghost").notNull().default(false),
-    injuryTime: bigint("injury_time", { mode: "bigint" }).notNull().default(0n),
+    // drizzle-kit cannot serialize JS BigInt defaults (`0n`).
+    injuryTime: bigint("injury_time", { mode: "bigint" })
+      .notNull()
+      .default(sql`0`),
     injuryArtikulId: integer("injury_artikul_id").notNull().default(0),
     version: integer("version").notNull(),
   },

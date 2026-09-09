@@ -17,7 +17,9 @@ HTTPS fproxy consume кармана после успеха). CMB-03 landed: com
 CMB-04 landed: init2 `fight|conf` overlay на тот же RAM battle и character
 ghost/injury/`RESURRECT`, без таблиц active fight. ECO-01 landed: catalog
 витрина 504 type `-131` lots 23/24, character `debitMoney`, composition
-`StorePurchase`.
+`StorePurchase`. REP-01 landed: catalog track 5, `hero_reputations`, OA
+`user|stats`. INV-05 landed: instance durability columns, death −1 on
+settlement, composition `StoreRepair`.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение
@@ -162,12 +164,11 @@ character `debitMoney` + inventory `grantToBag`. Catalog владеет authored
 World уже владеет area 504 `code=store`. Dual-write hero↔economy wallet
 запрещён. Контракт: [STORE.md](../modules/STORE.md).
 
-**Решение REP-01:** текущих границ достаточно; отдельный `ARC-CHAR` не нужен.
-Catalog владеет authored `reputation_tracks` (slice: object_id **5**, type 2,
-empty unlock). Character владеет `hero_reputations` и `grantReputation`.
-Derived SUM **36** type 3 не хранится и не является целью гранта. Combat и
-inventory репу не пишут. Economy-модуля нет. Контракт:
-[REPUTATION.md](../modules/REPUTATION.md).
+**Решение INV-05:** текущих границ достаточно; отдельный `ARC-INV` /
+`ARC-ECO` не нужен. Durability — inventory instance columns. Repair gold —
+character `debitMoney` в composition UoW, как ECO-01. Death break —
+inventory port из `HuntFightSettlement`, как pocket refill. Контракт:
+[INVENTORY.md](../modules/INVENTORY.md).
 
 Отдельный `ARC-ECO` потребуется позже только если mail COD / auction / trade
 нельзя провести без ledger, reservations и переноса balance с hero.

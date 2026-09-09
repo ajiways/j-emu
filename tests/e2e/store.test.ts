@@ -28,6 +28,12 @@ describe("store list and buy", () => {
     expect(block.status).toBe(100);
     expect(typeIds(block.types)).toEqual([-131]);
     expect(lotArtikuls(block.artikuls)).toEqual([24, 23]);
+    const lots = Array.isArray(block.artikuls) ? block.artikuls : [];
+    for (const row of lots) {
+      const lot = requireRecord(row, "store lot");
+      expect(lot.durability).toBe(30);
+      expect(lot.durability_max).toBe(30);
+    }
   });
 
   it("buys both lots, persists 23.00 and bag across reconnect/restart", async () => {

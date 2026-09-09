@@ -5,13 +5,20 @@ import type { ReleaseArtifacts } from "../../catalog/ports/release-artifacts.ts"
 import type { InventoryItem, ItemLocation } from "./inventory-item.ts";
 import type { InventoryRepository } from "../ports/inventory-repository.ts";
 import { applyInventoryMutation } from "./apply-inventory-mutation.ts";
+import {
+  applyDeathDurability,
+  type ApplyDeathDurabilityCommand,
+  type DeathDurabilityResult,
+} from "./apply-death-durability.ts";
 import { bagActionsFor, FLAG_DROP, FLAG_SELL } from "./bag-actions.ts";
 import { computeBagLoad, type BagLoad } from "./bag-load.ts";
 import { DropDeniedError } from "./drop-denied-error.ts";
+import { instanceDurability, isBroken } from "./durability.ts";
 import { planMergeBagStacks } from "./merge-bag-stacks.ts";
 import { isLeftPocket, requirePocketCapacity } from "./pocket-slot.ts";
 import { planPutOnPocket, type PocketTarget } from "./put-on-pocket.ts";
 import { requireQuantityWithinStack } from "./require-quantity-within-stack.ts";
+import { repairItem, type RepairItemCommand, type RepairItemResult } from "./repair-item.ts";
 import { sellPriceMinor } from "./sell-price.ts";
 import { takeDropQuantity } from "./take-drop-quantity.ts";
 import { useFromBag, type UseFromBagCommand, type UseFromBagResult } from "./use-from-bag.ts";
@@ -69,11 +76,15 @@ export class InventoryService {
   async ensureStarterInventory(heroId: number): Promise<void> {
     if ((await this.inventory.listForHero(heroId)).length > 0) return;
     for (const spec of this.starterItems) {
+      const definition = await this.catalog.artifact(spec.artifactId);
+      if (!definition) throw new Error(`Artifact catalog entry ${spec.artifactId} is missing`);
       await this.inventory.create({
         heroId,
         artifactId: spec.artifactId,
         quantity: spec.quantity,
         location: spec.location,
+        durability: definition.durability,
+        durabilityMax: definition.durabilityMax,
       });
     }
   }
@@ -138,7 +149,11 @@ export class InventoryService {
     const definition = await this.catalog.artifact(item.artifactId);
     if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
     requireQuantityWithinStack(definition, item.quantity);
-    const actions = bagActionsFor(definition.slotMask, definition.useAction !== undefined);
+    const actions = bagActionsFor(
+      definition.slotMask,
+      definition.useAction !== undefined,
+      isBroken(instanceDurability(item.durability, item.durabilityMax, definition.flags)),
+    );
     const unit = sellPriceMinor(definition.priceMinor);
     const voidSell = (actions & FLAG_SELL) !== 0 && unit > 0;
     if (intent === "sell") {
@@ -170,6 +185,25 @@ export class InventoryService {
     cells: readonly PocketRefillCell[];
   }): Promise<void> {
     return refillPocketAfterFight(this.inventory, this.catalog, command);
+  }
+
+  applyDeathDurability(command: ApplyDeathDurabilityCommand): Promise<DeathDurabilityResult> {
+    return applyDeathDurability(this.inventory, this.catalog, command);
+  }
+
+  repair(command: RepairItemCommand): Promise<RepairItemResult> {
+    return repairItem(this.inventory, this.catalog, command);
+  }
+
+  async equippedSkillBonuses(characterId: number): Promise<readonly ArtifactSkillBonus[]> {
+    const bonuses: ArtifactSkillBonus[] = [];
+    for (const item of await this.inventory.listForHero(characterId)) {
+      if (item.location.kind !== "equipment") continue;
+      const definition = await this.catalog.artifact(item.artifactId);
+      if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
+      bonuses.push(...definition.skills);
+    }
+    return bonuses;
   }
 
   async consumePocket(command: { characterId: number; itemId: number }): Promise<void> {

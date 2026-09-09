@@ -6,6 +6,7 @@ export type CreditMoneyCommand = Readonly<{
 export type DebitMoneyCommand = Readonly<{
   characterId: number;
   minorUnits: number;
+  allowGhost: boolean;
 }>;
 
 export interface CharacterMoney {

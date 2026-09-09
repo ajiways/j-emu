@@ -39,22 +39,33 @@ FK и общая транзакция не дают права обходить 
 `initial`, `update` и номер без смысла запрещены. Исключение — текущий
 pre-baseline init `foundation_init`: одна миграция на весь playable slice.
 
+`drizzle-kit generate` обязан завершаться успешно. Если kit падает
+(например `Do not know how to serialize a BigInt`), чинится schema file,
+а не пишется SQL руками. JS `bigint` defaults запрещены: для SQL `0`
+используется `sql\`0\``, не `0n`.
+
 Одна миграция содержит одно когезионное изменение либо минимальный набор,
-который нельзя применить раздельно из-за FK.
+который нельзя применить раздельно из-за FK. До baseline инкрементальные
+`0001`… не копятся: схема меняется в Drizzle files, затем цепочка
+схлопывается в новую `0000_foundation_init` (`npm run db:generate -- --name=foundation_init`
+после удаления `drizzle/*.sql` и каталога `drizzle/meta`). Пустой `meta/`
+без `_journal.json` kit не принимает — удалять надо всю `meta/`, чтобы kit
+создал сухой journal.
 
 Текущая схема — `drizzle/0000_foundation_init.sql` (ADR-0018 identity и
 sequences, `finished_fights`, content publication). Snapshot и journal
 перегенерированы из schema files. В SQL после generate добавлен только
 `INSERT` singleton-строки `content.active_release`: kit не умеет выразить
 эту строку из Drizzle schema, а runtime требует ровно одну запись.
+Других ручных правок SQL нет.
 
 `drizzle-kit` читает module-owned schema files из `drizzle.config.ts`.
 `pgSchema` экспортируется, чтобы kit создал PostgreSQL schema. Общего
 runtime barrel `db/schema.ts` нет.
 
-Пока не объявлен первый стабильный baseline, цепочку `drizzle/` можно
-схлопывать в новую `0000` и заново генерировать snapshot/journal.
-Существующие БД и данные при схлопывании не сохраняются.
+Пока не объявлен первый стабильный baseline, цепочку `drizzle/` схлопывают
+в новую `0000`. Существующие БД и данные при схлопывании не сохраняются:
+`npm run db:reset`.
 
 После объявления стабильного baseline применённый SQL, snapshot и journal
 entry неизменяемы: файл не редактируется и не переименовывается.

@@ -5,6 +5,8 @@ export type NewInventoryItem = Readonly<{
   artifactId: number;
   quantity: number;
   location: ItemLocation;
+  durability: number;
+  durabilityMax: number;
 }>;
 
 export interface InventoryRepository {

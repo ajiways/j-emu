@@ -103,11 +103,16 @@ const artifactSchema = z
     priceMinor: z.number().int().nonnegative(),
     flags: z.number().int().nonnegative(),
     bagStack: z.number().int().positive(),
+    durability: z.number().int().nonnegative(),
+    durabilityMax: z.number().int().nonnegative(),
     skills: z.array(artifactSkillSchema),
     artifact_actions: z.record(z.string().min(1), artifactActionSchema),
     extra: artifactExtraSchema,
   })
-  .strict();
+  .strict()
+  .refine((artifact) => artifact.durability <= artifact.durabilityMax, {
+    message: "durability must be <= durabilityMax",
+  });
 
 const huntLookSchema = z
   .object({

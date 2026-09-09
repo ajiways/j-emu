@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v14",
+  "schemaVersion": "playable-slice/v15",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -16,20 +16,57 @@
       "priceMinor": 0,
       "flags": 40,
       "bagStack": 1,
+      "durability": 3,
+      "durabilityMax": 3,
       "skills": [
-        { "id": "STR", "value": 6, "flags": 0 },
-        { "id": "RAG", "value": 2, "flags": 0 },
-        { "id": "DEX", "value": 1, "flags": 0 },
-        { "id": "DEF", "value": 1, "flags": 0 },
-        { "id": "VIT", "value": 5, "flags": 0 }
+        {
+          "id": "STR",
+          "value": 6,
+          "flags": 0
+        },
+        {
+          "id": "RAG",
+          "value": 2,
+          "flags": 0
+        },
+        {
+          "id": "DEX",
+          "value": 1,
+          "flags": 0
+        },
+        {
+          "id": "DEF",
+          "value": 1,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 5,
+          "flags": 0
+        }
       ],
       "artifact_actions": {},
       "extra": {
         "hits": [2, 3, 2, 3, 1, 2, 3, 1],
         "spells": [
-          { "id": 1, "cost": 2, "row": 1, "artikul_id0": 9098 },
-          { "id": 2, "cost": 3, "row": 1, "artikul_id0": 9100 },
-          { "id": 3, "cost": 4, "row": 1, "artikul_id0": 9099 }
+          {
+            "id": 1,
+            "cost": 2,
+            "row": 1,
+            "artikul_id0": 9098
+          },
+          {
+            "id": 2,
+            "cost": 3,
+            "row": 1,
+            "artikul_id0": 9100
+          },
+          {
+            "id": 3,
+            "cost": 4,
+            "row": 1,
+            "artikul_id0": 9099
+          }
         ]
       }
     },
@@ -47,21 +84,35 @@
       "priceMinor": 0,
       "flags": 0,
       "bagStack": 1,
+      "durability": 0,
+      "durabilityMax": 0,
       "skills": [],
       "artifact_actions": {},
       "extra": {
         "spell": {
           "animData": "magic_electroball",
           "endTurn": true,
-          "persRestr": { "active": true, "dead": false },
-          "targetRestr": { "opp": true, "dead": false, "selgroupdeny": {} },
+          "persRestr": {
+            "active": true,
+            "dead": false
+          },
+          "targetRestr": {
+            "opp": true,
+            "dead": false,
+            "selgroupdeny": {}
+          },
           "effects": [
             {
               "kind": 1,
               "dmgType": 128,
               "order": 1,
               "hidden": 0,
-              "skills": [{ "skill_id": "pcSTR", "value": 52 }]
+              "skills": [
+                {
+                  "skill_id": "pcSTR",
+                  "value": 52
+                }
+              ]
             }
           ]
         }
@@ -81,13 +132,26 @@
       "priceMinor": 0,
       "flags": 0,
       "bagStack": 1,
+      "durability": 0,
+      "durabilityMax": 0,
       "skills": [],
       "artifact_actions": {},
       "extra": {
         "spell": {
-          "persRestr": { "active": true, "dead": false },
-          "targetRestr": { "self": true, "dead": false },
-          "effects": [{ "kind": 3, "charging": 1 }]
+          "persRestr": {
+            "active": true,
+            "dead": false
+          },
+          "targetRestr": {
+            "self": true,
+            "dead": false
+          },
+          "effects": [
+            {
+              "kind": 3,
+              "charging": 1
+            }
+          ]
         }
       }
     },
@@ -105,15 +169,28 @@
       "priceMinor": 0,
       "flags": 0,
       "bagStack": 1,
+      "durability": 0,
+      "durabilityMax": 0,
       "skills": [],
       "artifact_actions": {},
       "extra": {
         "spell": {
           "animData": "magic_aoe_light",
           "endTurn": true,
-          "persRestr": { "active": true, "dead": false },
-          "targetRestr": { "opp": true, "dead": false },
-          "effects": [{ "kind": 1, "targetCount": 2 }]
+          "persRestr": {
+            "active": true,
+            "dead": false
+          },
+          "targetRestr": {
+            "opp": true,
+            "dead": false
+          },
+          "effects": [
+            {
+              "kind": 1,
+              "targetCount": 2
+            }
+          ]
         }
       }
     },
@@ -131,6 +208,8 @@
       "priceMinor": 100,
       "flags": 0,
       "bagStack": 99,
+      "durability": 0,
+      "durabilityMax": 0,
       "skills": [],
       "artifact_actions": {},
       "extra": {
@@ -139,13 +218,23 @@
           "cooldown": 20,
           "groupId": 841,
           "flags": "262144",
-          "persRestr": { "dead": false },
+          "persRestr": {
+            "dead": false
+          },
           "targetRestr": {
             "dead": false,
             "self": true,
-            "selgroupdeny": { "cond": true, "id": 956 }
+            "selgroupdeny": {
+              "cond": true,
+              "id": 956
+            }
           },
-          "effects": [{ "kind": 2, "amount": 15 }]
+          "effects": [
+            {
+              "kind": 2,
+              "amount": 15
+            }
+          ]
         }
       }
     },
@@ -163,6 +252,8 @@
       "priceMinor": 15,
       "flags": 0,
       "bagStack": 999,
+      "durability": 0,
+      "durabilityMax": 0,
       "skills": [],
       "artifact_actions": {},
       "extra": {
@@ -170,7 +261,9 @@
           "animData": "botles_strenght_grey",
           "groupId": 842,
           "flags": "262144",
-          "persRestr": { "dead": false },
+          "persRestr": {
+            "dead": false
+          },
           "targetRestr": {
             "dead": false,
             "groupdeny": true,
@@ -182,7 +275,12 @@
               "kind": 3,
               "charging": 1,
               "dmgType": 1,
-              "skills": [{ "skill_id": "pcSTR", "value": 10 }]
+              "skills": [
+                {
+                  "skill_id": "pcSTR",
+                  "value": 10
+                }
+              ]
             }
           ]
         }
@@ -202,6 +300,8 @@
       "priceMinor": 3,
       "flags": 40,
       "bagStack": 99,
+      "durability": 0,
+      "durabilityMax": 0,
       "skills": [],
       "artifact_actions": {
         "20": {
@@ -228,12 +328,34 @@
       "priceMinor": 100,
       "flags": 0,
       "bagStack": 1,
+      "durability": 30,
+      "durabilityMax": 30,
       "skills": [
-        { "id": "STR", "value": 6, "flags": 0 },
-        { "id": "RAG", "value": 2, "flags": 0 },
-        { "id": "DEX", "value": 1, "flags": 0 },
-        { "id": "DEF", "value": 1, "flags": 0 },
-        { "id": "VIT", "value": 5, "flags": 0 }
+        {
+          "id": "STR",
+          "value": 6,
+          "flags": 0
+        },
+        {
+          "id": "RAG",
+          "value": 2,
+          "flags": 0
+        },
+        {
+          "id": "DEX",
+          "value": 1,
+          "flags": 0
+        },
+        {
+          "id": "DEF",
+          "value": 1,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 5,
+          "flags": 0
+        }
       ],
       "artifact_actions": {},
       "extra": {}
@@ -252,12 +374,172 @@
       "priceMinor": 100,
       "flags": 0,
       "bagStack": 1,
+      "durability": 30,
+      "durabilityMax": 30,
       "skills": [
-        { "id": "DEF", "value": 2, "flags": 0 },
-        { "id": "DEX", "value": 2, "flags": 0 },
-        { "id": "RAG", "value": 2, "flags": 0 },
-        { "id": "STR", "value": 8, "flags": 0 },
-        { "id": "VIT", "value": 7, "flags": 0 }
+        {
+          "id": "DEF",
+          "value": 2,
+          "flags": 0
+        },
+        {
+          "id": "DEX",
+          "value": 2,
+          "flags": 0
+        },
+        {
+          "id": "RAG",
+          "value": 2,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 8,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 7,
+          "flags": 0
+        }
+      ],
+      "artifact_actions": {},
+      "extra": {}
+    },
+    {
+      "id": 20,
+      "title": "Простая кираса",
+      "picture": "greyset5_armour.png",
+      "typeId": "2",
+      "kindId": 20,
+      "slotMask": 2,
+      "weight": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 100,
+      "flags": 0,
+      "bagStack": 1,
+      "durability": 30,
+      "durabilityMax": 30,
+      "skills": [
+        {
+          "id": "DEF",
+          "value": 2,
+          "flags": 0
+        },
+        {
+          "id": "DEX",
+          "value": 2,
+          "flags": 0
+        },
+        {
+          "id": "RAG",
+          "value": 1,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 7,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 6,
+          "flags": 0
+        }
+      ],
+      "artifact_actions": {},
+      "extra": {}
+    },
+    {
+      "id": 21,
+      "title": "Простые сапоги",
+      "picture": "greyset5_shoes.png",
+      "typeId": "2",
+      "kindId": 2,
+      "slotMask": 1,
+      "weight": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 100,
+      "flags": 0,
+      "bagStack": 1,
+      "durability": 30,
+      "durabilityMax": 30,
+      "skills": [
+        {
+          "id": "DEF",
+          "value": 2,
+          "flags": 0
+        },
+        {
+          "id": "DEX",
+          "value": 1,
+          "flags": 0
+        },
+        {
+          "id": "RAG",
+          "value": 2,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 7,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 6,
+          "flags": 0
+        }
+      ],
+      "artifact_actions": {},
+      "extra": {}
+    },
+    {
+      "id": 26,
+      "title": "Простые поножи",
+      "picture": "greyset5_trousers.png",
+      "typeId": "2",
+      "kindId": 6,
+      "slotMask": 4,
+      "weight": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 100,
+      "flags": 0,
+      "bagStack": 1,
+      "durability": 30,
+      "durabilityMax": 30,
+      "skills": [
+        {
+          "id": "DEF",
+          "value": 1,
+          "flags": 0
+        },
+        {
+          "id": "DEX",
+          "value": 2,
+          "flags": 0
+        },
+        {
+          "id": "RAG",
+          "value": 2,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 7,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 6,
+          "flags": 0
+        }
       ],
       "artifact_actions": {},
       "extra": {}
@@ -279,9 +561,24 @@
       "lootBonusMax": 1,
       "lootNothingWeight": 3460,
       "lootEntries": [
-        { "artikulId": 77, "dropWeight": 77, "countMin": 1, "countMax": 2 },
-        { "artikulId": 93, "dropWeight": 66, "countMin": 1, "countMax": 4 },
-        { "artikulId": 99, "dropWeight": 72, "countMin": 5, "countMax": 25 }
+        {
+          "artikulId": 77,
+          "dropWeight": 77,
+          "countMin": 1,
+          "countMax": 2
+        },
+        {
+          "artikulId": 93,
+          "dropWeight": 66,
+          "countMin": 1,
+          "countMax": 4
+        },
+        {
+          "artikulId": 99,
+          "dropWeight": 72,
+          "countMin": 5,
+          "countMax": 25
+        }
       ],
       "hunt": {
         "nick": "Грызл",
@@ -371,7 +668,10 @@
       "href": {
         "object": "common",
         "action": "action",
-        "form": { "code": "COME_IN", "area_id": 504 }
+        "form": {
+          "code": "COME_IN",
+          "area_id": 504
+        }
       }
     },
     {
@@ -388,7 +688,10 @@
       "href": {
         "object": "common",
         "action": "action",
-        "form": { "code": "COME_IN", "area_id": 501 }
+        "form": {
+          "code": "COME_IN",
+          "area_id": 501
+        }
       }
     },
     {
@@ -405,7 +708,10 @@
       "href": {
         "object": "common",
         "action": "action",
-        "form": { "code": "COME_IN", "area_id": 503 }
+        "form": {
+          "code": "COME_IN",
+          "area_id": 503
+        }
       }
     },
     {
@@ -422,7 +728,10 @@
       "href": {
         "object": "common",
         "action": "action",
-        "form": { "code": "COME_IN", "area_id": 503 }
+        "form": {
+          "code": "COME_IN",
+          "area_id": 503
+        }
       }
     }
   ],
@@ -436,10 +745,31 @@
       "huntMask": "bot_1"
     }
   ],
-  "storeTypes": [{ "areaId": "504", "typeId": -131, "title": "Оружие и доспехи", "ord": 11000 }],
+  "storeTypes": [
+    {
+      "areaId": "504",
+      "typeId": -131,
+      "title": "Оружие и доспехи",
+      "ord": 11000
+    }
+  ],
   "storeLots": [
-    { "areaId": "504", "lotId": 82, "artikulId": 24, "typeId": -131, "price": 1, "ord": 6 },
-    { "areaId": "504", "lotId": 80, "artikulId": 23, "typeId": -131, "price": 1, "ord": 8 }
+    {
+      "areaId": "504",
+      "lotId": 82,
+      "artikulId": 24,
+      "typeId": -131,
+      "price": 1,
+      "ord": 6
+    },
+    {
+      "areaId": "504",
+      "lotId": 80,
+      "artikulId": 23,
+      "typeId": -131,
+      "price": 1,
+      "ord": 8
+    }
   ],
   "reputationTracks": [
     {
@@ -563,12 +893,30 @@
       "honorStatus": 0,
       "evidenceKind": "confirmed",
       "managedSkills": [
-        { "id": "STR", "value": 12 },
-        { "id": "RAG", "value": 8 },
-        { "id": "DEX", "value": 8 },
-        { "id": "DEF", "value": 8 },
-        { "id": "VIT", "value": 10 },
-        { "id": "MPMAX", "value": 12 }
+        {
+          "id": "STR",
+          "value": 12
+        },
+        {
+          "id": "RAG",
+          "value": 8
+        },
+        {
+          "id": "DEX",
+          "value": 8
+        },
+        {
+          "id": "DEF",
+          "value": 8
+        },
+        {
+          "id": "VIT",
+          "value": 10
+        },
+        {
+          "id": "MPMAX",
+          "value": 12
+        }
       ]
     },
     {
@@ -582,12 +930,30 @@
       "honorStatus": 0,
       "evidenceKind": "confirmed",
       "managedSkills": [
-        { "id": "STR", "value": 13 },
-        { "id": "RAG", "value": 9 },
-        { "id": "DEX", "value": 9 },
-        { "id": "DEF", "value": 9 },
-        { "id": "VIT", "value": 11 },
-        { "id": "MPMAX", "value": 13 }
+        {
+          "id": "STR",
+          "value": 13
+        },
+        {
+          "id": "RAG",
+          "value": 9
+        },
+        {
+          "id": "DEX",
+          "value": 9
+        },
+        {
+          "id": "DEF",
+          "value": 9
+        },
+        {
+          "id": "VIT",
+          "value": 11
+        },
+        {
+          "id": "MPMAX",
+          "value": 13
+        }
       ]
     },
     {
@@ -601,12 +967,30 @@
       "honorStatus": 0,
       "evidenceKind": "confirmed",
       "managedSkills": [
-        { "id": "STR", "value": 14 },
-        { "id": "RAG", "value": 10 },
-        { "id": "DEX", "value": 10 },
-        { "id": "DEF", "value": 10 },
-        { "id": "VIT", "value": 12 },
-        { "id": "MPMAX", "value": 14 }
+        {
+          "id": "STR",
+          "value": 14
+        },
+        {
+          "id": "RAG",
+          "value": 10
+        },
+        {
+          "id": "DEX",
+          "value": 10
+        },
+        {
+          "id": "DEF",
+          "value": 10
+        },
+        {
+          "id": "VIT",
+          "value": 12
+        },
+        {
+          "id": "MPMAX",
+          "value": 14
+        }
       ]
     },
     {
@@ -620,12 +1004,30 @@
       "honorStatus": 0,
       "evidenceKind": "confirmed",
       "managedSkills": [
-        { "id": "STR", "value": 16 },
-        { "id": "RAG", "value": 11 },
-        { "id": "DEX", "value": 11 },
-        { "id": "DEF", "value": 11 },
-        { "id": "VIT", "value": 13 },
-        { "id": "MPMAX", "value": 16 }
+        {
+          "id": "STR",
+          "value": 16
+        },
+        {
+          "id": "RAG",
+          "value": 11
+        },
+        {
+          "id": "DEX",
+          "value": 11
+        },
+        {
+          "id": "DEF",
+          "value": 11
+        },
+        {
+          "id": "VIT",
+          "value": 13
+        },
+        {
+          "id": "MPMAX",
+          "value": 16
+        }
       ]
     },
     {
@@ -639,12 +1041,30 @@
       "honorStatus": 0,
       "evidenceKind": "confirmed",
       "managedSkills": [
-        { "id": "STR", "value": 17 },
-        { "id": "RAG", "value": 12 },
-        { "id": "DEX", "value": 12 },
-        { "id": "DEF", "value": 12 },
-        { "id": "VIT", "value": 14 },
-        { "id": "MPMAX", "value": 17 }
+        {
+          "id": "STR",
+          "value": 17
+        },
+        {
+          "id": "RAG",
+          "value": 12
+        },
+        {
+          "id": "DEX",
+          "value": 12
+        },
+        {
+          "id": "DEF",
+          "value": 12
+        },
+        {
+          "id": "VIT",
+          "value": 14
+        },
+        {
+          "id": "MPMAX",
+          "value": 17
+        }
       ]
     },
     {
@@ -658,12 +1078,30 @@
       "honorStatus": 0,
       "evidenceKind": "confirmed",
       "managedSkills": [
-        { "id": "STR", "value": 19 },
-        { "id": "RAG", "value": 13 },
-        { "id": "DEX", "value": 13 },
-        { "id": "DEF", "value": 13 },
-        { "id": "VIT", "value": 16 },
-        { "id": "MPMAX", "value": 19 }
+        {
+          "id": "STR",
+          "value": 19
+        },
+        {
+          "id": "RAG",
+          "value": 13
+        },
+        {
+          "id": "DEX",
+          "value": 13
+        },
+        {
+          "id": "DEF",
+          "value": 13
+        },
+        {
+          "id": "VIT",
+          "value": 16
+        },
+        {
+          "id": "MPMAX",
+          "value": 19
+        }
       ]
     },
     {
@@ -677,12 +1115,30 @@
       "honorStatus": 0,
       "evidenceKind": "legacy_extrapolated",
       "managedSkills": [
-        { "id": "STR", "value": 20 },
-        { "id": "RAG", "value": 14 },
-        { "id": "DEX", "value": 14 },
-        { "id": "DEF", "value": 14 },
-        { "id": "VIT", "value": 17 },
-        { "id": "MPMAX", "value": 20 }
+        {
+          "id": "STR",
+          "value": 20
+        },
+        {
+          "id": "RAG",
+          "value": 14
+        },
+        {
+          "id": "DEX",
+          "value": 14
+        },
+        {
+          "id": "DEF",
+          "value": 14
+        },
+        {
+          "id": "VIT",
+          "value": 17
+        },
+        {
+          "id": "MPMAX",
+          "value": 20
+        }
       ]
     },
     {
@@ -696,12 +1152,30 @@
       "honorStatus": 0,
       "evidenceKind": "legacy_extrapolated",
       "managedSkills": [
-        { "id": "STR", "value": 21 },
-        { "id": "RAG", "value": 15 },
-        { "id": "DEX", "value": 15 },
-        { "id": "DEF", "value": 15 },
-        { "id": "VIT", "value": 18 },
-        { "id": "MPMAX", "value": 21 }
+        {
+          "id": "STR",
+          "value": 21
+        },
+        {
+          "id": "RAG",
+          "value": 15
+        },
+        {
+          "id": "DEX",
+          "value": 15
+        },
+        {
+          "id": "DEF",
+          "value": 15
+        },
+        {
+          "id": "VIT",
+          "value": 18
+        },
+        {
+          "id": "MPMAX",
+          "value": 21
+        }
       ]
     }
   ],
@@ -735,29 +1209,74 @@
     "user|professions": {
       "status": 100,
       "professions": [
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 },
-        { "value": 0 }
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        },
+        {
+          "value": 0
+        }
       ],
       "max_profession_skill": 0
     },
-    "pet|list": { "status": 100, "pets": [] },
-    "user|mount_list": { "status": 100, "mounts": [] },
-    "user|campaigns": { "status": 100, "macros_list": [], "campaigns": [] },
-    "chat|area_population": { "status": 100, "population": [] },
+    "pet|list": {
+      "status": 100,
+      "pets": []
+    },
+    "user|mount_list": {
+      "status": 100,
+      "mounts": []
+    },
+    "user|campaigns": {
+      "status": 100,
+      "macros_list": [],
+      "campaigns": []
+    },
+    "chat|area_population": {
+      "status": 100,
+      "population": []
+    },
     "friend|info": {
       "status": 100,
       "friends": [],
@@ -765,20 +1284,48 @@
       "requests": [],
       "requests_out": []
     },
-    "user|action_stats": { "status": 100, "action_stats": [] },
-    "arena|great_fights": { "status": 100, "fight_ids": [] },
+    "user|action_stats": {
+      "status": 100,
+      "action_stats": []
+    },
+    "arena|great_fights": {
+      "status": 100,
+      "fight_ids": []
+    },
     "user|time_to_next_achievement": {
       "status": 100,
       "show_chest": "0",
       "next_value": 0,
       "online_achievement_left": 0
     },
-    "assistant|farm_info": { "status": 100, "area_id": 503, "farm_list": {} },
-    "bank|info": { "status": 100, "bank_info": [], "goldpool_vars": {} },
-    "user|smiles": { "status": 100, "smiles": [] },
-    "common|antimat": { "status": 100, "words": [] },
-    "common|event_conf": { "status": 100, "event_conf": { "events": [] } },
-    "common|front_status": { "status": 100, "front_status": true },
+    "assistant|farm_info": {
+      "status": 100,
+      "area_id": 503,
+      "farm_list": {}
+    },
+    "bank|info": {
+      "status": 100,
+      "bank_info": [],
+      "goldpool_vars": {}
+    },
+    "user|smiles": {
+      "status": 100,
+      "smiles": []
+    },
+    "common|antimat": {
+      "status": 100,
+      "words": []
+    },
+    "common|event_conf": {
+      "status": 100,
+      "event_conf": {
+        "events": []
+      }
+    },
+    "common|front_status": {
+      "status": 100,
+      "front_status": true
+    },
     "common|area_capture_info": {
       "status": 100,
       "area_capture_info": {
@@ -793,7 +1340,13 @@
       },
       "macros_list": []
     },
-    "common|occurrences_conf": { "status": 100, "occurrences_conf": [] },
-    "common|farm_agregate": { "status": 100, "areas_farm": {} }
+    "common|occurrences_conf": {
+      "status": 100,
+      "occurrences_conf": []
+    },
+    "common|farm_agregate": {
+      "status": 100,
+      "areas_farm": {}
+    }
   }
 }

@@ -46,6 +46,7 @@ export class StorePurchase {
         await this.characters.debitMoney({
           characterId: command.characterId,
           minorUnits,
+          allowGhost: false,
         });
         for (const grant of grants) {
           await this.inventory.grantToBag({

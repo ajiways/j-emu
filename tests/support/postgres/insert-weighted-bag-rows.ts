@@ -15,6 +15,8 @@ export async function insertWeightedBagRows(heroId: number, extraRows: number): 
         artifactId: 93,
         quantity: 1,
         locationKind: "bag",
+        durability: 0,
+        durabilityMax: 0,
         version: 1,
       });
     }

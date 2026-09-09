@@ -26,6 +26,7 @@ import { HuntAreaFanout } from "../modules/jugger-wire/application/hunt-area-fan
 import { HuntLockRelease } from "./hunt-lock-release.ts";
 import { HuntFightSettlement } from "./hunt-fight-settlement.ts";
 import { StorePurchase } from "./store-purchase.ts";
+import { StoreRepair } from "./store-repair.ts";
 import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 
@@ -155,6 +156,7 @@ export class CompositionRoot {
           catalog.catalog,
           world.service,
         ),
+        storeRepair: new StoreRepair(database, characters.service, inventory.service),
       });
       closers.push(wire);
       return new Application(

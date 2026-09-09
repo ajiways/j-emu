@@ -142,30 +142,19 @@ describe("Drizzle migrations", () => {
       bootstrapImports,
     ]).toHaveLength(29);
 
+    const sqlFiles = fs
+      .readdirSync(drizzleFolder)
+      .filter((name) => name.endsWith(".sql"))
+      .sort();
+    expect(sqlFiles).toEqual(["0000_foundation_init.sql"]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
     ) as { entries: Array<{ tag: string }> };
-    expect(journal.entries.map((entry) => entry.tag)).toEqual([
-      "0000_foundation_init",
-      "0001_character_add_hero_personal_details",
-      "0002_world_location_scalars",
-      "0003_character_bootstrap_state",
-      "0004_catalog_artifact_wear_and_equipment_slot",
-      "0005_character_experience_progression",
-      "0006_character_hp_regeneration",
-      "0007_catalog_artifact_bag_economy",
-      "0008_inventory_pocket_position_unique",
-      "0009_catalog_artifact_actions",
-      "0010_character_move_ready_at",
-      "0011_world_area_links",
-      "0012_catalog_bot_fight_look",
-      "0013_catalog_artifact_extra",
-      "0014_catalog_bot_loot",
-      "0015_character_ghost_injury",
-      "0016_catalog_store_types_lots",
-      "0017_catalog_reputation_tracks",
-    ]);
-    expect(await appliedCount()).toBe(18);
+    expect(journal.entries.map((entry) => entry.tag)).toEqual(["0000_foundation_init"]);
+    expect(await appliedCount()).toBe(1);
+    expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
+      /INSERT INTO "content"\."active_release"/,
+    );
 
     const singleton = await database
       .session()

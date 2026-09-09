@@ -8,8 +8,8 @@ import type {
   WelcomeMessageDocument,
 } from "./bootstrap-content.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v14";
-export const CONTENT_VALIDATOR_VERSION = "14";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v15";
+export const CONTENT_VALIDATOR_VERSION = "15";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;
@@ -80,6 +80,8 @@ export type ArtifactDocument = Readonly<{
   priceMinor: number;
   flags: number;
   bagStack: number;
+  durability: number;
+  durabilityMax: number;
   skills: readonly ArtifactSkillDocument[];
   artifact_actions: Readonly<Record<string, ArtifactActionDocument>>;
   extra: ArtifactExtraDocument;

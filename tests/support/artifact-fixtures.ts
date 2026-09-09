@@ -18,13 +18,18 @@ export function testArtifact(
     priceMinor?: number;
     flags?: number;
     bagStack?: number;
+    durability?: number;
+    durabilityMax?: number;
     skills?: readonly ArtifactSkillBonus[];
     useActions?: Readonly<Record<string, ArtifactUseAction>>;
     extra?: ArtifactExtra;
   } = {},
 ): ArtifactDefinition {
+  const id = overrides.id ?? 9095;
+  const durability = overrides.durability ?? (id === 9095 ? 3 : 0);
+  const durabilityMax = overrides.durabilityMax ?? (id === 9095 ? 3 : 0);
   return new ArtifactDefinition(
-    overrides.id ?? 9095,
+    id,
     overrides.title ?? "Ветхая магическая перчатка",
     overrides.picture ?? "greyset5_lhand.png",
     overrides.typeId ?? "2",
@@ -40,5 +45,7 @@ export function testArtifact(
     overrides.skills ?? [new ArtifactSkillBonus("VIT", 5, 0)],
     overrides.useActions ?? {},
     overrides.extra ?? new ArtifactExtra(null, [], null),
+    durability,
+    durabilityMax,
   );
 }

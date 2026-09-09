@@ -75,7 +75,8 @@ Equipment-derived `user|skills` / `hpMax` считаются из naked skills +
 меняются.
 
 - catalog projection и stable item instance IDs;
-- starter 9095 в bag (`greyset5_lhand.png`, `artifact_skills`);
+- starter 9095 в bag (`greyset5_lhand.png`, `artifact_skills`); v15 также
+  20/21/26 в bag (не надеты);
 - `PUT_ON`/`PUT_OFF` через `common|action` и `common|object`;
 - occupancy displace, level/gender/type gates (`203` + `error`);
 - согласованный flat bag/view/pocket/skills/unitframe/conf/state;
@@ -83,12 +84,13 @@ Equipment-derived `user|skills` / `hpMax` считаются из naked skills +
 
 ## Inventory bag DROP — готово
 
-Есть raw-AMF E2E и подтверждённый CEF-прогон: перчатку 9095 выбрасывают из
-bag, деньги остаются `25.00`, bag пуст, reconnect совпадает с PostgreSQL.
+Есть raw-AMF E2E и подтверждённый CEF-прогон throw-away 9095: деньги остаются
+`25.00`, reconnect совпадает с PostgreSQL. После INV-05 стартовый bag не
+пустеет от DROP одной перчатки.
 
 - catalog v6: `priceMinor`/`flags`/`bagStack` на 9095 (`0`/`40`/`1`);
-- `user|bag.amount` считает только взвешенные слоты (`9095` → `amount=0`,
-  `total=1`); `amount_max=20`;
+- `user|bag.amount` считает только взвешенные слоты; starter v15 —
+  `amount=5` / `total=7`; `amount_max=20`;
 - OA `DROP` (и alias `SELL`) → flat `common|action` + bag/skills/mount_list/state;
 - throw-away 9095 не меняет деньги; equipped DROP и SELL без `sell_price>0` —
   `204` с live `error`;
@@ -123,7 +125,13 @@ bag, деньги остаются `25.00`, bag пуст, reconnect совпад
 
 ## Inventory — частично
 
-Не перенесены durability/repair, DRINK/TEMPEFFECT, ADD_MP. Добор пояса после
+Есть raw-AMF и PostgreSQL: instance `durability`/`durability_max`, смерть на
+hunt −1 по 4–5 надетым tracking, `0/N` auto PUT_OFF, PUT_ON broken **204**,
+`store|repair` finite `(max−1)/(max−1)` (9095 бесплатно 2/2, кираса 20 за
+0.02g), persist reconnect/restart, concurrent repair — один победитель.
+CEF мастерской не прогонялся.
+
+Не перенесены DRINK/TEMPEFFECT, ADD_MP, upgrade, set-bonus. Добор пояса после
 боя (`CMB-03`) есть: spent cells refill from bag to `pocketCntMax`.
 
 ## World presence — готово
@@ -185,16 +193,18 @@ Chat/party, полный store (ECO-02), mail, auction и trade рассматр
 
 Есть raw-AMF: COME_IN 504, `store|list` вкладка `-131` и лоты 23/24,
 `store|buy` обоих (`25.00` → `23.00`, bag persist reconnect/restart). Отказы
-status 2 и ghost 203 покрыты e2e. CEF лавки не прогонялся.
+status 2 и ghost 203 покрыты e2e. `store|repair` instance `{ id }` чинит
+finite item (ghost не блокирует; cost 0 не зовёт `debitMoney`). CEF лавки
+и мастерской не прогонялся.
 
-Не перенесены остальные лоты 504, diamonds, `store|repair`, OPEN_STORE.
+Не перенесены остальные лоты 504, diamonds, OPEN_STORE.
 
 ## Reputation — частично
 
-Есть raw-AMF: OA `user|stats` named rows (опыт/героизм, нули kill/duel/fatality/
-daily, type:2 только при value > 0, всегда SUM 36 type 3), `grantReputation`
-track **5** persist reconnect/restart. Catalog публикует только Радвей **5**.
-CEF экран репутации не прогонялся; квестового consumer нет.
+Есть raw-AMF и PostgreSQL: OA `user|stats` named rows (опыт/героизм, нули
+kill/duel/fatality/daily, type:2 только при value > 0, всегда SUM 36 type 3),
+`grantReputation` track **5** persist reconnect/restart. Catalog публикует
+только Радвей **5**. CEF экран репутации не прогонялся; квестового consumer нет.
 
 Не перенесены tracks 7/11/…, kill overlay, SET_FLAG, chat notify, GRANT_REP.
 

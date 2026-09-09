@@ -29,8 +29,8 @@ counts/checksums и completeness gates:
 
 ## Текущий playable slice
 
-Текущая `playable-slice/v14` release — минимальный bundle: 9 artifacts
-(9095 + dump-proven glove spells **9098/9100/9099**, pocketables **93** и **99**, food **77**,
+Текущая `playable-slice/v15` release — минимальный bundle: 12 artifacts
+(9095 + dump-proven L1 greyset **20/21/26**, glove spells **9098/9100/9099**, pocketables **93** и **99**, food **77**,
 shop wear **23** и **24**; без 209 и патронташа), 1 bot с overlay reward scalars и `bot_loot_entries` 77/93/99,
 3 areas (503/501/504), authored travel `area_links`, 1 hunt spawn на 503, store 504 type `-131` и lots 80/23 и 82/24, reputation track **5**, 11 skills, 8 levels с normalized managed skills,
 1 appearance и common-conf/chrome/HUD/welcome документы в составе текущего

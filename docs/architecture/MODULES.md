@@ -18,23 +18,17 @@ area presence roster:
   `noteHp`, `noteDefeat`, `resurrect`, `creditMoney`, `debitMoney` и
   `grantReputation` пишут этот state; `move_ready_at` и `setArea` на том же
   aggregate;
-- `inventory` хранит bag/pocket/equipment instances и выполняет
+- `inventory` хранит bag/pocket/equipment instances, durability и выполняет
   `PUT_ON`/`PUT_OFF` (paperdoll и пояс), `drop`, `useFromBag`, `bagLoad`,
-  `grantToBag` и `listPocket`;
+  `grantToBag`, `listPocket`, `applyDeathDurability` и `repair`;
 - `catalog` и `world` читают artifacts, skills, levels, appearance,
   game-wide bootstrap documents, areas 503/501/504, travel `area_links`, hunt
   503 и витрину 504 (`store_types` type `-131`, lots 23/24) и reputation track
   5 из active release;
 - equipment-derived skills/vitals считаются из persisted naked skills и
-  artifact bonuses; migration `0004` закрепляет wear fields и occupancy slot;
-  `0007` — artifact `price_minor`/`flags`/`bag_stack`;
-  `0008` — partial unique pocket occupancy;
-  `0009` — catalog `artifact_actions`;
-  `0010` — `heroes.move_ready_at`;
-  `0011` — `areas.parent_id` и `world.area_links`;
-  `0015` — `heroes.ghost` / injury;
-  `0016` — `catalog.store_types` / `store_lots`;
-  `0017` — `catalog.reputation_tracks` / `character.hero_reputations`;
+  artifact bonuses; `0000_foundation_init` держит wear/occupancy, bag economy,
+  pocket unique, artifact_actions, move_ready_at, area_links, ghost/injury,
+  store types/lots, reputation tracks и durability;
 - `combat` — hunt lifecycle, CMB-02…04 reconnect/ghost settlement и finished
   history; `quests`, `social`, `economy`, `professions`, `instances` в runtime
   нет. Репутация Радвея **5** есть (REP-01, product частично).

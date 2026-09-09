@@ -34,6 +34,7 @@ describe("HuntFightSettlement", () => {
     ]);
     expect(characters.credits).toEqual([{ characterId: 1, minorUnits: minMoneyMinor }]);
     expect(inventory.refills).toHaveLength(1);
+    expect(inventory.deaths).toEqual([]);
     expect(win.get(10)).toMatchObject({
       status: 100,
       fight_id: 9,
@@ -66,6 +67,7 @@ describe("HuntFightSettlement", () => {
     expect(lossCharacters.defeats).toEqual([{ characterId: 1, hp: 0 }]);
     expect(lossCharacters.grants).toEqual([]);
     expect(lossCharacters.credits).toEqual([]);
+    expect(lossInventory.deaths).toHaveLength(1);
     expect(lost.get(10)).toMatchObject({ experience: 0, money: "0", loot: [] });
   });
 
@@ -168,6 +170,12 @@ function recordingCharacters() {
     async debitMoney() {
       throw new Error("unused");
     },
+    async lockById() {
+      throw new Error("unused");
+    },
+    async applyEquipmentVitals() {
+      throw new Error("unused");
+    },
     async syncResources() {
       throw new Error("unused");
     },
@@ -190,11 +198,19 @@ function recordingInventory() {
   const inventory = {
     refills: [] as unknown[],
     grants: [] as unknown[],
+    deaths: [] as unknown[],
     async grantToBag(command: unknown) {
       inventory.grants.push(command);
     },
     async refillPocketAfterFight(command: unknown) {
       inventory.refills.push(command);
+    },
+    async applyDeathDurability(command: unknown) {
+      inventory.deaths.push(command);
+      return { paperdollChanged: false };
+    },
+    async equippedSkillBonuses() {
+      return [];
     },
   };
   return inventory as InventoryService & typeof inventory;

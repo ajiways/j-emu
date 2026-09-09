@@ -1,6 +1,7 @@
 import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { Hero } from "../../character/domain/hero.ts";
 import { bagActionsFor } from "../../inventory/domain/bag-actions.ts";
+import { instanceDurability, isBroken } from "../../inventory/domain/durability.ts";
 import { noweightWire } from "../../inventory/domain/artifact-flags.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import { sellPriceMinor } from "../../inventory/domain/sell-price.ts";
@@ -22,6 +23,8 @@ type BagItemBlock = Readonly<{
   level_min: number;
   level_max: number;
   cnt: number;
+  durability: number;
+  durability_max: number;
   action: "bag";
   actions: number;
   flags: number;
@@ -66,8 +69,14 @@ export async function buildUserBag(
       level_min: definition.levelMin,
       level_max: definition.levelMax,
       cnt: item.quantity,
+      durability: item.durability,
+      durability_max: item.durabilityMax,
       action: "bag",
-      actions: bagActionsFor(definition.slotMask, definition.useAction !== undefined),
+      actions: bagActionsFor(
+        definition.slotMask,
+        definition.useAction !== undefined,
+        isBroken(instanceDurability(item.durability, item.durabilityMax, definition.flags)),
+      ),
       flags: definition.flags,
       noweight: noweightWire(definition.flags),
       price: moneyNumberFromMinorUnits(definition.priceMinor),

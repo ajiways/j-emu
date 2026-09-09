@@ -1,1 +1,0 @@
-ALTER TABLE "character"."heroes" ADD COLUMN "move_ready_at" timestamp with time zone;

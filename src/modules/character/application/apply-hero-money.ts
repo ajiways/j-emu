@@ -18,7 +18,9 @@ export async function debitHeroMoney(
 ): Promise<void> {
   const hero = await heroes.lockById(command.characterId);
   if (!hero) throw new Error(`Hero ${command.characterId} is missing`);
-  if (hero.ghost) throw new GhostHeroError(command.characterId, "debitMoney");
+  if (!command.allowGhost && hero.ghost) {
+    throw new GhostHeroError(command.characterId, "debitMoney");
+  }
   hero.debitMoney(command.minorUnits);
   await heroes.save(hero);
 }

@@ -35,6 +35,8 @@ describe("PostgreSQL identifiers", () => {
                 artifactId: 9095,
                 quantity: 1,
                 location: { kind: "bag" },
+                durability: 3,
+                durabilityMax: 3,
               })
               .then((item) => item.id),
           ),
@@ -64,6 +66,8 @@ describe("PostgreSQL identifiers", () => {
         locationKind: "bag",
         pocketPosition: null,
         equipmentSlot: null,
+        durability: 3,
+        durabilityMax: 3,
         version: 1,
       });
       throw new Error("Expected items_id_fight_safe to reject native spell id 2");
@@ -82,6 +86,8 @@ describe("PostgreSQL identifiers", () => {
           artifactId: 9095,
           quantity: 1,
           location: { kind: "bag" },
+          durability: 3,
+          durabilityMax: 3,
         });
         consumed = item.id;
         throw new Error("rollback after nextval");
@@ -93,6 +99,8 @@ describe("PostgreSQL identifiers", () => {
       artifactId: 9095,
       quantity: 1,
       location: { kind: "bag" },
+      durability: 3,
+      durabilityMax: 3,
     });
     expect(next.id).toBeGreaterThan(consumed);
   });
@@ -104,6 +112,8 @@ describe("PostgreSQL identifiers", () => {
       artifactId: 9095,
       quantity: 1,
       location: { kind: "bag" },
+      durability: 3,
+      durabilityMax: 3,
     });
     const fights = new PostgresFightIdSource(database);
     const firstFight = await fights.nextFightId();
@@ -115,6 +125,8 @@ describe("PostgreSQL identifiers", () => {
       artifactId: 9095,
       quantity: 1,
       location: { kind: "bag" },
+      durability: 3,
+      durabilityMax: 3,
     });
     const reopenedFights = new PostgresFightIdSource(database);
     const secondFight = await reopenedFights.nextFightId();

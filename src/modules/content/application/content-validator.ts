@@ -130,6 +130,15 @@ export class ContentValidator {
       if (!Number.isInteger(artifact.bagStack) || artifact.bagStack < 1) {
         issues.push(`artifact ${artifact.id} bagStack is invalid`);
       }
+      if (!Number.isInteger(artifact.durability) || artifact.durability < 0) {
+        issues.push(`artifact ${artifact.id} durability is invalid`);
+      }
+      if (!Number.isInteger(artifact.durabilityMax) || artifact.durabilityMax < 0) {
+        issues.push(`artifact ${artifact.id} durabilityMax is invalid`);
+      }
+      if (artifact.durability > artifact.durabilityMax) {
+        issues.push(`artifact ${artifact.id} durability exceeds durabilityMax`);
+      }
       const artifactSkills = new Set<string>();
       for (const skill of artifact.skills) {
         if (!skillIds.has(skill.id)) {

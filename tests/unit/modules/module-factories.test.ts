@@ -9,6 +9,7 @@ import { JuggerWireModule } from "../../../src/modules/jugger-wire/jugger-wire-m
 import { WorldModule } from "../../../src/modules/world/world-module.ts";
 import type { AppConfig } from "../../../src/app/config.ts";
 import type { StorePurchase } from "../../../src/app/store-purchase.ts";
+import type { StoreRepair } from "../../../src/app/store-repair.ts";
 import type { PlayableAccountRegistration } from "../../../src/app/playable-account-registration.ts";
 import type { PlayableDevelopmentIdentity } from "../../../src/app/playable-development-identity.ts";
 import type { Catalog } from "../../../src/modules/catalog/ports/catalog.ts";
@@ -213,6 +214,7 @@ describe("module factories", () => {
         outbox: {} as EsrvOutbox,
         longPoll: {} as LongPollCoordinator,
         storePurchase: {} as StorePurchase,
+        storeRepair: {} as StoreRepair,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -306,6 +308,7 @@ describe("module factories", () => {
         outbox: {} as EsrvOutbox,
         longPoll: new LongPollCoordinator(),
         storePurchase: {} as StorePurchase,
+        storeRepair: {} as StoreRepair,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

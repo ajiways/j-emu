@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX "inventory_items_hero_pocket_position_uidx" ON "inventory"."items" USING btree ("hero_id","pocket_position") WHERE "inventory"."items"."location_kind" = 'pocket';

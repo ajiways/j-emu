@@ -1,6 +1,7 @@
 import type { Catalog } from "../../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../../character/application/character-service.ts";
 import type { CombatPort } from "../../../combat/ports/combat-port.ts";
+import { BrokenItemError } from "../../../inventory/domain/broken-item-error.ts";
 import { PocketDeniedError } from "../../../inventory/domain/pocket-denied-error.ts";
 import type { InventoryService } from "../../../inventory/domain/inventory-service.ts";
 import type { PocketTarget } from "../../../inventory/domain/put-on-pocket.ts";
@@ -69,6 +70,7 @@ export class PutOnCommand implements OaCommand {
     } catch (error) {
       if (error instanceof WearDeniedError) throw new ProtocolError(203, error.message);
       if (error instanceof PocketDeniedError) throw new ProtocolError(204, error.message);
+      if (error instanceof BrokenItemError) throw new ProtocolError(204, error.message);
       throw error;
     }
   }
@@ -82,6 +84,7 @@ export class PutOnCommand implements OaCommand {
       return this.encode(await this.handle({ accountId }, this.decode(envelope)));
     } catch (error) {
       if (error instanceof PocketDeniedError) throw new ProtocolError(204, error.message);
+      if (error instanceof BrokenItemError) throw new ProtocolError(204, error.message);
       throw error;
     }
   }

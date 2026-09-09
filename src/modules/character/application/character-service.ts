@@ -213,6 +213,12 @@ export class CharacterService
     return hero;
   }
 
+  async lockById(characterId: number): Promise<Hero> {
+    const hero = await this.heroes.lockById(characterId);
+    if (!hero) throw new Error(`Hero ${characterId} is missing`);
+    return hero;
+  }
+
   async applyEquipmentVitals(hero: Hero, bonuses: readonly ArtifactSkillBonus[]): Promise<Hero> {
     const naked = requireHeroSkills(await this.skills.list(hero.id));
     const totals = totalHeroSkills(naked, bonuses);

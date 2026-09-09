@@ -22,12 +22,17 @@ export const items = inventorySchema.table(
     locationKind: text("location_kind").notNull(),
     pocketPosition: integer("pocket_position"),
     equipmentSlot: integer("equipment_slot"),
+    durability: integer("durability").notNull(),
+    durabilityMax: integer("durability_max").notNull(),
     version: integer("version").notNull(),
   },
   (table) => [
     check("items_id_fight_safe", sql`${table.id} >= 100000`),
     check("items_quantity_check", sql`${table.quantity} > 0`),
     check("items_version_check", sql`${table.version} > 0`),
+    check("items_durability_check", sql`${table.durability} >= 0`),
+    check("items_durability_max_check", sql`${table.durabilityMax} >= 0`),
+    check("items_durability_range_check", sql`${table.durability} <= ${table.durabilityMax}`),
     check(
       "items_location_kind_check",
       sql`${table.locationKind} IN ('bag', 'pocket', 'equipment')`,

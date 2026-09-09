@@ -21,20 +21,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 ## Текущий playable slice
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
-и цепочка `drizzle/0000_foundation_init`, `drizzle/0001_character_add_hero_personal_details`,
-`drizzle/0002_world_location_scalars`, `drizzle/0003_character_bootstrap_state`,
-`drizzle/0004_catalog_artifact_wear_and_equipment_slot`,
-`drizzle/0005_character_experience_progression`,
-`drizzle/0006_character_hp_regeneration`,
-`drizzle/0007_catalog_artifact_bag_economy`,
-`drizzle/0008_inventory_pocket_position_unique`,
-`drizzle/0009_catalog_artifact_actions`,
-`drizzle/0010_character_move_ready_at`,
-`drizzle/0011_world_area_links`,
-`drizzle/0012_catalog_bot_fight_look`,
-`drizzle/0013_catalog_artifact_extra`,
-`drizzle/0014_catalog_bot_loot`,
-`drizzle/0015_character_ghost_injury`.
+и единственная pre-baseline миграция `drizzle/0000_foundation_init.sql`.
 Поля ниже совпадают с runtime.
 
 ### `identity`
@@ -54,7 +41,7 @@ money_gold_minor, kind, gender, language, body, sk, honor, hp_time, regen_at tim
 - `hero_skills(hero_id FK → heroes ON DELETE CASCADE, skill_id, value)` с PK
   `(hero_id, skill_id)`.
 - `hero_reputations(hero_id FK → heroes ON DELETE CASCADE, object_id, value)`
-  PK `(hero_id, object_id)`; `object_id > 0 AND <> 36`; `value >= 0`. Нет row = 0. SUM **36** не хранится. Migration `0017`.
+  PK `(hero_id, object_id)`; `object_id > 0 AND <> 36`; `value >= 0`. Нет row = 0. SUM **36** не хранится.
 - `experience_grants(hero_id, operation_id, amount, exp_before, exp_after,
 level_before, level_after, content_release_id, progression_digest, created_at)`
   с PK `(hero_id, operation_id)`, FK на `heroes` и `content.releases`;
@@ -76,22 +63,27 @@ REP-01 (`hero_reputations` + derived SUM 36 на чтении).
 ### `inventory`
 
 - `item_id_seq`: `MIN 100_000` `MAX 2_147_483_647` `NO CYCLE` (не пересекаться с native/glove `persSpells.srcId`). [ID_POLICY.md](ID_POLICY.md), [ID_RANGES.md](../../../jgr-emu/docs/ID_RANGES.md).
-- `items(id bigint DEFAULT nextval, hero_id integer, artifact_id, quantity, location_kind, pocket_position, equipment_slot, version)`.
+- `items(id bigint DEFAULT nextval, hero_id integer, artifact_id, quantity, location_kind, pocket_position, equipment_slot, durability, durability_max, version)`.
+  Instance `durability`/`durability_max` — INV-05, целые `>= 0`,
+  `durability <= durability_max`. Колонки `NOT NULL` без SQL DEFAULT;
+  runtime пишет явные значения с catalog template при create.
 
 `location_kind` ∈ `bag|pocket|equipment` с CHECK взаимоисключения slot-колонок.
 Частичный unique `(hero_id, equipment_slot) WHERE location_kind = 'equipment'`.
-Частичный unique `(hero_id, pocket_position) WHERE location_kind = 'pocket'`
-(`0008_inventory_pocket_position_unique`). Отдельных containers/reservations нет.
+Частичный unique `(hero_id, pocket_position) WHERE location_kind = 'pocket'`.
+Отдельных containers/reservations нет.
 
 ### `catalog`
 
 Versioned projection активной content release:
 
 - `artifacts(release_id, id, title, picture, type_id, kind_id, slot_mask, weight,
-level_min, level_max, gender, price_minor, flags, bag_stack, skills jsonb,
-artifact_actions jsonb, extra jsonb)`
+level_min, level_max, gender, price_minor, flags, bag_stack, durability,
+durability_max, skills jsonb, artifact_actions jsonb, extra jsonb)`
   PK `(release_id, id)`. `price_minor` — integer cents ≥ 0 (`0` валиден);
-  `flags` integer ≥ 0; `bag_stack` integer ≥ 1; `artifact_actions` — typed map
+  `flags` integer ≥ 0; `bag_stack` integer ≥ 1; `durability` /
+  `durability_max` integer ≥ 0, `durability <= durability_max` (`0`/`0` =
+  не tracking). `artifact_actions` — typed map
   (пустой объект = нет USE). `extra` — dump-proven fight blobs (`spell`,
   `spells`/`hits` на 9095); пустой объект валиден (еда 77).
 - `bots(release_id, id, title, level, max_hp, strength, hunt_nick, hunt_swf,
@@ -123,10 +115,10 @@ source_digest)` PK `(release_id, level, skill_id)`; FK на boundary и
 - `store_lots(release_id, area_id, lot_id, artikul_id, type_id, price, ord)`
   PK `(release_id, area_id, lot_id)`; FK на `artifacts` и `store_types` той
   же release. Slice: area 504 type `-131`, lots 80/23 и 82/24. Area
-  проверяет publication, SQL FK на `world.areas` нет. Migration `0016`.
+  проверяет publication, SQL FK на `world.areas` нет.
 - `reputation_tracks(release_id, object_id, type, title, image, unlock_flag)`
   PK `(release_id, object_id)`; type 2; `object_id > 0 AND <> 36`. Slice:
-  только Радвей **5**, empty unlock. Migration `0017`.
+  только Радвей **5**, empty unlock.
 
 Отдельных spell-таблиц нет: fight spell живёт в `artifacts.extra`.
 `common|conf`, empty chrome и HUD defaults читаются из
@@ -135,15 +127,10 @@ versioned catalog tables той же release. Исходные bootstrap-фай�
 import input publication pipeline, а не runtime source gameplay-запроса.
 Chat/menu links пока остаются в обязательной game policy.
 
-Migration `0003_character_bootstrap_state` добавила persisted hero state,
-`hero_skills` и bootstrap catalog projection. Migration
-`0004_catalog_artifact_wear_and_equipment_slot` добавила wear constraints и
-`skills` artifact-а, а также unique occupancy equipment slot. Equipment totals
-считаются из naked `hero_skills` и `artifacts.skills`; это derived read/mutation
-state, не отдельная таблица. Migration
-`0005_character_experience_progression` добавила `experience_grants` и
-normalized `level_skill_values`. Hero creation читает L1 из pinned progression
-snapshot; policy хранит только EXP 1 и misc skills.
+Hero creation читает L1 из pinned progression
+snapshot; policy хранит только EXP 1 и misc skills. Equipment totals
+считаются из naked `hero_skills` и `artifacts.skills`; это derived
+read/mutation state, не отдельная таблица.
 
 ### `world`
 

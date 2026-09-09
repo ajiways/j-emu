@@ -1,4 +1,5 @@
 import type { StorePurchase } from "../../app/store-purchase.ts";
+import type { StoreRepair } from "../../app/store-repair.ts";
 import type { FastifyInstance } from "fastify";
 import type { AppConfig } from "../../app/config.ts";
 import type { PlayableAccountRegistration } from "../../app/playable-account-registration.ts";
@@ -74,6 +75,7 @@ export class JuggerWireModule {
     outbox: EsrvOutbox;
     longPoll: LongPollCoordinator;
     storePurchase: StorePurchase;
+    storeRepair: StoreRepair;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -119,6 +121,10 @@ export class JuggerWireModule {
       input.storePurchase,
       "Jugger-wire module requires store purchase",
     );
+    const storeRepair = requirePresent(
+      input.storeRepair,
+      "Jugger-wire module requires store repair",
+    );
     try {
       const fightWire = new FightWireMapper(
         {
@@ -156,6 +162,7 @@ export class JuggerWireModule {
         presenceFanout,
         huntFanout,
         storePurchase,
+        storeRepair,
       );
       const esrvPoll = new EsrvPollAssembler(
         characters,

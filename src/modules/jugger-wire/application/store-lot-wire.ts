@@ -10,6 +10,8 @@ export type StoreLotArtifactView = Readonly<{
   levelMin: number;
   levelMax: number;
   flags: number;
+  durability: number;
+  durabilityMax: number;
   skills: Readonly<Record<string, ArtifactSkillWireBlock>>;
 }>;
 
@@ -24,8 +26,8 @@ export type StoreLotWireBlock = Readonly<{
   price: number;
   level_min: number;
   level_max: number;
-  durability: 0;
-  durability_max: 0;
+  durability: number;
+  durability_max: number;
   validity: 0;
   cnt: 0 | 1;
   flags: number;
@@ -53,8 +55,6 @@ export type StoreLotWireBlock = Readonly<{
 const EMPTY_STORE_LOT_DISPLAY = {
   trend: 0,
   quality: 0,
-  durability: 0,
-  durability_max: 0,
   validity: 0,
   slot2_mask: 0,
   companion_type: 0,
@@ -94,6 +94,8 @@ export function storeLotWire(lot: StoreLot, artifact: StoreLotArtifactView): Sto
     price: lot.price,
     level_min: artifact.levelMin,
     level_max: artifact.levelMax,
+    durability: artifact.durability,
+    durability_max: artifact.durabilityMax,
     cnt: artifact.slotMask !== 0 ? 0 : 1,
     flags: artifact.flags,
     slot_mask: artifact.slotMask,

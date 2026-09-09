@@ -20,6 +20,8 @@ export class ArtifactDefinition {
     readonly skills: readonly ArtifactSkillBonus[],
     readonly useActions: Readonly<Record<string, ArtifactUseAction>>,
     readonly extra: ArtifactExtra,
+    readonly durability: number,
+    readonly durabilityMax: number,
   ) {
     if (!Number.isInteger(id) || id <= 0) throw new Error("Invalid artifact id");
     if (!title) throw new Error(`Artifact ${id} title is required`);
@@ -54,6 +56,15 @@ export class ArtifactDefinition {
     }
     if (!Number.isInteger(bagStack) || bagStack < 1) {
       throw new Error(`Artifact ${id} bagStack is invalid`);
+    }
+    if (!Number.isInteger(durability) || durability < 0) {
+      throw new Error(`Artifact ${id} durability is invalid`);
+    }
+    if (!Number.isInteger(durabilityMax) || durabilityMax < 0) {
+      throw new Error(`Artifact ${id} durabilityMax is invalid`);
+    }
+    if (durability > durabilityMax) {
+      throw new Error(`Artifact ${id} durability exceeds durabilityMax`);
     }
     const ids = new Set<string>();
     for (const skill of skills) {

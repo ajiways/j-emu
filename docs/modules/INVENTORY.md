@@ -3,10 +3,11 @@
 ## Статус
 
 Paperdoll `PUT_ON`/`PUT_OFF`, bag DROP 9095, pocket 93/99 и world USE 77
-**готово**: raw-AMF E2E и реальный CEF-прогон. Точный статус:
+**готово**: raw-AMF E2E и реальный CEF-прогон. Durability/repair (INV-05)
+workflow `done`, product **частично** без CEF мастерской. Точный статус:
 [CAPABILITIES.md](../CAPABILITIES.md).
 
-Не перенесены durability, fight cast/`persSpells`, DRINK/ADD_MP и патронташ.
+Не перенесены fight cast/`persSpells`, DRINK/ADD_MP, upgrade и патронташ.
 
 ## Источники поведения
 
@@ -52,7 +53,6 @@ Bag item обязан иметь подтверждённые `type_id`, `kind_i
 
 Дальше не этот срез:
 
-- durability/repair/upgrade;
 - ADD_MP / DRINK / TEMPEFFECT;
 - quest/item scripts и dialog actions — отдельный `IUS-01` после появления
   quest application ports.
@@ -182,9 +182,7 @@ wire = `flags & 8 ? 1 : 0`. Стартовая 9095: `flags: 40`
 Unique paperdoll/bag: `bagStack = 1`, стакать нельзя. `priceMinor` missing ≠ 0.
 
 9095: `priceMinor: 0`, `flags: 40`, `bagStack: 1`. Provenance: live dump
-instance flags/price; unique wearable. Bundle сейчас `playable-slice/v8`
-(INV-04 добавил 77; INV-03 добавил 93/99); миграция bag-полей —
-`0007_catalog_artifact_bag_economy`, `artifact_actions` — `0009`.
+instance flags/price; unique wearable. Bundle сейчас `playable-slice/v15`.
 
 Второго stackable/sellable артикула в slice нет. E2E/CEF — throw-away 9095.
 Void-sell без dump-proven priced artifact не выдумывался.
@@ -240,7 +238,7 @@ Throw-away не вызывает `applyEquipmentVitals`. В бою `syncResource
 
 ### Out of scope
 
-Pocket, USE, durability, mail GIVE, COME_IN overload, store buy beyond
+Pocket, USE, mail GIVE, COME_IN overload, store buy beyond
 504 lots 23/24 ([STORE.md](STORE.md)), grant/merge
 новых стаков (кроме уменьшения DROP), economy ledger.
 
@@ -320,7 +318,7 @@ PUT_OFF: `pocket → bag`, затем merge одинаковых bag-стако�
 
 ### Content
 
-`playable-slice/v6` → **v7**. Миграция `0008_inventory_pocket_position_unique`.
+`playable-slice/v15`. Pocket occupancy — partial unique в `0000_foundation_init`.
 
 | id  | title                 | picture                  | typeId | kindId | slotMask  | weight | priceMinor | flags | bagStack |
 | --- | --------------------- | ------------------------ | ------ | ------ | --------- | ------ | ---------- | ----- | -------- |
@@ -349,7 +347,7 @@ Lock: hero + `lockForHero` + `syncResources`, как PUT_ON. Не
 ### Out of scope
 
 Fight `castSpell` / `persSpells` / `rs` ordering, USE из bag, медальон 209,
-патронташ, TEMPEFFECT drinks, durability. Refill пояса — CMB-03.
+патронташ, TEMPEFFECT drinks. Refill пояса — CMB-03. Durability — INV-05.
 
 ### INV-03 acceptance
 
@@ -450,7 +448,7 @@ OA: новый `UseArtifactCommand`, не ветка внутри PUT_ON. Нов
 ### Out of scope
 
 ADD_MP, DRINK/TEMPEFFECT, books/`bonus_id`, waiting, openDialog, recipes,
-ghost, durability.
+ghost. Durability — INV-05.
 
 ### INV-04 acceptance
 
@@ -468,12 +466,100 @@ ghost, durability.
 Новый герой, четыре USE мяса, `status:100`, без `user|view`, стек в PostgreSQL
 пуст. Restart покрыт raw-AMF e2e.
 
+## INV-05 — durability, death loss and repair
+
+### Architecture decision
+
+Отдельный `ARC-INV` / `ARC-ECO` не нужен. Instance durability — колонки
+`inventory.items.durability` / `durability_max`, не JSON. Catalog владеет
+шаблоном (`artifacts.durability` / `durability_max`) и `priceMinor`/`flags`.
+Character владеет золотом через `debitMoney`. Combat не пишет `items`.
+Death: composition `HuntFightSettlement`, та же UoW что `noteDefeat`, порт
+`applyDeathDurability`. Repair: composition `StoreRepair`, та же схема что
+ECO-01 buy (inventory mutation + `debitMoney`). Economy-модуля нет.
+`flags_ext` не добавлять: infinite = `flags & 1` (NON_BREAK) и
+`flags & 536870912` (COLLECTS_EPICNESS). Chat notify — `SOC-01`.
+
+### Правила
+
+`durabilityMax > 0` или infinite → предмет tracks durability. `0`/`0` —
+еда/пояс/спеллы, прочность не ведётся. Instance копирует catalog при create.
+Не `Number(x) || 0` и не catalog overlay поверх missing instance.
+
+Смерть (hp 0 на hunt finish): pool = надетые tracking с `current > 0`, без
+TEMPEFFECT; `pickDeathBreaks` 4–5 или весь pool. −1; finite `1/1` delete;
+`0/N` PUT_OFF в bag. RNG — `RandomSource.unit` на settlement. Win тоже
+ломает, если hunter hp 0 (live rewards loop). Practice fights в j-emu нет.
+
+PUT_ON `0/N` — **204** `Эту вещь нельзя надеть!` (`BrokenItemError`).
+Level/gender WearDenied остаётся **203**. Bag `actions` без PUT_ON если
+broken.
+
+Repair OA `store|repair` form `{ id }` — instance id. Live не проверяет
+`area.code=store`. Finite → `(max−1)/(max−1)`; infinite → fill current.
+Цена золотом: `min(50, round(priceGold * 0.02 * 100) / 100)`, затем
+`goldToMinor`. `priceMinor=0` → cost 0, debit не вызывать. Cannot repair /
+missing item **203** `нельзя починить`. Недостаточно денег **2**
+`Недостаточно денег`. Ghost/fight не блокируют (live).
+
+### Content
+
+`playable-slice/v15`. Все артефакты обязаны иметь оба поля.
+
+| id                 | occupancy bit | dur   | provenance                                |
+| ------------------ | ------------- | ----- | ----------------------------------------- |
+| 21                 | FOOT 1        | 30/30 | dump `interesting_full` «Простые сапоги»  |
+| 20                 | BODY 2        | 30/30 | dump + `CHARACTER_STATS` «Простая кираса» |
+| 26                 | LEG 4         | 30/30 | dump + `CHARACTER_STATS` «Простые поножи» |
+| 24                 | 16            | 30/30 | dump, store lot 82 (L2)                   |
+| 9095               | 32            | 3/3   | dump + `CHARACTER_STATS`                  |
+| 23                 | 32            | 30/30 | dump, store lot 80 (L2)                   |
+| 77/93/99/9098–9100 | —             | 0/0   | не tracking                               |
+
+Starter bag: 9095, 20, 21, 26, 93×2, 99×10, 77×4. Не надевать серые доспехи
+на login. 103 с `expire` не публиковать.
+
+### Public ports
+
+- `applyDeathDurability({ characterId, random })` → `{ paperdollChanged }`;
+- `repair({ characterId, itemId })` → `{ costMinor }` (0 = free, no debit);
+- catalog template durability on `ArtifactDefinition`;
+- composition `StoreRepair` debit + repair в одной UoW.
+
+### Wire
+
+Bag/view/store-lot несут instance или catalog `durability` /
+`durability_max`. `store|repair` success **flat**: `store|repair`
+`{status:100}`, `user|bag`, `user|view`, `user|magic`, `state`.
+
+### Fail-fast / restart
+
+Нет catalog durability на artifact — публикация падает. Missing instance
+columns — runtime 204. Concurrent death/repair — hero+items lock, один
+победитель. Reconnect/restart читает PostgreSQL.
+
+### Out of scope
+
+Upgrade INV-06; set-bonus INV-07; 103 expire; BAG slots; flags_ext /
+draconis infinite; chat macros; workshop tab client filter (client-side
+`dur < max`).
+
+### INV-05 acceptance
+
+- unit: break/repair/cost/pick 4–5; PUT_ON omit when broken;
+- integration: persist death −1 and repair `(max-1)/(max-1)`; concurrent
+  repair one winner;
+- raw-AMF: four L1 durables equipped, hunt loss, 4 broken, 0/N in bag,
+  PUT_ON 204; repair 9095 cost 0 → 2/2; repair 20 cost 0.02g; restart;
+- CEF мастерской не прогонялся — product **частично**, пока нет CEF
+  20/21/26/9095 → смерть о Грызля → снятие 0/N → починка в 504.
+
 ## Architecture checkpoint — план
 
-Containers, reservations и durability schema по-прежнему не спроектированы.
-Следующий inventory checkpoint после INV-04 — quest-aware `IUS-01`; DRINK /
-ADD_MP — отдельный срез, когда появится dump-proven артикул.
-Процесс: [ROADMAP.md](../migration/ROADMAP.md) и
+INV-05 реализован (workflow `done`). Containers, reservations и upgrade
+schema не спроектированы. Следующий inventory checkpoint — INV-06. DRINK /
+ADD_MP — когда появится dump-proven артикул. Процесс:
+[ROADMAP.md](../migration/ROADMAP.md) и
 [PLAYBOOK.md](../migration/PLAYBOOK.md).
 
 ## Acceptance
@@ -486,4 +572,5 @@ ADD_MP — отдельный срез, когда появится dump-proven 
 - paperdoll 9095 **готово** подтверждён CEF PUT_ON (статы и bag);
 - DROP throw-away 9095 **готово** подтверждён CEF из bag;
 - pocket 93/99 **готово** подтверждён CEF PUT_ON на пояс;
-- world USE 77 **готово** подтверждён CEF из bag.
+- world USE 77 **готово** подтверждён CEF из bag;
+- durability/repair **частично**: raw-AMF E2E есть, CEF мастерской нет.

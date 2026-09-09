@@ -98,8 +98,8 @@ release) отклоняет весь candidate release.
 picture, description, flags, direction)` PK `(release_id, from_area_id, item_id)`;
   FK на `areas` той же release для from и to.
 
-Миграции: `0010_character_move_ready_at`, `0011_world_area_links` (имена
-осмысленные, Drizzle Kit). JSONB для items запрещён.
+Схема: `0000_foundation_init` (имена осмысленные, Drizzle Kit). JSONB для
+items запрещён.
 
 ### Public ports
 

@@ -505,7 +505,7 @@
 - **Acceptance:** grant 5 persists through reconnect/restart; `user|stats`
   shows type:2 5 only when value > 0 and always SUM 36; unknown id / grant 36
   fail-fast. CEF reputation UI not required until a quest consumes the port.
-- **Status:** `next`
+- **Status:** `done`
 
 ## Wave 5 — inventory and character engine generality
 
@@ -518,16 +518,47 @@
 
 - **ID:** `INV-05`
 - **depends_on:** `INV-02`, `CMB-04`
-- **Behavior evidence:** legacy `INVENTORY_USE.md` §8b, durability code.
-- **Content set:** representative предметы с `durability`/`durability_max` на
-  каждый occupancy slot type; массовый импорт остальных — DATA-02, не
-  требование этой capability.
-- **Architecture checkpoint / decision:** pending — durability как inventory
-  state vs economy payment port для repair price.
-- **Acceptance:** смерть снимает −1 у 4–5 надетых предметов, `0` → авто
-  PUT_OFF, `store|repair` считает `min(50, price×0.02)`, generic для любого
-  предмета с durability, не только одного захардкоженного.
-- **Status:** `queued`
+- **Behavior evidence:** legacy `INVENTORY_USE.md` § «Прочность и Мастерская»,
+  `src/durability.ts`, `src/durabilityApply.ts`, `src/store.ts`
+  `handleStoreRepair`, `src/fight/rewards.ts` (death after non-practice
+  finish), `src/items.ts` broken PUT_ON, dump
+  `_research/from_register/interesting_full.json` and
+  [INVENTORY.md](../modules/INVENTORY.md).
+- **Content set:** bump `playable-slice/v14` → **v15**. Every published
+  artifact has explicit integer `durability`/`durabilityMax` (`0`/`0` =
+  does not track). Representative paperdoll occupancy bits, dump-proven L1
+  greyset + already published store gloves: **21** FOOT `1` 30/30, **20**
+  BODY `2` 30/30, **26** LEG `4` 30/30, **24** MGLOVE `16` 30/30 (L2),
+  **9095**/**23** slot `32` 3/3 and 30/30. Starter bag adds 20/21/26 (not
+  pre-equipped). Trophy **103** (expire) and remaining PROTOCOL bits
+  (BELT/WEAPON/HEAD/…) stay DATA-02 — do not invent. Mass import — DATA-02.
+- **Architecture checkpoint / decision:** complete — existing ADRs and
+  ECO-01/CMB-03 composition UoW are sufficient; no `ARC-INV` / `ARC-ECO` /
+  `ARC-CMB`. Inventory owns instance `items.durability` /
+  `durability_max` (columns, not JSON) and mutations (break, auto PUT_OFF,
+  1/1 destroy, repair). Catalog owns authored template durability and
+  `priceMinor`/`flags`. Character owns `debitMoney` for repair gold.
+  Combat does not write `items`; `HuntFightSettlement` calls inventory
+  `applyDeathDurability` in the same UoW as `noteDefeat` when hp is 0
+  (hunt only; no practice fights). Repair is composition `StoreRepair`:
+  inventory `repair` + `debitMoney`; inventory does not write `heroes`.
+  No economy module, ledger, or `flags_ext` column (infinite = `flags`
+  NON_BREAK + COLLECTS_EPICNESS only; draconis DATA-02). RNG is injected
+  `RandomSource.unit` already on settlement. Chat «Вещи потеряли
+  прочность» is `SOC-01`. `store|repair` is OA `{ id }`, not store-area
+  gated (live). Full contract: [INVENTORY.md](../modules/INVENTORY.md),
+  [STORE.md](../modules/STORE.md).
+- **Acceptance:** generic for any item with `durabilityMax > 0`. Death
+  picks 4–5 equipped tracking items (or the whole pool if smaller), −1
+  each; `0/N` auto PUT_OFF to bag (vitals recalc); finite `1/1` deletes;
+  PUT_ON of `0/N` is **204** `Эту вещь нельзя надеть!` (INV-01
+  level/gender WearDenied stays **203**). `store|repair` cost
+  `min(50, round(priceGold×0.02×100)/100)` gold, result finite
+  `(max−1)/(max−1)`; insufficient gold status **2**; cannot repair **203**
+  `нельзя починить`. Persist reconnect/restart. Concurrent repair one
+  winner. CEF: equip four L1 durables, die to Gryzl, see auto-unequip of
+  broken, repair in 504 workshop.
+- **Status:** `done`
 
 ### INV-06 — Upgrade / enchant chain
 
@@ -541,7 +572,7 @@
 - **Acceptance:** 6-ступенчатая заточка работает для произвольного предмета с
   authored chain; резонатор сбрасывает ступень; тип 4 explicitly не
   поддержан, не молча игнорируется.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### INV-07 — Set bonuses and gear-spell hook
 

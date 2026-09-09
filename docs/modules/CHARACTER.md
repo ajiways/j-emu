@@ -351,11 +351,10 @@ Restart теста с fake clock обязан передать тот же clock
 
 ### Persistence
 
-`character.heroes.regen_at` — `timestamptz NOT NULL`. `hp_time` — remaining
-seconds для `user|unitframe`. Creation: полные naked HP/MP, `hp_time=0`,
-`regen_at` = unix-second truncated now. Policy не хранит startup `hpTime`.
-Миграция `0006` backfill существующих hero: `regen_at` = момент migrate
-(unix-second truncated now). Колонки `updated_at` нет.
+`character.heroes.regen_at` — `timestamptz NOT NULL` в `0000_foundation_init`.
+`hp_time` — remaining seconds для `user|unitframe`. Creation: полные naked
+HP/MP, `hp_time=0`, `regen_at` = unix-second truncated now. Policy не хранит
+startup `hpTime`. Колонки `updated_at` нет.
 
 ### CHR-02 acceptance
 
@@ -365,7 +364,7 @@ seconds для `user|unitframe`. Creation: полные naked HP/MP, `hp_time=0`
   `regen_at`, clock regression, missing HPREG while wounded, HPREG gear
   change updates `hp_time` without instant full heal, in-fight equipment
   mutation leaves `hp_time`/`regen_at` untouched;
-- integration: persist `regen_at`, backfill, reconnect/restart, concurrent
+- integration: persist `regen_at`, reconnect/restart, concurrent
   sync, rollback, grant replay still syncs, equip after wound, active fight
   via account-keyed `ActiveFightQuery`, in-fight vitals save without regen
   clock write;
