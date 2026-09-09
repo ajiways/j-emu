@@ -621,11 +621,40 @@ Bag bit `CAN_BE_UPGRADED=512`. Карточка: `upgrade_id` / `upgrade_level` 
   flat 203 + bag; restart; fight 203;
 - CEF диалога заточки отложен до редактора; product **частично**.
 
+## INV-07 — set bonuses and gear-spell hook
+
+### Architecture decision
+
+Отдельный `ARC-*` не нужен. Бонус комплекта — по `extra.set.id`, не по
+цвету и не по `trend`. `trend` 1/2/3 блокирует PUT_ON микса (`204`
+«Эту вещь нельзя надеть!»). Kind-139 строка живёт в тех же `inventory.items`
+с новым `location_kind=tempeffect` (несколько строк на героя; unique слота
+нельзя — несколько сетов сразу). Wire: slot `134217728`, `expire:0`,
+`cnt:0`. Picture у **106** в dump пустая — catalog это допускает только для
+kind 139. Портрет — только wire overlay. Combat не читает inventory tables:
+порт `equippedGearSpells` отдаёт `extra.spell` с nonempty effects; attach в
+бою — GEAR-01. Recruit AMF `spell` без `effects` в срез не тащим как боевой
+hook.
+
+### Content
+
+Pub1 AMF. Сет **47** «Рекрута»: **30, 33, 35, 27, 28** + **106**. Mix:
+**43** trend 1, **46** trend 3. `level_boundaries` 9–15, чтобы надеть L12
+шлем. `MAGSTR` в skills. Стартовый bag не выдаёт L10+ шмот.
+
+### INV-07 acceptance
+
+- unit: set_id / bonusN / mix / portrait at 4;
+- integration: TEMPEFFECT 106 persist, concurrent PUT_ON one winner;
+- raw-AMF: 4 вещи → avatar overlay; 5 → 106 skills; mix 204; restart;
+- CEF после редактора.
+
 ## Architecture checkpoint — план
 
 INV-06 workflow `done`. Следующий inventory checkpoint — INV-07
-(set-bonus / gear-spell hook). Containers, reservations не спроектированы.
-DRINK / ADD_MP — INV-08, когда появится dump-proven артикул. Процесс:
+(set-bonus по `set_id`, TEMPEFFECT kind 139, portrait overlay, gear-spell
+read port). Containers, reservations не спроектированы.
+DRINK / ADD_MP — INV-08. Процесс:
 [ROADMAP.md](../migration/ROADMAP.md) и
 [PLAYBOOK.md](../migration/PLAYBOOK.md).
 

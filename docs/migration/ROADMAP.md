@@ -587,14 +587,26 @@
 - **ID:** `INV-07`
 - **depends_on:** `INV-01`, `INV-05`
 - **Behavior evidence:** legacy `INVENTORY_USE.md` set-bonus §, `GEAR_SPELL.md`.
-- **Content set:** один representative сет (4 предмета) + один gear-spell
-  hook proof-of-concept; полный каталог сетов — отдельная задача массового
-  импорта.
-- **Architecture checkpoint / decision:** pending — set-bonus вычисление на
-  equip snapshot; combat consumption hook без импорта combat-таблиц в
-  inventory.
-- **Acceptance:** сет-бонус применяется/снимается generic по `extra.trend`,
-  не по цвету; портрет сета собирается из 4 вещей.
+- **Content set:** комплект рекрута **47**: paperdoll **30/33/35/27/28**
+  (live `RECRUIT_5`) + bonus articule **106**; mix-доказательство **43**
+  (trend 1) и **46** (trend 3). Dump: Pub1 `artifact_artikul_*.amf`.
+  Полный каталог сетов — массовый импорт. Slice max level сейчас 8 —
+  для ношения L12 шлема публикуются dump-proven `level_boundaries` 9–15.
+- **Architecture checkpoint / decision:** set-bonus считается по
+  `extra.set.id` / `set_id`, не по `trend`. `trend` 1/2/3 — запрет микса на
+  PUT_ON (`204` «Эту вещь нельзя надеть!»; trend 0 мешается со всеми).
+  Порог: N paperdoll вещей одного `set_id` → старший `bonusK` с K ≤ N.
+  Бонус — каталожный артикул kind 139 / type 9, persist как
+  `inventory.items` `location_kind=tempeffect`, wire slot `134217728`,
+  `expire:0`, `cnt:0`. Портрет с 4 вещей: overlay `user|view.avatar_big` /
+  `user|unitframe.avatar_small` из `extra.set.avatar_*`, hero appearance не
+  пишется. Gear-spell: inventory отдаёт read-only `extra.spell` с nonempty
+  `effects` (combat attach — GEAR-01, без импорта combat-таблиц). ADR-0017–0020
+  достаточны; `ARC-*` не нужен.
+- **Acceptance:** 4 вещи сета 47 меняют портрет; 5-я вешает TEMPEFFECT **106**
+  и его `artifact_skills`; PUT_OFF бонуса при надетых кусках возвращает
+  строку; trend 1+3 → `204`; неизвестный bonus articule — fail-fast
+  публикации.
 - **Status:** `next`
 
 ### INV-08 — Full USE pipeline generality
