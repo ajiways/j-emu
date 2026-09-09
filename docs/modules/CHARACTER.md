@@ -6,13 +6,14 @@ Bootstrap закрыт: raw-AMF E2E и реальный CEF smoke-test пока�
 локацию после cold login. CHR-01 `grantExperience` реализован как internal
 port: EXP/level и managed skills пишутся в PostgreSQL, raw-AMF init/init2
 показывают final boundary после reconnect/restart. Клиентского OA и CEF
-level-up нет до CMB-03/quests, поэтому character progression остаётся
+level-up нет до квестов, поэтому character progression остаётся
 частичным. CHR-02 lazy HP regen реализован как internal ports `syncResources` /
 `noteHp`: wounded HP начисляется с `regen_at` на resource reads и мутациях,
-`hp_time` уходит в `user|unitframe`. CMB-03 — первый client-visible consumer
-этих портов (бой). Honor и ghost/injury не входят. Equipment-derived VIT/hpMax считаются после PUT_ON; без экипа HUD
-показывает naked L1 (VIT 10). Точный статус:
-[CAPABILITIES.md](../CAPABILITIES.md).
+`hp_time` уходит в `user|unitframe`. CMB-03 пишет fight HP/EXP через эти
+порты (raw-AMF). Honor и ghost/injury не входят. CMB-03 loss пишет HP `0` без ghost: до
+CMB-04 CHR-02 regen может заживить труп после ненулевого elapsed. Equipment-derived VIT/hpMax
+считаются после PUT_ON; без экипа HUD показывает naked L1 (VIT 10). Точный
+статус: [CAPABILITIES.md](../CAPABILITIES.md).
 
 ## Источники поведения
 
@@ -226,10 +227,8 @@ notification не входит в CHR-01: realtime owner появляется в
   progression formula.
 
 CHR-01 implementation закрыт как internal enabling capability: production-клиент
-пока не может создать EXP grant без CMB-03/quest consumer. Workflow-статус
-`done` не повышает character progression до `готово` и не требует
-бессодержательного CEF сценария. Первый реальный consumer обязан добавить
-raw-AMF и CEF acceptance.
+не имеет отдельного EXP OA. CMB-03 — consumer боя (raw-AMF). Workflow-статус
+`done` не повышает character progression до `готово`. Quest consumer ещё нет.
 
 ## CHR-02 — out-of-combat HP regeneration
 
@@ -289,7 +288,7 @@ authority.
 
 - `syncResources({ characterId })` — lock hero, спросить active fight, применить
   elapsed либо pause; persist только при изменении `hp` или `hp_time`;
-- `noteHp({ characterId, hp })` — authoritative HP write для будущего CMB-03 и
+- `noteHp({ characterId, hp })` — authoritative HP write для CMB-03 и
   тестов: lock, записать `hp` в `[0, maxHp]`, пересчитать `hp_time` от нового
   deficit, `regen_at` = unix-second truncated now. Elapsed старого дефицита не
   применяется поверх нового HP.
@@ -364,14 +363,12 @@ seconds для `user|unitframe`. Creation: полные naked HP/MP, `hp_time=0`
   fake clock advances; harness restart передаёт тот же clock; `mp_time`
   остаётся HUD `0`; ATTACK_BOT sync-before-start; clock regression on
   init/unitframe is `204`;
-- нет ticker, нет fake OA, нет CEF gate (бой ещё не персистит HP).
+- нет ticker, нет fake OA. CEF экрана результата после CMB-03 не прогонялся.
 
-Первый consumer, который пишет HP с боя (CMB-03), наследует CEF acceptance
-регена.
+CMB-03 пишет HP с боя (raw-AMF). CEF confirmation регена после боя нет.
 
 CHR-02 implementation закрыт как internal enabling capability: production
-client не видит отдельного regen OA, а CEF не подтверждает HP после боя.
-Workflow-статус `done` не повышает character до `готово`. Clock regression на
+client не видит отдельного regen OA. Clock regression на
 init/unitframe мапится в `204` через общий Error path, без отдельного
 ProtocolError.
 

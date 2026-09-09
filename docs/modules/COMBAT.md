@@ -3,9 +3,10 @@
 ## Статус
 
 Есть hunt melee loop (raw-AMF L/C/R, delay grant/bot-counter, kill, waiter
-re-pair), map `joinHunt` и CMB-02 pocket/glove/rage casts. Terminal
-HP/EXP/loot persist — CMB-03. Shuffle 3↔3 не в этом срезе. CEF кнопок и
-счётчиков пояса не подтверждался — product status combat остаётся частично.
+re-pair), map `joinHunt`, CMB-02 pocket/glove/rage casts и CMB-03 terminal
+settlement (HP/EXP/money/loot, `leaveFight`, esrv `fight|loot` затем
+`fight|exit`). Shuffle 3↔3 не в этом срезе. CEF экрана результата после
+CMB-03 не прогонялся — product status combat остаётся частично.
 
 ## Источники поведения
 
@@ -57,7 +58,7 @@ account-keyed `CombatPort.activeFightId`. `CombatService` держит один 
 4. Pocket/glove/rage: HTTP `castSpell` пустой; poll `{rs,sq}` **до** FX для
    `srcType` 2/3 и native 6/7. Melee L/C/R остаётся strike-then-rs.
 5. Terminal: `fightFinish` на fproxy; CMB-03 добавляет esrv `fight|loot` затем
-   `fight|exit` в одном `2:` object. Сейчас exit без loot/HP persist.
+   `fight|exit` в одном `2:` object после composition UoW (HP/EXP/money/loot).
 
 Inventory layout lock (`PUT_ON`/`PUT_OFF`/`DROP`/`SELL` → `203` в бою) —
 именованное `FightRules` в [INVENTORY.md](INVENTORY.md), не live. Live
@@ -136,6 +137,16 @@ fproxy, нет 77 в бою, нет generic effect engine. AOE ending (`targetCo
 
 ## CMB-03 — terminal settlement
 
+Срез закрыт (raw-AMF). Composition `HuntFightSettlement` после RAM finish:
+одна UoW (`noteHp`, `grantExperience` если ≥ 1, `creditMoney`, `grantToBag`,
+`refillPocketAfterFight`), затем history best-effort, затем esrv
+`fight|loot` затем `fight|exit`. Combat не пишет `heroes`/`items`. Catalog
+бот 2: `baseExp` 15, money 0.2–0.44, `lootNothingWeight` 3460 (= 3000 + 460
+неопубликованных overlay-весов), entries 77/93/99. `leaveFight` HTTP
+`{rs:true}`; last human — flee `type:2` без лута; союзник жив — только
+flee-exit, бой продолжается. Loss: HP 0, loot-блок с нулями, без ghost.
+CEF экрана результата не прогонялся.
+
 ### Architecture decision
 
 Отдельный `ARC-CMB` не нужен. ADR-0020 остаётся: active fight только RAM.
@@ -200,11 +211,54 @@ Catalog: на `bots` — `base_exp`, `money_min`, `money_max`, `loot_drop_cnt`,
 release. Публикация без существующего artifact — ошибка candidate. Slice
 version bump. Combat не читает fixtures.
 
+### Out of scope (CMB-03 leftover)
+
+Ghost/injury/RESURRECT и mid-fight F5 (`CMB-04`); quest loot; party split;
+dungeon bands; system chat; `Clock.schedule`; OA FIGHT_JOIN/HELP;
+live `10_000_000+hero.id`.
+
+## CMB-04 — reconnect, locks, ghost
+
+### Architecture decision
+
+Отдельный `ARC-CMB` не нужен. ADR-0020 не меняется: бой не пишется в
+PostgreSQL. Reconnect — wire overlay на тот же RAM `Battle`. History
+cleanup уже у `FinishedFightCleanup` (72h, batch вне request path).
+FightRules 203 на layout/travel/USE/ATTACK уже есть; CMB-04 их не
+расширяет на store/npc (фич нет в slice).
+
+### Reconnect
+
+Пока процесс жив и `activeFightId` не null: `common|init2` отдаёт
+`fight|conf` с тем же `fightId`/`fightAkey`/`userId`=`heroes.id`.
+`state.fight_id` и `user|unitframe.fight_id` — numeric id этого боя, не
+HUD default. Перед conf сбросить auth/bootstrap очереди аккаунта (live
+`resumeFightConfForHero`). Fproxy `auth` снова паркует bootstrap.
+
+Если hunter всё ещё в паре: resume **без** `oppwait`, сразу `oppnew` и
+`attacknow` с `restTime` = остаток wall-clock. Первый вход в бой по-
+прежнему `oppwait`→`oppnew`. Таймер хода не паузится на F5. Hunt overlay
+остаётся busy. Restart процесса — как сейчас: RAM/overlay/queue пусты,
+settlement нет.
+
+### Ghost / RESURRECT
+
+Character владеет `ghost`, `injury_time`, `injury_artikul_id`. Loss UoW
+(тот же `HuntFightSettlement`) вызывает character port, не combat tables.
+Ghost **блокирует** CHR-02 regen (иначе `noteHp(0)` заживёт на следующем
+sync). Roster: `dead:4` при ghost (live), не `dead:1`. Wire injury id
+**875**, `injury_time` = unix now+600; артикул 875 в slice не публиковать.
+
+OA `RESURRECT` (`common|object`, тот же реестр): не в бою; HP
+`max(2, floor(hpMax * 0.05))`; снять ghost/injury; dest для outdoor hunt
+— текущая 503, без dungeon/BG веток. Flat: `common|action`, `state`,
+`user|unitframe`, `user|skills`, `common|area_conf`, `common|hunt`,
+`chat|area_population`.
+
 ### Out of scope
 
-Ghost/injury/RESURRECT (`CMB-04`); quest loot; party split; dungeon bands;
-system chat; reconnect mid-fight; `Clock.schedule`; OA FIGHT_JOIN/HELP;
-live `10_000_000+hero.id`.
+OA FIGHT_JOIN/HELP; persist боя; `arena|finished_fights`; dungeon/BG
+resurrect dest; artifact 875; `Clock.schedule`.
 
 ## Границы модулей
 

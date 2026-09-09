@@ -13,7 +13,7 @@
   `depends_on`.
 - Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
   `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **CMB-03**.
+- Ровно одна запись имеет статус `next`: **CMB-04**.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -393,22 +393,42 @@
   a no-op. FakeClock/RNG, no wall-clock sleep. CEF: result screen without
   ~60s ResultWaiting; bag/EXP/HP match server after exit. Two-hunter join
   still one fight id; loot to top damager, EXP by damage share.
-- **Status:** `next`
+- **Status:** `done`
 
 ### CMB-04 — Reconnect, locks and history
 
 - **ID:** `CMB-04`
 - **depends_on:** `CMB-03`
-- **Behavior evidence:** legacy `FIGHT_RECONNECT.md`, `FIGHT_LOCK.md`,
-  `FIGHT_JOIN.md`, ADR-0020 and [COMBAT.md](../modules/COMBAT.md).
+- **Behavior evidence:** `FIGHT_RECONNECT.md`, `FIGHT_LOCK.md`, `FIGHT_JOIN.md`
+  (reconnect is init2 `fight|conf`, not OA JOIN), `HP_REGEN.md` ghost,
+  `presence.ts` `dead:4`, `commonObject.ts` `RESURRECT`, ADR-0020 and
+  [COMBAT.md](../modules/COMBAT.md).
 - **Content set:** none beyond already published fight definitions.
-- **Architecture checkpoint / decision:** pending — confirm process-local
-  reconnect lifetime, guard port and 72-hour history cleanup ownership.
-- **Acceptance:** reconnect before restart restores fight; restart abandons
-  active state without partial settlement; gameplay locks and bounded history
-  behave consistently; death produces persisted ghost/injury state and
-  RESURRECT clears it by the confirmed legacy contract.
-- **Status:** `queued`
+- **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
+  no `ARC-*`. Active fight stays RAM (ADR-0020); no reconnect table.
+  `common|init2` piggybacks `fight|conf` while `CombatPort.activeFightId` is
+  set; overlay `state`/`unitframe` `fight_id` from that port (not HUD
+  default). Re-auth parks bootstrap; if still paired, skip `oppwait` and
+  send `oppnew` + `attacknow` with remaining `restTime`. Turn wall-clock
+  does not pause. Restart still drops RAM without settlement (existing
+  `combat-restart`). `FinishedFightCleanup` already owns 72h batches —
+  do not add request-path cleanup or `arena|finished_fights` OA.
+  Ghost/injury belong to character (`heroes.ghost`, `injury_time`,
+  `injury_artikul_id`); combat does not write those columns. Loss
+  settlement calls a character port from the same composition UoW as
+  `noteHp(0)`. Ghost blocks CHR-02 regen. Roster `dead:4` when ghost
+  (live presence). `RESURRECT` is existing `common|object` code: HP
+  `max(2, floor(hpMax*0.05))`, clear ghost/injury, outdoor dest stays
+  current area 503 (no dungeon/BG). Injury id **875** is a dump-proven
+  wire integer; do not publish artifact 875. OA `FIGHT_JOIN`/`HELP` stay
+  out. Full contract: [COMBAT.md](../modules/COMBAT.md).
+- **Acceptance:** raw-AMF F5 mid-hunt: init2 has same `fightId`/`akey`,
+  arena re-auths, paired hunter sees opponent and remaining turn bar
+  (not `oppwait`). Restart mid-fight still no rewards/history. Loss:
+  ghost persists, hp stays 0 across clock advance, roster `dead:4`;
+  RESURRECT clears ghost, HP > 0, FightRules unlock. CEF: F5 in Gryzl
+  fight returns to arena; death shows ghost until RESURRECT.
+- **Status:** `next`
 
 ## Wave 4 — quest dependencies and cycle 1–8
 

@@ -54,6 +54,9 @@
 - `fproxy-pocket-glove` — raw-AMF 93/99 `{rs}` затем FX, CD HTTP `{rs:false}`
   без restriction, consume кармана после init, rage/aggro rs-then-FX, glove
   9095 `persCP` и ending rs-then-strike;
+- `fproxy-settlement` — win 50310 esrv loot-then-exit, EXP/money persist
+  reconnect/restart; loss HP 0 без EXP/ghost; `leaveFight` flee `type:2`;
+  two-hunter EXP top damager; pocket 93 refill from bag;
 - `esrv-exit-reconnect` — `fight|exit`, затем restart и повторный hunt;
 - `combat-restart` — restart посреди боя прекращает active fight, не меняет
   HP/bag и не создаёт finished history;

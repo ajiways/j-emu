@@ -12,9 +12,10 @@ WLD-02 hunt overlay + map `joinHunt`, CMB-01 melee delay port и CMB-02
 pocket/glove/rage loadout: persistent state в PostgreSQL; esrv delivery и hunt
 overlay process-local; active content через release projections; active combat
 в RAM (несколько accounts на один fight id, `CombatDelay` не `Clock.schedule`;
-HTTPS fproxy consume кармана после успеха). CMB-03 добавит одну composition
-UoW на terminal (character/inventory ports, затем esrv loot+exit), без таблиц
-active fight.
+HTTPS fproxy consume кармана после успеха). CMB-03 landed: composition UoW
+на terminal, catalog `bots` rewards + `bot_loot_entries`, esrv loot-then-exit.
+CMB-04 добавит init2 `fight|conf` overlay на тот же RAM battle и character
+ghost/injury/`RESURRECT`, без таблиц active fight.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение

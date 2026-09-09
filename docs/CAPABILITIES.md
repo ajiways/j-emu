@@ -55,10 +55,10 @@ bootstrap. Internal `grantExperience` атомарно применяет DATA-0
 
 Не перенесено:
 
-- CEF confirmation of regen until combat persists HP (CMB-03);
+- CEF confirmation of CMB-03 result screen / HP-EXP-bag after exit;
 - ghost/injury/RESURRECT (CMB-04);
 - honor progression;
-- клиентский EXP grant через бой/квест (CMB-03 / quests).
+- клиентский EXP grant через квест.
 
 Equipment-derived `user|skills` / `hpMax` считаются из naked skills + надетых
 предметов (перчатка 9095 даёт VIT+5). Без экипа HUD показывает naked L1.
@@ -118,8 +118,8 @@ bag, деньги остаются `25.00`, bag пуст, reconnect совпад
 
 ## Inventory — частично
 
-Не перенесены durability/repair, DRINK/TEMPEFFECT, ADD_MP и добор пояса
-после боя (`CMB-03`).
+Не перенесены durability/repair, DRINK/TEMPEFFECT, ADD_MP. Добор пояса после
+боя (`CMB-03`) есть: spent cells refill from bag to `pocketCntMax`.
 
 ## World presence — готово
 
@@ -153,15 +153,15 @@ hunt overlay и map join: первый ATTACK_BOT **50310** ставит `fight_
 
 ## Combat — частично
 
-Есть hunt melee loop и CMB-02 casts (raw-AMF): ATTACK_BOT → fproxy
-auth/bootstrap, L/C/R `attackwait`+`cast` затем `{rs}`, карман 93/99,
-ярость 6 / разозлить 7 и перчатка 9095 `{rs}` затем FX, позже удар бота и
-standalone `attacknow`, kill без leftover grant, `joinHunt` waiter `oppwait`.
-Delay port ~1400/~2500 ms, `BattleRules` урон `legacy behavior`. CEF вход в
-бой с двух клиентов есть; **кнопки L/C/R после паузы и счётчики
-пояса/перчатки/ярости в CEF не подтверждались**.
+Есть hunt melee loop, CMB-02 casts и CMB-03 terminal settlement (raw-AMF):
+ATTACK_BOT → fproxy auth/bootstrap, L/C/R, карман/перчатка/ярость, затем
+esrv один `2:` object `fight|loot` затем `fight|exit`. Win 50310 пишет HP/EXP/
+money (overlay 0.2–0.44) и ролл лута 77/93/99; loss пишет HP в том числе 0
+без EXP/лута; `leaveFight` HTTP `{rs:true}` и flee `type:2`. Duplicate
+settlement no-op. Restart посреди боя без награды. CEF экрана результата
+не прогонялся.
 
-Не перенесены: loot, HP/EXP/level settlement, reconnect и ghost.
+Не перенесены: reconnect mid-fight и ghost/injury (CMB-04).
 
 ## Quests и NPC 1–8 — не перенесено
 

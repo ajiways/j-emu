@@ -9,7 +9,8 @@ esrv `2:`/`131:`, chat auth). Точный статус:
 Hunt overlay и map join **готово**: первый ATTACK_BOT 50310 ставит
 `fight_id`, второй входит в тот же бой (`joinHunt` team 1). Authored
 wander/respawn для 50310 в dump нет — не выдумывать. Melee loop — CMB-01
-(raw-AMF). Pocket fight cast — CMB-02 (raw-AMF). Terminal loot/HP — CMB-03.
+(raw-AMF). Pocket fight cast — CMB-02 (raw-AMF). Terminal loot/HP — CMB-03
+(raw-AMF). Mid-fight F5 `fight|conf` — CMB-04.
 
 ## Источники поведения
 
@@ -54,7 +55,7 @@ gates / `store|*` — **ECO-01**. Dungeon/BG copies и `common|instance_conf` �
 `status:203` `нельзя во время боя` (live `fightBusy`). Это не live-исключение
 для PUT_ON; для travel live уже режет.
 
-### Content set (`playable-slice/v11`)
+### Content set (`playable-slice/v12`)
 
 Dump-proven subset, не весь L1–8 (это DATA-04 corpus):
 

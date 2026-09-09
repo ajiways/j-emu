@@ -120,10 +120,11 @@ state и outbound packets. В PostgreSQL владеет только завер�
 персонажа/инвентарь напрямую.
 
 **API:** `startHunt`, `joinHunt`, `hasFight`, `execute`, `activeFightId`,
-`accountForFight`, `takePocketConsume`, `takeExit`. Injected `CombatDelay`
+`accountForFight`, `takePocketConsume`, `takeExit`, `takeLoot`. Injected `CombatDelay`
 (dueAt + cancel по fight id) и `CombatWake` для fproxy. Loadout snapshot
 собирает `jugger-wire` из inventory/catalog ports; CMB-03 settlement —
-composition UoW, не запись combat в `heroes`/`items`.
+composition UoW, не запись combat в `heroes`/`items`. CMB-04 reconnect —
+тот же `activeFightId` на init2 `fight|conf`, без persist боя.
 Mapper старого `arena|finished_fights` / info view существует в combat
 application; OA `arena|finished_fights` и `fight_info.php` в текущем срезе
 не регистрируются.

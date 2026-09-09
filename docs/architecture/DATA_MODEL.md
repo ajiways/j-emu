@@ -32,7 +32,8 @@ Playerbot-таблиц и признаков `is_bot` нет.
 `drizzle/0010_character_move_ready_at`,
 `drizzle/0011_world_area_links`,
 `drizzle/0012_catalog_bot_fight_look`,
-`drizzle/0013_catalog_artifact_extra`.
+`drizzle/0013_catalog_artifact_extra`,
+`drizzle/0014_catalog_bot_loot`.
 Поля ниже совпадают с runtime.
 
 ### `identity`
@@ -90,9 +91,15 @@ artifact_actions jsonb, extra jsonb)`
   `spells`/`hits` на 9095); пустой объект валиден (еда 77).
 - `bots(release_id, id, title, level, max_hp, strength, hunt_nick, hunt_swf,
 hunt_scale, hunt_fps, hunt_speed, hunt_avatar, hunt_kind, hunt_hide_on_map,
-hunt_sk, hunt_body)`
+hunt_sk, hunt_body, base_exp, money_min, money_max, loot_drop_cnt,
+loot_bonus_chance, loot_bonus_min, loot_bonus_max, loot_nothing_weight)`
   PK `(release_id, id)`. Map hunt uses swf/avatar; fight `oppnew` uses
   `hunt_sk`/`hunt_body`/`hunt_avatar` (Gryzl live: sk `"11"`, body `""`).
+  Reward scalars — overlay Gryzl bot 2; `loot_nothing_weight` = 3000 + сумма
+  unpublished overlay entry weights.
+- `bot_loot_entries(release_id, bot_id, artikul_id, drop_weight, count_min,
+count_max)` PK `(release_id, bot_id, artikul_id)`; FK на `bots` и `artifacts`
+  той же release. Published Gryzl entries: 77, 93, 99.
 - `skill_definitions(release_id, id, title, group_key, sort_order, weight,
 image, value_kind)` PK `(release_id, id)`.
 - `level_boundaries(release_id, level, exp_min, exp_max, bag_cnt, honor_rank,
@@ -107,8 +114,8 @@ source_digest)` PK `(release_id, level, skill_id)`; FK на boundary и
   `(release_id, document_key)`; допустимые ключи: `hud_defaults`, `chrome`,
   `common_conf`, `welcome_message`.
 
-Отдельных spell-таблиц нет: fight spell живёт в `artifacts.extra`. Loot-таблиц
-бота ещё нет (CMB-03). `common|conf`, empty chrome и HUD defaults читаются из
+Отдельных spell-таблиц нет: fight spell живёт в `artifacts.extra`.
+`common|conf`, empty chrome и HUD defaults читаются из
 `catalog.game_wide_documents` активной release; level/appearance metadata — из
 versioned catalog tables той же release. Исходные bootstrap-файлы являются
 import input publication pipeline, а не runtime source gameplay-запроса.

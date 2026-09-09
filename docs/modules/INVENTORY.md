@@ -74,7 +74,9 @@ armor 20/26/103 is not invented in this playable slice.
 
 Смысл: в бою нельзя докладывать расходку на пояс и менять экип/сумку. Трата из
 кармана — fproxy `castSpell` (`CMB-02`), не PUT_ON. World `USE` из bag live уже
-`fightBusy`. Добор ячеек после боя (`POCKET.md` refill) — `CMB-03`.
+`fightBusy`. Добор ячеек после боя (`POCKET.md` refill) — `CMB-03`: spent cells
+добираются из bag до `pocketCntMax`; исчезнувший стак создаётся в том же
+`slot_num`.
 
 Live `jgr-emu` `commonObject.ts` эти коды **не** блокирует; в
 [FIGHT_LOCK.md](../../../jgr-emu/docs/FIGHT_LOCK.md) строка стоит как
@@ -344,8 +346,8 @@ Lock: hero + `lockForHero` + `syncResources`, как PUT_ON. Не
 
 ### Out of scope
 
-Fight `castSpell` / `persSpells` / `rs` ordering, refill after fight, USE из
-bag, медальон 209, патронташ, TEMPEFFECT drinks, durability.
+Fight `castSpell` / `persSpells` / `rs` ordering, USE из bag, медальон 209,
+патронташ, TEMPEFFECT drinks, durability. Refill пояса — CMB-03.
 
 ### INV-03 acceptance
 
@@ -446,7 +448,7 @@ OA: новый `UseArtifactCommand`, не ветка внутри PUT_ON. Нов
 ### Out of scope
 
 ADD_MP, DRINK/TEMPEFFECT, books/`bonus_id`, waiting, openDialog, recipes,
-ghost, refill after fight (`CMB-03`), durability.
+ghost, durability.
 
 ### INV-04 acceptance
 
