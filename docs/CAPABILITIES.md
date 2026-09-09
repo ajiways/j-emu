@@ -53,7 +53,7 @@
 ## Character — частично
 
 Есть persisted naked HP/MP/EXP, skills и appearance, достаточные для HUD после
-bootstrap. Internal `grantExperience` атомарно применяет DATA-01 L1–L8 curve,
+bootstrap. Internal `grantExperience` атомарно применяет DATA-01 L1–L14 curve,
 переживает reconnect/restart и не имеет production OA/CEF consumer. Internal
 `syncResources` / `noteHp` применяют lazy HP regen с `regen_at` и `hp_time`
 без ticker и без CEF gate; `mp_time` остаётся HUD `0`.
@@ -137,7 +137,11 @@ CEF мастерской не прогонялся.
 ступеней type 3, резонатор на той же ступени, type 4 nested `203`, fail-roll
 коммитит consume. CEF диалога заточки отложен до редактора контента.
 
-Не перенесены DRINK/TEMPEFFECT, ADD_MP, set-bonus. Добор пояса после
+Сеты (INV-07) workflow `done`, product **частично**: PUT_ON пяти вещей
+рекрута 47 вешает TEMPEFFECT **106**, с 4 вещей overlay портрета,
+trend 1+3 → **204**. CEF сетов отложен до редактора.
+
+Не перенесены DRINK/TEMPEFFECT-напитки, ADD_MP. Добор пояса после
 боя (`CMB-03`) есть: spent cells refill from bag to `pocketCntMax`.
 
 ## World presence — готово

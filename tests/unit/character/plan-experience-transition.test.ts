@@ -103,7 +103,7 @@ describe("planExperienceTransition", () => {
         level: 1,
         skills: l1Skills,
         snapshot,
-        amount: 23872,
+        amount: 347422,
       }),
     ).toThrow(ProgressionLimitError);
     expect(() =>

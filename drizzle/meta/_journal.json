@@ -15,6 +15,13 @@
       "when": 1788981902973,
       "tag": "0001_inventory_item_upgrade",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788984841624,
+      "tag": "0002_inventory_item_tempeffect",
+      "breakpoints": true
     }
   ]
 }

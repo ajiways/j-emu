@@ -43,6 +43,7 @@ export function buildUserUnitframe(
   hud: HudDefaults,
   inActiveFight = false,
   fightId: number | null = null,
+  avatarSmall = appearance.avatarSmall,
 ): UserUnitframeBlock {
   if (inActiveFight && fightId === null) {
     throw new Error(`Hero ${hero.id} is in a fight without a numeric fight id`);
@@ -75,7 +76,7 @@ export function buildUserUnitframe(
     revengeStatus: hud.revengeStatus,
     energy_percent_max: hud.energyPercentMax,
     energy_percent_current: hud.energyPercentCurrent,
-    avatar_small: appearance.avatarSmall,
+    avatar_small: avatarSmall,
     injury_time: hero.ghost ? hero.injuryTime : hud.injuryTime,
     injury_artikul_id: hero.ghost ? hero.injuryArtikulId : hud.injuryArtikulId,
   };

@@ -123,7 +123,7 @@
   skills, equipment-derived maxima and HP/MP scaled exactly once. Duplicate
   operation IDs return the same persisted result, conflicting reuse fails, and
   concurrency/rollback/reconnect/restart are covered. Published `bag_cnt` is
-  resolved from the resulting boundary and remains 2 throughout L1–L8; bag
+  resolved from the resulting boundary and remains 2 throughout L1–L14; bag
   `amount`/`total`/`amount_max` belong to `INV-02`. Travel overload gate stays
   `WLD-01`. CHR-01 adds no fake OA: until
   CMB-03 or a quest flow consumes the port, character progression remains
@@ -590,8 +590,9 @@
 - **Content set:** комплект рекрута **47**: paperdoll **30/33/35/27/28**
   (live `RECRUIT_5`) + bonus articule **106**; mix-доказательство **43**
   (trend 1) и **46** (trend 3). Dump: Pub1 `artifact_artikul_*.amf`.
-  Полный каталог сетов — массовый импорт. Slice max level сейчас 8 —
-  для ношения L12 шлема публикуются dump-proven `level_boundaries` 9–15.
+  Полный каталог сетов — массовый импорт. Slice публикует dump-proven
+  `level_boundaries` 9–14 (`XP_TABLE`; L15 не публикуем — dump `expMax=expMin`)
+  чтобы L12 шлем рекрута надевался.
 - **Architecture checkpoint / decision:** set-bonus считается по
   `extra.set.id` / `set_id`, не по `trend`. `trend` 1/2/3 — запрет микса на
   PUT_ON (`204` «Эту вещь нельзя надеть!»; trend 0 мешается со всеми).
@@ -607,7 +608,7 @@
   и его `artifact_skills`; PUT_OFF бонуса при надетых кусках возвращает
   строку; trend 1+3 → `204`; неизвестный bonus articule — fail-fast
   публикации.
-- **Status:** `next`
+- **Status:** `done`
 
 ### INV-08 — Full USE pipeline generality
 
@@ -622,7 +623,7 @@
   мере доказанной нужности).
 - **Acceptance:** каждая ветка пайплайна проходит raw-AMF E2E на своём
   representative предмете; неизвестная операция — `203`, не молчаливый skip.
-- **Status:** `queued`
+- **Status:** `next`
 
 ## Wave 6 — combat engine generality
 

@@ -683,6 +683,285 @@
         }
       },
       "extra": {}
+    },
+    {
+      "id": 27,
+      "title": "Палица рекрута",
+      "picture": "greyset15_mace.png",
+      "typeId": "2",
+      "kindId": 98,
+      "slotMask": 64,
+      "weight": 0,
+      "levelMin": 10,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 2000,
+      "flags": 0,
+      "bagStack": 1,
+      "durability": 30,
+      "durabilityMax": 30,
+      "skills": [
+        { "id": "DEF", "value": 4, "flags": 0 },
+        { "id": "DEX", "value": 4, "flags": 0 },
+        { "id": "MAGSTR", "value": 1, "flags": 0 },
+        { "id": "RAG", "value": 4, "flags": 0 },
+        { "id": "STR", "value": 17, "flags": 0 },
+        { "id": "VIT", "value": 15, "flags": 0 }
+      ],
+      "artifact_actions": {},
+      "extra": {
+        "trend": 0,
+        "set": {
+          "id": 47,
+          "title": "Рекрута",
+          "bonus5": 106,
+          "bonus9": 107,
+          "avatar_man": "avatar_m_set_1_gray.png",
+          "avatar_woman": "avatar_f_set_1_gray.png"
+        }
+      }
+    },
+    {
+      "id": 28,
+      "title": "Шлем рекрута",
+      "picture": "greyset15_helmet.png",
+      "typeId": "2",
+      "kindId": 47,
+      "slotMask": 256,
+      "weight": 0,
+      "levelMin": 12,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 2000,
+      "flags": 0,
+      "bagStack": 1,
+      "durability": 30,
+      "durabilityMax": 30,
+      "skills": [
+        { "id": "DEF", "value": 5, "flags": 0 },
+        { "id": "DEX", "value": 4, "flags": 0 },
+        { "id": "MAGSTR", "value": 1, "flags": 0 },
+        { "id": "RAG", "value": 4, "flags": 0 },
+        { "id": "STR", "value": 18, "flags": 0 },
+        { "id": "VIT", "value": 14, "flags": 0 }
+      ],
+      "artifact_actions": {},
+      "extra": {
+        "trend": 0,
+        "set": {
+          "id": 47,
+          "title": "Рекрута",
+          "bonus5": 106,
+          "bonus9": 107,
+          "avatar_man": "avatar_m_set_1_gray.png",
+          "avatar_woman": "avatar_f_set_1_gray.png"
+        }
+      }
+    },
+    {
+      "id": 30,
+      "title": "Кираса рекрута",
+      "picture": "greyset15_armour.png",
+      "typeId": "2",
+      "kindId": 20,
+      "slotMask": 2,
+      "weight": 0,
+      "levelMin": 8,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 2000,
+      "flags": 0,
+      "bagStack": 1,
+      "durability": 30,
+      "durabilityMax": 30,
+      "skills": [
+        { "id": "DEF", "value": 3, "flags": 0 },
+        { "id": "DEX", "value": 3, "flags": 0 },
+        { "id": "MAGSTR", "value": 1, "flags": 0 },
+        { "id": "RAG", "value": 4, "flags": 0 },
+        { "id": "STR", "value": 15, "flags": 0 },
+        { "id": "VIT", "value": 13, "flags": 0 }
+      ],
+      "artifact_actions": {},
+      "extra": {
+        "trend": 0,
+        "set": {
+          "id": 47,
+          "title": "Рекрута",
+          "bonus5": 106,
+          "bonus9": 107,
+          "avatar_man": "avatar_m_set_1_gray.png",
+          "avatar_woman": "avatar_f_set_1_gray.png"
+        }
+      }
+    },
+    {
+      "id": 33,
+      "title": "Перчатка рекрута",
+      "picture": "greyset15_lhand.png",
+      "typeId": "2",
+      "kindId": 44,
+      "slotMask": 32,
+      "weight": 0,
+      "levelMin": 7,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 2000,
+      "flags": 0,
+      "bagStack": 1,
+      "durability": 30,
+      "durabilityMax": 30,
+      "skills": [
+        { "id": "DEF", "value": 3, "flags": 0 },
+        { "id": "DEX", "value": 3, "flags": 0 },
+        { "id": "RAG", "value": 3, "flags": 0 },
+        { "id": "STR", "value": 13, "flags": 0 },
+        { "id": "VIT", "value": 11, "flags": 0 }
+      ],
+      "artifact_actions": {},
+      "extra": {
+        "trend": 0,
+        "set": {
+          "id": 47,
+          "title": "Рекрута",
+          "bonus5": 106,
+          "bonus9": 107,
+          "avatar_man": "avatar_m_set_1_gray.png",
+          "avatar_woman": "avatar_f_set_1_gray.png"
+        }
+      }
+    },
+    {
+      "id": 35,
+      "title": "Поножи рекрута",
+      "picture": "greyset15_trousers.png",
+      "typeId": "2",
+      "kindId": 6,
+      "slotMask": 4,
+      "weight": 0,
+      "levelMin": 9,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 2000,
+      "flags": 0,
+      "bagStack": 1,
+      "durability": 30,
+      "durabilityMax": 30,
+      "skills": [
+        { "id": "DEF", "value": 4, "flags": 0 },
+        { "id": "DEX", "value": 4, "flags": 0 },
+        { "id": "MAGSTR", "value": 1, "flags": 0 },
+        { "id": "RAG", "value": 4, "flags": 0 },
+        { "id": "STR", "value": 16, "flags": 0 },
+        { "id": "VIT", "value": 13, "flags": 0 }
+      ],
+      "artifact_actions": {},
+      "extra": {
+        "trend": 0,
+        "set": {
+          "id": 47,
+          "title": "Рекрута",
+          "bonus5": 106,
+          "bonus9": 107,
+          "avatar_man": "avatar_m_set_1_gray.png",
+          "avatar_woman": "avatar_f_set_1_gray.png"
+        }
+      }
+    },
+    {
+      "id": 106,
+      "title": "Комплект рекрута - 5 вещей",
+      "picture": "",
+      "typeId": "9",
+      "kindId": 139,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 0,
+      "flags": 0,
+      "bagStack": 9999,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [
+        { "id": "DEF", "value": 1, "flags": 0 },
+        { "id": "DEX", "value": 2, "flags": 0 },
+        { "id": "RAG", "value": 2, "flags": 0 },
+        { "id": "STR", "value": 7, "flags": 0 },
+        { "id": "VIT", "value": 6, "flags": 0 }
+      ],
+      "artifact_actions": {},
+      "extra": {}
+    },
+    {
+      "id": 43,
+      "title": "Перчатка убийцы",
+      "picture": "G_A_set10_magic.png",
+      "typeId": "2",
+      "kindId": 44,
+      "slotMask": 32,
+      "weight": 0,
+      "levelMin": 7,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 300000,
+      "flags": 0,
+      "bagStack": 1,
+      "durability": 30,
+      "durabilityMax": 30,
+      "skills": [
+        { "id": "DEX", "value": 12, "flags": 0 },
+        { "id": "STR", "value": 17, "flags": 0 },
+        { "id": "VIT", "value": 13, "flags": 0 }
+      ],
+      "artifact_actions": {},
+      "extra": {
+        "trend": 1,
+        "set": {
+          "id": 48,
+          "title": "Убийцы",
+          "bonus5": 109,
+          "bonus9": 110,
+          "avatar_man": "avatar_m_ubiyca.jpg",
+          "avatar_woman": "avatar_w_ubiyca.jpg"
+        }
+      }
+    },
+    {
+      "id": 46,
+      "title": "Шлем стража",
+      "picture": "G_Z_set10_helmet.png",
+      "typeId": "2",
+      "kindId": 47,
+      "slotMask": 256,
+      "weight": 0,
+      "levelMin": 12,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 300000,
+      "flags": 0,
+      "bagStack": 1,
+      "durability": 30,
+      "durabilityMax": 30,
+      "skills": [
+        { "id": "DEF", "value": 15, "flags": 0 },
+        { "id": "MAGSTR", "value": 3, "flags": 0 },
+        { "id": "STR", "value": 23, "flags": 0 },
+        { "id": "VIT", "value": 18, "flags": 0 }
+      ],
+      "artifact_actions": {},
+      "extra": {
+        "trend": 3,
+        "set": {
+          "id": 49,
+          "title": "Стража",
+          "bonus5": 111,
+          "bonus9": 112,
+          "avatar_man": "avatar_m_set_1_g_z.png",
+          "avatar_woman": "avatar_w_straj.jpg"
+        }
+      }
     }
   ],
   "bots": [
@@ -945,6 +1224,15 @@
       "group": "1",
       "order": "0",
       "weight": "900",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGSTR",
+      "title": "Магическая сила",
+      "group": "7",
+      "order": "0",
+      "weight": "0",
       "image": "",
       "valueKind": "number"
     },
@@ -1343,6 +1631,120 @@
           "id": "MPMAX",
           "value": 21
         }
+      ]
+    },
+    {
+      "level": 9,
+      "expMin": 23873,
+      "expMax": 45923,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0,
+      "evidenceKind": "legacy_extrapolated",
+      "managedSkills": [
+        { "id": "STR", "value": 23 },
+        { "id": "RAG", "value": 16 },
+        { "id": "DEX", "value": 16 },
+        { "id": "DEF", "value": 16 },
+        { "id": "VIT", "value": 19 },
+        { "id": "MPMAX", "value": 23 }
+      ]
+    },
+    {
+      "level": 10,
+      "expMin": 45923,
+      "expMax": 78323,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0,
+      "evidenceKind": "legacy_extrapolated",
+      "managedSkills": [
+        { "id": "STR", "value": 24 },
+        { "id": "RAG", "value": 17 },
+        { "id": "DEX", "value": 17 },
+        { "id": "DEF", "value": 17 },
+        { "id": "VIT", "value": 20 },
+        { "id": "MPMAX", "value": 24 }
+      ]
+    },
+    {
+      "level": 11,
+      "expMin": 78323,
+      "expMax": 122873,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0,
+      "evidenceKind": "legacy_extrapolated",
+      "managedSkills": [
+        { "id": "STR", "value": 26 },
+        { "id": "RAG", "value": 18 },
+        { "id": "DEX", "value": 18 },
+        { "id": "DEF", "value": 18 },
+        { "id": "VIT", "value": 22 },
+        { "id": "MPMAX", "value": 26 }
+      ]
+    },
+    {
+      "level": 12,
+      "expMin": 122873,
+      "expMax": 181373,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0,
+      "evidenceKind": "legacy_extrapolated",
+      "managedSkills": [
+        { "id": "STR", "value": 27 },
+        { "id": "RAG", "value": 19 },
+        { "id": "DEX", "value": 19 },
+        { "id": "DEF", "value": 19 },
+        { "id": "VIT", "value": 23 },
+        { "id": "MPMAX", "value": 27 }
+      ]
+    },
+    {
+      "level": 13,
+      "expMin": 181373,
+      "expMax": 255623,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0,
+      "evidenceKind": "legacy_extrapolated",
+      "managedSkills": [
+        { "id": "STR", "value": 28 },
+        { "id": "RAG", "value": 20 },
+        { "id": "DEX", "value": 20 },
+        { "id": "DEF", "value": 20 },
+        { "id": "VIT", "value": 24 },
+        { "id": "MPMAX", "value": 28 }
+      ]
+    },
+    {
+      "level": 14,
+      "expMin": 255623,
+      "expMax": 347423,
+      "bagCnt": 2,
+      "honorRank": 0,
+      "honorMin": 0,
+      "honorMax": 100,
+      "honorStatus": 0,
+      "evidenceKind": "legacy_extrapolated",
+      "managedSkills": [
+        { "id": "STR", "value": 30 },
+        { "id": "RAG", "value": 21 },
+        { "id": "DEX", "value": 21 },
+        { "id": "DEF", "value": 21 },
+        { "id": "VIT", "value": 25 },
+        { "id": "MPMAX", "value": 30 }
       ]
     }
   ],

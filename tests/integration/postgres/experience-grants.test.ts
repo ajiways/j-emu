@@ -205,7 +205,7 @@ describe("experience grants", () => {
       characters.service.grantExperience({
         characterId: hero.id,
         operationId: `test:${hero.id}:limit`,
-        amount: 23872,
+        amount: 347422,
       }),
     ).rejects.toBeInstanceOf(ProgressionLimitError);
     expect((await characters.service.getByAccountId(hero.accountId))?.exp).toBe(1);

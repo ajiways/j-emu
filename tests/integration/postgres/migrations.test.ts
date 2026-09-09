@@ -146,15 +146,20 @@ describe("Drizzle migrations", () => {
       .readdirSync(drizzleFolder)
       .filter((name) => name.endsWith(".sql"))
       .sort();
-    expect(sqlFiles).toEqual(["0000_foundation_init.sql", "0001_inventory_item_upgrade.sql"]);
+    expect(sqlFiles).toEqual([
+      "0000_foundation_init.sql",
+      "0001_inventory_item_upgrade.sql",
+      "0002_inventory_item_tempeffect.sql",
+    ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
     ) as { entries: Array<{ tag: string }> };
     expect(journal.entries.map((entry) => entry.tag)).toEqual([
       "0000_foundation_init",
       "0001_inventory_item_upgrade",
+      "0002_inventory_item_tempeffect",
     ]);
-    expect(await appliedCount()).toBe(2);
+    expect(await appliedCount()).toBe(3);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -187,6 +192,12 @@ describe("Drizzle migrations", () => {
       { column_name: "upgrade_level", is_nullable: "NO", column_default: null },
       { column_name: "upgrade_skill_id", is_nullable: "NO", column_default: null },
     ]);
+    const tempeffectCheck = await database.session().execute<{ check_clause: string }>(
+      sql`SELECT check_clause
+          FROM information_schema.check_constraints
+          WHERE constraint_schema = 'inventory' AND constraint_name = 'items_location_kind_check'`,
+    );
+    expect([...tempeffectCheck].map((row) => row.check_clause).join(" ")).toMatch(/tempeffect/);
   });
 
   it("applies database identifier defaults and bounded item sequence", async () => {

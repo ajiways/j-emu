@@ -24,6 +24,7 @@ export function buildUserView(
   appearance: AppearancePreset,
   level: LevelBoundary,
   artifacts: readonly EquippedArtifactBlock[],
+  avatarBig = appearance.avatarBig,
 ): UserViewBlock {
   if (!hero.body) throw new Error("Hero body is required");
   return {
@@ -33,7 +34,7 @@ export function buildUserView(
     lvl: hero.level,
     sk: hero.sk,
     body: hero.body,
-    avatar_big: appearance.avatarBig,
+    avatar_big: avatarBig,
     avatar_dtime: null,
     bag_cnt: level.bagCnt,
     artifacts,

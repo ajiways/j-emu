@@ -32,7 +32,13 @@ export const items = inventorySchema.table(
   },
   (table) => [
     check("items_id_fight_safe", sql`${table.id} >= 100000`),
-    check("items_quantity_check", sql`${table.quantity} > 0`),
+    check(
+      "items_quantity_check",
+      sql`(
+        (${table.locationKind} <> 'tempeffect' AND ${table.quantity} > 0)
+        OR (${table.locationKind} = 'tempeffect' AND ${table.quantity} = 0)
+      )`,
+    ),
     check("items_version_check", sql`${table.version} > 0`),
     check("items_durability_check", sql`${table.durability} >= 0`),
     check("items_durability_max_check", sql`${table.durabilityMax} >= 0`),
@@ -52,7 +58,7 @@ export const items = inventorySchema.table(
     ),
     check(
       "items_location_kind_check",
-      sql`${table.locationKind} IN ('bag', 'pocket', 'equipment')`,
+      sql`${table.locationKind} IN ('bag', 'pocket', 'equipment', 'tempeffect')`,
     ),
     check(
       "items_location_check",
@@ -60,6 +66,7 @@ export const items = inventorySchema.table(
         (${table.locationKind} = 'bag' AND ${table.pocketPosition} IS NULL AND ${table.equipmentSlot} IS NULL)
         OR (${table.locationKind} = 'pocket' AND ${table.pocketPosition} > 0 AND ${table.equipmentSlot} IS NULL)
         OR (${table.locationKind} = 'equipment' AND ${table.equipmentSlot} > 0 AND ${table.pocketPosition} IS NULL)
+        OR (${table.locationKind} = 'tempeffect' AND ${table.pocketPosition} IS NULL AND ${table.equipmentSlot} IS NULL)
       )`,
     ),
     index("inventory_items_hero_idx").on(table.heroId),

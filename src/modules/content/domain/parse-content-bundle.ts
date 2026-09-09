@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ARTIFACT_KIND_SET_BONUS } from "../../catalog/domain/artifact-kind.ts";
 import { PLAYABLE_SLICE_SCHEMA_VERSION, type ContentBundle } from "./content-document.ts";
 import {
   appearanceDocumentSchema,
@@ -75,24 +76,46 @@ const artifactGloveSocketSchema = z
   })
   .strict();
 
+const artifactSetSchema = z
+  .object({
+    id: z.number().int().positive(),
+    title: z.string().min(1),
+    bonus1: z.number().int().nonnegative().optional(),
+    bonus2: z.number().int().nonnegative().optional(),
+    bonus3: z.number().int().nonnegative().optional(),
+    bonus4: z.number().int().nonnegative().optional(),
+    bonus5: z.number().int().nonnegative().optional(),
+    bonus6: z.number().int().nonnegative().optional(),
+    bonus7: z.number().int().nonnegative().optional(),
+    bonus8: z.number().int().nonnegative().optional(),
+    bonus9: z.number().int().nonnegative().optional(),
+    avatar_man: z.string(),
+    avatar_woman: z.string(),
+  })
+  .strict();
+
 const artifactExtraSchema = z
   .object({
     spell: artifactSpellSchema.optional(),
     spells: z.array(artifactGloveSocketSchema).optional(),
     hits: z.array(z.number().int().min(1).max(3)).optional(),
+    trend: z.number().int().min(0).max(3).optional(),
+    set: artifactSetSchema.optional(),
   })
   .strict()
   .transform((extra) => ({
     ...(extra.spell ? { spell: extra.spell } : {}),
     ...(extra.spells ? { spells: extra.spells } : {}),
     ...(extra.hits ? { hits: extra.hits } : {}),
+    ...(extra.trend !== undefined ? { trend: extra.trend } : {}),
+    ...(extra.set ? { set: extra.set } : {}),
   }));
 
 const artifactSchema = z
   .object({
     id: z.number().int().positive(),
     title: z.string().min(1),
-    picture: z.string().min(1),
+    picture: z.string(),
     typeId: z.string().min(1),
     kindId: z.number().int().nonnegative(),
     slotMask: z.number().int().nonnegative(),
@@ -112,7 +135,13 @@ const artifactSchema = z
   .strict()
   .refine((artifact) => artifact.durability <= artifact.durabilityMax, {
     message: "durability must be <= durabilityMax",
-  });
+  })
+  .refine(
+    (artifact) => artifact.picture.length > 0 || artifact.kindId === ARTIFACT_KIND_SET_BONUS,
+    {
+      message: "picture is required except for kind 139",
+    },
+  );
 
 const huntLookSchema = z
   .object({

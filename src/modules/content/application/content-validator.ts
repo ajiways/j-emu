@@ -11,6 +11,7 @@ import {
 import { ContentValidationError } from "./content-validation-error.ts";
 import { collectStoreIssues } from "./collect-store-issues.ts";
 import { collectReputationIssues } from "./collect-reputation-issues.ts";
+import { collectSetIssues } from "./collect-set-issues.ts";
 import { collectUpgradeIssues } from "./collect-upgrade-issues.ts";
 
 const REQUIRED_SKILL_IDS = [
@@ -159,6 +160,7 @@ export class ContentValidator {
     issues.push(...collectStoreIssues(bundle));
     issues.push(...collectReputationIssues(bundle));
     issues.push(...collectUpgradeIssues(bundle));
+    issues.push(...collectSetIssues(bundle));
     if (!bundle.levels.some((level) => level.level === 1)) {
       issues.push("level 1 boundary is required");
     }

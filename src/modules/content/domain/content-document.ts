@@ -64,6 +64,24 @@ type ArtifactExtraDocument = Readonly<{
   spell?: ArtifactSpellDocument;
   spells?: readonly ArtifactGloveSocketDocument[];
   hits?: readonly number[];
+  trend?: number;
+  set?: ArtifactSetDocument;
+}>;
+
+type ArtifactSetDocument = Readonly<{
+  id: number;
+  title: string;
+  bonus1?: number;
+  bonus2?: number;
+  bonus3?: number;
+  bonus4?: number;
+  bonus5?: number;
+  bonus6?: number;
+  bonus7?: number;
+  bonus8?: number;
+  bonus9?: number;
+  avatar_man: string;
+  avatar_woman: string;
 }>;
 
 export type ArtifactDocument = Readonly<{

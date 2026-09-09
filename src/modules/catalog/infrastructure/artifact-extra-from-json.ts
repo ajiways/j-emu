@@ -1,4 +1,5 @@
 import { ArtifactExtra } from "../domain/artifact-extra.ts";
+import type { ArtifactSetInfo, SetBonusThreshold } from "../domain/artifact-set-info.ts";
 import type {
   ArtifactGloveSocket,
   ArtifactSpell,
@@ -14,7 +15,50 @@ export function artifactExtraFromJson(artifactId: number, value: unknown): Artif
     record.spell === undefined ? null : spellFromJson(artifactId, record.spell),
     socketsFromJson(artifactId, record.spells),
     hitsFromJson(artifactId, record.hits),
+    setFromJson(artifactId, record.set),
+    trendFromJson(artifactId, record.trend),
   );
+}
+
+function trendFromJson(artifactId: number, value: unknown): number {
+  if (value === undefined) return 0;
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0 || value > 3) {
+    throw new Error(`Artifact ${artifactId} extra.trend must be 0, 1, 2 or 3`);
+  }
+  return value;
+}
+
+function setFromJson(artifactId: number, value: unknown): ArtifactSetInfo | null {
+  if (value === undefined) return null;
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`Artifact ${artifactId} extra.set must be an object`);
+  }
+  const record = value as Record<string, unknown>;
+  if (typeof record.id !== "number" || !Number.isInteger(record.id) || record.id < 1) {
+    throw new Error(`Artifact ${artifactId} extra.set.id is required`);
+  }
+  if (typeof record.title !== "string" || !record.title) {
+    throw new Error(`Artifact ${artifactId} extra.set.title is required`);
+  }
+  if (typeof record.avatar_man !== "string" || typeof record.avatar_woman !== "string") {
+    throw new Error(`Artifact ${artifactId} extra.set avatars are required`);
+  }
+  const thresholds: SetBonusThreshold[] = [];
+  for (let count = 1; count <= 9; count += 1) {
+    const raw = record[`bonus${count}`];
+    if (raw === undefined) continue;
+    if (typeof raw !== "number" || !Number.isInteger(raw) || raw < 0) {
+      throw new Error(`Artifact ${artifactId} extra.set.bonus${count} is invalid`);
+    }
+    if (raw > 0) thresholds.push({ count, artikulId: raw });
+  }
+  return {
+    setId: record.id,
+    title: record.title,
+    thresholds,
+    avatarMan: record.avatar_man,
+    avatarWoman: record.avatar_woman,
+  };
 }
 
 function spellFromJson(artifactId: number, value: unknown): ArtifactSpell {

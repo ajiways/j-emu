@@ -155,21 +155,31 @@ modifiers — по сохранённому release ID; поэтому concurren
 
 Нормализованный DATA-01 core:
 
-| Level | EXP interval     | STR | RAG | DEX | DEF | VIT | MPMAX |
-| ----: | ---------------- | --: | --: | --: | --: | --: | ----: |
-|     1 | `[0, 68)`        |  12 |   8 |   8 |   8 |  10 |    12 |
-|     2 | `[68, 203)`      |  13 |   9 |   9 |   9 |  11 |    13 |
-|     3 | `[203, 473)`     |  14 |  10 |  10 |  10 |  12 |    14 |
-|     4 | `[473, 1013)`    |  16 |  11 |  11 |  11 |  13 |    16 |
-|     5 | `[1013, 1823)`   |  17 |  12 |  12 |  12 |  14 |    17 |
-|     6 | `[1823, 3623)`   |  19 |  13 |  13 |  13 |  16 |    19 |
-|     7 | `[3623, 10373)`  |  20 |  14 |  14 |  14 |  17 |    20 |
-|     8 | `[10373, 23873)` |  21 |  15 |  15 |  15 |  18 |    21 |
+| Level | EXP interval       | STR | RAG | DEX | DEF | VIT | MPMAX |
+| ----: | ------------------ | --: | --: | --: | --: | --: | ----: |
+|     1 | `[0, 68)`          |  12 |   8 |   8 |   8 |  10 |    12 |
+|     2 | `[68, 203)`        |  13 |   9 |   9 |   9 |  11 |    13 |
+|     3 | `[203, 473)`       |  14 |  10 |  10 |  10 |  12 |    14 |
+|     4 | `[473, 1013)`      |  16 |  11 |  11 |  11 |  13 |    16 |
+|     5 | `[1013, 1823)`     |  17 |  12 |  12 |  12 |  14 |    17 |
+|     6 | `[1823, 3623)`     |  19 |  13 |  13 |  13 |  16 |    19 |
+|     7 | `[3623, 10373)`    |  20 |  14 |  14 |  14 |  17 |    20 |
+|     8 | `[10373, 23873)`   |  21 |  15 |  15 |  15 |  18 |    21 |
+|     9 | `[23873, 45923)`   |  23 |  16 |  16 |  16 |  19 |    23 |
+|    10 | `[45923, 78323)`   |  24 |  17 |  17 |  17 |  20 |    24 |
+|    11 | `[78323, 122873)`  |  26 |  18 |  18 |  18 |  22 |    26 |
+|    12 | `[122873, 181373)` |  27 |  19 |  19 |  19 |  23 |    27 |
+|    13 | `[181373, 255623)` |  28 |  20 |  20 |  20 |  24 |    28 |
+|    14 | `[255623, 347423)` |  30 |  21 |  21 |  21 |  25 |    30 |
 
-L1–L6 skill values — confirmed gear-subtract evidence; L7–L8 — точный результат
+L1–L6 skill values — confirmed gear-subtract evidence; L7–L14 — точный результат
 legacy `COMBAT_BASE_GROWTH`, provenance `legacy behavior / extrapolated`.
-`bagCnt=2` для всех core rows. `expMin <= exp < expMax`; поэтому creation EXP 1
-валиден на L1, а `23873` — первый unsupported EXP и должен fail whole grant.
+INV-07 appends L9–L14 from `jgr-emu` `XP_TABLE` so L12 recruit helm 28 can be worn.
+L15 is unpublished: dump `expMax === expMin` at max level, which is an empty
+half-open interval here. `bagCnt=2` для всех core rows. `expMin <= exp < expMax`;
+поэтому creation EXP 1 валиден на L1, а `347423` — первый unsupported EXP и
+должен fail whole grant. Changing this digest on a nonempty DB requires
+`npm run db:reset`.
 
 Hero creation читает L1 из transaction-pinned snapshot, а не из startup-fixed
 managed values. После CHR-01 creation policy хранит обязательный initial EXP 1

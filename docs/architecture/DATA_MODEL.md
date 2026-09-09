@@ -22,7 +22,8 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и pre-baseline миграции `drizzle/0000_foundation_init.sql` плюс последующие
-`drizzle/0001_*.sql`. Поля ниже совпадают с runtime.
+`drizzle/0001_inventory_item_upgrade.sql` и
+`drizzle/0002_inventory_item_tempeffect.sql`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -70,8 +71,10 @@ REP-01 (`hero_reputations` + derived SUM 36 на чтении).
   xor upgraded CHECK. Колонки `NOT NULL` без SQL DEFAULT; runtime пишет явные
   значения (unupgraded `0/0/''/0`, durability с catalog template) при create.
 
-`location_kind` ∈ `bag|pocket|equipment` с CHECK взаимоисключения slot-колонок.
-Частичный unique `(hero_id, equipment_slot) WHERE location_kind = 'equipment'`.
+`location_kind` ∈ `bag|pocket|equipment|tempeffect` с CHECK взаимоисключения slot-колонок.
+`tempeffect` — INV-07 kind-139 set bonus: `quantity = 0`, оба slot-столбца NULL,
+несколько строк на героя (unique слота нельзя). Paperdoll unique остаётся
+`(hero_id, equipment_slot) WHERE location_kind = 'equipment'`.
 Частичный unique `(hero_id, pocket_position) WHERE location_kind = 'pocket'`.
 Отдельных containers/reservations нет.
 
@@ -105,7 +108,7 @@ image, value_kind)` PK `(release_id, id)`.
 honor_min, honor_max, honor_status)` PK `(release_id, level)`.
 - `level_skill_values(release_id, level, skill_id, value, evidence_kind,
 source_digest)` PK `(release_id, level, skill_id)`; FK на boundary и
-  `skill_definitions` той же release. Managed naked values L1–L8, не runtime
+  `skill_definitions` той же release. Managed naked values L1–L14, не runtime
   formula.
 - `appearance_presets(release_id, kind, gender, avatar_big, avatar_small)` PK
   `(release_id, kind, gender)`.

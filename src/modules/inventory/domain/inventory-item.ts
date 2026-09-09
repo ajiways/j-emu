@@ -4,7 +4,8 @@ import { requireItemUpgrade, UNUPGRADED, type ItemUpgrade } from "./item-upgrade
 export type ItemLocation =
   | Readonly<{ kind: "bag" }>
   | Readonly<{ kind: "pocket"; position: number }>
-  | Readonly<{ kind: "equipment"; slot: number }>;
+  | Readonly<{ kind: "equipment"; slot: number }>
+  | Readonly<{ kind: "tempeffect" }>;
 
 export class InventoryItem {
   readonly upgrade: ItemUpgrade;
@@ -22,7 +23,11 @@ export class InventoryItem {
     if (!Number.isInteger(id)) throw new Error("Jugger item ids must be integers");
     requireFightSafeItemId(BigInt(id));
     requireWireIdentity(heroId, "hero id");
-    if (quantityValue < 1) throw new Error("Item quantity must be positive");
+    if (location.kind === "tempeffect") {
+      if (quantityValue !== 0) throw new Error("Tempeffect quantity must be 0");
+    } else if (quantityValue < 1) {
+      throw new Error("Item quantity must be positive");
+    }
     if (!Number.isInteger(durability) || durability < 0) throw new Error("Durability is invalid");
     if (!Number.isInteger(durabilityMax) || durabilityMax < 0) {
       throw new Error("Durability max is invalid");

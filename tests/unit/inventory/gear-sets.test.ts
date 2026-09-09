@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  collectWornSets,
   isMaleHeroGender,
   isSetPieceSlot,
   KIND_SET,
   parseSetId,
-  parseTrend,
   pickSetBonusArtikul,
   pickSetPortrait,
   SET_AVATAR_MIN,
@@ -20,7 +20,7 @@ import {
 
 const recruit: ArtifactSetInfo = {
   setId: 47,
-  trend: 0,
+  title: "Рекрута",
   thresholds: [
     { count: 5, artikulId: 106 },
     { count: 9, artikulId: 107 },
@@ -46,7 +46,13 @@ describe("gear set formulas", () => {
           {
             setId: 48,
             count: 5,
-            info: { ...recruit, setId: 48, avatarMan: "avatar_m_set_2.png", avatarWoman: "" },
+            info: {
+              ...recruit,
+              setId: 48,
+              title: "Убийцы",
+              avatarMan: "avatar_m_set_2.png",
+              avatarWoman: "",
+            },
           },
         ],
         true,
@@ -67,12 +73,22 @@ describe("gear set formulas", () => {
 
   it("counts only paperdoll bits and treats gender 2 as female portrait", () => {
     expect(parseSetId(recruit)).toBe(47);
-    expect(parseTrend(0)).toBe(0);
-    expect(parseTrend("3")).toBe(3);
     expect(isMaleHeroGender(1)).toBe(true);
     expect(isMaleHeroGender(2)).toBe(false);
     expect(isSetPieceSlot(2, 2)).toBe(true);
     expect(isSetPieceSlot(SLOT_TEMPEFFECT, SLOT_TEMPEFFECT)).toBe(false);
     expect(SET_BONUS_EXPIRE).toBe(0);
+    expect(
+      wantedSetBonusArtikuls(
+        collectWornSets([
+          { slot: 2, slotMask: 2, kindId: 20, set: recruit },
+          { slot: 4, slotMask: 4, kindId: 6, set: recruit },
+          { slot: 32, slotMask: 32, kindId: 44, set: recruit },
+          { slot: 64, slotMask: 64, kindId: 98, set: recruit },
+          { slot: 256, slotMask: 256, kindId: 47, set: recruit },
+          { slot: SLOT_TEMPEFFECT, slotMask: 0, kindId: KIND_SET, set: null },
+        ]),
+      ),
+    ).toEqual([106]);
   });
 });

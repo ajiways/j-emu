@@ -1,5 +1,6 @@
 import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
 import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
+import { SLOT_TEMPEFFECT, SET_BONUS_EXPIRE } from "../../inventory/domain/gear-sets.ts";
 import type { ArtifactInstanceOverlay } from "./artifact-instance-overlay.ts";
 import type { ArtifactSkillWireBlock } from "./artifact-skill-wire.ts";
 import { FLAG_PUT_OFF } from "./item-action-flags.ts";
@@ -18,6 +19,7 @@ export type EquippedArtifactBlock = Readonly<{
   level_min: number;
   level_max: number;
   cnt: 0;
+  expire?: 0;
   durability: number;
   durability_max: number;
   actions: typeof FLAG_PUT_OFF;
@@ -35,7 +37,7 @@ export function buildEquippedArtifact(
   artifactSkills: Readonly<Record<string, ArtifactSkillWireBlock>>,
   overlay: ArtifactInstanceOverlay,
 ): EquippedArtifactBlock {
-  if (item.location.kind !== "equipment") {
+  if (item.location.kind !== "equipment" && item.location.kind !== "tempeffect") {
     throw new Error(`Item ${item.id} is not equipped`);
   }
   if (item.artifactId !== definition.id) {
@@ -43,6 +45,7 @@ export function buildEquippedArtifact(
       `Item ${item.id} catalog id ${item.artifactId} does not match ${definition.id}`,
     );
   }
+  const tempeffect = item.location.kind === "tempeffect";
   return {
     id: item.id,
     artikul_id: definition.id,
@@ -50,13 +53,14 @@ export function buildEquippedArtifact(
     picture: definition.picture,
     type_id: definition.typeId,
     kind_id: definition.kindId,
-    slot: item.location.slot,
+    slot: tempeffect ? SLOT_TEMPEFFECT : item.location.slot,
     slot2: 0,
     slot_num: 0,
     slot_mask: definition.slotMask,
     level_min: definition.levelMin,
     level_max: definition.levelMax,
     cnt: 0,
+    ...(tempeffect ? { expire: SET_BONUS_EXPIRE } : {}),
     durability: item.durability,
     durability_max: item.durabilityMax,
     actions: FLAG_PUT_OFF,

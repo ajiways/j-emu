@@ -10,7 +10,7 @@ export async function equippedSkillBonuses(
 ): Promise<readonly ArtifactSkillBonus[]> {
   const bonuses: ArtifactSkillBonus[] = [];
   for (const item of await inventory.list(heroId)) {
-    if (item.location.kind !== "equipment") continue;
+    if (item.location.kind !== "equipment" && item.location.kind !== "tempeffect") continue;
     const definition = await catalog.artifact(item.artifactId);
     if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
     bonuses.push(...overlaySkillBonuses(definition.skills, item.upgrade));

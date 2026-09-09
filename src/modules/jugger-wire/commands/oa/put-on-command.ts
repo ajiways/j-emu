@@ -5,6 +5,7 @@ import { BrokenItemError } from "../../../inventory/domain/broken-item-error.ts"
 import { PocketDeniedError } from "../../../inventory/domain/pocket-denied-error.ts";
 import type { InventoryService } from "../../../inventory/domain/inventory-service.ts";
 import type { PocketTarget } from "../../../inventory/domain/put-on-pocket.ts";
+import { MixDeniedError } from "../../../inventory/domain/mix-denied-error.ts";
 import { WearDeniedError } from "../../../inventory/domain/wear-denied-error.ts";
 import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
 import type { BootstrapReadModel } from "../../application/bootstrap-read-model.ts";
@@ -69,6 +70,7 @@ export class PutOnCommand implements OaCommand {
       });
     } catch (error) {
       if (error instanceof WearDeniedError) throw new ProtocolError(203, error.message);
+      if (error instanceof MixDeniedError) throw new ProtocolError(204, error.message);
       if (error instanceof PocketDeniedError) throw new ProtocolError(204, error.message);
       if (error instanceof BrokenItemError) throw new ProtocolError(204, error.message);
       throw error;
@@ -83,6 +85,7 @@ export class PutOnCommand implements OaCommand {
     try {
       return this.encode(await this.handle({ accountId }, this.decode(envelope)));
     } catch (error) {
+      if (error instanceof MixDeniedError) throw new ProtocolError(204, error.message);
       if (error instanceof PocketDeniedError) throw new ProtocolError(204, error.message);
       if (error instanceof BrokenItemError) throw new ProtocolError(204, error.message);
       throw error;

@@ -30,7 +30,7 @@ const CORE_CURVE = [
 
 describe("DATA-01 progression content", () => {
   it("freezes the CHARACTER.md L1-L8 managed values", () => {
-    expect(playable.levels).toHaveLength(8);
+    expect(playable.levels).toHaveLength(14);
     for (const expected of CORE_CURVE) {
       const row = playable.levels.find((level) => level.level === expected.level);
       if (!row) throw new Error(`Missing level ${expected.level}`);

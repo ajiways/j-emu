@@ -27,6 +27,7 @@ import { buildUserConf } from "./user-conf-block.ts";
 import { emptyUserMagic } from "./user-magic-block.ts";
 import { buildUserSkills, skillsExpireBlock, type UserSkillsBlock } from "./user-skills-block.ts";
 import { buildUserUnitframe, type UserUnitframeBlock } from "./user-unitframe-block.ts";
+import { wornSetPortrait } from "./worn-set-portrait.ts";
 import { buildUserView, type UserViewBlock } from "./user-view-block.ts";
 import { buildWelcomeMessage } from "./welcome-message-block.ts";
 import { buildUseMutation } from "./use-mutation-block.ts";
@@ -101,7 +102,20 @@ export class BootstrapReadModel {
     const appearance = await this.catalog.appearance(hero.kind, hero.gender);
     const hud = await this.catalog.hudDefaults();
     const fightId = await bootstrapFightId(this.combat, accountId);
-    return buildUserUnitframe(hero, level, appearance, hud, fightId !== null, fightId);
+    const portrait = await wornSetPortrait(
+      await this.inventory.list(hero.id),
+      this.catalog,
+      hero.gender,
+    );
+    return buildUserUnitframe(
+      hero,
+      level,
+      appearance,
+      hud,
+      fightId !== null,
+      fightId,
+      portrait === null ? appearance.avatarSmall : portrait.small,
+    );
   }
 
   async skills(accountId: number): Promise<UserSkillsBlock> {
@@ -122,9 +136,10 @@ export class BootstrapReadModel {
     const hero = await this.requireHero(accountId);
     const level = await this.catalog.level(hero.level);
     const appearance = await this.catalog.appearance(hero.kind, hero.gender);
+    const items = await this.inventory.list(hero.id);
     const artifacts = [];
-    for (const item of await this.inventory.list(hero.id)) {
-      if (item.location.kind !== "equipment") continue;
+    for (const item of items) {
+      if (item.location.kind !== "equipment" && item.location.kind !== "tempeffect") continue;
       const definition = await this.catalog.artifact(item.artifactId);
       if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
       const overlay = artifactInstanceOverlay(definition, item);
@@ -137,7 +152,14 @@ export class BootstrapReadModel {
         ),
       );
     }
-    return buildUserView(hero, appearance, level, artifacts);
+    const portrait = await wornSetPortrait(items, this.catalog, hero.gender);
+    return buildUserView(
+      hero,
+      appearance,
+      level,
+      artifacts,
+      portrait === null ? appearance.avatarBig : portrait.big,
+    );
   }
 
   async equipmentMutation(accountId: number): Promise<Readonly<Record<string, unknown>>> {

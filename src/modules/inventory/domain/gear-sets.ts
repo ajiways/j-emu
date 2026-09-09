@@ -1,20 +1,15 @@
 /** Copy of jgr-emu `gearSets.ts`: set_id bonuses, trend mix, portrait at 4. */
 
+import type { ArtifactSetInfo, SetBonusThreshold } from "../../catalog/domain/artifact-set-info.ts";
+import { ARTIFACT_KIND_SET_BONUS } from "../../catalog/domain/artifact-kind.ts";
+
+export type { ArtifactSetInfo, SetBonusThreshold };
+
 export const SET_MIX_ERROR = "Эту вещь нельзя надеть!";
 export const SET_AVATAR_MIN = 4;
-export const KIND_SET = 139;
+export const KIND_SET = ARTIFACT_KIND_SET_BONUS;
 export const SLOT_TEMPEFFECT = 134_217_728;
 export const SET_BONUS_EXPIRE = 0;
-
-export type SetBonusThreshold = Readonly<{ count: number; artikulId: number }>;
-
-export type ArtifactSetInfo = Readonly<{
-  setId: number;
-  trend: number;
-  thresholds: readonly SetBonusThreshold[];
-  avatarMan: string;
-  avatarWoman: string;
-}>;
 
 export type WornSetCount = Readonly<{
   setId: number;
@@ -24,12 +19,14 @@ export type WornSetCount = Readonly<{
 
 export type SetPortrait = Readonly<{ big: string; small: string }>;
 
-const PAPERDOLL_BITS = 0x000f_ffff;
+export type WornSetPiece = Readonly<{
+  slot: number;
+  slotMask: number;
+  kindId: number;
+  set: ArtifactSetInfo | null;
+}>;
 
-export function parseTrend(value: unknown): number {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? n : 0;
-}
+const PAPERDOLL_BITS = 0x000f_ffff;
 
 export function parseSetId(info: ArtifactSetInfo | null | undefined): number {
   if (!info) return 0;
@@ -106,4 +103,21 @@ export function wantedSetBonusArtikuls(worn: readonly WornSetCount[]): readonly 
     if (bonusId) wanted.add(bonusId);
   }
   return [...wanted];
+}
+
+export function collectWornSets(pieces: readonly WornSetPiece[]): readonly WornSetCount[] {
+  const counts = new Map<number, WornSetCount>();
+  for (const piece of pieces) {
+    if (!isSetPieceSlot(piece.slot, piece.slotMask)) continue;
+    if (skipSetCountKind(piece.kindId)) continue;
+    const setId = parseSetId(piece.set);
+    if (!setId || !piece.set) continue;
+    const previous = counts.get(setId);
+    if (previous) {
+      counts.set(setId, { ...previous, count: previous.count + 1 });
+    } else {
+      counts.set(setId, { setId, count: 1, info: piece.set });
+    }
+  }
+  return [...counts.values()];
 }

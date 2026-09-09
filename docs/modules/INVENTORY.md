@@ -639,22 +639,22 @@ hook.
 ### Content
 
 Pub1 AMF. Сет **47** «Рекрута»: **30, 33, 35, 27, 28** + **106**. Mix:
-**43** trend 1, **46** trend 3. `level_boundaries` 9–15, чтобы надеть L12
-шлем. `MAGSTR` в skills. Стартовый bag не выдаёт L10+ шмот.
+**43** trend 1, **46** trend 3. `level_boundaries` 9–14, чтобы надеть L12
+шлем. `MAGSTR` в skills. Стартовый bag не выдаёт L10+ шмот. L15 не
+публикуем: dump `expMax=expMin`. Существующие nonempty DB: `npm run db:reset`
+из‑за progression digest.
 
 ### INV-07 acceptance
 
 - unit: set_id / bonusN / mix / portrait at 4;
 - integration: TEMPEFFECT 106 persist, concurrent PUT_ON one winner;
 - raw-AMF: 4 вещи → avatar overlay; 5 → 106 skills; mix 204; restart;
-- CEF после редактора.
+- CEF после редактора; product **частично**.
 
 ## Architecture checkpoint — план
 
-INV-06 workflow `done`. Следующий inventory checkpoint — INV-07
-(set-bonus по `set_id`, TEMPEFFECT kind 139, portrait overlay, gear-spell
-read port). Containers, reservations не спроектированы.
-DRINK / ADD_MP — INV-08. Процесс:
+INV-07 workflow `done`. Следующий inventory checkpoint — INV-08
+(DRINK / ADD_MP / USE-pipeline). Containers, reservations не спроектированы.
 [ROADMAP.md](../migration/ROADMAP.md) и
 [PLAYBOOK.md](../migration/PLAYBOOK.md).
 
@@ -670,4 +670,5 @@ DRINK / ADD_MP — INV-08. Процесс:
 - pocket 93/99 **готово** подтверждён CEF PUT_ON на пояс;
 - world USE 77 **готово** подтверждён CEF из bag;
 - durability/repair **частично**: raw-AMF E2E есть, CEF мастерской нет;
-- upgrade **частично**: raw-AMF E2E есть, CEF диалога заточки отложен.
+- upgrade **частично**: raw-AMF E2E есть, CEF диалога заточки отложен;
+- set-bonus **частично**: raw-AMF E2E есть, CEF сетов отложен.

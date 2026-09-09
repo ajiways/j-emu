@@ -148,6 +148,12 @@ function location(row: {
     }
     return { kind: "pocket", position: row.pocketPosition };
   }
+  if (row.locationKind === "tempeffect") {
+    if (row.pocketPosition !== null || row.equipmentSlot !== null) {
+      throw new Error(`Tempeffect item ${row.id} has slot columns`);
+    }
+    return { kind: "tempeffect" };
+  }
   if (row.locationKind !== "equipment") {
     throw new Error(`Unknown item location ${row.locationKind}`);
   }

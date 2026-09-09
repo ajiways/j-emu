@@ -31,6 +31,11 @@ import {
   type GearUpgradeResult,
 } from "./apply-gear-upgrade.ts";
 import { overlaySkillBonuses } from "./gear-upgrade.ts";
+import { equippedGearSpells } from "./equipped-gear-spells.ts";
+import type { ArtifactSpell } from "../../catalog/domain/artifact-spell.ts";
+import { paperdollTrendsAfterWear, syncGearSetBonuses } from "./apply-gear-set-bonuses.ts";
+import { KIND_SET, setMixBlocked } from "./gear-sets.ts";
+import { MixDeniedError } from "./mix-denied-error.ts";
 
 export type StarterItemSpec = Readonly<{
   artifactId: number;
@@ -120,12 +125,16 @@ export class InventoryService {
     }
     const occupied = occupiedEquipmentSlots(items, itemId);
     const slot = requireWearablePaperdoll(hero, item, definition, occupied);
+    if (setMixBlocked(await paperdollTrendsAfterWear(items, this.catalog, item, slot))) {
+      throw new MixDeniedError();
+    }
     for (const occupant of items) {
       if (occupant.id === item.id || occupant.location.kind !== "equipment") continue;
       if (occupant.location.slot !== slot && (occupant.location.slot & slot) === 0) continue;
       await this.inventory.save(occupant.withLocation({ kind: "bag" }));
     }
     await this.inventory.save(item.withLocation({ kind: "equipment", slot }));
+    await syncGearSetBonuses(this.inventory, this.catalog, hero.id);
     return "paperdoll";
   }
 
@@ -144,8 +153,19 @@ export class InventoryService {
       await applyInventoryMutation(this.inventory, { ...merged, create: [] });
       return "pocket";
     }
+    if (item.location.kind === "tempeffect") {
+      const definition = await this.catalog.artifact(item.artifactId);
+      if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
+      if (definition.kindId !== KIND_SET) {
+        throw new Error(`Tempeffect item ${item.id} is not a set bonus`);
+      }
+      await this.inventory.delete(item);
+      await syncGearSetBonuses(this.inventory, this.catalog, heroId);
+      return "paperdoll";
+    }
     requireEquippedItem(item, heroId);
     await this.inventory.save(item.withLocation({ kind: "bag" }));
+    await syncGearSetBonuses(this.inventory, this.catalog, heroId);
     return "paperdoll";
   }
 
@@ -197,7 +217,12 @@ export class InventoryService {
   }
 
   applyDeathDurability(command: ApplyDeathDurabilityCommand): Promise<DeathDurabilityResult> {
-    return applyDeathDurability(this.inventory, this.catalog, command);
+    return applyDeathDurability(this.inventory, this.catalog, command).then(async (result) => {
+      if (result.paperdollChanged) {
+        await syncGearSetBonuses(this.inventory, this.catalog, command.characterId);
+      }
+      return result;
+    });
   }
 
   repair(command: RepairItemCommand): Promise<RepairItemResult> {
@@ -211,7 +236,7 @@ export class InventoryService {
   async equippedSkillBonuses(characterId: number): Promise<readonly ArtifactSkillBonus[]> {
     const bonuses: ArtifactSkillBonus[] = [];
     for (const item of await this.inventory.listForHero(characterId)) {
-      if (item.location.kind !== "equipment") continue;
+      if (item.location.kind !== "equipment" && item.location.kind !== "tempeffect") continue;
       const definition = await this.catalog.artifact(item.artifactId);
       if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
       bonuses.push(...overlaySkillBonuses(definition.skills, item.upgrade));
@@ -246,7 +271,9 @@ export class InventoryService {
     releaseId: string,
   ): Promise<readonly ArtifactSkillBonus[]> {
     const items = await this.inventory.lockForHero(characterId);
-    const equipped = items.filter((item) => item.location.kind === "equipment");
+    const equipped = items.filter(
+      (item) => item.location.kind === "equipment" || item.location.kind === "tempeffect",
+    );
     const ids = [...new Set(equipped.map((item) => item.artifactId))];
     const definitions = await this.artifacts.definitionsFor(releaseId, ids);
     const byId = new Map(definitions.map((definition) => [definition.id, definition]));
@@ -259,6 +286,19 @@ export class InventoryService {
       bonuses.push(...overlaySkillBonuses(definition.skills, item.upgrade));
     }
     return bonuses;
+  }
+
+  async equippedGearSpells(characterId: number): Promise<readonly ArtifactSpell[]> {
+    const items = await this.inventory.listForHero(characterId);
+    const definitions = new Map<number, ArtifactDefinition>();
+    for (const item of items) {
+      if (item.location.kind !== "equipment") continue;
+      if (definitions.has(item.artifactId)) continue;
+      const definition = await this.catalog.artifact(item.artifactId);
+      if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
+      definitions.set(item.artifactId, definition);
+    }
+    return equippedGearSpells(items, definitions);
   }
 }
 
