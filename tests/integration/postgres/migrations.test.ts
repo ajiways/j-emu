@@ -8,6 +8,7 @@ import { migrateDatabase } from "../../../src/infrastructure/postgres/migration-
 import {
   appearancePresets,
   artifacts,
+  bonuses,
   botLootEntries,
   bots,
   gameWideDocuments,
@@ -16,11 +17,13 @@ import {
   skillDefinitions,
   storeLots,
   storeTypes,
+  useScripts,
   reputationTracks,
 } from "../../../src/modules/catalog/infrastructure/schema.ts";
 import {
   experienceGrants,
   heroes,
+  heroLearnedBonuses,
   heroPersonalDetails,
   heroReputations,
   heroSkills,
@@ -78,6 +81,7 @@ describe("Drizzle migrations", () => {
       [
         "catalog.appearance_presets",
         "catalog.artifacts",
+        "catalog.bonuses",
         "catalog.bot_loot_entries",
         "catalog.bots",
         "catalog.game_wide_documents",
@@ -86,8 +90,10 @@ describe("Drizzle migrations", () => {
         "catalog.skill_definitions",
         "catalog.store_lots",
         "catalog.store_types",
+        "catalog.use_scripts",
         "catalog.reputation_tracks",
         "character.experience_grants",
+        "character.hero_learned_bonuses",
         "character.hero_personal_details",
         "character.hero_reputations",
         "character.hero_skills",
@@ -124,10 +130,13 @@ describe("Drizzle migrations", () => {
       storeTypes,
       storeLots,
       reputationTracks,
+      bonuses,
+      useScripts,
       areas,
       areaLinks,
       huntSpawns,
       heroes,
+      heroLearnedBonuses,
       heroPersonalDetails,
       heroSkills,
       heroReputations,
@@ -140,7 +149,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(29);
+    ]).toHaveLength(32);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -150,6 +159,8 @@ describe("Drizzle migrations", () => {
       "0000_foundation_init.sql",
       "0001_inventory_item_upgrade.sql",
       "0002_inventory_item_tempeffect.sql",
+      "0003_inventory_item_expire_use.sql",
+      "0004_content_draft_use_types.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -158,8 +169,10 @@ describe("Drizzle migrations", () => {
       "0000_foundation_init",
       "0001_inventory_item_upgrade",
       "0002_inventory_item_tempeffect",
+      "0003_inventory_item_expire_use",
+      "0004_content_draft_use_types",
     ]);
-    expect(await appliedCount()).toBe(3);
+    expect(await appliedCount()).toBe(5);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -192,6 +205,22 @@ describe("Drizzle migrations", () => {
       { column_name: "upgrade_level", is_nullable: "NO", column_default: null },
       { column_name: "upgrade_skill_id", is_nullable: "NO", column_default: null },
     ]);
+    const expireColumn = await database.session().execute<{
+      is_nullable: string;
+      column_default: string | null;
+    }>(
+      sql`SELECT is_nullable, column_default
+          FROM information_schema.columns
+          WHERE table_schema = 'inventory' AND table_name = 'items' AND column_name = 'expire'`,
+    );
+    expect([...expireColumn]).toEqual([{ is_nullable: "NO", column_default: null }]);
+    const draftTypes = await database.session().execute<{ check_clause: string }>(
+      sql`SELECT check_clause
+          FROM information_schema.check_constraints
+          WHERE constraint_schema = 'content' AND constraint_name = 'drafts_content_type_check'`,
+    );
+    expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/bonus/);
+    expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/use_script/);
     const tempeffectCheck = await database.session().execute<{ check_clause: string }>(
       sql`SELECT check_clause
           FROM information_schema.check_constraints

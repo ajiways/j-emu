@@ -15,6 +15,7 @@ import {
   unixSecondsOf,
 } from "../domain/hp-regen.ts";
 import { InvalidNoteHpError } from "../domain/invalid-note-hp-error.ts";
+import { InvalidNoteMpError } from "../domain/invalid-note-mp-error.ts";
 import { MissingHpregError } from "../domain/missing-hpreg-error.ts";
 import { parseCharacterId } from "../domain/parse-resource-command.ts";
 import { ProgressionContentError } from "../domain/progression-content-error.ts";
@@ -26,6 +27,7 @@ import type {
   CharacterResources,
   NoteDefeatCommand,
   NoteHpCommand,
+  NoteMpCommand,
   ResourceSnapshot,
   ResurrectCommand,
   SyncResourcesCommand,
@@ -65,6 +67,20 @@ export class ResourceService implements CharacterResources {
       const hpreg = await this.hpregFor(hero, hero.maxHp - command.hp);
       const hpTime = remainingHpSeconds(hero.maxHp - command.hp, hpreg, this.policy.k, hero.id);
       hero.applyResourceClock(command.hp, hpTime, truncatedUnixDate(this.clock));
+      await this.heroes.save(hero);
+      return resourceSnapshot(hero, false, true);
+    });
+  }
+
+  noteMp(command: NoteMpCommand): Promise<ResourceSnapshot> {
+    const characterId = parseCharacterId(command.characterId);
+    return this.unitOfWork.run(async () => {
+      const hero = await this.requireLocked(characterId);
+      if (hero.ghost) throw new GhostHeroError(characterId, "noteMp");
+      if (!Number.isInteger(command.mp) || command.mp < 0 || command.mp > hero.maxMp) {
+        throw new InvalidNoteMpError(command.mp, hero.maxMp);
+      }
+      hero.applyMp(command.mp);
       await this.heroes.save(hero);
       return resourceSnapshot(hero, false, true);
     });

@@ -618,12 +618,15 @@
   `ITEM_NPC_DIALOG.md`.
 - **Content set:** по одному representative предмету на каждую ветку:
   DRINK/TEMPEFFECT, dialog-open, multi-step script, bonus_id resolution.
-- **Architecture checkpoint / decision:** pending — typed script operation
-  registry (не generic JSON interpreter «на будущее», конкретные операции по
-  мере доказанной нужности).
-- **Acceptance:** каждая ветка пайплайна проходит raw-AMF E2E на своём
-  representative предмете; неизвестная операция — `203`, не молчаливый skip.
-- **Status:** `next`
+- **Architecture checkpoint / decision:** typed USE registry. This slice:
+  DRINK→TEMPEFFECT (640), empty code+bonus skill book (623/601), consume/grant
+  script (2371→55 / 2827), NPC dialog-open (584) returns `203`. ADD_MP
+  dispatcher exists; no L1 dump item in the slice. Unknown op → `203`.
+  System chat for books is SOC-01 and is not faked.
+- **Acceptance:** each pipeline branch has raw-AMF E2E on its representative;
+  unknown/NPC op is `203`, never silent `100`. CEF skipped until the content
+  editor can grant items.
+- **Status:** `done`
 
 ## Wave 6 — combat engine generality
 
@@ -643,7 +646,7 @@
   `BattleRules` по stats бота/оружия вместо текущей одной константы.
 - **Acceptance:** урон считается по формуле от входных статов участников, не
   по хардкоду под bot id 2; existing CMB-01 acceptance не регрессирует.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### CMB-06 — Bot AI and spellbook casting
 

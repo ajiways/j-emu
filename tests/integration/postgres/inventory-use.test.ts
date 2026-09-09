@@ -74,6 +74,9 @@ describe("inventory USE persistence", () => {
         characterId: hero.id,
         itemId: last.id,
         hpMax: hero.maxHp,
+        mpMax: hero.maxMp,
+        heroLevel: hero.level,
+        nowSec: 1_700_000_000,
       }),
     );
     expect(
@@ -94,6 +97,9 @@ describe("inventory USE persistence", () => {
           characterId: hero.id,
           itemId: last.id,
           hpMax: hero.maxHp,
+          mpMax: hero.maxMp,
+          heroLevel: hero.level,
+          nowSec: 1_700_000_000,
         }),
       ),
       database.run(async () =>
@@ -101,6 +107,9 @@ describe("inventory USE persistence", () => {
           characterId: hero.id,
           itemId: last.id,
           hpMax: hero.maxHp,
+          mpMax: hero.maxMp,
+          heroLevel: hero.level,
+          nowSec: 1_700_000_000,
         }),
       ),
     ]);
@@ -129,7 +138,11 @@ describe("inventory USE persistence", () => {
           characterId: hero.id,
           itemId: meat.id,
           hpMax: hero.maxHp,
+          mpMax: hero.maxMp,
+          heroLevel: hero.level,
+          nowSec: 1_700_000_000,
         });
+        if (used.kind !== "add_hp") throw new Error("expected ADD_HP");
         await characters.service.noteHp({
           characterId: hero.id,
           hp: Math.min(hero.maxHp, 1 + used.gain),

@@ -49,6 +49,7 @@ export async function grantToBag(
       location: { kind: "bag" },
       durability: definition.durability,
       durabilityMax: definition.durabilityMax,
+      expire: 0,
     });
     items.push(created);
     remaining -= take;

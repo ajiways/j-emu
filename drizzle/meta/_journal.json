@@ -22,6 +22,20 @@
       "when": 1788984841624,
       "tag": "0002_inventory_item_tempeffect",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1788987599182,
+      "tag": "0003_inventory_item_expire_use",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788988522750,
+      "tag": "0004_content_draft_use_types",
+      "breakpoints": true
     }
   ]
 }

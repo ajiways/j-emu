@@ -35,6 +35,14 @@ function actionFromJson(artifactId: number, key: string, value: unknown): Artifa
   if (typeof record["dispose"] !== "number") {
     throw new Error(`Artifact ${artifactId} use action ${key} dispose is required`);
   }
+  const bonusId = record["bonusId"] === undefined ? 0 : record["bonusId"];
+  if (typeof bonusId !== "number") {
+    throw new Error(`Artifact ${artifactId} use action ${key} bonusId is invalid`);
+  }
+  const description = record["description"] === undefined ? "" : record["description"];
+  if (typeof description !== "string") {
+    throw new Error(`Artifact ${artifactId} use action ${key} description is invalid`);
+  }
   return new ArtifactUseAction(
     key,
     record["code"],
@@ -42,5 +50,7 @@ function actionFromJson(artifactId: number, key: string, value: unknown): Artifa
     record["param2"],
     record["dispose"],
     record["title"],
+    bonusId,
+    description,
   );
 }

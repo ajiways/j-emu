@@ -7,6 +7,11 @@ export type NoteHpCommand = Readonly<{
   hp: number;
 }>;
 
+export type NoteMpCommand = Readonly<{
+  characterId: number;
+  mp: number;
+}>;
+
 export type NoteDefeatCommand = Readonly<{
   characterId: number;
   hp: 0;
@@ -29,6 +34,7 @@ export type ResourceSnapshot = Readonly<{
 export interface CharacterResources {
   syncResources(command: SyncResourcesCommand): Promise<ResourceSnapshot>;
   noteHp(command: NoteHpCommand): Promise<ResourceSnapshot>;
+  noteMp(command: NoteMpCommand): Promise<ResourceSnapshot>;
   noteDefeat(command: NoteDefeatCommand): Promise<ResourceSnapshot>;
   resurrect(command: ResurrectCommand): Promise<ResourceSnapshot>;
 }

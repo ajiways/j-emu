@@ -8,9 +8,17 @@ export class ArtifactExtra {
     readonly hits: readonly number[] | null,
     readonly set: ArtifactSetInfo | null,
     readonly trend: number,
+    readonly param1: number,
+    readonly flagsExt: number,
   ) {
     if (!Number.isInteger(trend) || trend < 0 || trend > 3) {
       throw new Error("Artifact extra.trend must be 0, 1, 2 or 3");
+    }
+    if (!Number.isInteger(param1) || param1 < 0) {
+      throw new Error("Artifact extra.param1 must be a non-negative integer");
+    }
+    if (!Number.isInteger(flagsExt) || flagsExt < 0) {
+      throw new Error("Artifact extra.flagsExt must be a non-negative integer");
     }
     if (this.hits !== null && this.hits.length !== 8) {
       throw new Error("Glove hits must contain 8 L/C/R steps");

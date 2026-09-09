@@ -244,6 +244,13 @@ export class Hero {
     this.hpValue = this.maxHpValue;
   }
 
+  applyMp(mp: number): void {
+    if (!Number.isInteger(mp) || mp < 0 || mp > this.maxMpValue) {
+      throw new Error("Hero MP must be an integer in [0, maxMp]");
+    }
+    this.mpValue = mp;
+  }
+
   creditMoney(minorUnits: number): void {
     this.moneyMinorValue = nextMoneyMinor(this.moneyMinorValue, minorUnits);
   }

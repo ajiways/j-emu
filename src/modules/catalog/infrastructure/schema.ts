@@ -326,3 +326,55 @@ export const reputationTracks = catalogSchema.table(
     check("reputation_tracks_type_check", sql`${table.type} = 2`),
   ],
 );
+
+export const bonuses = catalogSchema.table(
+  "bonuses",
+  {
+    releaseId: uuid("release_id")
+      .notNull()
+      .references(() => releases.id, { onDelete: "restrict" }),
+    id: integer("id").notNull(),
+    kind: text("kind").notNull(),
+    skillId: text("skill_id").notNull(),
+    delta: integer("delta").notNull(),
+    needValue: integer("need_value").notNull(),
+    artikulId: integer("artikul_id").notNull(),
+    title: text("title").notNull(),
+    chatMsg: text("chat_msg").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.releaseId, table.id] }),
+    foreignKey({
+      columns: [table.releaseId, table.skillId],
+      foreignColumns: [skillDefinitions.releaseId, skillDefinitions.id],
+      name: "bonuses_skill_fk",
+    }).onDelete("restrict"),
+    foreignKey({
+      columns: [table.releaseId, table.artikulId],
+      foreignColumns: [artifacts.releaseId, artifacts.id],
+      name: "bonuses_artifact_fk",
+    }).onDelete("restrict"),
+    check("bonuses_id_check", sql`${table.id} > 0`),
+    check("bonuses_kind_check", sql`${table.kind} = 'skill'`),
+    check("bonuses_delta_check", sql`${table.delta} <> 0`),
+    check("bonuses_need_value_check", sql`${table.needValue} >= 0`),
+    check("bonuses_artikul_id_check", sql`${table.artikulId} > 0`),
+  ],
+);
+
+export const useScripts = catalogSchema.table(
+  "use_scripts",
+  {
+    releaseId: uuid("release_id")
+      .notNull()
+      .references(() => releases.id, { onDelete: "restrict" }),
+    bonusId: integer("bonus_id").notNull(),
+    failPlaque: text("fail_plaque").notNull(),
+    require: jsonb("require").notNull(),
+    effects: jsonb("effects").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.releaseId, table.bonusId] }),
+    check("use_scripts_bonus_id_check", sql`${table.bonusId} > 0`),
+  ],
+);

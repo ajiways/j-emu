@@ -1,3 +1,4 @@
+import type { ArtifactBonus } from "../../catalog/domain/artifact-bonus.ts";
 import type { ArtifactSkillBonus } from "../../catalog/domain/artifact-skill-bonus.ts";
 import type { CatalogProgression } from "../../catalog/ports/catalog-progression.ts";
 import type { ReputationCatalog } from "../../catalog/ports/reputation-catalog.ts";
@@ -9,11 +10,13 @@ import { truncatedUnixDate } from "../domain/hp-regen.ts";
 import { PersonalDetails } from "../domain/personal-details.ts";
 import { requiredSkillTotal, totalHeroSkills } from "../domain/equipment-skill-totals.ts";
 import { requireHeroSkills, type HeroSkill } from "../domain/hero-skill.ts";
+import { planLearnBonus } from "../domain/plan-learn-bonus.ts";
 import { ProgressionContentError } from "../domain/progression-content-error.ts";
 import type { RegenPolicy } from "../domain/regen-policy.ts";
 import type { ActiveFightQuery } from "../ports/active-fight-query.ts";
 import type { EquippedModifiers } from "../ports/equipped-modifiers.ts";
 import type { HeroRepository } from "../ports/hero-repository.ts";
+import type { HeroLearnedBonusRepository } from "../ports/hero-learned-bonus-repository.ts";
 import type { HeroSkillRepository } from "../ports/hero-skill-repository.ts";
 import type { PersonalDetailsRepository } from "../ports/personal-details-repository.ts";
 import { ExperienceGrantService } from "./experience-grant-service.ts";
@@ -32,6 +35,7 @@ import type {
   CharacterResources,
   NoteDefeatCommand,
   NoteHpCommand,
+  NoteMpCommand,
   ResourceSnapshot,
   ResurrectCommand,
   SyncResourcesCommand,
@@ -65,6 +69,7 @@ export class CharacterService
     private readonly heroes: HeroRepository,
     private readonly heroReputations: HeroReputationRepository,
     private readonly skills: HeroSkillRepository,
+    private readonly learnedBonuses: HeroLearnedBonusRepository,
     private readonly personalDetailsStore: PersonalDetailsRepository,
     private readonly creationPolicy: HeroCreationPolicy,
     private readonly progression: CatalogProgression,
@@ -106,6 +111,10 @@ export class CharacterService
 
   noteHp(command: NoteHpCommand): Promise<ResourceSnapshot> {
     return this.resources.noteHp(command);
+  }
+
+  noteMp(command: NoteMpCommand): Promise<ResourceSnapshot> {
+    return this.resources.noteMp(command);
   }
 
   noteDefeat(command: NoteDefeatCommand): Promise<ResourceSnapshot> {
@@ -226,6 +235,33 @@ export class CharacterService
     await this.resources.recomputeHpTimeAfterMutation(hero);
     await this.heroes.save(hero);
     return hero;
+  }
+
+  async learnArtifactBonus(command: {
+    characterId: number;
+    bonus: ArtifactBonus;
+    artikulId: number;
+  }): Promise<void> {
+    const hero = await this.heroes.lockById(command.characterId);
+    if (!hero) throw new Error(`Hero ${command.characterId} is missing`);
+    const alreadyLearned = await this.learnedBonuses.has(hero.id, command.bonus.id);
+    const skills = [...(await this.skills.list(hero.id))];
+    const current = skills.find((skill) => skill.id === command.bonus.skillId);
+    const currentValue = current === undefined ? 0 : current.value;
+    const planned = planLearnBonus({
+      bonus: command.bonus,
+      currentValue,
+      alreadyLearned,
+    });
+    if (current) {
+      const index = skills.findIndex((skill) => skill.id === command.bonus.skillId);
+      if (index < 0) throw new Error(`Hero skill ${command.bonus.skillId} is missing after lookup`);
+      skills[index] = { id: command.bonus.skillId, value: planned.nextValue };
+    } else {
+      skills.push({ id: command.bonus.skillId, value: planned.nextValue });
+    }
+    await this.skills.replace(hero.id, skills);
+    await this.learnedBonuses.insert(hero.id, command.bonus.id, command.artikulId);
   }
 
   async save(hero: Hero): Promise<void> {

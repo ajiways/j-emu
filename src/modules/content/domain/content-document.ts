@@ -8,8 +8,8 @@ import type {
   WelcomeMessageDocument,
 } from "./bootstrap-content.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v16";
-export const CONTENT_VALIDATOR_VERSION = "16";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v17";
+export const CONTENT_VALIDATOR_VERSION = "17";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;
@@ -23,6 +23,8 @@ type ArtifactActionDocument = Readonly<{
   param2: number;
   dispose: 0 | 1;
   title: string;
+  bonusId: number;
+  description: string;
 }>;
 
 type ArtifactSpellSkillDocument = Readonly<{
@@ -66,6 +68,8 @@ type ArtifactExtraDocument = Readonly<{
   hits?: readonly number[];
   trend?: number;
   set?: ArtifactSetDocument;
+  param1?: number;
+  flagsExt?: number;
 }>;
 
 type ArtifactSetDocument = Readonly<{
@@ -216,6 +220,31 @@ export type ReputationTrackDocument = Readonly<{
   unlockFlag: string;
 }>;
 
+export type BonusDocument = Readonly<{
+  id: number;
+  kind: "skill";
+  skillId: string;
+  delta: number;
+  needValue: number;
+  artikulId: number;
+  title: string;
+  chatMsg: string;
+}>;
+
+type UseScriptRequireDocument = Readonly<{ artikulId: number; count: number }>;
+
+type UseScriptEffectDocument =
+  | Readonly<{ type: "consume"; artikulId: number; count: number }>
+  | Readonly<{ type: "grant"; artikulId: number; count: number }>
+  | Readonly<{ type: "openDialog"; dialogKey: string; npcId: number }>;
+
+export type UseScriptDocument = Readonly<{
+  bonusId: number;
+  require: readonly UseScriptRequireDocument[];
+  failPlaque: string;
+  effects: readonly UseScriptEffectDocument[];
+}>;
+
 export type ContentBundle = Readonly<{
   schemaVersion: string;
   artifacts: readonly ArtifactDocument[];
@@ -226,6 +255,8 @@ export type ContentBundle = Readonly<{
   storeTypes: readonly StoreTypeDocument[];
   storeLots: readonly StoreLotDocument[];
   reputationTracks: readonly ReputationTrackDocument[];
+  bonuses: readonly BonusDocument[];
+  useScripts: readonly UseScriptDocument[];
   skills: readonly SkillDocument[];
   levels: readonly LevelBoundaryDocument[];
   appearances: readonly AppearanceDocument[];
@@ -245,6 +276,8 @@ export type ContentEntry = Readonly<{
     | "store_type"
     | "store_lot"
     | "reputation_track"
+    | "bonus"
+    | "use_script"
     | "skill"
     | "level"
     | "appearance"
@@ -263,6 +296,8 @@ export type ContentEntry = Readonly<{
     | StoreTypeDocument
     | StoreLotDocument
     | ReputationTrackDocument
+    | BonusDocument
+    | UseScriptDocument
     | SkillDocument
     | LevelBoundaryDocument
     | AppearanceDocument
@@ -284,6 +319,8 @@ export type ValidatedContentBundle = Readonly<{
   storeTypes: readonly StoreTypeDocument[];
   storeLots: readonly StoreLotDocument[];
   reputationTracks: readonly ReputationTrackDocument[];
+  bonuses: readonly BonusDocument[];
+  useScripts: readonly UseScriptDocument[];
   skills: readonly SkillDocument[];
   levels: readonly LevelBoundaryDocument[];
   appearances: readonly AppearanceDocument[];

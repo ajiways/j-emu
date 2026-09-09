@@ -145,6 +145,9 @@ function recordingCharacters() {
       this.notes.push(command);
       return snapshot(command.characterId, command.hp);
     },
+    async noteMp() {
+      throw new Error("unused");
+    },
     async noteDefeat(command: { characterId: number; hp: 0 }) {
       this.defeats.push(command);
       return snapshot(command.characterId, 0);
@@ -253,5 +256,7 @@ function fakeCatalog(): Catalog {
     storeLots: async () => [],
     reputationTrack: async () => null,
     reputationTracks: async () => [],
+    bonus: async () => null,
+    useScript: async () => null,
   };
 }

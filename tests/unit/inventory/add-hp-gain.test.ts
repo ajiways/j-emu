@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { amountFromParams } from "../../../src/modules/inventory/domain/amount-from-params.ts";
 import { addHpGain } from "../../../src/modules/inventory/domain/add-hp-gain.ts";
 
 describe("addHpGain", () => {
@@ -14,5 +15,11 @@ describe("addHpGain", () => {
   it("fails fast when param1 is missing or not positive", () => {
     expect(() => addHpGain(10, 0, 0)).toThrow(/param1 is required and must be > 0/);
     expect(() => addHpGain(10, Number.NaN, 0)).toThrow(/param1 is required and must be > 0/);
+  });
+});
+
+describe("ADD_MP amountFromParams", () => {
+  it("uses the same percent formula against mpMax", () => {
+    expect(amountFromParams(20, 30, 0, "ADD_MP")).toBe(6);
   });
 });

@@ -33,6 +33,7 @@ export class PostgresInventoryRepository implements InventoryRepository {
         durability: item.durability,
         durabilityMax: item.durabilityMax,
         ...upgradeColumns(UNUPGRADED),
+        expire: item.expire,
         version: 1,
       })
       .returning();
@@ -58,6 +59,7 @@ export class PostgresInventoryRepository implements InventoryRepository {
         durability: item.durability,
         durabilityMax: item.durabilityMax,
         ...upgradeColumns(item.upgrade),
+        expire: item.expire,
         version: 1,
       })
       .onConflictDoUpdate({
@@ -70,6 +72,7 @@ export class PostgresInventoryRepository implements InventoryRepository {
           durability: item.durability,
           durabilityMax: item.durabilityMax,
           ...upgradeColumns(item.upgrade),
+          expire: item.expire,
           version: sql`${items.version} + 1`,
         },
       });
@@ -112,6 +115,7 @@ function toItem(row: {
   upgradeLevel: number;
   upgradeSkillId: string;
   upgradeBound: number;
+  expire: number;
 }): InventoryItem {
   return new InventoryItem(
     requireFightSafeItemId(row.id),
@@ -127,6 +131,7 @@ function toItem(row: {
       skillId: row.upgradeSkillId,
       bound: row.upgradeBound === 1,
     },
+    row.expire,
   );
 }
 

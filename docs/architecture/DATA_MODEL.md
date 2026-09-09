@@ -22,8 +22,10 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и pre-baseline миграции `drizzle/0000_foundation_init.sql` плюс последующие
-`drizzle/0001_inventory_item_upgrade.sql` и
-`drizzle/0002_inventory_item_tempeffect.sql`. Поля ниже совпадают с runtime.
+`drizzle/0001_inventory_item_upgrade.sql`,
+`drizzle/0002_inventory_item_tempeffect.sql`,
+`drizzle/0003_inventory_item_expire_use.sql` и
+`drizzle/0004_content_draft_use_types.sql`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -41,6 +43,8 @@ money_gold_minor, kind, gender, language, body, sk, honor, hp_time, regen_at tim
 - `hero_personal_details(hero_id PK FK → heroes ON DELETE CASCADE, info jsonb, schema_version=1)`.
 - `hero_skills(hero_id FK → heroes ON DELETE CASCADE, skill_id, value)` с PK
   `(hero_id, skill_id)`.
+- `hero_learned_bonuses(hero_id FK → heroes ON DELETE CASCADE, bonus_id, artikul_id)`
+  PK `(hero_id, bonus_id)`; INV-08 skill books. `bonus_id > 0`, `artikul_id > 0`.
 - `hero_reputations(hero_id FK → heroes ON DELETE CASCADE, object_id, value)`
   PK `(hero_id, object_id)`; `object_id > 0 AND <> 36`; `value >= 0`. Нет row = 0. SUM **36** не хранится.
 - `experience_grants(hero_id, operation_id, amount, exp_before, exp_after,
@@ -64,15 +68,17 @@ REP-01 (`hero_reputations` + derived SUM 36 на чтении).
 ### `inventory`
 
 - `item_id_seq`: `MIN 100_000` `MAX 2_147_483_647` `NO CYCLE` (не пересекаться с native/glove `persSpells.srcId`). [ID_POLICY.md](ID_POLICY.md), [ID_RANGES.md](../../../jgr-emu/docs/ID_RANGES.md).
-- `items(id bigint DEFAULT nextval, hero_id integer, artifact_id, quantity, location_kind, pocket_position, equipment_slot, durability, durability_max, upgrade_id, upgrade_level, upgrade_skill_id, upgrade_bound, version)`.
+- `items(id bigint DEFAULT nextval, hero_id integer, artifact_id, quantity, location_kind, pocket_position, equipment_slot, durability, durability_max, upgrade_id, upgrade_level, upgrade_skill_id, upgrade_bound, expire, version)`.
   Instance `durability`/`durability_max` — INV-05, целые `>= 0`,
   `durability <= durability_max`. Overlay заточки — INV-06: `upgrade_id` ≥ 0,
   `upgrade_level` 0..6, `upgrade_bound` 0/1, `upgrade_skill_id` text; unupgraded
-  xor upgraded CHECK. Колонки `NOT NULL` без SQL DEFAULT; runtime пишет явные
+  xor upgraded CHECK. `expire` — INV-08 unix seconds ≥ 0, `NOT NULL` без SQL
+  DEFAULT; drinks пишут `now+duration`, прочие create — `0`. Колонки `NOT NULL`
+  без SQL DEFAULT; runtime пишет явные
   значения (unupgraded `0/0/''/0`, durability с catalog template) при create.
 
 `location_kind` ∈ `bag|pocket|equipment|tempeffect` с CHECK взаимоисключения slot-колонок.
-`tempeffect` — INV-07 kind-139 set bonus: `quantity = 0`, оба slot-столбца NULL,
+`tempeffect` — INV-07 kind-139 set bonus и INV-08 drinks: `quantity = 0`, оба slot-столбца NULL,
 несколько строк на героя (unique слота нельзя). Paperdoll unique остаётся
 `(hero_id, equipment_slot) WHERE location_kind = 'equipment'`.
 Частичный unique `(hero_id, pocket_position) WHERE location_kind = 'pocket'`.
@@ -124,6 +130,12 @@ source_digest)` PK `(release_id, level, skill_id)`; FK на boundary и
 - `reputation_tracks(release_id, object_id, type, title, image, unlock_flag)`
   PK `(release_id, object_id)`; type 2; `object_id > 0 AND <> 36`. Slice:
   только Радвей **5**, empty unlock.
+- `bonuses(release_id, id, kind, skill_id, delta, need_value, artikul_id, title, chat_msg)`
+  PK `(release_id, id)`; kind `'skill'`; FK на `skill_definitions` и
+  `artifacts`. Slice: **601** AGRILKA_MOBOV.
+- `use_scripts(release_id, bonus_id, fail_plaque, require jsonb, effects jsonb)`
+  PK `(release_id, bonus_id)`; **нет** FK на `bonuses` (script **2827** без
+  bonus row).
 
 Отдельных spell-таблиц нет: fight spell живёт в `artifacts.extra`.
 `common|conf`, empty chrome и HUD defaults читаются из
@@ -186,8 +198,9 @@ finish/read request path. Полный контракт:
 ### `content`
 
 - `drafts(id, content_type, content_key)` UNIQUE `(content_type, content_key)`;
-  текущий `content_type` ∈ `artifact|bot|area|area_link|hunt_spawn|skill|level|appearance|
-hud_defaults|chrome|common_conf|welcome_message`.
+  `content_type` ∈ `artifact|bot|area|area_link|hunt_spawn|store_type|store_lot|
+reputation_track|bonus|use_script|skill|level|appearance|hud_defaults|chrome|
+common_conf|welcome_message`.
 - `draft_versions(id, draft_id, version, schema_version, document jsonb, created_at)`.
 - `releases(id, version UNIQUE nextval, checksum UNIQUE, schema_version, validator_version, created_at, activated_at)`.
 - `release_entries(release_id, content_type, content_key, draft_version_id, digest)`.

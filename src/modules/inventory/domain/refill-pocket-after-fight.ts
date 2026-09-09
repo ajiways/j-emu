@@ -41,6 +41,7 @@ export async function refillPocketAfterFight(
         location: { kind: "pocket", position: cell.position },
         durability: definition.durability,
         durabilityMax: definition.durabilityMax,
+        expire: 0,
       }),
     );
   }

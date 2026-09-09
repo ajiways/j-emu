@@ -8,6 +8,7 @@ import type { HeroCreationPolicy } from "./domain/hero.ts";
 import { Hero } from "./domain/hero.ts";
 import type { RegenPolicy } from "./domain/regen-policy.ts";
 import { PostgresExperienceGrantRepository } from "./infrastructure/postgres-experience-grant-repository.ts";
+import { PostgresHeroLearnedBonusRepository } from "./infrastructure/postgres-hero-learned-bonus-repository.ts";
 import { PostgresHeroRepository } from "./infrastructure/postgres-hero-repository.ts";
 import { PostgresHeroReputationRepository } from "./infrastructure/postgres-hero-reputation-repository.ts";
 import { PostgresHeroSkillRepository } from "./infrastructure/postgres-hero-skill-repository.ts";
@@ -69,6 +70,7 @@ export class CharacterModule {
         heroes,
         new PostgresHeroReputationRepository(database),
         skills,
+        new PostgresHeroLearnedBonusRepository(database),
         new PostgresPersonalDetailsRepository(database),
         creationPolicy,
         progression,

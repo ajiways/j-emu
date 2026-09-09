@@ -7,6 +7,7 @@ export type NewInventoryItem = Readonly<{
   location: ItemLocation;
   durability: number;
   durabilityMax: number;
+  expire: number;
 }>;
 
 export interface InventoryRepository {

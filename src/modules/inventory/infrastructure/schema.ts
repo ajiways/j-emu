@@ -28,6 +28,7 @@ export const items = inventorySchema.table(
     upgradeLevel: integer("upgrade_level").notNull(),
     upgradeSkillId: text("upgrade_skill_id").notNull(),
     upgradeBound: integer("upgrade_bound").notNull(),
+    expire: integer("expire").notNull(),
     version: integer("version").notNull(),
   },
   (table) => [
@@ -49,6 +50,7 @@ export const items = inventorySchema.table(
       sql`${table.upgradeLevel} >= 0 AND ${table.upgradeLevel} <= 6`,
     ),
     check("items_upgrade_bound_check", sql`${table.upgradeBound} IN (0, 1)`),
+    check("items_expire_check", sql`${table.expire} >= 0`),
     check(
       "items_upgrade_state_check",
       sql`(

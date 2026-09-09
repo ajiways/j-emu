@@ -7,9 +7,9 @@ const maxLines = 400;
 const reviewThreshold = 250;
 const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/character/application/character-service.ts":
-    "Character application facade: progression, resources, money, reputation grant, location, and presence",
+    "Character application facade: progression, resources, money, reputation, learn-bonus, location, and presence",
   "src/modules/content/domain/content-document.ts":
-    "Playable bundle DTO including store types/lots, reputation track 5, artifacts, bots, areas, and bootstrap documents",
+    "Playable bundle DTO including store, reputation, bonuses, use scripts, artifacts, bots, areas, and bootstrap documents",
   "src/modules/character/domain/hero.ts":
     "Hero aggregate owns vitals, money, location lock, and CMB-04 ghost/injury clock",
   "src/modules/combat/application/combat-service.ts":
@@ -17,17 +17,17 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/combat/domain/battle.ts":
     "Hunt aggregate owns pairing, melee, casts, and CMB-04 resume bootstrap for one RAM fight",
   "src/modules/content/application/content-validator.ts":
-    "Single bundle completeness gate including dump-proven store 504, reputation track 5, fight extra blobs, and bot loot references",
+    "Single bundle completeness gate including store 504, reputation, set bonuses, USE representatives, fight extra blobs, and bot loot",
   "src/modules/inventory/domain/inventory-service.ts":
-    "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag, INV-05 repair, INV-06 applyGearUpgrade, and INV-07 set-bonus sync",
+    "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag, INV-05 repair, INV-06 upgrade, INV-07 set-bonus, and INV-08 USE/drink",
   "src/modules/catalog/infrastructure/schema.ts":
-    "Catalog projection tables including bot loot, store_types, store_lots, and reputation_tracks",
+    "Catalog projection tables including bot loot, store, reputation, bonuses, and use_scripts",
   "src/modules/catalog/infrastructure/postgres-catalog.ts":
-    "Active-release catalog reads for artifacts, bots, skills, store, and reputation tracks",
+    "Active-release catalog reads for artifacts, bots, skills, store, reputation, bonuses, and use scripts",
   "src/modules/content/domain/parse-content-bundle.ts":
-    "Zod playable-slice document including store lots and the Radvey reputation track",
+    "Zod playable-slice document including store lots, reputation, bonuses, and use scripts",
   "src/modules/jugger-wire/application/bootstrap-read-model.ts":
-    "Flat OA bootstrap/mutation blocks including CMB-04 init2 fight|conf overlay",
+    "Flat OA bootstrap/mutation blocks including drink purge, USE mutation, and CMB-04 init2 fight|conf",
 };
 const multiExportAllowlist: readonly string[] = [];
 const amfValueAllowPrefix = "src/modules/jugger-wire/amf/";

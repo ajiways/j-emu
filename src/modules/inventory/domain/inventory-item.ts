@@ -19,6 +19,7 @@ export class InventoryItem {
     readonly durability: number,
     readonly durabilityMax: number,
     upgrade: ItemUpgrade = UNUPGRADED,
+    readonly expire: number = 0,
   ) {
     if (!Number.isInteger(id)) throw new Error("Jugger item ids must be integers");
     requireFightSafeItemId(BigInt(id));
@@ -33,6 +34,7 @@ export class InventoryItem {
       throw new Error("Durability max is invalid");
     }
     if (durability > durabilityMax) throw new Error("Durability exceeds durability max");
+    if (!Number.isInteger(expire) || expire < 0) throw new Error("Item expire is invalid");
     this.upgrade = requireItemUpgrade(upgrade);
   }
 
@@ -50,6 +52,7 @@ export class InventoryItem {
       this.durability,
       this.durabilityMax,
       this.upgrade,
+      this.expire,
     );
   }
 
@@ -63,6 +66,7 @@ export class InventoryItem {
       this.durability,
       this.durabilityMax,
       this.upgrade,
+      this.expire,
     );
   }
 
@@ -76,6 +80,7 @@ export class InventoryItem {
       current,
       max,
       this.upgrade,
+      this.expire,
     );
   }
 
@@ -89,6 +94,35 @@ export class InventoryItem {
       this.durability,
       this.durabilityMax,
       upgrade,
+      this.expire,
+    );
+  }
+
+  withExpire(expire: number): InventoryItem {
+    return new InventoryItem(
+      this.id,
+      this.heroId,
+      this.artifactId,
+      this.quantityValue,
+      this.location,
+      this.durability,
+      this.durabilityMax,
+      this.upgrade,
+      expire,
+    );
+  }
+
+  asTempeffect(expire: number): InventoryItem {
+    return new InventoryItem(
+      this.id,
+      this.heroId,
+      this.artifactId,
+      0,
+      { kind: "tempeffect" },
+      this.durability,
+      this.durabilityMax,
+      this.upgrade,
+      expire,
     );
   }
 }

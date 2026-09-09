@@ -14,7 +14,7 @@ describe("bag USE actions", () => {
       id: 77,
       slotMask: 0,
       useActions: {
-        "20": new ArtifactUseAction("20", "ADD_HP", 30, 0, 1, "Съесть мясо"),
+        "20": new ArtifactUseAction("20", "ADD_HP", 30, 0, 1, "Съесть мясо", 0, ""),
       },
     });
     expect(bagActionsFor(meat.slotMask, meat.useAction !== undefined, false, false)).toBe(

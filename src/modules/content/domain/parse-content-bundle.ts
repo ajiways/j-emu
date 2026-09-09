@@ -12,6 +12,7 @@ import {
 } from "./parse-bootstrap-content.ts";
 import { storeLotsSchema, storeTypesSchema } from "./parse-store-content.ts";
 import { reputationTracksSchema } from "./parse-reputation-content.ts";
+import { bonusDocumentSchema, useScriptDocumentSchema } from "./parse-use-content.ts";
 
 const flag = z.union([z.literal(0), z.literal(1)]);
 
@@ -25,13 +26,24 @@ const artifactSkillSchema = z
 
 const artifactActionSchema = z
   .object({
-    code: z.string().min(1),
+    code: z.string(),
     param1: z.number().int().nonnegative(),
     param2: z.number().int().nonnegative(),
     dispose: z.union([z.literal(0), z.literal(1)]),
     title: z.string().min(1),
+    bonusId: z.number().int().nonnegative().optional(),
+    description: z.string().optional(),
   })
-  .strict();
+  .strict()
+  .transform((action) => ({
+    code: action.code,
+    param1: action.param1,
+    param2: action.param2,
+    dispose: action.dispose,
+    title: action.title,
+    bonusId: action.bonusId === undefined ? 0 : action.bonusId,
+    description: action.description === undefined ? "" : action.description,
+  }));
 
 const artifactSpellSkillSchema = z
   .object({
@@ -101,6 +113,8 @@ const artifactExtraSchema = z
     hits: z.array(z.number().int().min(1).max(3)).optional(),
     trend: z.number().int().min(0).max(3).optional(),
     set: artifactSetSchema.optional(),
+    param1: z.number().int().nonnegative().optional(),
+    flagsExt: z.number().int().nonnegative().optional(),
   })
   .strict()
   .transform((extra) => ({
@@ -109,6 +123,8 @@ const artifactExtraSchema = z
     ...(extra.hits ? { hits: extra.hits } : {}),
     ...(extra.trend !== undefined ? { trend: extra.trend } : {}),
     ...(extra.set ? { set: extra.set } : {}),
+    ...(extra.param1 !== undefined ? { param1: extra.param1 } : {}),
+    ...(extra.flagsExt !== undefined ? { flagsExt: extra.flagsExt } : {}),
   }));
 
 const artifactSchema = z
@@ -270,6 +286,8 @@ const bundleSchema = z
     storeTypes: storeTypesSchema,
     storeLots: storeLotsSchema,
     reputationTracks: reputationTracksSchema,
+    bonuses: z.array(bonusDocumentSchema),
+    useScripts: z.array(useScriptDocumentSchema),
     skills: z.array(skillDocumentSchema).min(1),
     levels: z.array(levelBoundaryDocumentSchema).min(1),
     appearances: z.array(appearanceDocumentSchema).min(1),

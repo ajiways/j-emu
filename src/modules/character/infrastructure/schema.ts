@@ -157,3 +157,19 @@ export const heroReputations = characterSchema.table(
     check("hero_reputations_value_check", sql`${table.value} >= 0`),
   ],
 );
+
+export const heroLearnedBonuses = characterSchema.table(
+  "hero_learned_bonuses",
+  {
+    heroId: integer("hero_id")
+      .notNull()
+      .references(() => heroes.id, { onDelete: "cascade" }),
+    bonusId: integer("bonus_id").notNull(),
+    artikulId: integer("artikul_id").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.heroId, table.bonusId] }),
+    check("hero_learned_bonuses_bonus_id_check", sql`${table.bonusId} > 0`),
+    check("hero_learned_bonuses_artikul_id_check", sql`${table.artikulId} > 0`),
+  ],
+);

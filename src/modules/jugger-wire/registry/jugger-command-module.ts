@@ -119,7 +119,7 @@ export class JuggerCommandModule {
         inventory,
         combat,
       ),
-      new UseArtifactCommand(unitOfWork, bootstrap, characters, inventory, combat),
+      new UseArtifactCommand(unitOfWork, bootstrap, characters, inventory, combat, clock),
       new UpgradeCommand(unitOfWork, bootstrap, characters, inventory, combat),
       new ComeInCommand(
         unitOfWork,

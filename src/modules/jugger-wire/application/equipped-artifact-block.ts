@@ -1,6 +1,6 @@
 import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
 import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
-import { SLOT_TEMPEFFECT, SET_BONUS_EXPIRE } from "../../inventory/domain/gear-sets.ts";
+import { SLOT_TEMPEFFECT } from "../../inventory/domain/gear-sets.ts";
 import type { ArtifactInstanceOverlay } from "./artifact-instance-overlay.ts";
 import type { ArtifactSkillWireBlock } from "./artifact-skill-wire.ts";
 import { FLAG_PUT_OFF } from "./item-action-flags.ts";
@@ -19,7 +19,7 @@ export type EquippedArtifactBlock = Readonly<{
   level_min: number;
   level_max: number;
   cnt: 0;
-  expire?: 0;
+  expire?: number;
   durability: number;
   durability_max: number;
   actions: typeof FLAG_PUT_OFF;
@@ -60,7 +60,7 @@ export function buildEquippedArtifact(
     level_min: definition.levelMin,
     level_max: definition.levelMax,
     cnt: 0,
-    ...(tempeffect ? { expire: SET_BONUS_EXPIRE } : {}),
+    ...(tempeffect ? { expire: item.expire } : {}),
     durability: item.durability,
     durability_max: item.durabilityMax,
     actions: FLAG_PUT_OFF,

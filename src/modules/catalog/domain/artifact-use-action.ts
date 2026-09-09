@@ -6,10 +6,20 @@ export class ArtifactUseAction {
     readonly param2: number,
     readonly dispose: number,
     readonly title: string,
+    readonly bonusId: number,
+    readonly description: string,
   ) {
     if (!key) throw new Error("Artifact use action key is required");
-    if (!code) throw new Error(`Artifact use action ${key} code is required`);
+    if (typeof code !== "string") {
+      throw new Error(`Artifact use action ${key} code is required`);
+    }
     if (!title) throw new Error(`Artifact use action ${key} title is required`);
+    if (!Number.isInteger(bonusId) || bonusId < 0) {
+      throw new Error(`Artifact use action ${key} bonusId is invalid`);
+    }
+    if (typeof description !== "string") {
+      throw new Error(`Artifact use action ${key} description is required`);
+    }
     if (!Number.isInteger(param1) || param1 < 0) {
       throw new Error(`Artifact use action ${key} param1 is invalid`);
     }

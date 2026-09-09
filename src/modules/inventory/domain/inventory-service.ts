@@ -21,7 +21,6 @@ import { requireQuantityWithinStack } from "./require-quantity-within-stack.ts";
 import { repairItem, type RepairItemCommand, type RepairItemResult } from "./repair-item.ts";
 import { sellPriceMinor } from "./sell-price.ts";
 import { takeDropQuantity } from "./take-drop-quantity.ts";
-import { useFromBag, type UseFromBagCommand, type UseFromBagResult } from "./use-from-bag.ts";
 import { requireEquippedItem, requireWearablePaperdoll, type WearHero } from "./wear-paperdoll.ts";
 import { grantToBag } from "./grant-to-bag.ts";
 import { refillPocketAfterFight, type PocketRefillCell } from "./refill-pocket-after-fight.ts";
@@ -34,8 +33,15 @@ import { overlaySkillBonuses } from "./gear-upgrade.ts";
 import { equippedGearSpells } from "./equipped-gear-spells.ts";
 import type { ArtifactSpell } from "../../catalog/domain/artifact-spell.ts";
 import { paperdollTrendsAfterWear, syncGearSetBonuses } from "./apply-gear-set-bonuses.ts";
-import { KIND_SET, setMixBlocked } from "./gear-sets.ts";
+import { setMixBlocked } from "./gear-sets.ts";
 import { MixDeniedError } from "./mix-denied-error.ts";
+import {
+  consumeBagCharge,
+  useFromBag,
+  type UseFromBagCommand,
+  type UseFromBagResult,
+} from "./use-from-bag.ts";
+import { purgeExpiredDrinks } from "./purge-expired-drinks.ts";
 
 export type StarterItemSpec = Readonly<{
   artifactId: number;
@@ -98,6 +104,7 @@ export class InventoryService {
         location: spec.location,
         durability: definition.durability,
         durabilityMax: definition.durabilityMax,
+        expire: 0,
       });
     }
   }
@@ -154,11 +161,6 @@ export class InventoryService {
       return "pocket";
     }
     if (item.location.kind === "tempeffect") {
-      const definition = await this.catalog.artifact(item.artifactId);
-      if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
-      if (definition.kindId !== KIND_SET) {
-        throw new Error(`Tempeffect item ${item.id} is not a set bonus`);
-      }
       await this.inventory.delete(item);
       await syncGearSetBonuses(this.inventory, this.catalog, heroId);
       return "paperdoll";
@@ -197,8 +199,19 @@ export class InventoryService {
     return { take, creditMinor: voidSell ? unit * take : 0 };
   }
 
-  useFromBag(command: UseFromBagCommand): Promise<UseFromBagResult> {
-    return useFromBag(this.inventory, this.catalog, command);
+  useFromBag(command: Omit<UseFromBagCommand, "bagCapacity">): Promise<UseFromBagResult> {
+    return useFromBag(this.inventory, this.catalog, {
+      ...command,
+      bagCapacity: this.bagCapacity,
+    });
+  }
+
+  consumeBagCharge(command: { characterId: number; itemId: number }): Promise<void> {
+    return consumeBagCharge(this.inventory, command.characterId, command.itemId);
+  }
+
+  purgeExpiredDrinks(characterId: number, nowSec: number): Promise<boolean> {
+    return purgeExpiredDrinks(this.inventory, this.catalog, characterId, nowSec);
   }
 
   grantToBag(command: {

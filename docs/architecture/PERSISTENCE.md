@@ -55,9 +55,14 @@ pre-baseline init `foundation_init`: одна миграция на весь pla
 Текущая схема — `drizzle/0000_foundation_init.sql` (ADR-0018 identity и
 sequences, `finished_fights`, content publication) плюс
 `drizzle/0001_inventory_item_upgrade.sql` (INV-06 overlay колонки на
-`inventory.items`, `NOT NULL` без SQL DEFAULT) и
+`inventory.items`, `NOT NULL` без SQL DEFAULT),
 `drizzle/0002_inventory_item_tempeffect.sql` (INV-07 `location_kind=tempeffect`,
-quantity 0, без unique слота). Snapshot и journal
+quantity 0, без unique слота) и
+`drizzle/0003_inventory_item_expire_use.sql` (INV-08 `items.expire` NOT NULL
+без SQL DEFAULT, `catalog.bonuses` / `catalog.use_scripts`,
+`character.hero_learned_bonuses`) и
+`drizzle/0004_content_draft_use_types.sql` (`content.drafts` CHECK добавляет
+`bonus` / `use_script`). Snapshot и journal
 перегенерированы из schema files. В `0000` после generate добавлен только
 `INSERT` singleton-строки `content.active_release`: kit не умеет выразить
 эту строку из Drizzle schema, а runtime требует ровно одну запись.

@@ -3,13 +3,16 @@ import type { PostgresDatabase } from "../../../infrastructure/postgres/database
 import type { CommonConfBlock } from "../../content/domain/bootstrap-content.ts";
 import type { ActiveContentRevision } from "../../content/ports/active-content-revision.ts";
 import { AppearancePreset } from "../domain/appearance-preset.ts";
+import type { ArtifactBonus } from "../domain/artifact-bonus.ts";
 import type { ArtifactDefinition } from "../domain/artifact-definition.ts";
+import type { UseScript } from "../domain/use-script.ts";
 import type { StoreLot, StoreType } from "../domain/store-lot.ts";
 import type { ReputationTrack } from "../domain/reputation-track.ts";
 import type { Catalog } from "../ports/catalog.ts";
 import { loadReputationTrack, loadReputationTracks } from "./postgres-catalog-reputation.ts";
 import { loadStoreLots, loadStoreTypes } from "./postgres-catalog-store.ts";
 import { artifactDefinitionFromRow } from "./artifact-definition-from-row.ts";
+import { loadBonus, loadUseScript } from "./postgres-catalog-use.ts";
 import { BootstrapChrome } from "../domain/bootstrap-chrome.ts";
 import { BotDefinition } from "../domain/bot-definition.ts";
 import { BotLootEntry } from "../domain/bot-loot-entry.ts";
@@ -44,6 +47,14 @@ export class PostgresCatalog implements Catalog {
     if (rows.length > 1) throw new Error(`Multiple artifact definitions found for ${id}`);
     const row = rows[0];
     return row ? artifactDefinitionFromRow(row) : null;
+  }
+
+  async bonus(id: number): Promise<ArtifactBonus | null> {
+    return loadBonus(this.database, await this.revision.requireId(), id);
+  }
+
+  async useScript(bonusId: number): Promise<UseScript | null> {
+    return loadUseScript(this.database, await this.revision.requireId(), bonusId);
   }
 
   async bot(id: number): Promise<BotDefinition | null> {

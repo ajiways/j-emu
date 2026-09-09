@@ -37,6 +37,7 @@ describe("PostgreSQL identifiers", () => {
                 location: { kind: "bag" },
                 durability: 3,
                 durabilityMax: 3,
+                expire: 0,
               })
               .then((item) => item.id),
           ),
@@ -72,6 +73,7 @@ describe("PostgreSQL identifiers", () => {
         upgradeLevel: 0,
         upgradeSkillId: "",
         upgradeBound: 0,
+        expire: 0,
         version: 1,
       });
       throw new Error("Expected items_id_fight_safe to reject native spell id 2");
@@ -92,6 +94,7 @@ describe("PostgreSQL identifiers", () => {
           location: { kind: "bag" },
           durability: 3,
           durabilityMax: 3,
+          expire: 0,
         });
         consumed = item.id;
         throw new Error("rollback after nextval");
@@ -105,6 +108,7 @@ describe("PostgreSQL identifiers", () => {
       location: { kind: "bag" },
       durability: 3,
       durabilityMax: 3,
+      expire: 0,
     });
     expect(next.id).toBeGreaterThan(consumed);
   });
@@ -118,6 +122,7 @@ describe("PostgreSQL identifiers", () => {
       location: { kind: "bag" },
       durability: 3,
       durabilityMax: 3,
+      expire: 0,
     });
     const fights = new PostgresFightIdSource(database);
     const firstFight = await fights.nextFightId();
@@ -131,6 +136,7 @@ describe("PostgreSQL identifiers", () => {
       location: { kind: "bag" },
       durability: 3,
       durabilityMax: 3,
+      expire: 0,
     });
     const reopenedFights = new PostgresFightIdSource(database);
     const secondFight = await reopenedFights.nextFightId();

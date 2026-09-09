@@ -8,7 +8,9 @@ Paperdoll `PUT_ON`/`PUT_OFF`, bag DROP 9095, pocket 93/99 и world USE 77
 мастерской и диалога заточки. Точный статус:
 [CAPABILITIES.md](../CAPABILITIES.md).
 
-Не перенесены fight cast/`persSpells`, DRINK/ADD_MP и патронташ.
+Не перенесены fight cast/`persSpells` и патронташ. DRINK/ADD_MP/bonus USE —
+INV-08: workflow `done`, product **частично** без CEF (нет редактора выдачи
+предметов).
 
 ## Источники поведения
 
@@ -50,13 +52,13 @@ Bag item обязан иметь подтверждённые `type_id`, `kind_i
 5. `DROP` / `SELL` из bag; throw-away 9095; deny equipped и SELL без
    `sell_price>0` → `status:204` + `error`;
 6. pocket `PUT_ON`/`PUT_OFF` для 93/99: merge/split/swap, `listPocket`;
-7. world USE из bag по `artifact_actions` (`ADD_HP`, мясо 77).
+7. world USE из bag по `artifact_actions` (`ADD_HP` 77, `DRINK` 640,
+   empty-code bonus 623, consume/grant 2371, `NPC` 584 → 203).
 
 Дальше не этот срез:
 
-- ADD_MP / DRINK / TEMPEFFECT;
-- quest/item scripts и dialog actions — отдельный `IUS-01` после появления
-  quest application ports.
+- quest NPC dialog (`openDialog`) и remaining bonus kinds — QST-ENG / SOC-01;
+- waiting/openBoard/bumpGoal/LEARN_RECIPE.
 
 Успешная equip mutation возвращает полный flat response: `common|action`,
 `user|bag`, `user|view`, `user|pocket`, `user|skills`, `user|unitframe`,
@@ -183,7 +185,7 @@ wire = `flags & 8 ? 1 : 0`. Стартовая 9095: `flags: 40`
 Unique paperdoll/bag: `bagStack = 1`, стакать нельзя. `priceMinor` missing ≠ 0.
 
 9095: `priceMinor: 0`, `flags: 40`, `bagStack: 1`. Provenance: live dump
-instance flags/price; unique wearable. Bundle сейчас `playable-slice/v16`.
+instance flags/price; unique wearable. Bundle сейчас `playable-slice/v17`.
 
 Второго stackable/sellable артикула в slice нет. E2E/CEF — throw-away 9095.
 Void-sell без dump-proven priced artifact не выдумывался.
@@ -319,7 +321,7 @@ PUT_OFF: `pocket → bag`, затем merge одинаковых bag-стако�
 
 ### Content
 
-`playable-slice/v16`. Pocket occupancy — partial unique в `0000_foundation_init`.
+`playable-slice/v17`. Pocket occupancy — partial unique в `0000_foundation_init`.
 
 | id  | title                 | picture                  | typeId | kindId | slotMask  | weight | priceMinor | flags | bagStack |
 | --- | --------------------- | ------------------------ | ------ | ------ | --------- | ------ | ---------- | ----- | -------- |
@@ -505,7 +507,7 @@ missing item **203** `нельзя починить`. Недостаточно �
 
 ### Content
 
-`playable-slice/v16`. Все артефакты обязаны иметь оба поля.
+`playable-slice/v17`. Все артефакты обязаны иметь оба поля.
 
 | id                 | occupancy bit | dur   | provenance                                |
 | ------------------ | ------------- | ----- | ----------------------------------------- |
@@ -580,7 +582,7 @@ stat из пула. Types 2 и 3 — одна lineage. Bonus =
 
 ### Content
 
-`playable-slice/v16`. Dump `Pub1/images/locale/ru/amf/artifact_artikul_*.amf`.
+`playable-slice/v17`. Dump `Pub1/images/locale/ru/amf/artifact_artikul_*.amf`.
 `bagStack` 9999 — authored cap для weight-0 type 73. `level_max=-1` → `0`,
 кроме 13224 (`35`).
 
@@ -651,10 +653,35 @@ Pub1 AMF. Сет **47** «Рекрута»: **30, 33, 35, 27, 28** + **106**. Mi
 - raw-AMF: 4 вещи → avatar overlay; 5 → 106 skills; mix 204; restart;
 - CEF после редактора; product **частично**.
 
+## INV-08 — USE pipeline
+
+Typed registry, not a JSON interpreter. OA `UseArtifactCommand` orchestrates;
+inventory не пишет `hero_skills`. Clock injected. Purge timed drinks
+(`expire>1 && expire<=nowSec`, skip 0/1 и kind 139) на USE и
+view/skills/unitframe.
+
+- **640** DRINK → TEMPEFFECT, `expire = now+1800`, piggyback `user|view` +
+  `user|skills`, `msg_text` «Вы использовали {action.title}.»;
+- **623** empty code + bonus **601** → `AGRILKA_MOBOV` `"1"`, без `chatMsg`;
+- **2371**×2 + script **2827** → grant **55**;
+- **584** `NPC` → `203` «действие «NPC» пока не поддержано»;
+- ADD_MP — dispatcher + unit formula, no slice item.
+
+`inventory.items.expire` NOT NULL, app-set. Catalog `bonuses` / `use_scripts`.
+`character.hero_learned_bonuses`. Drink PUT_OFF deletes; kind 139 still
+resyncs.
+
+### INV-08 acceptance
+
+- unit: drink displace/expire, learn 0→1 / too-wise / too-green, ADD_MP formula;
+- integration: meat USE persist/concurrent; expire column;
+- raw-AMF: 640 / 623 / 2371 / 584; meat 77 regression;
+- CEF after editor; product **частично**.
+
 ## Architecture checkpoint — план
 
-INV-07 workflow `done`. Следующий inventory checkpoint — INV-08
-(DRINK / ADD_MP / USE-pipeline). Containers, reservations не спроектированы.
+INV-08 workflow `done`. Следующий checkpoint — CMB-05.
+Containers, reservations не спроектированы.
 [ROADMAP.md](../migration/ROADMAP.md) и
 [PLAYBOOK.md](../migration/PLAYBOOK.md).
 
@@ -671,4 +698,5 @@ INV-07 workflow `done`. Следующий inventory checkpoint — INV-08
 - world USE 77 **готово** подтверждён CEF из bag;
 - durability/repair **частично**: raw-AMF E2E есть, CEF мастерской нет;
 - upgrade **частично**: raw-AMF E2E есть, CEF диалога заточки отложен;
-- set-bonus **частично**: raw-AMF E2E есть, CEF сетов отложен.
+- set-bonus **частично**: raw-AMF E2E есть, CEF сетов отложен;
+- USE pipeline **частично**: raw-AMF 640/623/2371/584 есть, CEF выдачи нет.

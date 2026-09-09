@@ -10,7 +10,8 @@ level-up нет до квестов, поэтому character progression ост
 частичным. CHR-02 lazy HP regen реализован как internal ports `syncResources` /
 `noteHp`: wounded HP начисляется с `regen_at` на resource reads и мутациях,
 `hp_time` уходит в `user|unitframe`. CMB-03 пишет fight HP/EXP через эти
-порты (raw-AMF). CMB-04 `noteDefeat` ставит ghost/injury; ghost блокирует
+порты (raw-AMF). `noteMp` пишет MP без regen clock (INV-08 ADD_MP). CMB-04
+`noteDefeat` ставит ghost/injury; ghost блокирует
 regen. Honor не входит. Equipment-derived VIT/hpMax
 считаются после PUT_ON; без экипа HUD показывает naked L1 (VIT 10). Точный
 статус: [CAPABILITIES.md](../CAPABILITIES.md).
@@ -306,6 +307,11 @@ authority.
   и тестов: lock, записать `hp` в `[0, maxHp]`, пересчитать `hp_time` от нового
   deficit, `regen_at` = unix-second truncated now. Elapsed старого дефицита не
   применяется поверх нового HP. Ghost hero — ошибка, не silent heal.
+- `noteMp({ characterId, mp })` — INV-08 ADD_MP: lock, записать `mp` в
+  `[0, maxMp]`. MP regen clock нет. Ghost — ошибка.
+- `learnArtifactBonus({ characterId, bonus, artikulId })` — INV-08 skill book:
+  absent skill = 0, then replace `hero_skills` and insert
+  `hero_learned_bonuses`. Deny too-green / too-wise → `203`.
 - `noteDefeat({ characterId, hp: 0 })` — CMB-04 loss/HP 0: `hp=0`, `ghost`,
   `injury_time` = unix now+600, `injury_artikul_id` = 875, `hp_time=0`.
 - `resurrect({ characterId })` — OA `RESURRECT`: не ghost → ошибка; иначе

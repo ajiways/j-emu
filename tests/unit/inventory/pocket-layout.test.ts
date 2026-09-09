@@ -83,6 +83,7 @@ describe("planPutOnPocket", () => {
         location: { kind: "pocket", position: 1 },
         durability: 0,
         durabilityMax: 0,
+        expire: 0,
       },
     ]);
     expect(mutation.delete).toEqual([]);
@@ -121,6 +122,7 @@ describe("planPutOnPocket", () => {
         location: { kind: "pocket", position: 1 },
         durability: 0,
         durabilityMax: 0,
+        expire: 0,
       },
     ]);
   });

@@ -1,7 +1,9 @@
 import type { CharacterService } from "../../../character/application/character-service.ts";
+import { LearnBonusDeniedError } from "../../../character/domain/learn-bonus-denied-error.ts";
 import type { CombatPort } from "../../../combat/ports/combat-port.ts";
 import type { InventoryService } from "../../../inventory/domain/inventory-service.ts";
 import { UseDeniedError } from "../../../inventory/domain/use-denied-error.ts";
+import type { Clock } from "../../../../shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
 import type { BootstrapReadModel } from "../../application/bootstrap-read-model.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
@@ -21,6 +23,7 @@ export class UseArtifactCommand implements OaCommand {
     private readonly characters: CharacterService,
     private readonly inventory: InventoryService,
     private readonly combat: CombatPort,
+    private readonly clock: Clock,
   ) {}
 
   decode(envelope: ObjectActionEnvelope): UseArtifactRequest {
@@ -45,23 +48,80 @@ export class UseArtifactCommand implements OaCommand {
       return await this.unitOfWork.run(async () => {
         const locked = await this.characters.lockByAccountId(context.accountId);
         await this.characters.syncResources({ characterId: locked.id });
-        const hero = await this.characters.lockByAccountId(context.accountId);
+        let hero = await this.characters.lockByAccountId(context.accountId);
         await requireNoActiveFight(this.combat, context.accountId);
         await this.inventory.ensureStarterInventory(hero.id);
+        const nowSec = this.clock.unixSeconds();
+        const purged = await this.inventory.purgeExpiredDrinks(hero.id, nowSec);
+        if (purged) {
+          hero = await this.characters.applyEquipmentVitals(
+            hero,
+            await this.inventory.equippedSkillBonuses(hero.id),
+          );
+        }
         const used = await this.inventory.useFromBag({
           characterId: hero.id,
           itemId: request.itemId,
           hpMax: hero.maxHp,
+          mpMax: hero.maxMp,
+          heroLevel: hero.level,
+          nowSec,
         });
-        await this.characters.noteHp({
+        if (used.kind === "add_hp") {
+          await this.characters.noteHp({
+            characterId: hero.id,
+            hp: Math.min(hero.maxHp, hero.hp + used.gain),
+          });
+          return this.bootstrap.useMutation(context.accountId, {
+            msgText: null,
+            includeView: false,
+          });
+        }
+        if (used.kind === "add_mp") {
+          await this.characters.noteMp({
+            characterId: hero.id,
+            mp: Math.min(hero.maxMp, hero.mp + used.gain),
+          });
+          return this.bootstrap.useMutation(context.accountId, {
+            msgText: null,
+            includeView: false,
+          });
+        }
+        if (used.kind === "drink") {
+          hero = await this.characters.lockByAccountId(context.accountId);
+          await this.characters.applyEquipmentVitals(
+            hero,
+            await this.inventory.equippedSkillBonuses(hero.id),
+          );
+          return this.bootstrap.useMutation(context.accountId, {
+            msgText: `Вы использовали ${used.title}.`,
+            includeView: true,
+          });
+        }
+        if (used.kind === "script") {
+          return this.bootstrap.useMutation(context.accountId, {
+            msgText: null,
+            includeView: false,
+          });
+        }
+        await this.characters.learnArtifactBonus({
           characterId: hero.id,
-          hp: Math.min(hero.maxHp, hero.hp + used.gain),
+          bonus: used.bonus,
+          artikulId: used.artikulId,
         });
-        return this.bootstrap.useMutation(context.accountId);
+        if (used.dispose === 1) {
+          await this.inventory.consumeBagCharge({
+            characterId: hero.id,
+            itemId: used.itemId,
+          });
+        }
+        return this.bootstrap.useMutation(context.accountId, {
+          msgText: null,
+          includeView: false,
+        });
       });
     } catch (error) {
-      if (error instanceof UseDeniedError) throw new ProtocolError(203, error.message);
-      throw error;
+      mapUseError(error);
     }
   }
 
@@ -73,8 +133,13 @@ export class UseArtifactCommand implements OaCommand {
     try {
       return this.encode(await this.handle({ accountId }, this.decode(envelope)));
     } catch (error) {
-      if (error instanceof UseDeniedError) throw new ProtocolError(203, error.message);
-      throw error;
+      mapUseError(error);
     }
   }
+}
+
+function mapUseError(error: unknown): never {
+  if (error instanceof UseDeniedError) throw new ProtocolError(203, error.message);
+  if (error instanceof LearnBonusDeniedError) throw new ProtocolError(203, error.message);
+  throw error;
 }

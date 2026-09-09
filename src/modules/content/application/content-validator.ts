@@ -13,6 +13,7 @@ import { collectStoreIssues } from "./collect-store-issues.ts";
 import { collectReputationIssues } from "./collect-reputation-issues.ts";
 import { collectSetIssues } from "./collect-set-issues.ts";
 import { collectUpgradeIssues } from "./collect-upgrade-issues.ts";
+import { collectUseIssues } from "./collect-use-issues.ts";
 
 const REQUIRED_SKILL_IDS = [
   "HPREG",
@@ -161,6 +162,7 @@ export class ContentValidator {
     issues.push(...collectReputationIssues(bundle));
     issues.push(...collectUpgradeIssues(bundle));
     issues.push(...collectSetIssues(bundle));
+    issues.push(...collectUseIssues(bundle));
     if (!bundle.levels.some((level) => level.level === 1)) {
       issues.push("level 1 boundary is required");
     }
@@ -192,6 +194,10 @@ export class ContentValidator {
       ),
       ...bundle.reputationTracks.map((document) =>
         entry("reputation_track", String(document.objectId), document),
+      ),
+      ...bundle.bonuses.map((document) => entry("bonus", String(document.id), document)),
+      ...bundle.useScripts.map((document) =>
+        entry("use_script", String(document.bonusId), document),
       ),
       ...bundle.skills.map((document) => entry("skill", document.id, document)),
       ...bundle.levels.map((document) => entry("level", String(document.level), document)),
@@ -226,6 +232,8 @@ export class ContentValidator {
       storeTypes: bundle.storeTypes,
       storeLots: bundle.storeLots,
       reputationTracks: bundle.reputationTracks,
+      bonuses: bundle.bonuses,
+      useScripts: bundle.useScripts,
       skills: bundle.skills,
       levels: bundle.levels,
       appearances: bundle.appearances,

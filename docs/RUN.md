@@ -29,7 +29,8 @@ npm run db:reset
 новый checksum — новая активная release. Смена checksum витрины (например,
 только type `-131`) требует повторный `npm run db:publish:development`.
 До baseline ledger — `0000_foundation_init` плюс последующие generated
-`0001_inventory_item_upgrade` и `0002_inventory_item_tempeffect`;
+`0001_inventory_item_upgrade`, `0002_inventory_item_tempeffect`,
+`0003_inventory_item_expire_use` и `0004_content_draft_use_types`;
 несовпавший ledger — `db:reset`, не правка SQL.
 
 ## HTTP :8080 (браузер без CEF)

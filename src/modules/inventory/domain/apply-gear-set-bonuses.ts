@@ -58,6 +58,7 @@ export async function syncGearSetBonuses(
       location: { kind: "tempeffect" },
       durability: definition.durability,
       durabilityMax: definition.durabilityMax,
+      expire: 0,
     });
   }
 }

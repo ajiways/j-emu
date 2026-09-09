@@ -9,10 +9,12 @@ import type {
 } from "../../content/domain/bootstrap-content.ts";
 import type {
   ArtifactDocument,
+  BonusDocument,
   BotDocument,
   ReputationTrackDocument,
   StoreLotDocument,
   StoreTypeDocument,
+  UseScriptDocument,
 } from "../../content/domain/content-document.ts";
 
 export type CatalogMaterialization = Readonly<{
@@ -25,6 +27,8 @@ export type CatalogMaterialization = Readonly<{
   chrome: BootstrapChromeDocument;
   commonConf: CommonConfBlock;
   welcomeMessage: WelcomeMessageDocument;
+  bonuses: readonly BonusDocument[];
+  useScripts: readonly UseScriptDocument[];
 }>;
 
 export type CatalogStoreMaterialization = Readonly<{

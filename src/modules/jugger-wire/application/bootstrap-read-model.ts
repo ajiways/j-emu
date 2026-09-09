@@ -97,7 +97,7 @@ export class BootstrapReadModel {
   }
 
   async unitframe(accountId: number): Promise<UserUnitframeBlock> {
-    const hero = await this.requireHero(accountId);
+    const hero = await this.requireFreshHero(accountId);
     const level = await this.catalog.level(hero.level);
     const appearance = await this.catalog.appearance(hero.kind, hero.gender);
     const hud = await this.catalog.hudDefaults();
@@ -119,7 +119,7 @@ export class BootstrapReadModel {
   }
 
   async skills(accountId: number): Promise<UserSkillsBlock> {
-    const hero = await this.requireHero(accountId);
+    const hero = await this.requireFreshHero(accountId);
     const naked = await this.characters.skillsFor(accountId);
     const totals = totalHeroSkills(
       naked,
@@ -133,7 +133,7 @@ export class BootstrapReadModel {
   }
 
   async view(accountId: number): Promise<UserViewBlock> {
-    const hero = await this.requireHero(accountId);
+    const hero = await this.requireFreshHero(accountId);
     const level = await this.catalog.level(hero.level);
     const appearance = await this.catalog.appearance(hero.kind, hero.gender);
     const items = await this.inventory.list(hero.id);
@@ -182,9 +182,12 @@ export class BootstrapReadModel {
     };
   }
 
-  async useMutation(accountId: number): Promise<Readonly<Record<string, unknown>>> {
-    const hero = await this.requireHero(accountId);
-    return buildUseMutation({
+  async useMutation(
+    accountId: number,
+    options: Readonly<{ msgText: string | null; includeView: boolean }>,
+  ): Promise<Readonly<Record<string, unknown>>> {
+    const hero = await this.requireFreshHero(accountId);
+    const base = {
       hero,
       inventory: this.inventory,
       catalog: this.catalog,
@@ -192,7 +195,12 @@ export class BootstrapReadModel {
       unitframe: await this.unitframe(accountId),
       skills: await this.skills(accountId),
       state: await this.heroState(hero, accountId),
-    });
+      msgText: options.msgText,
+    };
+    if (options.includeView) {
+      return buildUseMutation({ ...base, includeView: true, view: await this.view(accountId) });
+    }
+    return buildUseMutation({ ...base, includeView: false });
   }
 
   async resurrectMutation(accountId: number): Promise<Readonly<Record<string, unknown>>> {
@@ -315,6 +323,16 @@ export class BootstrapReadModel {
       world: this.world,
       clock: this.clock,
     });
+  }
+
+  private async requireFreshHero(accountId: number): Promise<Hero> {
+    const hero = await this.requireHero(accountId);
+    const purged = await this.inventory.purgeExpiredDrinks(hero.id, this.clock.unixSeconds());
+    if (!purged) return hero;
+    return this.characters.applyEquipmentVitals(
+      hero,
+      await this.inventory.equippedSkillBonuses(hero.id),
+    );
   }
 
   private async requireHero(accountId: number) {

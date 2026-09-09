@@ -89,7 +89,7 @@ Equipment-derived `user|skills` / `hpMax` считаются из naked skills +
 пустеет от DROP одной перчатки.
 
 - catalog v6: `priceMinor`/`flags`/`bagStack` на 9095 (`0`/`40`/`1`);
-- `user|bag.amount` считает только взвешенные слоты; starter v16 —
+- `user|bag.amount` считает только взвешенные слоты; starter v17 —
   `amount=6` / `total=12` (обычный кристалл **1310** `flags=0` входит в
   amount; остальные кристаллы заточки noweight); `amount_max=20`;
 - OA `DROP` (и alias `SELL`) → flat `common|action` + bag/skills/mount_list/state;
@@ -122,7 +122,8 @@ Equipment-derived `user|skills` / `hpMax` считаются из naked skills +
 - OA `object_class=ARTIFACT` без `code` → `common|object:USE`;
 - `ADD_HP` по каталогу (`param2=0` → % от hpMax), не хардкод id 77;
 - полный HP всё равно consume; в бою и без action — `203`;
-- 9095/93/99 без USE. DRINK / ADD_MP / `bonus_id` не в срезе.
+- 9095/93/99 без USE. DRINK 640, skill book 623, consume/grant 2371 и NPC 584
+  есть в v17; CEF выдачи предметов нет.
 
 ## Inventory — частично
 
@@ -141,8 +142,13 @@ CEF мастерской не прогонялся.
 рекрута 47 вешает TEMPEFFECT **106**, с 4 вещей overlay портрета,
 trend 1+3 → **204**. CEF сетов отложен до редактора.
 
-Не перенесены DRINK/TEMPEFFECT-напитки, ADD_MP. Добор пояса после
-боя (`CMB-03`) есть: spent cells refill from bag to `pocketCntMax`.
+USE pipeline (INV-08) workflow `done`, product **частично**: DRINK **640** →
+TEMPEFFECT, книга **623**/бонус **601** → `AGRILKA_MOBOV`, сборка **2371**×2 →
+**55**, `NPC` **584** → `203`. ADD_MP — dispatcher без предмета в срезе.
+CEF отложен до редактора выдачи предметов.
+
+Добор пояса после боя (`CMB-03`) есть: spent cells refill from bag to
+`pocketCntMax`.
 
 ## World presence — готово
 

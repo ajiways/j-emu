@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v16",
+  "schemaVersion": "playable-slice/v17",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -962,6 +962,147 @@
           "avatar_woman": "avatar_w_straj.jpg"
         }
       }
+    },
+    {
+      "id": 640,
+      "title": "Буханка изумительного хлеба",
+      "picture": "breadbaf_20100714.png",
+      "typeId": "10",
+      "kindId": 48,
+      "slotMask": 134217728,
+      "weight": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 1000,
+      "flags": 40,
+      "bagStack": 9999,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [
+        { "id": "STR", "value": 6, "flags": 0 },
+        { "id": "VIT", "value": 4, "flags": 0 }
+      ],
+      "artifact_actions": {
+        "850": {
+          "code": "DRINK",
+          "param1": 0,
+          "param2": 0,
+          "dispose": 1,
+          "title": "Съесть"
+        }
+      },
+      "extra": { "param1": 1800 }
+    },
+    {
+      "id": 623,
+      "title": "Пособие «Слабая злость»",
+      "picture": "book_taunt_20100705.png",
+      "typeId": "75",
+      "kindId": 33,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 30000,
+      "flags": 32,
+      "bagStack": 1,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [],
+      "artifact_actions": {
+        "167": {
+          "code": "",
+          "param1": 0,
+          "param2": 0,
+          "dispose": 1,
+          "title": "Изучение книги_Пособие_Слабая злость",
+          "bonusId": 601
+        }
+      },
+      "extra": {}
+    },
+    {
+      "id": 2371,
+      "title": "Часть амулета огра",
+      "picture": "amuletogra_part_20110311.png",
+      "typeId": "20",
+      "kindId": 34,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 6,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 1500,
+      "flags": 40,
+      "bagStack": 99,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [],
+      "artifact_actions": {
+        "490": {
+          "code": "",
+          "param1": 0,
+          "param2": 0,
+          "dispose": 0,
+          "title": "Собрать Амулет огра",
+          "bonusId": 2827,
+          "description": "Для сборки амулета вам потребуется две таких половинки."
+        }
+      },
+      "extra": {}
+    },
+    {
+      "id": 55,
+      "title": "Амулет огра",
+      "picture": "amulet_ogr_2112.png",
+      "typeId": "11",
+      "kindId": 25,
+      "slotMask": 512,
+      "weight": 0,
+      "levelMin": 6,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 5000,
+      "flags": 32,
+      "bagStack": 1,
+      "durability": 15,
+      "durabilityMax": 15,
+      "skills": [
+        { "id": "STR", "value": 10, "flags": 0 },
+        { "id": "VIT", "value": 10, "flags": 0 }
+      ],
+      "artifact_actions": {},
+      "extra": {}
+    },
+    {
+      "id": 584,
+      "title": "Голова мертвеца",
+      "picture": "golova_zombi_20100622.png",
+      "typeId": "20",
+      "kindId": 66,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 5000,
+      "flags": 0,
+      "bagStack": 1,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [],
+      "artifact_actions": {
+        "131": {
+          "code": "NPC",
+          "param1": 271,
+          "param2": 0,
+          "dispose": 0,
+          "title": "Разговор"
+        }
+      },
+      "extra": {}
     }
   ],
   "bots": [
@@ -1197,6 +1338,29 @@
       "title": "Репутация Радвея",
       "image": "rep_radvey_sm.png",
       "unlockFlag": ""
+    }
+  ],
+  "bonuses": [
+    {
+      "id": 601,
+      "kind": "skill",
+      "skillId": "AGRILKA_MOBOV",
+      "delta": 1,
+      "needValue": 0,
+      "artikulId": 623,
+      "title": "Пособие «Слабая злость»",
+      "chatMsg": "<b>Вы прочли пособие «Слабая злость» и теперь знаете, как слегка разозлить противника во время боя.</b>"
+    }
+  ],
+  "useScripts": [
+    {
+      "bonusId": 2827,
+      "require": [{ "artikulId": 2371, "count": 2 }],
+      "failPlaque": "",
+      "effects": [
+        { "type": "consume", "artikulId": 2371, "count": 2 },
+        { "type": "grant", "artikulId": 55, "count": 1 }
+      ]
     }
   ],
   "skills": [

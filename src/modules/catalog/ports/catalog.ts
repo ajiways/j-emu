@@ -1,6 +1,8 @@
 import type { CommonConfBlock } from "../../content/domain/bootstrap-content.ts";
 import type { AppearancePreset } from "../domain/appearance-preset.ts";
+import type { ArtifactBonus } from "../domain/artifact-bonus.ts";
 import type { ArtifactDefinition } from "../domain/artifact-definition.ts";
+import type { UseScript } from "../domain/use-script.ts";
 import type { BootstrapChrome } from "../domain/bootstrap-chrome.ts";
 import type { BotDefinition } from "../domain/bot-definition.ts";
 import type { HudDefaults } from "../domain/hud-defaults.ts";
@@ -11,6 +13,8 @@ import type { ReputationCatalog } from "./reputation-catalog.ts";
 
 export interface Catalog extends ReputationCatalog {
   artifact(id: number): Promise<ArtifactDefinition | null>;
+  bonus(id: number): Promise<ArtifactBonus | null>;
+  useScript(bonusId: number): Promise<UseScript | null>;
   bot(id: number): Promise<BotDefinition | null>;
   skill(id: string): Promise<SkillDefinition>;
   level(level: number): Promise<LevelBoundary>;

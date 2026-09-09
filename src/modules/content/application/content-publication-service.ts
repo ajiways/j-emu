@@ -75,6 +75,8 @@ export class ContentPublicationService {
       chrome: validated.chrome,
       commonConf: validated.commonConf,
       welcomeMessage: validated.welcomeMessage,
+      bonuses: validated.bonuses,
+      useScripts: validated.useScripts,
     });
     await this.world.materialize(
       release.id,

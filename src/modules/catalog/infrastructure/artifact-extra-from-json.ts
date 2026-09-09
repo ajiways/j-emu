@@ -17,6 +17,8 @@ export function artifactExtraFromJson(artifactId: number, value: unknown): Artif
     hitsFromJson(artifactId, record.hits),
     setFromJson(artifactId, record.set),
     trendFromJson(artifactId, record.trend),
+    param1FromJson(artifactId, record.param1),
+    flagsExtFromJson(artifactId, record.flagsExt),
   );
 }
 
@@ -24,6 +26,22 @@ function trendFromJson(artifactId: number, value: unknown): number {
   if (value === undefined) return 0;
   if (typeof value !== "number" || !Number.isInteger(value) || value < 0 || value > 3) {
     throw new Error(`Artifact ${artifactId} extra.trend must be 0, 1, 2 or 3`);
+  }
+  return value;
+}
+
+function param1FromJson(artifactId: number, value: unknown): number {
+  if (value === undefined) return 0;
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    throw new Error(`Artifact ${artifactId} extra.param1 must be a non-negative integer`);
+  }
+  return value;
+}
+
+function flagsExtFromJson(artifactId: number, value: unknown): number {
+  if (value === undefined) return 0;
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    throw new Error(`Artifact ${artifactId} extra.flagsExt must be a non-negative integer`);
   }
   return value;
 }
