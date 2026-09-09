@@ -43,10 +43,23 @@ describe("buildUserUnitframe", () => {
       appearance,
       hud,
       true,
+      9,
     );
     expect(block.hp_time).toBe(0);
     expect(block.hp).toBe(8);
     expect(block.mp_time).toBe(0);
+  });
+
+  it("fails when in a fight without a numeric fight id", () => {
+    expect(() =>
+      buildUserUnitframe(testHero({ nick: "Ada" }), level, appearance, hud, true),
+    ).toThrow(/Hero 1 is in a fight without a numeric fight id/);
+  });
+
+  it("overlays numeric fight_id while in an active fight", () => {
+    const block = buildUserUnitframe(testHero({ nick: "Ada" }), level, appearance, hud, true, 9);
+    expect(block.fight_id).toBe(9);
+    expect(block.hp_time).toBe(0);
   });
 
   it("fails when avatar_small is missing", () => {

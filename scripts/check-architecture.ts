@@ -6,16 +6,20 @@ const srcRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../s
 const maxLines = 400;
 const reviewThreshold = 250;
 const lineJustifications: Readonly<Record<string, string>> = {
+  "src/modules/character/domain/hero.ts":
+    "Hero aggregate owns vitals, money, location lock, and CMB-04 ghost/injury clock",
   "src/modules/combat/application/combat-service.ts":
-    "Process-local hunt service: start/join/auth/poll, CMB-02 casts, CMB-03 loot/exit take and leave ack",
+    "Process-local hunt service: start/join/auth/resume/poll, CMB-02 casts, CMB-03 loot/exit take and leave ack",
   "src/modules/combat/domain/battle.ts":
-    "Hunt aggregate owns pairing, melee, and pocket/glove/rage casts for one RAM fight",
+    "Hunt aggregate owns pairing, melee, casts, and CMB-04 resume bootstrap for one RAM fight",
   "src/modules/content/application/content-validator.ts":
     "Single bundle completeness gate including dump-proven fight extra blobs and bot loot references",
   "src/modules/inventory/domain/inventory-service.ts":
     "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag and pocket refill entry points",
   "src/modules/catalog/infrastructure/schema.ts":
     "Catalog projection tables including bot reward columns and bot_loot_entries",
+  "src/modules/jugger-wire/application/bootstrap-read-model.ts":
+    "Flat OA bootstrap/mutation blocks including CMB-04 init2 fight|conf overlay",
 };
 const multiExportAllowlist: readonly string[] = [];
 const amfValueAllowPrefix = "src/modules/jugger-wire/amf/";

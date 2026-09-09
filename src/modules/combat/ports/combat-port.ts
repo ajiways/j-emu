@@ -82,6 +82,7 @@ export interface CombatPort {
   execute(accountId: number, command: FightCommand): Promise<readonly CombatEvent[]>;
   takePocketConsume(accountId: number): number | null;
   activeFightId(accountId: number): Promise<string | null>;
+  resumeFight(accountId: number): Promise<FightStart | null>;
   accountForFight(fightId: string): Promise<number | null>;
   takeExit(accountId: number): Promise<FightExit | null>;
   peekExit(accountId: number): Promise<FightExit | null>;

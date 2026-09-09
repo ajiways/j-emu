@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   bigint,
+  boolean,
   check,
   integer,
   jsonb,
@@ -43,6 +44,9 @@ export const heroes = characterSchema.table(
     hpTime: bigint("hp_time", { mode: "bigint" }).notNull(),
     regenAt: timestamp("regen_at", { withTimezone: true, mode: "date" }).notNull(),
     moveReadyAt: timestamp("move_ready_at", { withTimezone: true, mode: "date" }),
+    ghost: boolean("ghost").notNull().default(false),
+    injuryTime: bigint("injury_time", { mode: "bigint" }).notNull().default(0n),
+    injuryArtikulId: integer("injury_artikul_id").notNull().default(0),
     version: integer("version").notNull(),
   },
   (table) => [
@@ -59,6 +63,8 @@ export const heroes = characterSchema.table(
     check("heroes_sk_check", sql`${table.sk} >= 0`),
     check("heroes_honor_check", sql`${table.honor} >= 0`),
     check("heroes_hp_time_check", sql`${table.hpTime} >= 0`),
+    check("heroes_injury_time_check", sql`${table.injuryTime} >= 0`),
+    check("heroes_injury_artikul_id_check", sql`${table.injuryArtikulId} >= 0`),
     check("heroes_version_check", sql`${table.version} > 0`),
   ],
 );

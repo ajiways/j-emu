@@ -5,6 +5,9 @@ type CharacterInfoSource = Readonly<{
   kind: number;
   body: string;
   sk: number;
+  ghost: boolean;
+  injuryTime: number;
+  injuryArtikulId: number;
 }>;
 
 export type CharacterInfo = Readonly<{
@@ -13,9 +16,9 @@ export type CharacterInfo = Readonly<{
   level: number;
   kind: number;
   instance_id: 0;
-  dead: 0;
-  injury_time: 0;
-  injury_artikul_id: 0;
+  dead: 0 | 4;
+  injury_time: number;
+  injury_artikul_id: number;
   body: string;
   sk: number;
   avatar_small: string;
@@ -42,13 +45,27 @@ export function buildCharacterInfo(hero: CharacterInfoSource, avatarSmall: strin
     level: hero.level,
     kind: hero.kind,
     instance_id: 0,
-    dead: 0,
-    injury_time: 0,
-    injury_artikul_id: 0,
+    dead: hero.ghost ? 4 : 0,
+    injury_time: hero.ghost ? requireInjuryTime(hero) : 0,
+    injury_artikul_id: hero.ghost ? requireInjuryArtikulId(hero) : 0,
     body: hero.body,
     sk: hero.sk,
     avatar_small: avatarSmall,
   };
+}
+
+function requireInjuryTime(hero: CharacterInfoSource): number {
+  if (!Number.isInteger(hero.injuryTime) || hero.injuryTime < 1) {
+    throw new Error(`Ghost account ${hero.accountId} is missing injury_time`);
+  }
+  return hero.injuryTime;
+}
+
+function requireInjuryArtikulId(hero: CharacterInfoSource): number {
+  if (!Number.isInteger(hero.injuryArtikulId) || hero.injuryArtikulId < 1) {
+    throw new Error(`Ghost account ${hero.accountId} is missing injury_artikul_id`);
+  }
+  return hero.injuryArtikulId;
 }
 
 export function areaPopulationBlock(population: readonly CharacterInfo[]): AreaPopulationBlock {

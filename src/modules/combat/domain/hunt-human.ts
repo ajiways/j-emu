@@ -35,6 +35,8 @@ export class HuntHuman {
   readonly casts: HuntHumanCastState;
   private waitingValue: boolean;
   private turnActiveValue = false;
+  private turnDeadlineMsValue: number | null = null;
+  private resumeBootstrapValue = false;
   private hpValue: number;
   private damageToBotValue = 0;
   private leftLiveValue = false;
@@ -94,18 +96,46 @@ export class HuntHuman {
     this.waitingValue = false;
   }
 
-  beginTurn(): void {
+  markResume(): void {
+    this.resumeBootstrapValue = true;
+  }
+
+  takeResume(): boolean {
+    const resume = this.resumeBootstrapValue;
+    this.resumeBootstrapValue = false;
+    return resume;
+  }
+
+  beginTurn(nowMs: number, timeoutSeconds: number): void {
+    if (!Number.isInteger(nowMs) || nowMs < 0) {
+      throw new Error("Hunt human turn clock must be a non-negative integer");
+    }
+    if (!Number.isInteger(timeoutSeconds) || timeoutSeconds < 1) {
+      throw new Error("Hunt human turn timeout must be a positive integer");
+    }
     this.turnActiveValue = true;
+    this.turnDeadlineMsValue = nowMs + timeoutSeconds * 1000;
+  }
+
+  remainingTurnSeconds(nowMs: number): number | null {
+    if (!this.turnActiveValue || this.turnDeadlineMsValue === null) return null;
+    if (!Number.isInteger(nowMs) || nowMs < 0) {
+      throw new Error("Hunt human turn clock must be a non-negative integer");
+    }
+    return Math.max(0, Math.ceil((this.turnDeadlineMsValue - nowMs) / 1000));
   }
 
   endTurn(): void {
     this.turnActiveValue = false;
+    this.turnDeadlineMsValue = null;
   }
 
   markLeft(): void {
     this.leftLiveValue = true;
     this.waitingValue = false;
     this.turnActiveValue = false;
+    this.turnDeadlineMsValue = null;
+    this.resumeBootstrapValue = false;
   }
 
   creditDamageToBot(amount: number): void {

@@ -17,14 +17,17 @@ import type { HeroSkillRepository } from "../ports/hero-skill-repository.ts";
 import type { PersonalDetailsRepository } from "../ports/personal-details-repository.ts";
 import { ExperienceGrantService } from "./experience-grant-service.ts";
 import { ResourceService } from "./resource-service.ts";
+import { toPresenceHero } from "./to-presence-hero.ts";
 import type { ExperienceGrantCommand } from "../domain/experience-grant-command.ts";
 import type { ExperienceGrantResult } from "../domain/experience-grant-result.ts";
 import type { CharacterProgression } from "../ports/character-progression.ts";
 import type { CharacterMoney, CreditMoneyCommand } from "../ports/character-money.ts";
 import type {
   CharacterResources,
+  NoteDefeatCommand,
   NoteHpCommand,
   ResourceSnapshot,
+  ResurrectCommand,
   SyncResourcesCommand,
 } from "../ports/character-resources.ts";
 import type { CharacterLocation, SetAreaCommand } from "../ports/character-location.ts";
@@ -88,6 +91,14 @@ export class CharacterService
     return this.resources.noteHp(command);
   }
 
+  noteDefeat(command: NoteDefeatCommand): Promise<ResourceSnapshot> {
+    return this.resources.noteDefeat(command);
+  }
+
+  resurrect(command: ResurrectCommand): Promise<ResourceSnapshot> {
+    return this.resources.resurrect(command);
+  }
+
   async creditMoney(command: CreditMoneyCommand): Promise<void> {
     await this.unitOfWork.run(async () => {
       const hero = await this.heroes.lockById(command.characterId);
@@ -133,6 +144,9 @@ export class CharacterService
         hpTime: 0,
         regenAt: truncatedUnixDate(this.clock),
         moveReadyAt: null,
+        ghost: false,
+        injuryTime: 0,
+        injuryArtikulId: 0,
       });
       await this.skills.replace(hero.id, [
         ...levelOne.managedSkills.map((skill) => ({ id: skill.id, value: skill.value })),
@@ -220,19 +234,6 @@ export class CharacterService
       );
     }
   }
-}
-
-function toPresenceHero(hero: Hero): PresenceHero {
-  return {
-    accountId: hero.accountId,
-    nick: hero.nick,
-    level: hero.level,
-    kind: hero.kind,
-    gender: hero.gender,
-    body: hero.body,
-    sk: hero.sk,
-    areaId: hero.areaId,
-  };
 }
 
 function requiredManaged(skills: readonly { id: string; value: number }[], id: string): number {

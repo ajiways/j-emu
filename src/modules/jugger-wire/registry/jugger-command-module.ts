@@ -21,6 +21,7 @@ import { PutOffCommand } from "../commands/oa/put-off-command.ts";
 import { PutOnCommand } from "../commands/oa/put-on-command.ts";
 import { ComeInCommand } from "../commands/oa/come-in-command.ts";
 import { CommonExitCommand } from "../commands/oa/common-exit-command.ts";
+import { ResurrectCommand } from "../commands/oa/resurrect-command.ts";
 import { UseArtifactCommand } from "../commands/oa/use-artifact-command.ts";
 import { UserBagCommand } from "../commands/oa/user-bag-command.ts";
 import { UserFlashMessageCommand } from "../commands/oa/user-flash-message-command.ts";
@@ -129,6 +130,7 @@ export class JuggerCommandModule {
         clock,
         presence,
       ),
+      new ResurrectCommand(bootstrap, characters, combat),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     this.esrv = EsrvCommandRegistry.create(combat, fightWire);

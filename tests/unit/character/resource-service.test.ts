@@ -67,6 +67,28 @@ describe("ResourceService", () => {
     expect(hero.regenAt.getTime()).toBe(START_MS);
   });
 
+  it("does not regenerate HP while the hero is ghosted", async () => {
+    const hero = woundedHero({ hp: 0, maxHp: 10, hpTime: 0 });
+    hero.applyDefeat(Math.floor(START_MS / 1000) + 600, new Date(START_MS));
+    const clock = new FakeClock(START_MS);
+    const { service, saves } = resources(hero, { clock, hpreg: 700 });
+    clock.advanceSeconds(3_600);
+    const result = await service.syncResources({ characterId: hero.id });
+    expect(result).toMatchObject({ hp: 0, hpTime: 0, persisted: false });
+    expect(hero.hp).toBe(0);
+    expect(saves).toHaveLength(0);
+  });
+
+  it("resurrects a ghost to max(2, floor(hpMax*0.05)) and clears injury", async () => {
+    const hero = woundedHero({ hp: 0, maxHp: 10, hpTime: 0 });
+    hero.applyDefeat(Math.floor(START_MS / 1000) + 600, new Date(START_MS));
+    const { service } = resources(hero, { hpreg: 700 });
+    const result = await service.resurrect({ characterId: hero.id });
+    expect(result.hp).toBe(2);
+    expect(hero.ghost).toBe(false);
+    expect(hero.injuryTime).toBe(0);
+    expect(hero.injuryArtikulId).toBe(0);
+  });
   it("does not change hp_time or regen_at when equipment mutates during a fight", async () => {
     const hero = woundedHero({ hp: 8, maxHp: 50, hpTime: 35, hpreg: 300 });
     const { service } = resources(hero, { inFight: true, hpreg: 400 });

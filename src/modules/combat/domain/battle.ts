@@ -161,16 +161,18 @@ export class Battle {
     };
   }
 
-  authenticate(accountId: number): readonly BattleEvent[] {
+  authenticate(accountId: number, nowMs: number): readonly BattleEvent[] {
     if (this.finishedValue) throw new Error("Cannot authenticate a finished battle");
     const human = this.requireHuman(accountId);
     if (human.authed) throw new Error("Fight session is already authenticated");
+    const resume = human.takeResume();
     human.authed = true;
-    if (!human.waiting) human.beginTurn();
+    if (!human.waiting && !resume) human.beginTurn(nowMs, this.rules.turnTimeoutSeconds);
     const events: BattleEvent[] = [
       {
         type: "hunt-bootstrap",
         waiting: human.waiting,
+        ...(resume && !human.waiting ? { resumePaired: true as const } : {}),
         hero: human.snapshot(),
         allies: this.humans
           .filter((entry) => entry.accountId !== human.accountId)
@@ -183,10 +185,24 @@ export class Battle {
         loadout: human.casts.loadout,
       },
     ];
-    if (!human.waiting) {
-      events.push({ type: "turn-granted", timeoutSeconds: this.rules.turnTimeoutSeconds });
+    if (!human.waiting && human.turnActive) {
+      const restTime = resume ? human.remainingTurnSeconds(nowMs) : this.rules.turnTimeoutSeconds;
+      if (restTime === null) throw new Error("Paired hunter is missing a turn deadline");
+      events.push({ type: "turn-granted", timeoutSeconds: restTime });
     }
     return events;
+  }
+
+  prepareResume(accountId: number): void {
+    if (this.finishedValue) throw new Error("Cannot resume a finished battle");
+    const human = this.requireHuman(accountId);
+    const wasAuthed = human.authed;
+    human.authed = false;
+    if (wasAuthed) human.markResume();
+  }
+
+  heroIdFor(accountId: number): number {
+    return this.requireHuman(accountId).heroId;
   }
 
   tryPlayerMelee(accountId: number, side: "left" | "center" | "right"): PlayerMeleeResult {
@@ -260,9 +276,9 @@ export class Battle {
     return result;
   }
 
-  grantTurn(accountId: number): BattleEvent | null {
+  grantTurn(accountId: number, nowMs: number): BattleEvent | null {
     if (this.finishedValue) return null;
-    return grantHumanTurn(this.requireHuman(accountId), this.rules.turnTimeoutSeconds);
+    return grantHumanTurn(this.requireHuman(accountId), this.rules.turnTimeoutSeconds, nowMs);
   }
 
   outcome(kind: FightOutcomeKind, winnerTeam: 1 | 2): FightOutcomeSnapshot {

@@ -33,6 +33,8 @@ function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
   };
 }
 
+const AUTH_NOW = Date.parse("2026-09-07T12:00:00.000Z");
+
 function createBattle(random: SequenceRandom, overrides: Partial<HuntBattleInit> = {}): Battle {
   return new Battle(huntInit(overrides), UNIT_BATTLE_RULES, random);
 }
@@ -45,7 +47,7 @@ describe("Battle", () => {
 
   it("resolves player melee without a bot hit or turn grant", () => {
     const battle = createBattle(new SequenceRandom([8, 2]));
-    expect(battle.authenticate(1)).toEqual([
+    expect(battle.authenticate(1, AUTH_NOW)).toEqual([
       {
         type: "hunt-bootstrap",
         waiting: false,
@@ -106,7 +108,7 @@ describe("Battle", () => {
       hpChange: -2,
       targetMaxHp: 27,
     });
-    expect(battle.grantTurn(1)).toEqual({ type: "turn-granted", timeoutSeconds: 20 });
+    expect(battle.grantTurn(1, AUTH_NOW)).toEqual({ type: "turn-granted", timeoutSeconds: 20 });
   });
 
   it("rejects a bot fight id that collides with the hero", () => {
@@ -117,7 +119,7 @@ describe("Battle", () => {
 
   it("queues a second human as waiting without attacknow", () => {
     const battle = createBattle(new SequenceRandom([8]));
-    battle.authenticate(1);
+    battle.authenticate(1, AUTH_NOW);
     const roster = battle.addHuman({
       accountId: 2,
       heroId: 2,
@@ -134,9 +136,22 @@ describe("Battle", () => {
       type: "roster-updated",
       joined: { id: 2, nick: "Joiner", team: 1 },
     });
-    const bootstrap = battle.authenticate(2);
+    const bootstrap = battle.authenticate(2, AUTH_NOW);
     expect(bootstrap[0]).toMatchObject({ type: "hunt-bootstrap", waiting: true });
     expect(bootstrap.some((event) => event.type === "turn-granted")).toBe(false);
     expect(battle.tryPlayerMelee(2, "center")).toEqual({ kind: "ignored" });
+  });
+
+  it("resumes a paired hunter without resetting the turn deadline", () => {
+    const battle = createBattle(new SequenceRandom([8]));
+    battle.authenticate(1, AUTH_NOW);
+    battle.prepareResume(1);
+    const events = battle.authenticate(1, AUTH_NOW + 3_000);
+    expect(events[0]).toMatchObject({
+      type: "hunt-bootstrap",
+      waiting: false,
+      resumePaired: true,
+    });
+    expect(events).toContainEqual({ type: "turn-granted", timeoutSeconds: 17 });
   });
 });

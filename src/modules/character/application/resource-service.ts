@@ -4,6 +4,8 @@ import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../shared/kernel/unit-of-work.ts";
 import { CharacterNotFoundError } from "../domain/character-not-found-error.ts";
 import { totalHeroSkills } from "../domain/equipment-skill-totals.ts";
+import { FIGHT_INJURY_DURATION_SECONDS } from "../domain/fight-injury-wire.ts";
+import { GhostHeroError } from "../domain/ghost-hero-error.ts";
 import { requireHeroSkills } from "../domain/hero-skill.ts";
 import type { Hero } from "../domain/hero.ts";
 import {
@@ -17,11 +19,15 @@ import { MissingHpregError } from "../domain/missing-hpreg-error.ts";
 import { parseCharacterId } from "../domain/parse-resource-command.ts";
 import { ProgressionContentError } from "../domain/progression-content-error.ts";
 import type { RegenPolicy } from "../domain/regen-policy.ts";
+import { ResurrectUnavailableError } from "../domain/resurrect-unavailable-error.ts";
+import { resurrectHp } from "../domain/resurrect-hp.ts";
 import type { ActiveFightQuery } from "../ports/active-fight-query.ts";
 import type {
   CharacterResources,
+  NoteDefeatCommand,
   NoteHpCommand,
   ResourceSnapshot,
+  ResurrectCommand,
   SyncResourcesCommand,
 } from "../ports/character-resources.ts";
 import type { EquippedModifiers } from "../ports/equipped-modifiers.ts";
@@ -52,6 +58,7 @@ export class ResourceService implements CharacterResources {
     const characterId = parseCharacterId(command.characterId);
     return this.unitOfWork.run(async () => {
       const hero = await this.requireLocked(characterId);
+      if (hero.ghost) throw new GhostHeroError(characterId, "noteHp");
       if (!Number.isInteger(command.hp) || command.hp < 0 || command.hp > hero.maxHp) {
         throw new InvalidNoteHpError(command.hp, hero.maxHp);
       }
@@ -63,9 +70,39 @@ export class ResourceService implements CharacterResources {
     });
   }
 
+  noteDefeat(command: NoteDefeatCommand): Promise<ResourceSnapshot> {
+    const characterId = parseCharacterId(command.characterId);
+    if (command.hp !== 0) throw new InvalidNoteHpError(command.hp, 0);
+    return this.unitOfWork.run(async () => {
+      const hero = await this.requireLocked(characterId);
+      if (hero.ghost) throw new GhostHeroError(characterId, "noteDefeat");
+      hero.applyDefeat(
+        this.clock.unixSeconds() + FIGHT_INJURY_DURATION_SECONDS,
+        truncatedUnixDate(this.clock),
+      );
+      await this.heroes.save(hero);
+      return resourceSnapshot(hero, false, true);
+    });
+  }
+
+  resurrect(command: ResurrectCommand): Promise<ResourceSnapshot> {
+    const characterId = parseCharacterId(command.characterId);
+    return this.unitOfWork.run(async () => {
+      const hero = await this.requireLocked(characterId);
+      if (!hero.ghost) throw new ResurrectUnavailableError(characterId);
+      const hp = resurrectHp(hero.maxHp);
+      hero.clearGhost();
+      const hpreg = await this.hpregFor(hero, hero.maxHp - hp);
+      const hpTime = remainingHpSeconds(hero.maxHp - hp, hpreg, this.policy.k, hero.id);
+      hero.applyResourceClock(hp, hpTime, truncatedUnixDate(this.clock));
+      await this.heroes.save(hero);
+      return resourceSnapshot(hero, false, true);
+    });
+  }
+
   async applyElapsedToLocked(hero: Hero): Promise<ResourceSnapshot> {
     const inFight = await this.activeFight.isHeroInActiveFight(hero.id);
-    if (inFight) return resourceSnapshot(hero, true, false);
+    if (inFight || hero.ghost) return resourceSnapshot(hero, inFight, false);
     const hpreg = await this.hpregFor(hero, hero.maxHp - hero.hp);
     const next = applyElapsedHpRegen({
       hp: hero.hp,
@@ -85,7 +122,7 @@ export class ResourceService implements CharacterResources {
   }
 
   async recomputeHpTimeAfterMutation(hero: Hero): Promise<void> {
-    if (await this.activeFight.isHeroInActiveFight(hero.id)) return;
+    if (hero.ghost || (await this.activeFight.isHeroInActiveFight(hero.id))) return;
     const hpreg = await this.hpregFor(hero, hero.maxHp - hero.hp);
     const hpTime = remainingHpSeconds(hero.maxHp - hero.hp, hpreg, this.policy.k, hero.id);
     hero.applyResourceClock(hero.hp, hpTime, truncatedUnixDate(this.clock));

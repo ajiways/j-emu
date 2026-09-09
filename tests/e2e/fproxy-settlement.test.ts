@@ -34,6 +34,17 @@ describe("fproxy settlement", () => {
     await harness.stop();
   });
 
+  it("rejects RESURRECT when the hero is not ghosted", async () => {
+    const client = await AuthenticatedClient.login(application);
+    const denied = await client.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "RESURRECT" },
+      sq: 2,
+    });
+    expect(denied["common|action"]).toEqual({ status: 203, error: "воскрешение недоступно" });
+  });
+
   it("persists a 50310 win across esrv loot-then-exit, reconnect and restart", async () => {
     const client = await AuthenticatedClient.login(application);
     const before = await client.objectAction({ object: "common", action: "init", sq: 1 });
@@ -111,7 +122,7 @@ describe("fproxy settlement loss", () => {
     await harness.stop();
   });
 
-  it("notes HP 0 without EXP, money, loot or ghost", async () => {
+  it("notes HP 0 as ghost, blocks regen, then RESURRECT restores HP", async () => {
     const client = await AuthenticatedClient.login(application);
     const before = await client.objectAction({ object: "common", action: "init", sq: 1 });
     await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms));
@@ -126,8 +137,40 @@ describe("fproxy settlement loss", () => {
     const after = await client.objectAction({ object: "common", action: "init2", sq: 20 });
     expect(unitframe(after).hp).toBe(0);
     expect(unitframe(after).exp).toBe(1);
-    expect(unitframe(after).injury_time).toBe(0);
+    expect(unitframe(after).injury_artikul_id).toBe(875);
+    expect(unitframe(after).injury_time).toBeGreaterThan(0);
+    expect(stateGhost(after)).toBe(1);
+    expect(populationDead(after, client.accountId)).toBe(4);
     expect(stateMoney(after)).toBe(stateMoney(before));
+
+    await harness.elapseCombat(3_600_000);
+    const later = await client.objectAction({ object: "common", action: "init2", sq: 21 });
+    expect(unitframe(later).hp).toBe(0);
+    expect(unitframe(later).injury_time).toBe(unitframe(after).injury_time);
+
+    const living = await client.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "RESURRECT" },
+      sq: 22,
+    });
+    expect(living["common|action"]).toEqual({ status: 100 });
+    expect(unitframe(living).hp).toBe(2);
+    expect(unitframe(living).injury_time).toBe(0);
+    expect(unitframe(living).injury_artikul_id).toBe(0);
+    expect(stateGhost(living)).toBeUndefined();
+    expect(populationDead(living, client.accountId)).toBe(0);
+    expect(living["common|area_conf"]).toBeTypeOf("object");
+    expect(living["common|hunt"]).toBeTypeOf("object");
+    expect(living["chat|area_population"]).toBeTypeOf("object");
+
+    const hunt = await client.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 23,
+    });
+    expect(hunt["common|action"]).toEqual({ status: 100 });
   });
 });
 
@@ -220,6 +263,7 @@ function unitframe(payload: Record<string, AmfValue>): {
   hp: number;
   exp: number;
   injury_time: number;
+  injury_artikul_id: number;
 } {
   const frame = payload["user|unitframe"];
   if (!frame || typeof frame !== "object" || Array.isArray(frame)) {
@@ -232,7 +276,34 @@ function unitframe(payload: Record<string, AmfValue>): {
     hp: frame.hp,
     exp: frame.exp,
     injury_time: typeof frame.injury_time === "number" ? frame.injury_time : 0,
+    injury_artikul_id: typeof frame.injury_artikul_id === "number" ? frame.injury_artikul_id : 0,
   };
+}
+
+function stateGhost(payload: Record<string, AmfValue>): number | undefined {
+  const state = payload.state;
+  if (!state || typeof state !== "object" || Array.isArray(state)) {
+    throw new Error("state is missing");
+  }
+  return typeof state.ghost === "number" ? state.ghost : undefined;
+}
+
+function populationDead(payload: Record<string, AmfValue>, accountId: number): number {
+  const block = payload["chat|area_population"];
+  if (!block || typeof block !== "object" || Array.isArray(block)) {
+    throw new Error("chat|area_population is missing");
+  }
+  if (!Array.isArray(block.population)) throw new Error("population is missing");
+  const row = block.population.find((entry) => {
+    return Boolean(
+      entry && typeof entry === "object" && !Array.isArray(entry) && entry.id === accountId,
+    );
+  });
+  if (!row || typeof row !== "object" || Array.isArray(row)) {
+    throw new Error(`population is missing account ${accountId}`);
+  }
+  if (typeof row.dead !== "number") throw new Error("population dead is missing");
+  return row.dead;
 }
 
 function pocketItems(value: AmfValue | undefined): Record<string, AmfValue>[] {

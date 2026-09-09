@@ -66,6 +66,9 @@ export class PostgresHeroRepository implements HeroRepository {
         hpTime: BigInt(values.hpTime),
         regenAt: values.regenAt,
         moveReadyAt: values.moveReadyAt,
+        ghost: values.ghost,
+        injuryTime: BigInt(values.injuryTime),
+        injuryArtikulId: values.injuryArtikulId,
         version: 1,
       })
       .returning();
@@ -97,6 +100,9 @@ export class PostgresHeroRepository implements HeroRepository {
         hpTime: BigInt(hero.hpTime),
         regenAt: hero.regenAt,
         moveReadyAt: hero.moveReadyAt,
+        ghost: hero.ghost,
+        injuryTime: BigInt(hero.injuryTime),
+        injuryArtikulId: hero.injuryArtikulId,
         version: sql`${heroes.version} + 1`,
       })
       .where(eq(heroes.id, hero.id))
@@ -139,6 +145,9 @@ export class PostgresHeroRepository implements HeroRepository {
       hpTime: bigint;
       regenAt: Date;
       moveReadyAt: Date | null;
+      ghost: boolean;
+      injuryTime: bigint;
+      injuryArtikulId: number;
     }>,
     key: string,
   ): Hero | null {
@@ -172,6 +181,9 @@ function recordFromRow(
     hpTime: bigint;
     regenAt: Date;
     moveReadyAt: Date | null;
+    ghost: boolean;
+    injuryTime: bigint;
+    injuryArtikulId: number;
   },
   key: string,
 ): HeroRecord {
@@ -197,6 +209,9 @@ function recordFromRow(
     hpTime: safeInteger(row.hpTime, `hpTime for ${key}`),
     regenAt: requireTimestamp(row.regenAt, `regen_at for ${key}`),
     moveReadyAt: optionalTimestamp(row.moveReadyAt, `move_ready_at for ${key}`),
+    ghost: row.ghost,
+    injuryTime: safeInteger(row.injuryTime, `injury_time for ${key}`),
+    injuryArtikulId: row.injuryArtikulId,
   };
 }
 

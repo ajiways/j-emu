@@ -149,8 +149,9 @@ describe("Drizzle migrations", () => {
       "0012_catalog_bot_fight_look",
       "0013_catalog_artifact_extra",
       "0014_catalog_bot_loot",
+      "0015_character_ghost_injury",
     ]);
-    expect(await appliedCount()).toBe(15);
+    expect(await appliedCount()).toBe(16);
 
     const singleton = await database
       .session()

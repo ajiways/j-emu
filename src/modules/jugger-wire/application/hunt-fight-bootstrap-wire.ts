@@ -29,8 +29,8 @@ export function huntFightBootstrapEvents(
     },
     huntPersSpellsEvent(event.loadout),
     { et: "persEff", persId: hero.id },
-    { et: "oppwait" },
   ];
+  if (!event.resumePaired) events.push({ et: "oppwait" });
   if (waiting) return events;
   events.push(huntOppNewEvent(bot));
   events.push({ et: "persEff", persId: bot.id });

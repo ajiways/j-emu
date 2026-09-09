@@ -3,7 +3,7 @@ import type { CharacterService } from "../../character/application/character-ser
 import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { WorldService } from "../../world/domain/world-service.ts";
 import { locationAreaBlocks } from "./location-area-read.ts";
-import { buildHeroState } from "./hero-state-block.ts";
+import type { HeroStateBlock } from "./hero-state-block.ts";
 import type { UserSkillsBlock } from "./user-skills-block.ts";
 import type { UserUnitframeBlock } from "./user-unitframe-block.ts";
 
@@ -18,6 +18,7 @@ export async function buildTravelMutation(input: {
   unitframe: UserUnitframeBlock;
   skills: UserSkillsBlock;
   clock: Clock;
+  state: HeroStateBlock;
 }): Promise<Readonly<Record<string, unknown>>> {
   const hero = await input.characters.getByAccountId(input.accountId);
   if (!hero) throw new Error(`Hero for account ${input.accountId} is missing`);
@@ -26,7 +27,7 @@ export async function buildTravelMutation(input: {
     [input.actionKey]: input.actionBlock,
     "common|area_conf": location.areaConf,
     "common|hunt": location.hunt,
-    state: buildHeroState(hero, input.clock),
+    state: input.state,
     "user|unitframe": input.unitframe,
     "user|skills": input.skills,
     "chat|area_population": input.areaPopulation,

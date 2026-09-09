@@ -118,6 +118,17 @@ describe("object-action envelope decoder", () => {
     expect(oaResponseKey(envelope)).toBe("common|action");
   });
 
+  it("maps RESURRECT form code to common|object:RESURRECT", () => {
+    const envelope = decodeObjectActionEnvelope({
+      object: "common",
+      action: "object",
+      form: { code: "RESURRECT" },
+      sq: 11,
+    });
+    expect(oaRegistryKey(envelope)).toBe("common|object:RESURRECT");
+    expect(oaResponseKey(envelope)).toBe("common|action");
+  });
+
   it("does not stringify a missing code as undefined", () => {
     const envelope = decodeObjectActionEnvelope({
       object: "common",

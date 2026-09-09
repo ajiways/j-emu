@@ -92,8 +92,12 @@ export function resolveBotMelee(
   return { events, killedPlayer };
 }
 
-export function grantTurn(human: HuntHuman, timeoutSeconds: number): BattleEvent | null {
+export function grantTurn(
+  human: HuntHuman,
+  timeoutSeconds: number,
+  nowMs: number,
+): BattleEvent | null {
   if (human.waiting || human.hp === 0 || human.turnActive) return null;
-  human.beginTurn();
+  human.beginTurn(nowMs, timeoutSeconds);
   return { type: "turn-granted", timeoutSeconds };
 }

@@ -48,7 +48,7 @@ export class HuntFightSettlement implements FightSettlement {
     if (this.left.has(key)) return Promise.resolve();
     this.left.add(key);
     return this.unitOfWork.run(async () => {
-      await this.characters.noteHp({ characterId: snapshot.characterId, hp: snapshot.hp });
+      await persistFightHp(this.characters, snapshot.characterId, snapshot.hp);
       await this.inventory.refillPocketAfterFight({
         characterId: snapshot.characterId,
         cells: snapshot.pocket,
@@ -94,7 +94,7 @@ export class HuntFightSettlement implements FightSettlement {
         const goldMinor = isTop ? moneyMinor : 0;
         const drops = isTop ? rolled : [];
         if (!human.leftLive) {
-          await this.characters.noteHp({ characterId: human.characterId, hp: human.hp });
+          await persistFightHp(this.characters, human.characterId, human.hp);
           await this.inventory.refillPocketAfterFight({
             characterId: human.characterId,
             cells: human.pocket,
@@ -147,6 +147,15 @@ export class HuntFightSettlement implements FightSettlement {
     }
     return entries;
   }
+}
+
+function persistFightHp(
+  characters: SettlementCharacters,
+  characterId: number,
+  hp: number,
+): Promise<unknown> {
+  if (hp === 0) return characters.noteDefeat({ characterId, hp: 0 });
+  return characters.noteHp({ characterId, hp });
 }
 
 function artikulListEntry(definition: ArtifactDefinition): FightArtikulListWire {

@@ -1,5 +1,6 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { isProgressionManagedSkillId } from "../../content/domain/progression-managed-skills.ts";
+import { FIGHT_INJURY_ARTIKUL_ID } from "./fight-injury-wire.ts";
 import { type HeroCreationPolicy, type HeroRecord, type NewHero } from "./hero-record.ts";
 import { nextMoneyMinor } from "./next-money-minor.ts";
 
@@ -28,6 +29,9 @@ export class Hero {
     private hpTimeValue: number,
     private regenAtValue: Date,
     private moveReadyAtValue: Date | null,
+    private ghostValue: boolean,
+    private injuryTimeValue: number,
+    private injuryArtikulIdValue: number,
   ) {}
 
   static assertCreationPolicy(policy: HeroCreationPolicy): void {
@@ -63,6 +67,7 @@ export class Hero {
   }
 
   static restore(values: HeroRecord): Hero {
+    requireGhostState(values.ghost, values.injuryTime, values.injuryArtikulId);
     return new Hero(
       requireWireIdentity(values.id, "hero id"),
       requireWireIdentity(values.accountId, "account id"),
@@ -85,6 +90,9 @@ export class Hero {
       values.hpTime,
       values.regenAt,
       values.moveReadyAt,
+      values.ghost,
+      values.injuryTime,
+      values.injuryArtikulId,
     );
   }
 
@@ -142,6 +150,15 @@ export class Hero {
   get moveReadyAt(): Date | null {
     return this.moveReadyAtValue;
   }
+  get ghost(): boolean {
+    return this.ghostValue;
+  }
+  get injuryTime(): number {
+    return this.injuryTimeValue;
+  }
+  get injuryArtikulId(): number {
+    return this.injuryArtikulIdValue;
+  }
 
   setArea(areaId: string, moveReadyAt: Date | null): void {
     if (!areaId) throw new Error("Hero area is required");
@@ -161,6 +178,29 @@ export class Hero {
       throw new Error("Hero regen_at must be a valid timestamp");
     }
     this.regenAtValue = regenAt;
+  }
+
+  applyDefeat(injuryUntilUnix: number, regenAt: Date): void {
+    if (this.ghostValue) throw new Error("Hero is already ghosted");
+    if (!Number.isInteger(injuryUntilUnix) || injuryUntilUnix < 1) {
+      throw new Error("Hero injury_time must be a positive unix timestamp");
+    }
+    this.setHp(0);
+    this.setHpTime(0);
+    if (!(regenAt instanceof Date) || !Number.isFinite(regenAt.getTime())) {
+      throw new Error("Hero regen_at must be a valid timestamp");
+    }
+    this.regenAtValue = regenAt;
+    this.ghostValue = true;
+    this.injuryTimeValue = injuryUntilUnix;
+    this.injuryArtikulIdValue = FIGHT_INJURY_ARTIKUL_ID;
+  }
+
+  clearGhost(): void {
+    if (!this.ghostValue) throw new Error("Hero is not ghosted");
+    this.ghostValue = false;
+    this.injuryTimeValue = 0;
+    this.injuryArtikulIdValue = 0;
   }
 
   setHpTime(hpTime: number): void {
@@ -212,6 +252,26 @@ export class Hero {
       throw new Error("Hero HP must be an integer in [0, maxHp]");
     }
     this.hpValue = hp;
+  }
+}
+
+function requireGhostState(ghost: boolean, injuryTime: number, injuryArtikulId: number): void {
+  if (typeof ghost !== "boolean") throw new Error("Hero ghost must be a boolean");
+  if (!Number.isInteger(injuryTime) || injuryTime < 0) {
+    throw new Error("Hero injury_time must be a non-negative integer");
+  }
+  if (!Number.isInteger(injuryArtikulId) || injuryArtikulId < 0) {
+    throw new Error("Hero injury_artikul_id must be a non-negative integer");
+  }
+  if (ghost) {
+    if (injuryArtikulId !== FIGHT_INJURY_ARTIKUL_ID) {
+      throw new Error(`Hero injury_artikul_id must be ${FIGHT_INJURY_ARTIKUL_ID} when ghosted`);
+    }
+    if (injuryTime < 1) throw new Error("Hero injury_time must be positive when ghosted");
+    return;
+  }
+  if (injuryTime !== 0 || injuryArtikulId !== 0) {
+    throw new Error("Hero injury fields must be 0 when not ghosted");
   }
 }
 

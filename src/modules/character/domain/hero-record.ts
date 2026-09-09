@@ -40,6 +40,9 @@ export type HeroRecord = Readonly<{
   hpTime: number;
   regenAt: Date;
   moveReadyAt: Date | null;
+  ghost: boolean;
+  injuryTime: number;
+  injuryArtikulId: number;
 }>;
 
 export type NewHero = Omit<HeroRecord, "id">;

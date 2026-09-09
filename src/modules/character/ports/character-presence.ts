@@ -7,6 +7,9 @@ export type PresenceHero = Readonly<{
   body: string;
   sk: number;
   areaId: string;
+  ghost: boolean;
+  injuryTime: number;
+  injuryArtikulId: number;
 }>;
 
 export interface CharacterPresence {

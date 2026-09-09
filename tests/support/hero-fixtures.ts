@@ -65,6 +65,9 @@ export function playableNewHero(accountId: number, nick: string): NewHero {
     hpTime: 0,
     regenAt: TEST_REGEN_AT,
     moveReadyAt: null,
+    ghost: false,
+    injuryTime: 0,
+    injuryArtikulId: 0,
   };
 }
 
@@ -91,6 +94,9 @@ export function testHero(overrides: Partial<HeroRecord> = {}): Hero {
     hpTime: 0,
     regenAt: TEST_REGEN_AT,
     moveReadyAt: null,
+    ghost: false,
+    injuryTime: 0,
+    injuryArtikulId: 0,
     ...overrides,
   });
 }

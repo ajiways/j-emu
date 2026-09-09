@@ -131,6 +131,7 @@ export class JuggerWireModule {
           combat,
           clock,
           presence,
+          fightWire,
           bootstrapPolicy,
         ),
         new HeroSheetReadModel({

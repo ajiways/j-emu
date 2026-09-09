@@ -18,6 +18,7 @@ export type BattleEvent =
   | Readonly<{
       type: "hunt-bootstrap";
       waiting: boolean;
+      resumePaired?: true;
       hero: HuntHumanSnap;
       allies: readonly HuntHumanSnap[];
       bot: HuntBotSnap;

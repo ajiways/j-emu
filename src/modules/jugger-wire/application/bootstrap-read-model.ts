@@ -2,6 +2,7 @@ import type { SkillDefinition } from "../../catalog/domain/skill-definition.ts";
 import type { Catalog } from "../../catalog/ports/catalog.ts";
 import { totalHeroSkills } from "../../character/domain/equipment-skill-totals.ts";
 import type { CharacterService } from "../../character/application/character-service.ts";
+import type { Hero } from "../../character/domain/hero.ts";
 import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import type { WorldService } from "../../world/domain/world-service.ts";
@@ -13,7 +14,8 @@ import { withHttpsFproxy } from "./personal-details-wire.ts";
 import { artifactSkillWireMap } from "./artifact-skill-wire.ts";
 import { buildEquippedArtifact } from "./equipped-artifact-block.ts";
 import { equippedSkillBonuses } from "./equipped-skill-bonuses.ts";
-import { buildHeroState, type HeroStateBlock } from "./hero-state-block.ts";
+import { type HeroStateBlock } from "./hero-state-block.ts";
+import { bootstrapFightId, bootstrapHeroState } from "./bootstrap-hero-state.ts";
 import { type HuntBlock } from "./hunt-block.ts";
 import { locationAreaBlocks } from "./location-area-read.ts";
 import { buildMenuLinkStatus } from "./menu-link-status-block.ts";
@@ -29,6 +31,7 @@ import { buildWelcomeMessage } from "./welcome-message-block.ts";
 import { buildUseMutation } from "./use-mutation-block.ts";
 import { buildTravelMutation } from "./travel-mutation-block.ts";
 import type { PresenceService } from "../../world/application/presence-service.ts";
+import type { FightWireMapper } from "./fight-wire-mapper.ts";
 
 export type { HuntBlock, UserUnitframeBlock, HeroStateBlock };
 
@@ -41,6 +44,7 @@ export class BootstrapReadModel {
     private readonly combat: CombatPort,
     private readonly clock: Clock,
     private readonly presence: PresenceService,
+    private readonly fightWire: FightWireMapper,
     private readonly policy: Readonly<{
       bagCapacity: number;
       pocketCapacity: number;
@@ -54,7 +58,8 @@ export class BootstrapReadModel {
   }
 
   async state(accountId: number): Promise<HeroStateBlock> {
-    return buildHeroState(await this.requireHero(accountId), this.clock);
+    const hero = await this.requireHero(accountId);
+    return this.heroState(hero, accountId);
   }
 
   async travelMutation(
@@ -73,6 +78,7 @@ export class BootstrapReadModel {
       unitframe: await this.unitframe(accountId),
       skills: await this.skills(accountId),
       clock: this.clock,
+      state: await this.heroState(hero, accountId),
     });
   }
 
@@ -86,8 +92,8 @@ export class BootstrapReadModel {
     const level = await this.catalog.level(hero.level);
     const appearance = await this.catalog.appearance(hero.kind, hero.gender);
     const hud = await this.catalog.hudDefaults();
-    const inActiveFight = (await this.combat.activeFightId(accountId)) !== null;
-    return buildUserUnitframe(hero, level, appearance, hud, inActiveFight);
+    const fightId = await bootstrapFightId(this.combat, accountId);
+    return buildUserUnitframe(hero, level, appearance, hud, fightId !== null, fightId);
   }
 
   async skills(accountId: number): Promise<UserSkillsBlock> {
@@ -140,20 +146,35 @@ export class BootstrapReadModel {
       "user|skills": await this.skills(accountId),
       "user|unitframe": await this.unitframe(accountId),
       "user|conf": buildUserConf(hero, level),
-      state: buildHeroState(hero, this.clock),
+      state: await this.heroState(hero, accountId),
     };
   }
 
   async useMutation(accountId: number): Promise<Readonly<Record<string, unknown>>> {
+    const hero = await this.requireHero(accountId);
     return buildUseMutation({
-      hero: await this.requireHero(accountId),
+      hero,
       inventory: this.inventory,
       catalog: this.catalog,
       pocketCapacity: this.policy.pocketCapacity,
       unitframe: await this.unitframe(accountId),
       skills: await this.skills(accountId),
-      clock: this.clock,
+      state: await this.heroState(hero, accountId),
     });
+  }
+
+  async resurrectMutation(accountId: number): Promise<Readonly<Record<string, unknown>>> {
+    const hero = await this.requireHero(accountId);
+    const location = await locationAreaBlocks(this.world, this.catalog, hero, this.clock);
+    return {
+      "common|action": { status: 100 },
+      state: await this.heroState(hero, accountId),
+      "user|unitframe": await this.unitframe(accountId),
+      "user|skills": await this.skills(accountId),
+      "common|area_conf": location.areaConf,
+      "common|hunt": location.hunt,
+      "chat|area_population": await this.presence.listPopulation(hero.areaId),
+    };
   }
 
   async bagDropMutation(
@@ -167,7 +188,7 @@ export class BootstrapReadModel {
       "user|bag": await buildUserBag(hero, this.inventory, this.catalog),
       "user|skills": await this.skills(accountId),
       "user|mount_list": chrome.block("user|mount_list"),
-      state: buildHeroState(hero, this.clock),
+      state: await this.heroState(hero, accountId),
     };
   }
 
@@ -179,7 +200,7 @@ export class BootstrapReadModel {
     return {
       "common|init": { status: 100 },
       "common|conf": await this.catalog.commonConf(),
-      state: buildHeroState(hero, this.clock),
+      state: await this.heroState(hero, accountId),
       "user|bag": await buildUserBag(hero, this.inventory, this.catalog),
       "user|pocket": await buildUserPocket(
         this.inventory,
@@ -204,11 +225,12 @@ export class BootstrapReadModel {
 
   async init2(accountId: number): Promise<Readonly<Record<string, unknown>>> {
     const hero = await this.requireHero(accountId);
+    const resume = await this.combat.resumeFight(accountId);
     const location = await locationAreaBlocks(this.world, this.catalog, hero, this.clock);
     const chrome = await this.catalog.chrome();
     return {
       "common|init2": { status: 100 },
-      state: buildHeroState(hero, this.clock),
+      state: await this.heroState(hero, accountId),
       "user|unitframe": await this.unitframe(accountId),
       "chat|conf": buildChatConf(hero.accountId, this.policy.chat),
       "chat|area_population": await this.presence.listPopulation(hero.areaId),
@@ -237,7 +259,18 @@ export class BootstrapReadModel {
       ),
       "common|occurrences_conf": chrome.block("common|occurrences_conf"),
       "common|farm_agregate": chrome.block("common|farm_agregate"),
+      ...(resume ? { "fight|conf": this.fightWire.fightConfiguration(resume) } : {}),
     };
+  }
+
+  private heroState(hero: Hero, accountId: number) {
+    return bootstrapHeroState({
+      hero,
+      accountId,
+      combat: this.combat,
+      world: this.world,
+      clock: this.clock,
+    });
   }
 
   private async requireHero(accountId: number) {

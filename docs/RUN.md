@@ -33,6 +33,8 @@ projection-строки. После `0013_catalog_artifact_extra` migrate ста
 опубликован `playable-slice/v11` с dump-proven `extra.spell`. После
 `0014_catalog_bot_loot` migrate ставит reward scalars `0` на старые `bots`;
 охота с CMB-03 наградой падает, пока не опубликован `playable-slice/v12`.
+После `0015_character_ghost_injury` migrate ставит `ghost=false` и injury `0`
+на старые `heroes`; runtime всё равно пишет явные значения.
 
 ## HTTP :8080 (браузер без CEF)
 

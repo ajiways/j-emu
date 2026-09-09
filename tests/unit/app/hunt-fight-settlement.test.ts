@@ -28,6 +28,7 @@ describe("HuntFightSettlement", () => {
     );
     const win = await settlement.persistFinished(outcome("win", 27, 20));
     expect(characters.notes).toEqual([{ characterId: 1, hp: 27 }]);
+    expect(characters.defeats).toEqual([]);
     expect(characters.grants).toEqual([
       { characterId: 1, operationId: "fight:9:1", amount: bot.reward.baseExp },
     ]);
@@ -61,7 +62,8 @@ describe("HuntFightSettlement", () => {
       new SequenceRandom([0, 0, 0, 0]),
     );
     const lost = await loss.persistFinished(outcome("loss", 0, 20));
-    expect(lossCharacters.notes).toEqual([{ characterId: 1, hp: 0 }]);
+    expect(lossCharacters.notes).toEqual([]);
+    expect(lossCharacters.defeats).toEqual([{ characterId: 1, hp: 0 }]);
     expect(lossCharacters.grants).toEqual([]);
     expect(lossCharacters.credits).toEqual([]);
     expect(lost.get(10)).toMatchObject({ experience: 0, money: "0", loot: [] });
@@ -134,19 +136,19 @@ function identityUow(): UnitOfWork {
 function recordingCharacters() {
   return {
     notes: [] as Array<{ characterId: number; hp: number }>,
+    defeats: [] as Array<{ characterId: number; hp: 0 }>,
     grants: [] as Array<{ characterId: number; operationId: string; amount: number }>,
     credits: [] as Array<{ characterId: number; minorUnits: number }>,
     async noteHp(command: { characterId: number; hp: number }) {
       this.notes.push(command);
-      return {
-        characterId: command.characterId,
-        hp: command.hp,
-        maxHp: 27,
-        hpTime: 0,
-        regenAt: new Date(0),
-        inActiveFight: false,
-        persisted: true,
-      };
+      return snapshot(command.characterId, command.hp);
+    },
+    async noteDefeat(command: { characterId: number; hp: 0 }) {
+      this.defeats.push(command);
+      return snapshot(command.characterId, 0);
+    },
+    async resurrect() {
+      throw new Error("unused");
     },
     async grantExperience(command: { characterId: number; operationId: string; amount: number }) {
       this.grants.push(command);
@@ -166,6 +168,18 @@ function recordingCharacters() {
     async syncResources() {
       throw new Error("unused");
     },
+  };
+}
+
+function snapshot(characterId: number, hp: number) {
+  return {
+    characterId,
+    hp,
+    maxHp: 27,
+    hpTime: 0,
+    regenAt: new Date(0),
+    inActiveFight: false,
+    persisted: true,
   };
 }
 

@@ -42,13 +42,17 @@ export function buildUserUnitframe(
   appearance: AppearancePreset,
   hud: HudDefaults,
   inActiveFight = false,
+  fightId: number | null = null,
 ): UserUnitframeBlock {
+  if (inActiveFight && fightId === null) {
+    throw new Error(`Hero ${hero.id} is in a fight without a numeric fight id`);
+  }
   return {
     status: 100,
     nick: hero.nick,
     level: hero.level,
     rank: level.honorRank,
-    fight_id: hud.fightId,
+    fight_id: fightId ?? hud.fightId,
     gag_time: hud.gagTime,
     hp_time: inActiveFight ? 0 : hero.hpTime,
     mp_time: hud.mpTime,
@@ -72,7 +76,7 @@ export function buildUserUnitframe(
     energy_percent_max: hud.energyPercentMax,
     energy_percent_current: hud.energyPercentCurrent,
     avatar_small: appearance.avatarSmall,
-    injury_time: hud.injuryTime,
-    injury_artikul_id: hud.injuryArtikulId,
+    injury_time: hero.ghost ? hero.injuryTime : hud.injuryTime,
+    injury_artikul_id: hero.ghost ? hero.injuryArtikulId : hud.injuryArtikulId,
   };
 }

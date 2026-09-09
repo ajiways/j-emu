@@ -116,7 +116,7 @@ export class CombatMeleeLoop {
     const battle = this.battleByFight.get(fightId);
     if (!battle || battle.finished) return;
     if (!battle.accountIds().includes(accountId)) return;
-    const granted = battle.grantTurn(accountId);
+    const granted = battle.grantTurn(accountId, this.scheduler.now().getTime());
     if (!granted) return;
     this.enqueue(accountId, [granted]);
     this.wakeAccount(accountId);

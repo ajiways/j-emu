@@ -87,6 +87,23 @@ export function fightEventTypes(events: readonly AmfValue[]): string[] {
   return types;
 }
 
+export function attacknowRestTimeFrom(events: readonly AmfValue[]): number {
+  for (const event of events) {
+    if (!event || typeof event !== "object" || Array.isArray(event)) continue;
+    const ev = event["ev"];
+    if (!ev || typeof ev !== "object" || Array.isArray(ev)) continue;
+    for (const item of Object.values(ev)) {
+      if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+      if (item["et"] !== "attacknow") continue;
+      if (typeof item["restTime"] !== "number") {
+        throw new Error("attacknow restTime is missing");
+      }
+      return item["restTime"];
+    }
+  }
+  throw new Error("attacknow is missing from fight frames");
+}
+
 export function huntOppNewFrom(events: readonly AmfValue[]): Record<string, AmfValue> {
   for (const event of events) {
     if (!event || typeof event !== "object" || Array.isArray(event)) continue;

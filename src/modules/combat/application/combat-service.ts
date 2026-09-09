@@ -185,7 +185,7 @@ export class CombatService implements CombatPort {
       if (command.fightId !== battle.id) throw new Error("Fight id does not match active fight");
       this.enqueue(accountId, [
         { type: "command-accepted", sequence: command.sequence, accessKey: battle.accessKey },
-        ...battle.authenticate(accountId),
+        ...battle.authenticate(accountId, this.scheduler.now().getTime()),
       ]);
       return [];
     }
@@ -210,6 +210,20 @@ export class CombatService implements CombatPort {
 
   async activeFightId(accountId: number): Promise<string | null> {
     return this.byAccount.get(accountId)?.id ?? null;
+  }
+
+  async resumeFight(accountId: number): Promise<FightStart | null> {
+    requireWireIdentity(accountId, "account id");
+    const battle = this.byAccount.get(accountId);
+    if (!battle || battle.finished) return null;
+    this.queues.delete(accountId);
+    battle.prepareResume(accountId);
+    return {
+      fightId: battle.id,
+      accessKey: battle.accessKey,
+      participantId: battle.heroIdFor(accountId),
+      arena: battle.arena,
+    };
   }
 
   async accountForFight(fightId: string): Promise<number | null> {
