@@ -137,25 +137,30 @@ chat auth — пустое тело; restart очищает очередь и с
 504 и ущелье 501, `common|exit` возвращает из лавки, таймер 15с на 501
 соблюдается, reconnect на dest совпадает с PostgreSQL.
 
-- `playable-slice/v9`: areas 501/503/504 и четыре travel `area_links`;
+- `playable-slice/v10`: areas 501/503/504 и четыре travel `area_links`;
 - OA `COME_IN` / `common|exit`; `heroes.move_ready_at`; overload 21/20 → 204;
 - в бою travel `FightRules` `203`; нет ребра → `203` «некуда идти».
 
 ## World и hunt — частично
 
-Есть published area/hunt content, transitions 503↔501/504 и минимальный
-`ATTACK_BOT`.
+Есть published area/hunt content, transitions 503↔501/504, process-local
+hunt overlay и map join: первый ATTACK_BOT **50310** ставит `fight_id` на
+точке и в `131:`; второй клиент входит в тот же бой (`fight|conf` с тем же
+`fightId`/`akey`, свой `userId`). Raw-AMF и CEF двумя клиентами.
 
-Не перенесены spawn movement/respawn, hunt locks и полный realtime hunt
-flow (`fight_id` на точке).
+Не перенесены authored wander/respawn (у 50310 в dump нет — не выдумывать)
+и OA `FIGHT_JOIN` / `FIGHT_HELP`.
 
 ## Combat — частично
 
-Есть минимальный hunt fight lifecycle, fproxy transport, terminal packets,
-process-local active state и finished history.
+Есть минимальный hunt: ATTACK_BOT → `fight|conf`, HTTPS `/fproxy//;`
+auth паркует bootstrap (`fightState`…`oppnew` + `attacknow`), TCP `:33120`
+как запасной путь, `joinHunt` team 1 с `oppwait`, terminal packets,
+process-local active state и finished history. CEF открывает бой с Грызлом
+с двух клиентов.
 
-Не перенесены полный legacy packet flow, pocket/glove/rage/aggro, loot,
-HP/EXP/level settlement, reconnect и fight locks.
+Не перенесены: полный melee turn loop (CMB-01), pocket/glove/rage/aggro,
+loot, HP/EXP/level settlement, reconnect и ghost.
 
 ## Quests и NPC 1–8 — не перенесено
 

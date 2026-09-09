@@ -6,8 +6,9 @@
 esrv `2:`/`131:`, chat auth). Точный статус:
 [CAPABILITIES.md](../CAPABILITIES.md).
 
-Hunt spawn locks / `fight_id` на точке — **WLD-02**. Authored wander/respawn
-для 50310 в dump нет — не выдумывать.
+Hunt overlay и map join **готово**: первый ATTACK_BOT 50310 ставит
+`fight_id`, второй входит в тот же бой (`joinHunt` team 1). Authored
+wander/respawn для 50310 в dump нет — не выдумывать. Turn loop — CMB-01.
 
 ## Источники поведения
 
@@ -52,7 +53,7 @@ gates / `store|*` — **ECO-01**. Dungeon/BG copies и `common|instance_conf` �
 `status:203` `нельзя во время боя` (live `fightBusy`). Это не live-исключение
 для PUT_ON; для travel live уже режет.
 
-### Content set (`playable-slice/v9`)
+### Content set (`playable-slice/v10`)
 
 Dump-proven subset, не весь L1–8 (это DATA-04 corpus):
 
@@ -218,49 +219,72 @@ Wire `common|hunt.bots[]` только клиентские поля: `id`, `art
 ### ATTACK_BOT
 
 Карта шлёт `form.bot_id` = **spawn id** (`50310` = `common|hunt.bots[].id`),
-не catalog artikul `2`. Сейчас command резолвит artikul и падает на
-ambiguous, если спавнов >1; WLD-02: `world.spawn(areaId, spawnId)`, нет
-спавна → `203`. Не маппить `2`→`50310`. Существующие e2e с `bot_id:2`
-перевести на `50310`.
+не catalog artikul `2`. Нет спавна → `203`. Не маппить `2`→`50310`. Меню
+AREA `action_id` / `quest_bot_artikul` — не этот срез.
 
-Меню AREA `action_id` / `quest_bot_artikul` — не этот срез. FIGHT_JOIN /
-«Вмешаться» при `fight_id>0` — не этот срез (live join); второй ATTACK →
-**203** `моб уже занят`.
+Свободная точка: `nextFightId` → `tryAcquireSpawn` → `startHunt`. Занятая
+живая точка (`overlay.fightId` + RAM battle): **тот же** OA ATTACK_BOT
+идёт в `joinHunt(..., team=1)`. Клиент `BotAlt` при `FightID > 0` всё равно
+шлёт ATTACK_BOT. Evidence: `lifecycle.ts` `interveneJoin` /
+`startFight` occupied branch; [FIGHT_JOIN.md](../../../jgr-emu/docs/FIGHT_JOIN.md)
+«Intervene с карты». `SYNC.md` «второй ATTACK → 203» — устаревшая схема.
+
+Успех join — тот же flat, что старт: `common|action` 100, `fight|conf`
+(**тот же** `fightId`/`fightAkey`, **свой** `userId` = `heroes.id`),
+`common|hunt`, `state`, `user|unitframe`. Не выдавать новый fight id и не
+перезаписывать overlay.
+
+Первый боец уже держит бота → joiner в queue своей team, bootstrap с
+`oppwait` (без `attacknow`). Остальным authed humans — fproxy roster
+(`persList` + `persChangeInfo`), не полный re-bootstrap. Re-pair waiter
+после смерти союзника — CMB-01; shuffle 3↔3 не в этом срезе.
+
+Отказ join через ATTACK_BOT — **203** + `error` (`notPossible`), не 204:
+`уже в бою`, `бой не найден`, `бой в другой локации`,
+`вы уже участвовали в этом бою`. 204 — только будущие OA FIGHT_JOIN /
+FIGHT_HELP. Квестовых боёв и ghost в срезе нет.
+
+«моб уже занят» в live — текст `acquireHuntLock`, но ATTACK_BOT сразу
+делает `interveneJoin`, если есть `lock.fightId`. В j-emu: busy overlay
+без RAM battle = stale → `releaseSpawn` и обычный `startHunt`. Не
+оставлять 203 на живом `fight_id`.
 
 ### Ports
 
 World:
 
 - `tryAcquireSpawn({ areaId, spawnId, fightId, ownerAccountId })` —
-  occupied другим живым боем → deny; тот же owner может обновить fightId;
+  occupied живым боем → `{ ok:false, reason:"busy", fightId }`; тот же
+  owner может обновить fightId;
+- `occupiedFightId(areaId, spawnId)`;
 - `releaseSpawn({ areaId, spawnId })`;
 - `huntSnapshot(areaId)` — wire bots с live overlay (без записи в content).
 
-Combat: `startHunt` после успешного acquire (fightId уже из sequence).
-Release на terminal `takeExit` / finish / process drop — composition
-observer, combat не пишет world tables. Неудачный acquire не создаёт RAM
-battle.
+Combat: `startHunt` после успешного acquire; `joinHunt` на существующий
+fight id (второй human team 1, тот же access key). `hasFight` отличает
+живой RAM battle от stale overlay. Release overlay на terminal
+`takeExit` / finish / process drop — composition observer.
 
-Один spawn — один lock. Concurrent: один победитель.
-
-После acquire/release: fan-out 131 hunt через существующий esrv poll +
-`LongPollCoordinator.wake` соседей area (как presence). Не новый канал.
-
-Lock freeze: пока busy, xy не двигаются (и так home).
+После acquire/release/join: fan-out 131 hunt через существующий esrv poll
+и `LongPollCoordinator.wake`. Lock freeze: пока busy, xy на authored home.
 
 ### Out of scope
 
 Wander/route ticker; respawn hide; Pub1 `.map` polygons; dungeon copies;
-quest/menu attack; FIGHT_JOIN; loot; CMB-01 turn loop.
+quest/menu attack; OA `FIGHT_JOIN` / `FIGHT_HELP`; loot; shuffle 3↔3.
+Не копировать live `10_000_000 + heroes.id` в `userId`.
 
 ### Acceptance
 
-- unit: acquire/busy/release; snapshot `fight_id`; missing spawn;
+- unit: acquire/busy(+fightId)/release; stale overlay without battle;
+  snapshot `fight_id`; missing spawn;
 - raw-AMF: A ATTACK_BOT 50310 → hunt.bots[50310].fight_id = fight id;
-  B тот же spawn → 203 «моб уже занят»; B esrv 131 видит busy;
-  после finish/exit A — idle 0; restart → idle, area_id героя тот же;
-- CEF: клик Грызла на карте 503 занимает точку; второй клиент не стартует
-  второй бой с той же точки;
+  B тот же spawn → 100, тот же fightId/akey, userId B; 131 остаётся busy;
+  A poll видит B в persList; B auth → oppwait пока A в дуэли с ботом;
+  B уже в бою / другой area → 203; finish/exit → idle 0; restart → idle,
+  `area_id` героя тот же;
+- CEF: клик Грызла занимает точку; второй клиент на ту же точку входит в
+  тот же бой, не стартует второй;
 - нет fake OA; runtime не читает `hunt_spawns.json`.
 
 ## Presence и channels — RTM-01

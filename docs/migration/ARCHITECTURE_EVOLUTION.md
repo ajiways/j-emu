@@ -7,9 +7,12 @@
 Текущий проверенный checkpoint — готовые bootstrap, paperdoll PUT_ON/PUT_OFF,
 internal CHR-01 `grantExperience`, internal CHR-02 `syncResources`/`noteHp` и
 INV-02 bag DROP/`creditMoney`, INV-03 pocket layout 93/99, INV-04 world USE
-77 ADD_HP, WLD-01 area transitions 503↔501/504 и RTM-01 presence roster:
-persistent state находится в PostgreSQL; esrv delivery и hunt overlay (WLD-02)
-— process-local; active content через release projections; active combat в RAM.
+77 ADD_HP, WLD-01 area transitions 503↔501/504, RTM-01 presence roster и
+WLD-02 hunt overlay + map `joinHunt`: persistent state в PostgreSQL; esrv
+delivery и hunt overlay process-local; active content через release
+projections; active combat в RAM (несколько accounts на один fight id).
+CMB-01 добавит combat-local delay port для grant/bot-counter, не таблицу
+и не `Clock.schedule`.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение
@@ -96,7 +99,7 @@ World владеет authored `areas`/`area_links` (и `parent_id`). Travel lock
 личный `2:` (`fight|exit`, `chat|area_population_diff`). Полный roster —
 OA `chat|area_population` из Postgres `sessions` ⨝ `heroes.area_id`. Delivery
 queue process-local. Chat auth `{rc:"auth", eid:1}` → пустое HTTP body.
-Long-poll wait per-account; fproxy wait остаётся unscoped.
+Long-poll wait per-account для esrv и fproxy; fproxy poll сначала отдаёт очередь, иначе ждёт, auth/strike будят waiter.
 
 **Давление:** area presence, system chat, party, trade invitations и BG
 используют разные legacy channels и lifetime.

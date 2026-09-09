@@ -99,13 +99,14 @@ area presence roster:
 
 ### `world`
 
-**Владеет:** authored локациями и переходами (`areas`, `area_links`), hunt-spawn
-и presence notices. WLD-02 добавит process-local spawn overlay (не таблицу).
-Persisted координата героя — `character.heroes.area_id` + `move_ready_at`.
+**Владеет:** authored локациями и переходами (`areas`, `area_links`), hunt-spawn,
+presence notices и process-local hunt overlay (xy, `fight_id`, owner; не
+таблица). Persisted координата героя — `character.heroes.area_id` +
+`move_ready_at`.
 
 **API:** `area`, `linksFrom`, `requireLink`, `listPopulation`, `enterNotices`,
 `leaveNotices`, `moveNotices`, `tryAcquireSpawn`, `releaseSpawn`,
-`huntSnapshot`. Location write — character `setArea`.
+`occupiedFightId`, `huntSnapshot`. Location write — character `setArea`.
 
 **События:** `world.character-entered.v1`, `world.character-moved.v1`, `world.fact-changed.v1`, `world.spawn-acquired.v1`.
 
@@ -118,7 +119,8 @@ state и outbound packets. В PostgreSQL владеет только завер�
 `finished_fights` history с TTL 72 часа. Не начисляет награды и не меняет
 персонажа/инвентарь напрямую.
 
-**API:** `startHunt`, `execute`, `activeFightId`, `accountForFight`, `takeExit`.
+**API:** `startHunt`, `joinHunt` (второй human team 1 на существующий fight
+id), `hasFight`, `execute`, `activeFightId`, `accountForFight`, `takeExit`.
 Mapper старого `arena|finished_fights` / info view существует в combat
 application; OA `arena|finished_fights` и `fight_info.php` в текущем срезе
 не регистрируются.

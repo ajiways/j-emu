@@ -13,7 +13,7 @@
   `depends_on`.
 - Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
   `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **WLD-02**.
+- Ровно одна запись имеет статус `next`: **CMB-01**.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -222,7 +222,7 @@
 - **Behavior evidence:** legacy `TRAVEL_BAG.md`, `AREA_SIDEBAR.md`,
   `travel.ts`, `areaActions.ts`, `commonObject.ts` COME_IN, `common.ts` exit
   and [WORLD.md](../modules/WORLD.md).
-- **Content set:** `playable-slice/v9` dump-proven **503 ↔ 504** (store interior)
+- **Content set:** `playable-slice/v10` dump-proven **503 ↔ 504** (store interior)
   and **503 ↔ 501** (outdoor `ftime_max=15`). Authored travel `area_links` only
   (503 items 5 and 7, 501 item 2, 504 item 0). No 498/502/542, no NPC/AREA-attack
   sidebar rows, no store lots. Full L1–8 atlas stays DATA-04.
@@ -267,23 +267,27 @@
 
 - **ID:** `WLD-02`
 - **depends_on:** `WLD-01`, `RTM-01`
-- **Behavior evidence:** legacy `SYNC.md` phase 3, `FIXTURES.md` hunt wire,
-  `huntWorld.ts`, `huntLocks.ts`, `huntWander.ts`, `lifecycle.ts` ATTACK_BOT
-  and [WORLD.md](../modules/WORLD.md).
-- **Content set:** existing `playable-slice/v9` spawn **50310** (Gryzl artikul 2) only. Dump `hunt_spawns.json` 50310 has **no** `zone`/`route`/
+- **Behavior evidence:** `lifecycle.ts` ATTACK_BOT / `interveneJoin`,
+  [FIGHT_JOIN.md](../../../jgr-emu/docs/FIGHT_JOIN.md) «Intervene с карты»,
+  `huntLocks.ts`, hunt wire in `FIXTURES.md`, and
+  [WORLD.md](../modules/WORLD.md). `SYNC.md` phase 3 («второй ATTACK → 203»)
+  weaker than the live path: occupied spawn joins team 1.
+- **Content set:** existing `playable-slice/v10` spawn **50310** (Gryzl artikul 2)
+  only. Dump `hunt_spawns.json` 50310 has **no** `zone`/`route` /
   `respawn_time_*` — do not invent them, do not publish 50311–13 or Hissa 4.
 - **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
-  no `ARC-*`. Hunt runtime (positions + busy `fight_id`) is process-local in
-  world, like combat RAM; authored `world.hunt_spawns` unchanged. No
-  `hunt_locks` table. Restart drops overlay, keeps `heroes.area_id`. ATTACK
-  `bot_id` = hunt spawn id `50310` (wire `common|hunt.bots[].id`), not artikul
-  `2`. Second attacker `203` «моб уже занят»; FIGHT_JOIN/intervene is not this
-  slice. Full contract: [WORLD.md](../modules/WORLD.md).
-- **Acceptance:** two heroes: first ATTACK_BOT 50310 sets hunt `fight_id`;
-  second `203`; 131 snapshot shows busy then idle after fight end/restart;
-  lock freeze at authored home; no wander. Existing tests that send `bot_id:2`
-  must switch to `50310`.
-- **Status:** `next`
+  no `ARC-*`. Overlay is process-local in world. Occupied ATTACK_BOT is
+  `joinHunt` team 1 on the existing RAM `Battle` (same `fightId`/`akey`,
+  joiner `userId` = `heroes.id`). FIGHT_JOIN / FIGHT_HELP OA stay out.
+  Shuffle 3↔3 stays out. Full contract: [WORLD.md](../modules/WORLD.md).
+- **Acceptance:** A ATTACK_BOT 50310 occupies the spawn; B same `bot_id` gets
+  `100` + `fight|conf` with **same** `fightId`/`fightAkey` and **B’s**
+  `userId`; hunt `fight_id` unchanged; A fproxy sees B on roster; B bootstrap
+  is wait (`oppwait`) if A already holds the bot. Deny already-in-fight /
+  other area / finished fight with `203` + `error`. Stale overlay (no RAM
+  battle) releases and starts a new hunt. Finish/restart still idle `0`. No
+  wander. Do not map `2`→`50310`.
+- **Status:** `done`
 
 ## Wave 3 — complete core combat
 
@@ -291,15 +295,33 @@
 
 - **ID:** `CMB-01`
 - **depends_on:** `WLD-02`, `CHR-02`
-- **Behavior evidence:** legacy `FIGHT_MODEL.md`, `FIGHT_CAST_ACK.md`,
-  `FIGHT_TURN_UI.md`, `FIGHT_TOASTS.md` and
-  [COMBAT.md](../modules/COMBAT.md).
-- **Content set:** core bot combat stats and fight configuration.
-- **Architecture checkpoint / decision:** pending — freeze turn state machine,
-  clock/RNG injection and outbound packet queue boundary before coding.
-- **Acceptance:** L/C/R, grants, timers, opponent switch and deny toasts finish
-  a deterministic hunt turn loop with exact melee strike/`rs` ordering.
-- **Status:** `queued`
+- **Behavior evidence:** `FIGHT_TURN_UI.md`, `FIGHT_CAST_ACK.md` melee row,
+  `turns.ts` grant delay, `dispatch.ts` `cast_ignored_not_your_turn`,
+  `actions/melee.ts` kill `attackwait`, `delivery.ts` standalone `attacknow`,
+  and [COMBAT.md](../modules/COMBAT.md). `FIGHT_DAMAGE.md` formulas are
+  empirical — keep current `BattleRules` ranges labeled `legacy behavior`.
+- **Content set:** existing `playable-slice/v10` bot **2** / spawn **50310**
+  fight look and `BattleRules`. No new catalog rows, no bot spell book.
+- **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
+  no `ARC-*`. Active fight stays RAM (ADR-0020). Do not add `schedule` to
+  shared `Clock`. Combat owns an injected process-local delay port (dueAt +
+  cancel by fight token); domain `Battle` stays synchronous. Outbound packets
+  stay per-account queues. Melee `srcType:1` `srcId` 1/2/3 = L/C/R. Strike →
+  `{rs,sq}` in one poll; bot counter and next `attacknow` are later polls.
+  `FIGHT_TURN_GRANT_DELAY_MS` default 2500; bot counter delay from live melee
+  pacing (~1400), not AOE. Off-turn / waiter melee: empty HTTP + poll `{rs:true}`
+  no strike. Kill: clear grant **before** resolve. Waiter re-pair only if the
+  paired hunter dies and the bot still lives — not 3↔3 shuffle. Pocket/glove/
+  rage stay CMB-02. Full contract: [COMBAT.md](../modules/COMBAT.md).
+- **Acceptance:** raw-AMF 1v1: L/C/R `castSpell` empty HTTP; poll is
+  `attackwait`+`cast` then `{rs,sq}` (no `attacknow` in that MULTI); later bot
+  `cast`; later standalone `attacknow`. FakeClock/delay fires grants without
+  wall-clock sleep. Off-turn melee `{rs:true}` no HP change. Kill poll has
+  leading `attackwait` and no leftover `attacknow`. Two heroes: waiter stays
+  `oppwait` during A's loop; if A dies and bot lives, B gets `oppnew` then
+  `attacknow`. CEF: L/C/R appear after pause, hide during own strike, bot
+  does not clip the animation. No pocket/glove.
+- **Status:** `next`
 
 ### CMB-02 — Pocket, glove, rage and aggro
 
