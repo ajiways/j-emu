@@ -51,6 +51,9 @@
 - `fproxy` — auth / poll; L/C/R poll `attackwait`+`cast` затем `{rs}` без
   `attacknow`; bot `cast` после 1400 ms; standalone `attacknow` после 2500 ms;
   bootstrap `ev.oppnew.id` ≥ 1000000;
+- `fproxy-pocket-glove` — raw-AMF 93/99 `{rs}` затем FX, CD HTTP `{rs:false}`
+  без restriction, consume кармана после init, rage/aggro rs-then-FX, glove
+  9095 `persCP` и ending rs-then-strike;
 - `esrv-exit-reconnect` — `fight|exit`, затем restart и повторный hunt;
 - `combat-restart` — restart посреди боя прекращает active fight, не меняет
   HP/bag и не создаёт finished history;

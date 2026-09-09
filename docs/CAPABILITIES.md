@@ -102,7 +102,7 @@ bag, деньги остаются `25.00`, bag пуст, reconnect совпад
   `cnt`, `actions=16`, без `action:"bag"`;
 - те же OA `PUT_ON`/`PUT_OFF`; pocket deny **`204`**; перчатка 9095 на пояс
   и DROP из pocket — `204`;
-- unique `(hero_id, pocket_position)`; порт `listPocket` для CMB-02;
+- unique `(hero_id, pocket_position)`; порт `listPocket`; fight consume — CMB-02;
 - в бою PUT_ON/OFF/DROP/SELL — `FightRules` `203`. Трата из кармана не в срезе.
 
 ## Inventory USE — готово
@@ -118,8 +118,8 @@ bag, деньги остаются `25.00`, bag пуст, reconnect совпад
 
 ## Inventory — частично
 
-Не перенесены durability/repair, DRINK/TEMPEFFECT, ADD_MP и fight
-cast/`persSpells` (CMB-02).
+Не перенесены durability/repair, DRINK/TEMPEFFECT, ADD_MP и добор пояса
+после боя (`CMB-03`).
 
 ## World presence — готово
 
@@ -153,15 +153,15 @@ hunt overlay и map join: первый ATTACK_BOT **50310** ставит `fight_
 
 ## Combat — частично
 
-Есть hunt melee loop (raw-AMF): ATTACK_BOT → fproxy auth/bootstrap, L/C/R
-`attackwait`+`cast` затем `{rs}`, позже удар бота и standalone `attacknow`,
-kill без leftover grant, `joinHunt` waiter `oppwait`, re-pair если A умер.
+Есть hunt melee loop и CMB-02 casts (raw-AMF): ATTACK_BOT → fproxy
+auth/bootstrap, L/C/R `attackwait`+`cast` затем `{rs}`, карман 93/99,
+ярость 6 / разозлить 7 и перчатка 9095 `{rs}` затем FX, позже удар бота и
+standalone `attacknow`, kill без leftover grant, `joinHunt` waiter `oppwait`.
 Delay port ~1400/~2500 ms, `BattleRules` урон `legacy behavior`. CEF вход в
-бой с двух клиентов есть; **кнопки L/C/R после паузы в CEF не подтверждались**
-в срезе CMB-01.
+бой с двух клиентов есть; **кнопки L/C/R после паузы и счётчики
+пояса/перчатки/ярости в CEF не подтверждались**.
 
-Не перенесены: pocket/glove/rage/aggro (CMB-02), loot, HP/EXP/level
-settlement, reconnect и ghost.
+Не перенесены: loot, HP/EXP/level settlement, reconnect и ghost.
 
 ## Quests и NPC 1–8 — не перенесено
 

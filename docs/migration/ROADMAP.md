@@ -13,7 +13,7 @@
   `depends_on`.
 - Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
   `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **CMB-02**.
+- Ровно одна запись имеет статус `next`: **CMB-03**.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -352,23 +352,48 @@
   −1; glove 9095 combo `persCP` then finisher rs-then-strike; off-turn ending
   glove `{rs:true}` + absolute `persCP`. CEF: belt/glove/rage/aggro counters
   match one server consume. Melee loop from CMB-01 still holds.
-- **Status:** `next`
+- **Status:** `done`
 
 ### CMB-03 — Terminal settlement and loot
 
 - **ID:** `CMB-03`
 - **depends_on:** `CMB-01`, `CMB-02`, `CHR-01`, `CHR-02`, `RTM-01`
-- **Behavior evidence:** legacy `FIGHT_LOOT.md`, `FIGHT_MODEL.md`,
-  `CHARACTER_STATS.md`, wire finish evidence and
+- **Behavior evidence:** `FIGHT_LOOT.md`, `FIGHT_MODEL.md`, `CHARACTER_STATS.md`,
+  `POCKET.md` refill, `dispatch.ts` `leaveFight`, `loot.ts`/`lootNotify.ts`
+  `fight|loot` shape, `notify.ts` flee `fight|exit`, and
   [COMBAT.md](../modules/COMBAT.md).
-- **Content set:** level 1–8 loot references, quantities, money and EXP rewards.
-- **Architecture checkpoint / decision:** pending — define one terminal
-  orchestration transaction across character/inventory ports and post-commit
-  realtime delivery.
-- **Acceptance:** win/loss/leave settles exactly once, persists HP via
-  `noteHp`, EXP/level and loot, then emits ordered loot/exit without
-  ResultWaiting.
-- **Status:** `queued`
+- **Content set:** Gryzl bot **2** overlay rewards only: `base_exp` 15,
+  `money_min`/`money_max` 0.2/0.44 gold coins, loot `drop_cnt` 1,
+  `bonus_chance` 0.2, `bonus_min`/`bonus_max` 1. Published drop entries whose
+  artifacts already exist in DATA-01: **77**, **93**, **99** with overlay
+  `drop_weight`/`count_min`/`count_max`. Overlay `nothing_weight` 3000 **plus**
+  the sum of overlay entry weights whose artikul is not in the published
+  slice (unpublished ids contribute to NOTHING, not a substitute item).
+  Provenance: `legacy emu overlay / FIGHT_LOOT invented live rates`. No
+  56–63/78/… artifacts, no quest/`kind:loot`, no dungeon bands, no honor.
+- **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
+  no `ARC-*`. Active combat stays RAM (ADR-0020). Composition owns one
+  Unit of Work after RAM finish: character `noteHp` + `grantExperience` (skip
+  when amount would be `< 1`) + `creditMoney`; inventory bag grants +
+  `refillPocketAfterFight` from the fight-start pocket snapshot. Combat does
+  not write `heroes`/`items`. Catalog owns authored bot reward scalars and
+  `bot_loot_entries`. RNG is injected `RandomSource`, not `Math.random`.
+  Idempotency key `fight:{fightId}:{characterId}` on EXP. Durable writes
+  commit **before** esrv packets; `finished_fights` remains best-effort and
+  must not roll back rewards. Same personal `2:` object: `fight|loot` then
+  `fight|exit` (empty loot is `[]` not `{}`). System `chat|add` is post-core.
+  Ghost/injury/RESURRECT stay CMB-04; loss may persist HP `0`. Restart still
+  abandons RAM without settlement. Full contract:
+  [COMBAT.md](../modules/COMBAT.md).
+- **Acceptance:** raw-AMF 1v1 50310 win: HP/EXP/money/loot persist across
+  reconnect/restart; esrv one `2:` packet loot-then-exit; pocket cells spent
+  in the fight refill from bag. Loss: `noteHp`, refill, exit without item
+  loot/EXP. `leaveFight`: HTTP `{rs:true}` then `fight|exit`
+  `{flee:true,type:2}`; last human ends the battle. Duplicate settlement is
+  a no-op. FakeClock/RNG, no wall-clock sleep. CEF: result screen without
+  ~60s ResultWaiting; bag/EXP/HP match server after exit. Two-hunter join
+  still one fight id; loot to top damager, EXP by damage share.
+- **Status:** `next`
 
 ### CMB-04 — Reconnect, locks and history
 

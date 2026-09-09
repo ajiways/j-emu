@@ -53,7 +53,7 @@ Bag item обязан иметь подтверждённые `type_id`, `kind_i
 Дальше не этот срез:
 
 - durability/repair/upgrade;
-- ADD_MP / DRINK / TEMPEFFECT и pocket fight cast (`CMB-02`);
+- ADD_MP / DRINK / TEMPEFFECT;
 - quest/item scripts и dialog actions — отдельный `IUS-01` после появления
   quest application ports.
 
@@ -74,7 +74,7 @@ armor 20/26/103 is not invented in this playable slice.
 
 Смысл: в бою нельзя докладывать расходку на пояс и менять экип/сумку. Трата из
 кармана — fproxy `castSpell` (`CMB-02`), не PUT_ON. World `USE` из bag live уже
-`fightBusy`. Добор ячеек после боя (`POCKET.md` refill) — не этот срез.
+`fightBusy`. Добор ячеек после боя (`POCKET.md` refill) — `CMB-03`.
 
 Live `jgr-emu` `commonObject.ts` эти коды **не** блокирует; в
 [FIGHT_LOCK.md](../../../jgr-emu/docs/FIGHT_LOCK.md) строка стоит как
@@ -261,7 +261,7 @@ Pocket, USE, durability, mail GIVE, COME_IN overload, store buy, grant/merge
 Отдельный `ARC-INV` не нужен. Пояс — те же `items` с `location_kind=pocket` и
 `pocket_position` 1…capacity. Новых OA нет: клиент шлёт существующие
 `PUT_ON`/`PUT_OFF`. Combat не читает pocket в этом срезе; порт `listPocket`
-готовит CMB-02 без `persSpells` и без fight RAM.
+отдаёт пояс для wire и CMB-02 loadout без fight RAM.
 
 Live стартовый пояс (93×2, 99×10, 209) **не копируем**. Slice выдаёт 93 и 99
 в bag, pocket на login пустой — чтобы CEF проверял PUT_ON.
@@ -335,7 +335,7 @@ Starter: 9095×1 bag, 93×2 bag, 99×10 bag. Не выдавать 209, брон
 
 - расширить `putOn` (или соседний `putOnPocket`) опциональным `pocketPosition`;
 - `putOff` уже существующий — уметь pocket→bag;
-- `listPocket({ characterId })` — ordered snapshot для wire и будущего CMB-02.
+- `listPocket({ characterId })` — ordered snapshot для wire и CMB-02 loadout.
 
 OA: decode `slot_num` на существующем `PutOnCommand`. Новых `requiredKeys` нет.
 
@@ -446,7 +446,7 @@ OA: новый `UseArtifactCommand`, не ветка внутри PUT_ON. Нов
 ### Out of scope
 
 ADD_MP, DRINK/TEMPEFFECT, books/`bonus_id`, waiting, openDialog, recipes,
-ghost, pocket cast, refill after fight, durability.
+ghost, refill after fight (`CMB-03`), durability.
 
 ### INV-04 acceptance
 

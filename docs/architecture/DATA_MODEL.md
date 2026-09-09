@@ -30,7 +30,9 @@ Playerbot-таблиц и признаков `is_bot` нет.
 `drizzle/0008_inventory_pocket_position_unique`,
 `drizzle/0009_catalog_artifact_actions`,
 `drizzle/0010_character_move_ready_at`,
-`drizzle/0011_world_area_links`.
+`drizzle/0011_world_area_links`,
+`drizzle/0012_catalog_bot_fight_look`,
+`drizzle/0013_catalog_artifact_extra`.
 Поля ниже совпадают с runtime.
 
 ### `identity`
@@ -81,10 +83,11 @@ Versioned projection активной content release:
 
 - `artifacts(release_id, id, title, picture, type_id, kind_id, slot_mask, weight,
 level_min, level_max, gender, price_minor, flags, bag_stack, skills jsonb,
-artifact_actions jsonb)`
+artifact_actions jsonb, extra jsonb)`
   PK `(release_id, id)`. `price_minor` — integer cents ≥ 0 (`0` валиден);
   `flags` integer ≥ 0; `bag_stack` integer ≥ 1; `artifact_actions` — typed map
-  (пустой объект = нет USE).
+  (пустой объект = нет USE). `extra` — dump-proven fight blobs (`spell`,
+  `spells`/`hits` на 9095); пустой объект валиден (еда 77).
 - `bots(release_id, id, title, level, max_hp, strength, hunt_nick, hunt_swf,
 hunt_scale, hunt_fps, hunt_speed, hunt_avatar, hunt_kind, hunt_hide_on_map,
 hunt_sk, hunt_body)`
@@ -104,7 +107,8 @@ source_digest)` PK `(release_id, level, skill_id)`; FK на boundary и
   `(release_id, document_key)`; допустимые ключи: `hud_defaults`, `chrome`,
   `common_conf`, `welcome_message`.
 
-Spell/loot таблиц нет. `common|conf`, empty chrome и HUD defaults читаются из
+Отдельных spell-таблиц нет: fight spell живёт в `artifacts.extra`. Loot-таблиц
+бота ещё нет (CMB-03). `common|conf`, empty chrome и HUD defaults читаются из
 `catalog.game_wide_documents` активной release; level/appearance metadata — из
 versioned catalog tables той же release. Исходные bootstrap-файлы являются
 import input publication pipeline, а не runtime source gameplay-запроса.

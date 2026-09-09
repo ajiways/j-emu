@@ -7,12 +7,14 @@
 Текущий проверенный checkpoint — готовые bootstrap, paperdoll PUT_ON/PUT_OFF,
 internal CHR-01 `grantExperience`, internal CHR-02 `syncResources`/`noteHp` и
 INV-02 bag DROP/`creditMoney`, INV-03 pocket layout 93/99, INV-04 world USE
-77 ADD_HP, WLD-01 area transitions 503↔501/504, RTM-01 presence roster и
-WLD-02 hunt overlay + map `joinHunt` и CMB-01 melee delay port: persistent
-state в PostgreSQL; esrv delivery и hunt overlay process-local; active content
-через release projections; active combat в RAM (несколько accounts на один
-fight id, `CombatDelay` не `Clock.schedule`). CMB-02 добавит fight loadout
-снимок pocket/glove через inventory ports, без таблиц active fight.
+77 ADD_HP, WLD-01 area transitions 503↔501/504, RTM-01 presence roster,
+WLD-02 hunt overlay + map `joinHunt`, CMB-01 melee delay port и CMB-02
+pocket/glove/rage loadout: persistent state в PostgreSQL; esrv delivery и hunt
+overlay process-local; active content через release projections; active combat
+в RAM (несколько accounts на один fight id, `CombatDelay` не `Clock.schedule`;
+HTTPS fproxy consume кармана после успеха). CMB-03 добавит одну composition
+UoW на terminal (character/inventory ports, затем esrv loot+exit), без таблиц
+active fight.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение
@@ -120,10 +122,15 @@ process-local в `jugger-wire`. Durable outbox table не создаётся. Pa
 **Давление:** один terminal outcome меняет character, inventory, quests,
 economy, world lock и realtime notifications.
 
-**Checkpoint:** CMB-03 определяет idempotent terminal result и application
-orchestrator. Combat не пишет чужие таблицы. Durable state фиксируется до
-post-commit packets; ошибка history не меняет reward outcome. Active fight
-tables запрещены ADR-0020.
+**Решение CMB-03:** текущих границ достаточно; отдельный `ARC-CMB` не нужен.
+Combat отдаёт terminal snapshot; composition UoW вызывает character
+`noteHp`/`grantExperience`/`creditMoney` и inventory bag/refill ports. Catalog
+владеет authored `bots` reward scalars и `bot_loot_entries`. Durable writes
+до esrv `fight|loot` затем `fight|exit`. History best-effort не откатывает
+награду. Ghost/injury остаются CMB-04. Active fight tables запрещены ADR-0020.
+
+Отдельный `ARC-CMB` потребуется позже только если settlement нельзя провести
+без записи combat в чужие таблицы, durable outbox или active-fight rows.
 
 ### `ARC-ECO` — деньги и первый economy vertical
 

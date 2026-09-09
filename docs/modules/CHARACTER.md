@@ -9,8 +9,8 @@ port: EXP/level и managed skills пишутся в PostgreSQL, raw-AMF init/ini
 level-up нет до CMB-03/quests, поэтому character progression остаётся
 частичным. CHR-02 lazy HP regen реализован как internal ports `syncResources` /
 `noteHp`: wounded HP начисляется с `regen_at` на resource reads и мутациях,
-`hp_time` уходит в `user|unitframe`, CEF gate нет до CMB-03. Honor и ghost/injury не
-входят. Equipment-derived VIT/hpMax считаются после PUT_ON; без экипа HUD
+`hp_time` уходит в `user|unitframe`. CMB-03 — первый client-visible consumer
+этих портов (бой). Honor и ghost/injury не входят. Equipment-derived VIT/hpMax считаются после PUT_ON; без экипа HUD
 показывает naked L1 (VIT 10). Точный статус:
 [CAPABILITIES.md](../CAPABILITIES.md).
 
