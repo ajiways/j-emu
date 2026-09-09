@@ -8,6 +8,7 @@ import { publishDevelopmentContent } from "../../../src/infrastructure/postgres/
 import { CatalogModule } from "../../../src/modules/catalog/catalog-module.ts";
 import { CharacterModule } from "../../../src/modules/character/character-module.ts";
 import { CombatModule } from "../../../src/modules/combat/combat-module.ts";
+import { SystemCombatDelay } from "../../../src/modules/combat/infrastructure/system-combat-delay.ts";
 import { IdentityModule } from "../../../src/modules/identity/identity-module.ts";
 import { InventoryModule } from "../../../src/modules/inventory/inventory-module.ts";
 import { uniqueDevelopmentSlot } from "../../support/harness/unique-development-slot.ts";
@@ -48,7 +49,20 @@ describe("HP regeneration persistence", () => {
       bagCapacity: policy.bootstrap.bagCapacity,
       pocketCapacity: policy.bootstrap.pocketCapacity,
     });
-    combat = CombatModule.create({ database, rules: policy.combat, clock });
+    combat = CombatModule.create({
+      database,
+      rules: {
+        playerDamageMin: policy.combat.playerDamageMin,
+        playerDamageMax: policy.combat.playerDamageMax,
+        botDamageMin: policy.combat.botDamageMin,
+        botDamageMax: policy.combat.botDamageMax,
+        turnTimeoutSeconds: policy.combat.turnTimeoutSeconds,
+        meleeBotCounterMs: policy.combat.meleeBotCounterMs,
+        turnGrantDelayMs: policy.combat.turnGrantDelayMs,
+      },
+      clock,
+      delay: new SystemCombatDelay(),
+    });
     characters = CharacterModule.create(
       playableCharacterModuleInput(database, catalog.progression, inventory.service, {
         creationPolicy: policy.heroCreation,

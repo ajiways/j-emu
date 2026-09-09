@@ -48,7 +48,9 @@
 - `unsupported` — `clan|info` → `status:203`;
 - `hunt-attack` — `ATTACK_BOT` → flat `fight|conf` с decimal `fightId`/`userId`
   и `instance_id:"0"`;
-- `fproxy` — auth / poll / `castSpell` до `fightFinish`; bootstrap `ev.oppnew.id` ≥ 1000000;
+- `fproxy` — auth / poll; L/C/R poll `attackwait`+`cast` затем `{rs}` без
+  `attacknow`; bot `cast` после 1400 ms; standalone `attacknow` после 2500 ms;
+  bootstrap `ev.oppnew.id` ≥ 1000000;
 - `esrv-exit-reconnect` — `fight|exit`, затем restart и повторный hunt;
 - `combat-restart` — restart посреди боя прекращает active fight, не меняет
   HP/bag и не создаёт finished history;

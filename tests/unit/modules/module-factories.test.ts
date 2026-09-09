@@ -15,6 +15,7 @@ import type { CatalogProgression } from "../../../src/modules/catalog/ports/cata
 import type { ReleaseArtifacts } from "../../../src/modules/catalog/ports/release-artifacts.ts";
 import type { EquippedModifiers } from "../../../src/modules/character/ports/equipped-modifiers.ts";
 import type { CharacterService } from "../../../src/modules/character/application/character-service.ts";
+import type { CombatDelay } from "../../../src/modules/combat/ports/combat-delay.ts";
 import type { CombatPort } from "../../../src/modules/combat/ports/combat-port.ts";
 import type { IdentityService } from "../../../src/modules/identity/application/identity-service.ts";
 import type { InventoryService } from "../../../src/modules/inventory/domain/inventory-service.ts";
@@ -26,6 +27,8 @@ import type { PresenceFanout } from "../../../src/modules/jugger-wire/applicatio
 import type { HuntAreaFanout } from "../../../src/modules/jugger-wire/application/hunt-area-fanout.ts";
 import type { Clock } from "../../../src/shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../src/shared/kernel/unit-of-work.ts";
+import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
+import { ManualCombatDelay } from "../../support/fakes/manual-combat-delay.ts";
 import {
   IdleActiveFightQuery,
   PLAYABLE_HERO_CREATION,
@@ -38,13 +41,8 @@ const equipmentModifiers = {} as EquippedModifiers;
 const releaseArtifacts = {} as ReleaseArtifacts;
 const clock = {} as Clock;
 const activeFight = new IdleActiveFightQuery();
-const combatRules = {
-  playerDamageMin: 1,
-  playerDamageMax: 2,
-  botDamageMin: 1,
-  botDamageMax: 2,
-  turnTimeoutSeconds: 20,
-};
+const combatRules = UNIT_BATTLE_RULES;
+const combatDelay = new ManualCombatDelay();
 
 describe("module factories", () => {
   it("fails fast when required identity dependencies are missing", () => {
@@ -164,6 +162,7 @@ describe("module factories", () => {
         database,
         rules: combatRules,
         clock,
+        delay: combatDelay,
       }),
     ).toThrow(/Combat module requires a database/);
     expect(() =>
@@ -171,8 +170,17 @@ describe("module factories", () => {
         database: {} as PostgresDatabase,
         rules: combatRules,
         clock: undefined as unknown as Clock,
+        delay: combatDelay,
       }),
     ).toThrow(/Combat module requires a clock/);
+    expect(() =>
+      CombatModule.create({
+        database: {} as PostgresDatabase,
+        rules: combatRules,
+        clock,
+        delay: undefined as unknown as CombatDelay,
+      }),
+    ).toThrow(/Combat module requires a combat delay/);
   });
 
   it("fails fast when required jugger-wire dependencies are missing", async () => {
@@ -208,6 +216,7 @@ describe("module factories", () => {
       database: {} as PostgresDatabase,
       rules: combatRules,
       clock,
+      delay: combatDelay,
     });
     await expect(combat.close()).resolves.toBeUndefined();
     const characters = CharacterModule.create({

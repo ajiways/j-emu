@@ -1,33 +1,23 @@
-import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
+import type { BattleEvent } from "./battle-event.ts";
+import type { BattleRules } from "./battle-rules.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
-import { HuntHuman, type HuntHumanSnap } from "./hunt-human.ts";
+import { huntBotSnap } from "./hunt-bot-snap.ts";
+import { HuntHuman } from "./hunt-human.ts";
+import {
+  grantTurn as grantHumanTurn,
+  resolveBotMelee as resolvePairedBotMelee,
+  tryPlayerMelee as resolvePlayerMelee,
+  type BotMeleeResult,
+  type PlayerMeleeResult,
+} from "./hunt-melee.ts";
+import type { HuntJoinHuman } from "./hunt-join-human.ts";
 import { requireHuntBattleInit } from "./require-hunt-battle-init.ts";
 import type { RandomSource } from "./random-source.ts";
 
-export type BattleRules = Readonly<{
-  playerDamageMin: number;
-  playerDamageMax: number;
-  botDamageMin: number;
-  botDamageMax: number;
-  turnTimeoutSeconds: number;
-}>;
-
-type HuntJoinHuman = Readonly<{
-  accountId: number;
-  heroId: number;
-  nick: string;
-  level: number;
-  kind: number;
-  hp: number;
-  maxHp: number;
-  mp: number;
-  maxMp: number;
-}>;
-
 export class Battle {
-  private playerHpValue: number;
   private botHpValue: number;
   private finishedValue = false;
+  private pairedAccountIdValue: number;
   private readonly humans: HuntHuman[] = [];
 
   constructor(
@@ -35,8 +25,8 @@ export class Battle {
     private readonly rules: BattleRules,
     private readonly random: RandomSource,
   ) {
-    this.playerHpValue = init.playerHp;
     this.botHpValue = init.botMaxHp;
+    this.pairedAccountIdValue = init.accountId;
     requireHuntBattleInit(init, rules);
     this.humans.push(
       new HuntHuman({
@@ -100,6 +90,15 @@ export class Battle {
   get turnTimeoutSeconds(): number {
     return this.rules.turnTimeoutSeconds;
   }
+  get meleeBotCounterMs(): number {
+    return this.rules.meleeBotCounterMs;
+  }
+  get turnGrantDelayMs(): number {
+    return this.rules.turnGrantDelayMs;
+  }
+  get pairedAccountId(): number {
+    return this.pairedAccountIdValue;
+  }
   get finished(): boolean {
     return this.finishedValue;
   }
@@ -114,6 +113,10 @@ export class Battle {
 
   hasHuman(accountId: number, heroId: number): boolean {
     return this.humans.some((human) => human.accountId === accountId || human.heroId === heroId);
+  }
+
+  hasWaitingHuman(): boolean {
+    return this.humans.some((human) => human.waiting);
   }
 
   addHuman(join: HuntJoinHuman): BattleEvent {
@@ -138,12 +141,11 @@ export class Battle {
       waiting: true,
     });
     this.humans.push(human);
-    const joined = this.humanSnap(human);
     return {
       type: "roster-updated",
-      humans: this.humans.map((entry) => this.humanSnap(entry)),
-      bot: this.botSnap(),
-      joined,
+      humans: this.humans.map((entry) => entry.snapshot()),
+      bot: huntBotSnap(this.init, this.botHpValue),
+      joined: human.snapshot(),
     };
   }
 
@@ -152,95 +154,86 @@ export class Battle {
     const human = this.requireHuman(accountId);
     if (human.authed) throw new Error("Fight session is already authenticated");
     human.authed = true;
-    const events: BattleEvent[] = [this.bootstrapEvent(human)];
+    if (!human.waiting) human.beginTurn();
+    const events: BattleEvent[] = [
+      {
+        type: "hunt-bootstrap",
+        waiting: human.waiting,
+        hero: human.snapshot(),
+        allies: this.humans
+          .filter((entry) => entry.accountId !== human.accountId)
+          .map((entry) => entry.snapshot()),
+        bot: huntBotSnap(this.init, this.botHpValue),
+      },
+    ];
     if (!human.waiting) {
       events.push({ type: "turn-granted", timeoutSeconds: this.rules.turnTimeoutSeconds });
     }
     return events;
   }
 
-  strike(accountId: number, side: "left" | "center" | "right"): readonly BattleEvent[] {
+  tryPlayerMelee(accountId: number, side: "left" | "center" | "right"): PlayerMeleeResult {
     const human = this.requireHuman(accountId);
     if (!human.authed) throw new Error("Fight session is not authenticated");
-    if (human.waiting) throw new Error("Queued hunter cannot strike");
-    if (this.finishedValue) throw new Error("Fight is already finished");
+    const resolved = resolvePlayerMelee(human, side, {
+      finished: this.finishedValue,
+      rules: this.rules,
+      random: this.random,
+      botHp: this.botHpValue,
+      botFightId: this.botFightId,
+      botMaxHp: this.init.botMaxHp,
+      fightId: this.id,
+    });
+    this.botHpValue = resolved.botHp;
+    if (resolved.finished) this.finishedValue = true;
+    return resolved.result;
+  }
 
-    const playerDamage = this.random.integer(
-      this.rules.playerDamageMin,
-      this.rules.playerDamageMax,
-    );
-    this.botHpValue = Math.max(0, this.botHpValue - playerDamage);
-    const playerCast: BattleEvent = {
-      type: "damage",
-      sourceId: this.heroId,
-      targetId: this.botFightId,
-      animation: `attack_${side}`,
-      hpChange: -playerDamage,
-      targetMaxHp: this.init.botMaxHp,
-      killed: this.botHpValue === 0,
-    };
-    if (this.botHpValue === 0) {
-      this.finishedValue = true;
-      return [playerCast, { type: "finished", winnerTeam: 1, fightId: this.id }];
-    }
+  resolveBotMelee(): BotMeleeResult {
+    if (this.finishedValue) throw new Error("Cannot resolve bot melee on a finished battle");
+    const result = resolvePairedBotMelee(this.requireHuman(this.pairedAccountIdValue), {
+      rules: this.rules,
+      random: this.random,
+      botFightId: this.botFightId,
+      fightId: this.id,
+      hasWaiter: this.hasWaitingHuman(),
+    });
+    if (result.events.some((event) => event.type === "finished")) this.finishedValue = true;
+    return result;
+  }
 
-    const botDamage = this.random.integer(this.rules.botDamageMin, this.rules.botDamageMax);
-    this.playerHpValue = Math.max(0, this.playerHpValue - botDamage);
-    const botCast: BattleEvent = {
-      type: "damage",
-      sourceId: this.botFightId,
-      targetId: this.heroId,
-      animation: "attack_center",
-      hpChange: -botDamage,
-      targetMaxHp: this.init.playerMaxHp,
-      killed: this.playerHpValue === 0,
+  grantTurn(accountId: number): BattleEvent | null {
+    if (this.finishedValue) return null;
+    return grantHumanTurn(this.requireHuman(accountId), this.rules.turnTimeoutSeconds);
+  }
+
+  pairNextWaiter(): Readonly<{
+    accountId: number;
+    authed: boolean;
+    events: readonly BattleEvent[];
+  }> | null {
+    if (this.finishedValue || this.botHpValue === 0) return null;
+    const waiter = this.humans.find((entry) => entry.waiting);
+    if (!waiter) return null;
+    waiter.pair();
+    this.pairedAccountIdValue = waiter.accountId;
+    if (!waiter.authed) return { accountId: waiter.accountId, authed: false, events: [] };
+    return {
+      accountId: waiter.accountId,
+      authed: true,
+      events: [{ type: "opponent-new", bot: huntBotSnap(this.init, this.botHpValue) }],
     };
-    if (this.playerHpValue === 0) {
-      this.finishedValue = true;
-      return [playerCast, botCast, { type: "finished", winnerTeam: 2, fightId: this.id }];
-    }
-    return [
-      playerCast,
-      botCast,
-      { type: "turn-granted", timeoutSeconds: this.rules.turnTimeoutSeconds },
-    ];
+  }
+
+  releaseHuman(accountId: number): void {
+    const index = this.humans.findIndex((human) => human.accountId === accountId);
+    if (index < 0) throw new Error(`Human account ${accountId} is not in this battle`);
+    this.humans.splice(index, 1);
   }
 
   private requireHuman(accountId: number): HuntHuman {
     const human = this.humans.find((entry) => entry.accountId === accountId);
     if (!human) throw new Error(`Human account ${accountId} is not in this battle`);
     return human;
-  }
-
-  private bootstrapEvent(viewer: HuntHuman): BattleEvent {
-    return {
-      type: "hunt-bootstrap",
-      waiting: viewer.waiting,
-      hero: this.humanSnap(viewer),
-      allies: this.humans
-        .filter((entry) => entry.accountId !== viewer.accountId)
-        .map((entry) => this.humanSnap(entry)),
-      bot: this.botSnap(),
-    };
-  }
-
-  private humanSnap(human: HuntHuman): HuntHumanSnap {
-    const hp = human.accountId === this.accountId ? this.playerHpValue : human.hp;
-    return human.snapshot(hp);
-  }
-
-  private botSnap(): HuntBotSnap {
-    return {
-      id: this.botFightId,
-      nick: this.botNick,
-      level: this.botLevel,
-      hp: this.botHpValue,
-      maxHp: this.init.botMaxHp,
-      artikulId: this.botArtikulId,
-      avatar: this.init.botAvatar,
-      sk: this.init.botSk,
-      body: this.init.botBody,
-      team: 2,
-    };
   }
 }

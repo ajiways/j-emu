@@ -2,6 +2,7 @@ import type { CombatEvent, FightExit, FightStart } from "../../combat/ports/comb
 import { fightCastEvent } from "./fight-cast-wire.ts";
 import { fightEventMap } from "./fight-event-map.ts";
 import { huntFightBootstrapEvents, huntFightRosterEvents } from "./hunt-fight-bootstrap-wire.ts";
+import { huntOppNewEvent } from "./hunt-opp-new-event.ts";
 
 export type FightConfigurationBlock = Readonly<{
   status: 100;
@@ -83,6 +84,30 @@ export class FightWireMapper {
     };
   }
 
+  frames(events: readonly CombatEvent[]): FightWireFrame[] {
+    const frames: FightWireFrame[] = [];
+    for (let index = 0; index < events.length; index += 1) {
+      const event = events[index];
+      if (!event) throw new Error("Fight wire event is missing");
+      if (event.type === "turn-wait") {
+        const damage = events[index + 1];
+        if (!damage || damage.type !== "damage") {
+          throw new Error("turn-wait must precede damage");
+        }
+        frames.push(
+          fightEventMap([
+            { et: "attackwait", restTime: event.timeoutSeconds },
+            fightCastEvent(damage),
+          ]),
+        );
+        index += 1;
+        continue;
+      }
+      frames.push(this.event(event));
+    }
+    return frames;
+  }
+
   event(event: CombatEvent): FightWireFrame {
     switch (event.type) {
       case "command-accepted":
@@ -99,6 +124,10 @@ export class FightWireMapper {
         return fightEventMap([fightCastEvent(event)]);
       case "turn-granted":
         return fightEventMap([{ et: "attacknow", restTime: event.timeoutSeconds }]);
+      case "turn-wait":
+        throw new Error("turn-wait must be encoded with the following damage event");
+      case "opponent-new":
+        return fightEventMap([huntOppNewEvent(event.bot)]);
       case "finished":
         return fightEventMap([{ et: "fightFinish", winner: event.winnerTeam }]);
     }

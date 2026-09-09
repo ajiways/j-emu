@@ -20,7 +20,7 @@ describe("esrv exit and reconnect", () => {
 
   it("pushes fight|exit and keeps hunt after restart", async () => {
     const client = await AuthenticatedClient.login(application);
-    await completeMeleeHunt(client);
+    await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms));
     const packets = await client.pollEsrv();
     const exitPacket = packets.find(
       (packet) =>

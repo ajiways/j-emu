@@ -68,6 +68,9 @@
     "botDamageMin": 2,
     "botDamageMax": 4,
     "turnTimeoutSeconds": 20,
+    "meleeBotCounterMs": 1400,
+    "turnGrantDelayMs": 2500,
+    "damageProvenance": "legacy behavior",
     "meleeSourceIds": {
       "left": 1,
       "center": 2,

@@ -2,6 +2,8 @@ import { PostgresDatabase } from "../infrastructure/postgres/database.ts";
 import { CatalogModule } from "../modules/catalog/catalog-module.ts";
 import { CharacterModule } from "../modules/character/character-module.ts";
 import { CombatModule } from "../modules/combat/combat-module.ts";
+import type { CombatDelay } from "../modules/combat/ports/combat-delay.ts";
+import { SystemCombatDelay } from "../modules/combat/infrastructure/system-combat-delay.ts";
 import { IdentityModule } from "../modules/identity/identity-module.ts";
 import { InventoryModule } from "../modules/inventory/inventory-module.ts";
 import { JuggerWireModule } from "../modules/jugger-wire/jugger-wire-module.ts";
@@ -23,7 +25,11 @@ import { HuntAreaFanout } from "../modules/jugger-wire/application/hunt-area-fan
 import { HuntLockRelease } from "./hunt-lock-release.ts";
 
 export class CompositionRoot {
-  async build(config: AppConfig, clock: Clock = new SystemClock()): Promise<Application> {
+  async build(
+    config: AppConfig,
+    clock: Clock = new SystemClock(),
+    delay: CombatDelay = new SystemCombatDelay(),
+  ): Promise<Application> {
     const policy = loadGamePolicy(config.gamePolicyFile);
     const closers: Array<{ close(): Promise<void> }> = [];
     try {
@@ -44,7 +50,20 @@ export class CompositionRoot {
       closers.push(inventory);
       const world = await WorldModule.create({ database });
       closers.push(world);
-      const combat = CombatModule.create({ database, rules: policy.combat, clock });
+      const combat = CombatModule.create({
+        database,
+        rules: {
+          playerDamageMin: policy.combat.playerDamageMin,
+          playerDamageMax: policy.combat.playerDamageMax,
+          botDamageMin: policy.combat.botDamageMin,
+          botDamageMax: policy.combat.botDamageMax,
+          turnTimeoutSeconds: policy.combat.turnTimeoutSeconds,
+          meleeBotCounterMs: policy.combat.meleeBotCounterMs,
+          turnGrantDelayMs: policy.combat.turnGrantDelayMs,
+        },
+        clock,
+        delay,
+      });
       combat.startHistoryCleanup();
       closers.push(combat);
       const characters = CharacterModule.create({
@@ -70,6 +89,7 @@ export class CompositionRoot {
       const outbox = new EsrvOutbox();
       const presenceFanout = new PresenceFanout(presence, outbox, longPoll);
       const huntFanout = new HuntAreaFanout(presence, longPoll);
+      combat.bindWake({ wake: (accountId) => longPoll.wake(accountId) });
       combat.bindTerminalObserver(new HuntLockRelease(world.service, huntFanout));
       const registration = new PlayableAccountRegistration(
         identity.service,

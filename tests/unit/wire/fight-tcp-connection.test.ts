@@ -6,6 +6,8 @@ import { decodeFrames } from "../../../src/modules/jugger-wire/amf/framing.ts";
 import { FproxyCommandRegistry } from "../../../src/modules/jugger-wire/registry/fproxy-command-registry.ts";
 import { FightWireMapper } from "../../../src/modules/jugger-wire/application/fight-wire-mapper.ts";
 import { FightTcpConnection } from "../../../src/modules/jugger-wire/infrastructure/tcp/fight-tcp-connection.ts";
+import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
+import { ManualCombatDelay } from "../../support/fakes/manual-combat-delay.ts";
 import { MonotonicFightIdSource } from "../../support/fakes/monotonic-fight-id-source.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingFinishedFightStore } from "../../support/fakes/recording-finished-fight-store.ts";
@@ -21,16 +23,11 @@ describe("FightTcpConnection", () => {
     const combat = new CombatService(
       new MonotonicFightIdSource(1),
       new SequenceRandom([8]),
-      {
-        playerDamageMin: 8,
-        playerDamageMax: 12,
-        botDamageMin: 2,
-        botDamageMax: 4,
-        turnTimeoutSeconds: 20,
-      },
+      UNIT_BATTLE_RULES,
       clock,
       new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
       new RecordingHistoryWriteObserver(),
+      new ManualCombatDelay(),
     );
     const started = await startHuntWithIssuedId(combat, unitHuntStart());
     const commands = FproxyCommandRegistry.fromMeleeSourceIds({ left: 1, center: 2, right: 3 });

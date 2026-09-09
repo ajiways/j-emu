@@ -11,6 +11,8 @@ import { PostgresFinishedFightStore } from "../../../src/modules/combat/infrastr
 import { PostgresHeroRepository } from "../../../src/modules/character/infrastructure/postgres-hero-repository.ts";
 import { PostgresAccountRepository } from "../../../src/modules/identity/infrastructure/postgres-account-repository.ts";
 import { playableNewHero } from "../../support/hero-fixtures.ts";
+import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
+import { ManualCombatDelay } from "../../support/fakes/manual-combat-delay.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
@@ -40,15 +42,16 @@ describe("finished fight history storage", () => {
       new PostgresFightIdSource(database),
       new SequenceRandom([20]),
       {
+        ...UNIT_BATTLE_RULES,
         playerDamageMin: 20,
         playerDamageMax: 20,
         botDamageMin: 1,
         botDamageMax: 1,
-        turnTimeoutSeconds: 20,
       },
       clock,
       new FinishedFightRecorder(store, clock),
       new RecordingHistoryWriteObserver(),
+      new ManualCombatDelay(),
     );
     const start = await startHuntWithIssuedId(combat, {
       accountId: account.id,

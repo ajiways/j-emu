@@ -30,13 +30,13 @@ export class FightTcpConnection {
     const accountId = this.accountId;
     if (!accountId) throw new ProtocolError(4, "TCP fight connection is not authenticated");
     const immediate = await this.combat.execute(accountId, command);
-    return encodePlainFrames(immediate.map((event) => this.wire.event(event)));
+    return encodePlainFrames(this.wire.frames(immediate));
   }
 
   async poll(): Promise<Buffer> {
     const accountId = this.accountId;
     if (!accountId) return Buffer.alloc(0);
     const events = await this.combat.execute(accountId, { kind: "poll" });
-    return encodePlainFrames(events.map((event) => this.wire.event(event)));
+    return encodePlainFrames(this.wire.frames(events));
   }
 }

@@ -8,14 +8,15 @@ import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingFinishedFightStore } from "../../support/fakes/recording-finished-fight-store.ts";
 import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
+import { battleRules } from "../../support/create-combat-service.ts";
+import { ManualCombatDelay } from "../../support/fakes/manual-combat-delay.ts";
 
-const rules = {
+const rules = battleRules({
   playerDamageMin: 20,
   playerDamageMax: 20,
   botDamageMin: 2,
   botDamageMax: 2,
-  turnTimeoutSeconds: 20,
-};
+});
 
 describe("CombatService hunt join", () => {
   it("joins the same fight id and queues roster to authed humans", async () => {
@@ -82,5 +83,6 @@ function service(): CombatService {
     clock,
     new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
     new RecordingHistoryWriteObserver(),
+    new ManualCombatDelay(),
   );
 }

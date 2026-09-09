@@ -6,7 +6,9 @@ import { FinishedFightCleanup } from "./application/finished-fight-cleanup.ts";
 import { FinishedFightRecorder } from "./application/finished-fight-recorder.ts";
 import type { HistoryWriteObserver } from "./application/history-write-observer.ts";
 import { StructuredHistoryWriteObserver } from "./application/structured-history-write-observer.ts";
-import type { BattleRules } from "./domain/battle.ts";
+import type { BattleRules } from "./domain/battle-rules.ts";
+import type { CombatDelay } from "./ports/combat-delay.ts";
+import type { CombatWake } from "./ports/combat-wake.ts";
 import {
   FINISHED_FIGHT_CLEANUP_BATCH_SIZE,
   FINISHED_FIGHT_CLEANUP_INTERVAL_MS,
@@ -31,10 +33,12 @@ export class CombatModule {
     database: PostgresDatabase;
     rules: BattleRules;
     clock: Clock;
+    delay: CombatDelay;
   }): CombatModule {
     const database = requirePresent(input.database, "Combat module requires a database");
     const rules = requirePresent(input.rules, "Combat module requires battle rules");
     const clock = requirePresent(input.clock, "Combat module requires a clock");
+    const delay = requirePresent(input.delay, "Combat module requires a combat delay");
     const history = new PostgresFinishedFightStore(database);
     const historyWrites = new StructuredHistoryWriteObserver((event) => {
       process.stderr.write(`${JSON.stringify(event)}\n`);
@@ -46,6 +50,7 @@ export class CombatModule {
       clock,
       new FinishedFightRecorder(history, clock),
       historyWrites,
+      delay,
     );
     return new CombatModule(
       runtime,
@@ -53,6 +58,10 @@ export class CombatModule {
       new FinishedFightCleanup(history, clock, FINISHED_FIGHT_CLEANUP_BATCH_SIZE),
       historyWrites,
     );
+  }
+
+  bindWake(wake: CombatWake): void {
+    this.runtime.bindWake(wake);
   }
 
   bindTerminalObserver(observer: FightTerminalObserver): void {

@@ -61,6 +61,9 @@ const schema = z.object({
     botDamageMin: z.number().int().nonnegative(),
     botDamageMax: z.number().int().nonnegative(),
     turnTimeoutSeconds: z.number().int().positive(),
+    meleeBotCounterMs: z.number().int().positive(),
+    turnGrantDelayMs: z.number().int().positive(),
+    damageProvenance: z.literal("legacy behavior"),
     meleeSourceIds: z.object({
       left: z.number().int().positive(),
       center: z.number().int().positive(),

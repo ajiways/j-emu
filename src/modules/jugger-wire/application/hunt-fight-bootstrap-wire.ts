@@ -1,6 +1,7 @@
 import type { CombatEvent } from "../../combat/ports/combat-port.ts";
 import { huntNativePersSpells } from "./hunt-native-pers-spells.ts";
 import { huntHumanPersFields, huntPersListEvent } from "./hunt-fight-pers-wire.ts";
+import { huntOppNewEvent } from "./hunt-opp-new-event.ts";
 
 type HuntBootstrap = Extract<CombatEvent, { type: "hunt-bootstrap" }>;
 
@@ -31,24 +32,7 @@ export function huntFightBootstrapEvents(
     { et: "oppwait" },
   ];
   if (waiting) return events;
-  events.push({
-    aggressive: true,
-    artikulId: bot.artikulId,
-    avatar: bot.avatar,
-    body: bot.body,
-    bot: true,
-    dead: false,
-    et: "oppnew",
-    hp: bot.hp,
-    id: bot.id,
-    level: bot.level,
-    maxHp: bot.maxHp,
-    maxMp: 0,
-    mp: 0,
-    nick: bot.nick,
-    sk: bot.sk,
-    team: bot.team,
-  });
+  events.push(huntOppNewEvent(bot));
   events.push({ et: "persEff", persId: bot.id });
   return events;
 }

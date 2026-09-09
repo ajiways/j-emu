@@ -8,10 +8,10 @@ import {
 } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
+import { strikeUntilHuntFinish } from "../support/harness/complete-melee-hunt.ts";
 import {
   fightEventTypes,
   fightPersListIds,
-  framesIncludeFightFinish,
   heroIdFrom,
   huntFightConfFrom,
 } from "../support/harness/wire-payload.ts";
@@ -84,18 +84,24 @@ describe("hunt spawn lock", () => {
     expect(joinerTypes).not.toContain("oppnew");
     expect(fightPersListIds(bootstrapB)).toEqual(expect.arrayContaining([heroA, heroB]));
 
-    let finished = false;
-    for (let strike = 0; strike < 4 && !finished; strike += 1) {
-      const castBody = await a.fight({
-        rc: "castSpell",
-        srcType: 1,
-        srcId: 2,
-        sq: 6 + strike,
-      });
-      if (castBody.length !== 0) throw new Error("castSpell must return an empty body");
-      finished = framesIncludeFightFinish(await a.pollFight());
-    }
-    if (!finished) throw new Error("Hunt fight did not finish");
+    const castBody = await a.fight({
+      rc: "castSpell",
+      srcType: 1,
+      srcId: 2,
+      sq: 6,
+    });
+    if (castBody.length !== 0) throw new Error("castSpell must return an empty body");
+    const meleeA = await a.pollFight();
+    expect(fightEventTypes(meleeA)).toEqual(expect.arrayContaining(["attackwait", "cast"]));
+    expect(fightEventTypes(meleeA)).not.toContain("attacknow");
+    const waitingB = await b.pollFight();
+    expect(fightEventTypes(waitingB)).not.toContain("attacknow");
+    expect(fightEventTypes(waitingB)).not.toContain("oppnew");
+    await harness.elapseCombat(1400);
+    await a.pollFight();
+    await harness.elapseCombat(1100);
+    await a.pollFight();
+    await strikeUntilHuntFinish(a, (ms) => harness.elapseCombat(ms), 7);
     await a.pollEsrv();
     expect(huntBotFromEsrv(await b.pollEsrv(), "503").fight_id).toBe(IDLE_HUNT_FIGHT_ID);
   });

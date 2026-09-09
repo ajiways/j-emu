@@ -37,4 +37,6 @@ export type BattleEvent =
       killed: boolean;
     }>
   | Readonly<{ type: "turn-granted"; timeoutSeconds: number }>
+  | Readonly<{ type: "turn-wait"; timeoutSeconds: number }>
+  | Readonly<{ type: "opponent-new"; bot: HuntBotSnap }>
   | Readonly<{ type: "finished"; winnerTeam: 1 | 2; fightId: string }>;

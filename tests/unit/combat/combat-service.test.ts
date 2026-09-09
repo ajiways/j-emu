@@ -2,33 +2,38 @@ import { describe, expect, it } from "vitest";
 import { CombatService } from "../../../src/modules/combat/application/combat-service.ts";
 import { FinishedFightRecorder } from "../../../src/modules/combat/application/finished-fight-recorder.ts";
 import { FailingFinishedFightStore } from "../../support/fakes/failing-finished-fight-store.ts";
+import { ManualCombatDelay } from "../../support/fakes/manual-combat-delay.ts";
 import { MonotonicFightIdSource } from "../../support/fakes/monotonic-fight-id-source.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingFinishedFightStore } from "../../support/fakes/recording-finished-fight-store.ts";
 import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
+import { battleRules } from "../../support/create-combat-service.ts";
 import { unitHuntStart } from "../../support/hunt-start-input.ts";
 
-const rules = {
+const rules = battleRules({
   playerDamageMin: 20,
   playerDamageMax: 20,
   botDamageMin: 2,
   botDamageMax: 2,
-  turnTimeoutSeconds: 20,
-};
+});
 
 describe("CombatService history", () => {
   it("does not touch history storage on poll or a non-terminal strike", async () => {
     const history = new RecordingFinishedFightStore();
     const writes = new RecordingHistoryWriteObserver();
-    const combat = service(history, writes, new SequenceRandom([8, 2]), {
-      playerDamageMin: 8,
-      playerDamageMax: 8,
-      botDamageMin: 2,
-      botDamageMax: 2,
-      turnTimeoutSeconds: 20,
-    });
+    const combat = service(
+      history,
+      writes,
+      new SequenceRandom([8, 2]),
+      battleRules({
+        playerDamageMin: 8,
+        playerDamageMax: 8,
+        botDamageMin: 2,
+        botDamageMax: 2,
+      }),
+    );
     await startHuntWithIssuedId(combat, huntInput());
     expect(await combat.execute(1, { kind: "poll" })).toEqual([]);
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
@@ -55,8 +60,9 @@ describe("CombatService history", () => {
     expect(history.records[0]?.winner).toBe(1);
     expect(history.records[0]?.heroId).toBe(1);
     expect(history.deleted).toEqual([]);
-    await expect(combat.execute(1, { kind: "strike", side: "left", sequence: 3 })).rejects.toThrow(
-      /Active fight not found/,
+    await combat.execute(1, { kind: "strike", side: "left", sequence: 3 });
+    expect(await combat.execute(1, { kind: "poll" })).toEqual(
+      expect.arrayContaining([{ type: "command-accepted", sequence: 3 }]),
     );
     expect(history.records).toHaveLength(1);
     expect(history.deleted).toEqual([]);
@@ -65,16 +71,18 @@ describe("CombatService history", () => {
 
   it("still emits terminal packets when history storage is unavailable", async () => {
     const writes = new RecordingHistoryWriteObserver();
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const combat = new CombatService(
       new MonotonicFightIdSource(1),
       new SequenceRandom([20]),
       rules,
-      new MutableClock(new Date("2026-09-07T12:00:00.000Z")),
+      clock,
       new FinishedFightRecorder(
         new FailingFinishedFightStore(new Error("history storage unavailable")),
         new MutableClock(new Date("2026-09-07T12:00:10.000Z")),
       ),
       writes,
+      new ManualCombatDelay(),
     );
     const start = await startHuntWithIssuedId(combat, huntInput());
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
@@ -92,13 +100,12 @@ describe("CombatService history", () => {
       new RecordingFinishedFightStore(),
       new RecordingHistoryWriteObserver(),
       new SequenceRandom([8, 2]),
-      {
+      battleRules({
         playerDamageMin: 8,
         playerDamageMax: 8,
         botDamageMin: 2,
         botDamageMax: 2,
-        turnTimeoutSeconds: 20,
-      },
+      }),
     );
     const start = await startHuntWithIssuedId(combat, huntInput());
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
@@ -116,15 +123,17 @@ function service(
   history: RecordingFinishedFightStore,
   writes: RecordingHistoryWriteObserver,
   random: SequenceRandom,
-  battleRules = rules,
+  battleRulesValue = rules,
 ): CombatService {
+  const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
   return new CombatService(
     new MonotonicFightIdSource(1),
     random,
-    battleRules,
-    new MutableClock(new Date("2026-09-07T12:00:00.000Z")),
-    new FinishedFightRecorder(history, new MutableClock(new Date("2026-09-07T12:00:10.000Z"))),
+    battleRulesValue,
+    clock,
+    new FinishedFightRecorder(history, clock),
     writes,
+    new ManualCombatDelay(),
   );
 }
 

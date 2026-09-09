@@ -9,14 +9,22 @@ import { publishDevelopmentContent } from "../../../src/infrastructure/postgres/
 import { migrateDatabase } from "../../../src/infrastructure/postgres/migration-runner.ts";
 import { writeClientStaticStubs } from "./client-static-stubs.ts";
 import { requireTestDatabaseUrl } from "../postgres/test-database-url.ts";
+import { FakeClock } from "../fake-clock.ts";
+import { ManualCombatDelay } from "../fakes/manual-combat-delay.ts";
+import { MutableClock } from "../fakes/mutable-clock.ts";
 
 const testDatabaseUrl = requireTestDatabaseUrl();
 
 export class ApplicationHarness {
   private readonly staticDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "j-emu-pub1-"));
   private applicationValue: Application | null = null;
+  private readonly delay: ManualCombatDelay;
+  private readonly clock: Clock;
 
-  constructor(private readonly clock?: Clock) {}
+  constructor(clock?: Clock, delay = new ManualCombatDelay()) {
+    this.clock = clock ?? new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    this.delay = delay;
+  }
 
   async start(): Promise<Application> {
     if (this.applicationValue) throw new Error("Application harness is already started");
@@ -26,15 +34,30 @@ export class ApplicationHarness {
       testDatabaseUrl,
       path.resolve(process.cwd(), "content/playable-slice.json"),
     );
-    this.applicationValue = await new CompositionRoot().build(this.config(), this.clock);
+    this.applicationValue = await new CompositionRoot().build(
+      this.config(),
+      this.clock,
+      this.delay,
+    );
     return this.applicationValue;
   }
 
   async restart(): Promise<Application> {
     if (!this.applicationValue) throw new Error("Application harness was not started");
     await this.applicationValue.close();
-    this.applicationValue = await new CompositionRoot().build(this.config(), this.clock);
+    this.applicationValue = await new CompositionRoot().build(
+      this.config(),
+      this.clock,
+      this.delay,
+    );
     return this.applicationValue;
+  }
+
+  async elapseCombat(ms: number): Promise<void> {
+    if (this.clock instanceof MutableClock) this.clock.advanceMs(ms);
+    else if (this.clock instanceof FakeClock) this.clock.advanceSeconds(ms / 1000);
+    else throw new Error("Application harness clock cannot elapse combat delays");
+    await this.delay.fireDue(this.clock.now());
   }
 
   async stop(): Promise<void> {

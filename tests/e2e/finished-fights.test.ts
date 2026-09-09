@@ -24,7 +24,7 @@ describe("finished fights", () => {
     const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
     const heroId = heroIdFrom(init);
     const nick = (init["user|conf"] as { nick: string }).nick;
-    const fightId = await completeMeleeHunt(client);
+    const fightId = await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms));
     const row = await loadFinishedFightByWireId(fightId);
     if (!row) throw new Error("Finished hunt did not write history");
     expect(row).toMatchObject({

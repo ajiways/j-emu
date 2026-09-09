@@ -13,6 +13,8 @@ import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingFinishedFightStore } from "../../support/fakes/recording-finished-fight-store.ts";
 import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
+import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
+import { ManualCombatDelay } from "../../support/fakes/manual-combat-delay.ts";
 
 const plaza = new Area(
   "503",
@@ -93,16 +95,11 @@ function harness(): {
   const combat = new CombatService(
     new MonotonicFightIdSource(1),
     new SequenceRandom([20]),
-    {
-      playerDamageMin: 20,
-      playerDamageMax: 20,
-      botDamageMin: 2,
-      botDamageMax: 2,
-      turnTimeoutSeconds: 20,
-    },
+    UNIT_BATTLE_RULES,
     clock,
     new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
     new RecordingHistoryWriteObserver(),
+    new ManualCombatDelay(),
   );
   const fanout = { wakeArea: async () => undefined };
   return {

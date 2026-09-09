@@ -12,6 +12,8 @@ import { FproxyCommandRegistry } from "../../../src/modules/jugger-wire/registry
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { fightEventTypes, huntOppNewFrom } from "../../support/harness/wire-payload.ts";
 import { unitHuntStart } from "../../support/hunt-start-input.ts";
+import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
+import { ManualCombatDelay } from "../../support/fakes/manual-combat-delay.ts";
 import { MonotonicFightIdSource } from "../../support/fakes/monotonic-fight-id-source.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingFinishedFightStore } from "../../support/fakes/recording-finished-fight-store.ts";
@@ -24,16 +26,11 @@ describe("FightTcpServer", () => {
     const combat = new CombatService(
       new MonotonicFightIdSource(1),
       new SequenceRandom([8]),
-      {
-        playerDamageMin: 8,
-        playerDamageMax: 12,
-        botDamageMin: 2,
-        botDamageMax: 4,
-        turnTimeoutSeconds: 20,
-      },
+      UNIT_BATTLE_RULES,
       clock,
       new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
       new RecordingHistoryWriteObserver(),
+      new ManualCombatDelay(),
     );
     const started = await startHuntWithIssuedId(combat, unitHuntStart());
     const longPoll = new LongPollCoordinator();

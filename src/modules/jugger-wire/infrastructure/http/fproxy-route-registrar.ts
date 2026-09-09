@@ -28,11 +28,7 @@ export class FproxyRouteRegistrar {
         const events = await this.fightEvents(request, account.id, command);
         return reply
           .type("application/octet-stream")
-          .send(
-            encodePlainFrames(
-              events.map((event) => this.dependencies.commands.fightWire.event(event)),
-            ),
-          );
+          .send(encodePlainFrames(this.dependencies.commands.fightWire.frames(events)));
       } catch (error) {
         request.log.error({ err: error }, "fight_command_failed");
         const message = error instanceof Error ? error.message : "Unknown non-Error failure";

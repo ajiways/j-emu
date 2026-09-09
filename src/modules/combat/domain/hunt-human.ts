@@ -28,9 +28,14 @@ type HuntHumanInit = Readonly<{
 
 export class HuntHuman {
   authed = false;
+  private waitingValue: boolean;
+  private turnActiveValue = false;
+  private hpValue: number;
 
   constructor(private readonly init: HuntHumanInit) {
     requireHuntHumanInit(init);
+    this.waitingValue = init.waiting;
+    this.hpValue = init.hp;
   }
 
   get accountId(): number {
@@ -49,7 +54,7 @@ export class HuntHuman {
     return this.init.kind;
   }
   get hp(): number {
-    return this.init.hp;
+    return this.hpValue;
   }
   get maxHp(): number {
     return this.init.maxHp;
@@ -64,24 +69,45 @@ export class HuntHuman {
     return this.init.team;
   }
   get waiting(): boolean {
-    return this.init.waiting;
+    return this.waitingValue;
+  }
+  get turnActive(): boolean {
+    return this.turnActiveValue;
   }
 
-  snapshot(hp: number): HuntHumanSnap {
-    if (!Number.isInteger(hp) || hp < 0 || hp > this.maxHp) {
-      throw new Error("Hunt human snapshot hp is invalid");
-    }
+  pair(): void {
+    if (!this.waitingValue) throw new Error("Hunt human is already paired");
+    this.waitingValue = false;
+  }
+
+  beginTurn(): void {
+    this.turnActiveValue = true;
+  }
+
+  endTurn(): void {
+    this.turnActiveValue = false;
+  }
+
+  snapshot(): HuntHumanSnap {
     return {
       id: this.heroId,
       nick: this.nick,
       level: this.level,
       kind: this.kind,
-      hp,
+      hp: this.hpValue,
       maxHp: this.maxHp,
       mp: this.mp,
       maxMp: this.maxMp,
       team: this.team,
     };
+  }
+
+  applyDamage(amount: number): boolean {
+    if (!Number.isInteger(amount) || amount < 0) {
+      throw new Error("Hunt human damage must be a non-negative integer");
+    }
+    this.hpValue = Math.max(0, this.hpValue - amount);
+    return this.hpValue === 0;
   }
 }
 

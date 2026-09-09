@@ -1,5 +1,5 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
-import type { BattleRules } from "./battle.ts";
+import type { BattleRules } from "./battle-rules.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 
 export function requireHuntBattleInit(init: HuntBattleInit, rules: BattleRules): void {
@@ -42,4 +42,13 @@ export function requireHuntBattleInit(init: HuntBattleInit, rules: BattleRules):
     throw new Error("Bot damage rules are invalid");
   }
   if (rules.turnTimeoutSeconds < 1) throw new Error("Turn timeout must be positive");
+  if (!Number.isInteger(rules.meleeBotCounterMs) || rules.meleeBotCounterMs < 1) {
+    throw new Error("Melee bot-counter delay must be positive");
+  }
+  if (!Number.isInteger(rules.turnGrantDelayMs) || rules.turnGrantDelayMs < 1) {
+    throw new Error("Turn grant delay must be positive");
+  }
+  if (rules.turnGrantDelayMs < rules.meleeBotCounterMs) {
+    throw new Error("Turn grant delay must be at least the melee bot-counter delay");
+  }
 }

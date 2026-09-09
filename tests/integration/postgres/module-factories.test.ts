@@ -10,6 +10,8 @@ import {
   testDatabaseName,
 } from "../../support/postgres/test-database-url.ts";
 import { withIsolatedTestDatabase } from "../../support/postgres/isolated-test-database.ts";
+import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
+import { ManualCombatDelay } from "../../support/fakes/manual-combat-delay.ts";
 import { SystemClock } from "../../../src/shared/kernel/system-clock.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
@@ -31,14 +33,9 @@ describe("module factory lifecycle", () => {
     await expect(identity.close()).resolves.toBeUndefined();
     const combat = CombatModule.create({
       database,
-      rules: {
-        playerDamageMin: 8,
-        playerDamageMax: 12,
-        botDamageMin: 2,
-        botDamageMax: 4,
-        turnTimeoutSeconds: 20,
-      },
+      rules: UNIT_BATTLE_RULES,
       clock,
+      delay: new ManualCombatDelay(),
     });
     await expect(combat.close()).resolves.toBeUndefined();
   });

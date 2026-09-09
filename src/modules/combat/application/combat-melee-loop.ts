@@ -1,0 +1,114 @@
+import type { Battle } from "../domain/battle.ts";
+import type { CombatEvent, FightExit } from "../ports/combat-port.ts";
+import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
+
+export class CombatMeleeLoop {
+  constructor(
+    private readonly byAccount: Map<number, Battle>,
+    private readonly battleByFight: Map<string, Battle>,
+    private readonly pendingExits: Map<number, FightExit>,
+    private readonly scheduler: HuntMeleeScheduler,
+    private readonly enqueue: (accountId: number, events: readonly CombatEvent[]) => void,
+    private readonly wakeAccount: (accountId: number) => void,
+    private readonly settleFinished: (
+      battle: Battle,
+      events: readonly CombatEvent[],
+      strikerAccountId: number,
+    ) => Promise<void>,
+  ) {}
+
+  async strike(
+    accountId: number,
+    side: "left" | "center" | "right",
+    sequence: string | number,
+  ): Promise<void> {
+    const battle = this.byAccount.get(accountId);
+    if (!battle) {
+      this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
+      return;
+    }
+    this.scheduler.cancel(battle.id);
+    const resolved = battle.tryPlayerMelee(accountId, side);
+    if (resolved.kind === "ignored") {
+      this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
+      return;
+    }
+    enqueuePlayerMelee(this.enqueue, accountId, sequence, resolved.events);
+    if (battle.finished) {
+      await this.settleFinished(battle, resolved.events, accountId);
+      return;
+    }
+    this.scheduleBotAndGrant(battle);
+  }
+
+  private scheduleBotAndGrant(battle: Battle): void {
+    const fightId = battle.id;
+    const striker = battle.pairedAccountId;
+    this.scheduler.schedule(fightId, battle.meleeBotCounterMs, () => this.runBotCounter(fightId));
+    this.scheduler.schedule(fightId, battle.turnGrantDelayMs, () =>
+      this.runGrant(fightId, striker),
+    );
+  }
+
+  private async runBotCounter(fightId: string): Promise<void> {
+    const battle = this.battleByFight.get(fightId);
+    if (!battle || battle.finished) return;
+    const target = battle.pairedAccountId;
+    const result = battle.resolveBotMelee();
+    this.enqueue(target, result.events);
+    this.wakeAccount(target);
+    if (!result.killedPlayer) return;
+    if (battle.finished) {
+      await this.settleFinished(battle, result.events, target);
+      return;
+    }
+    this.handOffToWaiter(battle, target);
+  }
+
+  private handOffToWaiter(battle: Battle, deadAccountId: number): void {
+    this.scheduler.cancel(battle.id);
+    this.enqueue(deadAccountId, [{ type: "finished", winnerTeam: 2, fightId: battle.id }]);
+    this.pendingExits.set(deadAccountId, { fightId: battle.id, winnerTeam: 2 });
+    this.byAccount.delete(deadAccountId);
+    battle.releaseHuman(deadAccountId);
+    this.wakeAccount(deadAccountId);
+    const waiter = battle.pairNextWaiter();
+    if (!waiter) throw new Error("Killed hunter had no waiter to re-pair");
+    if (!waiter.authed) return;
+    this.enqueue(waiter.accountId, waiter.events);
+    this.wakeAccount(waiter.accountId);
+    this.scheduler.schedule(battle.id, battle.turnGrantDelayMs, () =>
+      this.runGrant(battle.id, waiter.accountId),
+    );
+  }
+
+  private runGrant(fightId: string, accountId: number): void {
+    const battle = this.battleByFight.get(fightId);
+    if (!battle || battle.finished) return;
+    if (!battle.accountIds().includes(accountId)) return;
+    const granted = battle.grantTurn(accountId);
+    if (!granted) return;
+    this.enqueue(accountId, [granted]);
+    this.wakeAccount(accountId);
+  }
+}
+
+function enqueuePlayerMelee(
+  enqueue: (accountId: number, events: readonly CombatEvent[]) => void,
+  accountId: number,
+  sequence: string | number,
+  events: readonly CombatEvent[],
+): void {
+  const wait = events.find((event) => event.type === "turn-wait");
+  const damage = events.find((event) => event.type === "damage");
+  const finished = events.find((event) => event.type === "finished");
+  if (!wait || wait.type !== "turn-wait" || !damage || damage.type !== "damage") {
+    throw new Error("Player melee must emit turn-wait then damage");
+  }
+  enqueue(accountId, [
+    wait,
+    damage,
+    { type: "command-accepted", sequence },
+    ...(finished ? [finished] : []),
+  ]);
+}
