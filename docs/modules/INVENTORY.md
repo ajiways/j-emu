@@ -113,7 +113,8 @@ Naked skills остаются в `hero_skills`. Totals и `hpMax`/`mpMax` счи
 character владеет `money_minor` на hero; catalog поставляет immutable
 `priceMinor` / `flags` / `bagStack` из pinned release. Economy-модуля нет и
 его нельзя изобретать: void-sell кредитует героя через public character port
-в той же Unit of Work. `ARC-ECO` остаётся будущим checkpoint до ECO-01.
+в той же Unit of Work. ECO-01 не создаёт economy-модуль; `debitMoney` и
+витрина — [STORE.md](STORE.md). `ARC-ECO` нужен только для ledger/auction.
 
 DROP не идемпотентен по `operation_id`: повтор клиента — вторая мутация.
 
@@ -239,7 +240,8 @@ Throw-away не вызывает `applyEquipmentVitals`. В бою `syncResource
 
 ### Out of scope
 
-Pocket, USE, durability, mail GIVE, COME_IN overload, store buy, grant/merge
+Pocket, USE, durability, mail GIVE, COME_IN overload, store buy
+([STORE.md](STORE.md) ECO-01), grant/merge
 новых стаков (кроме уменьшения DROP), economy ledger.
 
 ### INV-02 acceptance

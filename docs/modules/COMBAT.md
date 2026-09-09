@@ -5,8 +5,9 @@
 Есть hunt melee loop (raw-AMF L/C/R, delay grant/bot-counter, kill, waiter
 re-pair), map `joinHunt`, CMB-02 pocket/glove/rage casts и CMB-03 terminal
 settlement (HP/EXP/money/loot, `leaveFight`, esrv `fight|loot` затем
-`fight|exit`). Shuffle 3↔3 не в этом срезе. CEF экрана результата после
-CMB-03 не прогонялся — product status combat остаётся частично.
+`fight|exit`) и CMB-04 reconnect/ghost/RESURRECT (raw-AMF). Shuffle 3↔3 не
+в этом срезе. CEF экрана результата, F5 в бою и призрака не прогонялся —
+product status combat остаётся частично.
 
 ## Источники поведения
 
@@ -144,7 +145,7 @@ fproxy, нет 77 в бою, нет generic effect engine. AOE ending (`targetCo
 бот 2: `baseExp` 15, money 0.2–0.44, `lootNothingWeight` 3460 (= 3000 + 460
 неопубликованных overlay-весов), entries 77/93/99. `leaveFight` HTTP
 `{rs:true}`; last human — flee `type:2` без лута; союзник жив — только
-flee-exit, бой продолжается. Loss: HP 0, loot-блок с нулями, без ghost.
+flee-exit, бой продолжается. Loss: HP 0, loot-блок с нулями, ghost/injury через character `noteDefeat`.
 CEF экрана результата не прогонялся.
 
 ### Architecture decision
@@ -171,7 +172,7 @@ Item loot: FIGHT_LOOT ролл на мёртвого бота 2. Published entri
 99** с overlay весами; `nothing_weight` = 3000 + сумма overlay-весов
 неопубликованных artikul. Не подставлять 56–63 и т.п. Квест/данж лут нет.
 Loss и last-human leave: `noteHp` + refill, без item loot и без EXP.
-`noteHp` пишет fight HP как есть, в том числе `0`; ghost/injury — CMB-04.
+`noteHp` пишет fight HP как есть; HP `0` идёт в `noteDefeat` (ghost/injury).
 
 Два охотника, один fight id: EXP пропорционально урону по боту, remainder
 top damager; loot+money только top damager-человеку. Settlement один раз на
@@ -213,49 +214,38 @@ version bump. Combat не читает fixtures.
 
 ### Out of scope (CMB-03 leftover)
 
-Ghost/injury/RESURRECT и mid-fight F5 (`CMB-04`); quest loot; party split;
-dungeon bands; system chat; `Clock.schedule`; OA FIGHT_JOIN/HELP;
-live `10_000_000+hero.id`.
+Quest loot; party split; dungeon bands; system chat; `Clock.schedule`;
+OA FIGHT_JOIN/HELP; live `10_000_000+hero.id`.
 
 ## CMB-04 — reconnect, locks, ghost
+
+Срез закрыт (raw-AMF). Пока `CombatPort.activeFightId` не null, `common|init2`
+отдаёт `fight|conf` с тем же `fightId`/`fightAkey`/`userId`=`heroes.id`.
+`state.fight_id` и `user|unitframe.fight_id` — numeric id боя, не HUD `0`.
+Перед conf сбрасываются auth/bootstrap очереди аккаунта; следующий fproxy
+`auth` снова паркует bootstrap. В паре resume без `oppwait`, сразу `oppnew`
+и `attacknow` с остатком wall-clock `restTime`. Первый вход — `oppwait`→
+`oppnew`. Таймер хода на F5 не паузится; hunt overlay остаётся busy.
+Restart процесса по-прежнему без боя, награды и history (`combat-restart`).
+
+Ghost/injury принадлежат character (`heroes.ghost`, `injury_time`,
+`injury_artikul_id`). Combat эти колонки не пишет. Loss/HP 0 в
+`HuntFightSettlement` вызывает `noteDefeat` в той же UoW. Ghost блокирует
+CHR-02 regen. Roster `dead:4`. Injury id **875**, `injury_time` = unix now+600;
+артефакт 875 не публиковать. OA `RESURRECT`: не в бою; HP
+`max(2, floor(hpMax*0.05))`; снять ghost/injury; dest — текущая 503.
+CEF F5/призрака не прогонялся.
 
 ### Architecture decision
 
 Отдельный `ARC-CMB` не нужен. ADR-0020 не меняется: бой не пишется в
-PostgreSQL. Reconnect — wire overlay на тот же RAM `Battle`. History
-cleanup уже у `FinishedFightCleanup` (72h, batch вне request path).
-FightRules 203 на layout/travel/USE/ATTACK уже есть; CMB-04 их не
-расширяет на store/npc (фич нет в slice).
+PostgreSQL. Reconnect — wire overlay на тот же RAM `Battle` (`resumeFight`
+чистит очереди и `prepareResume`). History cleanup уже у
+`FinishedFightCleanup` (72h, batch вне request path) — request-path
+cleanup и OA `arena|finished_fights` не добавлялись. FightRules 203 на
+layout/travel/USE/ATTACK уже есть; CMB-04 их не расширяет на store/npc.
 
-### Reconnect
-
-Пока процесс жив и `activeFightId` не null: `common|init2` отдаёт
-`fight|conf` с тем же `fightId`/`fightAkey`/`userId`=`heroes.id`.
-`state.fight_id` и `user|unitframe.fight_id` — numeric id этого боя, не
-HUD default. Перед conf сбросить auth/bootstrap очереди аккаунта (live
-`resumeFightConfForHero`). Fproxy `auth` снова паркует bootstrap.
-
-Если hunter всё ещё в паре: resume **без** `oppwait`, сразу `oppnew` и
-`attacknow` с `restTime` = остаток wall-clock. Первый вход в бой по-
-прежнему `oppwait`→`oppnew`. Таймер хода не паузится на F5. Hunt overlay
-остаётся busy. Restart процесса — как сейчас: RAM/overlay/queue пусты,
-settlement нет.
-
-### Ghost / RESURRECT
-
-Character владеет `ghost`, `injury_time`, `injury_artikul_id`. Loss UoW
-(тот же `HuntFightSettlement`) вызывает character port, не combat tables.
-Ghost **блокирует** CHR-02 regen (иначе `noteHp(0)` заживёт на следующем
-sync). Roster: `dead:4` при ghost (live), не `dead:1`. Wire injury id
-**875**, `injury_time` = unix now+600; артикул 875 в slice не публиковать.
-
-OA `RESURRECT` (`common|object`, тот же реестр): не в бою; HP
-`max(2, floor(hpMax * 0.05))`; снять ghost/injury; dest для outdoor hunt
-— текущая 503, без dungeon/BG веток. Flat: `common|action`, `state`,
-`user|unitframe`, `user|skills`, `common|area_conf`, `common|hunt`,
-`chat|area_population`.
-
-### Out of scope
+### Out of scope (CMB-04 leftover)
 
 OA FIGHT_JOIN/HELP; persist боя; `arena|finished_fights`; dungeon/BG
 resurrect dest; artifact 875; `Clock.schedule`.

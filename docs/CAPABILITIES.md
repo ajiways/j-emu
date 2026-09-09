@@ -36,7 +36,7 @@
 - numeric account/hero identity;
 - persisted hero, skills, HP/MP/EXP, appearance и personal details;
 - полный flat состав `common|init` и `common|init2` из jgr-emu baseline
-  (без party restore, presence announce и fight resume);
+  (без party restore; `fight|conf` на init2 только пока RAM-бой жив);
 - `user|skills`, magic, view, conf, unitframe, bag/pocket;
 - authored `common|conf`, empty chrome и level/appearance catalog из active
   release;
@@ -56,7 +56,7 @@ bootstrap. Internal `grantExperience` атомарно применяет DATA-0
 Не перенесено:
 
 - CEF confirmation of CMB-03 result screen / HP-EXP-bag after exit;
-- ghost/injury/RESURRECT (CMB-04);
+- CEF ghost/injury/RESURRECT (raw-AMF CMB-04 есть);
 - honor progression;
 - клиентский EXP grant через квест.
 
@@ -153,15 +153,18 @@ hunt overlay и map join: первый ATTACK_BOT **50310** ставит `fight_
 
 ## Combat — частично
 
-Есть hunt melee loop, CMB-02 casts и CMB-03 terminal settlement (raw-AMF):
-ATTACK_BOT → fproxy auth/bootstrap, L/C/R, карман/перчатка/ярость, затем
-esrv один `2:` object `fight|loot` затем `fight|exit`. Win 50310 пишет HP/EXP/
-money (overlay 0.2–0.44) и ролл лута 77/93/99; loss пишет HP в том числе 0
-без EXP/лута; `leaveFight` HTTP `{rs:true}` и flee `type:2`. Duplicate
-settlement no-op. Restart посреди боя без награды. CEF экрана результата
-не прогонялся.
+Есть hunt melee loop, CMB-02 casts, CMB-03 terminal settlement и CMB-04
+reconnect/ghost/RESURRECT (raw-AMF): ATTACK_BOT → fproxy auth/bootstrap,
+L/C/R, карман/перчатка/ярость, затем esrv один `2:` object `fight|loot`
+затем `fight|exit`. Win 50310 пишет HP/EXP/money (overlay 0.2–0.44) и ролл
+лута 77/93/99; loss пишет HP 0 + ghost/injury 875; `leaveFight` HTTP
+`{rs:true}` и flee `type:2`. F5 mid-hunt: init2 `fight|conf` с тем же
+`fightId`/`akey`, resume без `oppwait`, `attacknow` с остатком restTime.
+Ghost блокирует regen; OA `RESURRECT` снимает ghost. Duplicate settlement
+no-op. Restart посреди боя без награды. CEF экрана результата, F5 в бою
+и призрака не прогонялся.
 
-Не перенесены: reconnect mid-fight и ghost/injury (CMB-04).
+Не перенесены: OA `FIGHT_JOIN` / `FIGHT_HELP`.
 
 ## Quests и NPC 1–8 — не перенесено
 
@@ -170,7 +173,9 @@ markers и curated chain пока существуют только в legacy co
 
 ## После core — не перенесено
 
-Chat/party, полный store, mail, auction и trade рассматриваются после цикла 1–8.
+Chat/party, полный store (ECO-02), mail, auction и trade рассматриваются
+после цикла 1–8. Quest-required `store|list`/`store|buy` в 504 (артикулы
+23/24) — ECO-01, пока **не перенесено**; вход в лавку уже есть (WLD-01).
 
 ## Вне первой волны
 

@@ -10,8 +10,8 @@ level-up нет до квестов, поэтому character progression ост
 частичным. CHR-02 lazy HP regen реализован как internal ports `syncResources` /
 `noteHp`: wounded HP начисляется с `regen_at` на resource reads и мутациях,
 `hp_time` уходит в `user|unitframe`. CMB-03 пишет fight HP/EXP через эти
-порты (raw-AMF). Honor и ghost/injury не входят. CMB-03 loss пишет HP `0` без ghost: до
-CMB-04 CHR-02 regen может заживить труп после ненулевого elapsed. Equipment-derived VIT/hpMax
+порты (raw-AMF). CMB-04 `noteDefeat` ставит ghost/injury; ghost блокирует
+regen. Honor не входит. Equipment-derived VIT/hpMax
 считаются после PUT_ON; без экипа HUD показывает naked L1 (VIT 10). Точный
 статус: [CAPABILITIES.md](../CAPABILITIES.md).
 
@@ -55,8 +55,10 @@ Player state:
 - `common|conf` и empty chrome (professions/pets/friends/bank/…) читаются из
   `catalog.game_wide_documents`.
 
-Out of scope here: area travel, fight resume, party, mail, presence roster и
-quest book contents. Paperdoll `PUT_ON`/`PUT_OFF` — [INVENTORY.md](INVENTORY.md).
+Out of scope here: area travel, party, mail, presence roster и
+quest book contents. Fight resume на `common|init2` — [COMBAT.md](COMBAT.md).
+Paperdoll `PUT_ON`/`PUT_OFF` — [INVENTORY.md](INVENTORY.md).
+Магазин — [STORE.md](STORE.md).
 
 ## Persistence
 
@@ -243,8 +245,10 @@ Mana regen **не изобретается**. Live/legacy `mp_time` формул
 (`HP_REGEN.md`); текущий wire берёт `mp_time` из HUD defaults (`0`). CHR-02
 оставляет это как явный research gap, а не копирует HP-формулу на MP.
 
-Ghost/injury/RESURRECT не входят: колонки и ветки ghost нет, 0 HP регенится
-как обычный deficit до `CMB-04`.
+Ghost блокирует elapsed regen: `applyElapsedToLocked` не начисляет HP,
+пока `hero.ghost`. `noteHp` на ghost — ошибка; HP 0 из боя идёт в
+`noteDefeat`. `resurrect` считает HP `max(2, floor(hpMax*0.05))` и снимает
+ghost/injury. Injury id **875** — dump-proven wire integer, не catalog.
 
 Character не импортирует combat domain. Composition передаёт read-only
 `ActiveFightQuery.isHeroInActiveFight(characterId)`. Реализация — адаптер
@@ -288,10 +292,14 @@ authority.
 
 - `syncResources({ characterId })` — lock hero, спросить active fight, применить
   elapsed либо pause; persist только при изменении `hp` или `hp_time`;
-- `noteHp({ characterId, hp })` — authoritative HP write для CMB-03 и
-  тестов: lock, записать `hp` в `[0, maxHp]`, пересчитать `hp_time` от нового
+- `noteHp({ characterId, hp })` — authoritative HP write для CMB-03 win/leave
+  и тестов: lock, записать `hp` в `[0, maxHp]`, пересчитать `hp_time` от нового
   deficit, `regen_at` = unix-second truncated now. Elapsed старого дефицита не
-  применяется поверх нового HP.
+  применяется поверх нового HP. Ghost hero — ошибка, не silent heal.
+- `noteDefeat({ characterId, hp: 0 })` — CMB-04 loss/HP 0: `hp=0`, `ghost`,
+  `injury_time` = unix now+600, `injury_artikul_id` = 875, `hp_time=0`.
+- `resurrect({ characterId })` — OA `RESURRECT`: не ghost → ошибка; иначе
+  HP `max(2, floor(hpMax*0.05))`, снять ghost/injury, пересчитать `hp_time`.
 - `setArea({ characterId, areaId, moveReadyAt })` — WLD-01: lock hero, записать
   dest и `move_ready_at` (`Date | null`). Граф переходов валидирует world
   `requireLink`, не character. Контракт: [WORLD.md](WORLD.md).
@@ -330,6 +338,8 @@ PUT_ON/grant: сначала `syncResources`, потом мутация maxima/H
 положительное целое; итог в `[0, 2_147_483_647]`; та же hero-row lock и Unit
 of Work, что DROP. Inventory не пишет `heroes`. Wire: строка в `state`, число
 в `user|conf`. Полный DROP-контракт: [INVENTORY.md](INVENTORY.md).
+`debitMoney` (обратная операция, fail если не хватает) — ECO-01,
+[STORE.md](STORE.md).
 
 Clock: один экземпляр из composition root в character, identity, combat и
 wire. CharacterModule создаётся после CombatModule (нужен query) и принимает

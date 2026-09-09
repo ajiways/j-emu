@@ -173,8 +173,12 @@ source group ведутся только в
 - `world`: `radvei_areas.json`, `hunt_spawns.json` и authored links/routes;
   validator проверяет уникальность area/point/spawn IDs, bot references и
   достижимость ссылок.
-- `economy`: `stores/*.json`; validator проверяет area, item, stock/price и
-  валюту без подстановки отсутствующего артикула.
+- `catalog`: ECO-01 subset `fixtures/stores/504.json` (types + lots 23/24) и
+  Pub1 artifacts 23/24; validator проверяет area 504, artifact refs и price
+  без подстановки отсутствующего артикула. Полный корпус `stores/*.json` —
+  DATA-05 / модуль economy, не этот срез.
+- `economy`: remaining `stores/*.json` (DATA-05); validator проверяет area,
+  item, stock/price и валюту без подстановки отсутствующего артикула.
 - `catalog`: `bonuses.json`; validator проверяет artifact/action/effect
   references и не принимает неизвестный effect как generic JSON.
 - `catalog`: `bot_spell_book.json`, `spell_catalog_overlay.json`,

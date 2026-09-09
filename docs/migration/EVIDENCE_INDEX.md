@@ -96,8 +96,8 @@ parity.
 
 ## Зависимости core
 
-- [STORE.md](../../../jgr-emu/docs/STORE.md) — только магазины, необходимые
-  квестам 1–8;
+- [STORE.md](../../../jgr-emu/docs/STORE.md) — ECO-01: только лавка 504 и
+  лоты 23/24; полный корпус `stores/*.json` остаётся `ECO-02`;
 - [REPUTATION.md](../../../jgr-emu/docs/REPUTATION.md) — только quest
   rewards/gates;
 - [CHAT.md](../../../jgr-emu/docs/CHAT.md) — только обязательные system

@@ -33,7 +33,8 @@ Playerbot-таблиц и признаков `is_bot` нет.
 `drizzle/0011_world_area_links`,
 `drizzle/0012_catalog_bot_fight_look`,
 `drizzle/0013_catalog_artifact_extra`,
-`drizzle/0014_catalog_bot_loot`.
+`drizzle/0014_catalog_bot_loot`,
+`drizzle/0015_character_ghost_injury`.
 Поля ниже совпадают с runtime.
 
 ### `identity`
@@ -48,7 +49,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 - `heroes(id integer GENERATED ALWAYS AS IDENTITY START 1, account_id UNIQUE,
 nick, level, hp, max_hp, mp, max_mp, exp, area_id, money_minor,
-money_gold_minor, kind, gender, language, body, sk, honor, hp_time, regen_at timestamptz, move_ready_at timestamptz NULL, version)`.
+money_gold_minor, kind, gender, language, body, sk, honor, hp_time, regen_at timestamptz, move_ready_at timestamptz NULL, ghost boolean, injury_time bigint, injury_artikul_id integer, version)`.
 - `hero_personal_details(hero_id PK FK → heroes ON DELETE CASCADE, info jsonb, schema_version=1)`.
 - `hero_skills(hero_id FK → heroes ON DELETE CASCADE, skill_id, value)` с PK
   `(hero_id, skill_id)`.
@@ -66,7 +67,8 @@ level_before, level_after, content_release_id, progression_digest, created_at)`
 целиком, без `jsonb_set`. HP/MP/EXP и naked max values хранятся скалярами героя,
 naked skills — отдельными строками `hero_skills`. `hp_time` — remaining seconds
 до полного HP; `regen_at` — unix-second truncated timestamp ленивого регена.
-Репутации ещё нет.
+`ghost` / `injury_time` / `injury_artikul_id` — CMB-04; SQL DEFAULT только для
+старых строк, runtime пишет явные значения. Репутации ещё нет.
 
 ### `inventory`
 
@@ -197,10 +199,10 @@ hud_defaults|chrome|common_conf|welcome_message`.
 
 ### `character`
 
-Mana regen (`MPREG`/`mp_time` formula), ghost/injury timestamps, reputations и
-расширенная statistics model остаются планом. `heroes.regen_at`, `hp_time`,
-`experience_grants`, `hero_skills`, HP/MP/EXP и appearance bootstrap уже
-находятся в runtime.
+Mana regen (`MPREG`/`mp_time` formula), reputations и расширенная statistics
+model остаются планом. `heroes.ghost` / `injury_time` / `injury_artikul_id`,
+`heroes.regen_at`, `hp_time`, `experience_grants`, `hero_skills`, HP/MP/EXP
+и appearance bootstrap уже находятся в runtime.
 
 ### `inventory`
 
@@ -211,6 +213,8 @@ containers, item_modifiers, container_slots, equipment_slots, item_reservations.
 item_actions, item_stat_modifiers, creature_stats/loot, spell_definitions,
 level_curves — отдельные таблицы поверх текущих `artifacts`/`bots`.
 `level_skill_values` уже в runtime и не является будущей таблицей.
+`store_types` / `store_lots` — ECO-01 (ещё не созданы); owner catalog, не
+economy.
 
 ### `world`
 

@@ -14,7 +14,7 @@ overlay process-local; active content через release projections; active com
 в RAM (несколько accounts на один fight id, `CombatDelay` не `Clock.schedule`;
 HTTPS fproxy consume кармана после успеха). CMB-03 landed: composition UoW
 на terminal, catalog `bots` rewards + `bot_loot_entries`, esrv loot-then-exit.
-CMB-04 добавит init2 `fight|conf` overlay на тот же RAM battle и character
+CMB-04 landed: init2 `fight|conf` overlay на тот же RAM battle и character
 ghost/injury/`RESURRECT`, без таблиц active fight.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
@@ -72,7 +72,8 @@ key.
 **Решение CHR-02:** текущих границ достаточно. Lazy HP regen живёт на том же
 hero aggregate с `regen_at` и injected `Clock`. Combat отдаёт только
 `isHeroInActiveFight`; character не пишет fight RAM и не читает combat tables.
-`mp_time` не получает invented formula. Ghost/injury по-прежнему `CMB-04`.
+`mp_time` не получает invented formula. Ghost/injury — CMB-04 character
+колонки; regen пропускает ghost.
 
 Отдельный `ARC-CHAR` потребуется позже только если death/settlement невозможно
 добавить без второго authoritative maxima, cross-module write из character
@@ -128,7 +129,7 @@ Combat отдаёт terminal snapshot; composition UoW вызывает characte
 `noteHp`/`grantExperience`/`creditMoney` и inventory bag/refill ports. Catalog
 владеет authored `bots` reward scalars и `bot_loot_entries`. Durable writes
 до esrv `fight|loot` затем `fight|exit`. History best-effort не откатывает
-награду. Ghost/injury остаются CMB-04. Active fight tables запрещены ADR-0020.
+награду. Ghost/injury — CMB-04 character port из той же UoW. Active fight tables запрещены ADR-0020.
 
 Отдельный `ARC-CMB` потребуется позже только если settlement нельзя провести
 без записи combat в чужие таблицы, durable outbox или active-fight rows.
@@ -146,10 +147,15 @@ reservations, ledger и race-safe settlement.
 `creditMoney` в той же UoW, что и удаление предмета. Inventory не пишет
 `heroes`.
 
-**Checkpoint:** до ECO-01 выбрать долгоживущего владельца balance. Нельзя
-сначала создать вторую сумму в economy и синхронизировать её с hero dual-write.
-Если ownership переносится, `ARC-ECO` описывает schema migration, public balance
-port, bootstrap read model и атомарный переход.
+**Решение ECO-01:** текущих границ достаточно; отдельный `ARC-ECO` не нужен.
+Balance остаётся `heroes.money_minor`. Покупка — composition UoW:
+character `debitMoney` + inventory `grantToBag`. Catalog владеет authored
+`store_types` / `store_lots` (как `bot_loot_entries`), не модуль economy.
+World уже владеет area 504 `code=store`. Dual-write hero↔economy wallet
+запрещён. Контракт: [STORE.md](../modules/STORE.md).
+
+Отдельный `ARC-ECO` потребуется позже только если mail COD / auction / trade
+нельзя провести без ledger, reservations и переноса balance с hero.
 
 ### `ARC-QST` — quest definitions, progress и rewards
 

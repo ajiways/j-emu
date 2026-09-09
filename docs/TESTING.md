@@ -55,8 +55,11 @@
   без restriction, consume кармана после init, rage/aggro rs-then-FX, glove
   9095 `persCP` и ending rs-then-strike;
 - `fproxy-settlement` — win 50310 esrv loot-then-exit, EXP/money persist
-  reconnect/restart; loss HP 0 без EXP/ghost; `leaveFight` flee `type:2`;
-  two-hunter EXP top damager; pocket 93 refill from bag;
+  reconnect/restart; loss HP 0 + ghost, clock не лечит, RESURRECT; `leaveFight`
+  flee `type:2`; two-hunter EXP top damager; pocket 93 refill from bag;
+- `combat-reconnect` — mid-hunt F5: init2 `fight|conf` same fightId/akey,
+  overlay busy, paired resume без oppwait, restTime wall-clock; RESURRECT
+  during fight → 203;
 - `esrv-exit-reconnect` — `fight|exit`, затем restart и повторный hunt;
 - `combat-restart` — restart посреди боя прекращает active fight, не меняет
   HP/bag и не создаёт finished history;

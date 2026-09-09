@@ -13,15 +13,17 @@
 area presence roster:
 
 - `character` хранит hero scalars, personal details, naked `hero_skills`,
-  `hp_time` и `regen_at`; internal ports `grantExperience`, `syncResources`,
-  `noteHp` и `creditMoney` пишут этот state; `move_ready_at` и `setArea`
-  на том же aggregate (`area_id` не переезжает в `world`);
+  `hp_time`, `regen_at`, `ghost` / `injury_time` / `injury_artikul_id`;
+  internal ports `grantExperience`, `syncResources`, `noteHp`, `noteDefeat`,
+  `resurrect` и `creditMoney` пишут этот state; `move_ready_at` и `setArea`
+  на том же aggregate (`area_id` не переезжает в `world`); `debitMoney` —
+  ECO-01;
 - `inventory` хранит bag/pocket/equipment instances и выполняет
-  `PUT_ON`/`PUT_OFF` (paperdoll и пояс), `drop`, `useFromBag`, `bagLoad` и
-  `listPocket`;
+  `PUT_ON`/`PUT_OFF` (paperdoll и пояс), `drop`, `useFromBag`, `bagLoad`,
+  `grantToBag` и `listPocket`;
 - `catalog` и `world` читают artifacts, skills, levels, appearance,
   game-wide bootstrap documents, areas 503/501/504, travel `area_links` и hunt
-  rows на 503 из active release;
+  rows на 503 из active release; витрина `store_types`/`store_lots` — ECO-01;
 - equipment-derived skills/vitals считаются из persisted naked skills и
   artifact bonuses; migration `0004` закрепляет wear fields и occupancy slot;
   `0007` — artifact `price_minor`/`flags`/`bag_stack`;
@@ -29,8 +31,10 @@ area presence roster:
   `0009` — catalog `artifact_actions`;
   `0010` — `heroes.move_ready_at`;
   `0011` — `areas.parent_id` и `world.area_links`;
-- `combat` предоставляет только минимальный hunt lifecycle и finished history;
-  `quests`, `social`, `economy`, `professions`, `instances` в runtime нет.
+  `0015` — `heroes.ghost` / injury;
+- `combat` — hunt lifecycle, CMB-02…04 reconnect/ghost settlement и finished
+  history; `quests`, `social`, `economy`, `professions`, `instances` в runtime
+  нет.
 
 Во всех разделах ниже **API**, **события** и **шов извлечения** описывают
 целевую границу. Они не доказывают регистрацию команды, наличие таблиц или
@@ -69,7 +73,7 @@ area presence roster:
 
 **Владеет:** персонажем, именем и внешностью, уровнем/опытом, базовыми ресурсами, навыками, репутациями, настройками, текущим состоянием жизни. Координата персонажа хранится в `world`.
 
-**API:** `createCharacter`, `getCharacter`, `getCharacterSheet`, `grantExperience`, `syncResources`, `noteHp`, `creditMoney`, `setArea`, `setAppearance`, `setPreference`, `grantReputation`.
+**API:** `createCharacter`, `getCharacter`, `getCharacterSheet`, `grantExperience`, `syncResources`, `noteHp`, `noteDefeat`, `resurrect`, `creditMoney`, `debitMoney`, `setArea`, `setAppearance`, `setPreference`, `grantReputation`.
 
 **События:** `character.created.v1`, `character.level-changed.v1`, `character.sheet-changed.v1`, `character.defeated.v1`.
 
@@ -89,9 +93,9 @@ area presence roster:
 
 ### `catalog`
 
-**Владеет:** опубликованными, версионированными определениями предметов, существ, заклинаний, уровней, наград и общих справочников. Runtime читает только опубликованную ревизию.
+**Владеет:** опубликованными, версионированными определениями предметов, существ, заклинаний, уровней, наград, витрины магазина (`store_types` / `store_lots`) и общих справочников. Runtime читает только опубликованную ревизию. Кошелёк героя catalog не владеет.
 
-**API:** `getItemDefinition`, `getCreatureDefinition`, `getSpellDefinition`, `getLevelCurve`, `getPublishedRevision`; пакет snapshot/export для потребителей.
+**API:** `getItemDefinition`, `getCreatureDefinition`, `getSpellDefinition`, `getLevelCurve`, `getPublishedRevision`, `storeTypes`, `storeLots`; пакет snapshot/export для потребителей.
 
 **События:** `catalog.revision-published.v1`.
 
@@ -120,7 +124,7 @@ state и outbound packets. В PostgreSQL владеет только завер�
 персонажа/инвентарь напрямую.
 
 **API:** `startHunt`, `joinHunt`, `hasFight`, `execute`, `activeFightId`,
-`accountForFight`, `takePocketConsume`, `takeExit`, `takeLoot`. Injected `CombatDelay`
+`resumeFight`, `accountForFight`, `takePocketConsume`, `takeExit`, `takeLoot`. Injected `CombatDelay`
 (dueAt + cancel по fight id) и `CombatWake` для fproxy. Loadout snapshot
 собирает `jugger-wire` из inventory/catalog ports; CMB-03 settlement —
 composition UoW, не запись combat в `heroes`/`items`. CMB-04 reconnect —
@@ -160,9 +164,9 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 
 ### `economy` — после core
 
-**Владеет:** кошельками, неизменяемым ledger, торговыми предложениями, ставками, магазинами и денежными резервами. Названия валют доменные (`gold_coin`, `diamond`), live-поля преобразует wire.
+**Владеет:** кошельками, неизменяемым ledger, торговыми предложениями, ставками и денежными резервами. Authored витрина ECO-01 живёт в `catalog`, balance — на `heroes.money_minor`; этого модуля в runtime нет.
 
-**API:** `getBalance`, `postTransfer`, `reserveFunds`, `openListing`, `placeBid`, `buyout`, `cancelListing`, `buyStoreLot`.
+**API:** `getBalance`, `postTransfer`, `reserveFunds`, `openListing`, `placeBid`, `buyout`, `cancelListing`. Покупка лота ECO-01 — composition, не `buyStoreLot`.
 
 **События:** `economy.ledger-posted.v1`, `economy.listing-opened.v1`, `economy.trade-settled.v1`, `economy.listing-closed.v1`.
 

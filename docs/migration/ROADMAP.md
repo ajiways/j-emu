@@ -13,7 +13,7 @@
   `depends_on`.
 - Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
   `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **CMB-04**.
+- Ровно одна запись имеет статус `next`: **ECO-01**.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -121,7 +121,7 @@
   hero aggregate are sufficient; no `ARC-CHAR`. Character owns lazy HP regen
   under the hero row lock; a shared injected `Clock` is authoritative;
   combat supplies a read-only active-fight query so character does not import
-  fight RAM. Ghost/injury/resurrection remain `CMB-04`. Full contract:
+  fight RAM. Ghost/injury/RESURRECT are CMB-04. Full contract:
   [CHARACTER.md](../modules/CHARACTER.md).
 - **Acceptance:** wounded HP regenerates from persisted `regen_at` on
   resource reads and mutations; `hp_time` is remaining seconds from
@@ -373,21 +373,21 @@
   56–63/78/… artifacts, no quest/`kind:loot`, no dungeon bands, no honor.
 - **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
   no `ARC-*`. Active combat stays RAM (ADR-0020). Composition owns one
-  Unit of Work after RAM finish: character `noteHp` + `grantExperience` (skip
-  when amount would be `< 1`) + `creditMoney`; inventory bag grants +
-  `refillPocketAfterFight` from the fight-start pocket snapshot. Combat does
+  Unit of Work after RAM finish: character `noteHp` or `noteDefeat` (HP 0) +
+  `grantExperience` (skip when amount would be `< 1`) + `creditMoney`; inventory
+  bag grants + `refillPocketAfterFight` from the fight-start pocket snapshot. Combat does
   not write `heroes`/`items`. Catalog owns authored bot reward scalars and
   `bot_loot_entries`. RNG is injected `RandomSource`, not `Math.random`.
   Idempotency key `fight:{fightId}:{characterId}` on EXP. Durable writes
   commit **before** esrv packets; `finished_fights` remains best-effort and
   must not roll back rewards. Same personal `2:` object: `fight|loot` then
   `fight|exit` (empty loot is `[]` not `{}`). System `chat|add` is post-core.
-  Ghost/injury/RESURRECT stay CMB-04; loss may persist HP `0`. Restart still
+  Ghost/injury/RESURRECT are CMB-04; loss may persist HP `0`. Restart still
   abandons RAM without settlement. Full contract:
   [COMBAT.md](../modules/COMBAT.md).
 - **Acceptance:** raw-AMF 1v1 50310 win: HP/EXP/money/loot persist across
   reconnect/restart; esrv one `2:` packet loot-then-exit; pocket cells spent
-  in the fight refill from bag. Loss: `noteHp`, refill, exit without item
+  in the fight refill from bag. Loss: `noteDefeat`, refill, exit without item
   loot/EXP. `leaveFight`: HTTP `{rs:true}` then `fight|exit`
   `{flee:true,type:2}`; last human ends the battle. Duplicate settlement is
   a no-op. FakeClock/RNG, no wall-clock sleep. CEF: result screen without
@@ -416,7 +416,7 @@
   Ghost/injury belong to character (`heroes.ghost`, `injury_time`,
   `injury_artikul_id`); combat does not write those columns. Loss
   settlement calls a character port from the same composition UoW as
-  `noteHp(0)`. Ghost blocks CHR-02 regen. Roster `dead:4` when ghost
+  `noteDefeat`. Ghost blocks CHR-02 regen. Roster `dead:4` when ghost
   (live presence). `RESURRECT` is existing `common|object` code: HP
   `max(2, floor(hpMax*0.05))`, clear ghost/injury, outdoor dest stays
   current area 503 (no dungeon/BG). Injury id **875** is a dump-proven
@@ -428,23 +428,36 @@
   ghost persists, hp stays 0 across clock advance, roster `dead:4`;
   RESURRECT clears ghost, HP > 0, FightRules unlock. CEF: F5 in Gryzl
   fight returns to arena; death shows ghost until RESURRECT.
-- **Status:** `next`
+- **Status:** `done`
 
 ## Wave 4 — quest dependencies and cycle 1–8
 
 ### ECO-01 — Quest-required stores
 
 - **ID:** `ECO-01`
-- **depends_on:** `WLD-01`, `INV-02`
-- **Behavior evidence:** legacy `STORE.md`, store fixtures and quest references
-  listed in [EVIDENCE_INDEX.md](EVIDENCE_INDEX.md).
-- **Content set:** only stores, lots, prices and gates referenced by the curated
-  1–8 chain.
-- **Architecture checkpoint / decision:** pending — define store public port,
-  currency/item transaction and release reference validation.
-- **Acceptance:** required enter/list/buy scenarios are atomic, persist through
-  reconnect and reject missing lot/currency/reference without fallback.
-- **Status:** `queued`
+- **depends_on:** `WLD-01`, `INV-02`, `CMB-04`
+- **Behavior evidence:** `STORE.md`, `src/store.ts`, `_research/samples/STORE.md`,
+  `fixtures/stores/504.json`, curated `q_5` (artikuls 23 and 24),
+  [EVIDENCE_INDEX.md](EVIDENCE_INDEX.md).
+- **Content set:** bump `playable-slice/v12` → **v13**. Dump 504 types
+  (`-131`, `159`, `10`, `21`) and **only** lots artikul **23** (`lot_id` 80)
+  and **24** (`lot_id` 82), `price` 1 gold, empty requires. Publish artifacts
+  23 and 24 from Pub1 AMF (dump-proven wear fields). Do not publish the rest
+  of `504.json` or the 23-file store corpus (ECO-02 / DATA-02).
+- **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
+  no `ARC-ECO`. Money stays `heroes.money_minor`; add character `debitMoney`
+  (positive minor, fail if insufficient, no clamp, no second balance).
+  Catalog owns `store_types` / `store_lots`; world already owns area 504
+  `code=store`; composition UoW `debitMoney` + `grantToBag`. Inventory does
+  not write `heroes`. No economy module, ledger, diamond/artifact barter,
+  `store|repair`, OPEN_STORE, RANK/REPUTATION parser, or quest book
+  piggyback. `FightRules` does not block `store|*`. Ghost buy is 203.
+  List/buy wire and status **2** codes: [STORE.md](../modules/STORE.md).
+- **Acceptance:** COME_IN 504 list shows types + lots 23/24; buy both is
+  atomic (`25.00` → `23.00`, bag persists reconnect/restart); not-in-store /
+  empty basket / unknown lot / insufficient gold → status 2; ghost → 203;
+  missing artifact fails publication. CEF: buy glove+наруч in the shop.
+- **Status:** `next`
 
 ### REP-01 — Quest-required reputation
 

@@ -57,9 +57,10 @@ Transport decoder извлекает только общий envelope: `object`,
 
 Response descriptor явно определяет один из вариантов:
 
-- nested block под исходным `object|action`;
-- flat набор блоков для `init/init2` и других подтверждённых мутаций;
-- protocol error с точным `status` и `error`.
+- nested block под исходным `object|action` (`store|list` — `{status,types,artikuls}`);
+- flat набор блоков для `init/init2`, `store|buy` и других подтверждённых мутаций;
+- protocol error с точным `status` и `error` (store buy dump-proven **2** для
+  пустой корзины / не-лавки / неизвестного лота / нехватки золота — не 203).
 
 `sq` зеркалирует transport, а не application handler. Неизвестный registry key
 возвращает `status:203`; ошибка сессии — `status:4`; внутренняя ошибка логируется

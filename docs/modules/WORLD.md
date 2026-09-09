@@ -10,7 +10,7 @@ Hunt overlay и map join **готово**: первый ATTACK_BOT 50310 ста�
 `fight_id`, второй входит в тот же бой (`joinHunt` team 1). Authored
 wander/respawn для 50310 в dump нет — не выдумывать. Melee loop — CMB-01
 (raw-AMF). Pocket fight cast — CMB-02 (raw-AMF). Terminal loot/HP — CMB-03
-(raw-AMF). Mid-fight F5 `fight|conf` — CMB-04.
+(raw-AMF). Mid-fight F5 `fight|conf` — CMB-04 (raw-AMF; CEF не прогонялся).
 
 ## Источники поведения
 
@@ -244,7 +244,8 @@ AREA `action_id` / `quest_bot_artikul` — не этот срез.
 Отказ join через ATTACK_BOT — **203** + `error` (`notPossible`), не 204:
 `уже в бою`, `бой не найден`, `бой в другой локации`,
 `вы уже участвовали в этом бою`. 204 — только будущие OA FIGHT_JOIN /
-FIGHT_HELP. Квестовых боёв и ghost в срезе нет.
+FIGHT_HELP. Квестовых боёв нет. Ghost/injury — CMB-04 character, не hunt
+join.
 
 «моб уже занят» в live — текст `acquireHuntLock`, но ATTACK_BOT сразу
 делает `interveneJoin`, если есть `lock.fightId`. В j-emu: busy overlay
@@ -328,11 +329,11 @@ Post-commit: enqueue и wake **после** UoW travel/login/logout, не вну
 Dump-proven поля live `presence.ts` `buildCharacterInfo`:
 
 `id` = **accountId** (не `heroes.id`), `nick`, `level`, `kind`,
-`instance_id: 0`, `dead: 0`, `injury_time: 0`, `injury_artikul_id: 0`,
+`instance_id: 0`, `dead: 0|4`, `injury_time`, `injury_artikul_id`,
 `body`, `sk`, `avatar_small` из appearance catalog.
 
-Ghost/injury колонок нет — CMB-04. Поля на wire обязательны и в этом срезе
-равны 0, не omit. Экип в roster не пушить. `change` (level/ghost) не слать,
+Ghost: `dead:4`, `injury_time`/`injury_artikul_id` с героя (875 / unix+600).
+Живой roster держит нули, не omit. Экип в roster не пушить. `change` (level/ghost) не слать,
 пока нет consumer-сценария в срезе.
 
 Logout / `replaceForAccount` (новая сессия вытесняет старую): remove в старой
