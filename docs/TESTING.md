@@ -32,6 +32,9 @@
   empty actions `203`, reconnect;
 - `world-travel` — raw-AMF COME_IN 503→504/`exit`, 503→501 15s lock, overload
   21/20, fight/missing-link/outdoor-exit denies, reconnect sidebar;
+- `presence-esrv` — два isolated hero: init2 population by accountId, COME_IN/
+  exit/logout `2:` diffs, `131:` hunt snapshot, chat auth empty body, restart
+  drops queue;
 - `personal-details` — `user|save_personal_details` flat `status:100` + `state`,
   persist `pondViewLast` после restart, overlay tutorial flags, nested getter;
 - `browser-auth` — HTML login/register, 302 handoff, пять cookies только в 200,

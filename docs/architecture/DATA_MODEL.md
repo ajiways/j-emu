@@ -135,8 +135,9 @@ description, flags, direction)` PK `(release_id, from_area_id, item_id)`;
   PK `(release_id, id)`; FK на `areas` и `catalog.bots` в той же release.
   `id` — authored integer `area × 100 + index` (для Gryzl на 503 — `50310`).
 
-`position_x/y` — authored map coordinates (`double precision`). Presence и
-spawn leases не выделены. Текущая локация героя — `heroes.area_id`.
+`position_x/y` — authored map coordinates (`double precision`). Presence leases
+нет: roster считается из sessions. Spawn overlay WLD-02 process-local, не
+таблица. Текущая локация героя — `heroes.area_id`.
 
 ### `combat`
 
@@ -201,8 +202,7 @@ level_curves — отдельные таблицы поверх текущих `
 
 ### `world`
 
-character_locations, presence_leases, spawn_leases, facts. `area_links` и
-`areas.parent_id` уже в runtime (WLD-01).
+character_locations, presence_leases, spawn_leases, facts.
 
 ### `combat`
 

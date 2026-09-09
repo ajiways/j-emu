@@ -2,11 +2,12 @@
 
 ## Статус
 
-Переходы 503↔504 и 503↔501 **готово**: raw-AMF E2E и реальный CEF-прогон.
-Точный статус: [CAPABILITIES.md](../CAPABILITIES.md).
+Переходы 503↔504/501 и presence roster **готово**: raw-AMF E2E (два героя,
+esrv `2:`/`131:`, chat auth). Точный статус:
+[CAPABILITIES.md](../CAPABILITIES.md).
 
-Presence/esrv roster — **RTM-01**. Spawn movement/respawn и hunt locks —
-**WLD-02**.
+Hunt spawn locks / `fight_id` на точке — **WLD-02**. Authored wander/respawn
+для 50310 в dump нет — не выдумывать.
 
 ## Источники поведения
 
@@ -16,7 +17,7 @@ Presence/esrv roster — **RTM-01**. Spawn movement/respawn и hunt locks —
 - `jgr-emu/docs/BESTIARY.md`;
 - `jgr-emu/src/travel.ts`, `areaActions.ts`, `routes/oa/commonObject.ts`
   (`COME_IN`), `routes/oa/common.ts` (`exit`), `presence.ts`, `esrvOutbox.ts`,
-  `routes/esrv.ts`;
+  `routes/esrv.ts`, `huntWorld.ts`, `huntLocks.ts`, `huntWander.ts`;
 - authored `jgr-emu/fixtures/radvei_areas.json` (areas 501, 503, 504).
 
 ## Контракт мира
@@ -187,22 +188,80 @@ blobs; SPEED с экипа/маунта; dungeon/BG.
   ущелье и таймер/возврат; reconnect на dest. Покупка в лавке не требуется;
 - нет fake OA; нет Gryzl-as-travel; runtime не читает `radvei_areas.json`.
 
-## Hunt lifecycle
+## Hunt lifecycle — WLD-02
 
-Текущий authored spawn задаёт bot, position и hunt mask для area 503.
-Route/respawn policy, runtime ownership, busy state и timers — план; после
-реализации ephemeral state не должен записываться обратно в content.
+### Architecture decision
 
-ATTACK с карты использует конкретный hunt spawn. Quest/menu attack использует
-quest bot reference и не подменяется map spawn. В текущем срезе реализован
-только минимальный `ATTACK_BOT`; quest/menu flow отсутствует.
+Отдельный `ARC-*` не нужен. Ephemeral hunt overlay живёт в process memory
+модуля `world` (как active combat): текущие `position`/`prev`, `fight_id`,
+lock owner. Authored `world.hunt_spawns` не пишется. Таблицы `hunt_locks` /
+`spawn_leases` нет — live Postgres lock + `clearAllHuntLocks` на старте для
+j-emu лишний: один процесс, бой и так RAM.
 
-Будущий hunt lock:
+Restart процесса: overlay пуст, точки снова authored home, `fight_id=0`;
+`heroes.area_id` не трогать.
 
-- не допускает два успешных attack одного spawn;
-- снимается после завершения/отмены/timeout;
-- stale state очищается после process restart;
-- изменение `fight_id` доставляется через area realtime.
+Clock injected. Без wander ticker и без RNG в этом срезе.
+
+### Content
+
+Только уже опубликованный **50310** (artikul 2, mask `bot_1`, home
+883/1499). В `hunt_spawns.json` у 50310 нет `zone`, `route`,
+`respawn_time_min/max`. Не копировать маршрут 50309, не публиковать
+50311–13, не добавлять бота Хисса `4`. Live без zone/route паркует точку
+на home — тот же результат.
+
+Wire `common|hunt.bots[]` только клиентские поля: `id`, `artikul_id`,
+`fight_id`, `hunt_mask`, `position_x/y`, `prev_x/y`. Idle `fight_id=0`
+(уже `IDLE_HUNT_FIGHT_ID`).
+
+### ATTACK_BOT
+
+Карта шлёт `form.bot_id` = **spawn id** (`50310` = `common|hunt.bots[].id`),
+не catalog artikul `2`. Сейчас command резолвит artikul и падает на
+ambiguous, если спавнов >1; WLD-02: `world.spawn(areaId, spawnId)`, нет
+спавна → `203`. Не маппить `2`→`50310`. Существующие e2e с `bot_id:2`
+перевести на `50310`.
+
+Меню AREA `action_id` / `quest_bot_artikul` — не этот срез. FIGHT_JOIN /
+«Вмешаться» при `fight_id>0` — не этот срез (live join); второй ATTACK →
+**203** `моб уже занят`.
+
+### Ports
+
+World:
+
+- `tryAcquireSpawn({ areaId, spawnId, fightId, ownerAccountId })` —
+  occupied другим живым боем → deny; тот же owner может обновить fightId;
+- `releaseSpawn({ areaId, spawnId })`;
+- `huntSnapshot(areaId)` — wire bots с live overlay (без записи в content).
+
+Combat: `startHunt` после успешного acquire (fightId уже из sequence).
+Release на terminal `takeExit` / finish / process drop — composition
+observer, combat не пишет world tables. Неудачный acquire не создаёт RAM
+battle.
+
+Один spawn — один lock. Concurrent: один победитель.
+
+После acquire/release: fan-out 131 hunt через существующий esrv poll +
+`LongPollCoordinator.wake` соседей area (как presence). Не новый канал.
+
+Lock freeze: пока busy, xy не двигаются (и так home).
+
+### Out of scope
+
+Wander/route ticker; respawn hide; Pub1 `.map` polygons; dungeon copies;
+quest/menu attack; FIGHT_JOIN; loot; CMB-01 turn loop.
+
+### Acceptance
+
+- unit: acquire/busy/release; snapshot `fight_id`; missing spawn;
+- raw-AMF: A ATTACK_BOT 50310 → hunt.bots[50310].fight_id = fight id;
+  B тот же spawn → 203 «моб уже занят»; B esrv 131 видит busy;
+  после finish/exit A — idle 0; restart → idle, area_id героя тот же;
+- CEF: клик Грызла на карте 503 занимает точку; второй клиент не стартует
+  второй бой с той же точки;
+- нет fake OA; runtime не читает `hunt_spawns.json`.
 
 ## Presence и channels — RTM-01
 
@@ -233,8 +292,7 @@ Population **diff** едет на личный `2:` (live `enqueueEsrv` без `
 
 `jugger-wire` не считает presence: world/application отдаёт typed notify +
 roster DTO; wire кодирует packet `{ channel, ctime, object }`. Fastify long-poll
-остаётся adapter. Per-account wake — ограниченный refactor
-`LongPollCoordinator` (сейчас глобальный wait без account id).
+остаётся adapter. Per-account wake — `LongPollCoordinator.wake(accountId)`.
 
 Post-commit: enqueue и wake **после** UoW travel/login/logout, не внутри
 транзакции.
@@ -259,8 +317,7 @@ COME_IN/`exit` после `setArea`: remove в from, add в to (если from≠
 ### Chat auth
 
 `{rc:"auth", eid:1, ...}` на `/esrv/*` — HTTP пустое тело, не MULTI
-([WIRE_INVARIANTS.md](../migration/WIRE_INVARIANTS.md)). Сейчас registrar этого
-не делает — добавить в RTM-01.
+([WIRE_INVARIANTS.md](../migration/WIRE_INVARIANTS.md)).
 
 ### Out of scope
 

@@ -13,7 +13,7 @@
   `depends_on`.
 - Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
   `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **RTM-01**.
+- Ровно одна запись имеет статус `next`: **WLD-02**.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -261,21 +261,29 @@
   `chat|area_population`; B's esrv gets `2:` `area_population_diff` add/remove
   when A enters/leaves/COME_IN; `131:<area>` hunt snapshot on poll; chat auth
   empty body; restart rebuilds roster from sessions. No playerbots.
-- **Status:** `next`
+- **Status:** `done`
 
 ### WLD-02 — Hunt spawn lifecycle and locks
 
 - **ID:** `WLD-02`
 - **depends_on:** `WLD-01`, `RTM-01`
-- **Behavior evidence:** legacy `SYNC.md`, `BESTIARY.md`, `huntWorld.ts`,
-  `huntSpawns.ts`, `huntWander.ts` and [WORLD.md](../modules/WORLD.md).
-- **Content set:** core bestiary subset, area hunt spawns, routes and respawn
-  policy.
-- **Architecture checkpoint / decision:** pending — decide process-local spawn
-  scheduler/lock lifetime and combat handoff port.
-- **Acceptance:** movement/respawn reaches both clients, one concurrent attack
-  wins, and restart clears ephemeral busy state without losing hero location.
-- **Status:** `queued`
+- **Behavior evidence:** legacy `SYNC.md` phase 3, `FIXTURES.md` hunt wire,
+  `huntWorld.ts`, `huntLocks.ts`, `huntWander.ts`, `lifecycle.ts` ATTACK_BOT
+  and [WORLD.md](../modules/WORLD.md).
+- **Content set:** existing `playable-slice/v9` spawn **50310** (Gryzl artikul 2) only. Dump `hunt_spawns.json` 50310 has **no** `zone`/`route`/
+  `respawn_time_*` — do not invent them, do not publish 50311–13 or Hissa 4.
+- **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
+  no `ARC-*`. Hunt runtime (positions + busy `fight_id`) is process-local in
+  world, like combat RAM; authored `world.hunt_spawns` unchanged. No
+  `hunt_locks` table. Restart drops overlay, keeps `heroes.area_id`. ATTACK
+  `bot_id` = hunt spawn id `50310` (wire `common|hunt.bots[].id`), not artikul
+  `2`. Second attacker `203` «моб уже занят»; FIGHT_JOIN/intervene is not this
+  slice. Full contract: [WORLD.md](../modules/WORLD.md).
+- **Acceptance:** two heroes: first ATTACK_BOT 50310 sets hunt `fight_id`;
+  second `203`; 131 snapshot shows busy then idle after fight end/restart;
+  lock freeze at authored home; no wander. Existing tests that send `bot_id:2`
+  must switch to `50310`.
+- **Status:** `next`
 
 ## Wave 3 — complete core combat
 

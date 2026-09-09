@@ -121,6 +121,16 @@ bag, деньги остаются `25.00`, bag пуст, reconnect совпад
 Не перенесены durability/repair, DRINK/TEMPEFFECT, ADD_MP и fight
 cast/`persSpells` (CMB-02).
 
+## World presence — готово
+
+Есть raw-AMF E2E: два изолированных героя видят друг друга в
+`chat|area_population` (`id` = accountId); COME_IN/`exit`/logout дают `2:`
+`area_population_diff`; каждый esrv poll несёт `131:<area>` `common|hunt`;
+chat auth — пустое тело; restart очищает очередь и собирает roster из sessions.
+
+- Roster: `identity.sessions` ⨝ `heroes.area_id`; delivery process-local;
+- Long-poll wake per-account. `chat|add` и party `4:` не в срезе.
+
 ## World transitions — готово
 
 Есть raw-AMF E2E и подтверждённый CEF-прогон: из 503 сайдбар ведёт в лавку
@@ -136,8 +146,8 @@ cast/`persSpells` (CMB-02).
 Есть published area/hunt content, transitions 503↔501/504 и минимальный
 `ATTACK_BOT`.
 
-Не перенесены presence/esrv roster, spawn movement/respawn, hunt locks и
-полный realtime flow.
+Не перенесены spawn movement/respawn, hunt locks и полный realtime hunt
+flow (`fight_id` на точке).
 
 ## Combat — частично
 

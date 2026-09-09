@@ -57,6 +57,7 @@ Inventory layout lock (`PUT_ON`/`PUT_OFF`/`DROP`/`SELL` → `203` в бою) —
 [FIGHT_LOCK.md](../../../jgr-emu/docs/FIGHT_LOCK.md) эти коды не режет.
 Трата из кармана — fproxy (`CMB-02`). World USE, COME_IN/`common|exit` и
 ATTACK — live `fightBusy`; WLD-01 применяет то же `FightRules` `203`.
+Карта ATTACK_BOT в WLD-02 ключ — spawn id и hunt lock; FIGHT_JOIN не входит.
 
 SINGLE/MULTI framing, exact `sq`, source IDs и packet order менять нельзя.
 

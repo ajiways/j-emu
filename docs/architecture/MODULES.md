@@ -9,7 +9,8 @@
 ## Текущий runtime checkpoint
 
 Текущий проверенный срез после готовых bootstrap, equipment
-`PUT_ON`/`PUT_OFF`, bag DROP, pocket layout, world USE и area transitions:
+`PUT_ON`/`PUT_OFF`, bag DROP, pocket layout, world USE, area transitions и
+area presence roster:
 
 - `character` хранит hero scalars, personal details, naked `hero_skills`,
   `hp_time` и `regen_at`; internal ports `grantExperience`, `syncResources`,
@@ -99,13 +100,12 @@
 ### `world`
 
 **Владеет:** authored локациями и переходами (`areas`, `area_links`), hunt-spawn
-и (позже) presence/locks/фактами. Persisted координата героя в срезе WLD-01
-остаётся `character.heroes.area_id` + `move_ready_at`; отдельной
-world-owned location table нет.
+и presence notices. WLD-02 добавит process-local spawn overlay (не таблицу).
+Persisted координата героя — `character.heroes.area_id` + `move_ready_at`.
 
-**API:** `area`, `linksFrom`, `requireLink`, `enterWorld`, `moveCharacter`, `getLocation`, `getAreaView`, `setFact`, `acquireSpawn`, `releaseSpawn`, `listPresence`.
-Текущий WLD-01 срез использует `area` / `linksFrom` / `requireLink`;
-location write идёт через character `setArea`, не через world table.
+**API:** `area`, `linksFrom`, `requireLink`, `listPopulation`, `enterNotices`,
+`leaveNotices`, `moveNotices`, `tryAcquireSpawn`, `releaseSpawn`,
+`huntSnapshot`. Location write — character `setArea`.
 
 **События:** `world.character-entered.v1`, `world.character-moved.v1`, `world.fact-changed.v1`, `world.spawn-acquired.v1`.
 
