@@ -133,7 +133,7 @@ describe("content publication", () => {
     await createPostgresContentPublication(database).seed(playable, playablePath);
     const catalog = new PostgresCatalog(database, new PostgresActiveContentRevision(database));
     const types = await catalog.storeTypes("504");
-    expect(types.map((row) => row.typeId).sort((a, b) => a - b)).toEqual([-131, 10, 21, 159]);
+    expect(types.map((row) => row.typeId)).toEqual([-131]);
     const lots = await catalog.storeLots("504");
     expect(lots.map((lot) => ({ lotId: lot.lotId, artikulId: lot.artikulId }))).toEqual([
       { lotId: 82, artikulId: 24 },

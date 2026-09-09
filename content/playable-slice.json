@@ -436,12 +436,7 @@
       "huntMask": "bot_1"
     }
   ],
-  "storeTypes": [
-    { "areaId": "504", "typeId": -131, "title": "Оружие и доспехи", "ord": 11000 },
-    { "areaId": "504", "typeId": 159, "title": "Быстрый старт", "ord": 15 },
-    { "areaId": "504", "typeId": 10, "title": "Еда", "ord": 0 },
-    { "areaId": "504", "typeId": 21, "title": "Разное", "ord": 0 }
-  ],
+  "storeTypes": [{ "areaId": "504", "typeId": -131, "title": "Оружие и доспехи", "ord": 11000 }],
   "storeLots": [
     { "areaId": "504", "lotId": 82, "artikulId": 24, "typeId": -131, "price": 1, "ord": 6 },
     { "areaId": "504", "lotId": 80, "artikulId": 23, "typeId": -131, "price": 1, "ord": 8 }

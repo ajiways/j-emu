@@ -137,6 +137,14 @@ describe("ContentValidator", () => {
     );
   });
 
+  it("rejects a store type that has no lots", () => {
+    const bundle: ContentBundle = {
+      ...playable,
+      storeTypes: [...playable.storeTypes, { areaId: "504", typeId: 10, title: "Еда", ord: 0 }],
+    };
+    expect(() => new ContentValidator().validate(bundle)).toThrow(/store_type 504:10 has no lots/);
+  });
+
   it("rejects a store lot whose artifact is not in the bundle", () => {
     const bundle: ContentBundle = {
       ...playable,

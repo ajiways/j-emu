@@ -26,7 +26,7 @@ describe("store list and buy", () => {
     const listed = await client.objectAction({ object: "store", action: "list", sq: 3 });
     const block = requireRecord(listed["store|list"], "store|list");
     expect(block.status).toBe(100);
-    expect(typeIds(block.types)).toEqual([10, 21, 159, -131]);
+    expect(typeIds(block.types)).toEqual([-131]);
     expect(lotArtikuls(block.artikuls)).toEqual([24, 23]);
   });
 

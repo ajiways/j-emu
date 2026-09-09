@@ -36,7 +36,9 @@ projection-строки. После `0013_catalog_artifact_extra` migrate ста
 После `0015_character_ghost_injury` migrate ставит `ghost=false` и injury `0`
 на старые `heroes`; runtime всё равно пишет явные значения. После
 `0016_catalog_store_types_lots` migrate создаёт пустые `store_types`/`store_lots`;
-лавка 504 list/buy пуста, пока не опубликован `playable-slice/v13`.
+лавка 504 list/buy пуста, пока не опубликован `playable-slice/v13`. Смена
+checksum витрины (например, только type `-131`) требует повторный
+`npm run db:publish:development`.
 
 ## HTTP :8080 (браузер без CEF)
 

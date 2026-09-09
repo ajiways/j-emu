@@ -20,6 +20,9 @@ export function collectStoreIssues(bundle: ContentBundle): readonly string[] {
       issues.push(`store_type ${row.areaId}:${row.typeId} references missing area ${row.areaId}`);
     }
     if (!row.title) issues.push(`store_type ${row.areaId}:${row.typeId} title is required`);
+    if (!bundle.storeLots.some((lot) => lot.areaId === row.areaId && lot.typeId === row.typeId)) {
+      issues.push(`store_type ${row.areaId}:${row.typeId} has no lots`);
+    }
   }
   for (const lot of bundle.storeLots) {
     if (!areaIds.has(lot.areaId)) {
@@ -40,9 +43,7 @@ export function collectStoreIssues(bundle: ContentBundle): readonly string[] {
   const shopTypes = new Set(
     bundle.storeTypes.filter((row) => row.areaId === "504").map((row) => row.typeId),
   );
-  for (const typeId of [-131, 159, 10, 21]) {
-    if (!shopTypes.has(typeId)) issues.push(`store 504 is missing type ${typeId}`);
-  }
+  if (!shopTypes.has(-131)) issues.push("store 504 is missing type -131");
   const shopLots = bundle.storeLots.filter((lot) => lot.areaId === "504");
   if (!shopLots.some((lot) => lot.lotId === 80 && lot.artikulId === 23 && lot.typeId === -131)) {
     issues.push("store 504 is missing lot 80 artikul 23");
