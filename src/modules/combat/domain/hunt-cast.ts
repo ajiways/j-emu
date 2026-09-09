@@ -175,7 +175,9 @@ export function resolveGloveFinisher(
   human.endTurn();
   const cp = human.casts.spendCombo(glove.cost);
   const damage = endingGloveDamage(glove.spell, input.random, input.rules);
-  const botHp = Math.max(0, input.botHp - damage);
+  const applied = Math.min(input.botHp, damage);
+  human.creditDamageToBot(applied);
+  const botHp = input.botHp - applied;
   const killed = botHp === 0;
   const events: BattleEvent[] = [
     { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },

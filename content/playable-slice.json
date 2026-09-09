@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v11",
+  "schemaVersion": "playable-slice/v12",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -222,6 +222,19 @@
       "level": 1,
       "maxHp": 20,
       "strength": 10,
+      "baseExp": 15,
+      "moneyMin": 0.2,
+      "moneyMax": 0.44,
+      "lootDropCnt": 1,
+      "lootBonusChance": 0.2,
+      "lootBonusMin": 1,
+      "lootBonusMax": 1,
+      "lootNothingWeight": 3460,
+      "lootEntries": [
+        { "artikulId": 77, "dropWeight": 77, "countMin": 1, "countMax": 2 },
+        { "artikulId": 93, "dropWeight": 66, "countMin": 1, "countMax": 4 },
+        { "artikulId": 99, "dropWeight": 72, "countMin": 5, "countMax": 25 }
+      ],
       "hunt": {
         "nick": "Грызл",
         "swf": "gryzl1.swf",

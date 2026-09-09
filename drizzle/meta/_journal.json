@@ -99,6 +99,13 @@
       "when": 1789012345678,
       "tag": "0013_catalog_artifact_extra",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1789123456789,
+      "tag": "0014_catalog_bot_loot",
+      "breakpoints": true
     }
   ]
 }

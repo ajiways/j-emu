@@ -7,6 +7,8 @@ import type { ArtifactDefinition } from "../domain/artifact-definition.ts";
 import { artifactDefinitionFromRow } from "./artifact-definition-from-row.ts";
 import { BootstrapChrome } from "../domain/bootstrap-chrome.ts";
 import { BotDefinition } from "../domain/bot-definition.ts";
+import { BotLootEntry } from "../domain/bot-loot-entry.ts";
+import { BotReward } from "../domain/bot-reward.ts";
 import { HudDefaults } from "../domain/hud-defaults.ts";
 import { HuntLook } from "../domain/hunt-look.ts";
 import { LevelBoundary } from "../domain/level-boundary.ts";
@@ -15,6 +17,7 @@ import type { Catalog } from "../ports/catalog.ts";
 import {
   appearancePresets,
   artifacts,
+  botLootEntries,
   bots,
   gameWideDocuments,
   levelBoundaries,
@@ -48,27 +51,45 @@ export class PostgresCatalog implements Catalog {
       .where(and(eq(bots.releaseId, releaseId), eq(bots.id, id)));
     if (rows.length > 1) throw new Error(`Multiple bot definitions found for ${id}`);
     const row = rows[0];
-    return row
-      ? new BotDefinition(
-          row.id,
-          row.title,
-          row.level,
-          row.maxHp,
-          row.strength,
-          new HuntLook(
-            row.huntNick,
-            row.huntSwf,
-            row.huntScale,
-            row.huntFps,
-            row.huntSpeed,
-            row.huntAvatar,
-            row.huntKind,
-            row.huntHideOnMap,
-            row.huntSk,
-            row.huntBody,
-          ),
-        )
-      : null;
+    if (!row) return null;
+    const lootRows = await this.database
+      .session()
+      .select()
+      .from(botLootEntries)
+      .where(and(eq(botLootEntries.releaseId, releaseId), eq(botLootEntries.botId, id)));
+    return new BotDefinition(
+      row.id,
+      row.title,
+      row.level,
+      row.maxHp,
+      row.strength,
+      new HuntLook(
+        row.huntNick,
+        row.huntSwf,
+        row.huntScale,
+        row.huntFps,
+        row.huntSpeed,
+        row.huntAvatar,
+        row.huntKind,
+        row.huntHideOnMap,
+        row.huntSk,
+        row.huntBody,
+      ),
+      new BotReward(
+        row.baseExp,
+        row.moneyMin,
+        row.moneyMax,
+        row.lootDropCnt,
+        row.lootBonusChance,
+        row.lootBonusMin,
+        row.lootBonusMax,
+        row.lootNothingWeight,
+        lootRows.map(
+          (entry) =>
+            new BotLootEntry(entry.artikulId, entry.dropWeight, entry.countMin, entry.countMax),
+        ),
+      ),
+    );
   }
 
   async skill(id: string): Promise<SkillDefinition> {

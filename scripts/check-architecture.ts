@@ -7,11 +7,15 @@ const maxLines = 400;
 const reviewThreshold = 250;
 const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/combat/application/combat-service.ts":
-    "Process-local hunt service: start/join/auth/poll plus CMB-02 keep-turn and ending-glove dispatch on the same battle maps",
+    "Process-local hunt service: start/join/auth/poll, CMB-02 casts, CMB-03 loot/exit take and leave ack",
   "src/modules/combat/domain/battle.ts":
     "Hunt aggregate owns pairing, melee, and pocket/glove/rage casts for one RAM fight",
   "src/modules/content/application/content-validator.ts":
-    "Single bundle completeness gate including dump-proven fight extra blobs",
+    "Single bundle completeness gate including dump-proven fight extra blobs and bot loot references",
+  "src/modules/inventory/domain/inventory-service.ts":
+    "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag and pocket refill entry points",
+  "src/modules/catalog/infrastructure/schema.ts":
+    "Catalog projection tables including bot reward columns and bot_loot_entries",
 };
 const multiExportAllowlist: readonly string[] = [];
 const amfValueAllowPrefix = "src/modules/jugger-wire/amf/";

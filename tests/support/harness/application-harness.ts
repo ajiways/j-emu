@@ -12,6 +12,8 @@ import { requireTestDatabaseUrl } from "../postgres/test-database-url.ts";
 import { FakeClock } from "../fake-clock.ts";
 import { ManualCombatDelay } from "../fakes/manual-combat-delay.ts";
 import { MutableClock } from "../fakes/mutable-clock.ts";
+import type { RandomSource } from "../../../src/modules/combat/domain/random-source.ts";
+import type { BattleRules } from "../../../src/modules/combat/domain/battle-rules.ts";
 
 const testDatabaseUrl = requireTestDatabaseUrl();
 
@@ -20,10 +22,24 @@ export class ApplicationHarness {
   private applicationValue: Application | null = null;
   private readonly delay: ManualCombatDelay;
   private readonly clock: Clock;
+  private readonly extras: Readonly<{
+    lootRandom?: RandomSource;
+    combatRandom?: RandomSource;
+    combatRules?: Partial<BattleRules>;
+  }>;
 
-  constructor(clock?: Clock, delay = new ManualCombatDelay()) {
+  constructor(
+    clock?: Clock,
+    delay = new ManualCombatDelay(),
+    extras: Readonly<{
+      lootRandom?: RandomSource;
+      combatRandom?: RandomSource;
+      combatRules?: Partial<BattleRules>;
+    }> = {},
+  ) {
     this.clock = clock ?? new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     this.delay = delay;
+    this.extras = extras;
   }
 
   async start(): Promise<Application> {
@@ -38,6 +54,7 @@ export class ApplicationHarness {
       this.config(),
       this.clock,
       this.delay,
+      this.extras,
     );
     return this.applicationValue;
   }
@@ -49,6 +66,7 @@ export class ApplicationHarness {
       this.config(),
       this.clock,
       this.delay,
+      this.extras,
     );
     return this.applicationValue;
   }

@@ -122,6 +122,18 @@ const huntLookSchema = z
   })
   .strict();
 
+const botLootEntrySchema = z
+  .object({
+    artikulId: z.number().int().positive(),
+    dropWeight: z.number().int().nonnegative(),
+    countMin: z.number().int().positive(),
+    countMax: z.number().int().positive(),
+  })
+  .strict()
+  .refine((entry) => entry.countMax >= entry.countMin, {
+    message: "loot countMax must be >= countMin",
+  });
+
 const botSchema = z
   .object({
     id: z.number().int().positive(),
@@ -130,8 +142,26 @@ const botSchema = z
     maxHp: z.number().int().positive(),
     strength: z.number().int().nonnegative(),
     hunt: huntLookSchema,
+    baseExp: z.number().int().nonnegative(),
+    moneyMin: z.number().nonnegative(),
+    moneyMax: z.number().nonnegative(),
+    lootDropCnt: z.number().int().nonnegative(),
+    lootBonusChance: z.number().min(0).max(1),
+    lootBonusMin: z.number().int().nonnegative(),
+    lootBonusMax: z.number().int().nonnegative(),
+    lootNothingWeight: z.number().int().nonnegative(),
+    lootEntries: z.array(botLootEntrySchema),
   })
-  .strict();
+  .strict()
+  .refine((bot) => bot.moneyMax >= bot.moneyMin, { message: "moneyMax must be >= moneyMin" })
+  .refine((bot) => bot.lootBonusMax >= bot.lootBonusMin, {
+    message: "lootBonusMax must be >= lootBonusMin",
+  })
+  .refine(
+    (bot) =>
+      new Set(bot.lootEntries.map((entry) => entry.artikulId)).size === bot.lootEntries.length,
+    { message: "lootEntries artikul ids must be unique" },
+  );
 
 const areaSchema = z
   .object({

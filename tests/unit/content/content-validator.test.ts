@@ -32,6 +32,37 @@ describe("ContentValidator", () => {
     expect(() => new ContentValidator().validate(bundle)).toThrow(/missing bot 999/);
   });
 
+  it("rejects bot loot that points at a missing artifact", () => {
+    const bot = playable.bots[0];
+    if (!bot) throw new Error("playable bundle has no bots");
+    const bundle: ContentBundle = {
+      ...playable,
+      bots: [
+        {
+          ...bot,
+          lootEntries: [
+            ...bot.lootEntries,
+            { artikulId: 8, dropWeight: 1, countMin: 1, countMax: 1 },
+          ],
+        },
+      ],
+    };
+    expect(() => new ContentValidator().validate(bundle)).toThrow(
+      /loot artikul 8 is not in the bundle/,
+    );
+  });
+
+  it("rejects duplicate loot artikul on the same bot", () => {
+    const bot = playable.bots[0];
+    const entry = bot?.lootEntries[0];
+    if (!bot || !entry) throw new Error("playable bundle has no bot loot");
+    const bundle: ContentBundle = {
+      ...playable,
+      bots: [{ ...bot, lootEntries: [...bot.lootEntries, entry] }],
+    };
+    expect(() => new ContentValidator().validate(bundle)).toThrow(/duplicate loot artikul/);
+  });
+
   it("rejects an area_link whose destination is not in the bundle", () => {
     const link = playable.areaLinks[0];
     if (!link) throw new Error("playable bundle has no area links");
@@ -199,5 +230,17 @@ describe("parseContentBundle", () => {
         bots: [{ ...bot, hunt: { ...bot.hunt, sk: "" } }],
       }),
     ).toThrow();
+  });
+
+  it("rejects duplicate loot artikul ids on a bot", () => {
+    const bot = playable.bots[0];
+    const entry = bot?.lootEntries[0];
+    if (!bot || !entry) throw new Error("playable bundle has no bot loot");
+    expect(() =>
+      parseContentBundle({
+        ...playable,
+        bots: [{ ...bot, lootEntries: [...bot.lootEntries, entry] }],
+      }),
+    ).toThrow(/lootEntries artikul ids must be unique/);
   });
 });

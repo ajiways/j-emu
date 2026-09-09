@@ -20,8 +20,9 @@ import {
   type KeepTurnResult,
 } from "./hunt-cast.ts";
 import type { HuntJoinHuman } from "./hunt-join-human.ts";
-import { requireHuntBattleInit } from "./require-hunt-battle-init.ts";
 import type { RandomSource } from "./random-source.ts";
+import { requireHuntBattleInit } from "./require-hunt-battle-init.ts";
+import type { FightOutcomeKind, FightOutcomeSnapshot } from "./fight-outcome-snapshot.ts";
 
 export class Battle {
   private botHpValue: number;
@@ -126,7 +127,7 @@ export class Battle {
   }
 
   hasWaitingHuman(): boolean {
-    return this.humans.some((human) => human.waiting);
+    return this.humans.some((human) => human.waiting && !human.leftLive && human.hp > 0);
   }
 
   addHuman(join: HuntJoinHuman): BattleEvent {
@@ -264,13 +265,51 @@ export class Battle {
     return grantHumanTurn(this.requireHuman(accountId), this.rules.turnTimeoutSeconds);
   }
 
+  outcome(kind: FightOutcomeKind, winnerTeam: 1 | 2): FightOutcomeSnapshot {
+    return {
+      fightId: this.id,
+      botId: this.init.botArtikulId,
+      botLevel: this.init.botLevel,
+      winnerTeam,
+      kind,
+      humans: this.humans.map((human) => ({
+        accountId: human.accountId,
+        characterId: human.heroId,
+        level: human.level,
+        hp: human.hp,
+        damageToBot: human.damageToBot,
+        leftLive: human.leftLive,
+        pocket: human.pocketCells(),
+      })),
+    };
+  }
+
+  livingHumans(): readonly HuntHuman[] {
+    return this.humans.filter((human) => !human.leftLive && human.hp > 0);
+  }
+
+  markHumanLeft(accountId: number): HuntHuman {
+    const human = this.requireHuman(accountId);
+    human.markLeft();
+    return human;
+  }
+
+  finishLeave(): 1 | 2 {
+    if (this.finishedValue) throw new Error("Cannot leave a finished battle");
+    this.finishedValue = true;
+    const remaining = this.humans.filter((human) => !human.leftLive);
+    const last = remaining[remaining.length - 1];
+    if (!last) throw new Error("Leave requires a human in the battle");
+    return last.hp <= 0 ? 2 : 1;
+  }
+
   pairNextWaiter(): Readonly<{
     accountId: number;
     authed: boolean;
     events: readonly BattleEvent[];
   }> | null {
     if (this.finishedValue || this.botHpValue === 0) return null;
-    const waiter = this.humans.find((entry) => entry.waiting);
+    const waiter = this.humans.find((entry) => entry.waiting && !entry.leftLive && entry.hp > 0);
     if (!waiter) return null;
     waiter.pair();
     this.pairedAccountIdValue = waiter.accountId;
@@ -280,12 +319,6 @@ export class Battle {
       authed: true,
       events: [{ type: "opponent-new", bot: huntBotSnap(this.init, this.botHpValue) }],
     };
-  }
-
-  releaseHuman(accountId: number): void {
-    const index = this.humans.findIndex((human) => human.accountId === accountId);
-    if (index < 0) throw new Error(`Human account ${accountId} is not in this battle`);
-    this.humans.splice(index, 1);
   }
 
   private requireAuthed(accountId: number): HuntHuman {

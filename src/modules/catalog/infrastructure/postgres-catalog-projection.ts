@@ -14,6 +14,7 @@ import type { CatalogMaterialization, CatalogProjection } from "../ports/catalog
 import {
   appearancePresets,
   artifacts,
+  botLootEntries,
   bots,
   gameWideDocuments,
   levelBoundaries,
@@ -105,8 +106,27 @@ async function insertBots(
       huntHideOnMap: bot.hunt.hideOnMap,
       huntSk: bot.hunt.sk,
       huntBody: bot.hunt.body,
+      baseExp: bot.baseExp,
+      moneyMin: bot.moneyMin,
+      moneyMax: bot.moneyMax,
+      lootDropCnt: bot.lootDropCnt,
+      lootBonusChance: bot.lootBonusChance,
+      lootBonusMin: bot.lootBonusMin,
+      lootBonusMax: bot.lootBonusMax,
+      lootNothingWeight: bot.lootNothingWeight,
     })),
   );
+  const lootRows = rows.flatMap((bot) =>
+    bot.lootEntries.map((entry) => ({
+      releaseId,
+      botId: bot.id,
+      artikulId: entry.artikulId,
+      dropWeight: entry.dropWeight,
+      countMin: entry.countMin,
+      countMax: entry.countMax,
+    })),
+  );
+  if (lootRows.length > 0) await session.insert(botLootEntries).values(lootRows);
 }
 
 async function insertSkills(

@@ -30,7 +30,9 @@ npm run db:reset
 сначала migrate, затем publish: миграция очищает устаревшие `world`/`catalog.bots`
 projection-строки. После `0013_catalog_artifact_extra` migrate ставит
 `extra = {}` на старые строки; hunt с эликсиром 93/орбом 99 падает, пока не
-опубликован `playable-slice/v11` с dump-proven `extra.spell`.
+опубликован `playable-slice/v11` с dump-proven `extra.spell`. После
+`0014_catalog_bot_loot` migrate ставит reward scalars `0` на старые `bots`;
+охота с CMB-03 наградой падает, пока не опубликован `playable-slice/v12`.
 
 ## HTTP :8080 (браузер без CEF)
 

@@ -1,6 +1,7 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { CombatLoadout } from "./combat-loadout.ts";
 import { HuntHumanCastState } from "./hunt-human-cast-state.ts";
+import type { PocketCellSnapshot } from "./fight-outcome-snapshot.ts";
 
 export type HuntHumanSnap = Readonly<{
   id: number;
@@ -35,6 +36,8 @@ export class HuntHuman {
   private waitingValue: boolean;
   private turnActiveValue = false;
   private hpValue: number;
+  private damageToBotValue = 0;
+  private leftLiveValue = false;
 
   constructor(private readonly init: HuntHumanInit) {
     requireHuntHumanInit(init);
@@ -79,6 +82,12 @@ export class HuntHuman {
   get turnActive(): boolean {
     return this.turnActiveValue;
   }
+  get damageToBot(): number {
+    return this.damageToBotValue;
+  }
+  get leftLive(): boolean {
+    return this.leftLiveValue;
+  }
 
   pair(): void {
     if (!this.waitingValue) throw new Error("Hunt human is already paired");
@@ -91,6 +100,23 @@ export class HuntHuman {
 
   endTurn(): void {
     this.turnActiveValue = false;
+  }
+
+  markLeft(): void {
+    this.leftLiveValue = true;
+    this.waitingValue = false;
+    this.turnActiveValue = false;
+  }
+
+  creditDamageToBot(amount: number): void {
+    if (!Number.isInteger(amount) || amount < 0) {
+      throw new Error("Hunt human damage to bot must be a non-negative integer");
+    }
+    this.damageToBotValue += amount;
+  }
+
+  pocketCells(): readonly PocketCellSnapshot[] {
+    return this.casts.pocketCells();
   }
 
   snapshot(): HuntHumanSnap {

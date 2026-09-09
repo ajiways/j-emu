@@ -5,11 +5,12 @@ import { ProtocolError } from "../application/protocol-error.ts";
 import type { FproxyCommand } from "../commands/fproxy/fproxy-command.ts";
 import { FproxyAuthCommand } from "../commands/fproxy/fproxy-auth-command.ts";
 import { FproxyCastSpellCommand } from "../commands/fproxy/fproxy-cast-spell-command.ts";
+import { FproxyLeaveFightCommand } from "../commands/fproxy/fproxy-leave-fight-command.ts";
 import { FproxyPollCommand } from "../commands/fproxy/fproxy-poll-command.ts";
 import { fproxyCommandKey } from "../commands/fproxy/fproxy-frame.ts";
 
 export class FproxyCommandRegistry {
-  static readonly requiredKeys = ["auth", "castSpell", "poll"] as const;
+  static readonly requiredKeys = ["auth", "castSpell", "leaveFight", "poll"] as const;
 
   private readonly commands: ReadonlyMap<string, FproxyCommand>;
 
@@ -36,6 +37,7 @@ export class FproxyCommandRegistry {
     return new FproxyCommandRegistry([
       new FproxyAuthCommand(),
       new FproxyCastSpellCommand(meleeSourceIds),
+      new FproxyLeaveFightCommand(),
       new FproxyPollCommand(),
     ]);
   }

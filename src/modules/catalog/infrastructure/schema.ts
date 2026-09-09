@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   check,
+  doublePrecision,
   foreignKey,
   integer,
   jsonb,
@@ -69,6 +70,14 @@ export const bots = catalogSchema.table(
     huntHideOnMap: integer("hunt_hide_on_map").notNull(),
     huntSk: text("hunt_sk").notNull(),
     huntBody: text("hunt_body").notNull(),
+    baseExp: integer("base_exp").notNull(),
+    moneyMin: doublePrecision("money_min").notNull(),
+    moneyMax: doublePrecision("money_max").notNull(),
+    lootDropCnt: integer("loot_drop_cnt").notNull(),
+    lootBonusChance: doublePrecision("loot_bonus_chance").notNull(),
+    lootBonusMin: integer("loot_bonus_min").notNull(),
+    lootBonusMax: integer("loot_bonus_max").notNull(),
+    lootNothingWeight: integer("loot_nothing_weight").notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.releaseId, table.id] }),
@@ -80,6 +89,51 @@ export const bots = catalogSchema.table(
     check("bots_hunt_speed_check", sql`${table.huntSpeed} >= 0`),
     check("bots_hunt_kind_check", sql`${table.huntKind} >= 0`),
     check("bots_hunt_hide_on_map_check", sql`${table.huntHideOnMap} IN (0, 1)`),
+    check("bots_base_exp_check", sql`${table.baseExp} >= 0`),
+    check(
+      "bots_money_check",
+      sql`${table.moneyMin} >= 0 AND ${table.moneyMax} >= ${table.moneyMin}`,
+    ),
+    check("bots_loot_drop_cnt_check", sql`${table.lootDropCnt} >= 0`),
+    check(
+      "bots_loot_bonus_chance_check",
+      sql`${table.lootBonusChance} >= 0 AND ${table.lootBonusChance} <= 1`,
+    ),
+    check(
+      "bots_loot_bonus_check",
+      sql`${table.lootBonusMin} >= 0 AND ${table.lootBonusMax} >= ${table.lootBonusMin}`,
+    ),
+    check("bots_loot_nothing_weight_check", sql`${table.lootNothingWeight} >= 0`),
+  ],
+);
+
+export const botLootEntries = catalogSchema.table(
+  "bot_loot_entries",
+  {
+    releaseId: uuid("release_id")
+      .notNull()
+      .references(() => releases.id, { onDelete: "restrict" }),
+    botId: integer("bot_id").notNull(),
+    artikulId: integer("artikul_id").notNull(),
+    dropWeight: integer("drop_weight").notNull(),
+    countMin: integer("count_min").notNull(),
+    countMax: integer("count_max").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.releaseId, table.botId, table.artikulId] }),
+    foreignKey({
+      columns: [table.releaseId, table.botId],
+      foreignColumns: [bots.releaseId, bots.id],
+      name: "bot_loot_entries_bot_fk",
+    }).onDelete("restrict"),
+    foreignKey({
+      columns: [table.releaseId, table.artikulId],
+      foreignColumns: [artifacts.releaseId, artifacts.id],
+      name: "bot_loot_entries_artifact_fk",
+    }).onDelete("restrict"),
+    check("bot_loot_entries_drop_weight_check", sql`${table.dropWeight} >= 0`),
+    check("bot_loot_entries_count_min_check", sql`${table.countMin} >= 1`),
+    check("bot_loot_entries_count_max_check", sql`${table.countMax} >= ${table.countMin}`),
   ],
 );
 

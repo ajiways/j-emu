@@ -3,6 +3,7 @@ import { CatalogModule } from "../modules/catalog/catalog-module.ts";
 import { CharacterModule } from "../modules/character/character-module.ts";
 import { CombatModule } from "../modules/combat/combat-module.ts";
 import type { CombatDelay } from "../modules/combat/ports/combat-delay.ts";
+import type { BattleRules } from "../modules/combat/domain/battle-rules.ts";
 import { SystemCombatDelay } from "../modules/combat/infrastructure/system-combat-delay.ts";
 import { IdentityModule } from "../modules/identity/identity-module.ts";
 import { InventoryModule } from "../modules/inventory/inventory-module.ts";
@@ -23,12 +24,20 @@ import { LongPollCoordinator } from "../modules/jugger-wire/application/long-pol
 import { PresenceFanout } from "../modules/jugger-wire/application/presence-fanout.ts";
 import { HuntAreaFanout } from "../modules/jugger-wire/application/hunt-area-fanout.ts";
 import { HuntLockRelease } from "./hunt-lock-release.ts";
+import { HuntFightSettlement } from "./hunt-fight-settlement.ts";
+import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
+import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 
 export class CompositionRoot {
   async build(
     config: AppConfig,
     clock: Clock = new SystemClock(),
     delay: CombatDelay = new SystemCombatDelay(),
+    extras: Readonly<{
+      lootRandom?: RandomSource;
+      combatRandom?: RandomSource;
+      combatRules?: Partial<BattleRules>;
+    }> = {},
   ): Promise<Application> {
     const policy = loadGamePolicy(config.gamePolicyFile);
     const closers: Array<{ close(): Promise<void> }> = [];
@@ -53,16 +62,19 @@ export class CompositionRoot {
       const combat = CombatModule.create({
         database,
         rules: {
-          playerDamageMin: policy.combat.playerDamageMin,
-          playerDamageMax: policy.combat.playerDamageMax,
-          botDamageMin: policy.combat.botDamageMin,
-          botDamageMax: policy.combat.botDamageMax,
-          turnTimeoutSeconds: policy.combat.turnTimeoutSeconds,
-          meleeBotCounterMs: policy.combat.meleeBotCounterMs,
-          turnGrantDelayMs: policy.combat.turnGrantDelayMs,
+          playerDamageMin: extras.combatRules?.playerDamageMin ?? policy.combat.playerDamageMin,
+          playerDamageMax: extras.combatRules?.playerDamageMax ?? policy.combat.playerDamageMax,
+          botDamageMin: extras.combatRules?.botDamageMin ?? policy.combat.botDamageMin,
+          botDamageMax: extras.combatRules?.botDamageMax ?? policy.combat.botDamageMax,
+          turnTimeoutSeconds:
+            extras.combatRules?.turnTimeoutSeconds ?? policy.combat.turnTimeoutSeconds,
+          meleeBotCounterMs:
+            extras.combatRules?.meleeBotCounterMs ?? policy.combat.meleeBotCounterMs,
+          turnGrantDelayMs: extras.combatRules?.turnGrantDelayMs ?? policy.combat.turnGrantDelayMs,
         },
         clock,
         delay,
+        ...(extras.combatRandom === undefined ? {} : { random: extras.combatRandom }),
       });
       combat.startHistoryCleanup();
       closers.push(combat);
@@ -91,6 +103,15 @@ export class CompositionRoot {
       const huntFanout = new HuntAreaFanout(presence, longPoll);
       combat.bindWake({ wake: (accountId) => longPoll.wake(accountId) });
       combat.bindTerminalObserver(new HuntLockRelease(world.service, huntFanout));
+      combat.bindSettlement(
+        new HuntFightSettlement(
+          database,
+          catalog.catalog,
+          characters.service,
+          inventory.service,
+          extras.lootRandom ?? new SystemRandomSource(),
+        ),
+      );
       const registration = new PlayableAccountRegistration(
         identity.service,
         characters.service,

@@ -4,13 +4,14 @@ import { encodeFrames } from "../../../src/modules/jugger-wire/amf/framing.ts";
 import { ProtocolError } from "../../../src/modules/jugger-wire/application/protocol-error.ts";
 import { FproxyAuthCommand } from "../../../src/modules/jugger-wire/commands/fproxy/fproxy-auth-command.ts";
 import { FproxyCastSpellCommand } from "../../../src/modules/jugger-wire/commands/fproxy/fproxy-cast-spell-command.ts";
+import { FproxyLeaveFightCommand } from "../../../src/modules/jugger-wire/commands/fproxy/fproxy-leave-fight-command.ts";
 import { FproxyPollCommand } from "../../../src/modules/jugger-wire/commands/fproxy/fproxy-poll-command.ts";
 import { FproxyCommandRegistry } from "../../../src/modules/jugger-wire/registry/fproxy-command-registry.ts";
 
 const meleeSourceIds = { left: 1, center: 2, right: 3 };
 
 describe("fproxy command registry", () => {
-  it("registers auth, poll and castSpell once", () => {
+  it("registers auth, poll, leaveFight and castSpell once", () => {
     const registry = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     expect(registry.keys()).toEqual([...FproxyCommandRegistry.requiredKeys].sort());
     expect(new Set(registry.keys()).size).toBe(FproxyCommandRegistry.requiredKeys.length);
@@ -61,6 +62,14 @@ describe("fproxy command registry", () => {
     expect(
       registry.decodePayload(encodeAmf3({ rc: "castSpell", srcType: 1, srcId: 7, sq: 6 })),
     ).toEqual({ kind: "aggro", sequence: 6 });
+    expect(registry.decodePayload(encodeAmf3({ rc: "leaveFight", sq: 7 }))).toEqual({
+      kind: "leave",
+      sequence: 7,
+    });
+    expect(new FproxyLeaveFightCommand().decode({ rc: "leaveFight", sq: "8" })).toEqual({
+      kind: "leave",
+      sequence: "8",
+    });
   });
 
   it("rejects malformed and unsupported fight payloads", () => {

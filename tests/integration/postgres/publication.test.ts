@@ -40,6 +40,31 @@ describe("content publication", () => {
     expect(second).toEqual(first);
     const rows = await database.session().select({ id: releases.id }).from(releases);
     expect(rows).toHaveLength(1);
+    const catalog = new PostgresCatalog(database, new PostgresActiveContentRevision(database));
+    const authored = authoredHuntBot();
+    const projected = await catalog.bot(authored.id);
+    expect(projected).toMatchObject({
+      id: authored.id,
+      title: authored.title,
+      reward: {
+        baseExp: authored.baseExp,
+        moneyMin: authored.moneyMin,
+        moneyMax: authored.moneyMax,
+        lootDropCnt: authored.lootDropCnt,
+        lootBonusChance: authored.lootBonusChance,
+        lootBonusMin: authored.lootBonusMin,
+        lootBonusMax: authored.lootBonusMax,
+        lootNothingWeight: authored.lootNothingWeight,
+      },
+    });
+    expect(
+      projected?.reward.lootEntries.map((entry) => ({
+        artikulId: entry.artikulId,
+        dropWeight: entry.dropWeight,
+        countMin: entry.countMin,
+        countMax: entry.countMax,
+      })),
+    ).toEqual([...authored.lootEntries]);
   });
 
   it("does not change the active revision when a candidate is invalid", async () => {
@@ -51,7 +76,11 @@ describe("content publication", () => {
     };
     await expect(publication.publish(invalid)).rejects.toBeInstanceOf(ContentValidationError);
     const catalog = new PostgresCatalog(database, new PostgresActiveContentRevision(database));
-    await expect(catalog.bot(2)).resolves.toMatchObject({ id: 2, title: "Грызль" });
+    const huntBot = authoredHuntBot();
+    await expect(catalog.bot(huntBot.id)).resolves.toMatchObject({
+      id: huntBot.id,
+      title: huntBot.title,
+    });
     const current = await publication.seed(playable, playablePath);
     expect(current.checksum).toBe(active.checksum);
   });
@@ -76,8 +105,9 @@ describe("content publication", () => {
       expect(accepted.length + rejected.length).toBe(2);
       expect(accepted.length).toBeGreaterThanOrEqual(1);
       const catalog = new PostgresCatalog(database, new PostgresActiveContentRevision(database));
-      const activeBot = await catalog.bot(2);
-      expect(activeBot?.id).toBe(2);
+      const huntBot = authoredHuntBot();
+      const activeBot = await catalog.bot(huntBot.id);
+      expect(activeBot?.id).toBe(huntBot.id);
     } finally {
       await Promise.all([firstClient.close(), secondClient.close()]);
     }
@@ -169,6 +199,14 @@ describe("content publication", () => {
     });
   });
 });
+
+function authoredHuntBot(): ContentBundle["bots"][number] {
+  const spawn = playable.huntSpawns[0];
+  if (!spawn) throw new Error("playable bundle has no hunt spawns");
+  const bot = playable.bots.find((entry) => entry.id === spawn.botId);
+  if (!bot) throw new Error(`playable bundle is missing bot ${spawn.botId}`);
+  return bot;
+}
 
 function withHuntBot(id: number, title: string): ContentBundle["bots"][number] {
   const sample = playable.bots[0];

@@ -5,7 +5,6 @@ import { parseDecimalId, requireWireIdentity } from "../../../shared/kernel/deci
 import { Battle } from "../domain/battle.ts";
 import type { BattleRules } from "../domain/battle-rules.ts";
 import { EphemeralBotFightIds } from "../domain/ephemeral-bot-fight-ids.ts";
-import { FinishedFightConflictError } from "../domain/finished-fight-conflict-error.ts";
 import { HuntJoinDenied } from "../domain/hunt-join-denied.ts";
 import type { RandomSource } from "../domain/random-source.ts";
 import type { CombatDelay } from "../ports/combat-delay.ts";
@@ -13,6 +12,7 @@ import type { CombatWake } from "../ports/combat-wake.ts";
 import type { FinishedFightRecorder } from "./finished-fight-recorder.ts";
 import type { HistoryWriteObserver } from "./history-write-observer.ts";
 import { CombatMeleeLoop } from "./combat-melee-loop.ts";
+import { CombatTerminal } from "./combat-terminal.ts";
 import { huntBattleInitFromStart } from "./hunt-battle-init-from-start.ts";
 import { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 import type {
@@ -25,18 +25,25 @@ import type {
   HuntStartInput,
 } from "../ports/combat-port.ts";
 import type { FightIdSource } from "../ports/fight-id-source.ts";
+import type { FightSettlement } from "../ports/fight-settlement.ts";
 import type { FightTerminalObserver } from "../ports/fight-terminal-observer.ts";
+import type { FightLootBlock } from "../domain/fight-loot-block.ts";
 
 export class CombatService implements CombatPort {
   private readonly byAccount = new Map<number, Battle>();
   private readonly battleByFight = new Map<string, Battle>();
   private readonly queues = new Map<number, CombatEvent[]>();
   private readonly pendingExits = new Map<number, FightExit>();
+  private readonly pendingLoot = new Map<number, FightLootBlock>();
   private readonly pendingPocketConsume = new Map<number, number>();
+  private readonly settledFights = new Set<string>();
+  private readonly exitSent = new Set<string>();
   private readonly botFightIds = new EphemeralBotFightIds();
   private readonly scheduler: HuntMeleeScheduler;
   private readonly melee: CombatMeleeLoop;
+  private readonly finish: CombatTerminal;
   private terminal: FightTerminalObserver | undefined;
+  private settlement: FightSettlement | undefined;
   private wakePort: CombatWake | undefined;
 
   constructor(
@@ -44,25 +51,48 @@ export class CombatService implements CombatPort {
     private readonly random: RandomSource,
     private readonly rules: BattleRules,
     clock: Clock,
-    private readonly history: FinishedFightRecorder,
-    private readonly historyWrites: HistoryWriteObserver,
+    history: FinishedFightRecorder,
+    historyWrites: HistoryWriteObserver,
     delay: CombatDelay,
   ) {
     this.scheduler = new HuntMeleeScheduler(delay, clock);
     this.melee = new CombatMeleeLoop(
       this.byAccount,
       this.battleByFight,
-      this.pendingExits,
       this.scheduler,
       (accountId, events) => this.enqueue(accountId, events),
       (accountId) => this.wakeAccount(accountId),
-      (battle, events, strikerAccountId) => this.settleFinished(battle, events, strikerAccountId),
+      (battle, events, strikerAccountId) =>
+        this.finish.settleFinished(battle, events, strikerAccountId),
+      (battle, accountId) => this.finish.departHuman(battle, accountId),
+      (accountId, fightId, exit) => this.finish.queueExit(accountId, fightId, exit),
+    );
+    this.finish = new CombatTerminal(
+      this.byAccount,
+      this.battleByFight,
+      this.pendingExits,
+      this.pendingLoot,
+      this.settledFights,
+      this.exitSent,
+      this.scheduler,
+      this.melee,
+      history,
+      historyWrites,
+      (accountId, events) => this.enqueue(accountId, events),
+      (accountId) => this.wakeAccount(accountId),
+      () => this.settlement,
+      () => this.terminal,
     );
   }
 
   bindTerminalObserver(observer: FightTerminalObserver): void {
     if (this.terminal) throw new Error("Fight terminal observer is already bound");
     this.terminal = requirePresent(observer, "Fight terminal observer is required");
+  }
+
+  bindSettlement(settlement: FightSettlement): void {
+    if (this.settlement) throw new Error("Fight settlement is already bound");
+    this.settlement = requirePresent(settlement, "Fight settlement is required");
   }
 
   bindWake(wake: CombatWake): void {
@@ -163,6 +193,10 @@ export class CombatService implements CombatPort {
       await this.melee.strike(accountId, command.side, command.sequence);
       return [];
     }
+    if (command.kind === "leave") {
+      await this.finish.leaveFight(accountId);
+      return [{ type: "command-accepted" as const, sequence: command.sequence }];
+    }
     await this.castSpecial(accountId, command);
     return [];
   }
@@ -195,13 +229,27 @@ export class CombatService implements CombatPort {
     return this.pendingExits.get(accountId) ?? null;
   }
 
+  async takeLoot(accountId: number) {
+    const value = this.pendingLoot.get(accountId);
+    if (!value) return null;
+    this.pendingLoot.delete(accountId);
+    return value;
+  }
+
+  async peekLoot(accountId: number) {
+    return this.pendingLoot.get(accountId) ?? null;
+  }
+
   shutdown(): void {
     for (const fightId of this.battleByFight.keys()) this.scheduler.cancel(fightId);
     this.byAccount.clear();
     this.battleByFight.clear();
     this.queues.clear();
     this.pendingExits.clear();
+    this.pendingLoot.clear();
     this.pendingPocketConsume.clear();
+    this.settledFights.clear();
+    this.exitSent.clear();
   }
 
   private async castSpecial(
@@ -250,46 +298,6 @@ export class CombatService implements CombatPort {
       this.pendingPocketConsume.set(accountId, resolved.consumePocketItemId);
     }
     this.melee.keepTurn(accountId, sequence, resolved.events);
-  }
-
-  private async settleFinished(
-    battle: Battle,
-    events: readonly CombatEvent[],
-    strikerAccountId: number,
-  ): Promise<void> {
-    const finished = events.find((event) => event.type === "finished");
-    if (!finished || finished.type !== "finished") {
-      throw new Error("Finished battle did not produce a finished event");
-    }
-    this.scheduler.cancel(battle.id);
-    await this.recordHistory(battle, finished.winnerTeam);
-    const exit = { fightId: battle.id, winnerTeam: finished.winnerTeam };
-    for (const accountId of battle.accountIds()) {
-      if (accountId !== strikerAccountId) this.enqueue(accountId, [finished]);
-      this.pendingExits.set(accountId, exit);
-      this.byAccount.delete(accountId);
-      this.wakeAccount(accountId);
-    }
-    this.battleByFight.delete(battle.id);
-    await this.notifyFinished(battle.accountId, battle.id);
-  }
-
-  private async notifyFinished(accountId: number, fightId: string): Promise<void> {
-    if (!this.terminal) return;
-    await this.terminal.afterFinished({ accountId, fightId });
-  }
-
-  private async recordHistory(battle: Battle, winnerTeam: 1 | 2): Promise<void> {
-    try {
-      await this.history.record(battle, winnerTeam);
-    } catch (error) {
-      const failure = error instanceof Error ? error : new Error(String(error));
-      if (error instanceof FinishedFightConflictError) {
-        this.historyWrites.conflict(battle.id, failure);
-      } else {
-        this.historyWrites.failed(battle.id, failure);
-      }
-    }
   }
 
   private enqueue(accountId: number, events: readonly CombatEvent[]): void {

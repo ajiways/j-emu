@@ -37,12 +37,18 @@ type FightWireFrame =
   | Readonly<{ rs: true; sq: string | number; akey?: string }>
   | Readonly<{ ev: Readonly<Record<string, Readonly<Record<string, unknown>>>> }>;
 
-export type FightExitBlock = Readonly<{
-  status: 100;
-  type: 0;
-  fight_id: string;
-  winner: 1 | 2;
-}>;
+export type FightExitBlock =
+  | Readonly<{
+      status: 100;
+      type: 0;
+      fight_id: string;
+      winner: 1 | 2;
+    }>
+  | Readonly<{
+      flee: true;
+      status: 100;
+      type: 2;
+    }>;
 
 export class FightWireMapper {
   constructor(
@@ -168,6 +174,9 @@ export class FightWireMapper {
   }
 
   exit(exit: FightExit): FightExitBlock {
+    if (exit.flee) {
+      return { flee: true, status: 100, type: 2 };
+    }
     return {
       status: 100,
       type: 0,

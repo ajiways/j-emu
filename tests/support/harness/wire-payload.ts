@@ -120,6 +120,22 @@ export function fightPersListIds(events: readonly AmfValue[]): number[] {
   throw new Error("persList is missing from fight frames");
 }
 
+export function personalEsrvObject(packets: readonly AmfValue[]): Record<string, AmfValue> {
+  for (const packet of packets) {
+    if (!packet || typeof packet !== "object" || Array.isArray(packet)) continue;
+    if (
+      packet.object === null ||
+      typeof packet.object !== "object" ||
+      Array.isArray(packet.object)
+    ) {
+      continue;
+    }
+    const object = packet.object as Record<string, AmfValue>;
+    if ("fight|exit" in object || "fight|loot" in object) return object;
+  }
+  throw new Error("personal esrv fight object is missing");
+}
+
 function requireRecord(value: AmfValue | undefined, label: string): Record<string, AmfValue> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error(`${label} is missing`);

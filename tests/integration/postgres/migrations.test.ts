@@ -8,6 +8,7 @@ import { migrateDatabase } from "../../../src/infrastructure/postgres/migration-
 import {
   appearancePresets,
   artifacts,
+  botLootEntries,
   bots,
   gameWideDocuments,
   levelBoundaries,
@@ -73,6 +74,7 @@ describe("Drizzle migrations", () => {
       [
         "catalog.appearance_presets",
         "catalog.artifacts",
+        "catalog.bot_loot_entries",
         "catalog.bots",
         "catalog.game_wide_documents",
         "catalog.level_boundaries",
@@ -104,6 +106,7 @@ describe("Drizzle migrations", () => {
       accounts,
       sessions,
       artifacts,
+      botLootEntries,
       bots,
       skillDefinitions,
       levelBoundaries,
@@ -125,7 +128,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(24);
+    ]).toHaveLength(25);
 
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -145,8 +148,9 @@ describe("Drizzle migrations", () => {
       "0011_world_area_links",
       "0012_catalog_bot_fight_look",
       "0013_catalog_artifact_extra",
+      "0014_catalog_bot_loot",
     ]);
-    expect(await appliedCount()).toBe(14);
+    expect(await appliedCount()).toBe(15);
 
     const singleton = await database
       .session()

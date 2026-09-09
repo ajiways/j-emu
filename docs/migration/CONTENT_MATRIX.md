@@ -43,15 +43,15 @@ content.
 
 ## Легенда статусов
 
-| Статус        | Значение                                                                                                                              |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `ACTIVE-MIN`  | Тип материализуется из активной playable-slice/v11 release, но данных только для минимального bootstrap/fight/pocket/USE/travel smoke |
-| `CORPUS`      | Read-only source найден и учтён; importer и target projection ещё не готовы                                                           |
-| `IMPORTER`    | Decoder/importer выдаёт versioned drafts с provenance, но complete candidate ещё не публикуется                                       |
-| `VALIDATED`   | Schema, references, counts и checksums проверяются на полном source set                                                               |
-| `PUBLISHABLE` | Тип входит в materialization и clean-DB candidate; активация атомарна                                                                 |
-| `DEFERRED`    | Post-core набор; не блокирует цикл 1–8                                                                                                |
-| `EXCLUDED`    | Не authored content или запрещён для переноса                                                                                         |
+| Статус        | Значение                                                                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ACTIVE-MIN`  | Тип материализуется из активной playable-slice/v12 release, но данных только для минимального bootstrap/fight/pocket/USE/travel/loot smoke |
+| `CORPUS`      | Read-only source найден и учтён; importer и target projection ещё не готовы                                                                |
+| `IMPORTER`    | Decoder/importer выдаёт versioned drafts с provenance, но complete candidate ещё не публикуется                                            |
+| `VALIDATED`   | Schema, references, counts и checksums проверяются на полном source set                                                                    |
+| `PUBLISHABLE` | Тип входит в materialization и clean-DB candidate; активация атомарна                                                                      |
+| `DEFERRED`    | Post-core набор; не блокирует цикл 1–8                                                                                                     |
+| `EXCLUDED`    | Не authored content или запрещён для переноса                                                                                              |
 
 Статус применяется к `j-emu`, а не к работоспособности legacy runtime.
 

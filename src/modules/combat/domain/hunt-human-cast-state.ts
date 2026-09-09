@@ -5,6 +5,7 @@ import {
   type CombatPocketRow,
   type CombatSpell,
 } from "./combat-loadout.ts";
+import type { PocketCellSnapshot } from "./fight-outcome-snapshot.ts";
 
 type PocketRuntime = {
   readonly row: CombatPocketRow;
@@ -35,6 +36,16 @@ export class HuntHumanCastState {
 
   pocketCount(itemId: number): number {
     return this.pockets.get(itemId)?.count ?? 0;
+  }
+
+  pocketCells(): readonly PocketCellSnapshot[] {
+    return [...this.pockets.values()].map((pocket) => ({
+      itemId: pocket.row.itemId,
+      artifactId: pocket.row.artifactId,
+      position: pocket.row.position,
+      startCount: pocket.row.count,
+      currentCount: pocket.count,
+    }));
   }
 
   consumePocket(itemId: number, nowMs: number): CombatPocketRow {

@@ -20,7 +20,8 @@ export class HuntCombatLoadout {
   async snapshot(characterId: number): Promise<CombatLoadout> {
     const items = await this.inventory.list(characterId);
     const pocket = [];
-    for (const item of items.filter((entry) => entry.location.kind === "pocket")) {
+    for (const item of items) {
+      if (item.location.kind !== "pocket") continue;
       const definition = await this.requireArtifact(item.artifactId);
       if (!definition.extra.spell) {
         throw new Error(
@@ -30,6 +31,7 @@ export class HuntCombatLoadout {
       pocket.push({
         itemId: item.id,
         artifactId: item.artifactId,
+        position: item.location.position,
         count: item.quantity,
         title: definition.title,
         picture: definition.picture,

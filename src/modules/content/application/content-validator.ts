@@ -140,6 +140,7 @@ export class ContentValidator {
       }
     }
     issues.push(...collectFightSpellIssues(bundle.artifacts));
+    issues.push(...collectBotLootIssues(bundle));
     if (!bundle.levels.some((level) => level.level === 1)) {
       issues.push("level 1 boundary is required");
     }
@@ -249,6 +250,24 @@ function collectFightSpellIssues(artifacts: ContentBundle["artifacts"]): readonl
     const spell = byId.get(spellId);
     if (!spell?.extra.spell) {
       issues.push(`artifact ${spellId} is missing dump-proven extra.spell`);
+    }
+  }
+  return issues;
+}
+
+function collectBotLootIssues(bundle: ContentBundle): readonly string[] {
+  const issues: string[] = [];
+  const artifactIds = new Set(bundle.artifacts.map((artifact) => artifact.id));
+  for (const bot of bundle.bots) {
+    const seen = new Set<number>();
+    for (const entry of bot.lootEntries) {
+      if (seen.has(entry.artikulId)) {
+        issues.push(`bot ${bot.id} has duplicate loot artikul ${entry.artikulId}`);
+      }
+      seen.add(entry.artikulId);
+      if (!artifactIds.has(entry.artikulId)) {
+        issues.push(`bot ${bot.id} loot artikul ${entry.artikulId} is not in the bundle`);
+      }
     }
   }
   return issues;

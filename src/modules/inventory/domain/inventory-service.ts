@@ -16,6 +16,8 @@ import { sellPriceMinor } from "./sell-price.ts";
 import { takeDropQuantity } from "./take-drop-quantity.ts";
 import { useFromBag, type UseFromBagCommand, type UseFromBagResult } from "./use-from-bag.ts";
 import { requireEquippedItem, requireWearablePaperdoll, type WearHero } from "./wear-paperdoll.ts";
+import { grantToBag } from "./grant-to-bag.ts";
+import { refillPocketAfterFight, type PocketRefillCell } from "./refill-pocket-after-fight.ts";
 
 export type StarterItemSpec = Readonly<{
   artifactId: number;
@@ -153,6 +155,21 @@ export class InventoryService {
 
   useFromBag(command: UseFromBagCommand): Promise<UseFromBagResult> {
     return useFromBag(this.inventory, this.catalog, command);
+  }
+
+  grantToBag(command: {
+    characterId: number;
+    artifactId: number;
+    quantity: number;
+  }): Promise<void> {
+    return grantToBag(this.inventory, this.catalog, this.bagCapacity, command);
+  }
+
+  refillPocketAfterFight(command: {
+    characterId: number;
+    cells: readonly PocketRefillCell[];
+  }): Promise<void> {
+    return refillPocketAfterFight(this.inventory, this.catalog, command);
   }
 
   async consumePocket(command: { characterId: number; itemId: number }): Promise<void> {

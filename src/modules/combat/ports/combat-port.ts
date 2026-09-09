@@ -1,5 +1,6 @@
 import type { BattleEvent } from "../domain/battle-event.ts";
 import type { CombatLoadout } from "../domain/combat-loadout.ts";
+import type { FightLootBlock } from "../domain/fight-loot-block.ts";
 
 type CommandSequence = string | number;
 
@@ -14,6 +15,7 @@ export type FightCommand =
   | Readonly<{ kind: "glove"; spellId: number; sequence: CommandSequence }>
   | Readonly<{ kind: "rage"; sequence: CommandSequence }>
   | Readonly<{ kind: "aggro"; sequence: CommandSequence }>
+  | Readonly<{ kind: "leave"; sequence: CommandSequence }>
   | Readonly<{ kind: "poll" }>;
 
 export type FightStart = Readonly<{
@@ -69,6 +71,7 @@ export type CombatEvent =
 export type FightExit = Readonly<{
   fightId: string;
   winnerTeam: 1 | 2;
+  flee?: true;
 }>;
 
 export interface CombatPort {
@@ -82,4 +85,6 @@ export interface CombatPort {
   accountForFight(fightId: string): Promise<number | null>;
   takeExit(accountId: number): Promise<FightExit | null>;
   peekExit(accountId: number): Promise<FightExit | null>;
+  takeLoot(accountId: number): Promise<FightLootBlock | null>;
+  peekLoot(accountId: number): Promise<FightLootBlock | null>;
 }

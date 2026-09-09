@@ -27,7 +27,10 @@ export class EsrvPollAssembler {
 
   async hasImmediateWork(accountId: number): Promise<boolean> {
     if (this.outbox.peek(accountId)) return true;
-    return (await this.combat.peekExit(accountId)) !== null;
+    return (
+      (await this.combat.peekLoot(accountId)) !== null ||
+      (await this.combat.peekExit(accountId)) !== null
+    );
   }
 
   async assemble(accountId: number): Promise<readonly EsrvFrame[]> {
@@ -46,6 +49,8 @@ export class EsrvPollAssembler {
     for (const fragment of this.outbox.take(accountId)) {
       Object.assign(personal, fragment);
     }
+    const loot = await this.combat.takeLoot(accountId);
+    if (loot) personal["fight|loot"] = loot;
     const exit = await this.combat.takeExit(accountId);
     if (exit) personal["fight|exit"] = this.fightWire.exit(exit);
     if (Object.keys(personal).length > 0) {

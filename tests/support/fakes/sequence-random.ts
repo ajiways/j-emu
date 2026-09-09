@@ -13,4 +13,13 @@ export class SequenceRandom implements RandomSource {
     }
     return value;
   }
+
+  unit(): number {
+    const value = this.values.shift();
+    if (value === undefined) throw new Error("Random sequence is exhausted");
+    if (value < 0 || value >= 1) {
+      throw new Error(`Random unit ${value} is outside [0, 1)`);
+    }
+    return value;
+  }
 }

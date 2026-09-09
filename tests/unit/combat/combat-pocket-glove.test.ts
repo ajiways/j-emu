@@ -32,6 +32,7 @@ function dumpLoadout(overrides: Partial<CombatLoadout> = {}): CombatLoadout {
       {
         itemId: 100_001,
         artifactId: 93,
+        position: 1,
         count: 1,
         title: "Малый эликсир жизни",
         picture: "bottles_live1_2712.png",
@@ -40,6 +41,7 @@ function dumpLoadout(overrides: Partial<CombatLoadout> = {}): CombatLoadout {
       {
         itemId: 100_002,
         artifactId: 99,
+        position: 2,
         count: 10,
         title: "Малый усиливающий орб",
         picture: "bottles_sila1.png",
@@ -243,6 +245,7 @@ describe("CombatService pocket glove rage", () => {
             {
               itemId: 100_011,
               artifactId: 1,
+              position: 1,
               count: 1,
               title: "kind11",
               picture: "x.png",

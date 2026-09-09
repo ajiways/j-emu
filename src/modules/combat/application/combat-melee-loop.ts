@@ -6,7 +6,6 @@ export class CombatMeleeLoop {
   constructor(
     private readonly byAccount: Map<number, Battle>,
     private readonly battleByFight: Map<string, Battle>,
-    private readonly pendingExits: Map<number, FightExit>,
     private readonly scheduler: HuntMeleeScheduler,
     private readonly enqueue: (accountId: number, events: readonly CombatEvent[]) => void,
     private readonly wakeAccount: (accountId: number) => void,
@@ -15,6 +14,8 @@ export class CombatMeleeLoop {
       events: readonly CombatEvent[],
       strikerAccountId: number,
     ) => Promise<void>,
+    private readonly departHuman: (battle: Battle, accountId: number) => Promise<void>,
+    private readonly queueExit: (accountId: number, fightId: string, exit: FightExit) => void,
   ) {}
 
   async strike(
@@ -64,6 +65,12 @@ export class CombatMeleeLoop {
     this.scheduleBotAndGrant(battle);
   }
 
+  grantAfterPair(battle: Battle, accountId: number): void {
+    this.scheduler.schedule(battle.id, battle.turnGrantDelayMs, () =>
+      this.runGrant(battle.id, accountId),
+    );
+  }
+
   private scheduleBotAndGrant(battle: Battle): void {
     const fightId = battle.id;
     const striker = battle.pairedAccountId;
@@ -85,15 +92,15 @@ export class CombatMeleeLoop {
       await this.settleFinished(battle, result.events, target);
       return;
     }
-    this.handOffToWaiter(battle, target);
+    await this.handOffToWaiter(battle, target);
   }
 
-  private handOffToWaiter(battle: Battle, deadAccountId: number): void {
+  private async handOffToWaiter(battle: Battle, deadAccountId: number): Promise<void> {
     this.scheduler.cancel(battle.id);
     this.enqueue(deadAccountId, [{ type: "finished", winnerTeam: 2, fightId: battle.id }]);
-    this.pendingExits.set(deadAccountId, { fightId: battle.id, winnerTeam: 2 });
+    await this.departHuman(battle, deadAccountId);
+    this.queueExit(deadAccountId, battle.id, { fightId: battle.id, winnerTeam: 2 });
     this.byAccount.delete(deadAccountId);
-    battle.releaseHuman(deadAccountId);
     this.wakeAccount(deadAccountId);
     const waiter = battle.pairNextWaiter();
     if (!waiter) throw new Error("Killed hunter had no waiter to re-pair");

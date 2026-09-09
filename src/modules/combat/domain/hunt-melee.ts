@@ -35,7 +35,9 @@ export function tryPlayerMelee(
     playerDamage = Math.max(playerDamage, input.rules.playerDamageMax);
   }
   const comboCp = human.casts.hits.length > 0 ? human.casts.advanceCombo(side) : undefined;
-  const botHp = Math.max(0, input.botHp - playerDamage);
+  const applied = Math.min(input.botHp, playerDamage);
+  human.creditDamageToBot(applied);
+  const botHp = input.botHp - applied;
   const killed = botHp === 0;
   const events: BattleEvent[] = [
     { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },

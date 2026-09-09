@@ -33,8 +33,16 @@ describe("esrv exit and reconnect", () => {
         "fight|exit" in packet.object,
     );
     expect(exitPacket).toMatchObject({
-      object: { "fight|exit": { status: 100, type: 0 } },
+      object: {
+        "fight|loot": { status: 100, honor: 0, revenge: 0 },
+        "fight|exit": { status: 100, type: 0 },
+      },
     });
+    const object = (exitPacket as { object: Record<string, unknown> }).object;
+    expect(Object.keys(object).filter((key) => key.startsWith("fight|"))).toEqual([
+      "fight|loot",
+      "fight|exit",
+    ]);
 
     application = await harness.restart();
     const afterRestart = new AuthenticatedClient(application, client.cookie);

@@ -9,10 +9,12 @@ import { StructuredHistoryWriteObserver } from "./application/structured-history
 import type { BattleRules } from "./domain/battle-rules.ts";
 import type { CombatDelay } from "./ports/combat-delay.ts";
 import type { CombatWake } from "./ports/combat-wake.ts";
+import type { FightSettlement } from "./ports/fight-settlement.ts";
 import {
   FINISHED_FIGHT_CLEANUP_BATCH_SIZE,
   FINISHED_FIGHT_CLEANUP_INTERVAL_MS,
 } from "./domain/finished-fight-retention.ts";
+import type { RandomSource } from "./domain/random-source.ts";
 import { SystemRandomSource } from "./domain/system-random-source.ts";
 import { PostgresFightIdSource } from "./infrastructure/postgres-fight-id-source.ts";
 import { PostgresFinishedFightStore } from "./infrastructure/postgres-finished-fight-store.ts";
@@ -34,6 +36,7 @@ export class CombatModule {
     rules: BattleRules;
     clock: Clock;
     delay: CombatDelay;
+    random?: RandomSource;
   }): CombatModule {
     const database = requirePresent(input.database, "Combat module requires a database");
     const rules = requirePresent(input.rules, "Combat module requires battle rules");
@@ -45,7 +48,7 @@ export class CombatModule {
     });
     const runtime = new CombatService(
       new PostgresFightIdSource(database),
-      new SystemRandomSource(),
+      input.random ?? new SystemRandomSource(),
       rules,
       clock,
       new FinishedFightRecorder(history, clock),
@@ -62,6 +65,10 @@ export class CombatModule {
 
   bindWake(wake: CombatWake): void {
     this.runtime.bindWake(wake);
+  }
+
+  bindSettlement(settlement: FightSettlement): void {
+    this.runtime.bindSettlement(settlement);
   }
 
   bindTerminalObserver(observer: FightTerminalObserver): void {

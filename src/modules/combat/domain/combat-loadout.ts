@@ -23,6 +23,7 @@ export type CombatSpell = Readonly<{
 export type CombatPocketRow = Readonly<{
   itemId: number;
   artifactId: number;
+  position: number;
   count: number;
   title: string;
   picture: string;
@@ -55,6 +56,9 @@ export function requireCombatLoadout(loadout: CombatLoadout): void {
   for (const row of loadout.pocket) {
     requireFightSafeItemId(BigInt(row.itemId));
     requireWireIdentity(row.artifactId, "pocket artifact id");
+    if (!Number.isInteger(row.position) || row.position < 1) {
+      throw new Error(`Pocket item ${row.itemId} position must be positive`);
+    }
     if (!Number.isInteger(row.count) || row.count < 1) {
       throw new Error(`Pocket item ${row.itemId} count must be positive`);
     }
