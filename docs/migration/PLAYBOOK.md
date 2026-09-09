@@ -48,7 +48,8 @@ coding agent останавливается и возвращает вопрос
 
 1. В `ROADMAP.md` должна быть ровно одна запись `next`.
 2. Все её `depends_on` имеют статус `done`.
-3. Scope не включает соседнюю capability, post-core или excluded behavior.
+3. Scope не включает соседнюю capability, `deferred` (нужен явный queue-edit)
+   или excluded behavior.
 4. Рабочее дерево проверяется до изменений; чужие dirty-файлы записываются и
    не форматируются, не stage-ятся и не включаются в commit.
 
@@ -224,7 +225,7 @@ raw-AMF и CEF acceptance этого поведения.
 - migration/publication не атомарна или restart/concurrency теряет state;
 - реализация требует fallback, dynamic registry/import, runtime fixture read
   или изменения active-combat persistence;
-- scope выходит в post-core, deferred, clan или in-process playerbots;
+- scope выходит в `deferred`, excluded, clan или in-process playerbots;
 - unrelated dirty files невозможно надёжно отделить от capability diff.
 
 Replan изменяет roadmap/checkpoint/ADR до возобновления coding. Ошибка gate с
