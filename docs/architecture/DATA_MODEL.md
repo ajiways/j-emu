@@ -115,6 +115,12 @@ source_digest)` PK `(release_id, level, skill_id)`; FK на boundary и
 - `game_wide_documents(release_id, document_key, document jsonb)` PK
   `(release_id, document_key)`; допустимые ключи: `hud_defaults`, `chrome`,
   `common_conf`, `welcome_message`.
+- `store_types(release_id, area_id, type_id, title, ord)` PK
+  `(release_id, area_id, type_id)`.
+- `store_lots(release_id, area_id, lot_id, artikul_id, type_id, price, ord)`
+  PK `(release_id, area_id, lot_id)`; FK на `artifacts` и `store_types` той
+  же release. Slice: area 504 type `-131`, lots 80/23 и 82/24. Area
+  проверяет publication, SQL FK на `world.areas` нет. Migration `0016`.
 
 Отдельных spell-таблиц нет: fight spell живёт в `artifacts.extra`.
 `common|conf`, empty chrome и HUD defaults читаются из
@@ -213,8 +219,7 @@ containers, item_modifiers, container_slots, equipment_slots, item_reservations.
 item_actions, item_stat_modifiers, creature_stats/loot, spell_definitions,
 level_curves — отдельные таблицы поверх текущих `artifacts`/`bots`.
 `level_skill_values` уже в runtime и не является будущей таблицей.
-`store_types` / `store_lots` — runtime ECO-01 (active release, area 504 types
-и lots 23/24); owner catalog, не economy.
+`store_types` / `store_lots` — runtime ECO-01.
 
 ### `world`
 

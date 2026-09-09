@@ -339,7 +339,7 @@ PUT_ON/grant: сначала `syncResources`, потом мутация maxima/H
 of Work, что DROP. Inventory не пишет `heroes`. Wire: строка в `state`, число
 в `user|conf`. Полный DROP-контракт: [INVENTORY.md](INVENTORY.md).
 `debitMoney` (обратная операция, fail если не хватает) — реализовано ECO-01,
-[STORE.md](STORE.md).
+[STORE.md](STORE.md). `grantReputation` — REP-01, [REPUTATION.md](REPUTATION.md).
 
 Clock: один экземпляр из composition root в character, identity, combat и
 wire. CharacterModule создаётся после CombatModule (нужен query) и принимает

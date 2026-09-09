@@ -48,13 +48,16 @@ REPUTATION лотов 23/24 тоже нет — парсер описания а
 | Что              | Provenance                                                                                                                       | Не публиковать                               |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
 | Area 504         | уже WLD-01                                                                                                                       | остальные store-area                         |
-| Types 504        | `504.json`: `-131` «Оружие и доспехи», `159` «Быстрый старт», `10` «Еда», `21` «Разное»                                          | вкладки других лавок                         |
+| Types 504        | только `-131` «Оружие и доспехи» — единственная вкладка с лотами 23/24                                                           | `159`/`10`/`21` и вкладки других лавок       |
 | Lots             | artikul **23** `lot_id` **80** `type_id` **-131** `price` **1**; artikul **24** `lot_id` **82** `type_id` **-131** `price` **1** | остальные лоты `504.json` (1, 79, 21, 26, …) |
 | Artifacts 23, 24 | Pub1 `artifact_artikul_*.amf`; titles/slots как dump `user_view_slim` (перчатка slot_mask 32, наруч 16)                          | полный Pub1 catalog (DATA-02)                |
 
-Пустые вкладки без лотов — dump-proven (live пустой assortment). Лота без
-опубликованного artifact в candidate быть не может. Не выдумывать price,
-badge алмазов, `requires` или `cnt`.
+В `504.json` у вкладок `159`/`10`/`21` есть лоты (еда с дробной ценой, badge,
+алмазный быстрый старт) — их не публикуем. Тип без лотов на wire даёт CEF
+спиннер «загрузка данных»; validator отклоняет такой type. Пустой `store|list`
+(нет types и нет artikuls, как вне лавки / area без витрины) — live `100`.
+Лота без опубликованного artifact в candidate быть не может. Не выдумывать
+price, badge алмазов, `requires` или `cnt`.
 
 Поля артефакта — тот же validator, что DATA-01 (title, picture, type_id,
 kind_id, slot_mask, price_minor, flags, bag_stack, skills, extra). `type_id`
@@ -125,6 +128,7 @@ currency, dual-badge — out of scope.
 
 Не копировать live `cat?.title ??`, `?? {}` как маскировку обязательного
 каталога 23/24. Отсутствующий artifact на опубликованном лоте — 204.
+Тип без лотов — ошибка публикации, не пустая вкладка (CEF зависает).
 Недостаточный gold — 2, не молчаливый `creditMoney(-n)`. Нет fallback на
 другой лот/артикул.
 
@@ -137,6 +141,11 @@ currency, dual-badge — out of scope.
 
 ECO-02 полный `stores/*.json`; DATA-02 catalog; RANK/REPUTATION; diamonds;
 dungeon coins 724; `store|repair`; quest signals; economy ledger; `assertStoreEntry`.
+Пустые вкладки `159`/`10`/`21` без лотов. SQL FK `store_types` → `world.areas`
+нет: area проверяет publication. Ghost `203` несёт `GhostHeroError` message
+(английский `cannot debitMoney while ghosted`); dump-proven русский toast
+на buy-призрак не найден. Concurrent buy e2e нет — сериализация через hero
+row lock, как DROP.
 
 ## Acceptance
 
@@ -144,7 +153,7 @@ dungeon coins 724; `store|repair`; quest signals; economy ledger; `assertStoreEn
   artikul_id; list wire без missing-catalog fallback;
 - integration: publication v13 с 23+24; lot без artifact отклоняет candidate;
   concurrent buy одного золота — один победитель;
-- raw-AMF: COME_IN 504 → `store|list` четыре type, лоты 23 и 24; buy обоих
+- raw-AMF: COME_IN 504 → `store|list` type `-131`, лоты 23 и 24; buy обоих
   (starter `25.00` → `23.00`), bag instances, reconnect/restart; buy в 503 →
   2; пустая корзина → 2; неизвестный лот → 2; ghost → 203;
 - CEF: лавка, купить перчатку и наруч, иконки в bag — обязательно для

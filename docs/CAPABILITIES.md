@@ -174,8 +174,15 @@ markers и curated chain пока существуют только в legacy co
 ## После core — не перенесено
 
 Chat/party, полный store (ECO-02), mail, auction и trade рассматриваются
-после цикла 1–8. Quest-required `store|list`/`store|buy` в 504 (артикулы
-23/24) — ECO-01, пока **не перенесено**; вход в лавку уже есть (WLD-01).
+после цикла 1–8.
+
+## Store — частично
+
+Есть raw-AMF: COME_IN 504, `store|list` вкладка `-131` и лоты 23/24,
+`store|buy` обоих (`25.00` → `23.00`, bag persist reconnect/restart). Отказы
+status 2 и ghost 203 покрыты e2e. CEF лавки не прогонялся.
+
+Не перенесены остальные лоты 504, diamonds, `store|repair`, OPEN_STORE.
 
 ## Вне первой волны
 

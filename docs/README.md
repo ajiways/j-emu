@@ -19,6 +19,7 @@
 - [Character/bootstrap](modules/CHARACTER.md)
 - [Inventory](modules/INVENTORY.md)
 - [Store](modules/STORE.md)
+- [Reputation](modules/REPUTATION.md)
 - [World/hunt](modules/WORLD.md)
 - [Combat](modules/COMBAT.md)
 - [Quests/NPC](modules/QUESTS.md)

@@ -13,7 +13,7 @@
   `depends_on`.
 - Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
   `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **ECO-01**.
+- Ровно одна запись имеет статус `next`: **REP-01**.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -439,11 +439,12 @@
 - **Behavior evidence:** `STORE.md`, `src/store.ts`, `_research/samples/STORE.md`,
   `fixtures/stores/504.json`, curated `q_5` (artikuls 23 and 24),
   [EVIDENCE_INDEX.md](EVIDENCE_INDEX.md).
-- **Content set:** bump `playable-slice/v12` → **v13**. Dump 504 types
-  (`-131`, `159`, `10`, `21`) and **only** lots artikul **23** (`lot_id` 80)
-  and **24** (`lot_id` 82), `price` 1 gold, empty requires. Publish artifacts
-  23 and 24 from Pub1 AMF (dump-proven wear fields). Do not publish the rest
-  of `504.json` or the 23-file store corpus (ECO-02 / DATA-02).
+- **Content set:** bump `playable-slice/v12` → **v13**. Dump 504 type
+  `-131` and **only** lots artikul **23** (`lot_id` 80) and **24** (`lot_id` 82),
+  `price` 1 gold, empty requires. Types `159`/`10`/`21` stay unpublished:
+  their lots are ECO-02, and an empty tab hangs CEF on «загрузка данных».
+  Publish artifacts 23 and 24 from Pub1 AMF (dump-proven wear fields). Do not
+  publish the rest of `504.json` or the 23-file store corpus (ECO-02 / DATA-02).
 - **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
   no `ARC-ECO`. Money stays `heroes.money_minor`; add character `debitMoney`
   (positive minor, fail if insufficient, no clamp, no second balance).
@@ -457,21 +458,28 @@
   atomic (`25.00` → `23.00`, bag persists reconnect/restart); not-in-store /
   empty basket / unknown lot / insufficient gold → status 2; ghost → 203;
   missing artifact fails publication. CEF: buy glove+наруч in the shop.
-- **Status:** `next`
+- **Status:** `done`
 
 ### REP-01 — Quest-required reputation
 
 - **ID:** `REP-01`
 - **depends_on:** `CHR-01`
-- **Behavior evidence:** legacy `REPUTATION.md` and quest reward/gate references
-  listed in [EVIDENCE_INDEX.md](EVIDENCE_INDEX.md).
-- **Content set:** only reputation tracks, rewards and gates required by the
-  curated 1–8 chain.
-- **Architecture checkpoint / decision:** pending — define reputation owner and
-  transaction port for quest/combat grants.
-- **Acceptance:** grants and gates use published references, are idempotent and
-  appear in the expected player stats after reconnect.
-- **Status:** `queued`
+- **Behavior evidence:** `REPUTATION.md`, `src/reputation.ts`,
+  `heroLifetime.ts` `user|stats`, `reputation_tracks.json`, curated q_1
+  `award.rep` object_id 5, [EVIDENCE_INDEX.md](EVIDENCE_INDEX.md).
+- **Content set:** bump after v13 — catalog track **5** only (Радвея, type 2,
+  empty unlock). Do not publish SUM 36, other factions, or `reputation_kills`
+  (bot 2 has none).
+- **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
+  no `ARC-CHAR`. Catalog owns authored track; character owns
+  `hero_reputations` and `grantReputation`. SUM 36 is derived on read, never
+  a grant target. No kill-rep on Gryzl, no `REPUTATION` gates in q_1–8, no
+  chat. Production read: OA `user|stats` dump-proven named rows. Full
+  contract: [REPUTATION.md](../modules/REPUTATION.md).
+- **Acceptance:** grant 5 persists through reconnect/restart; `user|stats`
+  shows type:2 5 only when value > 0 and always SUM 36; unknown id / grant 36
+  fail-fast. CEF reputation UI not required until a quest consumes the port.
+- **Status:** `next`
 
 ### CHT-01 — Required system notifications
 

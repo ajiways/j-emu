@@ -240,8 +240,8 @@ Throw-away не вызывает `applyEquipmentVitals`. В бою `syncResource
 
 ### Out of scope
 
-Pocket, USE, durability, mail GIVE, COME_IN overload, store buy
-([STORE.md](STORE.md) ECO-01), grant/merge
+Pocket, USE, durability, mail GIVE, COME_IN overload, store buy beyond
+504 lots 23/24 ([STORE.md](STORE.md)), grant/merge
 новых стаков (кроме уменьшения DROP), economy ledger.
 
 ### INV-02 acceptance

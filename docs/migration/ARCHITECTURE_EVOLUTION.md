@@ -15,7 +15,9 @@ overlay process-local; active content через release projections; active com
 HTTPS fproxy consume кармана после успеха). CMB-03 landed: composition UoW
 на terminal, catalog `bots` rewards + `bot_loot_entries`, esrv loot-then-exit.
 CMB-04 landed: init2 `fight|conf` overlay на тот же RAM battle и character
-ghost/injury/`RESURRECT`, без таблиц active fight.
+ghost/injury/`RESURRECT`, без таблиц active fight. ECO-01 landed: catalog
+витрина 504 type `-131` lots 23/24, character `debitMoney`, composition
+`StorePurchase`.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение
@@ -75,9 +77,14 @@ hero aggregate с `regen_at` и injected `Clock`. Combat отдаёт тольк
 `mp_time` не получает invented formula. Ghost/injury — CMB-04 character
 колонки; regen пропускает ghost.
 
-Отдельный `ARC-CHAR` потребуется позже только если death/settlement невозможно
-добавить без второго authoritative maxima, cross-module write из character
-или циклической module dependency.
+**Решение REP-01:** текущих границ достаточно; отдельный `ARC-CHAR` не нужен.
+Catalog владеет authored track; character — `hero_reputations` и
+`grantReputation`. SUM 36 считается на чтении. Контракт:
+[REPUTATION.md](../modules/REPUTATION.md).
+
+Отдельный `ARC-CHAR` потребуется позже только если death/settlement/reputation
+невозможно добавить без второго authoritative maxima, cross-module write из
+character или циклической module dependency.
 
 ### `ARC-WORLD` — ownership местоположения
 

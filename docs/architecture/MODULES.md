@@ -15,15 +15,14 @@ area presence roster:
 - `character` хранит hero scalars, personal details, naked `hero_skills`,
   `hp_time`, `regen_at`, `ghost` / `injury_time` / `injury_artikul_id`;
   internal ports `grantExperience`, `syncResources`, `noteHp`, `noteDefeat`,
-  `resurrect` и `creditMoney` пишут этот state; `move_ready_at` и `setArea`
-  на том же aggregate (`area_id` не переезжает в `world`); `debitMoney` —
-  ECO-01;
+  `resurrect`, `creditMoney` и `debitMoney` пишут этот state; `move_ready_at`
+  и `setArea` на том же aggregate;
 - `inventory` хранит bag/pocket/equipment instances и выполняет
   `PUT_ON`/`PUT_OFF` (paperdoll и пояс), `drop`, `useFromBag`, `bagLoad`,
   `grantToBag` и `listPocket`;
 - `catalog` и `world` читают artifacts, skills, levels, appearance,
-  game-wide bootstrap documents, areas 503/501/504, travel `area_links` и hunt
-  rows на 503 из active release; витрина `store_types`/`store_lots` — ECO-01;
+  game-wide bootstrap documents, areas 503/501/504, travel `area_links`, hunt
+  503 и витрину 504 (`store_types` type `-131`, lots 23/24) из active release;
 - equipment-derived skills/vitals считаются из persisted naked skills и
   artifact bonuses; migration `0004` закрепляет wear fields и occupancy slot;
   `0007` — artifact `price_minor`/`flags`/`bag_stack`;
@@ -32,9 +31,10 @@ area presence roster:
   `0010` — `heroes.move_ready_at`;
   `0011` — `areas.parent_id` и `world.area_links`;
   `0015` — `heroes.ghost` / injury;
+  `0016` — `catalog.store_types` / `store_lots`;
 - `combat` — hunt lifecycle, CMB-02…04 reconnect/ghost settlement и finished
   history; `quests`, `social`, `economy`, `professions`, `instances` в runtime
-  нет.
+  нет. Репутации ещё нет (REP-01).
 
 Во всех разделах ниже **API**, **события** и **шов извлечения** описывают
 целевую границу. Они не доказывают регистрацию команды, наличие таблиц или

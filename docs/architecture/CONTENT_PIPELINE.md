@@ -32,7 +32,7 @@ counts/checksums и completeness gates:
 Текущая `playable-slice/v13` release — минимальный bundle: 9 artifacts
 (9095 + dump-proven glove spells **9098/9100/9099**, pocketables **93** и **99**, food **77**,
 shop wear **23** и **24**; без 209 и патронташа), 1 bot с overlay reward scalars и `bot_loot_entries` 77/93/99,
-3 areas (503/501/504), authored travel `area_links`, 1 hunt spawn на 503, store 504 types `-131/159/10/21` и lots 80/23 и 82/24, 11 skills, 8 levels с normalized managed skills,
+3 areas (503/501/504), authored travel `area_links`, 1 hunt spawn на 503, store 504 type `-131` и lots 80/23 и 82/24, 11 skills, 8 levels с normalized managed skills,
 1 appearance и common-conf/chrome/HUD/welcome документы в составе текущего
 bundle. Это нельзя называть полным игровым контентом или полным контентом
 цикла 1–8.
@@ -173,9 +173,9 @@ source group ведутся только в
 - `world`: `radvei_areas.json`, `hunt_spawns.json` и authored links/routes;
   validator проверяет уникальность area/point/spawn IDs, bot references и
   достижимость ссылок.
-- `catalog`: ECO-01 subset `fixtures/stores/504.json` (types + lots 23/24) и
-  Pub1 artifacts 23/24; validator проверяет area 504, artifact refs и price
-  без подстановки отсутствующего артикула. Полный корпус `stores/*.json` —
+- `catalog`: ECO-01 subset `fixtures/stores/504.json` (type `-131` + lots 23/24) и
+  Pub1 artifacts 23/24; validator проверяет area 504, artifact refs, price и
+  «type без lots». Полный корпус `stores/*.json` —
   DATA-05 / модуль economy, не этот срез.
 - `economy`: remaining `stores/*.json` (DATA-05); validator проверяет area,
   item, stock/price и валюту без подстановки отсутствующего артикула.
@@ -188,8 +188,11 @@ source group ведутся только в
   проверяет areas, ingredients, results и требования.
 - `instances`: `dungeons/*.json`; validator проверяет areas, encounters,
   bots, loot и checkpoint graph.
-- `catalog`: `reputation_tracks.json` и `reputation_kills.json`; validator
-  проверяет track levels, thresholds/rewards и bot refs. Quest reward/gate refs
+- `catalog`: REP-01 subset `reputation_tracks.json` track **5** only; SUM 36
+  и kill overlay не публиковать. Полный корпус треков/`reputation_kills` —
+  DATA-05.
+- `catalog`: `reputation_tracks.json` и `reputation_kills.json` (остаток DATA-05);
+  validator проверяет track levels, thresholds/rewards и bot refs. Quest reward/gate refs
   проверяет quest validator, поэтому authored reputation не зависит обратно от
   quests.
 

@@ -48,7 +48,7 @@ Travel lock — `character.heroes.move_ready_at` (`timestamptz`, `NULL` = мож
 ADR-0017…ADR-0020 достаточны: одна UoW на команду, typed static OA, content
 через active release, fail-fast без fixture fallback. Presence `131:` /
 `notifyAreaMove` — **RTM-01**. Hunt locks — **WLD-02**. Store lots / rank
-gates / `store|*` — **ECO-01**. Dungeon/BG copies и `common|instance_conf` —
+gates / `store|*` — ECO-01 (raw-AMF; CEF не прогонялся). Dungeon/BG copies и `common|instance_conf` —
 не этот срез.
 
 Именованное `FightRules`: активный бой → COME_IN и `common|exit` дают
@@ -164,7 +164,8 @@ lock жив → **204**
 Перегруз → **204** `Вы не можете перемещаться, т.к. рюкзак перегружен!`.
 Нет ребра from→to или dest не published → **203** `некуда идти` (строже live
 `resolveComeIn`, который доверяет голому `area_id`). Нет `area_id` в form →
-то же. Вход в `code=store` **без** `assertStoreEntry` (ECO-01).
+то же. Вход в `code=store` **без** `assertStoreEntry` (ECO-01 закрыт: нет
+requires в 504).
 
 ### Restart / clock / concurrency
 
@@ -174,7 +175,7 @@ lock жив → **204**
 
 ### Out of scope
 
-RTM-01 presence/`131:`; WLD-02 hunt movement/locks; ECO-01 store buy; NPC
+RTM-01 presence/`131:`; WLD-02 hunt movement/locks; NPC
 dialog; AREA `action_id` hunt from menu; 502+; `parent_id` 498; `client_data`
 blobs; SPEED с экипа/маунта; dungeon/BG.
 
