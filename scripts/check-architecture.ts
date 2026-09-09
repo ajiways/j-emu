@@ -5,7 +5,14 @@ import { fileURLToPath } from "node:url";
 const srcRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../src");
 const maxLines = 400;
 const reviewThreshold = 250;
-const lineJustifications: Readonly<Record<string, string>> = {};
+const lineJustifications: Readonly<Record<string, string>> = {
+  "src/modules/combat/application/combat-service.ts":
+    "Process-local hunt service: start/join/auth/poll plus CMB-02 keep-turn and ending-glove dispatch on the same battle maps",
+  "src/modules/combat/domain/battle.ts":
+    "Hunt aggregate owns pairing, melee, and pocket/glove/rage casts for one RAM fight",
+  "src/modules/content/application/content-validator.ts":
+    "Single bundle completeness gate including dump-proven fight extra blobs",
+};
 const multiExportAllowlist: readonly string[] = [];
 const amfValueAllowPrefix = "src/modules/jugger-wire/amf/";
 

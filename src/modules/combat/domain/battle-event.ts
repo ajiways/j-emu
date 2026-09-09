@@ -1,3 +1,4 @@
+import type { CombatLoadout } from "./combat-loadout.ts";
 import type { HuntHumanSnap } from "./hunt-human.ts";
 
 export type HuntBotSnap = Readonly<{
@@ -20,6 +21,11 @@ export type BattleEvent =
       hero: HuntHumanSnap;
       allies: readonly HuntHumanSnap[];
       bot: HuntBotSnap;
+      cp: number;
+      cpHits: readonly number[];
+      rage: number;
+      aggro: number;
+      loadout: CombatLoadout;
     }>
   | Readonly<{
       type: "roster-updated";
@@ -35,8 +41,36 @@ export type BattleEvent =
       hpChange: number;
       targetMaxHp: number;
       killed: boolean;
+      comboCp?: number;
+      dRage?: number;
     }>
   | Readonly<{ type: "turn-granted"; timeoutSeconds: number }>
   | Readonly<{ type: "turn-wait"; timeoutSeconds: number }>
   | Readonly<{ type: "opponent-new"; bot: HuntBotSnap }>
-  | Readonly<{ type: "finished"; winnerTeam: 1 | 2; fightId: string }>;
+  | Readonly<{ type: "finished"; winnerTeam: 1 | 2; fightId: string }>
+  | Readonly<{
+      type: "effect-use";
+      artikulId: number;
+      animation: string;
+      kind: number;
+      groupId?: number;
+      flags: string;
+      img: string;
+      title: string;
+      persId: number;
+      dmgType?: number;
+    }>
+  | Readonly<{
+      type: "buff-cast";
+      animation: string;
+      sourceId: number;
+      targetId: number;
+      maxHp: number;
+    }>
+  | Readonly<{ type: "pers-cp"; cp: number }>
+  | Readonly<{
+      type: "native-count";
+      srcId: number;
+      count: number;
+      title: string;
+    }>;

@@ -32,6 +32,7 @@ export class CombatService implements CombatPort {
   private readonly battleByFight = new Map<string, Battle>();
   private readonly queues = new Map<number, CombatEvent[]>();
   private readonly pendingExits = new Map<number, FightExit>();
+  private readonly pendingPocketConsume = new Map<number, number>();
   private readonly botFightIds = new EphemeralBotFightIds();
   private readonly scheduler: HuntMeleeScheduler;
   private readonly melee: CombatMeleeLoop;
@@ -126,6 +127,7 @@ export class CombatService implements CombatPort {
       maxHp: input.heroMaxHp,
       mp: input.heroMp,
       maxMp: input.heroMaxMp,
+      loadout: input.loadout,
     });
     this.byAccount.set(input.accountId, battle);
     for (const accountId of battle.authedAccountIds()) {
@@ -157,8 +159,19 @@ export class CombatService implements CombatPort {
       ]);
       return [];
     }
-    await this.melee.strike(accountId, command.side, command.sequence);
+    if (command.kind === "strike") {
+      await this.melee.strike(accountId, command.side, command.sequence);
+      return [];
+    }
+    await this.castSpecial(accountId, command);
     return [];
+  }
+
+  takePocketConsume(accountId: number): number | null {
+    const itemId = this.pendingPocketConsume.get(accountId);
+    if (itemId === undefined) return null;
+    this.pendingPocketConsume.delete(accountId);
+    return itemId;
   }
 
   async activeFightId(accountId: number): Promise<string | null> {
@@ -188,6 +201,55 @@ export class CombatService implements CombatPort {
     this.battleByFight.clear();
     this.queues.clear();
     this.pendingExits.clear();
+    this.pendingPocketConsume.clear();
+  }
+
+  private async castSpecial(
+    accountId: number,
+    command: Extract<FightCommand, { kind: "pocket" | "glove" | "rage" | "aggro" }>,
+  ): Promise<void> {
+    const battle = this.byAccount.get(accountId);
+    if (!battle) {
+      this.enqueue(accountId, [{ type: "command-accepted", sequence: command.sequence }]);
+      return;
+    }
+    const nowMs = this.scheduler.now().getTime();
+    if (command.kind === "pocket") {
+      const resolved = battle.tryPocket(accountId, command.itemId, nowMs, command.sequence);
+      this.finishKeepTurn(accountId, command.sequence, resolved);
+      return;
+    }
+    if (command.kind === "rage") {
+      this.finishKeepTurn(accountId, command.sequence, battle.tryRage(accountId));
+      return;
+    }
+    if (command.kind === "aggro") {
+      this.finishKeepTurn(accountId, command.sequence, battle.tryAggro(accountId));
+      return;
+    }
+    const resolved = battle.tryGlove(accountId, command.spellId, command.sequence);
+    if (resolved.kind === "ending") {
+      await this.melee.endingGlove(accountId, command.sequence, resolved.events);
+      return;
+    }
+    this.finishKeepTurn(accountId, command.sequence, resolved);
+  }
+
+  private finishKeepTurn(
+    accountId: number,
+    sequence: string | number,
+    resolved:
+      | { kind: "ignored" }
+      | { kind: "resolved"; events: readonly CombatEvent[]; consumePocketItemId?: number },
+  ): void {
+    if (resolved.kind === "ignored") {
+      this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
+      return;
+    }
+    if (resolved.consumePocketItemId !== undefined) {
+      this.pendingPocketConsume.set(accountId, resolved.consumePocketItemId);
+    }
+    this.melee.keepTurn(accountId, sequence, resolved.events);
   }
 
   private async settleFinished(

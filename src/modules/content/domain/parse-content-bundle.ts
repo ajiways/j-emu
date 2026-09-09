@@ -30,6 +30,62 @@ const artifactActionSchema = z
   })
   .strict();
 
+const artifactSpellSkillSchema = z
+  .object({
+    skill_id: z.string().min(1),
+    value: z.number(),
+  })
+  .strict();
+
+const artifactSpellEffectSchema = z
+  .object({
+    kind: z.number().int().positive(),
+    amount: z.union([z.number(), z.string()]).optional(),
+    dmgType: z.number().int().nonnegative().optional(),
+    charging: z.number().int().positive().optional(),
+    capacity: z.number().int().positive().optional(),
+    order: z.number().int().nonnegative().optional(),
+    hidden: z.number().int().nonnegative().optional(),
+    targetCount: z.number().int().positive().optional(),
+    skills: z.array(artifactSpellSkillSchema).optional(),
+  })
+  .strict();
+
+const artifactSpellSchema = z
+  .object({
+    animData: z.string().min(1).optional(),
+    groupId: z.number().int().positive().optional(),
+    cooldown: z.number().int().nonnegative().optional(),
+    endTurn: z.boolean().optional(),
+    flags: z.union([z.string(), z.number()]).optional(),
+    persRestr: z.record(z.string(), z.unknown()).optional(),
+    targetRestr: z.record(z.string(), z.unknown()).optional(),
+    effects: z.array(artifactSpellEffectSchema).min(1),
+  })
+  .strict();
+
+const artifactGloveSocketSchema = z
+  .object({
+    id: z.number().int().positive().optional(),
+    cost: z.number().int().positive(),
+    row: z.number().int().positive(),
+    artikul_id0: z.number().int().positive(),
+  })
+  .strict();
+
+const artifactExtraSchema = z
+  .object({
+    spell: artifactSpellSchema.optional(),
+    spells: z.array(artifactGloveSocketSchema).optional(),
+    hits: z.array(z.number().int().min(1).max(3)).optional(),
+  })
+  .strict()
+  .transform((extra) => ({
+    ...(extra.spell ? { spell: extra.spell } : {}),
+    ...(extra.spells ? { spells: extra.spells } : {}),
+    ...(extra.hits ? { hits: extra.hits } : {}),
+  }));
+
 const artifactSchema = z
   .object({
     id: z.number().int().positive(),
@@ -47,6 +103,7 @@ const artifactSchema = z
     bagStack: z.number().int().positive(),
     skills: z.array(artifactSkillSchema),
     artifact_actions: z.record(z.string().min(1), artifactActionSchema),
+    extra: artifactExtraSchema,
   })
   .strict();
 
@@ -155,5 +212,5 @@ const bundleSchema = z
   .strict();
 
 export function parseContentBundle(value: unknown): ContentBundle {
-  return bundleSchema.parse(value);
+  return bundleSchema.parse(value) as ContentBundle;
 }

@@ -1,4 +1,5 @@
 import { ArtifactDefinition } from "../domain/artifact-definition.ts";
+import { artifactExtraFromJson } from "./artifact-extra-from-json.ts";
 import { artifactSkillsFromJson } from "./artifact-skills-from-json.ts";
 import { artifactUseActionsFromJson } from "./artifact-use-actions-from-json.ts";
 
@@ -18,6 +19,7 @@ export function artifactDefinitionFromRow(row: {
   bagStack: number;
   skills: unknown;
   artifactActions: unknown;
+  extra: unknown;
 }): ArtifactDefinition {
   return new ArtifactDefinition(
     row.id,
@@ -35,5 +37,6 @@ export function artifactDefinitionFromRow(row: {
     row.bagStack,
     artifactSkillsFromJson(row.id, row.skills),
     artifactUseActionsFromJson(row.id, row.artifactActions),
+    artifactExtraFromJson(row.id, row.extra),
   );
 }

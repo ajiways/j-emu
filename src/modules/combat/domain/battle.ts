@@ -10,6 +10,15 @@ import {
   type BotMeleeResult,
   type PlayerMeleeResult,
 } from "./hunt-melee.ts";
+import {
+  resolveGloveFinisher,
+  tryAggroCast,
+  tryGloveKeepTurn,
+  tryPocketCast,
+  tryRageCast,
+  type EndingGloveResult,
+  type KeepTurnResult,
+} from "./hunt-cast.ts";
 import type { HuntJoinHuman } from "./hunt-join-human.ts";
 import { requireHuntBattleInit } from "./require-hunt-battle-init.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -41,6 +50,7 @@ export class Battle {
         maxMp: init.heroMaxMp,
         team: 1,
         waiting: false,
+        loadout: init.loadout,
       }),
     );
   }
@@ -139,6 +149,7 @@ export class Battle {
       maxMp: join.maxMp,
       team: 1,
       waiting: true,
+      loadout: join.loadout,
     });
     this.humans.push(human);
     return {
@@ -164,6 +175,11 @@ export class Battle {
           .filter((entry) => entry.accountId !== human.accountId)
           .map((entry) => entry.snapshot()),
         bot: huntBotSnap(this.init, this.botHpValue),
+        cp: human.casts.cp,
+        cpHits: human.casts.hits,
+        rage: human.casts.rage,
+        aggro: human.casts.aggro,
+        loadout: human.casts.loadout,
       },
     ];
     if (!human.waiting) {
@@ -187,6 +203,47 @@ export class Battle {
     this.botHpValue = resolved.botHp;
     if (resolved.finished) this.finishedValue = true;
     return resolved.result;
+  }
+
+  tryPocket(
+    accountId: number,
+    itemId: number,
+    nowMs: number,
+    sequence: string | number,
+  ): KeepTurnResult {
+    return tryPocketCast(this.requireAuthed(accountId), itemId, nowMs, sequence);
+  }
+
+  tryRage(accountId: number): KeepTurnResult {
+    return tryRageCast(this.requireAuthed(accountId));
+  }
+
+  tryAggro(accountId: number): KeepTurnResult {
+    return tryAggroCast(this.requireAuthed(accountId));
+  }
+
+  tryGlove(
+    accountId: number,
+    spellId: number,
+    sequence: string | number,
+  ): KeepTurnResult | EndingGloveResult {
+    const human = this.requireAuthed(accountId);
+    const keep = tryGloveKeepTurn(human, spellId, sequence);
+    if (keep.kind !== "ignored") return keep;
+    const ending = resolveGloveFinisher(human, spellId, sequence, {
+      finished: this.finishedValue,
+      rules: this.rules,
+      random: this.random,
+      botHp: this.botHpValue,
+      botFightId: this.botFightId,
+      botMaxHp: this.init.botMaxHp,
+      fightId: this.id,
+    });
+    if (ending.kind === "ending") {
+      this.botHpValue = ending.botHp;
+      if (ending.finished) this.finishedValue = true;
+    }
+    return ending;
   }
 
   resolveBotMelee(): BotMeleeResult {
@@ -229,6 +286,12 @@ export class Battle {
     const index = this.humans.findIndex((human) => human.accountId === accountId);
     if (index < 0) throw new Error(`Human account ${accountId} is not in this battle`);
     this.humans.splice(index, 1);
+  }
+
+  private requireAuthed(accountId: number): HuntHuman {
+    const human = this.requireHuman(accountId);
+    if (!human.authed) throw new Error("Fight session is not authenticated");
+    return human;
   }
 
   private requireHuman(accountId: number): HuntHuman {

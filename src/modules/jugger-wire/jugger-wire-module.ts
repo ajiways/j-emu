@@ -170,6 +170,7 @@ export class JuggerWireModule {
         longPoll,
         esrvPoll,
         presence: presenceFanout,
+        unitOfWork,
       }).build();
       const fightTcp = new FightTcpServer(combat, commands.fproxy, fightWire, longPoll, http.log);
       try {

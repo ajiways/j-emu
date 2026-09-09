@@ -155,6 +155,16 @@ export class InventoryService {
     return useFromBag(this.inventory, this.catalog, command);
   }
 
+  async consumePocket(command: { characterId: number; itemId: number }): Promise<void> {
+    const items = await this.inventory.lockForHero(command.characterId);
+    const item = requireHeroItem(items, command.characterId, command.itemId);
+    if (item.location.kind !== "pocket") {
+      throw new Error(`Item ${command.itemId} is not in the pocket`);
+    }
+    if (item.quantity <= 1) await this.inventory.delete(item);
+    else await this.inventory.save(item.withQuantity(item.quantity - 1));
+  }
+
   async bagLoad(command: { characterId: number }): Promise<BagLoad> {
     const items = await this.inventory.listForHero(command.characterId);
     const ids = [...new Set(items.map((item) => item.artifactId))];

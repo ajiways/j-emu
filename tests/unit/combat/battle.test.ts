@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Battle } from "../../../src/modules/combat/domain/battle.ts";
+import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import type { HuntBattleInit } from "../../../src/modules/combat/domain/hunt-battle-init.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
@@ -27,6 +28,7 @@ function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
     arena: "1_1",
     areaId: "503",
     startedAt: new Date("2026-09-07T12:00:00.000Z"),
+    loadout: EMPTY_COMBAT_LOADOUT,
     ...overrides,
   };
 }
@@ -71,6 +73,11 @@ describe("Battle", () => {
           body: "",
           team: 2,
         },
+        cp: 0,
+        cpHits: [],
+        rage: 0,
+        aggro: 1,
+        loadout: EMPTY_COMBAT_LOADOUT,
       },
       { type: "turn-granted", timeoutSeconds: 20 },
     ]);
@@ -121,6 +128,7 @@ describe("Battle", () => {
       maxHp: 27,
       mp: 10,
       maxMp: 10,
+      loadout: EMPTY_COMBAT_LOADOUT,
     });
     expect(roster).toMatchObject({
       type: "roster-updated",

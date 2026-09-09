@@ -92,6 +92,13 @@
       "when": 1788944365555,
       "tag": "0012_catalog_bot_fight_look",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1789012345678,
+      "tag": "0013_catalog_artifact_extra",
+      "breakpoints": true
     }
   ]
 }

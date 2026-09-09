@@ -42,6 +42,7 @@ export class HuntMapAttack {
         fightId,
         areaId: input.areaId,
         team: 1,
+        loadout: input.loadout,
       });
       await this.fanout.wakeArea(input.areaId);
       return fight;
@@ -92,6 +93,7 @@ export class HuntMapAttack {
         botBody: input.botBody,
         arena: input.arena,
         areaId: input.areaId,
+        loadout: input.loadout,
       });
       await this.fanout.wakeArea(input.areaId);
       return fight;

@@ -1,5 +1,5 @@
 import type { CombatEvent } from "../../combat/ports/combat-port.ts";
-import { huntNativePersSpells } from "./hunt-native-pers-spells.ts";
+import { huntPersSpellsEvent } from "./hunt-fight-pers-spells.ts";
 import { huntHumanPersFields, huntPersListEvent } from "./hunt-fight-pers-wire.ts";
 import { huntOppNewEvent } from "./hunt-opp-new-event.ts";
 
@@ -14,8 +14,8 @@ export function huntFightBootstrapEvents(
     huntPersListEvent([hero, ...allies], bot),
     {
       companions: [],
-      cp: 0,
-      cpHits: [],
+      cp: event.cp,
+      cpHits: [...event.cpHits],
       dead: false,
       et: "persSelf",
       hp: hero.hp,
@@ -23,11 +23,11 @@ export function huntFightBootstrapEvents(
       maxHp: hero.maxHp,
       maxMp: hero.maxMp,
       mp: hero.mp,
-      rage: 0,
-      aggro: 1,
+      rage: event.rage,
+      aggro: event.aggro,
       team: hero.team,
     },
-    huntNativePersSpells(),
+    huntPersSpellsEvent(event.loadout),
     { et: "persEff", persId: hero.id },
     { et: "oppwait" },
   ];

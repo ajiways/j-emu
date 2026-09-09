@@ -28,7 +28,9 @@ npm run db:reset
 Тот же publish-скрипт на уже заполненной БД: совпавший checksum — no-op;
 новый checksum — новая активная release. После миграции `0002_world_location_scalars`
 сначала migrate, затем publish: миграция очищает устаревшие `world`/`catalog.bots`
-projection-строки.
+projection-строки. После `0013_catalog_artifact_extra` migrate ставит
+`extra = {}` на старые строки; hunt с эликсиром 93/орбом 99 падает, пока не
+опубликован `playable-slice/v11` с dump-proven `extra.spell`.
 
 ## HTTP :8080 (браузер без CEF)
 

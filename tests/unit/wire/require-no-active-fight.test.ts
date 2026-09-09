@@ -29,6 +29,7 @@ function fakeCombat(fightId: string | null): CombatPort {
       throw new Error("unused");
     },
     execute: async () => [],
+    takePocketConsume: () => null,
     activeFightId: async () => fightId,
     accountForFight: async () => null,
     takeExit: async () => null,

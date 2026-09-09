@@ -139,6 +139,7 @@ export class ContentValidator {
         artifactSkills.add(skill.id);
       }
     }
+    issues.push(...collectFightSpellIssues(bundle.artifacts));
     if (!bundle.levels.some((level) => level.level === 1)) {
       issues.push("level 1 boundary is required");
     }
@@ -210,6 +211,47 @@ function entry(
   document: ContentEntry["document"],
 ): ContentEntry {
   return { type, key, digest: digestCanonical(document), document };
+}
+
+function collectFightSpellIssues(artifacts: ContentBundle["artifacts"]): readonly string[] {
+  const issues: string[] = [];
+  const byId = new Map(artifacts.map((artifact) => [artifact.id, artifact]));
+  const elixir = byId.get(93);
+  if (!elixir?.extra.spell) {
+    issues.push("artifact 93 is missing dump-proven extra.spell");
+  } else {
+    if (elixir.extra.spell.cooldown !== 20) {
+      issues.push("artifact 93 spell cooldown must be 20");
+    }
+    if (!elixir.extra.spell.effects.some((effect) => effect.kind === 2)) {
+      issues.push("artifact 93 spell must include a kind-2 heal effect");
+    }
+  }
+  const orb = byId.get(99);
+  if (!orb?.extra.spell) {
+    issues.push("artifact 99 is missing dump-proven extra.spell");
+  } else if (!orb.extra.spell.effects.some((effect) => effect.kind === 3)) {
+    issues.push("artifact 99 spell must include a kind-3 charging effect");
+  }
+  const meat = byId.get(77);
+  if (meat?.extra.spell) issues.push("artifact 77 must not carry a fight spell blob");
+  const glove = byId.get(9095);
+  const socketIds = glove?.extra.spells?.map((socket) => socket.artikul_id0) ?? [];
+  if (!glove?.extra.spells) {
+    issues.push("artifact 9095 is missing dump-proven extra.spells sockets");
+  } else if (socketIds.join(",") !== "9098,9100,9099" && socketIds.join(",") !== "9098,9099,9100") {
+    issues.push("artifact 9095 sockets must be artikul_id0 9098/9100/9099");
+  }
+  if (!glove?.extra.hits || glove.extra.hits.length !== 8) {
+    issues.push("artifact 9095 is missing dump-proven extra.hits");
+  }
+  for (const spellId of [9098, 9100, 9099]) {
+    const spell = byId.get(spellId);
+    if (!spell?.extra.spell) {
+      issues.push(`artifact ${spellId} is missing dump-proven extra.spell`);
+    }
+  }
+  return issues;
 }
 
 function collectDuplicateIds(issues: string[], type: string, keys: readonly string[]): void {

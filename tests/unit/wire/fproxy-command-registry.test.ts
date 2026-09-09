@@ -49,6 +49,18 @@ describe("fproxy command registry", () => {
     expect(
       registry.decodePayload(encodeAmf3({ rc: "castSpell", srcType: 1, srcId: 2, sq: 2 })),
     ).toEqual({ kind: "strike", side: "center", sequence: 2 });
+    expect(
+      registry.decodePayload(encodeAmf3({ rc: "castSpell", srcType: 2, srcId: 100001, sq: 3 })),
+    ).toEqual({ kind: "pocket", itemId: 100001, sequence: 3 });
+    expect(
+      registry.decodePayload(encodeAmf3({ rc: "castSpell", srcType: 3, srcId: 9098, sq: 4 })),
+    ).toEqual({ kind: "glove", spellId: 9098, sequence: 4 });
+    expect(
+      registry.decodePayload(encodeAmf3({ rc: "castSpell", srcType: 1, srcId: 6, sq: 5 })),
+    ).toEqual({ kind: "rage", sequence: 5 });
+    expect(
+      registry.decodePayload(encodeAmf3({ rc: "castSpell", srcType: 1, srcId: 7, sq: 6 })),
+    ).toEqual({ kind: "aggro", sequence: 6 });
   });
 
   it("rejects malformed and unsupported fight payloads", () => {

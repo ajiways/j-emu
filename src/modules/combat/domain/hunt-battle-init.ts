@@ -1,3 +1,5 @@
+import type { CombatLoadout } from "./combat-loadout.ts";
+
 export type HuntBattleInit = Readonly<{
   fightId: string;
   accessKey: string;
@@ -21,4 +23,5 @@ export type HuntBattleInit = Readonly<{
   arena: string;
   areaId: string;
   startedAt: Date;
+  loadout: CombatLoadout;
 }>;

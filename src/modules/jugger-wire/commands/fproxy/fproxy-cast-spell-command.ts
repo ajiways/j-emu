@@ -24,10 +24,16 @@ export class FproxyCastSpellCommand implements FproxyCommand {
     if (typeof sequence !== "number" && typeof sequence !== "string") {
       throw new ProtocolError(203, "Fight command requires sq");
     }
-    if (record["srcType"] !== 1) {
-      throw new ProtocolError(203, `Fight source type ${String(record["srcType"])} is unsupported`);
-    }
+    const sourceType = record["srcType"];
     const sourceId = record["srcId"];
+    if (typeof sourceId !== "number" || !Number.isInteger(sourceId)) {
+      throw new ProtocolError(203, "Fight source id is invalid");
+    }
+    if (sourceType === 2) return { kind: "pocket", itemId: sourceId, sequence };
+    if (sourceType === 3) return { kind: "glove", spellId: sourceId, sequence };
+    if (sourceType !== 1) {
+      throw new ProtocolError(203, `Fight source type ${String(sourceType)} is unsupported`);
+    }
     if (sourceId === this.meleeSourceIds.left) {
       return { kind: "strike", side: "left", sequence };
     }
@@ -37,6 +43,8 @@ export class FproxyCastSpellCommand implements FproxyCommand {
     if (sourceId === this.meleeSourceIds.right) {
       return { kind: "strike", side: "right", sequence };
     }
+    if (sourceId === 6) return { kind: "rage", sequence };
+    if (sourceId === 7) return { kind: "aggro", sequence };
     throw new ProtocolError(203, `Fight source id ${String(sourceId)} is unsupported`);
   }
 }

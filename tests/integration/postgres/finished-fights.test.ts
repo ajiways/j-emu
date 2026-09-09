@@ -17,6 +17,7 @@ import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
+import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
@@ -70,6 +71,7 @@ describe("finished fight history storage", () => {
       ...GRYZL_FIGHT_LOOK,
       arena: "1_1",
       areaId: hero.areaId,
+      loadout: EMPTY_COMBAT_LOADOUT,
     });
     expect(start.participantId).toBe(hero.id);
     const fightId = BigInt(start.fightId);

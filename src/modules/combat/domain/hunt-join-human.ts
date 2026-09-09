@@ -1,3 +1,5 @@
+import type { CombatLoadout } from "./combat-loadout.ts";
+
 export type HuntJoinHuman = Readonly<{
   accountId: number;
   heroId: number;
@@ -8,4 +10,5 @@ export type HuntJoinHuman = Readonly<{
   maxHp: number;
   mp: number;
   maxMp: number;
+  loadout: CombatLoadout;
 }>;

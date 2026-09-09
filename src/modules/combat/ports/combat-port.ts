@@ -1,4 +1,5 @@
 import type { BattleEvent } from "../domain/battle-event.ts";
+import type { CombatLoadout } from "../domain/combat-loadout.ts";
 
 type CommandSequence = string | number;
 
@@ -9,6 +10,10 @@ export type FightCommand =
       side: "left" | "center" | "right";
       sequence: CommandSequence;
     }>
+  | Readonly<{ kind: "pocket"; itemId: number; sequence: CommandSequence }>
+  | Readonly<{ kind: "glove"; spellId: number; sequence: CommandSequence }>
+  | Readonly<{ kind: "rage"; sequence: CommandSequence }>
+  | Readonly<{ kind: "aggro"; sequence: CommandSequence }>
   | Readonly<{ kind: "poll" }>;
 
 export type FightStart = Readonly<{
@@ -38,6 +43,7 @@ export type HuntStartInput = Readonly<{
   botBody: string;
   arena: string;
   areaId: string;
+  loadout: CombatLoadout;
 }>;
 
 export type HuntJoinInput = Readonly<{
@@ -53,6 +59,7 @@ export type HuntJoinInput = Readonly<{
   fightId: string;
   areaId: string;
   team: 1;
+  loadout: CombatLoadout;
 }>;
 
 export type CombatEvent =
@@ -70,6 +77,7 @@ export interface CombatPort {
   joinHunt(input: HuntJoinInput): Promise<FightStart>;
   hasFight(fightId: string): Promise<boolean>;
   execute(accountId: number, command: FightCommand): Promise<readonly CombatEvent[]>;
+  takePocketConsume(accountId: number): number | null;
   activeFightId(accountId: number): Promise<string | null>;
   accountForFight(fightId: string): Promise<number | null>;
   takeExit(accountId: number): Promise<FightExit | null>;

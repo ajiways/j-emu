@@ -1,5 +1,11 @@
 import type { CombatEvent, FightExit, FightStart } from "../../combat/ports/combat-port.ts";
 import { fightCastEvent } from "./fight-cast-wire.ts";
+import {
+  fightBuffCastEvent,
+  fightEffectUseEvent,
+  fightNativeCountEvent,
+  fightPersCpEvent,
+} from "./fight-effect-wire.ts";
 import { fightEventMap } from "./fight-event-map.ts";
 import { huntFightBootstrapEvents, huntFightRosterEvents } from "./hunt-fight-bootstrap-wire.ts";
 import { huntOppNewEvent } from "./hunt-opp-new-event.ts";
@@ -94,13 +100,30 @@ export class FightWireMapper {
         if (!damage || damage.type !== "damage") {
           throw new Error("turn-wait must precede damage");
         }
-        frames.push(
-          fightEventMap([
-            { et: "attackwait", restTime: event.timeoutSeconds },
-            fightCastEvent(damage),
-          ]),
-        );
+        const packets = [
+          { et: "attackwait", restTime: event.timeoutSeconds },
+          fightCastEvent(damage),
+          ...(damage.comboCp !== undefined ? [fightPersCpEvent(damage.comboCp)] : []),
+        ];
+        frames.push(fightEventMap(packets));
         index += 1;
+        continue;
+      }
+      if (event.type === "effect-use") {
+        const packets: Readonly<Record<string, unknown>>[] = [fightEffectUseEvent(event)];
+        let consumed = 0;
+        const next = events[index + 1];
+        if (next?.type === "buff-cast" || next?.type === "damage") {
+          packets.push(next.type === "buff-cast" ? fightBuffCastEvent(next) : fightCastEvent(next));
+          consumed += 1;
+        }
+        const after = events[index + 1 + consumed];
+        if (after?.type === "pers-cp") {
+          packets.push(fightPersCpEvent(after.cp));
+          consumed += 1;
+        }
+        frames.push(fightEventMap(packets));
+        index += consumed;
         continue;
       }
       frames.push(this.event(event));
@@ -121,7 +144,18 @@ export class FightWireMapper {
       case "roster-updated":
         return fightEventMap(huntFightRosterEvents(event));
       case "damage":
-        return fightEventMap([fightCastEvent(event)]);
+        return fightEventMap([
+          fightCastEvent(event),
+          ...(event.comboCp !== undefined ? [fightPersCpEvent(event.comboCp)] : []),
+        ]);
+      case "effect-use":
+        return fightEventMap([fightEffectUseEvent(event)]);
+      case "buff-cast":
+        return fightEventMap([fightBuffCastEvent(event)]);
+      case "pers-cp":
+        return fightEventMap([fightPersCpEvent(event.cp)]);
+      case "native-count":
+        return fightEventMap([fightNativeCountEvent(event)]);
       case "turn-granted":
         return fightEventMap([{ et: "attacknow", restTime: event.timeoutSeconds }]);
       case "turn-wait":

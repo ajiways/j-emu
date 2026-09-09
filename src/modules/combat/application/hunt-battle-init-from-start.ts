@@ -30,5 +30,6 @@ export function huntBattleInitFromStart(
     arena: input.arena,
     areaId: input.areaId,
     startedAt,
+    loadout: input.loadout,
   };
 }

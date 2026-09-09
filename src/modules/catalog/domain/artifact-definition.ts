@@ -1,5 +1,6 @@
 import type { ArtifactSkillBonus } from "./artifact-skill-bonus.ts";
 import type { ArtifactUseAction } from "./artifact-use-action.ts";
+import type { ArtifactExtra } from "./artifact-extra.ts";
 
 export class ArtifactDefinition {
   constructor(
@@ -18,6 +19,7 @@ export class ArtifactDefinition {
     readonly bagStack: number,
     readonly skills: readonly ArtifactSkillBonus[],
     readonly useActions: Readonly<Record<string, ArtifactUseAction>>,
+    readonly extra: ArtifactExtra,
   ) {
     if (!Number.isInteger(id) || id <= 0) throw new Error("Invalid artifact id");
     if (!title) throw new Error(`Artifact ${id} title is required`);

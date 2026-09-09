@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { CombatEvent, FightCommand } from "../../../combat/ports/combat-port.ts";
+import { FightCastDenied } from "../../../combat/domain/fight-cast-denied.ts";
 import { encodePlainFrames } from "../../amf/framing.ts";
 import type { JuggerHttpDependencies } from "./jugger-http-dependencies.ts";
 import { waitForLongPoll } from "./long-poll-request.ts";
@@ -26,11 +27,31 @@ export class FproxyRouteRegistrar {
           "fproxy",
         );
         const events = await this.fightEvents(request, account.id, command);
+        if (command.kind !== "poll") {
+          const itemId = this.dependencies.combat.takePocketConsume(account.id);
+          if (itemId !== null) {
+            await this.dependencies.unitOfWork.run(async () => {
+              const hero = await this.dependencies.characters.getByAccountId(account.id);
+              if (!hero) throw new Error(`Hero for account ${account.id} is missing`);
+              await this.dependencies.inventory.consumePocket({
+                characterId: hero.id,
+                itemId,
+              });
+            });
+          }
+        }
         return reply
           .type("application/octet-stream")
           .send(encodePlainFrames(this.dependencies.commands.fightWire.frames(events)));
       } catch (error) {
         request.log.error({ err: error }, "fight_command_failed");
+        if (error instanceof FightCastDenied) {
+          const deny =
+            error.deny === "kind11"
+              ? { rs: false, restriction: 18, sq: error.sequence }
+              : { rs: false };
+          return reply.type("application/octet-stream").send(encodePlainFrames([deny]));
+        }
         const message = error instanceof Error ? error.message : "Unknown non-Error failure";
         return reply
           .type("application/octet-stream")

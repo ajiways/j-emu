@@ -17,6 +17,7 @@ import { PLAYABLE_REGEN_POLICY } from "../../support/hero-fixtures.ts";
 import { playableCharacterModuleInput } from "../../support/playable-character-module-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
+import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
@@ -172,6 +173,7 @@ describe("HP regeneration persistence", () => {
       ...GRYZL_FIGHT_LOOK,
       arena: "2_1",
       areaId: "503",
+      loadout: EMPTY_COMBAT_LOADOUT,
     });
     clock.advanceSeconds(5);
     const synced = await characters.service.syncResources({ characterId: hero.id });
@@ -201,6 +203,7 @@ describe("HP regeneration persistence", () => {
       ...GRYZL_FIGHT_LOOK,
       arena: "2_1",
       areaId: "503",
+      loadout: EMPTY_COMBAT_LOADOUT,
     });
     const locked = await characters.service.lockByAccountId(hero.accountId);
     await characters.service.applyEquipmentVitals(locked, []);

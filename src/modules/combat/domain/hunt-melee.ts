@@ -28,10 +28,13 @@ export function tryPlayerMelee(
     return { result: { kind: "ignored" }, botHp: input.botHp, finished: input.finished };
   }
   human.endTurn();
-  const playerDamage = input.random.integer(
-    input.rules.playerDamageMin,
-    input.rules.playerDamageMax,
-  );
+  let playerDamage = input.random.integer(input.rules.playerDamageMin, input.rules.playerDamageMax);
+  const orb = human.casts.takeOrbPcStr();
+  if (orb > 0) playerDamage = Math.max(1, Math.round(playerDamage * (1 + orb / 100)));
+  if (human.casts.takeGloveCrit()) {
+    playerDamage = Math.max(playerDamage, input.rules.playerDamageMax);
+  }
+  const comboCp = human.casts.hits.length > 0 ? human.casts.advanceCombo(side) : undefined;
   const botHp = Math.max(0, input.botHp - playerDamage);
   const killed = botHp === 0;
   const events: BattleEvent[] = [
@@ -44,6 +47,7 @@ export function tryPlayerMelee(
       hpChange: -playerDamage,
       targetMaxHp: input.botMaxHp,
       killed,
+      ...(comboCp !== undefined ? { comboCp } : {}),
     },
   ];
   if (killed) {
@@ -67,6 +71,7 @@ export function resolveBotMelee(
   }
   const botDamage = input.random.integer(input.rules.botDamageMin, input.rules.botDamageMax);
   const killedPlayer = human.applyDamage(botDamage);
+  const dRage = human.casts.awardIncomingRage(botDamage, human.maxHp);
   const events: BattleEvent[] = [
     {
       type: "damage",
@@ -76,6 +81,7 @@ export function resolveBotMelee(
       hpChange: -botDamage,
       targetMaxHp: human.maxHp,
       killed: killedPlayer,
+      dRage,
     },
   ];
   if (killedPlayer && !input.hasWaiter) {

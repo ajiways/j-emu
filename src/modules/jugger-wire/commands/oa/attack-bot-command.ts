@@ -15,6 +15,7 @@ import type {
   FightWireMapper,
 } from "../../application/fight-wire-mapper.ts";
 import type { HuntAreaFanout } from "../../application/hunt-area-fanout.ts";
+import { HuntCombatLoadout } from "../../application/hunt-combat-loadout.ts";
 import { HuntMapAttack } from "../../application/hunt-map-attack.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
@@ -79,6 +80,7 @@ export class AttackBotCommand implements OaCommand {
     const bot = await this.catalog.bot(spawn.botId);
     if (!bot) throw new Error(`Bot catalog entry ${spawn.botId} is missing`);
     await this.inventory.ensureStarterInventory(hero.id);
+    const loadout = await new HuntCombatLoadout(this.inventory, this.catalog).snapshot(hero.id);
     const fight = await this.huntAttack.execute({
       accountId: context.accountId,
       heroId: hero.id,
@@ -99,6 +101,7 @@ export class AttackBotCommand implements OaCommand {
       botBody: bot.hunt.body,
       arena: area.fightBackground,
       areaId: area.id,
+      loadout,
     });
     return {
       "common|action": { status: 100 },

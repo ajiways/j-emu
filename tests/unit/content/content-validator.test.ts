@@ -74,6 +74,37 @@ describe("ContentValidator", () => {
     };
     expect(() => new ContentValidator().validate(bundle)).toThrow(/missing skill NOPE/);
   });
+
+  it("rejects artifact 93 without dump-proven extra.spell", () => {
+    const bundle: ContentBundle = {
+      ...playable,
+      artifacts: playable.artifacts.map((artifact) =>
+        artifact.id === 93 ? { ...artifact, extra: {} } : artifact,
+      ),
+    };
+    expect(() => new ContentValidator().validate(bundle)).toThrow(
+      /artifact 93 is missing dump-proven extra.spell/,
+    );
+  });
+
+  it("rejects artifact 77 carrying a fight spell blob", () => {
+    const meat = playable.artifacts.find((artifact) => artifact.id === 77);
+    if (!meat) throw new Error("playable bundle is missing artifact 77");
+    const bundle: ContentBundle = {
+      ...playable,
+      artifacts: playable.artifacts.map((artifact) =>
+        artifact.id === 77
+          ? {
+              ...meat,
+              extra: { spell: { effects: [{ kind: 2, amount: 1 }] } },
+            }
+          : artifact,
+      ),
+    };
+    expect(() => new ContentValidator().validate(bundle)).toThrow(
+      /artifact 77 must not carry a fight spell blob/,
+    );
+  });
 });
 
 describe("parseContentBundle", () => {
@@ -142,6 +173,19 @@ describe("parseContentBundle", () => {
             href: { object: "npc", action: "quests", ref: 1617 },
           },
         ],
+      }),
+    ).toThrow();
+  });
+
+  it("rejects an artifact missing extra", () => {
+    const artifact = playable.artifacts[0];
+    if (!artifact) throw new Error("playable bundle has no artifacts");
+    const withoutExtra = { ...artifact } as { extra?: unknown };
+    delete withoutExtra.extra;
+    expect(() =>
+      parseContentBundle({
+        ...playable,
+        artifacts: [withoutExtra],
       }),
     ).toThrow();
   });

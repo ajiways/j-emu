@@ -1,4 +1,6 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
+import type { CombatLoadout } from "./combat-loadout.ts";
+import { HuntHumanCastState } from "./hunt-human-cast-state.ts";
 
 export type HuntHumanSnap = Readonly<{
   id: number;
@@ -24,10 +26,12 @@ type HuntHumanInit = Readonly<{
   maxMp: number;
   team: 1;
   waiting: boolean;
+  loadout: CombatLoadout;
 }>;
 
 export class HuntHuman {
   authed = false;
+  readonly casts: HuntHumanCastState;
   private waitingValue: boolean;
   private turnActiveValue = false;
   private hpValue: number;
@@ -36,6 +40,7 @@ export class HuntHuman {
     requireHuntHumanInit(init);
     this.waitingValue = init.waiting;
     this.hpValue = init.hp;
+    this.casts = new HuntHumanCastState(init.loadout);
   }
 
   get accountId(): number {
@@ -108,6 +113,15 @@ export class HuntHuman {
     }
     this.hpValue = Math.max(0, this.hpValue - amount);
     return this.hpValue === 0;
+  }
+
+  applyHeal(amount: number): number {
+    if (!Number.isInteger(amount) || amount < 0) {
+      throw new Error("Hunt human heal must be a non-negative integer");
+    }
+    const before = this.hpValue;
+    this.hpValue = Math.min(this.maxHp, this.hpValue + amount);
+    return this.hpValue - before;
   }
 }
 

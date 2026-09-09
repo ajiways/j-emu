@@ -30,6 +30,10 @@ export class FightTcpConnection {
     const accountId = this.accountId;
     if (!accountId) throw new ProtocolError(4, "TCP fight connection is not authenticated");
     const immediate = await this.combat.execute(accountId, command);
+    const pocketItemId = this.combat.takePocketConsume(accountId);
+    if (pocketItemId !== null) {
+      throw new Error("TCP fproxy cannot persist pocket consume");
+    }
     return encodePlainFrames(this.wire.frames(immediate));
   }
 

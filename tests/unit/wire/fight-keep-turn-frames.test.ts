@@ -1,0 +1,161 @@
+import { describe, expect, it } from "vitest";
+import { FightWireMapper } from "../../../src/modules/jugger-wire/application/fight-wire-mapper.ts";
+
+const mapper = new FightWireMapper(
+  { host: "s1.jugger.ru", port: 33120, proxyPath: "https://s1.jugger.ru/fproxy//;" },
+  {
+    heroSkill: 1,
+    heroBody: "m1",
+    autoFight: 0,
+    canLeave: 1,
+    companionEnabled: 0,
+    isPvp: 0,
+    instanceId: "0",
+    type: "1",
+    isSlaughter: false,
+    flags: "0",
+  },
+);
+
+describe("FightWireMapper keep-turn frames", () => {
+  it("puts rs before pocket 93 FX and 99 ev:[]", () => {
+    const elixir = mapper.frames([
+      { type: "command-accepted", sequence: 2 },
+      {
+        type: "effect-use",
+        artikulId: 93,
+        animation: "botles_healself_grey",
+        kind: 2,
+        groupId: 841,
+        flags: "262144",
+        img: "bottles_live1_2712.png",
+        title: "Малый эликсир жизни",
+        persId: 1,
+      },
+      {
+        type: "damage",
+        sourceId: 1,
+        targetId: 1,
+        animation: "botles_healself_grey",
+        hpChange: 0,
+        targetMaxHp: 27,
+        killed: false,
+      },
+    ]);
+    expect(elixir[0]).toEqual({ rs: true, sq: 2 });
+    expect(evTypes(elixir[1])).toEqual(["effUse", "cast"]);
+
+    const orb = mapper.frames([
+      { type: "command-accepted", sequence: 3 },
+      {
+        type: "effect-use",
+        artikulId: 99,
+        animation: "botles_strenght_grey",
+        kind: 3,
+        groupId: 842,
+        flags: "262144",
+        img: "bottles_sila1.png",
+        title: "Малый усиливающий орб",
+        persId: 1,
+        dmgType: 1,
+      },
+      {
+        type: "buff-cast",
+        animation: "botles_strenght_grey",
+        sourceId: 1,
+        targetId: 1,
+        maxHp: 27,
+      },
+    ]);
+    expect(orb[0]).toEqual({ rs: true, sq: 3 });
+    expect(castPacket(orb[1])).toMatchObject({ et: "cast", ev: [] });
+    expect(JSON.stringify(orb)).not.toContain("persSpells");
+  });
+
+  it("puts rs before rage fury and aggro absolute count", () => {
+    const rage = mapper.frames([
+      { type: "command-accepted", sequence: 4 },
+      {
+        type: "effect-use",
+        artikulId: 212,
+        animation: "fury",
+        kind: 3,
+        groupId: 844,
+        flags: "0",
+        img: "rageeffect_2702.png",
+        title: "Ярость",
+        persId: 1,
+        dmgType: 1,
+      },
+      { type: "buff-cast", animation: "fury", sourceId: 1, targetId: 1, maxHp: 27 },
+    ]);
+    expect(rage[0]).toEqual({ rs: true, sq: 4 });
+    expect(evTypes(rage[1])).toEqual(["effUse", "cast"]);
+
+    const aggro = mapper.frames([
+      { type: "command-accepted", sequence: 5 },
+      { type: "native-count", srcId: 7, count: 0, title: "Разозлить" },
+    ]);
+    expect(aggro[0]).toEqual({ rs: true, sq: 5 });
+    expect(aggro[1]).toMatchObject({
+      ev: { "1": { et: "persSpells", "1": { srcId: 7, count: 0 } } },
+    });
+  });
+
+  it("puts rs before ending glove attackwait and keeps melee strike-then-rs", () => {
+    const ending = mapper.frames([
+      { type: "command-accepted", sequence: 6 },
+      { type: "turn-wait", timeoutSeconds: 20 },
+      {
+        type: "damage",
+        sourceId: 1,
+        targetId: 1_000_000,
+        animation: "magic_electroball",
+        hpChange: -8,
+        targetMaxHp: 20,
+        killed: false,
+        comboCp: 0,
+      },
+    ]);
+    expect(ending[0]).toEqual({ rs: true, sq: 6 });
+    expect(evTypes(ending[1])).toEqual(["attackwait", "cast", "persCP"]);
+
+    const melee = mapper.frames([
+      { type: "turn-wait", timeoutSeconds: 20 },
+      {
+        type: "damage",
+        sourceId: 1,
+        targetId: 1_000_000,
+        animation: "attack_left",
+        hpChange: -8,
+        targetMaxHp: 20,
+        killed: false,
+      },
+      { type: "command-accepted", sequence: 2 },
+    ]);
+    expect(evTypes(melee[0])).toEqual(["attackwait", "cast"]);
+    expect(melee[1]).toEqual({ rs: true, sq: 2 });
+  });
+});
+
+function evMap(frame: unknown): Record<string, { et?: string; ev?: unknown }> {
+  if (!frame || typeof frame !== "object" || !("ev" in frame)) {
+    throw new Error("expected an ev fight frame");
+  }
+  const ev = frame.ev;
+  if (!ev || typeof ev !== "object" || Array.isArray(ev)) throw new Error("ev map is missing");
+  return ev as Record<string, { et?: string; ev?: unknown }>;
+}
+
+function evTypes(frame: unknown): string[] {
+  return Object.values(evMap(frame)).map((packet) => {
+    if (typeof packet.et !== "string") throw new Error("et is missing");
+    return packet.et;
+  });
+}
+
+function castPacket(frame: unknown): { et?: string; ev?: unknown } {
+  const cast = Object.values(evMap(frame)).find((packet) => packet.et === "cast");
+  if (!cast) throw new Error("cast packet is missing");
+  return cast;
+}

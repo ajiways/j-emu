@@ -41,6 +41,29 @@ export class CombatMeleeLoop {
     this.scheduleBotAndGrant(battle);
   }
 
+  keepTurn(accountId: number, sequence: string | number, events: readonly CombatEvent[]): void {
+    this.enqueue(accountId, [{ type: "command-accepted", sequence }, ...events]);
+  }
+
+  async endingGlove(
+    accountId: number,
+    sequence: string | number,
+    events: readonly CombatEvent[],
+  ): Promise<void> {
+    const battle = this.byAccount.get(accountId);
+    if (!battle) {
+      this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
+      return;
+    }
+    this.scheduler.cancel(battle.id);
+    this.enqueue(accountId, [{ type: "command-accepted", sequence }, ...events]);
+    if (battle.finished) {
+      await this.settleFinished(battle, events, accountId);
+      return;
+    }
+    this.scheduleBotAndGrant(battle);
+  }
+
   private scheduleBotAndGrant(battle: Battle): void {
     const fightId = battle.id;
     const striker = battle.pairedAccountId;
