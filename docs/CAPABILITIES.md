@@ -153,14 +153,15 @@ hunt overlay и map join: первый ATTACK_BOT **50310** ставит `fight_
 
 ## Combat — частично
 
-Есть минимальный hunt: ATTACK_BOT → `fight|conf`, HTTPS `/fproxy//;`
-auth паркует bootstrap (`fightState`…`oppnew` + `attacknow`), TCP `:33120`
-как запасной путь, `joinHunt` team 1 с `oppwait`, terminal packets,
-process-local active state и finished history. CEF открывает бой с Грызлом
-с двух клиентов.
+Есть hunt melee loop (raw-AMF): ATTACK_BOT → fproxy auth/bootstrap, L/C/R
+`attackwait`+`cast` затем `{rs}`, позже удар бота и standalone `attacknow`,
+kill без leftover grant, `joinHunt` waiter `oppwait`, re-pair если A умер.
+Delay port ~1400/~2500 ms, `BattleRules` урон `legacy behavior`. CEF вход в
+бой с двух клиентов есть; **кнопки L/C/R после паузы в CEF не подтверждались**
+в срезе CMB-01.
 
-Не перенесены: полный melee turn loop (CMB-01), pocket/glove/rage/aggro,
-loot, HP/EXP/level settlement, reconnect и ghost.
+Не перенесены: pocket/glove/rage/aggro (CMB-02), loot, HP/EXP/level
+settlement, reconnect и ghost.
 
 ## Quests и NPC 1–8 — не перенесено
 

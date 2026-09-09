@@ -8,7 +8,8 @@ esrv `2:`/`131:`, chat auth). Точный статус:
 
 Hunt overlay и map join **готово**: первый ATTACK_BOT 50310 ставит
 `fight_id`, второй входит в тот же бой (`joinHunt` team 1). Authored
-wander/respawn для 50310 в dump нет — не выдумывать. Turn loop — CMB-01.
+wander/respawn для 50310 в dump нет — не выдумывать. Melee loop — CMB-01
+(raw-AMF). Pocket fight cast — CMB-02.
 
 ## Источники поведения
 
@@ -237,7 +238,7 @@ AREA `action_id` / `quest_bot_artikul` — не этот срез.
 Первый боец уже держит бота → joiner в queue своей team, bootstrap с
 `oppwait` (без `attacknow`). Остальным authed humans — fproxy roster
 (`persList` + `persChangeInfo`), не полный re-bootstrap. Re-pair waiter
-после смерти союзника — CMB-01; shuffle 3↔3 не в этом срезе.
+после смерти союзника — CMB-01 (сделано); shuffle 3↔3 не в этом срезе.
 
 Отказ join через ATTACK_BOT — **203** + `error` (`notPossible`), не 204:
 `уже в бою`, `бой не найден`, `бой в другой локации`,

@@ -119,8 +119,9 @@ state и outbound packets. В PostgreSQL владеет только завер�
 `finished_fights` history с TTL 72 часа. Не начисляет награды и не меняет
 персонажа/инвентарь напрямую.
 
-**API:** `startHunt`, `joinHunt` (второй human team 1 на существующий fight
-id), `hasFight`, `execute`, `activeFightId`, `accountForFight`, `takeExit`.
+**API:** `startHunt`, `joinHunt`, `hasFight`, `execute`, `activeFightId`,
+`accountForFight`, `takeExit`. Injected `CombatDelay` (dueAt + cancel по
+fight id) и `CombatWake` для fproxy. Loadout snapshot — CMB-02.
 Mapper старого `arena|finished_fights` / info view существует в combat
 application; OA `arena|finished_fights` и `fight_info.php` в текущем срезе
 не регистрируются.

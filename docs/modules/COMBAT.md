@@ -2,9 +2,9 @@
 
 ## Статус
 
-Есть минимальный hunt (CEF стартует бой с Грызлом, второй клиент входит
-через map `joinHunt`), fproxy transport, terminal packets, finished history
-и queue/`oppwait`. Полный melee loop — CMB-01; shuffle 3↔3 не в CMB-01.
+Есть hunt melee loop (raw-AMF L/C/R, delay grant/bot-counter, kill, waiter
+re-pair) и map `joinHunt`. CEF кнопки после паузы в CMB-01 не гонялись.
+Pocket/glove/rage — CMB-02; shuffle 3↔3 не в этом срезе.
 
 ## Источники поведения
 
@@ -52,8 +52,9 @@ account-keyed `CombatPort.activeFightId`. `CombatService` держит один 
    (policy + length-prefixed AMF) как запасной путь. HTTP `auth` паркует
    bootstrap в очередь; следующий poll отдаёт `{rs}` + `{ev: fightState…oppnew}`
    - `{ev: attacknow}`. Auth/strike будят account-scoped waiters.
-3. Poll получает instant player+bot+`attacknow` в одном execute — это
-   **не** live turn loop; CMB-01 разносит strike/`rs`, bot counter и grant.
+3. Melee poll: leading `attackwait` + `cast` → `{rs,sq}`; bot `cast` ~1400 ms
+   позже; standalone `attacknow` ~2500 ms только кастеру. Instant
+   player+bot+grant в одном execute больше нет.
 4. Terminal result добавляется в finished history.
 
 Полный cast/effects packet flow, loot/exit ordering, durable settlement и
@@ -84,59 +85,55 @@ SINGLE/MULTI framing, exact `sq`, source IDs и packet order менять нел
 
 ## CMB-01 — melee turn loop
 
-### Architecture decision
+Срез реализован: `CombatDelay` (`dueAt` + cancel по fight id), синхронный
+`Battle`, `HuntMeleeScheduler` + `CombatMeleeLoop`. Production
+`SystemCombatDelay` будит fproxy waiters; тесты — `MutableClock` +
+`ManualCombatDelay`, без `sleep`. `Clock.schedule` нет. Урон — `BattleRules`
+min/max, `damageProvenance: legacy behavior`.
 
-Отдельный `ARC-*` не нужен. Active fight остаётся process-local (ADR-0020).
-`Clock` по-прежнему только `now` / `unixSeconds` — **не** добавлять
-`schedule` в kernel. Combat владеет injected delay port: `dueAt` + cancel
-по fight token. Domain `Battle` синхронный: resolve удара возвращает
-события сразу; `CombatService` (или тонкий application scheduler) кладёт
-bot-counter и `attacknow` в очередь по dueAt и будит fproxy waiters.
-Тесты крутят FakeClock/delay без wall-clock `sleep`.
+Join/waiter WLD-02 не ломается: пока A в дуэли, B без `attacknow`/`oppnew`.
+Если A умер и бот жив — authed B получает `oppnew`, затем `attacknow`.
 
-RNG остаётся `RandomSource`. Урон — текущие `BattleRules` min/max с меткой
-`legacy behavior`; не переносить empirical `FIGHT_DAMAGE` как live parity.
-
-Очереди пакетов — per-account, как сейчас. Join/waiter из WLD-02 не ломать:
-пока A в дуэли, B без `attacknow`/`oppnew`.
+CEF (кнопки после паузы, скрытие на свой удар) в этом срезе не прогонялся —
+product status combat остаётся частично.
 
 ### Wire
 
 Melee `srcType:1`, `srcId` 1/2/3 = L/C/R. HTTP `castSpell` пустой.
 Успешный ending melee в **одном** poll: leading `{et:attackwait}` + `cast`
-(анимация `attack_left|center|right`) → соседний `{rs,sq}`. В этом MULTI
-нет `attacknow` и нет бот-удара.
+(`attack_left|center|right`) → соседний `{rs,sq}`. Нет `attacknow` и нет
+удара бота в этом MULTI.
 
-Потом отдельный poll: bot `cast` (`attack_center`). Потом standalone
-`{et:attacknow, restTime}` через ~2500 ms (`FIGHT_TURN_GRANT_DELAY_MS`),
-только кастеру. Bot-counter delay ~1400 ms (melee default, не AOE 3800).
+Потом bot `cast` `attack_center` (~1400 ms). Потом standalone
+`{et:attacknow, restTime}` (~2500 ms) только кастеру.
 
-Kill: очистить grant **до** resolve; в poll кастера leading `attackwait` +
-`cast` с `react=KILL` (10); не оставлять `attacknow`. `fightFinish` как
-сейчас.
+Kill: `cancel(fightId)` **до** resolve; poll `attackwait`+`cast` `react=10`
+и `fightFinish`; leftover `attacknow` нет.
 
-Off-turn / waiter / already-ended: HTTP пустой, poll `{rs:true, sq}` без
-strike и без HP change (`cast_ignored_not_your_turn`). Не HTTP
-`restriction:18` (это kind 11, CMB-02) и не fproxy `error` string.
+Off-turn / waiter / already-ended: пустой HTTP + poll `{rs:true}` без HP.
+Не `restriction:18` и не fproxy `error`.
 
-Если paired hunter умер, бот жив, есть waiter team 1 — waiter получает
-`oppnew` и затем `attacknow` (re-pair). Shuffle 3↔3, второй бот, bot spell
-roulette — не этот срез.
+### CMB-02 — pocket / glove / rage
 
-### Out of scope
+Fproxy сейчас режет любой `srcType` кроме melee 1/2/3. Native 6/7 уже в
+bootstrap `persSpells`, но не исполняются.
 
-Pocket/glove/rage/aggro (`CMB-02`); loot/HP persist (`CMB-03`); ghost
-(`CMB-04`); OA FIGHT_JOIN/HELP; wander; `Clock.schedule`; generic
-`startBattle`/`FightRules` consequences object; live `10_000_000+hero.id`.
+Loadout на `startHunt`/`joinHunt`: immutable снимок pocket + надетой
+перчатки (или пусто) через inventory/catalog **ports**. Combat RAM держит
+count/cp/rage; успешный карман — inventory consume из fproxy command, не
+repository из domain. `{rs}` до FX для `srcType` 2/3 и native 6/7.
 
-### Acceptance
+Content: dump-proven `spell` у **93** (хил, CD) и **99** (орб `ev:[]`);
+**9095** сокеты **9098/9100/9099**. Не выдумывать титана, патронташ, 77 в
+бою, `srcId:5`, generic effect engine.
 
-- unit: FakeClock delay — grant и bot-counter не в том же poll, что melee
-  `rs`; cancel grant on kill; off-turn ignore;
-- raw-AMF: L/C/R empty HTTP; poll order `attackwait`/`cast`/`rs`; later bot
-  `cast`; later `attacknow`; waiter silent during A's loop; A die + bot live
-  → B `oppnew` then `attacknow`;
-- CEF: кнопки после паузы, гаснут на свой удар, бот не бьёт посреди клипа.
+Казнь / empirical `dRage` — только с меткой `legacy behavior`. Kind 11 HTTP
+18 — только если в опубликованном spell это kind 11.
+
+### Out of scope (CMB-01 leftover)
+
+Loot/HP persist (`CMB-03`); ghost (`CMB-04`); OA FIGHT_JOIN/HELP; wander;
+shuffle 3↔3; `Clock.schedule`; `startBattle`; live `10_000_000+hero.id`.
 
 ## Границы модулей
 

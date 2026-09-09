@@ -13,7 +13,7 @@
   `depends_on`.
 - Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
   `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **CMB-01**.
+- Ровно одна запись имеет статус `next`: **CMB-02**.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -321,22 +321,38 @@
   `oppwait` during A's loop; if A dies and bot lives, B gets `oppnew` then
   `attacknow`. CEF: L/C/R appear after pause, hide during own strike, bot
   does not clip the animation. No pocket/glove.
-- **Status:** `next`
+- **Status:** `done`
 
 ### CMB-02 — Pocket, glove, rage and aggro
 
 - **ID:** `CMB-02`
 - **depends_on:** `CMB-01`, `INV-03`
-- **Behavior evidence:** legacy `POCKET.md`, `GLOVE_MAGIC.md`,
-  `FIGHT_RAGE.md`, `FIGHT_CAST_ACK.md` and
-  [COMBAT.md](../modules/COMBAT.md).
-- **Content set:** core pocket/glove spell definitions, effects and costs.
-- **Architecture checkpoint / decision:** pending — define immutable
-  combat-ready inventory snapshot and effect registry; invented formulas must
-  be labeled `legacy behavior`.
-- **Acceptance:** client counters never double-spend; pocket/glove/rage/aggro
-  packet order and restrictions match ordered raw-frame tests and CEF.
-- **Status:** `queued`
+- **Behavior evidence:** `POCKET.md`, `GLOVE_MAGIC.md` (9095), `FIGHT_RAGE.md`,
+  `FIGHT_CAST_ACK.md` rs-before-strike rows, `FIGHT_TOASTS.md` restriction 18
+  only if a slice spell is kind 11, and [COMBAT.md](../modules/COMBAT.md).
+- **Content set:** dump-proven fight `spell` on existing **93** and **99**;
+  **9095** `extra.spells` sockets with live `artikul_id0` **9098 / 9100 / 9099**
+  and those three spell artifacts. No titan/cartridge/orb families, no 77 in
+  fproxy, no backstab `srcId:5`, no kind 11 unless the dump for these ids has
+  it. Spell numbers labeled `legacy behavior` if `FIGHT_DAMAGE`/`FIGHT_RAGE`
+  formulas are empirical.
+- **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
+  no `ARC-*`. Combat stays RAM (ADR-0020). `startHunt`/`joinHunt` take an
+  immutable combat loadout from inventory+catalog ports (pocket rows + equipped
+  glove or empty). Combat does not import inventory repositories. Fproxy
+  command orchestrates: decode → combat cast → inventory `consume` on pocket
+  success. `{rs,sq}` **before** strike for `srcType` 2/3 and native 6/7.
+  Melee L/C/R stay strike-then-rs. Kind 11 without target: HTTP
+  `{rs:false, restriction:18}` — only if a published slice spell is kind 11.
+  Pocket CD deny: HTTP `{rs:false}` no restriction. Glove `cp − cost`, not
+  reset. Native 6/7 already in hunt `persSpells`; make them executable. No
+  `Clock.schedule`. Full contract: [COMBAT.md](../modules/COMBAT.md).
+- **Acceptance:** raw-AMF ordered frames: elixir 93 and orb 99 never
+  double-spend; 99 `cast` `ev:[]`; rage 6 / aggro 7 rs-then-FX and aggro never
+  −1; glove 9095 combo `persCP` then finisher rs-then-strike; off-turn ending
+  glove `{rs:true}` + absolute `persCP`. CEF: belt/glove/rage/aggro counters
+  match one server consume. Melee loop from CMB-01 still holds.
+- **Status:** `next`
 
 ### CMB-03 — Terminal settlement and loot
 

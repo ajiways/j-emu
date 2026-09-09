@@ -8,11 +8,11 @@
 internal CHR-01 `grantExperience`, internal CHR-02 `syncResources`/`noteHp` и
 INV-02 bag DROP/`creditMoney`, INV-03 pocket layout 93/99, INV-04 world USE
 77 ADD_HP, WLD-01 area transitions 503↔501/504, RTM-01 presence roster и
-WLD-02 hunt overlay + map `joinHunt`: persistent state в PostgreSQL; esrv
-delivery и hunt overlay process-local; active content через release
-projections; active combat в RAM (несколько accounts на один fight id).
-CMB-01 добавит combat-local delay port для grant/bot-counter, не таблицу
-и не `Clock.schedule`.
+WLD-02 hunt overlay + map `joinHunt` и CMB-01 melee delay port: persistent
+state в PostgreSQL; esrv delivery и hunt overlay process-local; active content
+через release projections; active combat в RAM (несколько accounts на один
+fight id, `CombatDelay` не `Clock.schedule`). CMB-02 добавит fight loadout
+снимок pocket/glove через inventory ports, без таблиц active fight.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение
