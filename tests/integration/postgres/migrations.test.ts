@@ -14,6 +14,8 @@ import {
   levelBoundaries,
   levelSkillValues,
   skillDefinitions,
+  storeLots,
+  storeTypes,
 } from "../../../src/modules/catalog/infrastructure/schema.ts";
 import {
   experienceGrants,
@@ -80,6 +82,8 @@ describe("Drizzle migrations", () => {
         "catalog.level_boundaries",
         "catalog.level_skill_values",
         "catalog.skill_definitions",
+        "catalog.store_lots",
+        "catalog.store_types",
         "character.experience_grants",
         "character.hero_personal_details",
         "character.hero_skills",
@@ -113,6 +117,8 @@ describe("Drizzle migrations", () => {
       levelSkillValues,
       appearancePresets,
       gameWideDocuments,
+      storeTypes,
+      storeLots,
       areas,
       areaLinks,
       huntSpawns,
@@ -128,7 +134,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(25);
+    ]).toHaveLength(27);
 
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -150,8 +156,9 @@ describe("Drizzle migrations", () => {
       "0013_catalog_artifact_extra",
       "0014_catalog_bot_loot",
       "0015_character_ghost_injury",
+      "0016_catalog_store_types_lots",
     ]);
-    expect(await appliedCount()).toBe(16);
+    expect(await appliedCount()).toBe(17);
 
     const singleton = await database
       .session()

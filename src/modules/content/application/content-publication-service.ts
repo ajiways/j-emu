@@ -82,6 +82,10 @@ export class ContentPublicationService {
       validated.areaLinks,
       validated.huntSpawns,
     );
+    await this.catalog.materializeStore(release.id, {
+      storeTypes: validated.storeTypes,
+      storeLots: validated.storeLots,
+    });
     await this.store.activate(release.id);
     return release;
   }

@@ -21,7 +21,12 @@ import { toPresenceHero } from "./to-presence-hero.ts";
 import type { ExperienceGrantCommand } from "../domain/experience-grant-command.ts";
 import type { ExperienceGrantResult } from "../domain/experience-grant-result.ts";
 import type { CharacterProgression } from "../ports/character-progression.ts";
-import type { CharacterMoney, CreditMoneyCommand } from "../ports/character-money.ts";
+import type {
+  CharacterMoney,
+  CreditMoneyCommand,
+  DebitMoneyCommand,
+} from "../ports/character-money.ts";
+import { creditHeroMoney, debitHeroMoney } from "./apply-hero-money.ts";
 import type {
   CharacterResources,
   NoteDefeatCommand,
@@ -101,10 +106,13 @@ export class CharacterService
 
   async creditMoney(command: CreditMoneyCommand): Promise<void> {
     await this.unitOfWork.run(async () => {
-      const hero = await this.heroes.lockById(command.characterId);
-      if (!hero) throw new Error(`Hero ${command.characterId} is missing`);
-      hero.creditMoney(command.minorUnits);
-      await this.heroes.save(hero);
+      await creditHeroMoney(this.heroes, command);
+    });
+  }
+
+  async debitMoney(command: DebitMoneyCommand): Promise<void> {
+    await this.unitOfWork.run(async () => {
+      await debitHeroMoney(this.heroes, command);
     });
   }
 

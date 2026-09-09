@@ -34,7 +34,9 @@ projection-строки. После `0013_catalog_artifact_extra` migrate ста
 `0014_catalog_bot_loot` migrate ставит reward scalars `0` на старые `bots`;
 охота с CMB-03 наградой падает, пока не опубликован `playable-slice/v12`.
 После `0015_character_ghost_injury` migrate ставит `ghost=false` и injury `0`
-на старые `heroes`; runtime всё равно пишет явные значения.
+на старые `heroes`; runtime всё равно пишет явные значения. После
+`0016_catalog_store_types_lots` migrate создаёт пустые `store_types`/`store_lots`;
+лавка 504 list/buy пуста, пока не опубликован `playable-slice/v13`.
 
 ## HTTP :8080 (браузер без CEF)
 

@@ -25,6 +25,7 @@ import { PresenceFanout } from "../modules/jugger-wire/application/presence-fano
 import { HuntAreaFanout } from "../modules/jugger-wire/application/hunt-area-fanout.ts";
 import { HuntLockRelease } from "./hunt-lock-release.ts";
 import { HuntFightSettlement } from "./hunt-fight-settlement.ts";
+import { StorePurchase } from "./store-purchase.ts";
 import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 
@@ -146,6 +147,13 @@ export class CompositionRoot {
         huntFanout,
         outbox,
         longPoll,
+        storePurchase: new StorePurchase(
+          database,
+          characters.service,
+          inventory.service,
+          catalog.catalog,
+          world.service,
+        ),
       });
       closers.push(wire);
       return new Application(wire.http, characters.service, characters.service, async () => {

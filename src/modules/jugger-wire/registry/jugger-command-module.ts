@@ -8,6 +8,7 @@ import type { UnitOfWork } from "../../../shared/kernel/unit-of-work.ts";
 import type { BootstrapReadModel } from "../application/bootstrap-read-model.ts";
 import type { HeroSheetReadModel } from "../application/hero-sheet-read-model.ts";
 import type { FightWireMapper } from "../application/fight-wire-mapper.ts";
+import type { StorePurchase } from "../../../app/store-purchase.ts";
 import { AttackBotCommand } from "../commands/oa/attack-bot-command.ts";
 import { BagDropCommand } from "../commands/oa/bag-drop-command.ts";
 import { BookQuestListCommand } from "../commands/oa/book-quest-list-command.ts";
@@ -22,6 +23,8 @@ import { PutOnCommand } from "../commands/oa/put-on-command.ts";
 import { ComeInCommand } from "../commands/oa/come-in-command.ts";
 import { CommonExitCommand } from "../commands/oa/common-exit-command.ts";
 import { ResurrectCommand } from "../commands/oa/resurrect-command.ts";
+import { StoreBuyCommand } from "../commands/oa/store-buy-command.ts";
+import { StoreListCommand } from "../commands/oa/store-list-command.ts";
 import { UseArtifactCommand } from "../commands/oa/use-artifact-command.ts";
 import { UserBagCommand } from "../commands/oa/user-bag-command.ts";
 import { UserFlashMessageCommand } from "../commands/oa/user-flash-message-command.ts";
@@ -57,6 +60,7 @@ export class JuggerCommandModule {
     clock: Clock,
     presence: PresenceFanout,
     huntFanout: HuntAreaFanout,
+    storePurchase: StorePurchase,
   ) {
     this.fightWire = fightWire;
     this.oa = new OaCommandRegistry([
@@ -131,6 +135,8 @@ export class JuggerCommandModule {
         presence,
       ),
       new ResurrectCommand(bootstrap, characters, combat),
+      new StoreListCommand(characters, catalog),
+      new StoreBuyCommand(bootstrap, characters, storePurchase),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     this.esrv = EsrvCommandRegistry.create(combat, fightWire);

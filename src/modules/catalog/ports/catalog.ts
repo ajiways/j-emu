@@ -6,6 +6,7 @@ import type { BotDefinition } from "../domain/bot-definition.ts";
 import type { HudDefaults } from "../domain/hud-defaults.ts";
 import type { LevelBoundary } from "../domain/level-boundary.ts";
 import type { SkillDefinition } from "../domain/skill-definition.ts";
+import type { StoreLot, StoreType } from "../domain/store-lot.ts";
 
 export interface Catalog {
   artifact(id: number): Promise<ArtifactDefinition | null>;
@@ -16,4 +17,6 @@ export interface Catalog {
   hudDefaults(): Promise<HudDefaults>;
   chrome(): Promise<BootstrapChrome>;
   commonConf(): Promise<CommonConfBlock>;
+  storeTypes(areaId: string): Promise<readonly StoreType[]>;
+  storeLots(areaId: string): Promise<readonly StoreLot[]>;
 }

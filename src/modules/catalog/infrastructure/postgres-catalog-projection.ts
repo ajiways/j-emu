@@ -10,7 +10,12 @@ import type {
 } from "../../content/domain/bootstrap-content.ts";
 import { managedSkillSourceDigest } from "../../content/domain/progression-curve.ts";
 import type { ArtifactDocument, BotDocument } from "../../content/domain/content-document.ts";
-import type { CatalogMaterialization, CatalogProjection } from "../ports/catalog-projection.ts";
+import type {
+  CatalogMaterialization,
+  CatalogProjection,
+  CatalogStoreMaterialization,
+} from "../ports/catalog-projection.ts";
+import { insertStoreLots, insertStoreTypes } from "./postgres-catalog-store-rows.ts";
 import {
   appearancePresets,
   artifacts,
@@ -41,6 +46,12 @@ export class PostgresCatalogProjection implements CatalogProjection {
         gameWideRow(releaseId, "common_conf", documents.commonConf),
         gameWideRow(releaseId, "welcome_message", documents.welcomeMessage),
       ]);
+  }
+
+  async materializeStore(releaseId: string, documents: CatalogStoreMaterialization): Promise<void> {
+    const session = this.database.session();
+    await insertStoreTypes(session, releaseId, documents.storeTypes);
+    await insertStoreLots(session, releaseId, documents.storeLots);
   }
 }
 

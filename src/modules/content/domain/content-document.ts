@@ -8,8 +8,8 @@ import type {
   WelcomeMessageDocument,
 } from "./bootstrap-content.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v12";
-export const CONTENT_VALIDATOR_VERSION = "12";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v13";
+export const CONTENT_VALIDATOR_VERSION = "13";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;
@@ -172,6 +172,22 @@ export type HuntSpawnDocument = Readonly<{
   huntMask: string;
 }>;
 
+export type StoreTypeDocument = Readonly<{
+  areaId: string;
+  typeId: number;
+  title: string;
+  ord: number;
+}>;
+
+export type StoreLotDocument = Readonly<{
+  areaId: string;
+  lotId: number;
+  artikulId: number;
+  typeId: number;
+  price: number;
+  ord: number;
+}>;
+
 export type ContentBundle = Readonly<{
   schemaVersion: string;
   artifacts: readonly ArtifactDocument[];
@@ -179,6 +195,8 @@ export type ContentBundle = Readonly<{
   areas: readonly AreaDocument[];
   areaLinks: readonly AreaLinkDocument[];
   huntSpawns: readonly HuntSpawnDocument[];
+  storeTypes: readonly StoreTypeDocument[];
+  storeLots: readonly StoreLotDocument[];
   skills: readonly SkillDocument[];
   levels: readonly LevelBoundaryDocument[];
   appearances: readonly AppearanceDocument[];
@@ -195,6 +213,8 @@ export type ContentEntry = Readonly<{
     | "area"
     | "area_link"
     | "hunt_spawn"
+    | "store_type"
+    | "store_lot"
     | "skill"
     | "level"
     | "appearance"
@@ -210,6 +230,8 @@ export type ContentEntry = Readonly<{
     | AreaDocument
     | AreaLinkDocument
     | HuntSpawnDocument
+    | StoreTypeDocument
+    | StoreLotDocument
     | SkillDocument
     | LevelBoundaryDocument
     | AppearanceDocument
@@ -228,6 +250,8 @@ export type ValidatedContentBundle = Readonly<{
   areas: readonly AreaDocument[];
   areaLinks: readonly AreaLinkDocument[];
   huntSpawns: readonly HuntSpawnDocument[];
+  storeTypes: readonly StoreTypeDocument[];
+  storeLots: readonly StoreLotDocument[];
   skills: readonly SkillDocument[];
   levels: readonly LevelBoundaryDocument[];
   appearances: readonly AppearanceDocument[];

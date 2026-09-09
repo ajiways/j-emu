@@ -20,7 +20,7 @@ import { type HuntBlock } from "./hunt-block.ts";
 import { locationAreaBlocks } from "./location-area-read.ts";
 import { buildMenuLinkStatus } from "./menu-link-status-block.ts";
 import { buildChatConf, type ChatConfPolicy } from "./chat-conf-block.ts";
-import { buildUserBag } from "./user-bag-block.ts";
+import { buildUserBag, type UserBagBlock } from "./user-bag-block.ts";
 import { buildUserPocket } from "./user-pocket-block.ts";
 import { buildUserConf } from "./user-conf-block.ts";
 import { emptyUserMagic } from "./user-magic-block.ts";
@@ -55,6 +55,11 @@ export class BootstrapReadModel {
 
   async commonConf(): Promise<CommonConfBlock> {
     return this.catalog.commonConf();
+  }
+
+  async bag(accountId: number): Promise<UserBagBlock> {
+    const hero = await this.requireHero(accountId);
+    return buildUserBag(hero, this.inventory, this.catalog);
   }
 
   async state(accountId: number): Promise<HeroStateBlock> {

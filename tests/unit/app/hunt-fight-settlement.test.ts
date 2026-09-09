@@ -165,6 +165,9 @@ function recordingCharacters() {
     async creditMoney(command: { characterId: number; minorUnits: number }) {
       this.credits.push(command);
     },
+    async debitMoney() {
+      throw new Error("unused");
+    },
     async syncResources() {
       throw new Error("unused");
     },
@@ -230,5 +233,7 @@ function fakeCatalog(): Catalog {
     commonConf: async () => {
       throw new Error("unused");
     },
+    storeTypes: async () => [],
+    storeLots: async () => [],
   };
 }

@@ -6,6 +6,10 @@ const srcRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../s
 const maxLines = 400;
 const reviewThreshold = 250;
 const lineJustifications: Readonly<Record<string, string>> = {
+  "src/modules/character/application/character-service.ts":
+    "Character application facade: progression, resources, money debit/credit, location, and presence",
+  "src/modules/content/domain/content-document.ts":
+    "Playable bundle DTO including store types/lots, artifacts, bots, areas, and bootstrap documents",
   "src/modules/character/domain/hero.ts":
     "Hero aggregate owns vitals, money, location lock, and CMB-04 ghost/injury clock",
   "src/modules/combat/application/combat-service.ts":
@@ -13,11 +17,11 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/combat/domain/battle.ts":
     "Hunt aggregate owns pairing, melee, casts, and CMB-04 resume bootstrap for one RAM fight",
   "src/modules/content/application/content-validator.ts":
-    "Single bundle completeness gate including dump-proven fight extra blobs and bot loot references",
+    "Single bundle completeness gate including dump-proven store 504 types/lots, fight extra blobs, and bot loot references",
   "src/modules/inventory/domain/inventory-service.ts":
     "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag and pocket refill entry points",
   "src/modules/catalog/infrastructure/schema.ts":
-    "Catalog projection tables including bot reward columns and bot_loot_entries",
+    "Catalog projection tables including bot loot, store_types, and store_lots",
   "src/modules/jugger-wire/application/bootstrap-read-model.ts":
     "Flat OA bootstrap/mutation blocks including CMB-04 init2 fight|conf overlay",
 };

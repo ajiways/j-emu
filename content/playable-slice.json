@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v12",
+  "schemaVersion": "playable-slice/v13",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -213,6 +213,54 @@
         }
       },
       "extra": {}
+    },
+    {
+      "id": 23,
+      "title": "Простая магическая перчатка",
+      "picture": "greyset5_lhand.png",
+      "typeId": "2",
+      "kindId": 44,
+      "slotMask": 32,
+      "weight": 0,
+      "levelMin": 2,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 100,
+      "flags": 0,
+      "bagStack": 1,
+      "skills": [
+        { "id": "STR", "value": 6, "flags": 0 },
+        { "id": "RAG", "value": 2, "flags": 0 },
+        { "id": "DEX", "value": 1, "flags": 0 },
+        { "id": "DEF", "value": 1, "flags": 0 },
+        { "id": "VIT", "value": 5, "flags": 0 }
+      ],
+      "artifact_actions": {},
+      "extra": {}
+    },
+    {
+      "id": 24,
+      "title": "Простой наруч",
+      "picture": "greyset5_rhand.png",
+      "typeId": "2",
+      "kindId": 5,
+      "slotMask": 16,
+      "weight": 0,
+      "levelMin": 2,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 100,
+      "flags": 0,
+      "bagStack": 1,
+      "skills": [
+        { "id": "DEF", "value": 2, "flags": 0 },
+        { "id": "DEX", "value": 2, "flags": 0 },
+        { "id": "RAG", "value": 2, "flags": 0 },
+        { "id": "STR", "value": 8, "flags": 0 },
+        { "id": "VIT", "value": 7, "flags": 0 }
+      ],
+      "artifact_actions": {},
+      "extra": {}
     }
   ],
   "bots": [
@@ -387,6 +435,16 @@
       "y": 1499,
       "huntMask": "bot_1"
     }
+  ],
+  "storeTypes": [
+    { "areaId": "504", "typeId": -131, "title": "Оружие и доспехи", "ord": 11000 },
+    { "areaId": "504", "typeId": 159, "title": "Быстрый старт", "ord": 15 },
+    { "areaId": "504", "typeId": 10, "title": "Еда", "ord": 0 },
+    { "areaId": "504", "typeId": 21, "title": "Разное", "ord": 0 }
+  ],
+  "storeLots": [
+    { "areaId": "504", "lotId": 82, "artikulId": 24, "typeId": -131, "price": 1, "ord": 6 },
+    { "areaId": "504", "lotId": 80, "artikulId": 23, "typeId": -131, "price": 1, "ord": 8 }
   ],
   "skills": [
     {

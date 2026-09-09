@@ -2,9 +2,10 @@
 
 ## Статус
 
-Вход в лавку 504 **готово** (WLD-01, `areas.code=store`). `store|list` /
-`store|buy` ещё нет — это срез ECO-01. Точный product-status:
-[CAPABILITIES.md](../CAPABILITIES.md).
+Вход в лавку 504 **готово** (WLD-01). `store|list` / `store|buy` для q_5
+лотов 23/24 реализованы на raw-AMF (ECO-01 architecture close). CEF лавки
+ещё не прогонялся — product-status **готово** не ставить. Точный
+product-status: [CAPABILITIES.md](../CAPABILITIES.md).
 
 ## Источники поведения
 

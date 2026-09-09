@@ -338,7 +338,7 @@ PUT_ON/grant: сначала `syncResources`, потом мутация maxima/H
 положительное целое; итог в `[0, 2_147_483_647]`; та же hero-row lock и Unit
 of Work, что DROP. Inventory не пишет `heroes`. Wire: строка в `state`, число
 в `user|conf`. Полный DROP-контракт: [INVENTORY.md](INVENTORY.md).
-`debitMoney` (обратная операция, fail если не хватает) — ECO-01,
+`debitMoney` (обратная операция, fail если не хватает) — реализовано ECO-01,
 [STORE.md](STORE.md).
 
 Clock: один экземпляр из composition root в character, identity, combat и

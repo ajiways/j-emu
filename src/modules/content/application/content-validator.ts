@@ -9,6 +9,7 @@ import {
   type ValidatedContentBundle,
 } from "../domain/content-document.ts";
 import { ContentValidationError } from "./content-validation-error.ts";
+import { collectStoreIssues } from "./collect-store-issues.ts";
 
 const REQUIRED_SKILL_IDS = [
   "HPREG",
@@ -141,6 +142,7 @@ export class ContentValidator {
     }
     issues.push(...collectFightSpellIssues(bundle.artifacts));
     issues.push(...collectBotLootIssues(bundle));
+    issues.push(...collectStoreIssues(bundle));
     if (!bundle.levels.some((level) => level.level === 1)) {
       issues.push("level 1 boundary is required");
     }
@@ -164,6 +166,12 @@ export class ContentValidator {
         entry("area_link", `${document.fromAreaId}:${document.itemId}`, document),
       ),
       ...bundle.huntSpawns.map((document) => entry("hunt_spawn", String(document.id), document)),
+      ...bundle.storeTypes.map((document) =>
+        entry("store_type", `${document.areaId}:${document.typeId}`, document),
+      ),
+      ...bundle.storeLots.map((document) =>
+        entry("store_lot", `${document.areaId}:${document.lotId}`, document),
+      ),
       ...bundle.skills.map((document) => entry("skill", document.id, document)),
       ...bundle.levels.map((document) => entry("level", String(document.level), document)),
       ...bundle.appearances.map((document) =>
@@ -194,6 +202,8 @@ export class ContentValidator {
       areas: bundle.areas,
       areaLinks: bundle.areaLinks,
       huntSpawns: bundle.huntSpawns,
+      storeTypes: bundle.storeTypes,
+      storeLots: bundle.storeLots,
       skills: bundle.skills,
       levels: bundle.levels,
       appearances: bundle.appearances,

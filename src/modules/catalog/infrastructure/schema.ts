@@ -255,3 +255,47 @@ export const gameWideDocuments = catalogSchema.table(
     ),
   ],
 );
+
+export const storeTypes = catalogSchema.table(
+  "store_types",
+  {
+    releaseId: uuid("release_id")
+      .notNull()
+      .references(() => releases.id, { onDelete: "restrict" }),
+    areaId: text("area_id").notNull(),
+    typeId: integer("type_id").notNull(),
+    title: text("title").notNull(),
+    ord: integer("ord").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.releaseId, table.areaId, table.typeId] })],
+);
+
+export const storeLots = catalogSchema.table(
+  "store_lots",
+  {
+    releaseId: uuid("release_id")
+      .notNull()
+      .references(() => releases.id, { onDelete: "restrict" }),
+    areaId: text("area_id").notNull(),
+    lotId: integer("lot_id").notNull(),
+    artikulId: integer("artikul_id").notNull(),
+    typeId: integer("type_id").notNull(),
+    price: integer("price").notNull(),
+    ord: integer("ord").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.releaseId, table.areaId, table.lotId] }),
+    foreignKey({
+      columns: [table.releaseId, table.artikulId],
+      foreignColumns: [artifacts.releaseId, artifacts.id],
+      name: "store_lots_artifact_fk",
+    }).onDelete("restrict"),
+    foreignKey({
+      columns: [table.releaseId, table.areaId, table.typeId],
+      foreignColumns: [storeTypes.releaseId, storeTypes.areaId, storeTypes.typeId],
+      name: "store_lots_type_fk",
+    }).onDelete("restrict"),
+    check("store_lots_artikul_id_check", sql`${table.artikulId} > 0`),
+    check("store_lots_price_check", sql`${table.price} >= 0`),
+  ],
+);

@@ -32,6 +32,9 @@
   empty actions `203`, reconnect;
 - `world-travel` — raw-AMF COME_IN 503→504/`exit`, 503→501 15s lock, overload
   21/20, fight/missing-link/outdoor-exit denies, reconnect sidebar;
+- `store` — COME_IN 504 `store|list` types + lots 23/24; buy both `25.00`→`23.00`
+  persist reconnect/restart; buy in 503 / empty basket / unknown lot /
+  insufficient gold → status 2; ghost buy → 203;
 - `presence-esrv` — два isolated hero: init2 population by accountId, COME_IN/
   exit/logout `2:` diffs, `131:` hunt snapshot, chat auth empty body, restart
   drops queue;

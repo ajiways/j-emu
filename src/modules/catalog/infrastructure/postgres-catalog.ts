@@ -4,6 +4,9 @@ import type { CommonConfBlock } from "../../content/domain/bootstrap-content.ts"
 import type { ActiveContentRevision } from "../../content/ports/active-content-revision.ts";
 import { AppearancePreset } from "../domain/appearance-preset.ts";
 import type { ArtifactDefinition } from "../domain/artifact-definition.ts";
+import type { StoreLot, StoreType } from "../domain/store-lot.ts";
+import type { Catalog } from "../ports/catalog.ts";
+import { loadStoreLots, loadStoreTypes } from "./postgres-catalog-store.ts";
 import { artifactDefinitionFromRow } from "./artifact-definition-from-row.ts";
 import { BootstrapChrome } from "../domain/bootstrap-chrome.ts";
 import { BotDefinition } from "../domain/bot-definition.ts";
@@ -13,7 +16,6 @@ import { HudDefaults } from "../domain/hud-defaults.ts";
 import { HuntLook } from "../domain/hunt-look.ts";
 import { LevelBoundary } from "../domain/level-boundary.ts";
 import { SkillDefinition } from "../domain/skill-definition.ts";
-import type { Catalog } from "../ports/catalog.ts";
 import {
   appearancePresets,
   artifacts,
@@ -192,6 +194,14 @@ export class PostgresCatalog implements Catalog {
     const row = asRecord(document, "common_conf");
     if (row.status !== 100) throw new Error("common_conf status must be 100");
     return row as CommonConfBlock;
+  }
+
+  async storeTypes(areaId: string): Promise<readonly StoreType[]> {
+    return loadStoreTypes(this.database, await this.revision.requireId(), areaId);
+  }
+
+  async storeLots(areaId: string): Promise<readonly StoreLot[]> {
+    return loadStoreLots(this.database, await this.revision.requireId(), areaId);
   }
 
   private async requireGameWide(

@@ -3,6 +3,12 @@ export type CreditMoneyCommand = Readonly<{
   minorUnits: number;
 }>;
 
+export type DebitMoneyCommand = Readonly<{
+  characterId: number;
+  minorUnits: number;
+}>;
+
 export interface CharacterMoney {
   creditMoney(command: CreditMoneyCommand): Promise<void>;
+  debitMoney(command: DebitMoneyCommand): Promise<void>;
 }

@@ -136,6 +136,26 @@ describe("ContentValidator", () => {
       /artifact 77 must not carry a fight spell blob/,
     );
   });
+
+  it("rejects a store lot whose artifact is not in the bundle", () => {
+    const bundle: ContentBundle = {
+      ...playable,
+      storeLots: [
+        ...playable.storeLots,
+        {
+          areaId: "504",
+          lotId: 99,
+          artikulId: 8,
+          typeId: -131,
+          price: 1,
+          ord: 99,
+        },
+      ],
+    };
+    expect(() => new ContentValidator().validate(bundle)).toThrow(
+      /store_lot 504:99 artifact 8 is not in the bundle/,
+    );
+  });
 });
 
 describe("parseContentBundle", () => {

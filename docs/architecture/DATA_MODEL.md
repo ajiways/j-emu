@@ -213,8 +213,8 @@ containers, item_modifiers, container_slots, equipment_slots, item_reservations.
 item_actions, item_stat_modifiers, creature_stats/loot, spell_definitions,
 level_curves — отдельные таблицы поверх текущих `artifacts`/`bots`.
 `level_skill_values` уже в runtime и не является будущей таблицей.
-`store_types` / `store_lots` — ECO-01 (ещё не созданы); owner catalog, не
-economy.
+`store_types` / `store_lots` — runtime ECO-01 (active release, area 504 types
+и lots 23/24); owner catalog, не economy.
 
 ### `world`
 

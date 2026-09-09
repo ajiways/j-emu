@@ -129,6 +129,45 @@ describe("content publication", () => {
     expect(first?.id).toBe(9095);
   });
 
+  it("publishes store 504 types and lots 23/24", async () => {
+    await createPostgresContentPublication(database).seed(playable, playablePath);
+    const catalog = new PostgresCatalog(database, new PostgresActiveContentRevision(database));
+    const types = await catalog.storeTypes("504");
+    expect(types.map((row) => row.typeId).sort((a, b) => a - b)).toEqual([-131, 10, 21, 159]);
+    const lots = await catalog.storeLots("504");
+    expect(lots.map((lot) => ({ lotId: lot.lotId, artikulId: lot.artikulId }))).toEqual([
+      { lotId: 82, artikulId: 24 },
+      { lotId: 80, artikulId: 23 },
+    ]);
+    expect(await catalog.storeLots("503")).toEqual([]);
+    expect(await catalog.artifact(23)).toMatchObject({
+      id: 23,
+      title: "Простая магическая перчатка",
+      slotMask: 32,
+    });
+    expect(await catalog.artifact(24)).toMatchObject({
+      id: 24,
+      title: "Простой наруч",
+      slotMask: 16,
+    });
+  });
+
+  it("rejects a candidate lot whose artifact is missing", async () => {
+    const publication = createPostgresContentPublication(database);
+    await publication.seed(playable, playablePath);
+    const invalid: ContentBundle = {
+      ...playable,
+      storeLots: [
+        ...playable.storeLots,
+        { areaId: "504", lotId: 99, artikulId: 8, typeId: -131, price: 1, ord: 99 },
+      ],
+    };
+    await expect(publication.publish(invalid)).rejects.toBeInstanceOf(ContentValidationError);
+    const catalog = new PostgresCatalog(database, new PostgresActiveContentRevision(database));
+    const lots = await catalog.storeLots("504");
+    expect(lots.some((lot) => lot.lotId === 99)).toBe(false);
+  });
+
   it("activates an additive artifact release and rejects changed progression or artifact skills", async () => {
     const publication = createPostgresContentPublication(database);
     await publication.seed(playable, playablePath);
