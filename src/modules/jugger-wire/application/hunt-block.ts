@@ -1,4 +1,4 @@
-import type { HuntSpawn } from "../../world/domain/hunt-spawn.ts";
+import type { HuntBotSnapshot } from "../../world/domain/hunt-bot-snapshot.ts";
 
 /** Idle hunt bot is not in a fight. Live sends 0; this is not a catalog fallback. */
 export const IDLE_HUNT_FIGHT_ID = 0;
@@ -6,7 +6,7 @@ export const IDLE_HUNT_FIGHT_ID = 0;
 type HuntWireBot = Readonly<{
   id: number;
   artikul_id: number;
-  fight_id: typeof IDLE_HUNT_FIGHT_ID;
+  fight_id: number;
   hunt_mask: string;
   position_x: number;
   position_y: number;
@@ -19,18 +19,18 @@ export type HuntBlock = Readonly<{
   bots: readonly HuntWireBot[];
 }>;
 
-export function buildHuntBlock(spawns: readonly HuntSpawn[]): HuntBlock {
+export function buildHuntBlock(bots: readonly HuntBotSnapshot[]): HuntBlock {
   return {
     status: 100,
-    bots: spawns.map((spawn) => ({
-      id: spawn.id,
-      artikul_id: spawn.botId,
-      fight_id: IDLE_HUNT_FIGHT_ID,
-      hunt_mask: spawn.huntMask,
-      position_x: spawn.x,
-      position_y: spawn.y,
-      prev_x: spawn.x,
-      prev_y: spawn.y,
+    bots: bots.map((bot) => ({
+      id: bot.id,
+      artikul_id: bot.artikulId,
+      fight_id: bot.fightId,
+      hunt_mask: bot.huntMask,
+      position_x: bot.positionX,
+      position_y: bot.positionY,
+      prev_x: bot.prevX,
+      prev_y: bot.prevY,
     })),
   };
 }

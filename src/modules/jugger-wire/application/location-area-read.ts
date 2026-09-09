@@ -38,6 +38,6 @@ export async function locationAreaBlocks(
       items,
       remainingAreaFtime(hero.moveReadyAt, clock.now()),
     ),
-    hunt: buildHuntBlock(area.spawns),
+    hunt: buildHuntBlock(await world.huntSnapshot(area.id)),
   };
 }

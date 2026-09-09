@@ -3,12 +3,23 @@ import {
   buildHuntBlock,
   IDLE_HUNT_FIGHT_ID,
 } from "../../../src/modules/jugger-wire/application/hunt-block.ts";
-import { HuntSpawn } from "../../../src/modules/world/domain/hunt-spawn.ts";
 
 describe("buildHuntBlock", () => {
   it("emits an array of live hunt wire bots", () => {
-    const spawn = new HuntSpawn(50310, 2, 883, 1499, "bot_1");
-    expect(buildHuntBlock([spawn])).toEqual({
+    expect(
+      buildHuntBlock([
+        {
+          id: 50310,
+          artikulId: 2,
+          fightId: IDLE_HUNT_FIGHT_ID,
+          huntMask: "bot_1",
+          positionX: 883,
+          positionY: 1499,
+          prevX: 883,
+          prevY: 1499,
+        },
+      ]),
+    ).toEqual({
       status: 100,
       bots: [
         {
