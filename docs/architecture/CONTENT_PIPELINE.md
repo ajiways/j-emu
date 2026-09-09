@@ -60,22 +60,46 @@ Seed: `npm run db:publish:development` с `CONTENT_BUNDLE_FILE` и `DATABASE_URL
 ещё одну ручную запись в `playable-slice.json`. Ручной bundle используется
 только для типов, для которых ещё нет ни одной работающей capability.
 
-`jgr-emu` уже содержит рабочие decoder'ы боевого формата, которые можно
-использовать как evidence/reference для алгоритма (не как runtime-зависимость
-и не копированием файла):
+`jgr-emu` уже содержит полный набор seed-скриптов — по одному на домен, не
+только для items. Каждый — evidence/reference для алгоритма соответствующей
+DATA-стадии (не runtime-зависимость и не копирование файла,
+`SOURCE_BOUNDARY.md`). Делятся на два разных по цене класса:
 
-- `jgr-emu/src/db/seed_artifacts.ts` — уже разбирает все
-  `Pub1/.../amf/artifact_artikul_*.amf` (реальный AMF3 клиента, ~22 560
-  файлов) в структурированные строки. Для DATA-02 это готовый алгоритм разбора
-  формата — остаётся обернуть в typed importer с manifest/checksum/validator
-  вместо прямого upsert в свою временную схему.
-- Аналогично `build_npc_catalog.py`, `bots_overlay.json`,
-  `bot_spell_book.json`, `hunt_spawns.json` и т.д. — уже decoded/curated
-  представление реальных источников для соответствующих DATA-03/04 доменов.
+**Уже разбирают сырой Pub1 AMF/bin — готовый алгоритм формата, дешевле, чем
+писать AMF3-парсер заново:**
 
-Копировать сам файл/модуль запрещено (`SOURCE_BOUNDARY.md`), но пересобрать
-тот же разбор формата под typed drafts — ожидаемый и самый дешёвый путь,
-дешевле, чем писать AMF3-парсер заново.
+- `jgr-emu/src/db/seed_artifacts.ts` — все
+  `Pub1/.../amf/artifact_artikul_*.amf` (~22 560 файлов) → DATA-02 items.
+- `jgr-emu/src/db/seed_bots.ts` — `Pub1/.../amf/bestiary.amf` → DATA-03 base
+  bots/loot; JSON-fallback только для ID, которых нет в AMF (данж-only боты),
+  `bots_overlay.json` — пример authored-слоя поверх base (см.
+  `SOURCE_BOUNDARY.md` § «Собственные правки поверх базовых данных»).
+- `jgr-emu/src/db/seed_game_config.ts` — `common_conf.bin`/`common_init2.bin`
+  (реальный AMF live-дампа) → DATA-01 bootstrap-конфиги; тот же файл также
+  льёт `radvei_areas.json`/`radvei_hunt_bots.json`/`hunt_spawns.json`
+  (уже authored JSON, не сырой AMF) → DATA-04 areas/hunt.
+- `jgr-emu/src/db/seed_professions.ts` — `assistant_list.amf`,
+  `farm_list.amf`, `farm_types.amf`, `recipes.amf` → POST-02 professions.
+
+**Читают уже authored/curated JSON (не сырой клиентский формат) — тоже
+полезный evidence состава и связей, но decoder тут почти не нужен, нужен
+только validator под схему:**
+
+- `seed_bot_spell_book.ts` (`bot_spell_book.json`) → DATA-03 spell definitions;
+- `seed_store.ts` (`fixtures/stores/*.json`) → DATA-05 stores;
+- `seed_reputation.ts` (`reputation_tracks.json`, `reputation_kills.json`) →
+  DATA-05 reputation;
+- `seed_bonuses.ts` (`bonuses.json`) → DATA-05 bonuses/consumable USE;
+- `seed_artifact_use.ts` (`artifact_use.json`) → DATA-05/06 item scripts;
+- `seed_quests.ts` (`quests_curated/*.json`, `npc_catalog.json`,
+  `radvei_npcs.json`, `strangers_quest_dialogs.json`) → DATA-06 quests/NPC —
+  это evidence самого низкого приоритета (content-fill, не движок);
+- `seed_dialogs.ts` (`dialogs.json`) → DATA-06 standalone dialogs;
+- `seed_world.ts` (`world_facts.json`) → DATA-06 world facts/rules.
+
+Копировать сам файл/модуль запрещено, но пересобрать тот же разбор формата
+или ту же схему под typed drafts с manifest/checksum/validator — ожидаемый
+путь для каждой DATA-стадии в `CONTENT_MATRIX.md`.
 
 ## Что реализовано сейчас
 
