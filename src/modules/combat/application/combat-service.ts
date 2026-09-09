@@ -54,6 +54,7 @@ export class CombatService implements CombatPort {
     history: FinishedFightRecorder,
     historyWrites: HistoryWriteObserver,
     delay: CombatDelay,
+    private readonly testBotStrength?: number,
   ) {
     this.scheduler = new HuntMeleeScheduler(delay, clock);
     this.melee = new CombatMeleeLoop(
@@ -115,9 +116,14 @@ export class CombatService implements CombatPort {
     const fightId = requireFightId(input.fightId);
     if (this.battleByFight.has(fightId)) throw new Error(`Fight ${fightId} is already active`);
     const accessKey = randomBytes(16).toString("hex");
+    const botStrength =
+      this.testBotStrength === undefined ? input.botStrength : this.testBotStrength;
+    if (!Number.isInteger(botStrength) || botStrength < 1) {
+      throw new Error("Hunt bot strength must be positive");
+    }
     const battle = new Battle(
       huntBattleInitFromStart(
-        { ...input, fightId },
+        { ...input, fightId, botStrength },
         accessKey,
         this.botFightIds.allocate(input.heroId),
         this.scheduler.now(),
@@ -158,6 +164,7 @@ export class CombatService implements CombatPort {
       mp: input.heroMp,
       maxMp: input.heroMaxMp,
       loadout: input.loadout,
+      strength: input.heroStrength,
     });
     this.byAccount.set(input.accountId, battle);
     for (const accountId of battle.authedAccountIds()) {

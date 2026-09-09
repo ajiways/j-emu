@@ -74,7 +74,7 @@ export class CharacterService
     private readonly creationPolicy: HeroCreationPolicy,
     private readonly progression: CatalogProgression,
     private readonly reputationCatalog: ReputationCatalog,
-    equipment: EquippedModifiers,
+    private readonly equipment: EquippedModifiers,
     grantStore: ExperienceGrantRepository,
     private readonly clock: Clock,
     regenPolicy: RegenPolicy,
@@ -85,7 +85,7 @@ export class CharacterService
       heroes,
       skills,
       progression,
-      equipment,
+      this.equipment,
       clock,
       regenPolicy,
       activeFight,
@@ -96,7 +96,7 @@ export class CharacterService
       skills,
       grantStore,
       progression,
-      equipment,
+      this.equipment,
       this.resources,
     );
   }
@@ -226,6 +226,16 @@ export class CharacterService
     const hero = await this.heroes.lockById(characterId);
     if (!hero) throw new Error(`Hero ${characterId} is missing`);
     return hero;
+  }
+
+  async combatStrength(characterId: number): Promise<number> {
+    if (!Number.isInteger(characterId) || characterId < 1) {
+      throw new Error("Character id is required");
+    }
+    const snapshot = await this.requireSnapshot();
+    const naked = requireHeroSkills(await this.skills.list(characterId));
+    const bonuses = await this.equipment.modifiersForHero(characterId, snapshot.contentReleaseId);
+    return requiredSkillTotal(totalHeroSkills(naked, bonuses), "STR");
   }
 
   async applyEquipmentVitals(hero: Hero, bonuses: readonly ArtifactSkillBonus[]): Promise<Hero> {

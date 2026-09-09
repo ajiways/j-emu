@@ -8,6 +8,7 @@ import {
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import {
   completeMeleeHunt,
+  putOnStarterGloveIfInBag,
   strikeUntilHuntFinish,
 } from "../support/harness/complete-melee-hunt.ts";
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
@@ -108,12 +109,7 @@ describe("fproxy settlement loss", () => {
   beforeEach(async () => {
     harness = new ApplicationHarness(undefined, undefined, {
       lootRandom: new SequenceRandom([0, 0, 0, 0]),
-      combatRules: {
-        playerDamageMin: 8,
-        playerDamageMax: 8,
-        botDamageMin: 30,
-        botDamageMax: 30,
-      },
+      combatBotStrength: 400,
     });
     application = await harness.start();
   });
@@ -125,7 +121,7 @@ describe("fproxy settlement loss", () => {
   it("notes HP 0 as ghost, blocks regen, then RESURRECT restores HP", async () => {
     const client = await AuthenticatedClient.login(application);
     const before = await client.objectAction({ object: "common", action: "init", sq: 1 });
-    await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms));
+    await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms), 4, { equipGlove: false });
     const esrv = personalEsrvObject(await client.pollEsrv());
     expect(esrv["fight|loot"]).toMatchObject({
       experience: 0,
@@ -192,6 +188,7 @@ describe("fproxy settlement two hunters and refill", () => {
   it("gives loot to the opener and leaves the joiner without EXP", async () => {
     const a = await createIsolatedHero(application);
     const b = await createIsolatedHero(application);
+    await putOnStarterGloveIfInBag(a, 2);
     const start = await a.objectAction({
       object: "common",
       action: "object",

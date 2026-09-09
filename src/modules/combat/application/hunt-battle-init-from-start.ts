@@ -31,5 +31,7 @@ export function huntBattleInitFromStart(
     areaId: input.areaId,
     startedAt,
     loadout: input.loadout,
+    heroStrength: input.heroStrength,
+    botStrength: input.botStrength,
   };
 }

@@ -1,20 +1,28 @@
 import type { AuthenticatedClient } from "./authenticated-client.ts";
 import { MAP_HUNT_SPAWN_ID } from "./map-hunt-spawn.ts";
-import { framesIncludeFightFinish, huntFightIdFrom } from "./wire-payload.ts";
+import { bagItemByArtikulId, framesIncludeFightFinish, huntFightIdFrom } from "./wire-payload.ts";
+
+const STARTER_GLOVE_ARTIKUL = 9095;
+const MAX_MELEE_STRIKES = 40;
 
 export async function completeMeleeHunt(
   client: AuthenticatedClient,
   elapse: (ms: number) => Promise<void>,
   sequenceStart = 4,
+  options: Readonly<{ equipGlove?: boolean }> = {},
 ): Promise<string> {
+  let sq = sequenceStart;
+  if (options.equipGlove !== false) {
+    sq = await putOnStarterGloveIfInBag(client, sq);
+  }
   const start = await client.objectAction({
     object: "common",
     action: "object",
     form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
-    sq: sequenceStart,
+    sq,
   });
   const fightId = huntFightIdFrom(start);
-  await finishStartedMeleeHunt(client, fightId, elapse, sequenceStart + 1);
+  await finishStartedMeleeHunt(client, fightId, elapse, sq + 1);
   return fightId;
 }
 
@@ -36,7 +44,7 @@ export async function strikeUntilHuntFinish(
   sequenceStart: number,
 ): Promise<void> {
   let finished = false;
-  for (let strike = 0; strike < 8 && !finished; strike += 1) {
+  for (let strike = 0; strike < MAX_MELEE_STRIKES && !finished; strike += 1) {
     const castBody = await client.fight({
       rc: "castSpell",
       srcType: 1,
@@ -59,4 +67,26 @@ export async function strikeUntilHuntFinish(
     await client.pollFight();
   }
   if (!finished) throw new Error("Hunt fight did not finish");
+}
+
+export async function putOnStarterGloveIfInBag(
+  client: AuthenticatedClient,
+  sq: number,
+): Promise<number> {
+  const bag = await client.objectAction({ object: "user", action: "bag", sq });
+  let itemId: number | null = null;
+  try {
+    const glove = bagItemByArtikulId(bag, STARTER_GLOVE_ARTIKUL);
+    itemId = typeof glove.id === "number" ? glove.id : null;
+  } catch {
+    itemId = null;
+  }
+  if (itemId === null) return sq + 1;
+  await client.objectAction({
+    object: "common",
+    action: "object",
+    form: { code: "PUT_ON", artifact_id: itemId },
+    sq: sq + 1,
+  });
+  return sq + 2;
 }

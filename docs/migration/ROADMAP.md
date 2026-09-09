@@ -642,11 +642,18 @@
   переносится как `legacy behavior`, не live parity).
 - **Content set:** 2–3 representative бота/оружия разного архетипа (лёгкий
   melee, тяжёлый melee, дальний) для проверки формулы на разных входах.
-- **Architecture checkpoint / decision:** pending — параметризовать
-  `BattleRules` по stats бота/оружия вместо текущей одной константы.
+- **Architecture checkpoint / decision:** `BattleRules` knobs
+  `strPerDamagePoint=10` / `damageSpread=0.15` (`legacy behavior`). STR
+  snapshot на `HuntStartInput`/`HuntJoinInput`; combat не читает character
+  tables. ADR-0017–0020 достаточны, `ARC-*` нет. Dodge/crit/choke вне среза.
 - **Acceptance:** урон считается по формуле от входных статов участников, не
   по хардкоду под bot id 2; existing CMB-01 acceptance не регрессирует.
-- **Status:** `next`
+  CEF не прогонялся — см. [CEF_MANUAL.md](CEF_MANUAL.md).
+- **Status:** `done`
+
+Очередь после CMB-05 — **развилка**: одновременно dependency-ready
+`CMB-06`, `CMB-07`, `CMB-08`, `CMB-09`, `WLD-03`, `MAIL-01`, `TRD-01`,
+`SOC-01`, `PRF-01`, `QST-ENG-01`. Автопилот не выбирает `next`.
 
 ### CMB-06 — Bot AI and spellbook casting
 

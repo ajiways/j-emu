@@ -1,8 +1,6 @@
 export type BattleRules = Readonly<{
-  playerDamageMin: number;
-  playerDamageMax: number;
-  botDamageMin: number;
-  botDamageMax: number;
+  strPerDamagePoint: number;
+  damageSpread: number;
   turnTimeoutSeconds: number;
   meleeBotCounterMs: number;
   turnGrantDelayMs: number;

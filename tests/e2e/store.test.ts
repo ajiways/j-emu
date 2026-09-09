@@ -102,12 +102,7 @@ describe("store buy while ghosted", () => {
 
   beforeEach(async () => {
     harness = new ApplicationHarness(undefined, undefined, {
-      combatRules: {
-        playerDamageMin: 8,
-        playerDamageMax: 8,
-        botDamageMin: 30,
-        botDamageMax: 30,
-      },
+      combatBotStrength: 400,
     });
     application = await harness.start();
   });
@@ -119,7 +114,7 @@ describe("store buy while ghosted", () => {
   it("returns 203 for a ghost buy in the shop", async () => {
     const client = await AuthenticatedClient.login(application);
     await client.objectAction({ object: "common", action: "init", sq: 1 });
-    await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms));
+    await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms), 4, { equipGlove: false });
     await client.pollEsrv();
     await enterShop(client, 20);
     const denied = await client.objectAction({

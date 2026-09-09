@@ -103,10 +103,8 @@
     }
   },
   "combat": {
-    "playerDamageMin": 8,
-    "playerDamageMax": 12,
-    "botDamageMin": 2,
-    "botDamageMax": 4,
+    "strPerDamagePoint": 10,
+    "damageSpread": 0.15,
     "turnTimeoutSeconds": 20,
     "meleeBotCounterMs": 1400,
     "turnGrantDelayMs": 2500,

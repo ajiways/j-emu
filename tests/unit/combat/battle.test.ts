@@ -17,6 +17,8 @@ function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
     heroKind: 1,
     heroMp: 10,
     heroMaxMp: 10,
+    heroStrength: 80,
+    botStrength: 20,
     botArtikulId: 2,
     botFightId: 1_000_000,
     botNick: "Грызль",
@@ -130,6 +132,7 @@ describe("Battle", () => {
       maxHp: 27,
       mp: 10,
       maxMp: 10,
+      strength: 80,
       loadout: EMPTY_COMBAT_LOADOUT,
     });
     expect(roster).toMatchObject({

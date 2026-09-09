@@ -12,28 +12,13 @@ import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { battleRules } from "../../support/create-combat-service.ts";
 import { unitHuntStart } from "../../support/hunt-start-input.ts";
 
-const rules = battleRules({
-  playerDamageMin: 20,
-  playerDamageMax: 20,
-  botDamageMin: 2,
-  botDamageMax: 2,
-});
+const rules = battleRules();
 
 describe("CombatService history", () => {
   it("does not touch history storage on poll or a non-terminal strike", async () => {
     const history = new RecordingFinishedFightStore();
     const writes = new RecordingHistoryWriteObserver();
-    const combat = service(
-      history,
-      writes,
-      new SequenceRandom([8, 2]),
-      battleRules({
-        playerDamageMin: 8,
-        playerDamageMax: 8,
-        botDamageMin: 2,
-        botDamageMax: 2,
-      }),
-    );
+    const combat = service(history, writes, new SequenceRandom([8, 2]));
     await startHuntWithIssuedId(combat, huntInput());
     expect(await combat.execute(1, { kind: "poll" })).toEqual([]);
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
@@ -50,7 +35,7 @@ describe("CombatService history", () => {
     const history = new RecordingFinishedFightStore();
     const writes = new RecordingHistoryWriteObserver();
     const combat = service(history, writes, new SequenceRandom([20]));
-    const start = await startHuntWithIssuedId(combat, huntInput());
+    const start = await startHuntWithIssuedId(combat, huntInput({ heroStrength: 200 }));
     expect(history.records).toEqual([]);
     expect(start.participantId).toBe(1);
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
@@ -84,7 +69,7 @@ describe("CombatService history", () => {
       writes,
       new ManualCombatDelay(),
     );
-    const start = await startHuntWithIssuedId(combat, huntInput());
+    const start = await startHuntWithIssuedId(combat, huntInput({ heroStrength: 200 }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     await combat.execute(1, { kind: "strike", side: "left", sequence: 2 });
     const events = await combat.execute(1, { kind: "poll" });
@@ -100,12 +85,6 @@ describe("CombatService history", () => {
       new RecordingFinishedFightStore(),
       new RecordingHistoryWriteObserver(),
       new SequenceRandom([8, 2]),
-      battleRules({
-        playerDamageMin: 8,
-        playerDamageMax: 8,
-        botDamageMin: 2,
-        botDamageMax: 2,
-      }),
     );
     const start = await startHuntWithIssuedId(combat, huntInput());
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
@@ -137,6 +116,6 @@ function service(
   );
 }
 
-function huntInput() {
-  return unitHuntStart();
+function huntInput(overrides: Parameters<typeof unitHuntStart>[0] = {}) {
+  return unitHuntStart(overrides);
 }

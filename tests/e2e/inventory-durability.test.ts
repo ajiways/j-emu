@@ -14,12 +14,7 @@ describe("inventory durability death and repair", () => {
   beforeEach(async () => {
     harness = new ApplicationHarness(undefined, undefined, {
       lootRandom: new SequenceRandom(Array.from({ length: 64 }, () => 0)),
-      combatRules: {
-        playerDamageMin: 8,
-        playerDamageMax: 8,
-        botDamageMin: 50,
-        botDamageMax: 50,
-      },
+      combatBotStrength: 400,
     });
     application = await harness.start();
   });
@@ -42,7 +37,7 @@ describe("inventory durability death and repair", () => {
 
     let sq = 10;
     for (let death = 0; death < 3; death += 1) {
-      await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms), sq);
+      await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms), sq, { equipGlove: false });
       sq += 20;
       await client.pollEsrv();
       if (death < 2) {

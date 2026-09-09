@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
-import { createCombatService, battleRules } from "../../support/create-combat-service.ts";
+import { createCombatService } from "../../support/create-combat-service.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { unitHuntJoin, unitHuntStart } from "../../support/hunt-start-input.ts";
@@ -11,12 +11,6 @@ describe("CombatService melee turns", () => {
     const { combat, delay } = createCombatService({
       clock,
       random: new SequenceRandom([8, 2]),
-      rules: battleRules({
-        playerDamageMin: 8,
-        playerDamageMax: 8,
-        botDamageMin: 2,
-        botDamageMax: 2,
-      }),
     });
     await startHuntWithIssuedId(combat, unitHuntStart());
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
@@ -45,9 +39,8 @@ describe("CombatService melee turns", () => {
   it("ignores off-turn, waiter, and already-ended strikes", async () => {
     const { combat } = createCombatService({
       random: new SequenceRandom([20]),
-      rules: battleRules({ playerDamageMin: 20, playerDamageMax: 20 }),
     });
-    const start = await startHuntWithIssuedId(combat, unitHuntStart());
+    const start = await startHuntWithIssuedId(combat, unitHuntStart({ heroStrength: 200 }));
     await combat.joinHunt(unitHuntJoin({ fightId: start.fightId }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     await combat.execute(1, { kind: "poll" });
@@ -72,9 +65,8 @@ describe("CombatService melee turns", () => {
     const { combat, delay } = createCombatService({
       clock,
       random: new SequenceRandom([20]),
-      rules: battleRules({ playerDamageMin: 20, playerDamageMax: 20 }),
     });
-    const start = await startHuntWithIssuedId(combat, unitHuntStart());
+    const start = await startHuntWithIssuedId(combat, unitHuntStart({ heroStrength: 200 }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     await combat.execute(1, { kind: "poll" });
     await combat.execute(1, { kind: "strike", side: "right", sequence: 2 });
@@ -99,16 +91,11 @@ describe("CombatService melee turns", () => {
     const { combat, delay } = createCombatService({
       clock,
       random: new SequenceRandom([1, 27]),
-      rules: battleRules({
-        playerDamageMin: 1,
-        playerDamageMax: 1,
-        botDamageMin: 27,
-        botDamageMax: 27,
-        meleeBotCounterMs: 1400,
-        turnGrantDelayMs: 2500,
-      }),
     });
-    const start = await startHuntWithIssuedId(combat, unitHuntStart());
+    const start = await startHuntWithIssuedId(
+      combat,
+      unitHuntStart({ heroStrength: 10, botStrength: 270 }),
+    );
     await combat.joinHunt(unitHuntJoin({ fightId: start.fightId }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     await combat.execute(1, { kind: "poll" });

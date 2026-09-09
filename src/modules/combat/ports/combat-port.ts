@@ -35,11 +35,13 @@ export type HuntStartInput = Readonly<{
   heroMaxHp: number;
   heroMp: number;
   heroMaxMp: number;
+  heroStrength: number;
   fightId: string;
   botId: number;
   botNick: string;
   botLevel: number;
   botHp: number;
+  botStrength: number;
   botAvatar: string;
   botSk: string;
   botBody: string;
@@ -58,6 +60,7 @@ export type HuntJoinInput = Readonly<{
   heroMaxHp: number;
   heroMp: number;
   heroMaxMp: number;
+  heroStrength: number;
   fightId: string;
   areaId: string;
   team: 1;

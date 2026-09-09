@@ -56,10 +56,8 @@ const schema = z.object({
     menuLinks: z.record(z.string(), z.string()),
   }),
   combat: z.object({
-    playerDamageMin: z.number().int().nonnegative(),
-    playerDamageMax: z.number().int().nonnegative(),
-    botDamageMin: z.number().int().nonnegative(),
-    botDamageMax: z.number().int().nonnegative(),
+    strPerDamagePoint: z.literal(10),
+    damageSpread: z.literal(0.15),
     turnTimeoutSeconds: z.number().int().positive(),
     meleeBotCounterMs: z.number().int().positive(),
     turnGrantDelayMs: z.number().int().positive(),

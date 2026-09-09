@@ -101,7 +101,7 @@ describe("CombatService pocket glove rage", () => {
   it("orders pocket 93 and 99 as rs then FX without persSpells", async () => {
     const { combat } = createCombatService({
       random: new SequenceRandom([8, 2]),
-      rules: battleRules({ playerDamageMin: 8, playerDamageMax: 8 }),
+      rules: battleRules(),
     });
     await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
@@ -138,12 +138,6 @@ describe("CombatService pocket glove rage", () => {
     const { combat, delay } = createCombatService({
       clock,
       random: new SequenceRandom([8, 2]),
-      rules: battleRules({
-        playerDamageMin: 8,
-        playerDamageMax: 8,
-        botDamageMin: 2,
-        botDamageMax: 2,
-      }),
     });
     await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
@@ -168,7 +162,7 @@ describe("CombatService pocket glove rage", () => {
   it("keeps unspent cp on off-turn ending glove", async () => {
     const { combat } = createCombatService({
       random: new SequenceRandom([8, 2]),
-      rules: battleRules({ playerDamageMin: 8, playerDamageMax: 8 }),
+      rules: battleRules(),
     });
     await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
@@ -188,12 +182,6 @@ describe("CombatService pocket glove rage", () => {
     const { combat, delay } = createCombatService({
       clock,
       random: new SequenceRandom([8, 2, 8, 2, 8, 2]),
-      rules: battleRules({
-        playerDamageMin: 8,
-        playerDamageMax: 8,
-        botDamageMin: 2,
-        botDamageMax: 2,
-      }),
     });
     await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
@@ -215,12 +203,6 @@ describe("CombatService pocket glove rage", () => {
     const { combat, delay } = createCombatService({
       clock,
       random: new SequenceRandom([8, 2, 8, 2, 8]),
-      rules: battleRules({
-        playerDamageMin: 8,
-        playerDamageMax: 8,
-        botDamageMin: 2,
-        botDamageMax: 2,
-      }),
     });
     await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });

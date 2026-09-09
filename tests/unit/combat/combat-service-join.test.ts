@@ -11,17 +11,12 @@ import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { battleRules } from "../../support/create-combat-service.ts";
 import { ManualCombatDelay } from "../../support/fakes/manual-combat-delay.ts";
 
-const rules = battleRules({
-  playerDamageMin: 20,
-  playerDamageMax: 20,
-  botDamageMin: 2,
-  botDamageMax: 2,
-});
+const rules = battleRules();
 
 describe("CombatService hunt join", () => {
   it("joins the same fight id and queues roster to authed humans", async () => {
     const combat = service();
-    const start = await startHuntWithIssuedId(combat, unitHuntStart());
+    const start = await startHuntWithIssuedId(combat, unitHuntStart({ heroStrength: 200 }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     await combat.execute(1, { kind: "poll" });
     const joined = await combat.joinHunt(unitHuntJoin({ fightId: start.fightId }));
@@ -42,7 +37,7 @@ describe("CombatService hunt join", () => {
 
   it("denies already-in-fight, missing fight, other area, and rejoin", async () => {
     const combat = service();
-    const start = await startHuntWithIssuedId(combat, unitHuntStart());
+    const start = await startHuntWithIssuedId(combat, unitHuntStart({ heroStrength: 200 }));
     await expect(
       combat.joinHunt(unitHuntJoin({ accountId: 1, heroId: 1, fightId: start.fightId })),
     ).rejects.toMatchObject({ name: "HuntJoinDenied", message: "уже в бою" });
@@ -62,7 +57,7 @@ describe("CombatService hunt join", () => {
 
   it("finishes every account on the shared battle", async () => {
     const combat = service();
-    const start = await startHuntWithIssuedId(combat, unitHuntStart());
+    const start = await startHuntWithIssuedId(combat, unitHuntStart({ heroStrength: 200 }));
     await combat.joinHunt(unitHuntJoin({ fightId: start.fightId }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     await combat.execute(1, { kind: "strike", side: "left", sequence: 2 });

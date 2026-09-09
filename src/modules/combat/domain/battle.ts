@@ -51,6 +51,7 @@ export class Battle {
         maxMp: init.heroMaxMp,
         team: 1,
         waiting: false,
+        strength: init.heroStrength,
         loadout: init.loadout,
       }),
     );
@@ -150,6 +151,7 @@ export class Battle {
       maxMp: join.maxMp,
       team: 1,
       waiting: true,
+      strength: join.strength,
       loadout: join.loadout,
     });
     this.humans.push(human);
@@ -269,6 +271,7 @@ export class Battle {
       rules: this.rules,
       random: this.random,
       botFightId: this.botFightId,
+      botStrength: this.init.botStrength,
       fightId: this.id,
       hasWaiter: this.hasWaitingHuman(),
     });

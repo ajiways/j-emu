@@ -3,7 +3,6 @@ import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { createCombatService } from "../../support/create-combat-service.ts";
 import { unitHuntJoin, unitHuntStart } from "../../support/hunt-start-input.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
-import { battleRules } from "../../support/create-combat-service.ts";
 
 describe("CombatService leaveFight", () => {
   it("acks leave on HTTP and queues a flee exit for the last human", async () => {
@@ -26,9 +25,8 @@ describe("CombatService leaveFight", () => {
   it("keeps the fight alive when an ally remains", async () => {
     const { combat } = createCombatService({
       random: new SequenceRandom([20]),
-      rules: battleRules({ playerDamageMin: 20, playerDamageMax: 20 }),
     });
-    const start = await startHuntWithIssuedId(combat, unitHuntStart());
+    const start = await startHuntWithIssuedId(combat, unitHuntStart({ heroStrength: 200 }));
     await combat.joinHunt(unitHuntJoin({ fightId: start.fightId }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     await combat.execute(1, { kind: "poll" });

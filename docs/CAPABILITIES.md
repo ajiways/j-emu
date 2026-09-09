@@ -182,16 +182,18 @@ hunt overlay и map join: первый ATTACK_BOT **50310** ставит `fight_
 
 ## Combat — частично
 
-Есть hunt melee loop, CMB-02 casts, CMB-03 terminal settlement и CMB-04
-reconnect/ghost/RESURRECT (raw-AMF): ATTACK_BOT → fproxy auth/bootstrap,
-L/C/R, карман/перчатка/ярость, затем esrv один `2:` object `fight|loot`
-затем `fight|exit`. Win 50310 пишет HP/EXP/money (overlay 0.2–0.44) и ролл
-лута 77/93/99; loss пишет HP 0 + ghost/injury 875; `leaveFight` HTTP
-`{rs:true}` и flee `type:2`. F5 mid-hunt: init2 `fight|conf` с тем же
+Есть hunt melee loop, CMB-02 casts, CMB-03 terminal settlement, CMB-04
+reconnect/ghost/RESURRECT и CMB-05 STR-формула урона (raw-AMF): ATTACK_BOT →
+fproxy auth/bootstrap, L/C/R, карман/перчатка/ярость, затем esrv один `2:`
+object `fight|loot` затем `fight|exit`. Melee damage = `STR/10 ±15%`
+(`legacy behavior`), не dice 8–12/2–4. Win 50310 пишет HP/EXP/money
+(overlay 0.2–0.44) и ролл лута 77/93/99; loss пишет HP 0 + ghost/injury 875;
+`leaveFight` HTTP `{rs:true}` и flee `type:2`. Representative боты 2/4/24/32
+и hunts 50310/50101–50103. F5 mid-hunt: init2 `fight|conf` с тем же
 `fightId`/`akey`, resume без `oppwait`, `attacknow` с остатком restTime.
 Ghost блокирует regen; OA `RESURRECT` снимает ghost. Duplicate settlement
-no-op. Restart посреди боя без награды. CEF экрана результата, F5 в бою
-и призрака не прогонялся.
+no-op. Restart посреди боя без награды. CEF экрана результата, F5 в бою,
+призрака и видимого урона не прогонялся — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 
 Не перенесены: OA `FIGHT_JOIN` / `FIGHT_HELP`.
 

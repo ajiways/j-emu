@@ -1152,6 +1152,90 @@
         "sk": "11",
         "body": ""
       }
+    },
+    {
+      "id": 4,
+      "title": "Хисса",
+      "level": 2,
+      "maxHp": 19,
+      "strength": 15,
+      "baseExp": 15,
+      "moneyMin": 0.4,
+      "moneyMax": 0.72,
+      "lootDropCnt": 1,
+      "lootBonusChance": 0,
+      "lootBonusMin": 0,
+      "lootBonusMax": 0,
+      "lootNothingWeight": 1,
+      "lootEntries": [],
+      "hunt": {
+        "nick": "Хисса",
+        "swf": "snake1.swf",
+        "scale": 90,
+        "fps": 15,
+        "speed": 10,
+        "avatar": "avatar_hissa1_sm.jpg",
+        "kind": 0,
+        "hideOnMap": 0,
+        "sk": "16",
+        "body": ""
+      }
+    },
+    {
+      "id": 24,
+      "title": "Рыжий грызл",
+      "level": 3,
+      "maxHp": 32,
+      "strength": 45,
+      "baseExp": 15,
+      "moneyMin": 0.6,
+      "moneyMax": 0.98,
+      "lootDropCnt": 1,
+      "lootBonusChance": 0,
+      "lootBonusMin": 0,
+      "lootBonusMax": 0,
+      "lootNothingWeight": 1,
+      "lootEntries": [],
+      "hunt": {
+        "nick": "Рыжий грызл",
+        "swf": "gryzl2.swf",
+        "scale": 100,
+        "fps": 15,
+        "speed": 10,
+        "avatar": "avatar_gryzl2_sm.jpg",
+        "kind": 0,
+        "hideOnMap": 0,
+        "sk": "12",
+        "body": ""
+      }
+    },
+    {
+      "id": 32,
+      "title": "Заблудший дух",
+      "level": 2,
+      "maxHp": 29,
+      "strength": 35,
+      "baseExp": 15,
+      "moneyMin": 0.4,
+      "moneyMax": 0.72,
+      "lootDropCnt": 1,
+      "lootBonusChance": 0,
+      "lootBonusMin": 0,
+      "lootBonusMax": 0,
+      "lootNothingWeight": 1,
+      "lootEntries": [],
+      "hunt": {
+        "nick": "Заблудший дух",
+        "swf": "svetlyak_blue.swf",
+        "scale": 100,
+        "fps": 15,
+        "speed": 10,
+        "avatar": "avatar_svetlyak2_sm.jpg",
+        "kind": 0,
+        "hideOnMap": 0,
+        "sk": "30",
+        "body": ""
+      }
     }
   ],
   "areas": [
@@ -1302,6 +1386,30 @@
       "botId": 2,
       "x": 883,
       "y": 1499,
+      "huntMask": "bot_1"
+    },
+    {
+      "id": 50101,
+      "areaId": "501",
+      "botId": 4,
+      "x": 886,
+      "y": 570,
+      "huntMask": "bot_1"
+    },
+    {
+      "id": 50102,
+      "areaId": "501",
+      "botId": 32,
+      "x": 915,
+      "y": 1029,
+      "huntMask": "bot_1"
+    },
+    {
+      "id": 50103,
+      "areaId": "501",
+      "botId": 24,
+      "x": 332,
+      "y": 922,
       "huntMask": "bot_1"
     }
   ],

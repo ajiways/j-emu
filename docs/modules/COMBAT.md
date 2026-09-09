@@ -3,11 +3,10 @@
 ## Статус
 
 Есть hunt melee loop (raw-AMF L/C/R, delay grant/bot-counter, kill, waiter
-re-pair), map `joinHunt`, CMB-02 pocket/glove/rage casts и CMB-03 terminal
-settlement (HP/EXP/money/loot, `leaveFight`, esrv `fight|loot` затем
-`fight|exit`) и CMB-04 reconnect/ghost/RESURRECT (raw-AMF). Shuffle 3↔3 не
-в этом срезе. CEF экрана результата, F5 в бою и призрака не прогонялся —
-product status combat остаётся частично.
+re-pair), map `joinHunt`, CMB-02 pocket/glove/rage casts, CMB-03 terminal
+settlement, CMB-04 reconnect/ghost/RESURRECT и CMB-05 STR-урон (raw-AMF).
+Shuffle 3↔3 не в этом срезе. CEF экрана результата, F5 в бою и призрака не
+прогонялся — product status combat остаётся частично.
 
 ## Источники поведения
 
@@ -88,8 +87,8 @@ SINGLE/MULTI framing, exact `sq`, source IDs и packet order менять нел
 Срез реализован: `CombatDelay` (`dueAt` + cancel по fight id), синхронный
 `Battle`, `HuntMeleeScheduler` + `CombatMeleeLoop`. Production
 `SystemCombatDelay` будит fproxy waiters; тесты — `MutableClock` +
-`ManualCombatDelay`, без `sleep`. `Clock.schedule` нет. Урон — `BattleRules`
-min/max, `damageProvenance: legacy behavior`.
+`ManualCombatDelay`, без `sleep`. `Clock.schedule` нет. Урон CMB-05 —
+`STR/10 ±15%` (`legacy behavior`), не min/max под Gryzl.
 
 Join/waiter WLD-02 не ломается: пока A в дуэли, B без `attacknow`/`oppnew`.
 Если A умер и бот жив — authed B получает `oppnew`, затем `attacknow`.
@@ -250,6 +249,34 @@ layout/travel/USE/ATTACK уже есть; CMB-04 их не расширяет н
 
 OA FIGHT_JOIN/HELP; persist боя; `arena|finished_fights`; dungeon/BG
 resurrect dest; artifact 875; `Clock.schedule`.
+
+## CMB-05 — generic melee damage
+
+Срез закрыт (raw-AMF). `BattleRules` держит knobs
+`strPerDamagePoint=10`, `damageSpread=0.15` (`legacy behavior` из
+`FIGHT_DAMAGE.md`), не dice под bot id 2. Урон =
+`max(1, round(STR/10 × [0.85…1.15]))`. Hero STR — naked+gear через
+`CharacterService.combatStrength` на ATTACK_BOT/join; bot STR —
+`BotDefinition.strength`. Combat domain не импортирует character/inventory
+repositories. Dodge/block/crit choke, charging overlay и VAMP — вне среза.
+Glove ending (не AOE 16) крутит ту же STR-формулу; crit перчатки = верхняя
+граница bounds.
+
+Content: Грызль **2** STR 10 / 50310; Хисса **4** STR 15 / 50101; дух **32**
+STR 35 / 50102; рыжий грызль **24** STR 45 / 50103. Луты 4/24/32 пустые
+(`nothing_weight=1`) — не CMB-07. CEF урона не прогонялся.
+
+### Architecture decision
+
+Отдельный `ARC-*` не нужен. ADR-0017–0020 достаточны: active fight в RAM,
+формула — именованный FightRules/policy knob, не persistent combat state.
+Test-only `combatBotStrength` в composition extras форсирует bot STR для
+e2e смерти; production path его не передаёт.
+
+### Out of scope (CMB-05 leftover)
+
+`rollMeleeOutcome` dodge/block/crit/DEF; kind-1 overlay; FIGHT_MAGIC;
+weapon DPS aparte от STR.
 
 ## Границы модулей
 

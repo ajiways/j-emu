@@ -1,6 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { CombatPocketRow, CombatSpell } from "./combat-loadout.ts";
+import { rollMeleeDamage } from "./melee-damage.ts";
 import { FightCastDenied } from "./fight-cast-denied.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { pocketHealAmount, spellCharging, spellKind, spellPcStr } from "./hunt-human-cast-state.ts";
@@ -174,7 +175,7 @@ export function resolveGloveFinisher(
   }
   human.endTurn();
   const cp = human.casts.spendCombo(glove.cost);
-  const damage = endingGloveDamage(glove.spell, input.random, input.rules);
+  const damage = endingGloveDamage(glove.spell, human.strength, input.random, input.rules);
   const applied = Math.min(input.botHp, damage);
   human.creditDamageToBot(applied);
   const botHp = input.botHp - applied;
@@ -200,9 +201,14 @@ function isEndingGlove(spell: CombatSpell): boolean {
   return spell.endTurn === true || spellKind(spell, 1);
 }
 
-function endingGloveDamage(spell: CombatSpell, random: RandomSource, rules: BattleRules): number {
+function endingGloveDamage(
+  spell: CombatSpell,
+  strength: number,
+  random: RandomSource,
+  rules: BattleRules,
+): number {
   if (spell.effects.some((effect) => effect.targetCount === 2)) return 16;
-  return random.integer(rules.playerDamageMin, rules.playerDamageMax);
+  return rollMeleeDamage(strength, random, rules);
 }
 
 function pocketEffectUse(

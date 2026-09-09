@@ -37,11 +37,20 @@ export function requireHuntBattleInit(init: HuntBattleInit, rules: BattleRules):
   if (!init.botAvatar) throw new Error("Battle bot avatar is required");
   if (!init.botSk) throw new Error("Battle bot sk is required");
   if (typeof init.botBody !== "string") throw new Error("Battle bot body is required");
-  if (rules.playerDamageMin < 0 || rules.playerDamageMax < rules.playerDamageMin) {
-    throw new Error("Player damage rules are invalid");
+  if (rules.strPerDamagePoint < 1) throw new Error("strPerDamagePoint must be positive");
+  if (
+    typeof rules.damageSpread !== "number" ||
+    Number.isNaN(rules.damageSpread) ||
+    rules.damageSpread <= 0 ||
+    rules.damageSpread >= 1
+  ) {
+    throw new Error("damageSpread must be in (0, 1)");
   }
-  if (rules.botDamageMin < 0 || rules.botDamageMax < rules.botDamageMin) {
-    throw new Error("Bot damage rules are invalid");
+  if (!Number.isInteger(init.heroStrength) || init.heroStrength < 1) {
+    throw new Error("Battle hero strength must be positive");
+  }
+  if (!Number.isInteger(init.botStrength) || init.botStrength < 1) {
+    throw new Error("Battle bot strength must be positive");
   }
   if (rules.turnTimeoutSeconds < 1) throw new Error("Turn timeout must be positive");
   if (!Number.isInteger(rules.meleeBotCounterMs) || rules.meleeBotCounterMs < 1) {

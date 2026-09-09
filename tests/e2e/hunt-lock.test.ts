@@ -8,7 +8,10 @@ import {
 } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
-import { strikeUntilHuntFinish } from "../support/harness/complete-melee-hunt.ts";
+import {
+  putOnStarterGloveIfInBag,
+  strikeUntilHuntFinish,
+} from "../support/harness/complete-melee-hunt.ts";
 import {
   fightEventTypes,
   fightPersListIds,
@@ -36,6 +39,7 @@ describe("hunt spawn lock", () => {
     const initB = await b.objectAction({ object: "common", action: "init", sq: 1 });
     const heroA = heroIdFrom(initA);
     const heroB = heroIdFrom(initB);
+    await putOnStarterGloveIfInBag(a, 2);
     const start = await a.objectAction({
       object: "common",
       action: "object",

@@ -24,4 +24,6 @@ export type HuntBattleInit = Readonly<{
   areaId: string;
   startedAt: Date;
   loadout: CombatLoadout;
+  heroStrength: number;
+  botStrength: number;
 }>;

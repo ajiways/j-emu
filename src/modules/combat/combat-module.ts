@@ -37,6 +37,7 @@ export class CombatModule {
     clock: Clock;
     delay: CombatDelay;
     random?: RandomSource;
+    testBotStrength?: number;
   }): CombatModule {
     const database = requirePresent(input.database, "Combat module requires a database");
     const rules = requirePresent(input.rules, "Combat module requires battle rules");
@@ -54,6 +55,7 @@ export class CombatModule {
       new FinishedFightRecorder(history, clock),
       historyWrites,
       delay,
+      input.testBotStrength,
     );
     return new CombatModule(
       runtime,

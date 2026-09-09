@@ -680,7 +680,7 @@ resyncs.
 
 ## Architecture checkpoint — план
 
-INV-08 workflow `done`. Следующий checkpoint — CMB-05.
+INV-08 workflow `done`. CMB-05 закрыт; очередь на развилке, см. ROADMAP.
 Containers, reservations не спроектированы.
 [ROADMAP.md](../migration/ROADMAP.md) и
 [PLAYBOOK.md](../migration/PLAYBOOK.md).

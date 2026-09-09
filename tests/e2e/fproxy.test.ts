@@ -48,7 +48,7 @@ describe("fproxy", () => {
       { srcId: 3, animation: "attack_right" },
     ] as const;
     let finished = false;
-    for (let strike = 0; strike < 8 && !finished; strike += 1) {
+    for (let strike = 0; strike < 40 && !finished; strike += 1) {
       const side = sides[strike % sides.length];
       if (!side) throw new Error("Melee side is missing");
       expect(

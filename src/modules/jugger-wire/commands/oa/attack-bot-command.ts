@@ -81,6 +81,7 @@ export class AttackBotCommand implements OaCommand {
     if (!bot) throw new Error(`Bot catalog entry ${spawn.botId} is missing`);
     await this.inventory.ensureStarterInventory(hero.id);
     const loadout = await new HuntCombatLoadout(this.inventory, this.catalog).snapshot(hero.id);
+    const heroStrength = await this.characters.combatStrength(hero.id);
     const fight = await this.huntAttack.execute({
       accountId: context.accountId,
       heroId: hero.id,
@@ -91,11 +92,13 @@ export class AttackBotCommand implements OaCommand {
       heroMaxHp: hero.maxHp,
       heroMp: hero.mp,
       heroMaxMp: hero.maxMp,
+      heroStrength,
       spawnId: spawn.id,
       botId: bot.id,
       botNick: bot.title,
       botLevel: bot.level,
       botHp: bot.maxHp,
+      botStrength: bot.strength,
       botAvatar: bot.hunt.avatar,
       botSk: bot.hunt.sk,
       botBody: bot.hunt.body,

@@ -1,6 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HuntHuman } from "./hunt-human.ts";
+import { meleeDamageBounds, rollMeleeDamage } from "./melee-damage.ts";
 import type { RandomSource } from "./random-source.ts";
 
 export type PlayerMeleeResult =
@@ -28,11 +29,11 @@ export function tryPlayerMelee(
     return { result: { kind: "ignored" }, botHp: input.botHp, finished: input.finished };
   }
   human.endTurn();
-  let playerDamage = input.random.integer(input.rules.playerDamageMin, input.rules.playerDamageMax);
+  let playerDamage = rollMeleeDamage(human.strength, input.random, input.rules);
   const orb = human.casts.takeOrbPcStr();
   if (orb > 0) playerDamage = Math.max(1, Math.round(playerDamage * (1 + orb / 100)));
   if (human.casts.takeGloveCrit()) {
-    playerDamage = Math.max(playerDamage, input.rules.playerDamageMax);
+    playerDamage = meleeDamageBounds(human.strength, input.rules).max;
   }
   const comboCp = human.casts.hits.length > 0 ? human.casts.advanceCombo(side) : undefined;
   const applied = Math.min(input.botHp, playerDamage);
@@ -64,6 +65,7 @@ export function resolveBotMelee(
     rules: BattleRules;
     random: RandomSource;
     botFightId: number;
+    botStrength: number;
     fightId: string;
     hasWaiter: boolean;
   }>,
@@ -71,7 +73,7 @@ export function resolveBotMelee(
   if (human.waiting || human.hp === 0) {
     throw new Error("Paired hunter is not a bot melee target");
   }
-  const botDamage = input.random.integer(input.rules.botDamageMin, input.rules.botDamageMax);
+  const botDamage = rollMeleeDamage(input.botStrength, input.random, input.rules);
   const killedPlayer = human.applyDamage(botDamage);
   const dRage = human.casts.awardIncomingRage(botDamage, human.maxHp);
   const events: BattleEvent[] = [

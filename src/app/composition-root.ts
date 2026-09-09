@@ -40,6 +40,7 @@ export class CompositionRoot {
       combatRandom?: RandomSource;
       upgradeRandom?: RandomSource;
       combatRules?: Partial<BattleRules>;
+      combatBotStrength?: number;
     }> = {},
   ): Promise<Application> {
     const policy = loadGamePolicy(config.gamePolicyFile);
@@ -66,10 +67,9 @@ export class CompositionRoot {
       const combat = CombatModule.create({
         database,
         rules: {
-          playerDamageMin: extras.combatRules?.playerDamageMin ?? policy.combat.playerDamageMin,
-          playerDamageMax: extras.combatRules?.playerDamageMax ?? policy.combat.playerDamageMax,
-          botDamageMin: extras.combatRules?.botDamageMin ?? policy.combat.botDamageMin,
-          botDamageMax: extras.combatRules?.botDamageMax ?? policy.combat.botDamageMax,
+          strPerDamagePoint:
+            extras.combatRules?.strPerDamagePoint ?? policy.combat.strPerDamagePoint,
+          damageSpread: extras.combatRules?.damageSpread ?? policy.combat.damageSpread,
           turnTimeoutSeconds:
             extras.combatRules?.turnTimeoutSeconds ?? policy.combat.turnTimeoutSeconds,
           meleeBotCounterMs:
@@ -79,6 +79,9 @@ export class CompositionRoot {
         clock,
         delay,
         ...(extras.combatRandom === undefined ? {} : { random: extras.combatRandom }),
+        ...(extras.combatBotStrength === undefined
+          ? {}
+          : { testBotStrength: extras.combatBotStrength }),
       });
       combat.startHistoryCleanup();
       closers.push(combat);

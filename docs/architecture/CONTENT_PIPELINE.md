@@ -32,9 +32,9 @@ counts/checksums и completeness gates:
 Текущая `playable-slice/v17` release — минимальный bundle: 30 artifacts
 (9095 + dump-proven L1 greyset **20/21/26**, glove spells **9098/9100/9099**, pocketables **93** и **99**, food **77**,
 shop wear **23** и **24**, upgrade crystals **553/1310/4603/11408/13224**, recruit set **27/28/30/33/35/106** и mix **43/46**,
-USE **640/623/2371/55/584**; без 209 и патронташа), 1 bot с overlay reward scalars и `bot_loot_entries` 77/93/99,
+USE **640/623/2371/55/584**; без 209 и патронташа), 4 bots (2/4/24/32) с overlay reward scalars; loot entries только у bot 2 (77/93/99),
 bonus **601**, use script **2827**,
-3 areas (503/501/504), authored travel `area_links`, 1 hunt spawn на 503, store 504 type `-131` и lots 80/23 и 82/24, reputation track **5**, 15 skills (включая **MAGSTR**), 14 levels с normalized managed skills,
+3 areas (503/501/504), authored travel `area_links`, hunt 50310 и 50101–50103, store 504 type `-131` и lots 80/23 и 82/24, reputation track **5**, 15 skills (включая **MAGSTR**), 14 levels с normalized managed skills,
 1 appearance и common-conf/chrome/HUD/welcome документы в составе текущего
 bundle. Это нельзя называть полным игровым контентом или полным контентом
 цикла 1–8.
