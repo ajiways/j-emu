@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import type { Clock } from "../../../shared/kernel/clock.ts";
-import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
+import { requirePresent } from "../../../shared/kernel/require-present.ts";
+import { parseDecimalId, requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { Battle, type BattleRules } from "../domain/battle.ts";
 import { EphemeralBotFightIds } from "../domain/ephemeral-bot-fight-ids.ts";
 import { FinishedFightConflictError } from "../domain/finished-fight-conflict-error.ts";
@@ -15,6 +16,7 @@ import type {
   FightStart,
 } from "../ports/combat-port.ts";
 import type { FightIdSource } from "../ports/fight-id-source.ts";
+import type { FightTerminalObserver } from "../ports/fight-terminal-observer.ts";
 
 export class CombatService implements CombatPort {
   // In-progress battles live in process memory. Fight IDs come from PostgreSQL;
@@ -25,6 +27,7 @@ export class CombatService implements CombatPort {
   private readonly queues = new Map<number, CombatEvent[]>();
   private readonly pendingExits = new Map<number, FightExit>();
   private readonly botFightIds = new EphemeralBotFightIds();
+  private terminal: FightTerminalObserver | undefined;
 
   constructor(
     private readonly ids: FightIdSource,
@@ -35,6 +38,15 @@ export class CombatService implements CombatPort {
     private readonly historyWrites: HistoryWriteObserver,
   ) {}
 
+  bindTerminalObserver(observer: FightTerminalObserver): void {
+    if (this.terminal) throw new Error("Fight terminal observer is already bound");
+    this.terminal = requirePresent(observer, "Fight terminal observer is required");
+  }
+
+  async nextFightId(): Promise<string> {
+    return this.ids.nextFightId();
+  }
+
   async startHunt(input: {
     accountId: number;
     heroId: number;
@@ -42,6 +54,7 @@ export class CombatService implements CombatPort {
     heroLevel: number;
     heroKind: number;
     heroHp: number;
+    fightId: string;
     botId: number;
     botNick: string;
     botLevel: number;
@@ -52,7 +65,10 @@ export class CombatService implements CombatPort {
     requireWireIdentity(input.accountId, "account id");
     requireWireIdentity(input.heroId, "hero id");
     if (this.byAccount.has(input.accountId)) throw new Error("Account already has an active fight");
-    const fightId = await this.ids.nextFightId();
+    const fightId = String(
+      requireWireIdentity(Number(parseDecimalId(input.fightId, "fight id")), "fight id"),
+    );
+    if (this.accountByFight.has(fightId)) throw new Error(`Fight ${fightId} is already active`);
     const accessKey = randomBytes(16).toString("hex");
     const battle = new Battle(
       {
@@ -123,6 +139,7 @@ export class CombatService implements CombatPort {
       });
       this.byAccount.delete(accountId);
       this.accountByFight.delete(battle.id);
+      await this.notifyFinished(accountId, battle.id);
     }
     return [];
   }
@@ -153,6 +170,11 @@ export class CombatService implements CombatPort {
     this.accountByFight.clear();
     this.queues.clear();
     this.pendingExits.clear();
+  }
+
+  private async notifyFinished(accountId: number, fightId: string): Promise<void> {
+    if (!this.terminal) return;
+    await this.terminal.afterFinished({ accountId, fightId });
   }
 
   private async recordHistory(battle: Battle, winnerTeam: 1 | 2): Promise<void> {

@@ -23,6 +23,7 @@ import type { WorldService } from "../../../src/modules/world/domain/world-servi
 import type { EsrvOutbox } from "../../../src/modules/jugger-wire/application/esrv-outbox.ts";
 import { LongPollCoordinator } from "../../../src/modules/jugger-wire/application/long-poll-coordinator.ts";
 import type { PresenceFanout } from "../../../src/modules/jugger-wire/application/presence-fanout.ts";
+import type { HuntAreaFanout } from "../../../src/modules/jugger-wire/application/hunt-area-fanout.ts";
 import type { Clock } from "../../../src/shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../src/shared/kernel/unit-of-work.ts";
 import {
@@ -193,6 +194,7 @@ describe("module factories", () => {
         unitOfWork: undefined as never,
         presence: {} as PresenceService,
         presenceFanout: {} as PresenceFanout,
+        huntFanout: {} as HuntAreaFanout,
         outbox: {} as EsrvOutbox,
         longPoll: {} as LongPollCoordinator,
       }),
@@ -282,6 +284,7 @@ describe("module factories", () => {
         unitOfWork: {} as UnitOfWork,
         presence: {} as PresenceService,
         presenceFanout: {} as PresenceFanout,
+        huntFanout: {} as HuntAreaFanout,
         outbox: {} as EsrvOutbox,
         longPoll: new LongPollCoordinator(),
       }),

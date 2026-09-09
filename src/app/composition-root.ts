@@ -19,6 +19,8 @@ import { PresenceService } from "../modules/world/application/presence-service.t
 import { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.ts";
 import { LongPollCoordinator } from "../modules/jugger-wire/application/long-poll-coordinator.ts";
 import { PresenceFanout } from "../modules/jugger-wire/application/presence-fanout.ts";
+import { HuntAreaFanout } from "../modules/jugger-wire/application/hunt-area-fanout.ts";
+import { HuntLockRelease } from "./hunt-lock-release.ts";
 
 export class CompositionRoot {
   async build(config: AppConfig, clock: Clock = new SystemClock()): Promise<Application> {
@@ -67,6 +69,8 @@ export class CompositionRoot {
       const longPoll = new LongPollCoordinator();
       const outbox = new EsrvOutbox();
       const presenceFanout = new PresenceFanout(presence, outbox, longPoll);
+      const huntFanout = new HuntAreaFanout(presence, longPoll);
+      combat.bindTerminalObserver(new HuntLockRelease(world.service, huntFanout));
       const registration = new PlayableAccountRegistration(
         identity.service,
         characters.service,
@@ -98,6 +102,7 @@ export class CompositionRoot {
         unitOfWork: database,
         presence,
         presenceFanout,
+        huntFanout,
         outbox,
         longPoll,
       });

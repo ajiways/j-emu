@@ -34,6 +34,7 @@ import { EsrvCommandRegistry } from "./esrv-command-registry.ts";
 import { FproxyCommandRegistry } from "./fproxy-command-registry.ts";
 import { OaCommandRegistry } from "./oa-command-registry.ts";
 import type { PresenceFanout } from "../application/presence-fanout.ts";
+import type { HuntAreaFanout } from "../application/hunt-area-fanout.ts";
 
 export class JuggerCommandModule {
   readonly oa: OaCommandRegistry;
@@ -54,6 +55,7 @@ export class JuggerCommandModule {
     unitOfWork: UnitOfWork,
     clock: Clock,
     presence: PresenceFanout,
+    huntFanout: HuntAreaFanout,
   ) {
     this.fightWire = fightWire;
     this.oa = new OaCommandRegistry([
@@ -84,6 +86,7 @@ export class JuggerCommandModule {
         catalog,
         combat,
         fightWire,
+        huntFanout,
       ),
       new PutOnCommand(unitOfWork, bootstrap, characters, inventory, catalog, combat),
       new PutOffCommand(unitOfWork, bootstrap, characters, inventory, catalog, combat),

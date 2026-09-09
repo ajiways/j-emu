@@ -7,6 +7,7 @@ import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingFinishedFightStore } from "../../support/fakes/recording-finished-fight-store.ts";
 import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
+import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 
 const rules = {
   playerDamageMin: 20,
@@ -27,7 +28,7 @@ describe("CombatService history", () => {
       botDamageMax: 2,
       turnTimeoutSeconds: 20,
     });
-    await combat.startHunt(huntInput());
+    await startHuntWithIssuedId(combat, huntInput());
     expect(await combat.execute(1, { kind: "poll" })).toEqual([]);
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
     await combat.execute(1, { kind: "strike", side: "center", sequence: 2 });
@@ -43,7 +44,7 @@ describe("CombatService history", () => {
     const history = new RecordingFinishedFightStore();
     const writes = new RecordingHistoryWriteObserver();
     const combat = service(history, writes, new SequenceRandom([20]));
-    const start = await combat.startHunt(huntInput());
+    const start = await startHuntWithIssuedId(combat, huntInput());
     expect(history.records).toEqual([]);
     expect(start.participantId).toBe(1);
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
@@ -74,7 +75,7 @@ describe("CombatService history", () => {
       ),
       writes,
     );
-    const start = await combat.startHunt(huntInput());
+    const start = await startHuntWithIssuedId(combat, huntInput());
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     await combat.execute(1, { kind: "strike", side: "left", sequence: 2 });
     const events = await combat.execute(1, { kind: "poll" });
@@ -98,7 +99,7 @@ describe("CombatService history", () => {
         turnTimeoutSeconds: 20,
       },
     );
-    const start = await combat.startHunt(huntInput());
+    const start = await startHuntWithIssuedId(combat, huntInput());
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     const events = await combat.execute(1, { kind: "poll" });
     const opponent = events.find((event) => event.type === "opponent-introduced");

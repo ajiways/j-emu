@@ -15,6 +15,7 @@ import { FakeClock } from "../../support/fake-clock.ts";
 import { PLAYABLE_REGEN_POLICY } from "../../support/hero-fixtures.ts";
 import { playableCharacterModuleInput } from "../../support/playable-character-module-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
+import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
 const policy = loadGamePolicy(path.resolve(process.cwd(), "config/development.json"));
@@ -139,7 +140,7 @@ describe("HP regeneration persistence", () => {
   it("pauses regen while the account-keyed fight query reports an active fight", async () => {
     const hero = await createHero();
     const noted = await characters.service.noteHp({ characterId: hero.id, hp: 1 });
-    await combat.combat.startHunt({
+    await startHuntWithIssuedId(combat.combat, {
       accountId: hero.accountId,
       heroId: hero.id,
       heroNick: hero.nick,
@@ -164,7 +165,7 @@ describe("HP regeneration persistence", () => {
   it("does not persist hp_time when vitals change during an active fight", async () => {
     const hero = await createHero();
     const noted = await characters.service.noteHp({ characterId: hero.id, hp: 1 });
-    await combat.combat.startHunt({
+    await startHuntWithIssuedId(combat.combat, {
       accountId: hero.accountId,
       heroId: hero.id,
       heroNick: hero.nick,

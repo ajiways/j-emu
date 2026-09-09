@@ -28,6 +28,7 @@ export type FightExit = Readonly<{
 }>;
 
 export interface CombatPort {
+  nextFightId(): Promise<string>;
   startHunt(input: {
     accountId: number;
     heroId: number;
@@ -35,6 +36,7 @@ export interface CombatPort {
     heroLevel: number;
     heroKind: number;
     heroHp: number;
+    fightId: string;
     botId: number;
     botNick: string;
     botLevel: number;

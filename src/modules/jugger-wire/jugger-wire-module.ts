@@ -20,6 +20,7 @@ import { FightWireMapper } from "./application/fight-wire-mapper.ts";
 import type { EsrvOutbox } from "./application/esrv-outbox.ts";
 import type { LongPollCoordinator } from "./application/long-poll-coordinator.ts";
 import type { PresenceFanout } from "./application/presence-fanout.ts";
+import type { HuntAreaFanout } from "./application/hunt-area-fanout.ts";
 import { JuggerHttpServer } from "./infrastructure/http/jugger-http-server.ts";
 import { JuggerCommandModule } from "./registry/jugger-command-module.ts";
 
@@ -66,6 +67,7 @@ export class JuggerWireModule {
     unitOfWork: UnitOfWork;
     presence: PresenceService;
     presenceFanout: PresenceFanout;
+    huntFanout: HuntAreaFanout;
     outbox: EsrvOutbox;
     longPoll: LongPollCoordinator;
   }): Promise<JuggerWireModule> {
@@ -106,6 +108,7 @@ export class JuggerWireModule {
       input.presenceFanout,
       "Jugger-wire module requires presence fanout",
     );
+    const huntFanout = requirePresent(input.huntFanout, "Jugger-wire module requires hunt fanout");
     const outbox = requirePresent(input.outbox, "Jugger-wire module requires esrv outbox");
     const longPoll = requirePresent(input.longPoll, "Jugger-wire module requires long-poll");
     try {
@@ -142,6 +145,7 @@ export class JuggerWireModule {
         unitOfWork,
         clock,
         presenceFanout,
+        huntFanout,
       );
       const esrvPoll = new EsrvPollAssembler(
         characters,

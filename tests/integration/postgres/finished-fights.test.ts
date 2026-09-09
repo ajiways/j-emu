@@ -14,6 +14,7 @@ import { playableNewHero } from "../../support/hero-fixtures.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
+import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
@@ -48,7 +49,7 @@ describe("finished fight history storage", () => {
       new FinishedFightRecorder(store, clock),
       new RecordingHistoryWriteObserver(),
     );
-    const start = await combat.startHunt({
+    const start = await startHuntWithIssuedId(combat, {
       accountId: account.id,
       heroId: hero.id,
       heroNick: hero.nick,

@@ -15,6 +15,7 @@ import { SystemRandomSource } from "./domain/system-random-source.ts";
 import { PostgresFightIdSource } from "./infrastructure/postgres-fight-id-source.ts";
 import { PostgresFinishedFightStore } from "./infrastructure/postgres-finished-fight-store.ts";
 import type { CombatPort } from "./ports/combat-port.ts";
+import type { FightTerminalObserver } from "./ports/fight-terminal-observer.ts";
 
 export class CombatModule {
   private cleanupTimer: ReturnType<typeof setInterval> | undefined;
@@ -52,6 +53,10 @@ export class CombatModule {
       new FinishedFightCleanup(history, clock, FINISHED_FIGHT_CLEANUP_BATCH_SIZE),
       historyWrites,
     );
+  }
+
+  bindTerminalObserver(observer: FightTerminalObserver): void {
+    this.runtime.bindTerminalObserver(observer);
   }
 
   startHistoryCleanup(): void {

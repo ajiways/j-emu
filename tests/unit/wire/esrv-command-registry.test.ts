@@ -28,6 +28,9 @@ function fakeCombat(): CombatPort {
     startHunt: async () => {
       throw new Error("unused");
     },
+    nextFightId: async () => {
+      throw new Error("unused");
+    },
     execute: async () => [],
     activeFightId: async () => null,
     accountForFight: async () => null,

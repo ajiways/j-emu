@@ -11,6 +11,7 @@ import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingFinishedFightStore } from "../../support/fakes/recording-finished-fight-store.ts";
 import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
+import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 
 describe("FightTcpConnection", () => {
   it("uses the same CombatPort without importing the HTTP adapter", async () => {
@@ -29,7 +30,7 @@ describe("FightTcpConnection", () => {
       new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
       new RecordingHistoryWriteObserver(),
     );
-    const started = await combat.startHunt({
+    const started = await startHuntWithIssuedId(combat, {
       accountId: 1,
       heroId: 1,
       heroNick: "Hero",

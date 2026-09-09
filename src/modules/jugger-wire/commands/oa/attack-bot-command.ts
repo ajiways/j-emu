@@ -14,9 +14,11 @@ import type {
   FightConfigurationBlock,
   FightWireMapper,
 } from "../../application/fight-wire-mapper.ts";
+import type { HuntAreaFanout } from "../../application/hunt-area-fanout.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
+import { requireNoActiveFight } from "./require-no-active-fight.ts";
 
 type AttackBotRequest = Readonly<{ botId: number }>;
 
@@ -41,6 +43,7 @@ export class AttackBotCommand implements OaCommand {
     private readonly catalog: Catalog,
     private readonly combat: CombatPort,
     private readonly fightWire: FightWireMapper,
+    private readonly huntFanout: HuntAreaFanout,
   ) {}
 
   decode(envelope: ObjectActionEnvelope): AttackBotRequest {
@@ -58,6 +61,7 @@ export class AttackBotCommand implements OaCommand {
   }
 
   async handle(context: OaCommandContext, request: AttackBotRequest): Promise<AttackBotBlocks> {
+    await requireNoActiveFight(this.combat, context.accountId);
     const hero = await this.unitOfWork.run(async () => {
       const locked = await this.characters.lockByAccountId(context.accountId);
       await this.characters.syncResources({ characterId: locked.id });
@@ -66,37 +70,50 @@ export class AttackBotCommand implements OaCommand {
       return current;
     });
     const area = await this.world.area(hero.areaId);
-    const matchingSpawns = area.spawns.filter((spawn) => spawn.botId === request.botId);
-    if (matchingSpawns.length === 0) {
-      throw new ProtocolError(203, `Bot ${request.botId} is not present in area ${area.id}`);
+    const spawn = await this.world.spawn(area.id, request.botId);
+    if (!spawn) {
+      throw new ProtocolError(203, `Hunt spawn ${request.botId} is not present in area ${area.id}`);
     }
-    if (matchingSpawns.length > 1) {
-      throw new Error(`Bot ${request.botId} is ambiguous in area ${area.id}; spawn id is required`);
-    }
-    const bot = await this.catalog.bot(request.botId);
-    if (!bot) throw new Error(`Bot catalog entry ${request.botId} is missing`);
+    const bot = await this.catalog.bot(spawn.botId);
+    if (!bot) throw new Error(`Bot catalog entry ${spawn.botId} is missing`);
     await this.inventory.ensureStarterInventory(hero.id);
-    const fight = await this.combat.startHunt({
-      accountId: context.accountId,
-      heroId: hero.id,
-      heroNick: hero.nick,
-      heroLevel: hero.level,
-      heroKind: hero.kind,
-      heroHp: hero.hp,
-      botId: bot.id,
-      botNick: bot.title,
-      botLevel: bot.level,
-      botHp: bot.maxHp,
-      arena: area.fightBackground,
+    const fightId = await this.combat.nextFightId();
+    const acquired = await this.world.tryAcquireSpawn({
       areaId: area.id,
+      spawnId: spawn.id,
+      fightId,
+      ownerAccountId: context.accountId,
     });
-    return {
-      "common|action": { status: 100 },
-      "fight|conf": this.fightWire.fightConfiguration(fight),
-      "common|hunt": await this.bootstrap.hunt(context.accountId),
-      "user|unitframe": await this.bootstrap.unitframe(context.accountId),
-      state: await this.bootstrap.state(context.accountId),
-    };
+    if (!acquired.ok) throw new ProtocolError(203, "моб уже занят");
+    try {
+      const fight = await this.combat.startHunt({
+        accountId: context.accountId,
+        heroId: hero.id,
+        heroNick: hero.nick,
+        heroLevel: hero.level,
+        heroKind: hero.kind,
+        heroHp: hero.hp,
+        fightId,
+        botId: bot.id,
+        botNick: bot.title,
+        botLevel: bot.level,
+        botHp: bot.maxHp,
+        arena: area.fightBackground,
+        areaId: area.id,
+      });
+      await this.huntFanout.wakeArea(area.id);
+      return {
+        "common|action": { status: 100 },
+        "fight|conf": this.fightWire.fightConfiguration(fight),
+        "common|hunt": await this.bootstrap.hunt(context.accountId),
+        "user|unitframe": await this.bootstrap.unitframe(context.accountId),
+        state: await this.bootstrap.state(context.accountId),
+      };
+    } catch (error) {
+      await this.world.releaseSpawn({ areaId: area.id, spawnId: spawn.id });
+      await this.huntFanout.wakeArea(area.id);
+      throw error;
+    }
   }
 
   encode(response: AttackBotBlocks): OaEncodedResponse {
