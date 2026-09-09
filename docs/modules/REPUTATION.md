@@ -2,8 +2,10 @@
 
 ## Статус
 
-Runtime репутации нет. Срез REP-01 ещё не реализован. Точный product-status:
-[CAPABILITIES.md](../CAPABILITIES.md).
+Срез REP-01 реализован на raw-AMF: catalog track **5**, `grantReputation`, OA
+`user|stats`. CEF экран репутации не обязателен. Product-status остаётся
+**частично**: [CAPABILITIES.md](../CAPABILITIES.md). ROADMAP `next` не
+меняется в этом срезе.
 
 ## Источники поведения
 
@@ -30,10 +32,10 @@ Pred `REPUTATION` в q_1…q_8 нет. `reputation_kills.json` не содерж
 
 ## Content set
 
-Bump playable-slice после ECO-01 **v13**: один track **5** из
-`reputation_tracks.json` (title «Репутация Радвея», image `rep_radvey_sm.png`,
-type 2, без unlock_flag). Track **36** в catalog не публиковать. Остальные
-треки и `reputation_kills` — DATA-05 / позже.
+`playable-slice/v14`: один track **5** из `reputation_tracks.json` (title
+«Репутация Радвея», image `rep_radvey_sm.png`, type 2, без unlock_flag). Track
+**36** в catalog не публиковать. Остальные треки и `reputation_kills` — DATA-05
+/ позже.
 
 ## Schema
 

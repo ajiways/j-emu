@@ -35,6 +35,8 @@
 - `store` — COME_IN 504 `store|list` types + lots 23/24; buy both `25.00`→`23.00`
   persist reconnect/restart; buy in 503 / empty basket / unknown lot /
   insufficient gold → status 2; ghost buy → 203;
+- `reputation` — `user|stats` без гранта: нет type:2, SUM 36 = 0; после
+  `grantReputation(5,10)` type:2 value 10 и SUM 10 persist restart;
 - `presence-esrv` — два isolated hero: init2 population by accountId, COME_IN/
   exit/logout `2:` diffs, `131:` hunt snapshot, chat auth empty body, restart
   drops queue;

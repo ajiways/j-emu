@@ -135,3 +135,22 @@ export const heroSkills = characterSchema.table(
     check("hero_skills_value_check", sql`${table.value} >= 0`),
   ],
 );
+
+export const heroReputations = characterSchema.table(
+  "hero_reputations",
+  {
+    heroId: integer("hero_id")
+      .notNull()
+      .references(() => heroes.id, { onDelete: "cascade" }),
+    objectId: integer("object_id").notNull(),
+    value: integer("value").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.heroId, table.objectId] }),
+    check(
+      "hero_reputations_object_id_check",
+      sql`${table.objectId} > 0 AND ${table.objectId} <> 36`,
+    ),
+    check("hero_reputations_value_check", sql`${table.value} >= 0`),
+  ],
+);

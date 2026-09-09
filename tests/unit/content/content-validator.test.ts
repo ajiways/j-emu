@@ -164,6 +164,48 @@ describe("ContentValidator", () => {
       /store_lot 504:99 artifact 8 is not in the bundle/,
     );
   });
+
+  it("rejects SUM 36 and extra faction tracks", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        reputationTracks: [
+          ...playable.reputationTracks,
+          {
+            objectId: 36,
+            type: 2,
+            title: "Суммарная репутация",
+            image: "x.png",
+            unlockFlag: "",
+          },
+        ],
+      }),
+    ).toThrow(/reputation track 36 is not in the playable slice/);
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        reputationTracks: [
+          ...playable.reputationTracks,
+          {
+            objectId: 7,
+            type: 2,
+            title: "Репутация Ведьмака",
+            image: "rep_vedmak_sm.png",
+            unlockFlag: "",
+          },
+        ],
+      }),
+    ).toThrow(/reputation track 7 is not in the playable slice/);
+  });
+
+  it("rejects a bundle without Radvey track 5", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        reputationTracks: [],
+      }),
+    ).toThrow(/reputation track 5 is required/);
+  });
 });
 
 describe("parseContentBundle", () => {

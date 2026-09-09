@@ -13,6 +13,7 @@ import type { PlayableAccountRegistration } from "../../../src/app/playable-acco
 import type { PlayableDevelopmentIdentity } from "../../../src/app/playable-development-identity.ts";
 import type { Catalog } from "../../../src/modules/catalog/ports/catalog.ts";
 import type { CatalogProgression } from "../../../src/modules/catalog/ports/catalog-progression.ts";
+import type { ReputationCatalog } from "../../../src/modules/catalog/ports/reputation-catalog.ts";
 import type { ReleaseArtifacts } from "../../../src/modules/catalog/ports/release-artifacts.ts";
 import type { EquippedModifiers } from "../../../src/modules/character/ports/equipped-modifiers.ts";
 import type { CharacterService } from "../../../src/modules/character/application/character-service.ts";
@@ -38,6 +39,7 @@ import {
 
 const database = undefined as unknown as PostgresDatabase;
 const progression = {} as CatalogProgression;
+const reputationCatalog = {} as ReputationCatalog;
 const equipmentModifiers = {} as EquippedModifiers;
 const releaseArtifacts = {} as ReleaseArtifacts;
 const clock = {} as Clock;
@@ -64,6 +66,7 @@ describe("module factories", () => {
         database,
         creationPolicy: PLAYABLE_HERO_CREATION,
         progression,
+        reputationCatalog,
         equipmentModifiers,
         clock,
         regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -75,6 +78,7 @@ describe("module factories", () => {
         database: {} as PostgresDatabase,
         creationPolicy: PLAYABLE_HERO_CREATION,
         progression,
+        reputationCatalog,
         equipmentModifiers,
         clock: undefined as unknown as Clock,
         regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -86,6 +90,7 @@ describe("module factories", () => {
         database: {} as PostgresDatabase,
         creationPolicy: PLAYABLE_HERO_CREATION,
         progression,
+        reputationCatalog,
         equipmentModifiers,
         clock,
         regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -97,6 +102,7 @@ describe("module factories", () => {
         database: {} as PostgresDatabase,
         creationPolicy: { ...PLAYABLE_HERO_CREATION, exp: 2 },
         progression,
+        reputationCatalog,
         equipmentModifiers,
         clock,
         regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -225,6 +231,7 @@ describe("module factories", () => {
       database: {} as PostgresDatabase,
       creationPolicy: PLAYABLE_HERO_CREATION,
       progression,
+      reputationCatalog,
       equipmentModifiers,
       clock,
       regenPolicy: PLAYABLE_REGEN_POLICY,

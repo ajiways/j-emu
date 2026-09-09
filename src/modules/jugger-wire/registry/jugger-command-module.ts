@@ -32,6 +32,7 @@ import { UserMagicCommand } from "../commands/oa/user-magic-command.ts";
 import { UserPersonalDetailsCommand } from "../commands/oa/user-personal-details-command.ts";
 import { UserSavePersonalDetailsCommand } from "../commands/oa/user-save-personal-details-command.ts";
 import { UserSkillsCommand } from "../commands/oa/user-skills-command.ts";
+import { UserStatsCommand } from "../commands/oa/user-stats-command.ts";
 import { UserUnitframeCommand } from "../commands/oa/user-unitframe-command.ts";
 import { UserViewCommand } from "../commands/oa/user-view-command.ts";
 import { EsrvCommandRegistry } from "./esrv-command-registry.ts";
@@ -72,6 +73,7 @@ export class JuggerCommandModule {
       new UserPersonalDetailsCommand(bootstrap),
       new UserSavePersonalDetailsCommand(characters, bootstrap),
       new UserSkillsCommand(bootstrap),
+      new UserStatsCommand(characters, catalog),
       new UserUnitframeCommand(unitOfWork, characters, bootstrap),
       new UserViewCommand(bootstrap),
       new UserMagicCommand(bootstrap, sheet),

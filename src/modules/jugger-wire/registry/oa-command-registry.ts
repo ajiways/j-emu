@@ -28,6 +28,7 @@ export class OaCommandRegistry {
     "user|personal_details",
     "user|save_personal_details",
     "user|skills",
+    "user|stats",
     "user|unitframe",
     "user|view",
     "store|list",

@@ -1,5 +1,6 @@
 import type { ArtifactSkillBonus } from "../../catalog/domain/artifact-skill-bonus.ts";
 import type { CatalogProgression } from "../../catalog/ports/catalog-progression.ts";
+import type { ReputationCatalog } from "../../catalog/ports/reputation-catalog.ts";
 import type { ProgressionSnapshot } from "../../catalog/domain/progression-snapshot.ts";
 import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../shared/kernel/unit-of-work.ts";
@@ -37,7 +38,15 @@ import type {
 } from "../ports/character-resources.ts";
 import type { CharacterLocation, SetAreaCommand } from "../ports/character-location.ts";
 import type { CharacterPresence, PresenceHero } from "../ports/character-presence.ts";
+import type {
+  CharacterReputation,
+  GrantReputationCommand,
+  GrantReputationResult,
+  HeroReputationRow,
+} from "../ports/character-reputation.ts";
 import type { ExperienceGrantRepository } from "../ports/experience-grant-repository.ts";
+import type { HeroReputationRepository } from "../ports/hero-reputation-repository.ts";
+import { grantHeroReputation } from "./grant-hero-reputation.ts";
 
 export class CharacterService
   implements
@@ -45,7 +54,8 @@ export class CharacterService
     CharacterResources,
     CharacterMoney,
     CharacterLocation,
-    CharacterPresence
+    CharacterPresence,
+    CharacterReputation
 {
   private readonly grants: ExperienceGrantService;
   private readonly resources: ResourceService;
@@ -53,10 +63,12 @@ export class CharacterService
   constructor(
     private readonly unitOfWork: UnitOfWork,
     private readonly heroes: HeroRepository,
+    private readonly heroReputations: HeroReputationRepository,
     private readonly skills: HeroSkillRepository,
     private readonly personalDetailsStore: PersonalDetailsRepository,
     private readonly creationPolicy: HeroCreationPolicy,
     private readonly progression: CatalogProgression,
+    private readonly reputationCatalog: ReputationCatalog,
     equipment: EquippedModifiers,
     grantStore: ExperienceGrantRepository,
     private readonly clock: Clock,
@@ -114,6 +126,19 @@ export class CharacterService
     await this.unitOfWork.run(async () => {
       await debitHeroMoney(this.heroes, command);
     });
+  }
+
+  grantReputation(command: GrantReputationCommand): Promise<GrantReputationResult> {
+    return this.unitOfWork.run(() =>
+      grantHeroReputation(this.heroes, this.heroReputations, this.reputationCatalog, command),
+    );
+  }
+
+  async reputations(characterId: number): Promise<readonly HeroReputationRow[]> {
+    if (!Number.isInteger(characterId) || characterId < 1) {
+      throw new Error("Character id is required");
+    }
+    return this.heroReputations.listByHeroId(characterId);
   }
 
   async setArea(command: SetAreaCommand): Promise<void> {

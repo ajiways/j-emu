@@ -7,8 +7,9 @@ import type { HudDefaults } from "../domain/hud-defaults.ts";
 import type { LevelBoundary } from "../domain/level-boundary.ts";
 import type { SkillDefinition } from "../domain/skill-definition.ts";
 import type { StoreLot, StoreType } from "../domain/store-lot.ts";
+import type { ReputationCatalog } from "./reputation-catalog.ts";
 
-export interface Catalog {
+export interface Catalog extends ReputationCatalog {
   artifact(id: number): Promise<ArtifactDefinition | null>;
   bot(id: number): Promise<BotDefinition | null>;
   skill(id: string): Promise<SkillDefinition>;

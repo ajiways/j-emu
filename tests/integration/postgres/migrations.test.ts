@@ -16,11 +16,13 @@ import {
   skillDefinitions,
   storeLots,
   storeTypes,
+  reputationTracks,
 } from "../../../src/modules/catalog/infrastructure/schema.ts";
 import {
   experienceGrants,
   heroes,
   heroPersonalDetails,
+  heroReputations,
   heroSkills,
 } from "../../../src/modules/character/infrastructure/schema.ts";
 import { finishedFights } from "../../../src/modules/combat/infrastructure/schema.ts";
@@ -84,8 +86,10 @@ describe("Drizzle migrations", () => {
         "catalog.skill_definitions",
         "catalog.store_lots",
         "catalog.store_types",
+        "catalog.reputation_tracks",
         "character.experience_grants",
         "character.hero_personal_details",
+        "character.hero_reputations",
         "character.hero_skills",
         "character.heroes",
         "combat.finished_fights",
@@ -119,12 +123,14 @@ describe("Drizzle migrations", () => {
       gameWideDocuments,
       storeTypes,
       storeLots,
+      reputationTracks,
       areas,
       areaLinks,
       huntSpawns,
       heroes,
       heroPersonalDetails,
       heroSkills,
+      heroReputations,
       experienceGrants,
       items,
       finishedFights,
@@ -134,7 +140,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(27);
+    ]).toHaveLength(29);
 
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -157,8 +163,9 @@ describe("Drizzle migrations", () => {
       "0014_catalog_bot_loot",
       "0015_character_ghost_injury",
       "0016_catalog_store_types_lots",
+      "0017_catalog_reputation_tracks",
     ]);
-    expect(await appliedCount()).toBe(17);
+    expect(await appliedCount()).toBe(18);
 
     const singleton = await database
       .session()

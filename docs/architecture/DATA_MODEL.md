@@ -53,6 +53,8 @@ money_gold_minor, kind, gender, language, body, sk, honor, hp_time, regen_at tim
 - `hero_personal_details(hero_id PK FK → heroes ON DELETE CASCADE, info jsonb, schema_version=1)`.
 - `hero_skills(hero_id FK → heroes ON DELETE CASCADE, skill_id, value)` с PK
   `(hero_id, skill_id)`.
+- `hero_reputations(hero_id FK → heroes ON DELETE CASCADE, object_id, value)`
+  PK `(hero_id, object_id)`; `object_id > 0 AND <> 36`; `value >= 0`. Нет row = 0. SUM **36** не хранится. Migration `0017`.
 - `experience_grants(hero_id, operation_id, amount, exp_before, exp_after,
 level_before, level_after, content_release_id, progression_digest, created_at)`
   с PK `(hero_id, operation_id)`, FK на `heroes` и `content.releases`;
@@ -68,7 +70,8 @@ level_before, level_after, content_release_id, progression_digest, created_at)`
 naked skills — отдельными строками `hero_skills`. `hp_time` — remaining seconds
 до полного HP; `regen_at` — unix-second truncated timestamp ленивого регена.
 `ghost` / `injury_time` / `injury_artikul_id` — CMB-04; SQL DEFAULT только для
-старых строк, runtime пишет явные значения. Репутации ещё нет.
+старых строк, runtime пишет явные значения. Репутация Радвея **5** — runtime
+REP-01 (`hero_reputations` + derived SUM 36 на чтении).
 
 ### `inventory`
 
@@ -121,6 +124,9 @@ source_digest)` PK `(release_id, level, skill_id)`; FK на boundary и
   PK `(release_id, area_id, lot_id)`; FK на `artifacts` и `store_types` той
   же release. Slice: area 504 type `-131`, lots 80/23 и 82/24. Area
   проверяет publication, SQL FK на `world.areas` нет. Migration `0016`.
+- `reputation_tracks(release_id, object_id, type, title, image, unlock_flag)`
+  PK `(release_id, object_id)`; type 2; `object_id > 0 AND <> 36`. Slice:
+  только Радвей **5**, empty unlock. Migration `0017`.
 
 Отдельных spell-таблиц нет: fight spell живёт в `artifacts.extra`.
 `common|conf`, empty chrome и HUD defaults читаются из
@@ -205,10 +211,10 @@ hud_defaults|chrome|common_conf|welcome_message`.
 
 ### `character`
 
-Mana regen (`MPREG`/`mp_time` formula), reputations и расширенная statistics
+Mana regen (`MPREG`/`mp_time` formula) и расширенная statistics
 model остаются планом. `heroes.ghost` / `injury_time` / `injury_artikul_id`,
-`heroes.regen_at`, `hp_time`, `experience_grants`, `hero_skills`, HP/MP/EXP
-и appearance bootstrap уже находятся в runtime.
+`heroes.regen_at`, `hp_time`, `experience_grants`, `hero_skills`,
+`hero_reputations`, HP/MP/EXP и appearance bootstrap уже находятся в runtime.
 
 ### `inventory`
 
@@ -220,6 +226,7 @@ item_actions, item_stat_modifiers, creature_stats/loot, spell_definitions,
 level_curves — отдельные таблицы поверх текущих `artifacts`/`bots`.
 `level_skill_values` уже в runtime и не является будущей таблицей.
 `store_types` / `store_lots` — runtime ECO-01.
+`reputation_tracks` — runtime REP-01 (только object_id 5).
 
 ### `world`
 

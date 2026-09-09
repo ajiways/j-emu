@@ -2,12 +2,14 @@ import type { PostgresDatabase } from "../../infrastructure/postgres/database.ts
 import { requirePresent } from "../../shared/kernel/require-present.ts";
 import type { Clock } from "../../shared/kernel/clock.ts";
 import type { CatalogProgression } from "../catalog/ports/catalog-progression.ts";
+import type { ReputationCatalog } from "../catalog/ports/reputation-catalog.ts";
 import { CharacterService } from "./application/character-service.ts";
 import type { HeroCreationPolicy } from "./domain/hero.ts";
 import { Hero } from "./domain/hero.ts";
 import type { RegenPolicy } from "./domain/regen-policy.ts";
 import { PostgresExperienceGrantRepository } from "./infrastructure/postgres-experience-grant-repository.ts";
 import { PostgresHeroRepository } from "./infrastructure/postgres-hero-repository.ts";
+import { PostgresHeroReputationRepository } from "./infrastructure/postgres-hero-reputation-repository.ts";
 import { PostgresHeroSkillRepository } from "./infrastructure/postgres-hero-skill-repository.ts";
 import { PostgresPersonalDetailsRepository } from "./infrastructure/postgres-personal-details-repository.ts";
 import type { ActiveFightQuery } from "./ports/active-fight-query.ts";
@@ -20,6 +22,7 @@ export class CharacterModule {
     database: PostgresDatabase;
     creationPolicy: HeroCreationPolicy;
     progression: CatalogProgression;
+    reputationCatalog: ReputationCatalog;
     equipmentModifiers: EquippedModifiers;
     clock: Clock;
     regenPolicy: RegenPolicy;
@@ -33,6 +36,10 @@ export class CharacterModule {
     const progression = requirePresent(
       input.progression,
       "Character module requires catalog progression",
+    );
+    const reputationCatalog = requirePresent(
+      input.reputationCatalog,
+      "Character module requires a reputation catalog",
     );
     const equipmentModifiers = requirePresent(
       input.equipmentModifiers,
@@ -60,10 +67,12 @@ export class CharacterModule {
       new CharacterService(
         database,
         heroes,
+        new PostgresHeroReputationRepository(database),
         skills,
         new PostgresPersonalDetailsRepository(database),
         creationPolicy,
         progression,
+        reputationCatalog,
         equipmentModifiers,
         new PostgresExperienceGrantRepository(database),
         clock,

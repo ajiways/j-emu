@@ -36,7 +36,11 @@ projection-строки. После `0013_catalog_artifact_extra` migrate ста
 После `0015_character_ghost_injury` migrate ставит `ghost=false` и injury `0`
 на старые `heroes`; runtime всё равно пишет явные значения. После
 `0016_catalog_store_types_lots` migrate создаёт пустые `store_types`/`store_lots`;
-лавка 504 list/buy пуста, пока не опубликован `playable-slice/v13`. Смена
+лавка 504 list/buy пуста, пока не опубликован `playable-slice/v13` или новее.
+После `0017_catalog_reputation_tracks` migrate создаёт пустые
+`reputation_tracks` / `hero_reputations`; `user|stats` без опубликованного
+track 5 не содержит type:2, грант падает, пока не опубликован
+`playable-slice/v14`. Смена
 checksum витрины (например, только type `-131`) требует повторный
 `npm run db:publish:development`.
 

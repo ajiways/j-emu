@@ -150,6 +150,15 @@ describe("content publication", () => {
       title: "Простой наруч",
       slotMask: 16,
     });
+    expect(await catalog.reputationTracks()).toEqual([
+      {
+        objectId: 5,
+        type: 2,
+        title: "Репутация Радвея",
+        image: "rep_radvey_sm.png",
+        unlockFlag: "",
+      },
+    ]);
   });
 
   it("rejects a candidate lot whose artifact is missing", async () => {

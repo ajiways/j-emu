@@ -10,6 +10,7 @@ import {
   welcomeMessageDocumentSchema,
 } from "./parse-bootstrap-content.ts";
 import { storeLotsSchema, storeTypesSchema } from "./parse-store-content.ts";
+import { reputationTracksSchema } from "./parse-reputation-content.ts";
 
 const flag = z.union([z.literal(0), z.literal(1)]);
 
@@ -234,6 +235,7 @@ const bundleSchema = z
     huntSpawns: z.array(huntSpawnSchema),
     storeTypes: storeTypesSchema,
     storeLots: storeLotsSchema,
+    reputationTracks: reputationTracksSchema,
     skills: z.array(skillDocumentSchema).min(1),
     levels: z.array(levelBoundaryDocumentSchema).min(1),
     appearances: z.array(appearanceDocumentSchema).min(1),

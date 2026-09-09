@@ -13,8 +13,10 @@ import type { ArtifactDocument, BotDocument } from "../../content/domain/content
 import type {
   CatalogMaterialization,
   CatalogProjection,
+  CatalogReputationMaterialization,
   CatalogStoreMaterialization,
 } from "../ports/catalog-projection.ts";
+import { insertReputationTracks } from "./postgres-catalog-reputation-rows.ts";
 import { insertStoreLots, insertStoreTypes } from "./postgres-catalog-store-rows.ts";
 import {
   appearancePresets,
@@ -52,6 +54,13 @@ export class PostgresCatalogProjection implements CatalogProjection {
     const session = this.database.session();
     await insertStoreTypes(session, releaseId, documents.storeTypes);
     await insertStoreLots(session, releaseId, documents.storeLots);
+  }
+
+  async materializeReputation(
+    releaseId: string,
+    documents: CatalogReputationMaterialization,
+  ): Promise<void> {
+    await insertReputationTracks(this.database.session(), releaseId, documents.reputationTracks);
   }
 }
 

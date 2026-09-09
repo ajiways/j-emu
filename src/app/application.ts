@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { CharacterProgression } from "../modules/character/ports/character-progression.ts";
+import type { CharacterReputation } from "../modules/character/ports/character-reputation.ts";
 import type { CharacterResources } from "../modules/character/ports/character-resources.ts";
 
 export class Application {
@@ -7,6 +8,7 @@ export class Application {
     readonly http: FastifyInstance,
     readonly characterProgression: CharacterProgression,
     readonly characterResources: CharacterResources,
+    readonly characterReputation: CharacterReputation,
     private readonly closeRuntime: () => Promise<void>,
   ) {}
 

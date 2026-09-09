@@ -13,16 +13,18 @@
 area presence roster:
 
 - `character` хранит hero scalars, personal details, naked `hero_skills`,
-  `hp_time`, `regen_at`, `ghost` / `injury_time` / `injury_artikul_id`;
-  internal ports `grantExperience`, `syncResources`, `noteHp`, `noteDefeat`,
-  `resurrect`, `creditMoney` и `debitMoney` пишут этот state; `move_ready_at`
-  и `setArea` на том же aggregate;
+  `hero_reputations` (Радвей 5), `hp_time`, `regen_at`, `ghost` / `injury_time`
+  / `injury_artikul_id`; internal ports `grantExperience`, `syncResources`,
+  `noteHp`, `noteDefeat`, `resurrect`, `creditMoney`, `debitMoney` и
+  `grantReputation` пишут этот state; `move_ready_at` и `setArea` на том же
+  aggregate;
 - `inventory` хранит bag/pocket/equipment instances и выполняет
   `PUT_ON`/`PUT_OFF` (paperdoll и пояс), `drop`, `useFromBag`, `bagLoad`,
   `grantToBag` и `listPocket`;
 - `catalog` и `world` читают artifacts, skills, levels, appearance,
   game-wide bootstrap documents, areas 503/501/504, travel `area_links`, hunt
-  503 и витрину 504 (`store_types` type `-131`, lots 23/24) из active release;
+  503 и витрину 504 (`store_types` type `-131`, lots 23/24) и reputation track
+  5 из active release;
 - equipment-derived skills/vitals считаются из persisted naked skills и
   artifact bonuses; migration `0004` закрепляет wear fields и occupancy slot;
   `0007` — artifact `price_minor`/`flags`/`bag_stack`;
@@ -32,9 +34,10 @@ area presence roster:
   `0011` — `areas.parent_id` и `world.area_links`;
   `0015` — `heroes.ghost` / injury;
   `0016` — `catalog.store_types` / `store_lots`;
+  `0017` — `catalog.reputation_tracks` / `character.hero_reputations`;
 - `combat` — hunt lifecycle, CMB-02…04 reconnect/ghost settlement и finished
   history; `quests`, `social`, `economy`, `professions`, `instances` в runtime
-  нет. Репутации ещё нет (REP-01).
+  нет. Репутация Радвея **5** есть (REP-01, product частично).
 
 Во всех разделах ниже **API**, **события** и **шов извлечения** описывают
 целевую границу. Они не доказывают регистрацию команды, наличие таблиц или
@@ -93,9 +96,9 @@ area presence roster:
 
 ### `catalog`
 
-**Владеет:** опубликованными, версионированными определениями предметов, существ, заклинаний, уровней, наград, витрины магазина (`store_types` / `store_lots`) и общих справочников. Runtime читает только опубликованную ревизию. Кошелёк героя catalog не владеет.
+**Владеет:** опубликованными, версионированными определениями предметов, существ, заклинаний, уровней, наград, витрины магазина (`store_types` / `store_lots`), треков репутации (`reputation_tracks`) и общих справочников. Runtime читает только опубликованную ревизию. Кошелёк героя catalog не владеет.
 
-**API:** `getItemDefinition`, `getCreatureDefinition`, `getSpellDefinition`, `getLevelCurve`, `getPublishedRevision`, `storeTypes`, `storeLots`; пакет snapshot/export для потребителей.
+**API:** `getItemDefinition`, `getCreatureDefinition`, `getSpellDefinition`, `getLevelCurve`, `getPublishedRevision`, `storeTypes`, `storeLots`, `reputationTrack` / `reputationTracks`; пакет snapshot/export для потребителей.
 
 **События:** `catalog.revision-published.v1`.
 

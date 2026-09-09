@@ -8,8 +8,8 @@ import type {
   WelcomeMessageDocument,
 } from "./bootstrap-content.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v13";
-export const CONTENT_VALIDATOR_VERSION = "13";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v14";
+export const CONTENT_VALIDATOR_VERSION = "14";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;
@@ -188,6 +188,14 @@ export type StoreLotDocument = Readonly<{
   ord: number;
 }>;
 
+export type ReputationTrackDocument = Readonly<{
+  objectId: number;
+  type: 2;
+  title: string;
+  image: string;
+  unlockFlag: string;
+}>;
+
 export type ContentBundle = Readonly<{
   schemaVersion: string;
   artifacts: readonly ArtifactDocument[];
@@ -197,6 +205,7 @@ export type ContentBundle = Readonly<{
   huntSpawns: readonly HuntSpawnDocument[];
   storeTypes: readonly StoreTypeDocument[];
   storeLots: readonly StoreLotDocument[];
+  reputationTracks: readonly ReputationTrackDocument[];
   skills: readonly SkillDocument[];
   levels: readonly LevelBoundaryDocument[];
   appearances: readonly AppearanceDocument[];
@@ -215,6 +224,7 @@ export type ContentEntry = Readonly<{
     | "hunt_spawn"
     | "store_type"
     | "store_lot"
+    | "reputation_track"
     | "skill"
     | "level"
     | "appearance"
@@ -232,6 +242,7 @@ export type ContentEntry = Readonly<{
     | HuntSpawnDocument
     | StoreTypeDocument
     | StoreLotDocument
+    | ReputationTrackDocument
     | SkillDocument
     | LevelBoundaryDocument
     | AppearanceDocument
@@ -252,6 +263,7 @@ export type ValidatedContentBundle = Readonly<{
   huntSpawns: readonly HuntSpawnDocument[];
   storeTypes: readonly StoreTypeDocument[];
   storeLots: readonly StoreLotDocument[];
+  reputationTracks: readonly ReputationTrackDocument[];
   skills: readonly SkillDocument[];
   levels: readonly LevelBoundaryDocument[];
   appearances: readonly AppearanceDocument[];

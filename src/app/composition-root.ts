@@ -83,6 +83,7 @@ export class CompositionRoot {
         database,
         creationPolicy: policy.heroCreation,
         progression: catalog.progression,
+        reputationCatalog: catalog.catalog,
         equipmentModifiers: inventory.service,
         clock,
         regenPolicy: policy.regen,
@@ -156,9 +157,15 @@ export class CompositionRoot {
         ),
       });
       closers.push(wire);
-      return new Application(wire.http, characters.service, characters.service, async () => {
-        await closeAll(closers);
-      });
+      return new Application(
+        wire.http,
+        characters.service,
+        characters.service,
+        characters.service,
+        async () => {
+          await closeAll(closers);
+        },
+      );
     } catch (error) {
       await closeAll(closers);
       throw error;

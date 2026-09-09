@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v13",
+  "schemaVersion": "playable-slice/v14",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -440,6 +440,15 @@
   "storeLots": [
     { "areaId": "504", "lotId": 82, "artikulId": 24, "typeId": -131, "price": 1, "ord": 6 },
     { "areaId": "504", "lotId": 80, "artikulId": 23, "typeId": -131, "price": 1, "ord": 8 }
+  ],
+  "reputationTracks": [
+    {
+      "objectId": 5,
+      "type": 2,
+      "title": "Репутация Радвея",
+      "image": "rep_radvey_sm.png",
+      "unlockFlag": ""
+    }
   ],
   "skills": [
     {

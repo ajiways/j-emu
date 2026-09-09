@@ -299,3 +299,25 @@ export const storeLots = catalogSchema.table(
     check("store_lots_price_check", sql`${table.price} >= 0`),
   ],
 );
+
+export const reputationTracks = catalogSchema.table(
+  "reputation_tracks",
+  {
+    releaseId: uuid("release_id")
+      .notNull()
+      .references(() => releases.id, { onDelete: "restrict" }),
+    objectId: integer("object_id").notNull(),
+    type: integer("type").notNull(),
+    title: text("title").notNull(),
+    image: text("image").notNull(),
+    unlockFlag: text("unlock_flag").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.releaseId, table.objectId] }),
+    check(
+      "reputation_tracks_object_id_check",
+      sql`${table.objectId} > 0 AND ${table.objectId} <> 36`,
+    ),
+    check("reputation_tracks_type_check", sql`${table.type} = 2`),
+  ],
+);

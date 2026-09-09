@@ -43,9 +43,15 @@ describe("experience grants", () => {
       pocketCapacity: policy.bootstrap.pocketCapacity,
     });
     characters = CharacterModule.create(
-      playableCharacterModuleInput(database, catalog.progression, inventory.service, {
-        creationPolicy: policy.heroCreation,
-      }),
+      playableCharacterModuleInput(
+        database,
+        catalog.progression,
+        inventory.service,
+        catalog.catalog,
+        {
+          creationPolicy: policy.heroCreation,
+        },
+      ),
     );
   });
 
@@ -227,9 +233,15 @@ async function modulesFor(database: PostgresDatabase) {
     pocketCapacity: policy.bootstrap.pocketCapacity,
   });
   const characters = CharacterModule.create(
-    playableCharacterModuleInput(database, catalog.progression, inventory.service, {
-      creationPolicy: policy.heroCreation,
-    }),
+    playableCharacterModuleInput(
+      database,
+      catalog.progression,
+      inventory.service,
+      catalog.catalog,
+      {
+        creationPolicy: policy.heroCreation,
+      },
+    ),
   );
   return { catalog, inventory, characters };
 }

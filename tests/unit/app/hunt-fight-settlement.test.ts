@@ -235,5 +235,7 @@ function fakeCatalog(): Catalog {
     },
     storeTypes: async () => [],
     storeLots: async () => [],
+    reputationTrack: async () => null,
+    reputationTracks: async () => [],
   };
 }

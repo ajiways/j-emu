@@ -42,9 +42,15 @@ describe("playable account registration", () => {
       pocketCapacity: policy.bootstrap.pocketCapacity,
     });
     characters = CharacterModule.create(
-      playableCharacterModuleInput(database, catalog.progression, inventory.service, {
-        creationPolicy: policy.heroCreation,
-      }),
+      playableCharacterModuleInput(
+        database,
+        catalog.progression,
+        inventory.service,
+        catalog.catalog,
+        {
+          creationPolicy: policy.heroCreation,
+        },
+      ),
     );
     registration = new PlayableAccountRegistration(
       identity.service,

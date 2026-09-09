@@ -65,8 +65,8 @@ schema. Первая волна ограничена данными, необх�
 только отдельным решением после core 1–8. Clan и встроенные playerbots не
 переносятся.
 
-Текущая БД `j-emu` содержит минимальный `playable-slice/v13` (artifacts 9095,
-9098, 9100, 9099, 93, 99, 77, 23, 24; bot 2 overlay loot 77/93/99; areas 503/501/504 и travel `area_links`; store 504 type `-131` lots 23/24). DATA-02 импорт корпуса ещё не сделан.
+Текущая БД `j-emu` содержит минимальный `playable-slice/v14` (artifacts 9095,
+9098, 9100, 9099, 93, 99, 77, 23, 24; bot 2 overlay loot 77/93/99; areas 503/501/504 и travel `area_links`; store 504 type `-131` lots 23/24; reputation track 5). DATA-02 импорт корпуса ещё не сделан.
 
 ## Приоритет доказательств
 

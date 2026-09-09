@@ -86,6 +86,9 @@ export class ContentPublicationService {
       storeTypes: validated.storeTypes,
       storeLots: validated.storeLots,
     });
+    await this.catalog.materializeReputation(release.id, {
+      reputationTracks: validated.reputationTracks,
+    });
     await this.store.activate(release.id);
     return release;
   }

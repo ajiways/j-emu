@@ -161,6 +161,13 @@ character `debitMoney` + inventory `grantToBag`. Catalog владеет authored
 World уже владеет area 504 `code=store`. Dual-write hero↔economy wallet
 запрещён. Контракт: [STORE.md](../modules/STORE.md).
 
+**Решение REP-01:** текущих границ достаточно; отдельный `ARC-CHAR` не нужен.
+Catalog владеет authored `reputation_tracks` (slice: object_id **5**, type 2,
+empty unlock). Character владеет `hero_reputations` и `grantReputation`.
+Derived SUM **36** type 3 не хранится и не является целью гранта. Combat и
+inventory репу не пишут. Economy-модуля нет. Контракт:
+[REPUTATION.md](../modules/REPUTATION.md).
+
 Отдельный `ARC-ECO` потребуется позже только если mail COD / auction / trade
 нельзя провести без ledger, reservations и переноса balance с hero.
 

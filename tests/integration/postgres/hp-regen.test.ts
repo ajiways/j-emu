@@ -65,15 +65,21 @@ describe("HP regeneration persistence", () => {
       delay: new SystemCombatDelay(),
     });
     characters = CharacterModule.create(
-      playableCharacterModuleInput(database, catalog.progression, inventory.service, {
-        creationPolicy: policy.heroCreation,
-        clock,
-        regenPolicy: PLAYABLE_REGEN_POLICY,
-        activeFight: new AccountKeyedActiveFightQuery(
-          new PostgresHeroRepository(database),
-          combat.combat,
-        ),
-      }),
+      playableCharacterModuleInput(
+        database,
+        catalog.progression,
+        inventory.service,
+        catalog.catalog,
+        {
+          creationPolicy: policy.heroCreation,
+          clock,
+          regenPolicy: PLAYABLE_REGEN_POLICY,
+          activeFight: new AccountKeyedActiveFightQuery(
+            new PostgresHeroRepository(database),
+            combat.combat,
+          ),
+        },
+      ),
     );
   });
 

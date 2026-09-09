@@ -184,6 +184,15 @@ status 2 и ghost 203 покрыты e2e. CEF лавки не прогонялс
 
 Не перенесены остальные лоты 504, diamonds, `store|repair`, OPEN_STORE.
 
+## Reputation — частично
+
+Есть raw-AMF: OA `user|stats` named rows (опыт/героизм, нули kill/duel/fatality/
+daily, type:2 только при value > 0, всегда SUM 36 type 3), `grantReputation`
+track **5** persist reconnect/restart. Catalog публикует только Радвей **5**.
+CEF экран репутации не прогонялся; квестового consumer нет.
+
+Не перенесены tracks 7/11/…, kill overlay, SET_FLAG, chat notify, GRANT_REP.
+
 ## Вне первой волны
 
 Professions, dungeons, battlegrounds, achievements, daily quests, heroism,

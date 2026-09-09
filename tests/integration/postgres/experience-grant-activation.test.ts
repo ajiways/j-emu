@@ -46,9 +46,15 @@ describe("experience grant activation races", () => {
           pocketCapacity: policy.bootstrap.pocketCapacity,
         });
         const characters = CharacterModule.create(
-          playableCharacterModuleInput(database, catalog.progression, inventory.service, {
-            creationPolicy: policy.heroCreation,
-          }),
+          playableCharacterModuleInput(
+            database,
+            catalog.progression,
+            inventory.service,
+            catalog.catalog,
+            {
+              creationPolicy: policy.heroCreation,
+            },
+          ),
         );
         const slot = uniqueDevelopmentSlot();
         const account = await identity.service.register(`u${slot}`, `N${slot}`, "secret1");
@@ -76,6 +82,7 @@ describe("experience grant activation races", () => {
             grantClient,
             grantCatalog.progression,
             grantInventory.service,
+            grantCatalog.catalog,
             {
               creationPolicy: policy.heroCreation,
             },

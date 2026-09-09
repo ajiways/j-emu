@@ -1,0 +1,3 @@
+export const SUM_REPUTATION_OBJECT_ID = 36;
+export const RADVEY_REPUTATION_OBJECT_ID = 5;
+export const REPUTATION_TRACK_MAX = 7000;

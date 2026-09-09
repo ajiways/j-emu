@@ -5,7 +5,9 @@ import type { ActiveContentRevision } from "../../content/ports/active-content-r
 import { AppearancePreset } from "../domain/appearance-preset.ts";
 import type { ArtifactDefinition } from "../domain/artifact-definition.ts";
 import type { StoreLot, StoreType } from "../domain/store-lot.ts";
+import type { ReputationTrack } from "../domain/reputation-track.ts";
 import type { Catalog } from "../ports/catalog.ts";
+import { loadReputationTrack, loadReputationTracks } from "./postgres-catalog-reputation.ts";
 import { loadStoreLots, loadStoreTypes } from "./postgres-catalog-store.ts";
 import { artifactDefinitionFromRow } from "./artifact-definition-from-row.ts";
 import { BootstrapChrome } from "../domain/bootstrap-chrome.ts";
@@ -202,6 +204,14 @@ export class PostgresCatalog implements Catalog {
 
   async storeLots(areaId: string): Promise<readonly StoreLot[]> {
     return loadStoreLots(this.database, await this.revision.requireId(), areaId);
+  }
+
+  async reputationTrack(objectId: number): Promise<ReputationTrack | null> {
+    return loadReputationTrack(this.database, await this.revision.requireId(), objectId);
+  }
+
+  async reputationTracks(): Promise<readonly ReputationTrack[]> {
+    return loadReputationTracks(this.database, await this.revision.requireId());
   }
 
   private async requireGameWide(
