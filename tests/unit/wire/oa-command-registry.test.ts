@@ -78,7 +78,7 @@ describe("object-action envelope decoder", () => {
     const envelope = decodeObjectActionEnvelope({
       object: "common",
       action: "object",
-      form: { code: "ATTACK_BOT", bot_id: 2 },
+      form: { code: "ATTACK_BOT", bot_id: 50310 },
       sq: 4,
     });
     expect(oaRegistryKey(envelope)).toBe("common|object:ATTACK_BOT");

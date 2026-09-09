@@ -35,6 +35,9 @@
 - `presence-esrv` — два isolated hero: init2 population by accountId, COME_IN/
   exit/logout `2:` diffs, `131:` hunt snapshot, chat auth empty body, restart
   drops queue;
+- `hunt-lock` — два isolated hero: ATTACK_BOT spawn 50310 ставит `fight_id`,
+  второй клиент 203 «моб уже занят» и видит busy на `131:`, finish/exit → idle
+  0, restart → idle при том же `area_id`;
 - `personal-details` — `user|save_personal_details` flat `status:100` + `state`,
   persist `pondViewLast` после restart, overlay tutorial flags, nested getter;
 - `browser-auth` — HTML login/register, 302 handoff, пять cookies только в 200,
@@ -49,7 +52,8 @@
   HP/bag и не создаёт finished history;
 - `finished-fights` — после terminal hunt в PostgreSQL ровно одна строка с
   numeric `teams.1[].id`; повторная идентичная запись не дублирует;
-- `concurrent-heroes` — два уникальных slot параллельно, разные hero/fight id;
+- `concurrent-heroes` — два уникальных slot параллельно, разные hero id; один
+  победитель ATTACK_BOT 50310, второй 203 «моб уже занят»;
 - `protocol-errors` — no-session `status:4`, Flash Content-Type → не `415`,
   malformed `204`, unknown OA/fproxy `203`;
 - `bootstrap-oa-trace` — CEF-order probe: весь burst init→jail status 100;

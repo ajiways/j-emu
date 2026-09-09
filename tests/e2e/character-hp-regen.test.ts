@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Application } from "../../src/app/application.ts";
 import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
+import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { FakeClock } from "../support/fake-clock.ts";
 import { bagItemByArtikulId, heroIdFrom } from "../support/harness/wire-payload.ts";
@@ -73,7 +74,7 @@ describe("character HP regeneration", () => {
     const start = await client.objectAction({
       object: "common",
       action: "object",
-      form: { code: "ATTACK_BOT", bot_id: 2 },
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
       sq: 4,
     });
     expect(objectBlock(start["user|unitframe"])).toMatchObject({

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Application } from "../../src/app/application.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
+import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { completeMeleeHunt } from "../support/harness/complete-melee-hunt.ts";
 
@@ -46,7 +47,7 @@ describe("esrv exit and reconnect", () => {
     const startAgain = await afterRestart.objectAction({
       object: "common",
       action: "object",
-      form: { code: "ATTACK_BOT", bot_id: 2 },
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
       sq: 22,
     });
     expect(startAgain["common|action"]).toEqual({ status: 100 });
