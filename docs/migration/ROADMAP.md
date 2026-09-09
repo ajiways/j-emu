@@ -580,7 +580,7 @@
 - **Acceptance:** 6-ступенчатая заточка работает для произвольного предмета с
   combat-stat pool; резонатор **перебрасывает стат на той же ступени**, не
   сбрасывает уровень; тип 4 explicitly `203`, не молча игнорируется.
-- **Status:** `next`
+- **Status:** `done`
 
 ### INV-07 — Set bonuses and gear-spell hook
 
@@ -595,7 +595,7 @@
   inventory.
 - **Acceptance:** сет-бонус применяется/снимается generic по `extra.trend`,
   не по цвету; портрет сета собирается из 4 вещей.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### INV-08 — Full USE pipeline generality
 

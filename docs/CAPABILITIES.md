@@ -132,11 +132,10 @@ hunt −1 по 4–5 надетым tracking, `0/N` auto PUT_OFF, PUT_ON broken 
 0.02g), persist reconnect/restart, concurrent repair — один победитель.
 CEF мастерской не прогонялся.
 
-Заточка (INV-06) есть на raw-AMF: OA `UPGRADE`, overlay на том же
-`items.id`, кристаллы **553 / 1310 / 4603 / 11408 / 13224**, шесть ступеней
-type 3, резонатор на той же ступени, type 4 nested `203`, fail-roll
-коммитит consume. CEF диалога заточки не прогонялся — product **частично**,
-capability остаётся открытой.
+Заточка (INV-06) workflow `done`, product **частично**: OA `UPGRADE`, overlay
+на том же `items.id`, кристаллы **553 / 1310 / 4603 / 11408 / 13224**, шесть
+ступеней type 3, резонатор на той же ступени, type 4 nested `203`, fail-roll
+коммитит consume. CEF диалога заточки отложен до редактора контента.
 
 Не перенесены DRINK/TEMPEFFECT, ADD_MP, set-bonus. Добор пояса после
 боя (`CMB-03`) есть: spent cells refill from bag to `pocketCntMax`.

@@ -4,8 +4,8 @@
 
 Paperdoll `PUT_ON`/`PUT_OFF`, bag DROP 9095, pocket 93/99 и world USE 77
 **готово**: raw-AMF E2E и реальный CEF-прогон. Durability/repair (INV-05)
-workflow `done`, product **частично** без CEF мастерской. Upgrade INV-06
-реализован (raw-AMF); CEF диалога заточки ещё не прогонялся. Точный статус:
+и upgrade (INV-06) — workflow `done`, product **частично** без CEF
+мастерской и диалога заточки. Точный статус:
 [CAPABILITIES.md](../CAPABILITIES.md).
 
 Не перенесены fight cast/`persSpells`, DRINK/ADD_MP и патронташ.
@@ -619,14 +619,13 @@ Bag bit `CAN_BE_UPGRADED=512`. Карточка: `upgrade_id` / `upgrade_level` 
   crystal;
 - raw-AMF: 6× type 3 on 20; resonator re-picks; type 4 nested 203; fail-roll
   flat 203 + bag; restart; fight 203;
-- CEF диалога заточки — обязателен для product `done`.
+- CEF диалога заточки отложен до редактора; product **частично**.
 
 ## Architecture checkpoint — план
 
-INV-05 реализован (workflow `done`). INV-06 реализован как vertical path;
-product status ждёт CEF. Containers, reservations не спроектированы.
-Следующий inventory checkpoint после закрытия INV-06. DRINK /
-ADD_MP — когда появится dump-proven артикул. Процесс:
+INV-06 workflow `done`. Следующий inventory checkpoint — INV-07
+(set-bonus / gear-spell hook). Containers, reservations не спроектированы.
+DRINK / ADD_MP — INV-08, когда появится dump-proven артикул. Процесс:
 [ROADMAP.md](../migration/ROADMAP.md) и
 [PLAYBOOK.md](../migration/PLAYBOOK.md).
 
@@ -641,4 +640,5 @@ ADD_MP — когда появится dump-proven артикул. Процес�
 - DROP throw-away 9095 **готово** подтверждён CEF из bag;
 - pocket 93/99 **готово** подтверждён CEF PUT_ON на пояс;
 - world USE 77 **готово** подтверждён CEF из bag;
-- durability/repair **частично**: raw-AMF E2E есть, CEF мастерской нет.
+- durability/repair **частично**: raw-AMF E2E есть, CEF мастерской нет;
+- upgrade **частично**: raw-AMF E2E есть, CEF диалога заточки отложен.
