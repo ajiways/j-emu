@@ -70,7 +70,8 @@ dump-proven named rows `type_id:"13"`: опыт (1), героизм (2), нул�
 fatality/daily, затем type:2 только если value > 0, всегда **36** type 3
 «Суммарная репутация». Image у type:2 с каталога. Нулевые type:2 не слать.
 
-Reconnect/restart читает PostgreSQL. Chat grant notify — CHT-01.
+Reconnect/restart читает PostgreSQL. Chat grant notify — часть `SOC-01`
+(system notifications) в [ROADMAP.md](../migration/ROADMAP.md).
 
 ## Fail-fast
 

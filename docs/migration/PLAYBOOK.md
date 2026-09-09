@@ -93,8 +93,10 @@ coding agent останавливается и возвращает вопрос
 
 ### 5. Реализация
 
-1. Создать ветку `cap/<id-lowercase>-<short-name>` от согласованной базы, если
-   capability ещё не находится в собственной изолированной ветке.
+1. Работать напрямую в `main`, если это не тот редкий случай, где нужна
+   отдельная ветка (см. `AGENTS.md` § Git workflow). Ветка
+   `cap/<id-lowercase>-<short-name>` — опция для риска/параллельной работы, не
+   обязательный шаг.
 2. Сначала добавить или уточнить vertical raw-AMF acceptance scenario.
 3. Реализовать минимальный полный path: decode → typed command → application
    ports → transaction/content → exact response/realtime mapping.

@@ -7,18 +7,41 @@
 [EVIDENCE_INDEX.md](EVIDENCE_INDEX.md), известные точки изменения ownership и
 общей архитектуры — [ARCHITECTURE_EVOLUTION.md](ARCHITECTURE_EVOLUTION.md).
 
+## Цель очереди: движки, не цикл 1–8
+
+Цель `j-emu` — восстановить **все игровые движки** `jgr-emu` в новой
+архитектуре, доказано на representative-выборке данных, чтобы дальше можно
+было свободно наполнять их контентом. Конкретный авторский контент (куратские
+квесты, полный каталог, все данжи как контент) — не цель и не приоритет;
+старая отметка «цикл 1–8» была лишь чек-поинтом черновика, не финальной
+границей. Подробности разделения «движок vs контент» —
+[SOURCE_BOUNDARY.md](SOURCE_BOUNDARY.md).
+
+Отсюда порядок волн ниже: движки идут по графу зависимостей и архитектурному
+риску (сначала то, что тяжелее ретрофитить — stateful combat, — потом более
+аддитивные вещи), а не по тому, что нужно конкретной сюжетной цепочке. Прямой
+перенос куратского сюжета — отдельный, не блокирующий трек в самом низу этого
+документа.
+
 ## Правила очереди
 
 - Порядок записей обязателен; capability берётся только после всех
   `depends_on`.
-- Workflow-статусы: `done`, `next`, `queued`, `post-core`, `deferred`,
-  `excluded`. Они не заменяют продуктовые статусы.
-- Ровно одна запись имеет статус `next`: **REP-01**.
+- Workflow-статусы: `done`, `next`, `queued`, `deferred`, `excluded`. Отдельного
+  `post-core` больше нет — economy/social/instances/professions не «после
+  ядра», они и есть часть ядра движков.
+- Ровно одна запись имеет статус `next`.
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
-- `Content set` перечисляет только authored data capability. Player/runtime
-  state не является content.
+- `Content set` для capability, расширяющей механику до generic-случая,
+  означает: representative-выборка, покрывающая каждую ветку правила
+  legacy-документа, **и** отдельно поставленная задача массового импорта
+  домена (см. `CONTENT_MATRIX.md`), если для этого домена такой задачи ещё
+  нет. Полный объём каталога не требование для статуса capability, но не
+  должен откладываться неопределённо — см. `CONTENT_PIPELINE.md` §
+  `playable-slice.json`.
+- Player/runtime state не является content.
 - Детали контрактов живут в `docs/modules/*` и `WIRE_INVARIANTS.md`; очередь их
   не дублирует.
 
@@ -430,9 +453,12 @@
   fight returns to arena; death shows ghost until RESURRECT.
 - **Status:** `done`
 
-## Wave 4 — quest dependencies and cycle 1–8
+## Wave 4 — economy foundation and reputation
 
-### ECO-01 — Quest-required stores
+Первая вертикаль economy поднята сюда из бывшего «post-core» — она такой же
+движок, как inventory или world, и не обязана ждать квестового контента.
+
+### ECO-01 — First store vertical
 
 - **ID:** `ECO-01`
 - **depends_on:** `WLD-01`, `INV-02`, `CMB-04`
@@ -481,298 +507,223 @@
   fail-fast. CEF reputation UI not required until a quest consumes the port.
 - **Status:** `next`
 
-### CHT-01 — Required system notifications
+## Wave 5 — inventory and character engine generality
 
-- **ID:** `CHT-01`
-- **depends_on:** `RTM-01`, `CMB-03`
-- **Behavior evidence:** legacy `CHAT.md`, `QUEST_MACROS_CHAT.md`,
-  `lootNotify.ts` and [EVIDENCE_INDEX.md](EVIDENCE_INDEX.md).
-- **Content set:** only system templates and artifact/bot/map macros needed by
-  fight settlement and quests.
-- **Architecture checkpoint / decision:** pending — define post-commit
-  notification port and personal-channel delivery without introducing the
-  complete social/chat module.
-- **Acceptance:** fight/loot system messages reach the correct hero through
-  esrv with exact macros after durable settlement; failed delivery does not
-  roll back committed rewards.
+Текущий INV-02…04 срез поддерживает 3 предмета и один пример на тип действия.
+Эта волна доводит инвентарный движок до generic-случая из legacy-документов —
+никакого нового content-объёма сверх representative-выборки, но код должен
+работать для произвольного предмета такого типа.
+
+### INV-05 — Durability, death loss and repair
+
+- **ID:** `INV-05`
+- **depends_on:** `INV-02`, `CMB-04`
+- **Behavior evidence:** legacy `INVENTORY_USE.md` §8b, durability code.
+- **Content set:** representative предметы с `durability`/`durability_max` на
+  каждый occupancy slot type; массовый импорт остальных — DATA-02, не
+  требование этой capability.
+- **Architecture checkpoint / decision:** pending — durability как inventory
+  state vs economy payment port для repair price.
+- **Acceptance:** смерть снимает −1 у 4–5 надетых предметов, `0` → авто
+  PUT_OFF, `store|repair` считает `min(50, price×0.02)`, generic для любого
+  предмета с durability, не только одного захардкоженного.
 - **Status:** `queued`
 
-### QST-01 — NPC board, dialogs and quest book
+### INV-06 — Upgrade / enchant chain
 
-- **ID:** `QST-01`
-- **depends_on:** `WLD-01`, `ECO-01`, `REP-01`
-- **Behavior evidence:** legacy `QUESTS.md`, `QUEST_DIALOG.md`,
-  `NPC_CATALOG.md`, `QUEST_BOARD_ICONS.md` and
-  [QUESTS.md](../modules/QUESTS.md).
-- **Content set:** core NPC catalog, portraits, dialogs, board actions and quest
-  summaries.
-- **Architecture checkpoint / decision:** pending — define quest content schema,
-  typed dialog cursor and static command surfaces.
-- **Acceptance:** board/dialog/book exact shapes render in CEF; publication
-  rejects broken NPC/dialog/quest references as one candidate.
+- **ID:** `INV-06`
+- **depends_on:** `INV-05`
+- **Behavior evidence:** legacy `INVENTORY_USE.md` upgrade §, resonator.
+- **Content set:** representative upgrade chain (типы 1–3) на одном предмете;
+  generic engine — любой предмет с объявленной chain.
+- **Architecture checkpoint / decision:** pending — item identity через
+  upgrade (новый instance id vs mutate in place).
+- **Acceptance:** 6-ступенчатая заточка работает для произвольного предмета с
+  authored chain; резонатор сбрасывает ступень; тип 4 explicitly не
+  поддержан, не молча игнорируется.
 - **Status:** `queued`
 
-### QST-02 — Quest state, goals and scripts
+### INV-07 — Set bonuses and gear-spell hook
 
-- **ID:** `QST-02`
-- **depends_on:** `QST-01`, `INV-04`
-- **Behavior evidence:** legacy `QUESTS.md`, `QUEST_DIALOG.md`,
-  curated fixtures, quest runtime and [QUESTS.md](../modules/QUESTS.md).
-- **Content set:** typed quest/step/goal/script definitions for the curated
-  chain.
-- **Architecture checkpoint / decision:** pending — define persistent progress
-  aggregate, script operation registry and idempotent transition transaction.
-- **Acceptance:** talk/kill/loot/buy/equip/deliver/area goals and supported
-  scripts persist cursor/progress/waiting without duplicate consume/reward.
+- **ID:** `INV-07`
+- **depends_on:** `INV-01`, `INV-05`
+- **Behavior evidence:** legacy `INVENTORY_USE.md` set-bonus §, `GEAR_SPELL.md`.
+- **Content set:** один representative сет (4 предмета) + один gear-spell
+  hook proof-of-concept; полный каталог сетов — отдельная задача массового
+  импорта.
+- **Architecture checkpoint / decision:** pending — set-bonus вычисление на
+  equip snapshot; combat consumption hook без импорта combat-таблиц в
+  inventory.
+- **Acceptance:** сет-бонус применяется/снимается generic по `extra.trend`,
+  не по цвету; портрет сета собирается из 4 вещей.
 - **Status:** `queued`
 
-### IUS-01 — Quest item USE and dialog actions
+### INV-08 — Full USE pipeline generality
 
-- **ID:** `IUS-01`
-- **depends_on:** `QST-02`, `INV-04`
-- **Behavior evidence:** legacy `INVENTORY_USE.md`, `ITEM_NPC_DIALOG.md`,
-  `artifact_use.json` and [INVENTORY.md](../modules/INVENTORY.md).
-- **Content set:** only item scripts, bonus/action definitions and
-  dialog-opening references used by the approved 1–8 quests.
-- **Architecture checkpoint / decision:** pending — define typed script
-  operation registry and one orchestration transaction across quest,
-  inventory and character ports.
-- **Acceptance:** supported quest-item actions validate requirements,
-  consume/grant exactly once and open the exact NPC dialog or plaque; missing
-  operation/reference fails publication or returns `203 + error`.
+- **ID:** `INV-08`
+- **depends_on:** `INV-04`
+- **Behavior evidence:** legacy `INVENTORY_USE.md` full pipeline,
+  `ITEM_NPC_DIALOG.md`.
+- **Content set:** по одному representative предмету на каждую ветку:
+  DRINK/TEMPEFFECT, dialog-open, multi-step script, bonus_id resolution.
+- **Architecture checkpoint / decision:** pending — typed script operation
+  registry (не generic JSON interpreter «на будущее», конкретные операции по
+  мере доказанной нужности).
+- **Acceptance:** каждая ветка пайплайна проходит raw-AMF E2E на своём
+  representative предмете; неизвестная операция — `203`, не молчаливый skip.
 - **Status:** `queued`
 
-### QST-03 — Quest world and combat integration
+## Wave 6 — combat engine generality
 
-- **ID:** `QST-03`
-- **depends_on:** `QST-02`, `IUS-01`, `CMB-04`, `CHT-01`
-- **Behavior evidence:** legacy `QUEST_DIALOG.md`, `QUEST_MAP_MARKERS.md`,
-  `QUEST_MACROS_CHAT.md`, known-bug list and
-  [QUESTS.md](../modules/QUESTS.md).
-- **Content set:** quest bots, AREA actions, fight scripts, markers and system
-  message templates required by levels 1–8.
-- **Architecture checkpoint / decision:** pending — define orchestration
-  transaction and post-commit notifications across quest, world, inventory and
-  combat ports.
-- **Acceptance:** AREA waiting starts the correct quest fight; only confirmed
-  win advances; loss/reset, loot limits, markers and messages follow the
-  adapted contract.
+Текущий combat работает только с одним ботом (Gryzl, spawn 50310) и тремя
+предметами. Эта волна убирает захардкоженность самого движка — контент
+по-прежнему остаётся representative-выборкой, но правила становятся общими.
+
+### CMB-05 — Generic damage formula
+
+- **ID:** `CMB-05`
+- **depends_on:** `CMB-01`
+- **Behavior evidence:** legacy `FIGHT_DAMAGE.md` (invented/empirical —
+  переносится как `legacy behavior`, не live parity).
+- **Content set:** 2–3 representative бота/оружия разного архетипа (лёгкий
+  melee, тяжёлый melee, дальний) для проверки формулы на разных входах.
+- **Architecture checkpoint / decision:** pending — параметризовать
+  `BattleRules` по stats бота/оружия вместо текущей одной константы.
+- **Acceptance:** урон считается по формуле от входных статов участников, не
+  по хардкоду под bot id 2; existing CMB-01 acceptance не регрессирует.
 - **Status:** `queued`
 
-### QST-04 — Markers and known quest regressions
+### CMB-06 — Bot AI and spellbook casting
 
-- **ID:** `QST-04`
-- **depends_on:** `QST-03`
-- **Behavior evidence:** legacy `QUEST_MAP_MARKERS.md`,
-  `TEMP_QUEST_ITEM_AND_MARKER_BUGS.md` and quest QA.
-- **Content set:** marker/offer metadata and explicit quest-loot limits for the
-  approved core set.
-- **Architecture checkpoint / decision:** pending — convert each still-relevant
-  legacy defect into one acceptance regression; obsolete defects are removed
-  with evidence, not silently ignored.
-- **Acceptance:** offer/target markers and quest-loot limit/re-loot behavior
-  match the adapted contract without false map markers.
+- **ID:** `CMB-06`
+- **depends_on:** `CMB-02`, `CMB-05`
+- **Behavior evidence:** legacy `BOT_SPELLS.md`, `botAi.ts`, `botSpells.ts`
+  (invented frequencies — `legacy behavior`).
+- **Content set:** 2 representative бота с книгой заклинаний разного типа
+  (например, один hot/heal-кастер, один AOE); массовый импорт полного
+  `bot_spell_book.json` — отдельная DATA-03 задача, не блокирует эту
+  capability.
+- **Architecture checkpoint / decision:** pending — AI decision port внутри
+  domain `Battle` (turn-based выбор заклинания), не отдельный process/scheduler.
+- **Acceptance:** бот с книгой заклинаний кастует по книге, а не только бьёт
+  врукопашную; бот без книги ведёт себя как раньше (regression-safe).
 - **Status:** `queued`
 
-## Wave 5 — authored story delivery and core gate
+### CMB-07 — Generic weighted loot table engine
 
-Each quest is an independent CEF milestone. The approved active core set is
-defined by the DATA-06 manifest; merely finding `q_1`…`q_14` files does not put
-all of them into the core release.
-
-### STORY-01 — q_1 «Рождение скорпиона»
-
-- **ID:** `STORY-01`
-- **depends_on:** `QST-04`
-- **Behavior evidence:** curated `q_1`, related NPC/dialog/fight evidence.
-- **Content set:** q_1 and its complete transitive item/bot/NPC/area/reward refs.
-- **Architecture checkpoint / decision:** pending — verify all references close
-  inside the active candidate; no story-specific runtime branch.
-- **Acceptance:** fresh hero completes talk, kill, ritual fight and turn-in;
-  reward/reputation/progress survive restart.
+- **ID:** `CMB-07`
+- **depends_on:** `CMB-03`
+- **Behavior evidence:** legacy `FIGHT_LOOT.md` full weighted-table algorithm.
+- **Content set:** переиспользует существующий `bot_loot_entries`; расширение
+  до полного корпуса — DATA-03 bulk import, не эта capability.
+- **Architecture checkpoint / decision:** pending — обобщить `roll-bot-loot.ts`
+  до произвольного числа entries/весов, quest/dungeon-conditioned entries как
+  отдельные policy-документы (не создавать сейчас, только не блокировать).
+- **Acceptance:** таблица лута работает для произвольного набора entries и
+  весов, включая edge cases (одна entry, все веса равны, `nothing_weight`
+  доминирует).
 - **Status:** `queued`
 
-### STORY-02 — q_4 «Первое задание скорпиона»
+### CMB-08 — Duels and team shuffle
 
-- **ID:** `STORY-02`
-- **depends_on:** `STORY-01`
-- **Behavior evidence:** curated `q_4` and related hunt evidence.
-- **Content set:** q_4 and its complete transitive references.
-- **Architecture checkpoint / decision:** pending — no new engine primitive may
-  be hidden in story content; missing primitive returns to `QST-*`.
-- **Acceptance:** sequential hunt kills advance and turn-in grants exactly one
-  set of rewards.
+- **ID:** `CMB-08`
+- **depends_on:** `CMB-01`, `CMB-04`
+- **Behavior evidence:** legacy `FIGHT_JOIN.md`, `duel.ts`, `swap.ts`.
+- **Content set:** нет нового контента — чистая механика поверх
+  существующего combat loadout.
+- **Architecture checkpoint / decision:** pending — `FightDuel` как generic
+  pairing (human/human, human/bot, bot/bot) поверх того же `Battle`, shuffle
+  3↔3 как реорганизация team-массивов, не новая сущность.
+- **Acceptance:** friendly duel propose/accept работает между двумя героями;
+  shuffle 3↔3 перераспределяет живых участников без потери HP/state.
 - **Status:** `queued`
 
-### STORY-03 — q_5 «Защита для Скорпиона»
+### CMB-09 — Quest-fight mode hook (engine only)
 
-- **ID:** `STORY-03`
-- **depends_on:** `STORY-02`, `ECO-01`, `INV-01`
-- **Behavior evidence:** curated `q_5`, store 504 and equip-goal evidence.
-- **Content set:** q_5, required store lots and equipment references.
-- **Architecture checkpoint / decision:** pending — confirm buy/equip signals
-  cross module ports after committed mutations.
-- **Acceptance:** client buys and equips all required items, then turns in q_5;
-  retry cannot duplicate goal credit or rewards.
+- **ID:** `CMB-09`
+- **depends_on:** `CMB-03`, `CMB-04`
+- **Behavior evidence:** legacy `QUEST_DIALOG.md` `mode:quest`/`win_fight`,
+  `questKills.ts`.
+- **Content set:** один синтетический тестовый quest-fight hook (не
+  куратский контент) — доказывает, что combat умеет отдавать `on_win`/
+  `on_lose` сигнал произвольному вызывающему модулю.
+- **Architecture checkpoint / decision:** pending — combat отдаёт terminal
+  outcome через тот же `FightTerminalObserver`, что и CMB-03, quest-модуль
+  подписывается, а не наоборот.
+- **Acceptance:** внешний вызывающий модуль может запросить fight с
+  `mode:quest`-подобным флагом и получить `on_win`/`on_lose` без изменения
+  ownership terminal settlement из CMB-03.
 - **Status:** `queued`
 
-### STORY-04 — q_6 «Щегольские сапоги»
+### WLD-03 — Hunt wander/respawn as a generic scheduler
 
-- **ID:** `STORY-04`
-- **depends_on:** `STORY-03`
-- **Behavior evidence:** curated `q_6`, fight loot and quest-loot evidence.
-- **Content set:** q_6, target bots, loot item and limits.
-- **Architecture checkpoint / decision:** pending — use QST-04 loot policy
-  without quest-specific settlement code.
-- **Acceptance:** only confirmed wins grant limited quest loot; turn-in consumes
-  the required quantity exactly once.
+- **ID:** `WLD-03`
+- **depends_on:** `WLD-02`
+- **Behavior evidence:** legacy `huntWorld.ts`, `huntWander.ts`, `SYNC.md`.
+- **Content set:** 2–3 representative spawn'а с разным route/zone/respawn —
+  массовый импорт `hunt_spawns.json` целиком — DATA-04, не эта capability.
+- **Architecture checkpoint / decision:** pending — process-local scheduler
+  port, не per-spawn `setInterval`.
+- **Acceptance:** произвольный authored spawn с route/zone бродит и
+  респаунится по своим authored таймингам, не только статичная точка 50310.
 - **Status:** `queued`
 
-### STORY-05 — q_7 «Лесной изгнанник»
+## Wave 7 — economy engines
 
-- **ID:** `STORY-05`
-- **depends_on:** `STORY-04`
-- **Behavior evidence:** curated `q_7`, multi-NPC/world facts and deliver flow.
-- **Content set:** q_7 and complete NPC/area/fact/item references.
-- **Architecture checkpoint / decision:** pending — confirm world facts and
-  quest progress ownership through public ports.
-- **Acceptance:** talk, travel, loot and deliver sequence completes in CEF and
-  persists at each restart checkpoint.
-- **Status:** `queued`
+`ECO-01` уже поднят в Wave 4. Здесь — остальная economy как generic-движки,
+без ожидания квестового контента.
 
-### STORY-06 — q_8/q_9 and level-8 progression band
-
-- **ID:** `STORY-06`
-- **depends_on:** `STORY-05`, `CHR-01`, `CMB-03`
-- **Behavior evidence:** curated `q_8`, `q_9` and level 1–8 progression evidence.
-- **Content set:** approved q_8/q_9 references and enough authored hunt/loot
-  content to reach level 8 without manual grants.
-- **Architecture checkpoint / decision:** pending — confirm the progression
-  band uses general quest/combat rules, not test-only reward inflation.
-- **Acceptance:** a normal client path reaches level 8 with persisted
-  progression and no manual DB patch.
-- **Status:** `queued`
-
-### CORE-GATE — complete cycle 1–8
-
-- **ID:** `CORE-GATE`
-- **depends_on:** `STORY-06`
-- **Behavior evidence:** all core module contracts and DATA-01…DATA-06
-  completeness report.
-- **Content set:** one complete, validated core manifest and active release.
-- **Architecture checkpoint / decision:** final core audit; unresolved
-  architecture work becomes blocking `ARC-*`, never inline cleanup.
-- **Acceptance:** clean DB → migrations → import/validate/materialize/activate →
-  restart → new hero completes the approved CEF cycle through level 8 without
-  runtime legacy access or manual DB patch.
-- **Status:** `queued`
-
-After this gate, collapse the pre-baseline migration chain if still desired,
-repeat the clean-DB gate and declare the first stable baseline. Applied
-migrations are immutable after that declaration.
-
-## Wave 6 — post-core social and economy
-
-### SOC-01 — Chat
-
-- **ID:** `SOC-01`
-- **depends_on:** `CORE-GATE`, `RTM-01`, `CHT-01`
-- **Behavior evidence:** legacy `CHAT.md`, `chat.ts`, `chatMacros.ts`.
-- **Content set:** approved macros/smiles only.
-- **Architecture checkpoint / decision:** pending — define chat/outbox module
-  boundary and retention policy.
-- **Acceptance:** area/private/system messages and required macros reach the
-  correct framed channel without exposing session data.
-- **Status:** `post-core`
-
-### SOC-02 — Party
-
-- **ID:** `SOC-02`
-- **depends_on:** `SOC-01`, `CMB-04`
-- **Behavior evidence:** legacy `PARTY.md`, `FIGHT_JOIN.md`, party runtime.
-- **Content set:** party UI/config documents, if required.
-- **Architecture checkpoint / decision:** pending — decide persistent party
-  ownership, membership locking and `4:` channel.
-- **Acceptance:** create/invite/accept/kick/leave/disband, leadership, settings
-  and party chat remain consistent through reconnect and concurrent membership
-  changes.
-- **Status:** `post-core`
-
-### SOC-03 — Party bag, grouploot and fight HELP
-
-- **ID:** `SOC-03`
-- **depends_on:** `SOC-02`, `CMB-04`
-- **Behavior evidence:** legacy `PARTY.md`, `FIGHT_LOOT.md`, `FIGHT_JOIN.md`.
-- **Content set:** loot-rule configuration only.
-- **Architecture checkpoint / decision:** pending — define party bag TTL,
-  inventory transfer and combat join ports without direct cross-table writes.
-- **Acceptance:** all supported loot rules, party bag give/drop and same-area
-  HELP/JOIN settle once and produce ordered party/personal pushes.
-- **Status:** `post-core`
-
-### ECO-02 — Full store catalog and purchases
+### ECO-02 — Generic store engine
 
 - **ID:** `ECO-02`
-- **depends_on:** `ECO-01`, `CORE-GATE`
-- **Behavior evidence:** legacy `STORE.md`, `INVENTORY_USE.md`, store fixtures.
-- **Content set:** all validated non-core stores, lots, currencies and gates.
-- **Architecture checkpoint / decision:** pending — extend, not bypass, ECO-01
-  ports and publication validation.
-- **Acceptance:** all 23 manifest-declared store files publish; gold, diamond
-  and barter buys plus restrictions pass client scenarios without fixture
-  reads.
-- **Status:** `post-core`
-
-### ECO-03 — Durability, repair and upgrade
-
-- **ID:** `ECO-03`
-- **depends_on:** `ECO-02`, `INV-04`
-- **Behavior evidence:** legacy `INVENTORY_USE.md`, `store|repair` and upgrade
-  evidence.
-- **Content set:** durability, repair-price, upgrade-chain and resonator
-  definitions.
-- **Architecture checkpoint / decision:** pending — determine whether upgrade
-  belongs to inventory with an economy payment port; item replacement must
-  preserve explicit identity semantics.
-- **Acceptance:** death durability loss, repair and supported six-step upgrade
-  chains are atomic, restart-safe and match item/card wire.
-- **Status:** `post-core`
+- **depends_on:** `ECO-01`
+- **Behavior evidence:** legacy `STORE.md`, `INVENTORY_USE.md`.
+- **Content set:** 2–3 representative магазина с разными currency/gate (gold,
+  diamond, barter, LEVEL/RANK/REPUTATION requires); массовый импорт всех 23
+  файлов — отдельная DATA-05 задача.
+- **Architecture checkpoint / decision:** pending — обобщить store engine до
+  произвольного `store_type`/`currency`/`requires`, не хардкода под тип
+  `-131`.
+- **Acceptance:** магазин с любым authored набором лотов и валют проходит
+  list/buy/gate raw-AMF E2E; `store|repair` вкладка — если не покрыта INV-05.
+- **Status:** `queued`
 
 ### MAIL-01 — Mailbox and plain messages
 
 - **ID:** `MAIL-01`
-- **depends_on:** `CORE-GATE`, `INV-02`
+- **depends_on:** `INV-02`
 - **Behavior evidence:** legacy `MAIL.md` and `src/mail/`.
-- **Content set:** mail macros/templates and welcome message policy.
-- **Architecture checkpoint / decision:** pending — define mailbox ownership,
-  sender/recipient identity and list/send/delete transaction boundary.
-- **Acceptance:** inbox/outbox, plain send/delete and welcome letter are
-  restart-safe, paginated and preserve exact list/macros wire.
-- **Status:** `post-core`
+- **Content set:** mail-макросы/шаблоны и welcome message policy.
+- **Architecture checkpoint / decision:** pending — mailbox ownership,
+  sender/recipient identity и list/send/delete transaction boundary.
+- **Acceptance:** inbox/outbox, plain send/delete и welcome letter
+  restart-safe, paginated, точный list/macros wire.
+- **Status:** `queued`
 
 ### MAIL-02 — Attachments, COD and expiry
 
 - **ID:** `MAIL-02`
 - **depends_on:** `MAIL-01`, `ECO-02`
 - **Behavior evidence:** legacy `MAIL.md` attachment/COD/TTL flows.
-- **Content set:** TTL and fee policy.
-- **Architecture checkpoint / decision:** pending — define item/fund
-  reservations, claim/retract locking and expiry worker ownership.
-- **Acceptance:** send attachments/gold, COD, pick/batch-pick, retract and
-  return-on-expiry have one winner under races and never lose ownership.
-- **Status:** `post-core`
+- **Content set:** TTL и fee policy.
+- **Architecture checkpoint / decision:** pending — item/fund reservations,
+  claim/retract locking и expiry worker ownership.
+- **Acceptance:** send attachments/gold, COD, pick/batch-pick, retract и
+  return-on-expiry имеют одного победителя в гонке и никогда не теряют
+  владение.
+- **Status:** `queued`
 
 ### AUC-01 — Auction listings and bids
 
 - **ID:** `AUC-01`
 - **depends_on:** `MAIL-02`, `ECO-02`
 - **Behavior evidence:** legacy `AUCTION.md` and `src/auction/`.
-- **Content set:** auction configuration and fee policy.
-- **Architecture checkpoint / decision:** pending — define listing/order holds,
-  row locking and mail delivery port.
-- **Acceptance:** list/page/my-lot/my-bid, add, bid, buyout, cancel and expiry
-  races have one winner and durable mail settlement.
-- **Status:** `post-core`
+- **Content set:** auction configuration и fee policy.
+- **Architecture checkpoint / decision:** pending — listing/order holds, row
+  locking и mail delivery port.
+- **Acceptance:** list/page/my-lot/my-bid, add, bid, buyout, cancel и expiry
+  races имеют одного победителя и durable mail settlement.
+- **Status:** `queued`
 
 ### AUC-02 — Auction tenders
 
@@ -780,239 +731,387 @@ migrations are immutable after that declaration.
 - **depends_on:** `AUC-01`
 - **Behavior evidence:** legacy `AUCTION.md` tender flows.
 - **Content set:** tender fee/limit policy.
-- **Architecture checkpoint / decision:** pending — reuse listing holds and
-  mail settlement; define partial-fill row locking.
-- **Acceptance:** tender create/sell/cancel and concurrent partial fills never
-  oversell quantity or duplicate payment/delivery.
-- **Status:** `post-core`
+- **Architecture checkpoint / decision:** pending — переиспользовать listing
+  holds и mail settlement; partial-fill row locking.
+- **Acceptance:** tender create/sell/cancel и concurrent partial fills никогда
+  не продают больше количества и не дублируют оплату/доставку.
+- **Status:** `queued`
 
 ### TRD-01 — Direct trade session
 
 - **ID:** `TRD-01`
-- **depends_on:** `SOC-01`, `INV-02`
+- **depends_on:** `INV-02`
 - **Behavior evidence:** legacy `TRADE.md` and `src/trade/`.
 - **Content set:** trade fee policy.
-- **Architecture checkpoint / decision:** pending — decide session lifetime,
-  invite/window delivery and restart behavior.
-- **Acceptance:** request/accept/cancel, item/money offers and confirmation-key
-  rotation keep one process-local session consistent through disconnect.
-- **Status:** `post-core`
+- **Architecture checkpoint / decision:** pending — session lifetime,
+  invite/window delivery и restart behavior.
+- **Acceptance:** request/accept/cancel, item/money offers и
+  confirmation-key rotation держат один process-local session consistent
+  через disconnect.
+- **Status:** `queued`
 
 ### TRD-02 — Direct trade settlement
 
 - **ID:** `TRD-02`
 - **depends_on:** `TRD-01`, `ECO-02`
-- **Behavior evidence:** legacy `TRADE.md` settlement and tax evidence.
+- **Behavior evidence:** legacy `TRADE.md` settlement и tax evidence.
 - **Content set:** validated tax policy.
-- **Architecture checkpoint / decision:** pending — define item/fund
-  reservations and one atomic two-hero settlement transaction.
-- **Acceptance:** double confirmation swaps items/money once, charges the
-  documented tax and rejects NOGIVE or stale offers without duplication.
-- **Status:** `post-core`
+- **Architecture checkpoint / decision:** pending — item/fund reservations и
+  одна atomic two-hero settlement transaction.
+- **Acceptance:** double confirmation меняет предметы/деньги один раз,
+  списывает документированный налог и отклоняет NOGIVE/stale offers без
+  дублирования.
+- **Status:** `queued`
 
-## Wave 7 — extended game systems
+## Wave 8 — social engines
 
-These entries are ordered only after Wave 6. Moving one to implementation
-requires an architecture checkpoint and an explicit queue edit.
+### SOC-01 — Chat
+
+- **ID:** `SOC-01`
+- **depends_on:** `RTM-01`
+- **Behavior evidence:** legacy `CHAT.md`, `chat.ts`, `chatMacros.ts`,
+  `QUEST_MACROS_CHAT.md`, `lootNotify.ts`.
+- **Content set:** approved macros/smiles плюс system templates для fight/loot
+  settlement notifications (замена бывшего `CHT-01`).
+- **Architecture checkpoint / decision:** pending — chat/outbox module
+  boundary, retention policy и post-commit notification port для
+  fight/loot settlement без прямой зависимости combat → chat.
+- **Acceptance:** area/private/system сообщения и требуемые макросы доходят до
+  правильного канала без утечки session-данных; fight/loot system messages
+  доходят через esrv после durable settlement без rollback committed rewards
+  при сбое доставки.
+- **Status:** `queued`
+
+### SOC-02 — Party
+
+- **ID:** `SOC-02`
+- **depends_on:** `SOC-01`, `CMB-04`
+- **Behavior evidence:** legacy `PARTY.md`, `FIGHT_JOIN.md`, party runtime.
+- **Content set:** party UI/config документы, если нужны.
+- **Architecture checkpoint / decision:** pending — persistent party
+  ownership, membership locking и `4:` channel.
+- **Acceptance:** create/invite/accept/kick/leave/disband, leadership,
+  settings и party chat остаются consistent через reconnect и параллельные
+  изменения состава.
+- **Status:** `queued`
+
+### SOC-03 — Party bag, grouploot and fight HELP
+
+- **ID:** `SOC-03`
+- **depends_on:** `SOC-02`, `CMB-08`
+- **Behavior evidence:** legacy `PARTY.md`, `FIGHT_LOOT.md`, `FIGHT_JOIN.md`.
+- **Content set:** loot-rule конфигурация только.
+- **Architecture checkpoint / decision:** pending — party bag TTL, inventory
+  transfer и combat join ports без прямых cross-table writes.
+- **Acceptance:** все поддержанные loot rules, party bag give/drop и
+  same-area HELP/JOIN settle один раз и дают упорядоченные
+  party/personal pushes.
+- **Status:** `queued`
+
+## Wave 9 — instance engines
 
 ### DNG-01 — Instance and dungeon foundation
 
 - **ID:** `DNG-01`
 - **depends_on:** `SOC-03`, `CMB-04`, `ECO-02`
 - **Behavior evidence:** legacy `DUNGEON.md` and dungeon catalog.
-- **Content set:** dungeon definitions, floors, hunts, binds and rewards.
-- **Architecture checkpoint / decision:** pending — instance ownership and
-  expiration require a dedicated `ARC-*` or ADR decision before coding.
-- **Acceptance:** published instance definition can create a copy, bind party
-  members, isolate area/hunt state, expire and return members without storing
-  active combat in PostgreSQL.
-- **Status:** `deferred`
+- **Content set:** один representative данж (самый маленький из
+  `fixtures/dungeons/*.json`) как generic instance engine proof; остальные —
+  массовый импорт после того, как движок доказан, не 7 отдельных capability
+  с нуля.
+- **Architecture checkpoint / decision:** pending — instance ownership и
+  expiration; отдельный `ARC-*` до coding.
+- **Acceptance:** authored instance definition создаёт копию, bind'ит членов
+  party, изолирует area/hunt state, expire'ится и возвращает участников без
+  хранения active combat в PostgreSQL.
+- **Status:** `queued`
 
-### DNG-02 — «Провал» vertical slice
+### DNG-02 — Remaining dungeons as bulk content
 
 - **ID:** `DNG-02`
 - **depends_on:** `DNG-01`
-- **Behavior evidence:** legacy `DUNGEON.md`, `proval.json`, coin shop 724.
-- **Content set:** full manifest for areas 548–551, encounters, clear
-  checkpoints, bosses, loot and coin shop.
-- **Architecture checkpoint / decision:** pending — reuse DNG-01 contracts;
-  dungeon-specific behavior remains authored policy.
-- **Acceptance:** a party enters, clears all floors, receives personal boss
-  loot/coins, exits and spends coins after reconnect.
-- **Status:** `deferred`
-
-### DNG-03 — Remaining legacy dungeons
-
-- **ID:** `DNG-03`
-- **depends_on:** `DNG-02`
-- **Behavior evidence:** the other seven manifest-declared dungeon files and
-  legacy dungeon tests.
-- **Content set:** one validated release entry set per dungeon.
-- **Architecture checkpoint / decision:** pending — split into one capability
-  per dungeon if any introduces a new engine primitive.
-- **Acceptance:** every published dungeon completes its authored
-  enter/floor/clear/boss/loot/exit scenario without runtime JSON reads.
-- **Status:** `deferred`
-
-### PRF-01 — Profession content and hero state
-
-- **ID:** `PRF-01`
-- **depends_on:** `CORE-GATE`, `WLD-02`, `INV-02`
-- **Behavior evidence:** legacy profession, fixture and quest-grant evidence.
-- **Content set:** professions, resource types, assistants, recipes, farms and
-  level/mastery policies.
-- **Architecture checkpoint / decision:** pending — define module ownership,
-  scheduler clock and quest/inventory/world ports.
-- **Acceptance:** complete enabled profession catalog publishes and a quest
-  grant persists the correct profession pair and bootstrap state.
-- **Status:** `deferred`
-
-### PRF-02 — Assistants and gathering
-
-- **ID:** `PRF-02`
-- **depends_on:** `PRF-01`, `CHT-01`
-- **Behavior evidence:** legacy assistant work/repeat/revoke/save/create/upgrade
-  flows.
-- **Content set:** assistant chains, resource nodes, durations and rewards.
-- **Architecture checkpoint / decision:** pending — define durable jobs and
-  bounded expiry processing without request-time fallback.
-- **Acceptance:** deploy, finish, claim/repeat/revoke and upgrade survive
-  restart and atomically grant inventory/mastery/stat changes.
-- **Status:** `deferred`
-
-### PRF-03 — Crafting
-
-- **ID:** `PRF-03`
-- **depends_on:** `PRF-02`
-- **Behavior evidence:** legacy craft recipes, cooldown and favorites.
-- **Content set:** complete enabled recipes, ingredients, outputs and XP bands.
-- **Architecture checkpoint / decision:** pending — define ingredient consume,
-  result grant and cooldown transaction.
-- **Acceptance:** craft and favorites produce one output/XP result after the
-  authored cooldown and remain consistent after retry/restart.
-- **Status:** `deferred`
+- **Behavior evidence:** остальные authored dungeon JSON
+  (`fixtures/dungeons/*.json`) как evidence для generic instance engine, не
+  7 отдельных ручных capability.
+- **Content set:** массовый импорт всех authored данжей через один typed
+  importer (POST-03 в `CONTENT_MATRIX.md`).
+- **Architecture checkpoint / decision:** pending — importer/validator на
+  authored dungeon schema, не per-dungeon код.
+- **Acceptance:** каждый импортированный данж проходит
+  enter/floor/clear/boss/loot/exit сценарий без runtime JSON reads и без
+  добавления кода на дополнительный данж.
+- **Status:** `queued`
 
 ### BG-01 — «Раскоп» queue and match
 
 - **ID:** `BG-01`
 - **depends_on:** `SOC-02`, `CMB-04`
 - **Behavior evidence:** legacy `BATTLEGROUNDS.md`, `HEROISM.md`, `src/bg/`.
-- **Content set:** Раскоп queue, areas 635–637, maps, score and reward
-  definitions.
-- **Architecture checkpoint / decision:** pending — matchmaking, instance and
-  PvP settlement require a dedicated decision.
-- **Acceptance:** two eligible heroes queue/confirm, enter an isolated match,
-  fight to score/timeout, receive ordered finish packets and persist history;
-  restart clears only ephemeral queue/match state.
-- **Status:** `deferred`
+- **Content set:** одна карта Раскопа как proof; остальные BG-карты —
+  массовый импорт после доказанного движка.
+- **Architecture checkpoint / decision:** pending — matchmaking, instance и
+  PvP settlement.
+- **Acceptance:** два героя queue/confirm, входят в изолированный матч,
+  бьются до score/timeout, получают упорядоченные finish-пакеты и
+  сохраняют историю; restart чистит только ephemeral queue/match state.
+- **Status:** `queued`
 
 ### BOOK-01 — Bestiary and instance books
 
 - **ID:** `BOOK-01`
-- **depends_on:** `DNG-02`, `CMB-03`
-- **Behavior evidence:** legacy `BESTIARY.md`, `DUNGEON.md`, book handlers.
-- **Content set:** bestiary presentation and instance catalog references.
-- **Architecture checkpoint / decision:** pending — define read models over
-  combat kills and instance binds without copying mutable state.
-- **Acceptance:** bestiary kill counters and active/completed instance entries
-  match persisted outcomes in exact book wire.
-- **Status:** `deferred`
+- **depends_on:** `DNG-01`, `CMB-07`
+- **Behavior evidence:** legacy `BESTIARY.md`, `DUNGEON.md`.
+- **Content set:** без нового контента — read model поверх существующих
+  combat kills и instance binds.
+- **Architecture checkpoint / decision:** pending — read model над combat
+  kills и instance binds без копирования mutable state.
+- **Acceptance:** bestiary kill counters и active/completed instance entries
+  совпадают с persisted outcome в точном book wire.
+- **Status:** `queued`
 
-### INFO-01 — HTML information pages
+## Wave 10 — professions engine
 
-- **ID:** `INFO-01`
-- **depends_on:** `BOOK-01`
-- **Behavior evidence:** legacy `INFO_PAGES.md` and HTML fixtures.
-- **Content set:** page presentation references; no clan/pet/companion fake
-  catalogs.
-- **Architecture checkpoint / decision:** pending — define typed read models
-  for user/artifact/fight/bot pages.
-- **Acceptance:** supported popups render live persisted/catalog data and
-  return explicit unsupported responses for excluded page types.
-- **Status:** `deferred`
+### PRF-01 — Profession engine and hero state
 
-## Wave 8 — optional overlays and authoring
+- **ID:** `PRF-01`
+- **depends_on:** `WLD-02`, `INV-02`
+- **Behavior evidence:** legacy profession routes, `assistant.ts` и evidence.
+- **Content set:** 1–2 representative профессии (одна добывающая, одна
+  крафтовая) как generic engine proof; полный список — DATA POST-02.
+- **Architecture checkpoint / decision:** pending — module ownership,
+  scheduler clock и quest/inventory/world ports.
+- **Acceptance:** representative профессия публикуется и grant/bootstrap
+  проходит raw-AMF E2E.
+- **Status:** `queued`
+
+### PRF-02 — Assistants and gathering
+
+- **ID:** `PRF-02`
+- **depends_on:** `PRF-01`
+- **Behavior evidence:** legacy assistant work/repeat/revoke/save/create/upgrade
+  flows.
+- **Content set:** representative resource node/chain.
+- **Architecture checkpoint / decision:** pending — durable jobs и bounded
+  expiry processing без request-time fallback.
+- **Acceptance:** deploy, finish, claim/repeat/revoke и upgrade переживают
+  restart и атомарно дают inventory/mastery/stat изменения.
+- **Status:** `queued`
+
+### PRF-03 — Crafting
+
+- **ID:** `PRF-03`
+- **depends_on:** `PRF-02`
+- **Behavior evidence:** legacy craft recipes, cooldown и favorites.
+- **Content set:** representative рецепт на каждый уровень мастерства;
+  полный корпус рецептов — bulk-import задача.
+- **Architecture checkpoint / decision:** pending — ingredient consume,
+  result grant и cooldown transaction.
+- **Acceptance:** craft и favorites дают один output/XP результат после
+  authored cooldown и остаются consistent после retry/restart.
+- **Status:** `queued`
+
+## Wave 11 — quest engine (не куратский контент)
+
+Цель этой волны — механика: движок, способный выполнить произвольное
+определение квеста. Куратский сюжет (Акрилон 1–9 и далее) переносить сюда не
+нужно — это Content-fill track внизу документа.
+
+### QST-ENG-01 — Board, dialog, book and script engine
+
+- **ID:** `QST-ENG-01`
+- **depends_on:** `WLD-01`, `ECO-01`, `REP-01`, `INV-08`
+- **Behavior evidence:** legacy `QUESTS.md`, `QUEST_DIALOG.md`,
+  `QUEST_BOARD_ICONS.md`, `NPC_CATALOG.md`.
+- **Content set:** 2–3 синтетических тестовых квеста (не куратский Акрилон),
+  выбранных так, чтобы проверить каждый тип goal (talk/kill/loot/buy/equip/
+  deliver/area_action) и каждый тип script (`START_FIGHT`, `GRANT_*`, `MSG`,
+  flags, waiting AREA).
+- **Architecture checkpoint / decision:** pending — persistent progress
+  aggregate, typed dialog cursor, script operation registry и idempotent
+  transition transaction.
+- **Acceptance:** синтетические тестовые квесты проходят raw-AMF E2E и CEF на
+  каждый тип goal/script; движок принимает произвольное authored quest
+  definition через content pipeline, не хардкод под конкретный quest key.
+- **Status:** `queued`
+
+### QST-ENG-02 — World/combat integration hooks
+
+- **ID:** `QST-ENG-02`
+- **depends_on:** `QST-ENG-01`, `CMB-09`
+- **Behavior evidence:** legacy `QUEST_DIALOG.md`, `QUEST_MAP_MARKERS.md`,
+  known-bug list.
+- **Content set:** без нового авторского контента — hook-проверка на
+  синтетических квестах из `QST-ENG-01`.
+- **Architecture checkpoint / decision:** pending — orchestration transaction
+  и post-commit notifications между quest, world, inventory и combat ports.
+- **Acceptance:** AREA waiting запускает нужный quest-fight через CMB-09
+  hook; markers и quest-loot limits работают generic, не per-quest кодом.
+- **Status:** `queued`
+
+## Wave 12 — presentation engines
 
 ### GEAR-01 — Equipped gear spells
 
 - **ID:** `GEAR-01`
-- **depends_on:** `CMB-04`, `ECO-03`
-- **Behavior evidence:** legacy `GEAR_SPELL.md` and spell catalogs.
-- **Content set:** validated equipment spell definitions and effect refs.
-- **Architecture checkpoint / decision:** pending — extend the combat-ready
-  equipment snapshot and effect registry without changing inventory ownership.
-- **Acceptance:** supported equipped spell attaches/procs with exact packet
-  order and expires by authored policy.
-- **Status:** `deferred`
+- **depends_on:** `CMB-06`, `INV-07`
+- **Behavior evidence:** legacy `GEAR_SPELL.md` и spell catalogs.
+- **Content set:** один representative gear-spell.
+- **Architecture checkpoint / decision:** pending — расширить combat-ready
+  equipment snapshot и effect registry без смены inventory ownership.
+- **Acceptance:** поддержанный equipped spell attaches/procs с точным
+  packet order и истекает по authored policy.
+- **Status:** `queued`
 
 ### HERO-01 — PvP heroism
 
 - **ID:** `HERO-01`
 - **depends_on:** `BG-01`, `CHR-01`
-- **Behavior evidence:** legacy `HEROISM.md`; empirical formula remains labeled
+- **Behavior evidence:** legacy `HEROISM.md`; empirical formula остаётся
   `legacy behavior`.
-- **Content set:** heroism bands/modifiers and presentation.
-- **Architecture checkpoint / decision:** pending — define PvP settlement and
+- **Content set:** heroism bands/modifiers и presentation.
+- **Architecture checkpoint / decision:** pending — PvP settlement и
   character progression ownership.
-- **Acceptance:** fixed-seed PvP outcomes grant the documented amount once and
-  render it in BG/fight/player stats wire.
-- **Status:** `deferred`
+- **Acceptance:** fixed-seed PvP outcomes дают документированную величину
+  один раз и отображаются в BG/fight/player stats wire.
+- **Status:** `queued`
 
 ### DAY-01 — Daily quests
 
 - **ID:** `DAY-01`
-- **depends_on:** `QST-04`
+- **depends_on:** `QST-ENG-02`
 - **Behavior evidence:** legacy `DAILY_QUESTS.md`.
-- **Content set:** explicitly approved daily quest definitions and reset
-  policies.
-- **Architecture checkpoint / decision:** pending — define timezone, scheduler,
-  idempotency and downtime catch-up before coding.
-- **Acceptance:** offer/finish/cooldown/reset survive restart and cannot grant a
-  second reward inside one daily period.
-- **Status:** `deferred`
+- **Content set:** representative daily quest definition.
+- **Architecture checkpoint / decision:** pending — timezone, scheduler,
+  idempotency и downtime catch-up до coding.
+- **Acceptance:** offer/finish/cooldown/reset переживают restart и не дают
+  вторую награду внутри одного daily-периода.
+- **Status:** `queued`
 
 ### ACH-01 — Achievements
 
 - **ID:** `ACH-01`
 - **depends_on:** `GEAR-01`, `HERO-01`, `DAY-01`
-- **Behavior evidence:** legacy `ACHIEVEMENTS.md` is currently incomplete/stub
-  evidence and does not authorize implementation by itself.
-- **Content set:** none until a separately approved achievement catalog and
-  client contract exist.
-- **Architecture checkpoint / decision:** blocking product/evidence decision
-  required; do not convert legacy empty success into a feature.
-- **Acceptance:** must be specified from stronger evidence before this item can
-  leave `deferred`.
+- **Behavior evidence:** legacy `ACHIEVEMENTS.md` — неполный/stub evidence,
+  сам по себе не разрешает реализацию.
+- **Content set:** нет, пока не появится отдельно одобренный каталог и
+  client-контракт.
+- **Architecture checkpoint / decision:** блокирующее product/evidence
+  решение; не превращать legacy пустой success в фичу.
+- **Acceptance:** требует более сильного evidence прежде чем выйти из
+  `queued`.
 - **Status:** `deferred`
+
+## Wave 13 — content authoring tooling
+
+Инструменты для наполнения уже построенных движков контентом. Не блокирует
+предыдущие волны — типизированные import-порты для bulk-данных уже строятся
+по мере DATA-02…06 (`CONTENT_MATRIX.md`); полноценный визуальный редактор
+может подождать.
 
 ### EDT-01 — Core content editor
 
 - **ID:** `EDT-01`
-- **depends_on:** `CORE-GATE`
-- **Behavior evidence:** legacy content UI is UX evidence only;
-  [CONTENT_PIPELINE.md](../architecture/CONTENT_PIPELINE.md) is authoritative.
+- **depends_on:** `FND-01`
+- **Behavior evidence:** legacy content UI — только UX evidence;
+  [CONTENT_PIPELINE.md](../architecture/CONTENT_PIPELINE.md) authoritative.
 - **Content set:** DATA-01…DATA-06 authoring schemas.
-- **Architecture checkpoint / decision:** define operator auth, optimistic
-  draft versioning, validation report and publish/activate ports; filesystem
-  dual-write remains forbidden.
-- **Acceptance:** edit creates a new PostgreSQL draft, failed validation leaves
-  active release unchanged, successful publish activates atomically and
-  survives server restart.
-- **Status:** `deferred`
+- **Architecture checkpoint / decision:** operator auth, optimistic draft
+  versioning, validation report и publish/activate ports; файловый
+  dual-write запрещён.
+- **Acceptance:** правка создаёт новый PostgreSQL draft, неудачная валидация
+  не трогает active release, успешный publish активирует атомарно и
+  переживает restart.
+- **Status:** `queued`
 
 ### EDT-02 — Extended content editor
 
 - **ID:** `EDT-02`
-- **depends_on:** `EDT-01`, `DNG-03`, `PRF-03`, `BG-01`
-- **Behavior evidence:** corresponding legacy editor screens and completed
-  module contracts.
-- **Content set:** stores, dungeons, professions, BG, spell and item-use
-  authoring schemas already proven by runtime.
-- **Architecture checkpoint / decision:** extend the same draft/release ports;
-  editor may not introduce a second source of truth.
-- **Acceptance:** every supported extended content type follows
-  draft→validate→publish→activate with no file mutation.
-- **Status:** `deferred`
+- **depends_on:** `EDT-01`, `DNG-02`, `PRF-03`, `BG-01`
+- **Behavior evidence:** соответствующие legacy editor screens и завершённые
+  модульные контракты.
+- **Content set:** stores, dungeons, professions, BG, spell и item-use
+  authoring schemas, уже доказанные runtime.
+- **Architecture checkpoint / decision:** расширяет те же draft/release
+  ports; редактор не создаёт второй источник истины.
+- **Acceptance:** каждый поддержанный extended content type проходит
+  draft→validate→publish→activate без file mutation.
+- **Status:** `queued`
+
+## Content-fill track — не блокирует ни одну волну выше
+
+Куратский авторский контент (Акрилон и далее) — дешёвый и легко
+пересоздаваемый актив, не цель переноса (см. `SOURCE_BOUNDARY.md` §
+«Цель переноса: движки, не конкретный контент»). Эти пункты берутся в любом
+порядке, любым агентом, в любой момент после соответствующего движка (Wave
+4–13 ниже) — они никогда не входят в `depends_on` capability из этих волн.
+
+`CHT-01`/`QST-01…04`/`IUS-01` из прежней версии этого документа заменены на
+`QST-ENG-01`/`QST-ENG-02` (Wave 11, движок квестов) и на system-notification
+часть `SOC-01` (Wave 8).
+
+### CONTENT-STORY-01 — q_1 «Рождение скорпиона»
+
+- **ID:** `CONTENT-STORY-01`
+- **depends_on:** `QST-ENG-02`
+- **Behavior evidence:** curated `q_1`, related NPC/dialog/fight evidence.
+- **Content set:** q_1 and its complete transitive item/bot/NPC/area/reward refs.
+- **Architecture checkpoint / decision:** not required — uses the `QST-ENG-*`
+  contract as-is; a new engine primitive found here returns work to `QST-ENG-*`.
+- **Acceptance:** fresh hero completes talk, kill, ritual fight and turn-in;
+  reward/reputation/progress survive restart.
+- **Status:** `queued`
+
+### CONTENT-STORY-02 — q_4 «Первое задание скорпиона»
+
+- **ID:** `CONTENT-STORY-02`
+- **depends_on:** `CONTENT-STORY-01`
+- **Behavior evidence:** curated `q_4` and related hunt evidence.
+- **Content set:** q_4 and its complete transitive references.
+- **Acceptance:** sequential hunt kills advance and turn-in grants exactly one
+  set of rewards.
+- **Status:** `queued`
+
+### CONTENT-STORY-03 — q_5 «Защита для Скорпиона»
+
+- **ID:** `CONTENT-STORY-03`
+- **depends_on:** `CONTENT-STORY-02`, `ECO-02`
+- **Behavior evidence:** curated `q_5`, store 504 and equip-goal evidence.
+- **Content set:** q_5, required store lots and equipment references.
+- **Acceptance:** client buys and equips all required items, then turns in q_5;
+  retry cannot duplicate goal credit or rewards.
+- **Status:** `queued`
+
+### CONTENT-STORY-04 — q_6 «Щегольские сапоги»
+
+- **ID:** `CONTENT-STORY-04`
+- **depends_on:** `CONTENT-STORY-03`, `CMB-07`
+- **Behavior evidence:** curated `q_6`, fight loot and quest-loot evidence.
+- **Content set:** q_6, target bots, loot item and limits.
+- **Acceptance:** only confirmed wins grant limited quest loot; turn-in consumes
+  the required quantity exactly once.
+- **Status:** `queued`
+
+### CONTENT-STORY-05 — q_7 «Лесной изгнанник»
+
+- **ID:** `CONTENT-STORY-05`
+- **depends_on:** `CONTENT-STORY-04`
+- **Behavior evidence:** curated `q_7`, multi-NPC/world facts and deliver flow.
+- **Content set:** q_7 and complete NPC/area/fact/item references.
+- **Acceptance:** talk, travel, loot and deliver sequence completes in CEF and
+  persists at each restart checkpoint.
+- **Status:** `queued`
+
+### CONTENT-STORY-06 — q_8/q_9 и далее (весь оставшийся куратский сюжет)
+
+- **ID:** `CONTENT-STORY-06`
+- **depends_on:** `CONTENT-STORY-05`
+- **Behavior evidence:** curated `q_8`, `q_9`…`q_14` и связанный evidence.
+- **Content set:** массовый импорт остатка `quests_curated/*.json` через
+  DATA-06, не по одному квесту вручную, как раньше.
+- **Acceptance:** свежий герой проходит весь доступный куратский сюжет;
+  отсутствие любого из этих пунктов не блокирует ни одну capability из волн
+  4–13.
+- **Status:** `queued`
 
 ## Excluded
 

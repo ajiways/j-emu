@@ -43,6 +43,40 @@ Seed: `npm run db:publish:development` с `CONTENT_BUNDLE_FILE` и `DATABASE_URL
 через `publish` (тот же npm-скрипт).
 Остальные типы и расширение текущих минимальных каталогов из матрицы — план.
 
+## `playable-slice.json` — временный bootstrap, не целевой механизм
+
+`content/playable-slice.json` — это вручную собранный bundle для самого
+раннего этапа (Wave 0–3), пока не было ни одного типизированного decoder.
+Он **не является** целевым способом заводить контент и не должен расти рукой
+до полного каталога — руками добавленный файл на весь Pub1-каталог (~22 560
+артикулов, весь бестиарий, все области) физически станет неподъёмным
+(порядка миллионов строк) и не даст ни manifest, ни per-source checksum, ни
+дедупликации, которые требует `CONTENT_MATRIX.md`.
+
+Правило: как только для домена (`catalog` items, `catalog` bots/spells,
+`world` areas/hunt, `economy` stores, …) появляется хотя бы одна capability,
+которая с ним работает, **приоритет — построить типизированный decoder этого
+домена** (см. `CONTENT_MATRIX.md`, DATA-02…06 и POST-01…06), а не добавлять
+ещё одну ручную запись в `playable-slice.json`. Ручной bundle используется
+только для типов, для которых ещё нет ни одной работающей capability.
+
+`jgr-emu` уже содержит рабочие decoder'ы боевого формата, которые можно
+использовать как evidence/reference для алгоритма (не как runtime-зависимость
+и не копированием файла):
+
+- `jgr-emu/src/db/seed_artifacts.ts` — уже разбирает все
+  `Pub1/.../amf/artifact_artikul_*.amf` (реальный AMF3 клиента, ~22 560
+  файлов) в структурированные строки. Для DATA-02 это готовый алгоритм разбора
+  формата — остаётся обернуть в typed importer с manifest/checksum/validator
+  вместо прямого upsert в свою временную схему.
+- Аналогично `build_npc_catalog.py`, `bots_overlay.json`,
+  `bot_spell_book.json`, `hunt_spawns.json` и т.д. — уже decoded/curated
+  представление реальных источников для соответствующих DATA-03/04 доменов.
+
+Копировать сам файл/модуль запрещено (`SOURCE_BOUNDARY.md`), но пересобрать
+тот же разбор формата под typed drafts — ожидаемый и самый дешёвый путь,
+дешевле, чем писать AMF3-парсер заново.
+
 ## Что реализовано сейчас
 
 `ContentPublicationService.publish/seed`:

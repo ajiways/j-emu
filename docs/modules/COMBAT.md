@@ -197,7 +197,8 @@ personal object: сначала `fight|loot`, потом `fight|exit`. Win/loss 
 `type:0` + `winner`. `leaveFight`: HTTP `{rs:true,sq}`; `fight|exit`
 `{flee:true,status:100,type:2}`. Если в бою ещё живой союзник — leaver
 получает только flee-exit, бой продолжается; полный loot/EXP — когда RAM
-fight заканчивается. `chat|add` «Вами получено» — post-core. `fight|finish`
+fight заканчивается. `chat|add` «Вами получено» — часть `SOC-01` в
+[ROADMAP.md](../migration/ROADMAP.md), не этой capability. `fight|finish`
 без самовольного `common|area_conf`.
 
 `leaveFight` — dump-proven fproxy `rc`, не OA. Outdoor hunt уже `can_leave:1`.

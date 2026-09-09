@@ -118,7 +118,8 @@ Long-poll wait per-account для esrv и fproxy; fproxy poll сначала о�
 **Решение RTM-01:** текущих границ достаточно; отдельный `ARC-RTM` не нужен.
 Roster живёт в Postgres (`sessions` + `area_id`). Delivery queue и waiters —
 process-local в `jugger-wire`. Durable outbox table не создаётся. Party/chat
-не владеют Fastify. `4:` и `chat|add` остаются post-core.
+не владеют Fastify. `4:` — `SOC-02`, `chat|add` — `SOC-01` в
+[ROADMAP.md](ROADMAP.md).
 
 Отдельный `ARC-RTM` потребуется позже только если доставка diffs должна
 пережить restart процесса или social-модуль заберёт channel policy.
@@ -178,7 +179,8 @@ inventory репу не пишут. Economy-модуля нет. Контрак�
 **Давление:** immutable definitions, mutable cursor/goals/waiting, signals от
 inventory/world/combat и multi-module rewards имеют разный lifetime.
 
-**Checkpoint:** QST-01/02 разделяют authored definitions и player progress,
+**Checkpoint:** `QST-ENG-01`/`QST-ENG-02` разделяют authored definitions и
+player progress,
 задают typed `QuestSignal`, script registry и idempotency. `ARC-QST` обязателен,
 если reward нельзя провести через одну orchestration transaction/public ports
 без прямых cross-table writes.

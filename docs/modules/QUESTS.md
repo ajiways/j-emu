@@ -68,13 +68,17 @@ Chat/esrv notification публикуется только после commit.
 
 ## Порядок переноса
 
-1. NPC catalog и board/dialog wire.
+1. NPC catalog и board/dialog wire — generic engine, синтетические тестовые
+   квесты, не куратский контент.
 2. Quest definitions и player progress schema.
-3. Базовые goal types и scripts.
-4. Quest-aware item USE через отдельный `IUS-01` поверх public inventory port.
-5. Inventory/world/combat integration и post-commit system messages.
+3. Базовые goal types и scripts, покрывающие каждую ветку из legacy
+   `QUESTS.md`.
+4. Quest-aware item USE поверх public inventory port (часть `INV-08`).
+5. Inventory/world/combat integration через `CMB-09` hook и post-commit
+   system messages (`SOC-01`).
 6. Markers/known regressions.
-7. Curated chain по одному `STORY-*` capability, затем `CORE-GATE`.
+7. Куратский сюжет (Акрилон и далее) переносится отдельным, не блокирующим
+   `CONTENT-STORY-*` треком после того, как движок готов; движок не ждёт его.
 
 ## Architecture checkpoint — план
 
@@ -82,9 +86,10 @@ Chat/esrv notification публикуется только после commit.
 ownership definitions и player progress, QuestSignal boundary с
 inventory/world/combat, reward orchestration и idempotency повторных команд.
 Конкретные таблицы выбираются только вместе с первым vertical slice по
-checkpoints `QST-01`–`QST-04`, `IUS-01` и `STORY-*` в
-[ROADMAP.md](../migration/ROADMAP.md) и workflow из
-[PLAYBOOK.md](../migration/PLAYBOOK.md), а не выводятся из целевой модели выше.
+`QST-ENG-01`/`QST-ENG-02` в [ROADMAP.md](../migration/ROADMAP.md) (Wave 11) и
+workflow из [PLAYBOOK.md](../migration/PLAYBOOK.md), а не выводятся из целевой
+модели выше. Куратский контент — `CONTENT-STORY-*` в content-fill track того
+же документа.
 
 ## Acceptance будущей quest wave
 

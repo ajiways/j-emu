@@ -78,7 +78,12 @@ Playerbot presence и bot-generated market/world state исключаются.
 invented formulas. Их можно сохранить как legacy behavior, но не как live
 parity.
 
-## Quests и NPC 1–8
+## Quest engine (не куратский контент)
+
+Источники ниже — для `QST-ENG-01`/`QST-ENG-02` (Wave 11), т.е. для generic
+движка, доказанного синтетическими тестовыми квестами. Куратский Акрилон и
+далее — низкий приоритет, `CONTENT-STORY-*` в content-fill track, отдельно от
+этих источников.
 
 - [QUESTS.md](../../../jgr-emu/docs/QUESTS.md);
 - [QUEST_DIALOG.md](../../../jgr-emu/docs/QUEST_DIALOG.md);
@@ -87,7 +92,9 @@ parity.
 - [QUEST_BOARD_ICONS.md](../../../jgr-emu/docs/QUEST_BOARD_ICONS.md);
 - [QUEST_MAP_MARKERS.md](../../../jgr-emu/docs/QUEST_MAP_MARKERS.md);
 - [QUEST_CURATOR_PROMPT.md](../../../jgr-emu/docs/QUEST_CURATOR_PROMPT.md);
-- `jgr-emu/src/quests/`, `fixtures/quests_curated/`, dialogs и NPC catalogs.
+- `jgr-emu/src/quests/`, `fixtures/quests_curated/`, dialogs и NPC catalogs —
+  как evidence алгоритма/схемы, куратский контент из них не копируется в
+  движковую часть.
 
 Открытые пункты
 [TEMP_QUEST_ITEM_AND_MARKER_BUGS.md](../../../jgr-emu/docs/TEMP_QUEST_ITEM_AND_MARKER_BUGS.md)
@@ -103,26 +110,30 @@ parity.
 - [CHAT.md](../../../jgr-emu/docs/CHAT.md) — только обязательные system
   notifications.
 
-## Post-core и deferred источники
+## Источники волн 6–13 (движки, не «после ядра»)
 
-Эти источники уже привязаны к capability IDs в
-[ROADMAP.md](ROADMAP.md), но не адаптируются до статуса `next`:
+Отдельного «post-core»/«deferred до ядра» больше нет — эти источники такие же
+движки, как inventory/combat, просто позже в графе зависимостей
+[ROADMAP.md](ROADMAP.md):
 
-- `CHAT.md`, `PARTY.md`, `FIGHT_JOIN.md` → `SOC-01…SOC-03`;
-- `STORE.md`, `INVENTORY_USE.md` → `ECO-02`, `ECO-03`;
-- `MAIL.md` → `MAIL-01`, `MAIL-02`;
-- `AUCTION.md` → `AUC-01`, `AUC-02`;
-- `TRADE.md` → `TRD-01`, `TRD-02`;
-- `DUNGEON.md`, `fixtures/dungeons/*.json` → `DNG-01…DNG-03`;
+- `CHAT.md`, `PARTY.md`, `FIGHT_JOIN.md` → `SOC-01…SOC-03` (Wave 8);
+- `STORE.md`, `INVENTORY_USE.md` → `ECO-02` (Wave 7), `INV-05…INV-08` (Wave 5);
+- `MAIL.md` → `MAIL-01`, `MAIL-02` (Wave 7);
+- `AUCTION.md` → `AUC-01`, `AUC-02` (Wave 7);
+- `TRADE.md` → `TRD-01`, `TRD-02` (Wave 7);
+- `DUNGEON.md`, `fixtures/dungeons/*.json` → `DNG-01`, `DNG-02` (Wave 9);
 - profession/craft docs, Pub1 catalogs, `area_farms.json` →
-  `PRF-01…PRF-03`;
-- `BATTLEGROUNDS.md`, `HEROISM.md`, `bg_raskop_areas.json` → `BG-01`,
-  `HERO-01`;
-- `BESTIARY.md`, `INFO_PAGES.md` → `BOOK-01`, `INFO-01`;
+  `PRF-01…PRF-03` (Wave 10);
+- `BATTLEGROUNDS.md`, `HEROISM.md`, `bg_raskop_areas.json` → `BG-01` (Wave 9),
+  `HERO-01` (Wave 12);
+- `BESTIARY.md`, `INFO_PAGES.md` → `BOOK-01` (Wave 9), `INFO-01`;
 - `GEAR_SPELL.md`, `DAILY_QUESTS.md`, `ACHIEVEMENTS.md` → `GEAR-01`,
-  `DAY-01`, `ACH-01`;
-- legacy content UI/editor docs → только UX evidence для `EDT-01/02`; target
-  publication contract задаёт `j-emu`.
+  `DAY-01`, `ACH-01` (Wave 12);
+- `FIGHT_DAMAGE.md`, `BOT_SPELLS.md`, `FIGHT_LOOT.md` full algorithm →
+  `CMB-05…CMB-09` (Wave 6) — расширяют сам combat-движок, не отдельная
+  система;
+- legacy content UI/editor docs → только UX evidence для `EDT-01/02`
+  (Wave 13); target publication contract задаёт `j-emu`.
 
 `PLAYERBOT*`, generated playerbot catalogs и clan behavior исключены полностью.
 
