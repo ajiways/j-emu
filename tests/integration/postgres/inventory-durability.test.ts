@@ -42,6 +42,7 @@ describe("inventory durability persistence", () => {
       catalog: catalog.catalog,
       bagCapacity: policy.bootstrap.bagCapacity,
       pocketCapacity: policy.bootstrap.pocketCapacity,
+      random: { unit: () => 0 },
     });
     characters = CharacterModule.create(
       playableCharacterModuleInput(

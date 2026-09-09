@@ -89,8 +89,9 @@ Equipment-derived `user|skills` / `hpMax` считаются из naked skills +
 пустеет от DROP одной перчатки.
 
 - catalog v6: `priceMinor`/`flags`/`bagStack` на 9095 (`0`/`40`/`1`);
-- `user|bag.amount` считает только взвешенные слоты; starter v15 —
-  `amount=5` / `total=7`; `amount_max=20`;
+- `user|bag.amount` считает только взвешенные слоты; starter v16 —
+  `amount=6` / `total=12` (обычный кристалл **1310** `flags=0` входит в
+  amount; остальные кристаллы заточки noweight); `amount_max=20`;
 - OA `DROP` (и alias `SELL`) → flat `common|action` + bag/skills/mount_list/state;
 - throw-away 9095 не меняет деньги; equipped DROP и SELL без `sell_price>0` —
   `204` с live `error`;
@@ -131,7 +132,13 @@ hunt −1 по 4–5 надетым tracking, `0/N` auto PUT_OFF, PUT_ON broken 
 0.02g), persist reconnect/restart, concurrent repair — один победитель.
 CEF мастерской не прогонялся.
 
-Не перенесены DRINK/TEMPEFFECT, ADD_MP, upgrade, set-bonus. Добор пояса после
+Заточка (INV-06) есть на raw-AMF: OA `UPGRADE`, overlay на том же
+`items.id`, кристаллы **553 / 1310 / 4603 / 11408 / 13224**, шесть ступеней
+type 3, резонатор на той же ступени, type 4 nested `203`, fail-roll
+коммитит consume. CEF диалога заточки не прогонялся — product **частично**,
+capability остаётся открытой.
+
+Не перенесены DRINK/TEMPEFFECT, ADD_MP, set-bonus. Добор пояса после
 боя (`CMB-03`) есть: spent cells refill from bag to `pocketCntMax`.
 
 ## World presence — готово

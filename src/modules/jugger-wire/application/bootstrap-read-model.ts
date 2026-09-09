@@ -12,6 +12,7 @@ import { emptyBookTrio } from "./book-quest-blocks.ts";
 import { overlayCaptureAreaId, overlayChromeAreaId } from "./chrome-area-overlay.ts";
 import { withHttpsFproxy } from "./personal-details-wire.ts";
 import { artifactSkillWireMap } from "./artifact-skill-wire.ts";
+import { artifactInstanceOverlay } from "./artifact-instance-overlay.ts";
 import { buildEquippedArtifact } from "./equipped-artifact-block.ts";
 import { equippedSkillBonuses } from "./equipped-skill-bonuses.ts";
 import { type HeroStateBlock } from "./hero-state-block.ts";
@@ -30,6 +31,8 @@ import { buildUserView, type UserViewBlock } from "./user-view-block.ts";
 import { buildWelcomeMessage } from "./welcome-message-block.ts";
 import { buildUseMutation } from "./use-mutation-block.ts";
 import { buildTravelMutation } from "./travel-mutation-block.ts";
+import { upgradeMutation } from "./upgrade-mutation-block.ts";
+import type { GearUpgradeResult } from "../../inventory/domain/apply-gear-upgrade.ts";
 import type { PresenceService } from "../../world/application/presence-service.ts";
 import type { FightWireMapper } from "./fight-wire-mapper.ts";
 
@@ -124,11 +127,13 @@ export class BootstrapReadModel {
       if (item.location.kind !== "equipment") continue;
       const definition = await this.catalog.artifact(item.artifactId);
       if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
+      const overlay = artifactInstanceOverlay(definition, item);
       artifacts.push(
         buildEquippedArtifact(
           item,
           definition,
-          await artifactSkillWireMap(definition.skills, this.catalog),
+          await artifactSkillWireMap(overlay.skills, this.catalog, overlay.upgradeBySkill),
+          overlay,
         ),
       );
     }
@@ -195,6 +200,18 @@ export class BootstrapReadModel {
       "user|mount_list": chrome.block("user|mount_list"),
       state: await this.heroState(hero, accountId),
     };
+  }
+
+  async upgradeMutation(
+    accountId: number,
+    result: GearUpgradeResult,
+  ): Promise<Readonly<Record<string, unknown>>> {
+    const hero = await this.requireHero(accountId);
+    return upgradeMutation(
+      result,
+      await buildUserBag(hero, this.inventory, this.catalog),
+      await this.skills(accountId),
+    );
   }
 
   async init(accountId: number): Promise<Readonly<Record<string, unknown>>> {

@@ -44,6 +44,7 @@ describe("experience grant activation races", () => {
           catalog: catalog.catalog,
           bagCapacity: policy.bootstrap.bagCapacity,
           pocketCapacity: policy.bootstrap.pocketCapacity,
+          random: { unit: () => 0 },
         });
         const characters = CharacterModule.create(
           playableCharacterModuleInput(
@@ -76,6 +77,7 @@ describe("experience grant activation races", () => {
           catalog: grantCatalog.catalog,
           bagCapacity: policy.bootstrap.bagCapacity,
           pocketCapacity: policy.bootstrap.pocketCapacity,
+          random: { unit: () => 0 },
         });
         const grantCharacters = CharacterModule.create(
           playableCharacterModuleInput(

@@ -132,6 +132,7 @@ async function openModules(url: string) {
     catalog: catalog.catalog,
     bagCapacity: policy.bootstrap.bagCapacity,
     pocketCapacity: policy.bootstrap.pocketCapacity,
+    random: { unit: () => 0 },
   });
   const characters = CharacterModule.create(
     playableCharacterModuleInput(

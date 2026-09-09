@@ -567,11 +567,19 @@
 - **Behavior evidence:** legacy `INVENTORY_USE.md` upgrade §, resonator.
 - **Content set:** representative upgrade chain (типы 1–3) на одном предмете;
   generic engine — любой предмет с объявленной chain.
-- **Architecture checkpoint / decision:** pending — item identity через
-  upgrade (новый instance id vs mutate in place).
+- **Architecture checkpoint / decision:** mutate in place, same
+  `inventory.items.id`. Overlay columns `upgrade_id` / `upgrade_level` /
+  `upgrade_skill_id` / `upgrade_bound` on the item row (not JSON). Catalog
+  owns crystal `ARTIFACT_UPGRADE` and named tables types 1–3. RNG is
+  `{ unit(): number }` on `InventoryService`, not combat `RandomSource` in
+  inventory domain. One UoW: consume crystal, then update target; roll-fail
+  **commits** the consume. Type 4 → `203`
+  `"Это действие предмета пока не поддержано."`. Fight → `203`
+  `"нельзя во время боя"`. Equipped/pocket targets unsupported. ADR-0017–0020
+  sufficient; `ARC-*` не нужен.
 - **Acceptance:** 6-ступенчатая заточка работает для произвольного предмета с
-  authored chain; резонатор сбрасывает ступень; тип 4 explicitly не
-  поддержан, не молча игнорируется.
+  combat-stat pool; резонатор **перебрасывает стат на той же ступени**, не
+  сбрасывает уровень; тип 4 explicitly `203`, не молча игнорируется.
 - **Status:** `next`
 
 ### INV-07 — Set bonuses and gear-spell hook

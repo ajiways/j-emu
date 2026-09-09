@@ -68,6 +68,10 @@ describe("PostgreSQL identifiers", () => {
         equipmentSlot: null,
         durability: 3,
         durabilityMax: 3,
+        upgradeId: 0,
+        upgradeLevel: 0,
+        upgradeSkillId: "",
+        upgradeBound: 0,
         version: 1,
       });
       throw new Error("Expected items_id_fight_safe to reject native spell id 2");

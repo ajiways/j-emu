@@ -25,6 +25,7 @@ export class ApplicationHarness {
   private readonly extras: Readonly<{
     lootRandom?: RandomSource;
     combatRandom?: RandomSource;
+    upgradeRandom?: RandomSource;
     combatRules?: Partial<BattleRules>;
   }>;
 
@@ -34,6 +35,7 @@ export class ApplicationHarness {
     extras: Readonly<{
       lootRandom?: RandomSource;
       combatRandom?: RandomSource;
+      upgradeRandom?: RandomSource;
       combatRules?: Partial<BattleRules>;
     }> = {},
   ) {

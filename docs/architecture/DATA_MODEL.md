@@ -21,8 +21,8 @@ Playerbot-таблиц и признаков `is_bot` нет.
 ## Текущий playable slice
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
-и единственная pre-baseline миграция `drizzle/0000_foundation_init.sql`.
-Поля ниже совпадают с runtime.
+и pre-baseline миграции `drizzle/0000_foundation_init.sql` плюс последующие
+`drizzle/0001_*.sql`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -63,10 +63,12 @@ REP-01 (`hero_reputations` + derived SUM 36 на чтении).
 ### `inventory`
 
 - `item_id_seq`: `MIN 100_000` `MAX 2_147_483_647` `NO CYCLE` (не пересекаться с native/glove `persSpells.srcId`). [ID_POLICY.md](ID_POLICY.md), [ID_RANGES.md](../../../jgr-emu/docs/ID_RANGES.md).
-- `items(id bigint DEFAULT nextval, hero_id integer, artifact_id, quantity, location_kind, pocket_position, equipment_slot, durability, durability_max, version)`.
+- `items(id bigint DEFAULT nextval, hero_id integer, artifact_id, quantity, location_kind, pocket_position, equipment_slot, durability, durability_max, upgrade_id, upgrade_level, upgrade_skill_id, upgrade_bound, version)`.
   Instance `durability`/`durability_max` — INV-05, целые `>= 0`,
-  `durability <= durability_max`. Колонки `NOT NULL` без SQL DEFAULT;
-  runtime пишет явные значения с catalog template при create.
+  `durability <= durability_max`. Overlay заточки — INV-06: `upgrade_id` ≥ 0,
+  `upgrade_level` 0..6, `upgrade_bound` 0/1, `upgrade_skill_id` text; unupgraded
+  xor upgraded CHECK. Колонки `NOT NULL` без SQL DEFAULT; runtime пишет явные
+  значения (unupgraded `0/0/''/0`, durability с catalog template) при create.
 
 `location_kind` ∈ `bag|pocket|equipment` с CHECK взаимоисключения slot-колонок.
 Частичный unique `(hero_id, equipment_slot) WHERE location_kind = 'equipment'`.

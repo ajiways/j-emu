@@ -24,8 +24,8 @@ describe("inventory DROP", () => {
     const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
     expect(objectBlock(init["user|bag"])).toMatchObject({
       status: 100,
-      amount: 5,
-      total: 7,
+      amount: 6,
+      total: 12,
       amount_max: 20,
     });
     const glove = bagItemByArtikulId(init, 9095);
@@ -35,7 +35,7 @@ describe("inventory DROP", () => {
       noweight: 1,
       price: 0,
       sell_price: 0,
-      actions: 11,
+      actions: 523,
       durability: 3,
       durability_max: 3,
     });
@@ -51,8 +51,8 @@ describe("inventory DROP", () => {
     expect(dropped["common|action"]).toEqual({ status: 100, action: "DROP" });
     expect(objectBlock(dropped["user|bag"])).toMatchObject({
       status: 100,
-      amount: 5,
-      total: 6,
+      amount: 6,
+      total: 11,
     });
     expect(() => bagItemByArtikulId(dropped, 9095)).toThrow(/9095 is missing/);
     expect(dropped["user|skills"]).toBeTypeOf("object");
@@ -67,8 +67,8 @@ describe("inventory DROP", () => {
     const again = new AuthenticatedClient(application, client.cookie);
     const afterRestart = await again.objectAction({ object: "common", action: "init", sq: 20 });
     expect(objectBlock(afterRestart["user|bag"])).toMatchObject({
-      amount: 5,
-      total: 6,
+      amount: 6,
+      total: 11,
     });
     expect(() => bagItemByArtikulId(afterRestart, 9095)).toThrow(/9095 is missing/);
     expect(objectBlock(afterRestart.state).money).toBe("25.00");
@@ -146,8 +146,8 @@ describe("inventory DROP", () => {
     const bag = await client.objectAction({ object: "user", action: "bag", sq: 5 });
     expect(objectBlock(bag["user|bag"])).toMatchObject({
       status: 100,
-      amount: 5,
-      total: 7,
+      amount: 6,
+      total: 12,
     });
     expect(bagItemByArtikulId(bag, 9095).id).toBe(itemId);
   });

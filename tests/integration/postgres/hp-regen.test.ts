@@ -49,6 +49,7 @@ describe("HP regeneration persistence", () => {
       catalog: catalog.catalog,
       bagCapacity: policy.bootstrap.bagCapacity,
       pocketCapacity: policy.bootstrap.pocketCapacity,
+      random: { unit: () => 0 },
     });
     combat = CombatModule.create({
       database,

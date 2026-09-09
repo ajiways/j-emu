@@ -25,6 +25,12 @@ import { useFromBag, type UseFromBagCommand, type UseFromBagResult } from "./use
 import { requireEquippedItem, requireWearablePaperdoll, type WearHero } from "./wear-paperdoll.ts";
 import { grantToBag } from "./grant-to-bag.ts";
 import { refillPocketAfterFight, type PocketRefillCell } from "./refill-pocket-after-fight.ts";
+import {
+  applyGearUpgrade,
+  type ApplyGearUpgradeCommand,
+  type GearUpgradeResult,
+} from "./apply-gear-upgrade.ts";
+import { overlaySkillBonuses } from "./gear-upgrade.ts";
 
 export type StarterItemSpec = Readonly<{
   artifactId: number;
@@ -54,12 +60,14 @@ export class InventoryService {
     private readonly catalog: Catalog,
     private readonly bagCapacity: number,
     private readonly pocketCapacity: number,
+    private readonly random: Readonly<{ unit(): number }>,
   ) {
     if (starterItems.length === 0) throw new Error("Starter inventory policy is required");
     if (!Number.isInteger(bagCapacity) || bagCapacity < 1) {
       throw new Error("Bag capacity must be a positive integer");
     }
     requirePocketCapacity(pocketCapacity);
+    if (typeof random.unit !== "function") throw new Error("Inventory random source is required");
   }
 
   list(heroId: number): Promise<readonly InventoryItem[]> {
@@ -153,6 +161,7 @@ export class InventoryService {
       definition.slotMask,
       definition.useAction !== undefined,
       isBroken(instanceDurability(item.durability, item.durabilityMax, definition.flags)),
+      false,
     );
     const unit = sellPriceMinor(definition.priceMinor);
     const voidSell = (actions & FLAG_SELL) !== 0 && unit > 0;
@@ -195,13 +204,17 @@ export class InventoryService {
     return repairItem(this.inventory, this.catalog, command);
   }
 
+  applyGearUpgrade(command: Omit<ApplyGearUpgradeCommand, "random">): Promise<GearUpgradeResult> {
+    return applyGearUpgrade(this.inventory, this.catalog, { ...command, random: this.random });
+  }
+
   async equippedSkillBonuses(characterId: number): Promise<readonly ArtifactSkillBonus[]> {
     const bonuses: ArtifactSkillBonus[] = [];
     for (const item of await this.inventory.listForHero(characterId)) {
       if (item.location.kind !== "equipment") continue;
       const definition = await this.catalog.artifact(item.artifactId);
       if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
-      bonuses.push(...definition.skills);
+      bonuses.push(...overlaySkillBonuses(definition.skills, item.upgrade));
     }
     return bonuses;
   }
@@ -243,7 +256,7 @@ export class InventoryService {
       if (!definition) {
         throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
       }
-      bonuses.push(...definition.skills);
+      bonuses.push(...overlaySkillBonuses(definition.skills, item.upgrade));
     }
     return bonuses;
   }

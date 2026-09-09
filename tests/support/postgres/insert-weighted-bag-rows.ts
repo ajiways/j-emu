@@ -17,6 +17,10 @@ export async function insertWeightedBagRows(heroId: number, extraRows: number): 
         locationKind: "bag",
         durability: 0,
         durabilityMax: 0,
+        upgradeId: 0,
+        upgradeLevel: 0,
+        upgradeSkillId: "",
+        upgradeBound: 0,
         version: 1,
       });
     }

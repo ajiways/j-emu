@@ -40,7 +40,7 @@ describe("inventory USE", () => {
       dispose: "1",
       title: "Съесть мясо",
     });
-    expect(bagItemByArtikulId(init, 9095).actions).toBe(11);
+    expect(bagItemByArtikulId(init, 9095).actions).toBe(523);
     expect(bagItemByArtikulId(init, 9095).artifact_actions).toEqual([]);
     const itemId = requireNumber(meat.id);
     const characterId = heroIdFrom(init);

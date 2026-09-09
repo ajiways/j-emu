@@ -28,8 +28,8 @@ npm run db:reset
 Тот же publish-скрипт на уже заполненной БД: совпавший checksum — no-op;
 новый checksum — новая активная release. Смена checksum витрины (например,
 только type `-131`) требует повторный `npm run db:publish:development`.
-До baseline схема — одна `0000_foundation_init`; несовпавший ledger —
-`db:reset`, не правка SQL.
+До baseline ledger — `0000_foundation_init` плюс последующие generated
+`0001_*`; несовпавший ledger — `db:reset`, не правка SQL.
 
 ## HTTP :8080 (браузер без CEF)
 

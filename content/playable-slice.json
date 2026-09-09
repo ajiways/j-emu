@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v15",
+  "schemaVersion": "playable-slice/v16",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -543,6 +543,146 @@
       ],
       "artifact_actions": {},
       "extra": {}
+    },
+    {
+      "id": 553,
+      "title": "Древний кристалл заточки",
+      "picture": "zatochka_old_21102010.png",
+      "typeId": "73",
+      "kindId": 12,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 6,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 8000,
+      "flags": 40,
+      "bagStack": 9999,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [],
+      "artifact_actions": {
+        "152": {
+          "code": "ARTIFACT_UPGRADE",
+          "param1": 0,
+          "param2": 1,
+          "dispose": 1,
+          "title": "Древняя заточка"
+        }
+      },
+      "extra": {}
+    },
+    {
+      "id": 1310,
+      "title": "Обычный кристалл заточки",
+      "picture": "zatochka_20100609.png",
+      "typeId": "73",
+      "kindId": 12,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 6,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 8000,
+      "flags": 0,
+      "bagStack": 9999,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [],
+      "artifact_actions": {
+        "467": {
+          "code": "ARTIFACT_UPGRADE",
+          "param1": 0,
+          "param2": 2,
+          "dispose": 1,
+          "title": "Обычная заточка"
+        }
+      },
+      "extra": {}
+    },
+    {
+      "id": 4603,
+      "title": "Ледяной кристалл заточки",
+      "picture": "zatochka_ny_20111222.png",
+      "typeId": "73",
+      "kindId": 12,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 10,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 0,
+      "flags": 40,
+      "bagStack": 9999,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [],
+      "artifact_actions": {
+        "1888": {
+          "code": "ARTIFACT_UPGRADE",
+          "param1": 0,
+          "param2": 3,
+          "dispose": 1,
+          "title": "Ледяная заточка"
+        }
+      },
+      "extra": {}
+    },
+    {
+      "id": 11408,
+      "title": "Волшебный резонатор заточки",
+      "picture": "rezonator_zatochki_4.png",
+      "typeId": "73",
+      "kindId": 12,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 7,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 50000,
+      "flags": 40,
+      "bagStack": 9999,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [],
+      "artifact_actions": {
+        "5703": {
+          "code": "ARTIFACT_UPGRADE",
+          "param1": 3,
+          "param2": 2,
+          "dispose": 1,
+          "title": "Изменить заточку"
+        }
+      },
+      "extra": {}
+    },
+    {
+      "id": 13224,
+      "title": "Адамантовый кристалл заточки",
+      "picture": "adamant_zatochka_4.png",
+      "typeId": "73",
+      "kindId": 12,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 35,
+      "levelMax": 35,
+      "gender": 0,
+      "priceMinor": 0,
+      "flags": 40,
+      "bagStack": 9999,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [],
+      "artifact_actions": {
+        "6963": {
+          "code": "ARTIFACT_UPGRADE",
+          "param1": 0,
+          "param2": 4,
+          "dispose": 1,
+          "title": "Бесконечная заточка"
+        }
+      },
+      "extra": {}
     }
   ],
   "bots": [
@@ -859,6 +999,33 @@
       "group": "6",
       "order": "0",
       "weight": "300",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "INJ_PROB",
+      "title": "Травматизм",
+      "group": "6",
+      "order": "0",
+      "weight": "600",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "BLOK",
+      "title": "Блокирование",
+      "group": "1",
+      "order": "0",
+      "weight": "750",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "BLOK_VISUAL",
+      "title": "Стойкость",
+      "group": "1",
+      "order": "0",
+      "weight": "750",
       "image": "",
       "valueKind": "number"
     },

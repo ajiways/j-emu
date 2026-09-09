@@ -1,4 +1,5 @@
 import { requireFightSafeItemId, requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
+import { requireItemUpgrade, UNUPGRADED, type ItemUpgrade } from "./item-upgrade.ts";
 
 export type ItemLocation =
   | Readonly<{ kind: "bag" }>
@@ -6,6 +7,8 @@ export type ItemLocation =
   | Readonly<{ kind: "equipment"; slot: number }>;
 
 export class InventoryItem {
+  readonly upgrade: ItemUpgrade;
+
   constructor(
     readonly id: number,
     readonly heroId: number,
@@ -14,6 +17,7 @@ export class InventoryItem {
     readonly location: ItemLocation,
     readonly durability: number,
     readonly durabilityMax: number,
+    upgrade: ItemUpgrade = UNUPGRADED,
   ) {
     if (!Number.isInteger(id)) throw new Error("Jugger item ids must be integers");
     requireFightSafeItemId(BigInt(id));
@@ -24,6 +28,7 @@ export class InventoryItem {
       throw new Error("Durability max is invalid");
     }
     if (durability > durabilityMax) throw new Error("Durability exceeds durability max");
+    this.upgrade = requireItemUpgrade(upgrade);
   }
 
   get quantity(): number {
@@ -39,6 +44,7 @@ export class InventoryItem {
       location,
       this.durability,
       this.durabilityMax,
+      this.upgrade,
     );
   }
 
@@ -51,6 +57,7 @@ export class InventoryItem {
       this.location,
       this.durability,
       this.durabilityMax,
+      this.upgrade,
     );
   }
 
@@ -63,6 +70,20 @@ export class InventoryItem {
       this.location,
       current,
       max,
+      this.upgrade,
+    );
+  }
+
+  withUpgrade(upgrade: ItemUpgrade): InventoryItem {
+    return new InventoryItem(
+      this.id,
+      this.heroId,
+      this.artifactId,
+      this.quantityValue,
+      this.location,
+      this.durability,
+      this.durabilityMax,
+      upgrade,
     );
   }
 }

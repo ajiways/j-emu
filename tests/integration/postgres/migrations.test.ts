@@ -146,12 +146,15 @@ describe("Drizzle migrations", () => {
       .readdirSync(drizzleFolder)
       .filter((name) => name.endsWith(".sql"))
       .sort();
-    expect(sqlFiles).toEqual(["0000_foundation_init.sql"]);
+    expect(sqlFiles).toEqual(["0000_foundation_init.sql", "0001_inventory_item_upgrade.sql"]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
     ) as { entries: Array<{ tag: string }> };
-    expect(journal.entries.map((entry) => entry.tag)).toEqual(["0000_foundation_init"]);
-    expect(await appliedCount()).toBe(1);
+    expect(journal.entries.map((entry) => entry.tag)).toEqual([
+      "0000_foundation_init",
+      "0001_inventory_item_upgrade",
+    ]);
+    expect(await appliedCount()).toBe(2);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -160,6 +163,30 @@ describe("Drizzle migrations", () => {
       .session()
       .execute<{ lock_id: number }>(sql`SELECT lock_id FROM content.active_release`);
     expect([...singleton].map((row) => row.lock_id)).toEqual([1]);
+
+    const upgradeColumns = await database.session().execute<{
+      column_name: string;
+      is_nullable: string;
+      column_default: string | null;
+    }>(
+      sql`SELECT column_name, is_nullable, column_default
+          FROM information_schema.columns
+          WHERE table_schema = 'inventory' AND table_name = 'items'
+            AND column_name IN ('upgrade_id', 'upgrade_level', 'upgrade_skill_id', 'upgrade_bound')
+          ORDER BY column_name`,
+    );
+    expect(
+      [...upgradeColumns].map((row) => ({
+        column_name: row.column_name,
+        is_nullable: row.is_nullable,
+        column_default: row.column_default,
+      })),
+    ).toEqual([
+      { column_name: "upgrade_bound", is_nullable: "NO", column_default: null },
+      { column_name: "upgrade_id", is_nullable: "NO", column_default: null },
+      { column_name: "upgrade_level", is_nullable: "NO", column_default: null },
+      { column_name: "upgrade_skill_id", is_nullable: "NO", column_default: null },
+    ]);
   });
 
   it("applies database identifier defaults and bounded item sequence", async () => {

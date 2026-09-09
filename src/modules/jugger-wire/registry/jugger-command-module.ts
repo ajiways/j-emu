@@ -28,6 +28,7 @@ import { StoreBuyCommand } from "../commands/oa/store-buy-command.ts";
 import { StoreListCommand } from "../commands/oa/store-list-command.ts";
 import { StoreRepairCommand } from "../commands/oa/store-repair-command.ts";
 import { UseArtifactCommand } from "../commands/oa/use-artifact-command.ts";
+import { UpgradeCommand } from "../commands/oa/upgrade-command.ts";
 import { UserBagCommand } from "../commands/oa/user-bag-command.ts";
 import { UserFlashMessageCommand } from "../commands/oa/user-flash-message-command.ts";
 import { UserMagicCommand } from "../commands/oa/user-magic-command.ts";
@@ -119,6 +120,7 @@ export class JuggerCommandModule {
         combat,
       ),
       new UseArtifactCommand(unitOfWork, bootstrap, characters, inventory, combat),
+      new UpgradeCommand(unitOfWork, bootstrap, characters, inventory, combat),
       new ComeInCommand(
         unitOfWork,
         bootstrap,

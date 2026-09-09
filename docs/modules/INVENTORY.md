@@ -4,10 +4,11 @@
 
 Paperdoll `PUT_ON`/`PUT_OFF`, bag DROP 9095, pocket 93/99 и world USE 77
 **готово**: raw-AMF E2E и реальный CEF-прогон. Durability/repair (INV-05)
-workflow `done`, product **частично** без CEF мастерской. Точный статус:
+workflow `done`, product **частично** без CEF мастерской. Upgrade INV-06
+реализован (raw-AMF); CEF диалога заточки ещё не прогонялся. Точный статус:
 [CAPABILITIES.md](../CAPABILITIES.md).
 
-Не перенесены fight cast/`persSpells`, DRINK/ADD_MP, upgrade и патронташ.
+Не перенесены fight cast/`persSpells`, DRINK/ADD_MP и патронташ.
 
 ## Источники поведения
 
@@ -69,7 +70,7 @@ armor 20/26/103 is not invented in this playable slice.
 
 Именованное `FightRules` (не live parity, не fallback). Пока
 `CombatPort.activeFightId(accountId)` не `null`, layout-мутации инвентаря
-запрещены: `PUT_ON`, `PUT_OFF`, `DROP`, `SELL`, world `USE` → **`status:203`** +
+запрещены: `PUT_ON`, `PUT_OFF`, `DROP`, `SELL`, world `USE`, `UPGRADE` → **`status:203`** +
 `error: "нельзя во время боя"`. Чтение bag/view/pocket/init не блокируется.
 
 Смысл: в бою нельзя докладывать расходку на пояс и менять экип/сумку. Трата из
@@ -182,7 +183,7 @@ wire = `flags & 8 ? 1 : 0`. Стартовая 9095: `flags: 40`
 Unique paperdoll/bag: `bagStack = 1`, стакать нельзя. `priceMinor` missing ≠ 0.
 
 9095: `priceMinor: 0`, `flags: 40`, `bagStack: 1`. Provenance: live dump
-instance flags/price; unique wearable. Bundle сейчас `playable-slice/v15`.
+instance flags/price; unique wearable. Bundle сейчас `playable-slice/v16`.
 
 Второго stackable/sellable артикула в slice нет. E2E/CEF — throw-away 9095.
 Void-sell без dump-proven priced artifact не выдумывался.
@@ -201,7 +202,7 @@ Wire `sell_price` и `price` — числа золота (`minor/100`), не с�
 negative итога — fail-fast, не clamp.
 
 `actions` в bag: `FLAG_DROP=1 | FLAG_SELL=2 | FLAG_PUT_ON=8` для paperdoll.
-USE/GIVE/WAREHOUSE/upgrade в этом срезе не эмитить.
+USE/GIVE/WAREHOUSE в этом срезе не эмитить; `CAN_BE_UPGRADED=512` — INV-06.
 
 ### Public ports
 
@@ -318,7 +319,7 @@ PUT_OFF: `pocket → bag`, затем merge одинаковых bag-стако�
 
 ### Content
 
-`playable-slice/v15`. Pocket occupancy — partial unique в `0000_foundation_init`.
+`playable-slice/v16`. Pocket occupancy — partial unique в `0000_foundation_init`.
 
 | id  | title                 | picture                  | typeId | kindId | slotMask  | weight | priceMinor | flags | bagStack |
 | --- | --------------------- | ------------------------ | ------ | ------ | --------- | ------ | ---------- | ----- | -------- |
@@ -504,7 +505,7 @@ missing item **203** `нельзя починить`. Недостаточно �
 
 ### Content
 
-`playable-slice/v15`. Все артефакты обязаны иметь оба поля.
+`playable-slice/v16`. Все артефакты обязаны иметь оба поля.
 
 | id                 | occupancy bit | dur   | provenance                                |
 | ------------------ | ------------- | ----- | ----------------------------------------- |
@@ -540,7 +541,7 @@ columns — runtime 204. Concurrent death/repair — hero+items lock, один
 
 ### Out of scope
 
-Upgrade INV-06; set-bonus INV-07; 103 expire; BAG slots; flags_ext /
+set-bonus INV-07; 103 expire; BAG slots; flags_ext /
 draconis infinite; chat macros; workshop tab client filter (client-side
 `dur < max`).
 
@@ -554,10 +555,77 @@ draconis infinite; chat macros; workshop tab client filter (client-side
 - CEF мастерской не прогонялся — product **частично**, пока нет CEF
   20/21/26/9095 → смерть о Грызля → снятие 0/N → починка в 504.
 
+## INV-06 — upgrade / enchant chain
+
+### Architecture decision
+
+Отдельный `ARC-*` не нужен. Identity — mutate in place, тот же
+`inventory.items.id`. Overlay — колонки `upgrade_id` / `upgrade_level` /
+`upgrade_skill_id` / `upgrade_bound`, не instance JSON. Catalog владеет
+кристаллами `ARTIFACT_UPGRADE` и named tables types 1–3
+(`upgrade-tables.ts`, копия Pub1 `common.amf`). RNG — `{ unit(): number }`
+на `InventoryService`. Combat `RandomSource` в inventory domain не
+импортируется.
+
+Одна UoW: consume crystal, затем (успех) update target. Roll-fail
+**коммитит** consume и отдаёт flat `203`. Deny до consume —
+`UpgradeDeniedError` → nested `203`. Type 4 и не-bag цели — nested `203`
+`"Это действие предмета пока не поддержано."`. Fight —
+`"нельзя во время боя"`.
+
+Резонатор (`param1 & 2`) не меняет `upgrade_level`; перебрасывает combat
+stat из пула. Types 2 и 3 — одна lineage. Bonus =
+`ceil(catalogBase × mult[level])`. Bind `flags |= 32` на уровне 6 или
+кристаллах 553/605/13779.
+
+### Content
+
+`playable-slice/v16`. Dump `Pub1/images/locale/ru/amf/artifact_artikul_*.amf`.
+`bagStack` 9999 — authored cap для weight-0 type 73. `level_max=-1` → `0`,
+кроме 13224 (`35`).
+
+| id    | title                        | param2 | notes                   |
+| ----- | ---------------------------- | ------ | ----------------------- |
+| 553   | Древний кристалл заточки     | 1      | bind-on-first; flags 40 |
+| 1310  | Обычный кристалл заточки     | 2      | flags 0; param1=0       |
+| 4603  | Ледяной кристалл заточки     | 3      | 100%; starter ×6        |
+| 11408 | Волшебный резонатор заточки  | 2      | param1=3                |
+| 13224 | Адамантовый кристалл заточки | 4      | refuse; levelMax 35     |
+
+Skills `INJ_PROB` / `BLOK` / `BLOK_VISUAL` обязательны для level-6 extras.
+Target: **20**. USE кристалла остаётся `203`; клиент шлёт OA `UPGRADE`.
+Starter: прежний bag плюс `4603×6`, `11408×1`, `1310×1`, `553×1`, `13224×1`.
+
+### Public ports
+
+- `applyGearUpgrade({ characterId, crystalItemId, targetItemId })` →
+  `{ ok: true } | { ok: false, error }`;
+- overlay skills на equipped read.
+
+### Wire
+
+OA `common|object:UPGRADE`: crystal = `form.object_id`, target =
+`in.artifact_id`. Success flat: `{status:100, action:"UPGRADE"}` +
+`user|bag` + `user|skills`. Consumed fail: те же blocks с
+`{action:"UPGRADE", status:203, error}`. Unconsumed deny: nested `203`.
+Bag bit `CAN_BE_UPGRADED=512`. Карточка: `upgrade_id` / `upgrade_level` /
+`upgrade_add`; skill `value` = catalog + bonus и `upgrade_value`.
+
+### INV-06 acceptance
+
+- unit: chance/mult, overlay, resonator same level, 2↔3 compatible, type 4
+  refuse, roll fail;
+- integration: persist overlay, concurrent one winner, fail-roll consumes
+  crystal;
+- raw-AMF: 6× type 3 on 20; resonator re-picks; type 4 nested 203; fail-roll
+  flat 203 + bag; restart; fight 203;
+- CEF диалога заточки — обязателен для product `done`.
+
 ## Architecture checkpoint — план
 
-INV-05 реализован (workflow `done`). Containers, reservations и upgrade
-schema не спроектированы. Следующий inventory checkpoint — INV-06. DRINK /
+INV-05 реализован (workflow `done`). INV-06 реализован как vertical path;
+product status ждёт CEF. Containers, reservations не спроектированы.
+Следующий inventory checkpoint после закрытия INV-06. DRINK /
 ADD_MP — когда появится dump-proven артикул. Процесс:
 [ROADMAP.md](../migration/ROADMAP.md) и
 [PLAYBOOK.md](../migration/PLAYBOOK.md).

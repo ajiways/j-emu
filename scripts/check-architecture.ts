@@ -19,7 +19,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/content/application/content-validator.ts":
     "Single bundle completeness gate including dump-proven store 504, reputation track 5, fight extra blobs, and bot loot references",
   "src/modules/inventory/domain/inventory-service.ts":
-    "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag and pocket refill entry points",
+    "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag, INV-05 repair, and INV-06 applyGearUpgrade",
   "src/modules/catalog/infrastructure/schema.ts":
     "Catalog projection tables including bot loot, store_types, store_lots, and reputation_tracks",
   "src/modules/catalog/infrastructure/postgres-catalog.ts":

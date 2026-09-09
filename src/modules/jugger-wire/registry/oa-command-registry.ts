@@ -16,6 +16,7 @@ export class OaCommandRegistry {
     "common|object:PUT_ON",
     "common|object:SELL",
     "common|object:USE",
+    "common|object:UPGRADE",
     "common|object:COME_IN",
     "common|object:RESURRECT",
     "common|exit",

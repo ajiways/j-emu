@@ -113,6 +113,7 @@ describe("module factories", () => {
   });
 
   it("fails fast when required inventory dependencies are missing", () => {
+    const random = { unit: () => 0 };
     expect(() =>
       InventoryModule.create({
         database,
@@ -121,6 +122,7 @@ describe("module factories", () => {
         catalog: {} as Catalog,
         bagCapacity: 20,
         pocketCapacity: 4,
+        random,
       }),
     ).toThrow(/Inventory module requires a database/);
     expect(() =>
@@ -131,6 +133,7 @@ describe("module factories", () => {
         catalog: {} as Catalog,
         bagCapacity: 20,
         pocketCapacity: 4,
+        random,
       }),
     ).toThrow(/Starter inventory policy is required/);
     expect(() =>
@@ -141,6 +144,7 @@ describe("module factories", () => {
         catalog: undefined as unknown as Catalog,
         bagCapacity: 20,
         pocketCapacity: 4,
+        random,
       }),
     ).toThrow(/Inventory module requires a catalog/);
     expect(() =>
@@ -151,8 +155,20 @@ describe("module factories", () => {
         catalog: {} as Catalog,
         bagCapacity: 20,
         pocketCapacity: undefined as unknown as number,
+        random,
       }),
     ).toThrow(/Inventory module requires pocket capacity/);
+    expect(() =>
+      InventoryModule.create({
+        database: {} as PostgresDatabase,
+        starterItems: [{ artifactId: 1, quantity: 1, location: { kind: "bag" } }],
+        releaseArtifacts,
+        catalog: {} as Catalog,
+        bagCapacity: 20,
+        pocketCapacity: 4,
+        random: undefined as unknown as Readonly<{ unit(): number }>,
+      }),
+    ).toThrow(/Inventory module requires a random source/);
   });
 
   it("fails fast when required catalog and world dependencies are missing", async () => {
@@ -247,6 +263,7 @@ describe("module factories", () => {
       catalog: {} as Catalog,
       bagCapacity: 20,
       pocketCapacity: 4,
+      random: { unit: () => 0 },
     });
     await expect(inventory.close()).resolves.toBeUndefined();
   });

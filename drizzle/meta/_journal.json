@@ -8,6 +8,13 @@
       "when": 1788979155931,
       "tag": "0000_foundation_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788981902973,
+      "tag": "0001_inventory_item_upgrade",
+      "breakpoints": true
     }
   ]
 }

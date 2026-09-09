@@ -38,6 +38,7 @@ export class CompositionRoot {
     extras: Readonly<{
       lootRandom?: RandomSource;
       combatRandom?: RandomSource;
+      upgradeRandom?: RandomSource;
       combatRules?: Partial<BattleRules>;
     }> = {},
   ): Promise<Application> {
@@ -57,6 +58,7 @@ export class CompositionRoot {
         catalog: catalog.catalog,
         bagCapacity: policy.bootstrap.bagCapacity,
         pocketCapacity: policy.bootstrap.pocketCapacity,
+        random: extras.upgradeRandom ?? new SystemRandomSource(),
       });
       closers.push(inventory);
       const world = await WorldModule.create({ database });

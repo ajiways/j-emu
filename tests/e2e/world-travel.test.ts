@@ -92,7 +92,7 @@ describe("world travel", () => {
   it("denies overload at 21 weighted slots and allows 20/20", async () => {
     const walker = await AuthenticatedClient.login(application);
     const walkInit = await walker.objectAction({ object: "common", action: "init", sq: 1 });
-    await insertWeightedBagRows(heroIdFrom(walkInit), 15);
+    await insertWeightedBagRows(heroIdFrom(walkInit), 14);
     const walked = await walker.objectAction({
       object: "common",
       action: "action",
@@ -103,7 +103,7 @@ describe("world travel", () => {
 
     const blocked = await AuthenticatedClient.login(application);
     const blockedInit = await blocked.objectAction({ object: "common", action: "init", sq: 1 });
-    await insertWeightedBagRows(heroIdFrom(blockedInit), 16);
+    await insertWeightedBagRows(heroIdFrom(blockedInit), 15);
     const denied = await blocked.objectAction({
       object: "common",
       action: "action",

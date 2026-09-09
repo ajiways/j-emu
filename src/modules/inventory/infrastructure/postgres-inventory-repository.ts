@@ -2,6 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import { requireFightSafeItemId } from "../../../shared/kernel/decimal-id.ts";
 import { InventoryItem, type ItemLocation } from "../domain/inventory-item.ts";
+import { UNUPGRADED, type ItemUpgrade } from "../domain/item-upgrade.ts";
 import type { InventoryRepository, NewInventoryItem } from "../ports/inventory-repository.ts";
 import { items } from "./schema.ts";
 
@@ -31,20 +32,13 @@ export class PostgresInventoryRepository implements InventoryRepository {
         equipmentSlot,
         durability: item.durability,
         durabilityMax: item.durabilityMax,
+        ...upgradeColumns(UNUPGRADED),
         version: 1,
       })
       .returning();
     const row = rows[0];
     if (rows.length !== 1 || !row) throw new Error("Item insert did not return an id");
-    return new InventoryItem(
-      requireFightSafeItemId(row.id),
-      row.heroId,
-      row.artifactId,
-      row.quantity,
-      this.location(row),
-      row.durability,
-      row.durabilityMax,
-    );
+    return toItem(row);
   }
 
   async save(item: InventoryItem): Promise<void> {
@@ -63,6 +57,7 @@ export class PostgresInventoryRepository implements InventoryRepository {
         equipmentSlot,
         durability: item.durability,
         durabilityMax: item.durabilityMax,
+        ...upgradeColumns(item.upgrade),
         version: 1,
       })
       .onConflictDoUpdate({
@@ -74,6 +69,7 @@ export class PostgresInventoryRepository implements InventoryRepository {
           equipmentSlot,
           durability: item.durability,
           durabilityMax: item.durabilityMax,
+          ...upgradeColumns(item.upgrade),
           version: sql`${items.version} + 1`,
         },
       });
@@ -98,44 +94,79 @@ export class PostgresInventoryRepository implements InventoryRepository {
       .where(eq(items.heroId, heroId))
       .orderBy(items.id);
     const rows = lock ? await query.for("update") : await query;
-    return rows.map(
-      (row) =>
-        new InventoryItem(
-          requireFightSafeItemId(row.id),
-          row.heroId,
-          row.artifactId,
-          row.quantity,
-          this.location(row),
-          row.durability,
-          row.durabilityMax,
-        ),
-    );
+    return rows.map(toItem);
   }
+}
 
-  private location(row: {
-    id: bigint;
-    locationKind: string;
-    pocketPosition: number | null;
-    equipmentSlot: number | null;
-  }): ItemLocation {
-    if (row.locationKind === "bag") {
-      if (row.pocketPosition !== null || row.equipmentSlot !== null) {
-        throw new Error(`Bag item ${row.id} has slot columns`);
-      }
-      return { kind: "bag" };
+function toItem(row: {
+  id: bigint;
+  heroId: number;
+  artifactId: number;
+  quantity: number;
+  locationKind: string;
+  pocketPosition: number | null;
+  equipmentSlot: number | null;
+  durability: number;
+  durabilityMax: number;
+  upgradeId: number;
+  upgradeLevel: number;
+  upgradeSkillId: string;
+  upgradeBound: number;
+}): InventoryItem {
+  return new InventoryItem(
+    requireFightSafeItemId(row.id),
+    row.heroId,
+    row.artifactId,
+    row.quantity,
+    location(row),
+    row.durability,
+    row.durabilityMax,
+    {
+      id: row.upgradeId,
+      level: row.upgradeLevel,
+      skillId: row.upgradeSkillId,
+      bound: row.upgradeBound === 1,
+    },
+  );
+}
+
+function location(row: {
+  id: bigint;
+  locationKind: string;
+  pocketPosition: number | null;
+  equipmentSlot: number | null;
+}): ItemLocation {
+  if (row.locationKind === "bag") {
+    if (row.pocketPosition !== null || row.equipmentSlot !== null) {
+      throw new Error(`Bag item ${row.id} has slot columns`);
     }
-    if (row.locationKind === "pocket") {
-      if (row.pocketPosition === null || row.equipmentSlot !== null) {
-        throw new Error(`Pocket item ${row.id} has invalid slot columns`);
-      }
-      return { kind: "pocket", position: row.pocketPosition };
-    }
-    if (row.locationKind !== "equipment") {
-      throw new Error(`Unknown item location ${row.locationKind}`);
-    }
-    if (row.equipmentSlot === null || row.pocketPosition !== null) {
-      throw new Error(`Equipment item ${row.id} has invalid slot columns`);
-    }
-    return { kind: "equipment", slot: row.equipmentSlot };
+    return { kind: "bag" };
   }
+  if (row.locationKind === "pocket") {
+    if (row.pocketPosition === null || row.equipmentSlot !== null) {
+      throw new Error(`Pocket item ${row.id} has invalid slot columns`);
+    }
+    return { kind: "pocket", position: row.pocketPosition };
+  }
+  if (row.locationKind !== "equipment") {
+    throw new Error(`Unknown item location ${row.locationKind}`);
+  }
+  if (row.equipmentSlot === null || row.pocketPosition !== null) {
+    throw new Error(`Equipment item ${row.id} has invalid slot columns`);
+  }
+  return { kind: "equipment", slot: row.equipmentSlot };
+}
+
+function upgradeColumns(upgrade: ItemUpgrade): {
+  upgradeId: number;
+  upgradeLevel: number;
+  upgradeSkillId: string;
+  upgradeBound: number;
+} {
+  return {
+    upgradeId: upgrade.id,
+    upgradeLevel: upgrade.level,
+    upgradeSkillId: upgrade.skillId,
+    upgradeBound: upgrade.bound ? 1 : 0,
+  };
 }

@@ -60,7 +60,7 @@ describe("inventory durability death and repair", () => {
     const afterDeaths = await client.objectAction({ object: "user", action: "bag", sq });
     sq += 1;
     const glove = bagItemByArtikulId(afterDeaths, 9095);
-    expect(glove).toMatchObject({ durability: 0, durability_max: 3, actions: 3 });
+    expect(glove).toMatchObject({ durability: 0, durability_max: 3, actions: 515 });
     const denied = await client.objectAction({
       object: "common",
       action: "object",

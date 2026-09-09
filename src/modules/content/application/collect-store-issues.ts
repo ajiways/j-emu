@@ -38,7 +38,7 @@ export function collectStoreIssues(bundle: ContentBundle): readonly string[] {
     }
   }
   const shop = bundle.areas.find((area) => area.id === "504");
-  if (!shop) issues.push("area 504 is required for playable-slice/v15");
+  if (!shop) issues.push("area 504 is required for playable-slice/v16");
   else if (shop.code !== "store") issues.push("area 504 code must be store");
   const shopTypes = new Set(
     bundle.storeTypes.filter((row) => row.areaId === "504").map((row) => row.typeId),

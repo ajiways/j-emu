@@ -25,7 +25,7 @@ const artifactSkillSchema = z
 const artifactActionSchema = z
   .object({
     code: z.string().min(1),
-    param1: z.number().int().positive(),
+    param1: z.number().int().nonnegative(),
     param2: z.number().int().nonnegative(),
     dispose: z.union([z.literal(0), z.literal(1)]),
     title: z.string().min(1),

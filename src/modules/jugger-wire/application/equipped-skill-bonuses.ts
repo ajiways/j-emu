@@ -1,5 +1,6 @@
 import type { ArtifactSkillBonus } from "../../catalog/domain/artifact-skill-bonus.ts";
 import type { Catalog } from "../../catalog/ports/catalog.ts";
+import { overlaySkillBonuses } from "../../inventory/domain/gear-upgrade.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 
 export async function equippedSkillBonuses(
@@ -12,7 +13,7 @@ export async function equippedSkillBonuses(
     if (item.location.kind !== "equipment") continue;
     const definition = await catalog.artifact(item.artifactId);
     if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
-    bonuses.push(...definition.skills);
+    bonuses.push(...overlaySkillBonuses(definition.skills, item.upgrade));
   }
   return bonuses;
 }

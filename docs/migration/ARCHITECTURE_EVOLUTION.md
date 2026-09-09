@@ -19,7 +19,8 @@ ghost/injury/`RESURRECT`, без таблиц active fight. ECO-01 landed: catal
 витрина 504 type `-131` lots 23/24, character `debitMoney`, composition
 `StorePurchase`. REP-01 landed: catalog track 5, `hero_reputations`, OA
 `user|stats`. INV-05 landed: instance durability columns, death −1 on
-settlement, composition `StoreRepair`.
+settlement, composition `StoreRepair`. INV-06 landed: instance upgrade
+overlay columns, catalog crystals 553/1310/4603/11408/13224, OA `UPGRADE`.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение

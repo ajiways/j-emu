@@ -38,6 +38,7 @@ describe("inventory drop persistence", () => {
       catalog: catalog.catalog,
       bagCapacity: policy.bootstrap.bagCapacity,
       pocketCapacity: policy.bootstrap.pocketCapacity,
+      random: { unit: () => 0 },
     });
     characters = CharacterModule.create(
       playableCharacterModuleInput(
@@ -77,7 +78,7 @@ describe("inventory drop persistence", () => {
     expect(accepted).toHaveLength(1);
     expect(denied).toHaveLength(1);
     const remaining = await inventory.service.list(hero.id);
-    expect(remaining).toHaveLength(6);
+    expect(remaining).toHaveLength(11);
     expect(remaining.some((item) => item.artifactId === 9095)).toBe(false);
   });
 
@@ -92,7 +93,7 @@ describe("inventory drop persistence", () => {
       }),
     ).rejects.toThrow(/forced rollback/);
     const remaining = await inventory.service.list(hero.id);
-    expect(remaining).toHaveLength(7);
+    expect(remaining).toHaveLength(12);
     expect(remaining[0]?.id).toBe(item.id);
   });
 

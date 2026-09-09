@@ -10,8 +10,8 @@ export class ArtifactUseAction {
     if (!key) throw new Error("Artifact use action key is required");
     if (!code) throw new Error(`Artifact use action ${key} code is required`);
     if (!title) throw new Error(`Artifact use action ${key} title is required`);
-    if (!Number.isInteger(param1) || param1 < 1) {
-      throw new Error(`Artifact use action ${key} param1 is required and must be > 0`);
+    if (!Number.isInteger(param1) || param1 < 0) {
+      throw new Error(`Artifact use action ${key} param1 is invalid`);
     }
     if (!Number.isInteger(param2) || param2 < 0) {
       throw new Error(`Artifact use action ${key} param2 is invalid`);

@@ -3,9 +3,11 @@ import type { Hero } from "../../character/domain/hero.ts";
 import { bagActionsFor } from "../../inventory/domain/bag-actions.ts";
 import { instanceDurability, isBroken } from "../../inventory/domain/durability.ts";
 import { noweightWire } from "../../inventory/domain/artifact-flags.ts";
+import { canItemBeUpgraded } from "../../inventory/domain/gear-upgrade.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import { sellPriceMinor } from "../../inventory/domain/sell-price.ts";
 import { artifactActionsWire, type ArtifactActionWireBlock } from "./artifact-actions-wire.ts";
+import { artifactInstanceOverlay } from "./artifact-instance-overlay.ts";
 import { artifactSkillWireMap, type ArtifactSkillWireBlock } from "./artifact-skill-wire.ts";
 import { moneyNumberFromMinorUnits } from "./money-from-minor-units.ts";
 
@@ -31,6 +33,9 @@ type BagItemBlock = Readonly<{
   noweight: 0 | 1;
   price: number;
   sell_price: number;
+  upgrade_id: number;
+  upgrade_level: number;
+  upgrade_add: number;
   artifact_skills: Readonly<Record<string, ArtifactSkillWireBlock>>;
   artifact_actions: Readonly<Record<string, ArtifactActionWireBlock>>;
 }>;
@@ -55,6 +60,7 @@ export async function buildUserBag(
     if (item.location.kind !== "bag") continue;
     const definition = await catalog.artifact(item.artifactId);
     if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
+    const overlay = artifactInstanceOverlay(definition, item);
     bag[String(item.id)] = {
       id: item.id,
       artikul_id: definition.id,
@@ -76,12 +82,23 @@ export async function buildUserBag(
         definition.slotMask,
         definition.useAction !== undefined,
         isBroken(instanceDurability(item.durability, item.durabilityMax, definition.flags)),
+        canItemBeUpgraded({
+          typeId: definition.typeId,
+          kindId: definition.kindId,
+          skills: definition.skills,
+          upgradeId: item.upgrade.id,
+          upgradeLevel: item.upgrade.level,
+          slotMask: definition.slotMask,
+        }),
       ),
-      flags: definition.flags,
+      flags: overlay.flags,
       noweight: noweightWire(definition.flags),
       price: moneyNumberFromMinorUnits(definition.priceMinor),
       sell_price: moneyNumberFromMinorUnits(sellPriceMinor(definition.priceMinor)),
-      artifact_skills: await artifactSkillWireMap(definition.skills, catalog),
+      upgrade_id: overlay.upgrade_id,
+      upgrade_level: overlay.upgrade_level,
+      upgrade_add: overlay.upgrade_add,
+      artifact_skills: await artifactSkillWireMap(overlay.skills, catalog, overlay.upgradeBySkill),
       artifact_actions: artifactActionsWire(definition.useActions),
     };
   }

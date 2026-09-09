@@ -15,6 +15,7 @@ export class InventoryModule {
     catalog: Catalog;
     bagCapacity: number;
     pocketCapacity: number;
+    random: Readonly<{ unit(): number }>;
   }): InventoryModule {
     const database = requirePresent(input.database, "Inventory module requires a database");
     const starterItems = requirePresent(
@@ -31,6 +32,7 @@ export class InventoryModule {
       input.pocketCapacity,
       "Inventory module requires pocket capacity",
     );
+    const random = requirePresent(input.random, "Inventory module requires a random source");
     return new InventoryModule(
       new InventoryService(
         new PostgresInventoryRepository(database),
@@ -39,6 +41,7 @@ export class InventoryModule {
         catalog,
         bagCapacity,
         pocketCapacity,
+        random,
       ),
     );
   }

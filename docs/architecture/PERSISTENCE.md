@@ -53,8 +53,10 @@ pre-baseline init `foundation_init`: одна миграция на весь pla
 создал сухой journal.
 
 Текущая схема — `drizzle/0000_foundation_init.sql` (ADR-0018 identity и
-sequences, `finished_fights`, content publication). Snapshot и journal
-перегенерированы из schema files. В SQL после generate добавлен только
+sequences, `finished_fights`, content publication) плюс
+`drizzle/0001_inventory_item_upgrade.sql` (INV-06 overlay колонки на
+`inventory.items`, `NOT NULL` без SQL DEFAULT). Snapshot и journal
+перегенерированы из schema files. В `0000` после generate добавлен только
 `INSERT` singleton-строки `content.active_release`: kit не умеет выразить
 эту строку из Drizzle schema, а runtime требует ровно одну запись.
 Других ручных правок SQL нет.

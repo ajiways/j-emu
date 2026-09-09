@@ -24,6 +24,10 @@ export const items = inventorySchema.table(
     equipmentSlot: integer("equipment_slot"),
     durability: integer("durability").notNull(),
     durabilityMax: integer("durability_max").notNull(),
+    upgradeId: integer("upgrade_id").notNull(),
+    upgradeLevel: integer("upgrade_level").notNull(),
+    upgradeSkillId: text("upgrade_skill_id").notNull(),
+    upgradeBound: integer("upgrade_bound").notNull(),
     version: integer("version").notNull(),
   },
   (table) => [
@@ -33,6 +37,19 @@ export const items = inventorySchema.table(
     check("items_durability_check", sql`${table.durability} >= 0`),
     check("items_durability_max_check", sql`${table.durabilityMax} >= 0`),
     check("items_durability_range_check", sql`${table.durability} <= ${table.durabilityMax}`),
+    check("items_upgrade_id_check", sql`${table.upgradeId} >= 0`),
+    check(
+      "items_upgrade_level_check",
+      sql`${table.upgradeLevel} >= 0 AND ${table.upgradeLevel} <= 6`,
+    ),
+    check("items_upgrade_bound_check", sql`${table.upgradeBound} IN (0, 1)`),
+    check(
+      "items_upgrade_state_check",
+      sql`(
+        (${table.upgradeLevel} = 0 AND ${table.upgradeId} = 0 AND ${table.upgradeSkillId} = '' AND ${table.upgradeBound} = 0)
+        OR (${table.upgradeLevel} > 0 AND ${table.upgradeId} IN (1, 2, 3) AND char_length(${table.upgradeSkillId}) > 0)
+      )`,
+    ),
     check(
       "items_location_kind_check",
       sql`${table.locationKind} IN ('bag', 'pocket', 'equipment')`,
