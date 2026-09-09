@@ -86,9 +86,10 @@ artifact_actions jsonb)`
   `flags` integer ≥ 0; `bag_stack` integer ≥ 1; `artifact_actions` — typed map
   (пустой объект = нет USE).
 - `bots(release_id, id, title, level, max_hp, strength, hunt_nick, hunt_swf,
-hunt_scale, hunt_fps, hunt_speed, hunt_avatar, hunt_kind, hunt_hide_on_map)`
-  PK `(release_id, id)`. Hunt look — спрайт на карте (`area_conf.hunt_bots`),
-  не fight `sk`/`body`.
+hunt_scale, hunt_fps, hunt_speed, hunt_avatar, hunt_kind, hunt_hide_on_map,
+hunt_sk, hunt_body)`
+  PK `(release_id, id)`. Map hunt uses swf/avatar; fight `oppnew` uses
+  `hunt_sk`/`hunt_body`/`hunt_avatar` (Gryzl live: sk `"11"`, body `""`).
 - `skill_definitions(release_id, id, title, group_key, sort_order, weight,
 image, value_kind)` PK `(release_id, id)`.
 - `level_boundaries(release_id, level, exp_min, exp_max, bag_cnt, honor_rank,

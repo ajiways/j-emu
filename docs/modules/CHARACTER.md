@@ -40,7 +40,10 @@ Hero identity:
 - equipment totals (`user|skills`, `hpMax`) считаются из naked + надетых
   `artifact_skills` на PUT_ON/OFF и при чтении skills;
 - tutorial flags пишутся в `hero_personal_details` при создании и больше не
-  overlay-ятся на чтении.
+  overlay-ятся на чтении;
+- `use_fproxy: 1` форсируется на каждом wire-чтении `user|personal_details.info`
+  (live `heroBuilder`). Без него CEF шлёт fight auth на TCP `:33120`, а не на
+  HTTPS `/fproxy/`. Поле не хранится в Postgres и не является tutorial overlay.
 
 Player state:
 

@@ -68,7 +68,7 @@ npm run db:publish:development
 npm run start:https
 ```
 
-`start:https` проверяет `HTTP_ONLY=0`, `HOST=0.0.0.0`, `PORT=443` и наличие сертификатов, затем слушает `:443` с `minVersion=TLSv1`, `ciphers=ALL:@SECLEVEL=0`, `honorCipherOrder` и `SSL_OP_LEGACY_SERVER_CONNECT`.
+`start:https` проверяет `HTTP_ONLY=0`, `HOST=0.0.0.0`, `PORT=443` и наличие сертификатов, затем слушает `:443` с `minVersion=TLSv1`, `ciphers=ALL:@SECLEVEL=0`, `honorCipherOrder` и `SSL_OP_LEGACY_SERVER_CONNECT`. Тот же процесс слушает TCP `FIGHT_PROXY_PORT` (по умолчанию `33120`) для Flash policy-file и fight Socket. `FIGHT_PROXY_PATH` в `.env` — это wire-поле `fight|conf.proxy`, live-значение `https://s1.jugger.ru/fproxy//;`, не относительный `/fproxy/`.
 
 ### Hosts
 

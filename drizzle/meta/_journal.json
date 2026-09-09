@@ -85,6 +85,13 @@
       "when": 1788880803747,
       "tag": "0011_world_area_links",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1788944365555,
+      "tag": "0012_catalog_bot_fight_look",
+      "breakpoints": true
     }
   ]
 }

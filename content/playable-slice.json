@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v9",
+  "schemaVersion": "playable-slice/v10",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -100,7 +100,9 @@
         "speed": 10,
         "avatar": "avatar_gryzl1_sm.jpg",
         "kind": 0,
-        "hideOnMap": 0
+        "hideOnMap": 0,
+        "sk": "11",
+        "body": ""
       }
     }
   ],

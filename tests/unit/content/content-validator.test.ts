@@ -146,13 +146,13 @@ describe("parseContentBundle", () => {
     ).toThrow();
   });
 
-  it("rejects an area without region_map", () => {
-    const area = playable.areas[0];
-    if (!area) throw new Error("playable bundle has no areas");
+  it("rejects a hunt look without fight sk", () => {
+    const bot = playable.bots[0];
+    if (!bot) throw new Error("playable bundle has no bots");
     expect(() =>
       parseContentBundle({
         ...playable,
-        areas: [{ ...area, regionMap: "" }],
+        bots: [{ ...bot, hunt: { ...bot.hunt, sk: "" } }],
       }),
     ).toThrow();
   });

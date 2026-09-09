@@ -1,0 +1,63 @@
+import type { CombatEvent } from "../../combat/ports/combat-port.ts";
+import { huntNativePersSpells } from "./hunt-native-pers-spells.ts";
+import { huntHumanPersFields, huntPersListEvent } from "./hunt-fight-pers-wire.ts";
+
+type HuntBootstrap = Extract<CombatEvent, { type: "hunt-bootstrap" }>;
+
+export function huntFightBootstrapEvents(
+  event: HuntBootstrap,
+): readonly Readonly<Record<string, unknown>>[] {
+  const { hero, bot, allies, waiting } = event;
+  const events: Readonly<Record<string, unknown>>[] = [
+    { bg: 1, et: "fightState", pvp: false, startTime: 0 },
+    huntPersListEvent([hero, ...allies], bot),
+    {
+      companions: [],
+      cp: 0,
+      cpHits: [],
+      dead: false,
+      et: "persSelf",
+      hp: hero.hp,
+      juggernaut: false,
+      maxHp: hero.maxHp,
+      maxMp: hero.maxMp,
+      mp: hero.mp,
+      rage: 0,
+      aggro: 1,
+      team: hero.team,
+    },
+    huntNativePersSpells(),
+    { et: "persEff", persId: hero.id },
+    { et: "oppwait" },
+  ];
+  if (waiting) return events;
+  events.push({
+    aggressive: true,
+    artikulId: bot.artikulId,
+    avatar: bot.avatar,
+    body: bot.body,
+    bot: true,
+    dead: false,
+    et: "oppnew",
+    hp: bot.hp,
+    id: bot.id,
+    level: bot.level,
+    maxHp: bot.maxHp,
+    maxMp: 0,
+    mp: 0,
+    nick: bot.nick,
+    sk: bot.sk,
+    team: bot.team,
+  });
+  events.push({ et: "persEff", persId: bot.id });
+  return events;
+}
+
+export function huntFightRosterEvents(
+  event: Extract<CombatEvent, { type: "roster-updated" }>,
+): readonly Readonly<Record<string, unknown>>[] {
+  return [
+    huntPersListEvent(event.humans, event.bot),
+    { ...huntHumanPersFields(event.joined), et: "persChangeInfo" },
+  ];
+}

@@ -21,6 +21,10 @@ function fakeCombat(fightId: string | null): CombatPort {
     startHunt: async () => {
       throw new Error("unused");
     },
+    joinHunt: async () => {
+      throw new Error("unused");
+    },
+    hasFight: async () => false,
     nextFightId: async () => {
       throw new Error("unused");
     },

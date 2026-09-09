@@ -5,7 +5,7 @@ import { AuthenticatedClient } from "../support/harness/authenticated-client.ts"
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { uniqueDevelopmentSlot } from "../support/harness/unique-development-slot.ts";
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
-import { heroIdFrom, huntFightIdFrom } from "../support/harness/wire-payload.ts";
+import { heroIdFrom, huntFightConfFrom } from "../support/harness/wire-payload.ts";
 
 describe("concurrent heroes", () => {
   let harness: ApplicationHarness;
@@ -20,7 +20,7 @@ describe("concurrent heroes", () => {
     await harness.stop();
   });
 
-  it("issues distinct hero ids and lets only one occupy spawn 50310", async () => {
+  it("issues distinct hero ids and lets both join spawn 50310", async () => {
     const slotA = uniqueDevelopmentSlot();
     let slotB = uniqueDevelopmentSlot();
     while (slotB === slotA) slotB = uniqueDevelopmentSlot();
@@ -47,15 +47,15 @@ describe("concurrent heroes", () => {
         sq: 2,
       }),
     ]);
-    const won = [startA, startB].filter((payload) => actionStatus(payload) === 100);
-    const denied = [startA, startB].filter((payload) => actionStatus(payload) === 203);
-    expect(won).toHaveLength(1);
-    expect(denied).toHaveLength(1);
-    const winner = won[0];
-    const busy = denied[0];
-    if (!winner || !busy) throw new Error("concurrent ATTACK_BOT did not split win/busy");
-    expect(huntFightIdFrom(winner)).toMatch(/^[1-9][0-9]*$/);
-    expect(busy["common|action"]).toEqual({ status: 203, error: "моб уже занят" });
+    expect(actionStatus(startA)).toBe(100);
+    expect(actionStatus(startB)).toBe(100);
+    const fightA = huntFightConfFrom(startA);
+    const fightB = huntFightConfFrom(startB);
+    expect(fightA.fightId).toBe(fightB.fightId);
+    expect(fightA.fightAkey).toBe(fightB.fightAkey);
+    expect(fightA.userId).toBe(String(heroIdFrom(initA)));
+    expect(fightB.userId).toBe(String(heroIdFrom(initB)));
+    expect(fightA.userId).not.toBe(fightB.userId);
   });
 });
 

@@ -9,6 +9,7 @@ import type { CombatPort } from "../../combat/ports/combat-port.ts";
 import type { CommonConfBlock } from "../../content/domain/bootstrap-content.ts";
 import { emptyBookTrio } from "./book-quest-blocks.ts";
 import { overlayCaptureAreaId, overlayChromeAreaId } from "./chrome-area-overlay.ts";
+import { withHttpsFproxy } from "./personal-details-wire.ts";
 import { artifactSkillWireMap } from "./artifact-skill-wire.ts";
 import { buildEquippedArtifact } from "./equipped-artifact-block.ts";
 import { equippedSkillBonuses } from "./equipped-skill-bonuses.ts";
@@ -190,7 +191,7 @@ export class BootstrapReadModel {
       "user|conf": buildUserConf(hero, level),
       "user|personal_details": {
         status: 100,
-        info: await this.characters.personalDetails(accountId),
+        info: withHttpsFproxy(await this.characters.personalDetails(accountId)),
       },
       "user|skills": await this.skills(accountId),
       "user|professions": chrome.block("user|professions"),

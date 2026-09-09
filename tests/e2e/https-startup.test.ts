@@ -61,7 +61,7 @@ function httpsConfig(pub1Dir: string): AppConfig {
     logLevel: "silent",
     gamePolicyFile: path.resolve(process.cwd(), "config/development.json"),
     fightProxyHost: "s1.jugger.ru",
-    fightProxyPath: "/fproxy/",
+    fightProxyPath: "https://s1.jugger.ru/fproxy//;",
     fightProxyPort: 33120,
   };
 }

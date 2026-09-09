@@ -15,10 +15,10 @@ import type {
   FightWireMapper,
 } from "../../application/fight-wire-mapper.ts";
 import type { HuntAreaFanout } from "../../application/hunt-area-fanout.ts";
+import { HuntMapAttack } from "../../application/hunt-map-attack.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
-import { requireNoActiveFight } from "./require-no-active-fight.ts";
 
 type AttackBotRequest = Readonly<{ botId: number }>;
 
@@ -33,6 +33,7 @@ type AttackBotBlocks = Readonly<{
 export class AttackBotCommand implements OaCommand {
   static readonly key = "common|object:ATTACK_BOT";
   readonly key = AttackBotCommand.key;
+  private readonly huntAttack: HuntMapAttack;
 
   constructor(
     private readonly unitOfWork: UnitOfWork,
@@ -41,10 +42,12 @@ export class AttackBotCommand implements OaCommand {
     private readonly inventory: InventoryService,
     private readonly world: WorldService,
     private readonly catalog: Catalog,
-    private readonly combat: CombatPort,
+    combat: CombatPort,
     private readonly fightWire: FightWireMapper,
-    private readonly huntFanout: HuntAreaFanout,
-  ) {}
+    huntFanout: HuntAreaFanout,
+  ) {
+    this.huntAttack = new HuntMapAttack(world, combat, huntFanout);
+  }
 
   decode(envelope: ObjectActionEnvelope): AttackBotRequest {
     const form = envelope.form;
@@ -61,7 +64,6 @@ export class AttackBotCommand implements OaCommand {
   }
 
   async handle(context: OaCommandContext, request: AttackBotRequest): Promise<AttackBotBlocks> {
-    await requireNoActiveFight(this.combat, context.accountId);
     const hero = await this.unitOfWork.run(async () => {
       const locked = await this.characters.lockByAccountId(context.accountId);
       await this.characters.syncResources({ characterId: locked.id });
@@ -77,43 +79,34 @@ export class AttackBotCommand implements OaCommand {
     const bot = await this.catalog.bot(spawn.botId);
     if (!bot) throw new Error(`Bot catalog entry ${spawn.botId} is missing`);
     await this.inventory.ensureStarterInventory(hero.id);
-    const fightId = await this.combat.nextFightId();
-    const acquired = await this.world.tryAcquireSpawn({
-      areaId: area.id,
+    const fight = await this.huntAttack.execute({
+      accountId: context.accountId,
+      heroId: hero.id,
+      heroNick: hero.nick,
+      heroLevel: hero.level,
+      heroKind: hero.kind,
+      heroHp: hero.hp,
+      heroMaxHp: hero.maxHp,
+      heroMp: hero.mp,
+      heroMaxMp: hero.maxMp,
       spawnId: spawn.id,
-      fightId,
-      ownerAccountId: context.accountId,
+      botId: bot.id,
+      botNick: bot.title,
+      botLevel: bot.level,
+      botHp: bot.maxHp,
+      botAvatar: bot.hunt.avatar,
+      botSk: bot.hunt.sk,
+      botBody: bot.hunt.body,
+      arena: area.fightBackground,
+      areaId: area.id,
     });
-    if (!acquired.ok) throw new ProtocolError(203, "моб уже занят");
-    try {
-      const fight = await this.combat.startHunt({
-        accountId: context.accountId,
-        heroId: hero.id,
-        heroNick: hero.nick,
-        heroLevel: hero.level,
-        heroKind: hero.kind,
-        heroHp: hero.hp,
-        fightId,
-        botId: bot.id,
-        botNick: bot.title,
-        botLevel: bot.level,
-        botHp: bot.maxHp,
-        arena: area.fightBackground,
-        areaId: area.id,
-      });
-      await this.huntFanout.wakeArea(area.id);
-      return {
-        "common|action": { status: 100 },
-        "fight|conf": this.fightWire.fightConfiguration(fight),
-        "common|hunt": await this.bootstrap.hunt(context.accountId),
-        "user|unitframe": await this.bootstrap.unitframe(context.accountId),
-        state: await this.bootstrap.state(context.accountId),
-      };
-    } catch (error) {
-      await this.world.releaseSpawn({ areaId: area.id, spawnId: spawn.id });
-      await this.huntFanout.wakeArea(area.id);
-      throw error;
-    }
+    return {
+      "common|action": { status: 100 },
+      "fight|conf": this.fightWire.fightConfiguration(fight),
+      "common|hunt": await this.bootstrap.hunt(context.accountId),
+      "user|unitframe": await this.bootstrap.unitframe(context.accountId),
+      state: await this.bootstrap.state(context.accountId),
+    };
   }
 
   encode(response: AttackBotBlocks): OaEncodedResponse {

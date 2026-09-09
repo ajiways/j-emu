@@ -36,6 +36,14 @@ export function firstBagItemFrom(payload: Record<string, AmfValue>): Record<stri
 }
 
 export function huntFightIdFrom(payload: Record<string, AmfValue>): string {
+  return huntFightConfFrom(payload).fightId;
+}
+
+export function huntFightConfFrom(payload: Record<string, AmfValue>): {
+  fightId: string;
+  fightAkey: string;
+  userId: string;
+} {
   const fightBlock = requireRecord(payload["fight|conf"], "fight|conf");
   const conf = requireRecord(fightBlock["conf"], "fight|conf.conf");
   if (typeof conf["fightId"] !== "string") throw new Error("fightId is missing");
@@ -46,20 +54,70 @@ export function huntFightIdFrom(payload: Record<string, AmfValue>): string {
   if (!/^[1-9][0-9]*$/.test(conf["userId"])) {
     throw new Error("userId must be a positive decimal string");
   }
+  if (typeof conf["fightAkey"] !== "string" || conf["fightAkey"].length < 1) {
+    throw new Error("fightAkey is missing");
+  }
   if (typeof conf["instance_id"] !== "string" || conf["instance_id"] !== "0") {
     throw new Error("instance_id must be the world zero string");
   }
-  return conf["fightId"];
+  return {
+    fightId: conf["fightId"],
+    fightAkey: conf["fightAkey"],
+    userId: conf["userId"],
+  };
 }
 
 export function framesIncludeFightFinish(events: readonly AmfValue[]): boolean {
-  return events.some(
-    (event) =>
-      event !== null &&
-      typeof event === "object" &&
-      !Array.isArray(event) &&
-      "fightFinish" in event,
-  );
+  return fightEventTypes(events).includes("fightFinish");
+}
+
+export function fightEventTypes(events: readonly AmfValue[]): string[] {
+  const types: string[] = [];
+  for (const event of events) {
+    if (!event || typeof event !== "object" || Array.isArray(event)) continue;
+    const ev = event["ev"];
+    if (!ev || typeof ev !== "object" || Array.isArray(ev)) continue;
+    const keys = Object.keys(ev).sort((a, b) => Number(a) - Number(b));
+    for (const key of keys) {
+      const item = ev[key];
+      if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+      if (typeof item["et"] === "string") types.push(item["et"]);
+    }
+  }
+  return types;
+}
+
+export function huntOppNewFrom(events: readonly AmfValue[]): Record<string, AmfValue> {
+  for (const event of events) {
+    if (!event || typeof event !== "object" || Array.isArray(event)) continue;
+    const ev = event["ev"];
+    if (!ev || typeof ev !== "object" || Array.isArray(ev)) continue;
+    for (const item of Object.values(ev)) {
+      if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+      if (item["et"] === "oppnew") return item;
+    }
+  }
+  throw new Error("oppnew is missing from fight frames");
+}
+
+export function fightPersListIds(events: readonly AmfValue[]): number[] {
+  for (const event of events) {
+    if (!event || typeof event !== "object" || Array.isArray(event)) continue;
+    const ev = event["ev"];
+    if (!ev || typeof ev !== "object" || Array.isArray(ev)) continue;
+    for (const item of Object.values(ev)) {
+      if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+      if (item["et"] !== "persList") continue;
+      const ids: number[] = [];
+      for (const [key, value] of Object.entries(item)) {
+        if (key === "et") continue;
+        if (!value || typeof value !== "object" || Array.isArray(value)) continue;
+        if (typeof value.id === "number") ids.push(value.id);
+      }
+      return ids;
+    }
+  }
+  throw new Error("persList is missing from fight frames");
 }
 
 function requireRecord(value: AmfValue | undefined, label: string): Record<string, AmfValue> {

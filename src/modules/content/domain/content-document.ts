@@ -8,8 +8,8 @@ import type {
   WelcomeMessageDocument,
 } from "./bootstrap-content.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v9";
-export const CONTENT_VALIDATOR_VERSION = "9";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v10";
+export const CONTENT_VALIDATOR_VERSION = "10";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;
@@ -52,6 +52,8 @@ type HuntLookDocument = Readonly<{
   avatar: string;
   kind: number;
   hideOnMap: number;
+  sk: string;
+  body: string;
 }>;
 
 export type BotDocument = Readonly<{

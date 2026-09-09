@@ -60,6 +60,8 @@ const huntLookSchema = z
     avatar: z.string().min(1),
     kind: z.number().int().nonnegative(),
     hideOnMap: flag,
+    sk: z.string().min(1),
+    body: z.string(),
   })
   .strict();
 

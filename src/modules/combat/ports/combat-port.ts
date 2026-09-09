@@ -1,4 +1,4 @@
-import type { BattleEvent } from "../domain/battle.ts";
+import type { BattleEvent } from "../domain/battle-event.ts";
 
 type CommandSequence = string | number;
 
@@ -18,6 +18,43 @@ export type FightStart = Readonly<{
   arena: string;
 }>;
 
+export type HuntStartInput = Readonly<{
+  accountId: number;
+  heroId: number;
+  heroNick: string;
+  heroLevel: number;
+  heroKind: number;
+  heroHp: number;
+  heroMaxHp: number;
+  heroMp: number;
+  heroMaxMp: number;
+  fightId: string;
+  botId: number;
+  botNick: string;
+  botLevel: number;
+  botHp: number;
+  botAvatar: string;
+  botSk: string;
+  botBody: string;
+  arena: string;
+  areaId: string;
+}>;
+
+export type HuntJoinInput = Readonly<{
+  accountId: number;
+  heroId: number;
+  heroNick: string;
+  heroLevel: number;
+  heroKind: number;
+  heroHp: number;
+  heroMaxHp: number;
+  heroMp: number;
+  heroMaxMp: number;
+  fightId: string;
+  areaId: string;
+  team: 1;
+}>;
+
 export type CombatEvent =
   | BattleEvent
   | Readonly<{ type: "command-accepted"; sequence: CommandSequence; accessKey?: string }>;
@@ -29,21 +66,9 @@ export type FightExit = Readonly<{
 
 export interface CombatPort {
   nextFightId(): Promise<string>;
-  startHunt(input: {
-    accountId: number;
-    heroId: number;
-    heroNick: string;
-    heroLevel: number;
-    heroKind: number;
-    heroHp: number;
-    fightId: string;
-    botId: number;
-    botNick: string;
-    botLevel: number;
-    botHp: number;
-    arena: string;
-    areaId: string;
-  }): Promise<FightStart>;
+  startHunt(input: HuntStartInput): Promise<FightStart>;
+  joinHunt(input: HuntJoinInput): Promise<FightStart>;
+  hasFight(fightId: string): Promise<boolean>;
   execute(accountId: number, command: FightCommand): Promise<readonly CombatEvent[]>;
   activeFightId(accountId: number): Promise<string | null>;
   accountForFight(fightId: string): Promise<number | null>;

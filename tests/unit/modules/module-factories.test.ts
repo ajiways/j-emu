@@ -246,7 +246,7 @@ describe("module factories", () => {
           logLevel: "silent",
           gamePolicyFile: "config/development.json",
           fightProxyHost: "s1.jugger.ru",
-          fightProxyPath: "/fproxy/",
+          fightProxyPath: "https://s1.jugger.ru/fproxy//;",
           fightProxyPort: 33120,
         },
         identity: {} as IdentityService,

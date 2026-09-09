@@ -13,7 +13,7 @@ const complete = {
   LOG_LEVEL: "info",
   GAME_POLICY_FILE: "./config/development.json",
   FIGHT_PROXY_HOST: "s1.jugger.ru",
-  FIGHT_PROXY_PATH: "/fproxy/",
+  FIGHT_PROXY_PATH: "https://s1.jugger.ru/fproxy//;",
   FIGHT_PROXY_PORT: "33120",
 };
 

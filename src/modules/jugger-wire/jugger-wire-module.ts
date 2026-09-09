@@ -22,6 +22,7 @@ import type { LongPollCoordinator } from "./application/long-poll-coordinator.ts
 import type { PresenceFanout } from "./application/presence-fanout.ts";
 import type { HuntAreaFanout } from "./application/hunt-area-fanout.ts";
 import { JuggerHttpServer } from "./infrastructure/http/jugger-http-server.ts";
+import { FightTcpServer } from "./infrastructure/tcp/fight-tcp-server.ts";
 import { JuggerCommandModule } from "./registry/jugger-command-module.ts";
 
 export type JuggerWireBootstrapPolicy = Readonly<{
@@ -48,6 +49,7 @@ export class JuggerWireModule {
   private constructor(
     readonly http: FastifyInstance,
     private readonly longPoll: LongPollCoordinator,
+    private readonly fightTcp: FightTcpServer,
   ) {}
 
   static async create(input: {
@@ -169,7 +171,14 @@ export class JuggerWireModule {
         esrvPoll,
         presence: presenceFanout,
       }).build();
-      return new JuggerWireModule(http, longPoll);
+      const fightTcp = new FightTcpServer(combat, commands.fproxy, fightWire, longPoll, http.log);
+      try {
+        await fightTcp.listen(config.host, config.fightProxyPort);
+      } catch (error) {
+        await http.close();
+        throw error;
+      }
+      return new JuggerWireModule(http, longPoll, fightTcp);
     } catch (error) {
       longPoll.shutdown();
       throw error;
@@ -178,6 +187,7 @@ export class JuggerWireModule {
 
   async close(): Promise<void> {
     this.longPoll.shutdown();
+    await this.fightTcp.close();
     await this.http.close();
   }
 }

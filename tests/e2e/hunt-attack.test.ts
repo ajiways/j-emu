@@ -29,7 +29,12 @@ describe("hunt attack", () => {
     expect(start["common|action"]).toEqual({ status: 100 });
     expect(start["fight|conf"]).toMatchObject({
       status: 100,
-      conf: { bg: "2_1", port: 33120, instance_id: "0" },
+      conf: {
+        bg: "2_1",
+        port: 33120,
+        instance_id: "0",
+        proxy: "https://s1.jugger.ru/fproxy//;",
+      },
     });
     const fightConf = start["fight|conf"] as {
       conf: { fightId: string; userId: string; instance_id: string };

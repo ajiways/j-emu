@@ -28,6 +28,10 @@ function fakeCombat(): CombatPort {
     startHunt: async () => {
       throw new Error("unused");
     },
+    joinHunt: async () => {
+      throw new Error("unused");
+    },
+    hasFight: async () => false,
     nextFightId: async () => {
       throw new Error("unused");
     },
@@ -41,7 +45,7 @@ function fakeCombat(): CombatPort {
 
 function fakeWire() {
   return new FightWireMapper(
-    { host: "s1.jugger.ru", port: 33120, proxyPath: "/fproxy/" },
+    { host: "s1.jugger.ru", port: 33120, proxyPath: "https://s1.jugger.ru/fproxy//;" },
     {
       heroSkill: 1,
       heroBody: "m1",

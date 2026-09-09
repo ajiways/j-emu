@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { encodeAmf3 } from "../../../src/modules/jugger-wire/amf/amf3.ts";
+import { encodeFrames } from "../../../src/modules/jugger-wire/amf/framing.ts";
 import { ProtocolError } from "../../../src/modules/jugger-wire/application/protocol-error.ts";
 import { FproxyAuthCommand } from "../../../src/modules/jugger-wire/commands/fproxy/fproxy-auth-command.ts";
 import { FproxyCastSpellCommand } from "../../../src/modules/jugger-wire/commands/fproxy/fproxy-cast-spell-command.ts";
@@ -26,14 +27,21 @@ describe("fproxy command registry", () => {
     ).toThrow(/Duplicate fproxy command key auth/);
   });
 
-  it("decodes an empty HTTP body as poll", () => {
+  it("decodes an empty HTTP body and a 1-byte AMF null as poll", () => {
     const registry = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     expect(registry.decodeHttpBody(Buffer.alloc(0))).toEqual({ kind: "poll" });
+    expect(registry.decodeHttpBody(encodeAmf3(null))).toEqual({ kind: "poll" });
+    expect(registry.decodeHttpBody(Buffer.from([0x00]))).toEqual({ kind: "poll" });
   });
 
   it("decodes auth and melee castSpell payloads", () => {
     const registry = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     expect(registry.decodePayload(encodeAmf3({ rc: "auth", eid: "fight-1", sq: 1 }))).toEqual({
+      kind: "authenticate",
+      fightId: "fight-1",
+      sequence: 1,
+    });
+    expect(registry.decodePayload(encodeFrames([{ rc: "auth", eid: "fight-1", sq: 1 }]))).toEqual({
       kind: "authenticate",
       fightId: "fight-1",
       sequence: 1,

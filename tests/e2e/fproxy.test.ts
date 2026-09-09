@@ -3,7 +3,12 @@ import type { Application } from "../../src/app/application.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
-import { framesIncludeFightFinish, huntFightIdFrom } from "../support/harness/wire-payload.ts";
+import {
+  framesIncludeFightFinish,
+  fightEventTypes,
+  huntFightIdFrom,
+  huntOppNewFrom,
+} from "../support/harness/wire-payload.ts";
 
 describe("fproxy", () => {
   let harness: ApplicationHarness;
@@ -30,11 +35,12 @@ describe("fproxy", () => {
     expect(await client.fight({ rc: "auth", eid: fightId, sq: 5 })).toHaveLength(0);
     const authenticated = await client.pollFight();
     expect(authenticated[0]).toMatchObject({ rs: true });
-    expect(authenticated[1]).toMatchObject({
-      oppnew: { nick: "Грызль", team: 2 },
-    });
-    const opponent = authenticated[1] as { oppnew: { id: number } };
-    expect(opponent.oppnew.id).toBeGreaterThanOrEqual(1_000_000);
+    expect(fightEventTypes(authenticated)).toEqual(
+      expect.arrayContaining(["fightState", "persList", "oppnew", "attacknow"]),
+    );
+    const opponent = huntOppNewFrom(authenticated);
+    expect(opponent).toMatchObject({ et: "oppnew", nick: "Грызль", bot: true, sk: "11", team: 2 });
+    expect(opponent.id).toBeGreaterThanOrEqual(1_000_000);
 
     let finished = false;
     for (let strike = 0; strike < 4 && !finished; strike += 1) {

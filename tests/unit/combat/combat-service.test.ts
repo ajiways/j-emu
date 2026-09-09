@@ -8,6 +8,7 @@ import { RecordingFinishedFightStore } from "../../support/fakes/recording-finis
 import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
+import { unitHuntStart } from "../../support/hunt-start-input.ts";
 
 const rules = {
   playerDamageMin: 20,
@@ -102,12 +103,12 @@ describe("CombatService history", () => {
     const start = await startHuntWithIssuedId(combat, huntInput());
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     const events = await combat.execute(1, { kind: "poll" });
-    const opponent = events.find((event) => event.type === "opponent-introduced");
-    if (!opponent || opponent.type !== "opponent-introduced") {
-      throw new Error("Expected an opponent packet");
+    const bootstrap = events.find((event) => event.type === "hunt-bootstrap");
+    if (!bootstrap || bootstrap.type !== "hunt-bootstrap") {
+      throw new Error("Expected a hunt bootstrap packet");
     }
-    expect(opponent.id).toBeGreaterThanOrEqual(1_000_000);
-    expect(opponent.id).not.toBe(start.participantId);
+    expect(bootstrap.bot.id).toBeGreaterThanOrEqual(1_000_000);
+    expect(bootstrap.bot.id).not.toBe(start.participantId);
   });
 });
 
@@ -128,18 +129,5 @@ function service(
 }
 
 function huntInput() {
-  return {
-    accountId: 1,
-    heroId: 1,
-    heroNick: "Hero",
-    heroLevel: 1,
-    heroKind: 1,
-    heroHp: 27,
-    botId: 2,
-    botNick: "Грызль",
-    botLevel: 1,
-    botHp: 20,
-    arena: "1_1",
-    areaId: "503",
-  };
+  return unitHuntStart();
 }

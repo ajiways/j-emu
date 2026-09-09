@@ -17,7 +17,7 @@ export async function completeMeleeHunt(
   return fightId;
 }
 
-export async function finishStartedMeleeHunt(
+async function finishStartedMeleeHunt(
   client: AuthenticatedClient,
   fightId: string,
   sequenceStart: number,

@@ -44,6 +44,7 @@ describe("personal details", () => {
       pondViewLast: "0",
       finished_first_fight: "1",
       tutorial2: '{"finished":true}',
+      use_fproxy: 1,
     });
 
     const emptySave = await client.objectAction({
@@ -52,6 +53,21 @@ describe("personal details", () => {
       sq: 16,
     });
     expect(emptySave["user|save_personal_details"]).toEqual({ status: 100 });
+  });
+
+  it("keeps HTTPS fproxy even when the client saves use_fproxy 0", async () => {
+    await client.objectAction({
+      object: "user",
+      action: "save_personal_details",
+      form: { use_fproxy: 0 },
+      sq: 14,
+    });
+    const details = await client.objectAction({
+      object: "user",
+      action: "personal_details",
+      sq: 15,
+    });
+    expect(infoFrom(details["user|personal_details"]).use_fproxy).toBe(1);
   });
 
   it("keeps saved personal details after application restart", async () => {
@@ -69,6 +85,7 @@ describe("personal details", () => {
       "Chat.mute": 1,
       finished_first_fight: "1",
       tutorial2: '{"finished":true}',
+      use_fproxy: 1,
     });
   });
 });

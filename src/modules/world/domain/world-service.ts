@@ -44,6 +44,10 @@ export class WorldService {
     return found;
   }
 
+  occupiedFightId(areaId: string, spawnId: number): string | null {
+    return this.overlay.fightId(areaId, spawnId);
+  }
+
   async tryAcquireSpawn(command: SpawnLockCommand): Promise<SpawnAcquireResult> {
     const spawn = await this.spawn(command.areaId, command.spawnId);
     if (!spawn) {

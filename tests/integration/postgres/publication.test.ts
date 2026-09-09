@@ -159,7 +159,7 @@ describe("content publication", () => {
             logLevel: "silent",
             gamePolicyFile: path.resolve(process.cwd(), "config/development.json"),
             fightProxyHost: "s1.jugger.ru",
-            fightProxyPath: "/fproxy/",
+            fightProxyPath: "https://s1.jugger.ru/fproxy//;",
             fightProxyPort: 33120,
           }),
         ).rejects.toThrow(/published content/);

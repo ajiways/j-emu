@@ -16,6 +16,7 @@ import { PLAYABLE_REGEN_POLICY } from "../../support/hero-fixtures.ts";
 import { playableCharacterModuleInput } from "../../support/playable-character-module-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
+import { GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
 const policy = loadGamePolicy(path.resolve(process.cwd(), "config/development.json"));
@@ -147,10 +148,14 @@ describe("HP regeneration persistence", () => {
       heroLevel: hero.level,
       heroKind: hero.kind,
       heroHp: noted.hp,
+      heroMaxHp: hero.maxHp,
+      heroMp: hero.mp,
+      heroMaxMp: hero.maxMp,
       botId: 2,
       botNick: "Gryzl",
       botLevel: 1,
       botHp: 20,
+      ...GRYZL_FIGHT_LOOK,
       arena: "2_1",
       areaId: "503",
     });
@@ -172,10 +177,14 @@ describe("HP regeneration persistence", () => {
       heroLevel: hero.level,
       heroKind: hero.kind,
       heroHp: noted.hp,
+      heroMaxHp: hero.maxHp,
+      heroMp: hero.mp,
+      heroMaxMp: hero.maxMp,
       botId: 2,
       botNick: "Gryzl",
       botLevel: 1,
       botHp: 20,
+      ...GRYZL_FIGHT_LOOK,
       arena: "2_1",
       areaId: "503",
     });

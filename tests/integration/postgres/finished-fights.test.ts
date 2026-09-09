@@ -15,6 +15,7 @@ import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
+import { GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
@@ -56,10 +57,14 @@ describe("finished fight history storage", () => {
       heroLevel: hero.level,
       heroKind: 1,
       heroHp: hero.hp,
+      heroMaxHp: hero.maxHp,
+      heroMp: hero.mp,
+      heroMaxMp: hero.maxMp,
       botId: 2,
       botNick: "Грызль",
       botLevel: 1,
       botHp: 20,
+      ...GRYZL_FIGHT_LOOK,
       arena: "1_1",
       areaId: hero.areaId,
     });

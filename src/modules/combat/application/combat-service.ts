@@ -5,6 +5,7 @@ import { parseDecimalId, requireWireIdentity } from "../../../shared/kernel/deci
 import { Battle, type BattleRules } from "../domain/battle.ts";
 import { EphemeralBotFightIds } from "../domain/ephemeral-bot-fight-ids.ts";
 import { FinishedFightConflictError } from "../domain/finished-fight-conflict-error.ts";
+import { HuntJoinDenied } from "../domain/hunt-join-denied.ts";
 import type { RandomSource } from "../domain/random-source.ts";
 import type { FinishedFightRecorder } from "./finished-fight-recorder.ts";
 import type { HistoryWriteObserver } from "./history-write-observer.ts";
@@ -14,16 +15,18 @@ import type {
   FightCommand,
   FightExit,
   FightStart,
+  HuntJoinInput,
+  HuntStartInput,
 } from "../ports/combat-port.ts";
 import type { FightIdSource } from "../ports/fight-id-source.ts";
 import type { FightTerminalObserver } from "../ports/fight-terminal-observer.ts";
 
 export class CombatService implements CombatPort {
   // In-progress battles live in process memory. Fight IDs come from PostgreSQL;
-  // human participant IDs are heroes.id; bot IDs are RAM-only. A restart drops
-  // an unfinished battle. History is best-effort after a terminal outcome.
+  // human participant IDs are heroes.id; bot IDs are RAM-only. One Battle may
+  // hold several accounts. A restart drops an unfinished battle.
   private readonly byAccount = new Map<number, Battle>();
-  private readonly accountByFight = new Map<string, number>();
+  private readonly battleByFight = new Map<string, Battle>();
   private readonly queues = new Map<number, CombatEvent[]>();
   private readonly pendingExits = new Map<number, FightExit>();
   private readonly botFightIds = new EphemeralBotFightIds();
@@ -47,28 +50,16 @@ export class CombatService implements CombatPort {
     return this.ids.nextFightId();
   }
 
-  async startHunt(input: {
-    accountId: number;
-    heroId: number;
-    heroNick: string;
-    heroLevel: number;
-    heroKind: number;
-    heroHp: number;
-    fightId: string;
-    botId: number;
-    botNick: string;
-    botLevel: number;
-    botHp: number;
-    arena: string;
-    areaId: string;
-  }): Promise<FightStart> {
+  async hasFight(fightId: string): Promise<boolean> {
+    return this.battleByFight.has(requireFightId(fightId));
+  }
+
+  async startHunt(input: HuntStartInput): Promise<FightStart> {
     requireWireIdentity(input.accountId, "account id");
     requireWireIdentity(input.heroId, "hero id");
     if (this.byAccount.has(input.accountId)) throw new Error("Account already has an active fight");
-    const fightId = String(
-      requireWireIdentity(Number(parseDecimalId(input.fightId, "fight id")), "fight id"),
-    );
-    if (this.accountByFight.has(fightId)) throw new Error(`Fight ${fightId} is already active`);
+    const fightId = requireFightId(input.fightId);
+    if (this.battleByFight.has(fightId)) throw new Error(`Fight ${fightId} is already active`);
     const accessKey = randomBytes(16).toString("hex");
     const battle = new Battle(
       {
@@ -79,11 +70,17 @@ export class CombatService implements CombatPort {
         heroNick: input.heroNick,
         heroLevel: input.heroLevel,
         heroKind: input.heroKind,
+        heroMp: input.heroMp,
+        heroMaxMp: input.heroMaxMp,
         botArtikulId: input.botId,
         botFightId: this.botFightIds.allocate(input.heroId),
         botNick: input.botNick,
         botLevel: input.botLevel,
-        playerMaxHp: input.heroHp,
+        botAvatar: input.botAvatar,
+        botSk: input.botSk,
+        botBody: input.botBody,
+        playerHp: input.heroHp,
+        playerMaxHp: input.heroMaxHp,
         botMaxHp: input.botHp,
         arena: input.arena,
         areaId: input.areaId,
@@ -93,12 +90,48 @@ export class CombatService implements CombatPort {
       this.random,
     );
     this.byAccount.set(input.accountId, battle);
-    this.accountByFight.set(fightId, input.accountId);
+    this.battleByFight.set(fightId, battle);
     return {
       fightId,
       accessKey,
       participantId: input.heroId,
       arena: input.arena,
+    };
+  }
+
+  async joinHunt(input: HuntJoinInput): Promise<FightStart> {
+    requireWireIdentity(input.accountId, "account id");
+    requireWireIdentity(input.heroId, "hero id");
+    if (input.team !== 1) throw new Error("Hunt join team must be 1");
+    if (this.byAccount.has(input.accountId)) throw new HuntJoinDenied("уже в бою");
+    const fightId = requireFightId(input.fightId);
+    const battle = this.battleByFight.get(fightId);
+    if (!battle || battle.finished) throw new HuntJoinDenied("бой не найден");
+    if (battle.areaId !== input.areaId) throw new HuntJoinDenied("бой в другой локации");
+    if (battle.hasHuman(input.accountId, input.heroId)) {
+      throw new HuntJoinDenied("вы уже участвовали в этом бою");
+    }
+    const roster = battle.addHuman({
+      accountId: input.accountId,
+      heroId: input.heroId,
+      nick: input.heroNick,
+      level: input.heroLevel,
+      kind: input.heroKind,
+      hp: input.heroHp,
+      maxHp: input.heroMaxHp,
+      mp: input.heroMp,
+      maxMp: input.heroMaxMp,
+    });
+    this.byAccount.set(input.accountId, battle);
+    for (const accountId of battle.authedAccountIds()) {
+      if (accountId === input.accountId) continue;
+      this.enqueue(accountId, [roster]);
+    }
+    return {
+      fightId: battle.id,
+      accessKey: battle.accessKey,
+      participantId: input.heroId,
+      arena: battle.arena,
     };
   }
 
@@ -115,11 +148,11 @@ export class CombatService implements CombatPort {
       if (command.fightId !== battle.id) throw new Error("Fight id does not match active fight");
       this.enqueue(accountId, [
         { type: "command-accepted", sequence: command.sequence, accessKey: battle.accessKey },
-        ...battle.authenticate(),
+        ...battle.authenticate(accountId),
       ]);
       return [];
     }
-    const events = battle.strike(command.side);
+    const events = battle.strike(accountId, command.side);
     const first = events[0];
     if (!first) throw new Error("Battle produced no events for a strike");
     this.enqueue(accountId, [
@@ -128,18 +161,7 @@ export class CombatService implements CombatPort {
       ...events.slice(1),
     ]);
     if (battle.finished) {
-      const finished = events.find((event) => event.type === "finished");
-      if (!finished || finished.type !== "finished") {
-        throw new Error("Finished battle did not produce a finished event");
-      }
-      await this.recordHistory(battle, finished.winnerTeam);
-      this.pendingExits.set(accountId, {
-        fightId: battle.id,
-        winnerTeam: finished.winnerTeam,
-      });
-      this.byAccount.delete(accountId);
-      this.accountByFight.delete(battle.id);
-      await this.notifyFinished(accountId, battle.id);
+      await this.settleFinished(battle, events, accountId);
     }
     return [];
   }
@@ -149,9 +171,9 @@ export class CombatService implements CombatPort {
   }
 
   async accountForFight(fightId: string): Promise<number | null> {
-    const accountId = this.accountByFight.get(fightId);
-    if (accountId === undefined) return null;
-    return accountId;
+    const battle = this.battleByFight.get(requireFightId(fightId));
+    if (!battle) return null;
+    return battle.accountId;
   }
 
   async takeExit(accountId: number) {
@@ -167,9 +189,29 @@ export class CombatService implements CombatPort {
 
   shutdown(): void {
     this.byAccount.clear();
-    this.accountByFight.clear();
+    this.battleByFight.clear();
     this.queues.clear();
     this.pendingExits.clear();
+  }
+
+  private async settleFinished(
+    battle: Battle,
+    events: readonly CombatEvent[],
+    strikerAccountId: number,
+  ): Promise<void> {
+    const finished = events.find((event) => event.type === "finished");
+    if (!finished || finished.type !== "finished") {
+      throw new Error("Finished battle did not produce a finished event");
+    }
+    await this.recordHistory(battle, finished.winnerTeam);
+    const exit = { fightId: battle.id, winnerTeam: finished.winnerTeam };
+    for (const accountId of battle.accountIds()) {
+      if (accountId !== strikerAccountId) this.enqueue(accountId, [finished]);
+      this.pendingExits.set(accountId, exit);
+      this.byAccount.delete(accountId);
+    }
+    this.battleByFight.delete(battle.id);
+    await this.notifyFinished(battle.accountId, battle.id);
   }
 
   private async notifyFinished(accountId: number, fightId: string): Promise<void> {
@@ -198,4 +240,8 @@ export class CombatService implements CombatPort {
     }
     this.queues.set(accountId, [...events]);
   }
+}
+
+function requireFightId(fightId: string): string {
+  return String(requireWireIdentity(Number(parseDecimalId(fightId, "fight id")), "fight id"));
 }

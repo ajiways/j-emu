@@ -92,8 +92,9 @@ describe("hunt spawn overlay", () => {
         fightId: "8",
         ownerAccountId: 2,
       }),
-    ).toEqual({ ok: false, reason: "busy" });
+    ).toEqual({ ok: false, reason: "busy", fightId: "7" });
     expect((await world.huntSnapshot("503"))[0]?.fightId).toBe(7);
+    expect(world.occupiedFightId("503", 50310)).toBe("7");
     expect(
       await world.tryAcquireSpawn({
         areaId: "503",

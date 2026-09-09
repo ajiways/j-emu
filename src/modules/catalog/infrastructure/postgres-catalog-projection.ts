@@ -102,6 +102,8 @@ async function insertBots(
       huntAvatar: bot.hunt.avatar,
       huntKind: bot.hunt.kind,
       huntHideOnMap: bot.hunt.hideOnMap,
+      huntSk: bot.hunt.sk,
+      huntBody: bot.hunt.body,
     })),
   );
 }

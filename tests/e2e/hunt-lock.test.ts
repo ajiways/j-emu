@@ -7,9 +7,14 @@ import {
   createIsolatedHero,
 } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
-import { finishStartedMeleeHunt } from "../support/harness/complete-melee-hunt.ts";
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
-import { huntFightIdFrom } from "../support/harness/wire-payload.ts";
+import {
+  fightEventTypes,
+  fightPersListIds,
+  framesIncludeFightFinish,
+  heroIdFrom,
+  huntFightConfFrom,
+} from "../support/harness/wire-payload.ts";
 
 describe("hunt spawn lock", () => {
   let harness: ApplicationHarness;
@@ -24,7 +29,78 @@ describe("hunt spawn lock", () => {
     await harness.stop();
   });
 
-  it("occupies 50310 for one hero and idles after finish", async () => {
+  it("lets a second hero join the occupied 50310 fight", async () => {
+    const a = await createIsolatedHero(application);
+    const b = await createIsolatedHero(application);
+    const initA = await a.objectAction({ object: "common", action: "init", sq: 1 });
+    const initB = await b.objectAction({ object: "common", action: "init", sq: 1 });
+    const heroA = heroIdFrom(initA);
+    const heroB = heroIdFrom(initB);
+    const start = await a.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 4,
+    });
+    expect(start["common|action"]).toEqual({ status: 100 });
+    const opened = huntFightConfFrom(start);
+    expect(opened.userId).toBe(String(heroA));
+    expect(huntBot(start, MAP_HUNT_SPAWN_ID).fight_id).toBe(Number(opened.fightId));
+
+    const authA = await a.fight({ rc: "auth", eid: opened.fightId, sq: 5 });
+    if (authA.length !== 0) throw new Error("fproxy auth must return an empty body");
+    const bootstrapA = await a.pollFight();
+    expect(fightEventTypes(bootstrapA)).toEqual(
+      expect.arrayContaining(["fightState", "persList", "oppnew", "attacknow"]),
+    );
+
+    const join = await b.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 4,
+    });
+    expect(join["common|action"]).toEqual({ status: 100 });
+    const joined = huntFightConfFrom(join);
+    expect(joined.fightId).toBe(opened.fightId);
+    expect(joined.fightAkey).toBe(opened.fightAkey);
+    expect(joined.userId).toBe(String(heroB));
+    expect(joined.userId).not.toBe(opened.userId);
+    expect(huntBot(join, MAP_HUNT_SPAWN_ID).fight_id).toBe(Number(opened.fightId));
+    expect(huntBotFromEsrv(await b.pollEsrv(), "503").fight_id).toBe(Number(opened.fightId));
+
+    const rosterA = await a.pollFight();
+    expect(fightEventTypes(rosterA)).toEqual(
+      expect.arrayContaining(["persList", "persChangeInfo"]),
+    );
+    expect(fightPersListIds(rosterA)).toEqual(expect.arrayContaining([heroA, heroB]));
+
+    const authB = await b.fight({ rc: "auth", eid: joined.fightId, sq: 5 });
+    if (authB.length !== 0) throw new Error("fproxy auth must return an empty body");
+    const bootstrapB = await b.pollFight();
+    const joinerTypes = fightEventTypes(bootstrapB);
+    expect(joinerTypes).toEqual(expect.arrayContaining(["fightState", "persList", "oppwait"]));
+    expect(joinerTypes).not.toContain("attacknow");
+    expect(joinerTypes).not.toContain("oppnew");
+    expect(fightPersListIds(bootstrapB)).toEqual(expect.arrayContaining([heroA, heroB]));
+
+    let finished = false;
+    for (let strike = 0; strike < 4 && !finished; strike += 1) {
+      const castBody = await a.fight({
+        rc: "castSpell",
+        srcType: 1,
+        srcId: 2,
+        sq: 6 + strike,
+      });
+      if (castBody.length !== 0) throw new Error("castSpell must return an empty body");
+      finished = framesIncludeFightFinish(await a.pollFight());
+    }
+    if (!finished) throw new Error("Hunt fight did not finish");
+    await a.pollEsrv();
+    expect(huntBotFromEsrv(await b.pollEsrv(), "503").fight_id).toBe(IDLE_HUNT_FIGHT_ID);
+  });
+
+  it("returns 203 when the joiner is already in the fight or in another area", async () => {
     const a = await createIsolatedHero(application);
     const b = await createIsolatedHero(application);
     const start = await a.objectAction({
@@ -34,21 +110,36 @@ describe("hunt spawn lock", () => {
       sq: 4,
     });
     expect(start["common|action"]).toEqual({ status: 100 });
-    const fightId = huntFightIdFrom(start);
-    expect(huntBot(start, MAP_HUNT_SPAWN_ID).fight_id).toBe(Number(fightId));
-
-    const denied = await b.objectAction({
+    const join = await b.objectAction({
       object: "common",
       action: "object",
       form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
       sq: 4,
     });
-    expect(denied["common|action"]).toEqual({ status: 203, error: "моб уже занят" });
-    expect(huntBotFromEsrv(await b.pollEsrv(), "503").fight_id).toBe(Number(fightId));
+    expect(join["common|action"]).toEqual({ status: 100 });
+    const again = await b.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 5,
+    });
+    expect(again["common|action"]).toEqual({ status: 203, error: "уже в бою" });
 
-    await finishStartedMeleeHunt(a, fightId, 5);
-    await a.pollEsrv();
-    expect(huntBotFromEsrv(await b.pollEsrv(), "503").fight_id).toBe(IDLE_HUNT_FIGHT_ID);
+    const c = await createIsolatedHero(application);
+    const away = await c.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "COME_IN", area_id: 504 },
+      sq: 2,
+    });
+    expect(away["common|action"]).toEqual({ status: 100, action: "COME_IN" });
+    const otherArea = await c.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 3,
+    });
+    expect(otherArea["common|action"]).toMatchObject({ status: 203 });
   });
 
   it("clears the overlay on restart without moving the hero", async () => {

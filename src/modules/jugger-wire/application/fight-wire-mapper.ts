@@ -1,4 +1,7 @@
 import type { CombatEvent, FightExit, FightStart } from "../../combat/ports/combat-port.ts";
+import { fightCastEvent } from "./fight-cast-wire.ts";
+import { fightEventMap } from "./fight-event-map.ts";
+import { huntFightBootstrapEvents, huntFightRosterEvents } from "./hunt-fight-bootstrap-wire.ts";
 
 export type FightConfigurationBlock = Readonly<{
   status: 100;
@@ -23,48 +26,9 @@ export type FightConfigurationBlock = Readonly<{
   }>;
 }>;
 
-type FightCommandAcceptedFrame = Readonly<{
-  rs: true;
-  sq: string | number;
-  akey?: string;
-}>;
-
-type FightOpponentFrame = Readonly<{
-  oppnew: Readonly<{
-    id: number;
-    nick: string;
-    hp: number;
-    maxHp: number;
-    level: number;
-    team: 2;
-  }>;
-}>;
-
-type FightDamageFrame = Readonly<{
-  cast: Readonly<{
-    srcId: number;
-    dstId: number;
-    anim: string;
-    hpChange: number;
-    react: 2 | 10;
-  }>;
-}>;
-
-type FightTurnFrame = Readonly<{ attacknow: Readonly<{ timeout: number }> }>;
-
-type FightFinishedFrame = Readonly<{
-  fightFinish: Readonly<{
-    winner: string;
-    fight_id: string;
-  }>;
-}>;
-
-type FightWireEvent =
-  | FightCommandAcceptedFrame
-  | FightOpponentFrame
-  | FightDamageFrame
-  | FightTurnFrame
-  | FightFinishedFrame;
+type FightWireFrame =
+  | Readonly<{ rs: true; sq: string | number; akey?: string }>
+  | Readonly<{ ev: Readonly<Record<string, Readonly<Record<string, unknown>>>> }>;
 
 export type FightExitBlock = Readonly<{
   status: 100;
@@ -119,7 +83,7 @@ export class FightWireMapper {
     };
   }
 
-  event(event: CombatEvent): FightWireEvent {
+  event(event: CombatEvent): FightWireFrame {
     switch (event.type) {
       case "command-accepted":
         return {
@@ -127,36 +91,16 @@ export class FightWireMapper {
           sq: event.sequence,
           ...(event.accessKey ? { akey: event.accessKey } : {}),
         };
-      case "opponent-introduced":
-        return {
-          oppnew: {
-            id: event.id,
-            nick: event.nick,
-            hp: event.hp,
-            maxHp: event.maxHp,
-            level: event.level,
-            team: event.team,
-          },
-        };
+      case "hunt-bootstrap":
+        return fightEventMap(huntFightBootstrapEvents(event));
+      case "roster-updated":
+        return fightEventMap(huntFightRosterEvents(event));
       case "damage":
-        return {
-          cast: {
-            srcId: event.sourceId,
-            dstId: event.targetId,
-            anim: event.animation,
-            hpChange: event.hpChange,
-            react: event.killed ? 10 : 2,
-          },
-        };
+        return fightEventMap([fightCastEvent(event)]);
       case "turn-granted":
-        return { attacknow: { timeout: event.timeoutSeconds } };
+        return fightEventMap([{ et: "attacknow", restTime: event.timeoutSeconds }]);
       case "finished":
-        return {
-          fightFinish: {
-            winner: String(event.winnerTeam),
-            fight_id: event.fightId,
-          },
-        };
+        return fightEventMap([{ et: "fightFinish", winner: event.winnerTeam }]);
     }
   }
 

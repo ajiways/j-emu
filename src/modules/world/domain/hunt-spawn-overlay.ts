@@ -7,7 +7,8 @@ export type SpawnLockCommand = Readonly<{
   ownerAccountId: number;
 }>;
 
-export type SpawnAcquireResult = Readonly<{ ok: true }> | Readonly<{ ok: false; reason: "busy" }>;
+export type SpawnAcquireResult =
+  Readonly<{ ok: true }> | Readonly<{ ok: false; reason: "busy"; fightId: string }>;
 
 type SpawnLock = Readonly<{
   areaId: string;
@@ -25,7 +26,7 @@ export class HuntSpawnOverlay {
     const key = spawnKey(lock.areaId, lock.spawnId);
     const existing = this.bySpawn.get(key);
     if (existing && existing.ownerAccountId !== lock.ownerAccountId) {
-      return { ok: false, reason: "busy" };
+      return { ok: false, reason: "busy", fightId: existing.fightId };
     }
     if (existing) this.forgetFight(existing.fightId);
     this.bySpawn.set(key, lock);

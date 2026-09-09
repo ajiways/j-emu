@@ -7,6 +7,10 @@ import type { FproxyCommandRegistry } from "../../registry/fproxy-command-regist
 export class FightTcpConnection {
   private accountId: number | null = null;
 
+  get authenticatedAccountId(): number | null {
+    return this.accountId;
+  }
+
   constructor(
     private readonly combat: CombatPort,
     private readonly commands: FproxyCommandRegistry,
@@ -31,7 +35,7 @@ export class FightTcpConnection {
 
   async poll(): Promise<Buffer> {
     const accountId = this.accountId;
-    if (!accountId) throw new ProtocolError(4, "TCP fight connection is not authenticated");
+    if (!accountId) return Buffer.alloc(0);
     const events = await this.combat.execute(accountId, { kind: "poll" });
     return encodePlainFrames(events.map((event) => this.wire.event(event)));
   }

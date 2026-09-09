@@ -32,7 +32,7 @@
 | Game OA                      | `POST /entry_point.php?ux=<timestamp>`; сервер обязан принимать сам путь `/entry_point.php` независимо от query | Bare AMF3 object без length prefix; ответ — bare AMF3 object                                              |
 | Chat/hunt/presence long-poll | `POST /esrv//<token>`; серверный route должен покрывать `/esrv/*`                                               | Исходящие события — MULTI: повторяющиеся `[u32 big-endian length][AMF3 object]`; пустая очередь допустима |
 | Fight HTTP proxy             | `POST /fproxy//<token>`; route также покрывает `/fproxy`, `/fproxy/`, `/fproxy/*`                               | Команды SINGLE — bare AMF3; poll-ответы MULTI с тем же `u32be + AMF3` framing                             |
-| Fight TCP fallback           | `host:port` из `fight\|conf`, исторически `s1.jugger.ru:33120`                                                  | Length-prefixed AMF; не менять контракт только потому, что основной путь использует fproxy                |
+| Fight TCP fallback           | `host:port` из `fight\|conf`, исторически `s1.jugger.ru:33120`; Flash policy-file-request на том же порту       | Length-prefixed AMF; `fight\|conf.proxy` = `https://s1.jugger.ru/fproxy//;`, не относительный `/fproxy/`  |
 | Статика клиента              | `GET /Pub1/**` в архитектурном контракте миграции                                                               | Файлы должны отдаваться под клиентскими путями без переписывания AMF-содержимого                          |
 | Login                        | `GET/POST /login`, также `GET /login.php`; `GET/POST /register`                                                 | HTML/form flow, не AMF                                                                                    |
 | Игра                         | `GET /game.php`                                                                                                 | HTTP 200 со страницей, FlashVars и установкой cookie после login redirect                                 |
@@ -64,7 +64,9 @@ MULTI — это конкатенация нуля или более кадро�
 
 Нельзя выдавать bare массив вместо кадров или добавлять length prefix к OA. Chat auth `{rc:"auth", eid:1, ...}` на `/esrv/*` является SINGLE и получает пустой HTTP body, а не MULTI wrapper. Источник: [`src/routes/esrv.ts`](../../../jgr-emu/src/routes/esrv.ts).
 
-Для fproxy команды `auth`, `castSpell`, `persInfo`, `leaveFight` разбираются как SINGLE bare AMF3; совместимый decoder может принять исторический length-prefixed request, но encoder не должен самовольно смешивать режимы. Long-poll отдаёт MULTI. Для успешного `castSpell` HTTP response остаётся пустым, а `{rs,sq}` и эффекты приходят через конкурентный poll. Источник: [`src/fight/dispatch.ts`](../../../jgr-emu/src/fight/dispatch.ts).
+Для fproxy команды `auth`, `castSpell`, `persInfo`, `leaveFight` разбираются как SINGLE bare AMF3; совместимый decoder может принять исторический length-prefixed request, но encoder не должен самовольно смешивать режимы. Long-poll отдаёт MULTI. **Poll request** — пустое HTTP-тело или 1 байт AMF null/undefined (live `buf.length <= 1`); это не команда с `rc`. Для успешного `castSpell` HTTP response остаётся пустым, а `{rs,sq}` и эффекты приходят через конкурентный poll. Источник: [`src/fight/dispatch.ts`](../../../jgr-emu/src/fight/dispatch.ts).
+
+Flash CombatQueue читает только кадры `{ ev: { "1": { et, ... }, "2": ... } }`. `{ rs, sq }` — соседний MULTI-объект, не внутри `ev`. Первая выдача после auth — `rs` + один `ev` bootstrap (`fightState`, `persList`, `persSelf`, `persSpells`, `persEff`, `oppwait`, `oppnew`) и отдельный `ev` `{ et: "attacknow", restTime }`. Top-level `{ oppnew: { nick } }` и `{ attacknow: { timeout } }` клиент игнорирует. Источники: [`src/fight/wire.ts`](../../../jgr-emu/src/fight/wire.ts) `evMap`/`buildBootstrap`, [`src/fight/turns.ts`](../../../jgr-emu/src/fight/turns.ts) `maybeAppendAttackNow`.
 
 ## OA envelope и плоские ответы
 
@@ -99,9 +101,10 @@ MULTI — это конкатенация нуля или более кадро�
 ```text
 finished_first_fight: "1"
 tutorial2: "{\"finished\":true}"
+use_fproxy: 1
 ```
 
-Без них клиент может включить tutorial и заблокировать основной UI. Источник: [`docs/PROTOCOL.md`](../../../jgr-emu/docs/PROTOCOL.md).
+Без tutorial flags клиент может включить tutorial и заблокировать основной UI. Без `use_fproxy: 1` CEF отправляет fight auth на TCP `:33120` и не POST'ит `/fproxy/` `auth`, поэтому poll не получает `oppnew`/`attacknow`. Источники: [`docs/PROTOCOL.md`](../../../jgr-emu/docs/PROTOCOL.md), [`src/heroBuilder.ts`](../../../jgr-emu/src/heroBuilder.ts).
 
 ### Экипировка и инвентарные мутации
 

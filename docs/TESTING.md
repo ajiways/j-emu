@@ -35,25 +35,27 @@
 - `presence-esrv` — два isolated hero: init2 population by accountId, COME_IN/
   exit/logout `2:` diffs, `131:` hunt snapshot, chat auth empty body, restart
   drops queue;
-- `hunt-lock` — два isolated hero: ATTACK_BOT spawn 50310 ставит `fight_id`,
-  второй клиент 203 «моб уже занят» и видит busy на `131:`, finish/exit → idle
-  0, restart → idle при том же `area_id`;
+- `hunt-lock` — два isolated hero: ATTACK_BOT spawn 50310 ставит `fight_id`;
+  второй ATTACK_BOT тот же spawn → 100, тот же `fightId`/`akey`, свой
+  `userId`; `131:` остаётся busy; finish/exit → idle 0; restart → idle при
+  том же `area_id`; already-in-fight / other area → 203;
 - `personal-details` — `user|save_personal_details` flat `status:100` + `state`,
-  persist `pondViewLast` после restart, overlay tutorial flags, nested getter;
+  persist `pondViewLast` после restart, overlay tutorial flags, `use_fproxy: 1`,
+  nested getter;
 - `browser-auth` — HTML login/register, 302 handoff, пять cookies только в 200,
   cookie restore, FlashVars/`main.swf`, Pub1 root static, duplicate conflict;
 - `https-startup` — Fastify listen с legacy TLS и GET `/login`;
 - `unsupported` — `clan|info` → `status:203`;
 - `hunt-attack` — `ATTACK_BOT` → flat `fight|conf` с decimal `fightId`/`userId`
   и `instance_id:"0"`;
-- `fproxy` — auth / poll / `castSpell` до `fightFinish`; `oppnew.id` ≥ 1000000;
+- `fproxy` — auth / poll / `castSpell` до `fightFinish`; bootstrap `ev.oppnew.id` ≥ 1000000;
 - `esrv-exit-reconnect` — `fight|exit`, затем restart и повторный hunt;
 - `combat-restart` — restart посреди боя прекращает active fight, не меняет
   HP/bag и не создаёт finished history;
 - `finished-fights` — после terminal hunt в PostgreSQL ровно одна строка с
   numeric `teams.1[].id`; повторная идентичная запись не дублирует;
 - `concurrent-heroes` — два уникальных slot параллельно, разные hero id; один
-  победитель ATTACK_BOT 50310, второй 203 «моб уже занят»;
+  занимает 50310, второй входит в тот же fight id, не создаёт второй бой;
 - `protocol-errors` — no-session `status:4`, Flash Content-Type → не `415`,
   malformed `204`, unknown OA/fproxy `203`;
 - `bootstrap-oa-trace` — CEF-order probe: весь burst init→jail status 100;
@@ -206,8 +208,8 @@ composition и не имеет memory fallback.
 harness. Внутри файла допустим `Promise.all` по разным session. `npm run test:all`
 запускает unit → integration → e2e последовательно.
 
-TCP fproxy (`FightTcpConnection`) проверяется unit-тестом: Fastify `inject` этот
-транспорт не покрывает.
+TCP fproxy (`FightTcpServer` + `FightTcpConnection`) проверяется unit-тестом
+(policy + length-prefixed auth/poll). Fastify `inject` этот транспорт не покрывает.
 
 ## Definition of done
 

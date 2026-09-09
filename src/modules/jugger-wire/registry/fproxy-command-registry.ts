@@ -1,5 +1,6 @@
 import type { FightCommand } from "../../combat/ports/combat-port.ts";
 import { decodeAmf3 } from "../amf/amf3.ts";
+import { decodeFrames } from "../amf/framing.ts";
 import { ProtocolError } from "../application/protocol-error.ts";
 import type { FproxyCommand } from "../commands/fproxy/fproxy-command.ts";
 import { FproxyAuthCommand } from "../commands/fproxy/fproxy-auth-command.ts";
@@ -45,12 +46,13 @@ export class FproxyCommandRegistry {
 
   decodeHttpBody(body: unknown): FightCommand {
     if (!Buffer.isBuffer(body)) throw new ProtocolError(204, "Fight body must be binary");
-    if (body.length === 0) return this.require("poll").decode(null);
+    // Live handleFightCommand: empty HTTP and 1-byte AMF null/undefined are poll.
+    if (body.length <= 1) return this.require("poll").decode(null);
     return this.decodePayload(body);
   }
 
   decodePayload(payload: Buffer): FightCommand {
-    const frame = decodeAmf3(payload);
+    const frame = decodeFightRequest(payload);
     const key = fproxyCommandKey(frame);
     return this.require(key).decode(frame);
   }
@@ -60,4 +62,20 @@ export class FproxyCommandRegistry {
     if (!command) throw new ProtocolError(203, `Fight command ${key} is unsupported`);
     return command;
   }
+}
+
+function decodeFightRequest(payload: Buffer): unknown {
+  try {
+    const value = decodeAmf3(payload);
+    if (value !== null && typeof value === "object") return value;
+  } catch {
+    // Live `decodeFightRequest`: length-prefixed first frame when bare AMF3 fails.
+  }
+  try {
+    const first = decodeFrames(payload)[0];
+    if (first !== undefined) return first;
+  } catch {
+    // Both framings failed.
+  }
+  throw new ProtocolError(204, "unrecognized fight request framing");
 }

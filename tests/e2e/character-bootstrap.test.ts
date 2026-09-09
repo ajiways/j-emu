@@ -85,6 +85,7 @@ describe("character bootstrap", () => {
     expect(details.info).toMatchObject({
       finished_first_fight: "1",
       tutorial2: '{"finished":true}',
+      use_fproxy: 1,
     });
     const skills = objectBlock(init["user|skills"]);
     expect(skills.status).toBe(100);

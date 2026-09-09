@@ -64,6 +64,8 @@ export class PostgresCatalog implements Catalog {
             row.huntAvatar,
             row.huntKind,
             row.huntHideOnMap,
+            row.huntSk,
+            row.huntBody,
           ),
         )
       : null;

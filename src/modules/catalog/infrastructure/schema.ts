@@ -66,6 +66,8 @@ export const bots = catalogSchema.table(
     huntAvatar: text("hunt_avatar").notNull(),
     huntKind: integer("hunt_kind").notNull(),
     huntHideOnMap: integer("hunt_hide_on_map").notNull(),
+    huntSk: text("hunt_sk").notNull(),
+    huntBody: text("hunt_body").notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.releaseId, table.id] }),

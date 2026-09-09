@@ -8,7 +8,18 @@ import {
 import { Area } from "../../../src/modules/world/domain/area.ts";
 import { HuntSpawn } from "../../../src/modules/world/domain/hunt-spawn.ts";
 
-const gryzlLook = new HuntLook("Грызл", "gryzl1.swf", 90, 15, 10, "avatar_gryzl1_sm.jpg", 0, 0);
+const gryzlLook = new HuntLook(
+  "Грызл",
+  "gryzl1.swf",
+  90,
+  15,
+  10,
+  "avatar_gryzl1_sm.jpg",
+  0,
+  0,
+  "11",
+  "",
+);
 const gryzl = new BotDefinition(2, "Грызль", 1, 20, 10, gryzlLook);
 const spawn = new HuntSpawn(50310, 2, 883, 1499, "bot_1");
 const area = new Area(
