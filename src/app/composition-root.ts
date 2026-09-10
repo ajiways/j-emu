@@ -38,6 +38,9 @@ import { AuctionList } from "./auction-list.ts";
 import { AuctionBid } from "./auction-bid.ts";
 import { AuctionBuyout } from "./auction-buyout.ts";
 import { AuctionCancel } from "./auction-cancel.ts";
+import { AuctionTenderAdd } from "./auction-tender-add.ts";
+import { AuctionTenderSell } from "./auction-tender-sell.ts";
+import { AuctionTenderCancel } from "./auction-tender-cancel.ts";
 import { AuctionTtlSweep } from "./auction-ttl-sweep.ts";
 import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
@@ -161,6 +164,28 @@ export class CompositionRoot {
         mail.service,
         auction.service,
       );
+      const auctionTenderAdd = new AuctionTenderAdd(
+        database,
+        auctionExpiry,
+        characters.service,
+        catalog.catalog,
+        auction.service,
+      );
+      const auctionTenderSell = new AuctionTenderSell(
+        database,
+        auctionExpiry,
+        characters.service,
+        inventory.service,
+        mail.service,
+        auction.service,
+      );
+      const auctionTenderCancel = new AuctionTenderCancel(
+        database,
+        auctionExpiry,
+        characters.service,
+        mail.service,
+        auction.service,
+      );
       const presence = new PresenceService(
         world.service,
         identity.service,
@@ -253,6 +278,9 @@ export class CompositionRoot {
         auctionBid,
         auctionBuyout,
         auctionCancel,
+        auctionTenderAdd,
+        auctionTenderSell,
+        auctionTenderCancel,
       });
       closers.push(wire);
       return new Application(

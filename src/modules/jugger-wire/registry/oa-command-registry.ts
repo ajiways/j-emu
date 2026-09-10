@@ -55,6 +55,11 @@ export class OaCommandRegistry {
     "auction|bid",
     "auction|buyout",
     "auction|cancel",
+    "auction|tenders",
+    "auction|my_tenders",
+    "auction|tender_add",
+    "auction|tender_cancel",
+    "auction|tender_sell",
   ] as const;
 
   private readonly commands: ReadonlyMap<string, OaCommand>;

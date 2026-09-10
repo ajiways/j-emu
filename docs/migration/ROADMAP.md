@@ -827,8 +827,8 @@
   `auction.listings` (снимок колонок, не JSONB и не live reservation);
   ставка лежит на лоте; settlement — mail `deliverSystemInbox` в composition
   UoW; `SELECT FOR UPDATE`; sweep на list и общем `DelayScheduler` ~30с.
-  Отдельный `ARC-ECO` / ledger / депозит не нужны. Tenders — AUC-02.
-  Контракт: [AUCTION.md](../modules/AUCTION.md).
+  Отдельный `ARC-ECO` / ledger / депозит не нужны. Tenders — AUC-02 (тот же
+  `auction.listings`). Контракт: [AUCTION.md](../modules/AUCTION.md).
 - **Acceptance:** list/page/my-lot/my-bid, add, bid, buyout, cancel и expiry
   races имеют одного победителя и durable mail settlement.
 - **Status:** `done`
@@ -839,11 +839,12 @@
 - **depends_on:** `AUC-01`
 - **Behavior evidence:** legacy `AUCTION.md` tender flows.
 - **Content set:** tender fee/limit policy.
-- **Architecture checkpoint / decision:** pending — переиспользовать listing
-  holds и mail settlement; partial-fill row locking.
+- **Architecture checkpoint / decision:** closed — tenders на `auction.listings`
+  `kind=tender`; hold = оставшийся `buyout_minor`; fill `SELECT FOR UPDATE`;
+  settlement mail. Контракт: [AUCTION.md](../modules/AUCTION.md).
 - **Acceptance:** tender create/sell/cancel и concurrent partial fills никогда
   не продают больше количества и не дублируют оплату/доставку.
-- **Status:** `queued`
+- **Status:** `done`
 
 ### TRD-01 — Direct trade session
 

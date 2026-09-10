@@ -51,3 +51,42 @@ export function auctionCancelMutation(
     state,
   };
 }
+
+export function auctionTenderAddMutation(
+  bag: UserBagBlock,
+  state: HeroStateBlock,
+): Readonly<Record<string, unknown>> {
+  return {
+    "auction|tender_add": { status: 100 },
+    "user|bag": bag,
+    state,
+  };
+}
+
+export function auctionTenderCancelMutation(
+  myTenders: object,
+  tenders: object,
+  bag: UserBagBlock,
+  state: HeroStateBlock,
+): Readonly<Record<string, unknown>> {
+  return {
+    "auction|tender_cancel": { status: 100 },
+    "auction|my_tenders": myTenders,
+    "auction|tenders": tenders,
+    "user|bag": bag,
+    state,
+  };
+}
+
+export function auctionTenderSellMutation(
+  tenders: object,
+  bag: UserBagBlock,
+  state: HeroStateBlock,
+): Readonly<Record<string, unknown>> {
+  return {
+    "auction|tender_sell": { status: 100 },
+    "auction|tenders": tenders,
+    "user|bag": bag,
+    state,
+  };
+}

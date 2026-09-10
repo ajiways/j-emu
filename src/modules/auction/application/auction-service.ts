@@ -1,6 +1,7 @@
 import type { Clock } from "../../../shared/kernel/clock.ts";
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { AuctionDeniedError } from "../domain/auction-denied-error.ts";
+import type { ListingKind } from "../domain/listing-kind.ts";
 import { moneyRound } from "../domain/listing-tax.ts";
 import type { Listing, NewListing } from "../domain/listing.ts";
 import type { ListingSearch } from "../domain/listing-search.ts";
@@ -24,9 +25,20 @@ export class AuctionService {
     return this.listings.searchLots(search, this.clock.now());
   }
 
-  async listMine(heroId: number): Promise<readonly Listing[]> {
+  async searchTenders(
+    search: ListingSearch,
+    unpaged: boolean,
+  ): Promise<{
+    rows: readonly Listing[];
+    total: number;
+    offset: number;
+  }> {
+    return this.listings.searchTenders(search, this.clock.now(), unpaged);
+  }
+
+  async listMine(heroId: number, kind: ListingKind): Promise<readonly Listing[]> {
     requireWireIdentity(heroId, "hero id");
-    return this.listings.listMine(heroId, this.clock.now());
+    return this.listings.listMine(kind, heroId, this.clock.now());
   }
 
   async listMyBids(heroId: number): Promise<readonly Listing[]> {

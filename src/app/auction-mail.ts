@@ -1,6 +1,8 @@
 import type { CharacterService } from "../modules/character/application/character-service.ts";
 import type { MailService } from "../modules/mail/application/mail-service.ts";
 import type { Listing } from "../modules/auction/domain/listing.ts";
+import type { ListingAttachment } from "../modules/auction/domain/listing-attachment.ts";
+import { LISTING_KIND_TENDER } from "../modules/auction/domain/listing-kind.ts";
 import {
   LISTING_STATUS_EXPIRED,
   LISTING_STATUS_SOLD,
@@ -22,6 +24,7 @@ export async function deliverAuctionMail(
     moneyComeMinor: number;
     listing: Listing;
     withItem: boolean;
+    item?: ListingAttachment;
   }>,
 ): Promise<void> {
   if (command.fromHeroId !== null) {
@@ -36,7 +39,9 @@ export async function deliverAuctionMail(
     text: command.text,
     flags: 0,
     moneyComeMinor: command.moneyComeMinor,
-    attachments: command.withItem ? [letterAttachmentFromListing(command.listing.attachment)] : [],
+    attachments: command.withItem
+      ? [letterAttachmentFromListing(command.item ?? command.listing.attachment)]
+      : [],
   });
 }
 
@@ -47,6 +52,22 @@ export async function expireListing(
   save: (row: Listing) => Promise<void>,
 ): Promise<void> {
   if (listing.status !== "open") return;
+  if (listing.kind === LISTING_KIND_TENDER) {
+    await save({ ...listing, status: LISTING_STATUS_EXPIRED });
+    if (listing.buyoutMinor > 0) {
+      await deliverAuctionMail(mail, heroes, {
+        toHeroId: listing.ownerHeroId,
+        fromHeroId: null,
+        fromNick: "Аукцион",
+        subject: "Аукцион: возврат",
+        text: `Заказ «${listing.title}» истёк. Золото возвращено на почту.`,
+        moneyComeMinor: listing.buyoutMinor,
+        listing,
+        withItem: false,
+      });
+    }
+    return;
+  }
   if (listing.bidderHeroId) {
     const seller = await heroes.getById(listing.ownerHeroId);
     if (!seller) throw new Error(`Hero ${listing.ownerHeroId} is missing for auction expiry`);

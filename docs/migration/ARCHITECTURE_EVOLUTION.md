@@ -191,6 +191,11 @@ Settlement — mail `deliverSystemInbox` + character `debitMoney` + inventory
 take-by-instance в composition UoW. Dual-write hero↔economy wallet запрещён.
 Контракт: [AUCTION.md](../modules/AUCTION.md).
 
+**Решение AUC-02:** tenders на той же таблице (`kind=tender`). Hold заказа —
+оставшийся `buyout_minor`, не депозит. Partial fill и гонка последнего cnt —
+`FOR UPDATE` строки; settlement mail. `original_item_id=0` на заказе: instance
+нет до fill.
+
 Отдельный `ARC-ECO` потребуется позже только если trade нельзя провести без
 ledger, reservations и переноса balance с hero.
 

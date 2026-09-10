@@ -61,3 +61,7 @@ function asNumList(value: unknown): readonly number[] {
   }
   return out;
 }
+
+export function parseAvailableFlag(form: Readonly<Record<string, unknown>> | undefined): boolean {
+  return String((form ?? {}).available ?? "0") === "1";
+}

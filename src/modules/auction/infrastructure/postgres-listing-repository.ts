@@ -2,10 +2,10 @@ import { and, asc, desc, eq, gt, gte, ilike, inArray, lte, sql, type SQL } from 
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { ListingAttachment } from "../domain/listing-attachment.ts";
-import { LISTING_KIND_LOT } from "../domain/listing-kind.ts";
+import { LISTING_KIND_LOT, LISTING_KIND_TENDER, type ListingKind } from "../domain/listing-kind.ts";
 import type { ListingSearch } from "../domain/listing-search.ts";
 import { LISTING_STATUS_OPEN, type ListingStatus } from "../domain/listing-status.ts";
-import { LOT_PAGE_SIZE } from "../domain/auction-ttl.ts";
+import { LOT_PAGE_SIZE, TENDER_AVAILABLE_SCAN_LIMIT } from "../domain/auction-ttl.ts";
 import type { Listing, NewListing } from "../domain/listing.ts";
 import type { ListingRepository, LotSearchPage } from "../ports/listing-repository.ts";
 import { listings } from "./schema.ts";
@@ -62,7 +62,20 @@ export class PostgresListingRepository implements ListingRepository {
   }
 
   async searchLots(search: ListingSearch, now: Date): Promise<LotSearchPage> {
-    const where = and(...filterSql(search, now));
+    return this.searchKind(LISTING_KIND_LOT, search, now, false);
+  }
+
+  async searchTenders(search: ListingSearch, now: Date, unpaged: boolean): Promise<LotSearchPage> {
+    return this.searchKind(LISTING_KIND_TENDER, search, now, unpaged);
+  }
+
+  private async searchKind(
+    kind: ListingKind,
+    search: ListingSearch,
+    now: Date,
+    unpaged: boolean,
+  ): Promise<LotSearchPage> {
+    const where = and(...filterSql(kind, search, now));
     const counted = await this.database
       .session()
       .select({ c: sql<number>`count(*)::int` })
@@ -70,20 +83,21 @@ export class PostgresListingRepository implements ListingRepository {
       .where(where);
     const total = counted[0]?.c;
     if (total === undefined || !Number.isInteger(total) || total < 0) {
-      throw new Error("Auction lot count is invalid");
+      throw new Error("Auction listing count is invalid");
     }
+    const offset = unpaged ? 0 : search.offset;
     const rows = await this.database
       .session()
       .select()
       .from(listings)
       .where(where)
       .orderBy(orderExpr(search), asc(listings.id))
-      .limit(LOT_PAGE_SIZE)
-      .offset(search.offset);
-    return { rows: rows.map(toListing), total, offset: search.offset };
+      .limit(unpaged ? TENDER_AVAILABLE_SCAN_LIMIT : LOT_PAGE_SIZE)
+      .offset(offset);
+    return { rows: rows.map(toListing), total, offset };
   }
 
-  async listMine(ownerHeroId: number, now: Date): Promise<readonly Listing[]> {
+  async listMine(kind: ListingKind, ownerHeroId: number, now: Date): Promise<readonly Listing[]> {
     requireWireIdentity(ownerHeroId, "hero id");
     const rows = await this.database
       .session()
@@ -91,7 +105,7 @@ export class PostgresListingRepository implements ListingRepository {
       .from(listings)
       .where(
         and(
-          eq(listings.kind, LISTING_KIND_LOT),
+          eq(listings.kind, kind),
           eq(listings.ownerHeroId, ownerHeroId),
           eq(listings.status, LISTING_STATUS_OPEN),
           gt(listings.expiresAt, now),
@@ -145,9 +159,9 @@ export class PostgresListingRepository implements ListingRepository {
   }
 }
 
-function filterSql(search: ListingSearch, now: Date): SQL[] {
+function filterSql(kind: ListingKind, search: ListingSearch, now: Date): SQL[] {
   const parts: SQL[] = [
-    eq(listings.kind, LISTING_KIND_LOT),
+    eq(listings.kind, kind),
     eq(listings.status, LISTING_STATUS_OPEN),
     gt(listings.expiresAt, now),
   ];
@@ -202,12 +216,18 @@ function toRow(row: NewListing) {
     upgradeLevel: row.attachment.upgradeLevel,
     upgradeSkillId: row.attachment.upgradeSkillId,
     upgradeBound: row.attachment.upgradeBound,
+    wholeStackOnly: row.wholeStackOnly,
+    requiredDurability: row.requiredDurability,
+    requiredDurabilityMax: row.requiredDurabilityMax,
+    magicId: row.magicId,
+    requiredUpgradeId: row.requiredUpgradeId,
   };
 }
 
 function toListing(row: typeof listings.$inferSelect): Listing {
-  if (row.kind !== LISTING_KIND_LOT)
+  if (row.kind !== LISTING_KIND_LOT && row.kind !== LISTING_KIND_TENDER) {
     throw new Error(`Listing ${row.id} kind ${row.kind} is invalid`);
+  }
   const status = row.status;
   if (status !== "open" && status !== "sold" && status !== "cancelled" && status !== "expired") {
     throw new Error(`Listing ${row.id} status ${status} is invalid`);
@@ -216,10 +236,18 @@ function toListing(row: typeof listings.$inferSelect): Listing {
   if (upgradeBound !== 0 && upgradeBound !== 1) {
     throw new Error(`Listing ${row.id} upgrade_bound is invalid`);
   }
+  const wholeStackOnly = row.wholeStackOnly;
+  if (wholeStackOnly !== 0 && wholeStackOnly !== 1) {
+    throw new Error(`Listing ${row.id} whole_stack_only is invalid`);
+  }
+  const originalItemId =
+    row.kind === LISTING_KIND_TENDER && row.originalItemId === 0
+      ? 0
+      : requireWireIdentity(row.originalItemId, "original item id");
   const attachment: ListingAttachment = {
-    originalItemId: requireWireIdentity(row.originalItemId, "original item id"),
+    originalItemId,
     artifactId: requireWireIdentity(row.artikulId, "artikul id"),
-    quantity: row.amount,
+    quantity: row.amount < 1 ? 1 : row.amount,
     durability: row.durability,
     durabilityMax: row.durabilityMax,
     upgradeId: row.upgradeId,
@@ -229,7 +257,7 @@ function toListing(row: typeof listings.$inferSelect): Listing {
   };
   return {
     id: requireWireIdentity(row.id, "lot id"),
-    kind: LISTING_KIND_LOT,
+    kind: row.kind,
     status: status as ListingStatus,
     ownerHeroId: requireWireIdentity(row.ownerHeroId, "owner hero id"),
     ownerKind: row.ownerKind,
@@ -248,6 +276,11 @@ function toListing(row: typeof listings.$inferSelect): Listing {
     expiresAt: requireTimestamp(row.expiresAt, `listing ${row.id} expires_at`),
     createdAt: requireTimestamp(row.createdAt, `listing ${row.id} created_at`),
     attachment,
+    wholeStackOnly,
+    requiredDurability: row.requiredDurability,
+    requiredDurabilityMax: row.requiredDurabilityMax,
+    magicId: row.magicId,
+    requiredUpgradeId: row.requiredUpgradeId,
   };
 }
 

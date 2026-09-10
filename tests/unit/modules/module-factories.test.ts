@@ -17,6 +17,9 @@ import type { AuctionList } from "../../../src/app/auction-list.ts";
 import type { AuctionBid } from "../../../src/app/auction-bid.ts";
 import type { AuctionBuyout } from "../../../src/app/auction-buyout.ts";
 import type { AuctionCancel } from "../../../src/app/auction-cancel.ts";
+import type { AuctionTenderAdd } from "../../../src/app/auction-tender-add.ts";
+import type { AuctionTenderSell } from "../../../src/app/auction-tender-sell.ts";
+import type { AuctionTenderCancel } from "../../../src/app/auction-tender-cancel.ts";
 import { AuctionModule } from "../../../src/modules/auction/auction-module.ts";
 import type { AuctionService } from "../../../src/modules/auction/application/auction-service.ts";
 import { MailModule } from "../../../src/modules/mail/mail-module.ts";
@@ -312,6 +315,9 @@ describe("module factories", () => {
         auctionBid: {} as AuctionBid,
         auctionBuyout: {} as AuctionBuyout,
         auctionCancel: {} as AuctionCancel,
+        auctionTenderAdd: {} as AuctionTenderAdd,
+        auctionTenderSell: {} as AuctionTenderSell,
+        auctionTenderCancel: {} as AuctionTenderCancel,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -427,6 +433,9 @@ describe("module factories", () => {
         auctionBid: {} as AuctionBid,
         auctionBuyout: {} as AuctionBuyout,
         auctionCancel: {} as AuctionCancel,
+        auctionTenderAdd: {} as AuctionTenderAdd,
+        auctionTenderSell: {} as AuctionTenderSell,
+        auctionTenderCancel: {} as AuctionTenderCancel,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

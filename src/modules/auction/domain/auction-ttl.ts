@@ -1,3 +1,5 @@
 export const AUCTION_SWEEP_INTERVAL_MS = 30_000;
 export const LOT_PAGE_SIZE = 100;
+export const TENDER_TTL_MS = 24 * 3600 * 1000;
+export const TENDER_AVAILABLE_SCAN_LIMIT = 10_000;
 export const LISTING_QUALITY_UNPUBLISHED = 0;

@@ -185,6 +185,7 @@ describe("Drizzle migrations", () => {
       "0008_mail_letters.sql",
       "0009_mail_letter_attachments.sql",
       "0010_auction_listings.sql",
+      "0011_auction_tenders.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -201,8 +202,9 @@ describe("Drizzle migrations", () => {
       "0008_mail_letters",
       "0009_mail_letter_attachments",
       "0010_auction_listings",
+      "0011_auction_tenders",
     ]);
-    expect(await appliedCount()).toBe(11);
+    expect(await appliedCount()).toBe(12);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );

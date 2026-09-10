@@ -225,11 +225,12 @@ reconnect/restart; pick выдаёт новый `items.id`. CEF почты не 
 ## Auction — частично
 
 Есть raw-AMF: `auction|lot` / `my_lot` / `my_bid` / `min_price`,
-`lot_add`, `bid`, `buyout`, `cancel`, TTL sweep на list и DelayScheduler.
-Buyout/bid/expiry гонки — один победитель; settlement через системную почту
-переживает reconnect/restart. CEF аукциона не прогонялся.
+`lot_add`, `bid`, `buyout`, `cancel`, `tenders` / `my_tenders`,
+`tender_add`, `tender_sell`, `tender_cancel`, TTL sweep на list и
+DelayScheduler. Buyout/bid/fill/expiry гонки — один победитель; settlement
+через системную почту переживает reconnect/restart. CEF аукциона не прогонялся.
 
-Не перенесены заказы (`tender_*`), `addToLot` и playerbots.
+Не перенесены `addToLot` и playerbots.
 
 ## После core — не перенесено
 

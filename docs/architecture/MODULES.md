@@ -34,8 +34,8 @@ area presence roster:
   history;
 - `mail` — `mail.letters` / `mail.letter_attachments`, welcome «Почтальон»,
   send/pick/COD/retract и TTL sweep. Target `social` mailbox ещё план.
-- `auction` — `auction.listings` лоты, bid/buyout/cancel и TTL sweep через
-  mail settlement. Target `economy` listings ещё план. Tenders — AUC-02.
+- `auction` — `auction.listings` лоты и заказы, bid/buyout/cancel/fill и TTL
+  sweep через mail settlement. Target `economy` listings ещё план.
   Репутация Радвея **5** есть (REP-01, product частично).
   `quests`, `economy`, `professions`, `instances` в runtime нет.
 
@@ -168,17 +168,19 @@ character money + inventory instance take/grant. Контракт:
 
 **Шов извлечения:** не цель MAIL-02. Target mailbox в `social` ниже — план.
 
-### `auction` — AUC-01 runtime
+### `auction` — AUC-01 / AUC-02 runtime
 
-**Владеет:** `auction.listings` (лоты и снимок предмета). Не владеет балансом,
-bag и письмами. Tenders — AUC-02.
+**Владеет:** `auction.listings` (лоты, заказы и снимок/фильтры). Не владеет
+балансом, bag и письмами.
 
-**API:** `searchLots`, `listMine`, `listMyBids`, `minUnitPriceMinor`, `insert`,
-`lock`, `lockExpired`, `save`. Add/bid/buyout/cancel/expiry — composition +
-character `debitMoney` + inventory take + mail `deliverSystemInbox`. Контракт:
+**API:** `searchLots`, `searchTenders`, `listMine`, `listMyBids`,
+`minUnitPriceMinor`, `insert`, `lock`, `lockExpired`, `save`. Add/bid/buyout/
+cancel/tender fill/expiry — composition + character `debitMoney` + inventory
+take + mail `deliverSystemInbox`. Контракт:
 [AUCTION.md](../modules/AUCTION.md).
 
-**Шов извлечения:** не цель AUC-01. Target listings в `economy` ниже — план.
+**Шов извлечения:** не цель AUC-01/AUC-02. Target listings в `economy` ниже —
+план.
 
 ### `social` — после core
 
@@ -192,9 +194,9 @@ character `debitMoney` + inventory take + mail `deliverSystemInbox`. Контр�
 
 ### `economy` — после core
 
-**Владеет:** кошельками, неизменяемым ledger, торговыми предложениями, ставками и денежными резервами. Authored витрина ECO-01/ECO-02 живёт в `catalog`, balance — на `heroes.money_minor` / `money_gold_minor`; лоты AUC-01 живут в `auction`, не здесь. Этого модуля в runtime нет.
+**Владеет:** кошельками, неизменяемым ledger, торговыми предложениями, ставками и денежными резервами. Authored витрина ECO-01/ECO-02 живёт в `catalog`, balance — на `heroes.money_minor` / `money_gold_minor`; лоты и заказы AUC-01/AUC-02 живут в `auction`, не здесь. Этого модуля в runtime нет.
 
-**API:** `getBalance`, `postTransfer`, `reserveFunds`. Покупка лота ECO-01/ECO-02 — composition, не `buyStoreLot`. Аукцион open/bid/buyout/cancel — модуль `auction`.
+**API:** `getBalance`, `postTransfer`, `reserveFunds`. Покупка лота ECO-01/ECO-02 — composition, не `buyStoreLot`. Аукцион open/bid/buyout/cancel/tender fill — модуль `auction`.
 
 **События:** `economy.ledger-posted.v1`, `economy.listing-opened.v1`, `economy.trade-settled.v1`, `economy.listing-closed.v1`.
 

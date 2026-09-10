@@ -1,6 +1,7 @@
 import { AuctionDeniedError } from "./auction-denied-error.ts";
 
 export const MIN_START_BID_GOLD = 0.21;
+export const ORDER_TAX_GOLD = 1;
 export const PRICE_TYPE_GOLD = 1;
 
 const DURATION_MULT: Readonly<Record<2 | 8 | 24, number>> = { 2: 1, 8: 1.11, 24: 1.4 };

@@ -7,6 +7,9 @@ import type { AuctionList } from "../../app/auction-list.ts";
 import type { AuctionBid } from "../../app/auction-bid.ts";
 import type { AuctionBuyout } from "../../app/auction-buyout.ts";
 import type { AuctionCancel } from "../../app/auction-cancel.ts";
+import type { AuctionTenderAdd } from "../../app/auction-tender-add.ts";
+import type { AuctionTenderSell } from "../../app/auction-tender-sell.ts";
+import type { AuctionTenderCancel } from "../../app/auction-tender-cancel.ts";
 import type { AuctionService } from "../auction/application/auction-service.ts";
 import type { MailService } from "../mail/application/mail-service.ts";
 import type { FastifyInstance } from "fastify";
@@ -94,6 +97,9 @@ export class JuggerWireModule {
     auctionBid: AuctionBid;
     auctionBuyout: AuctionBuyout;
     auctionCancel: AuctionCancel;
+    auctionTenderAdd: AuctionTenderAdd;
+    auctionTenderSell: AuctionTenderSell;
+    auctionTenderCancel: AuctionTenderCancel;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -164,6 +170,18 @@ export class JuggerWireModule {
       input.auctionCancel,
       "Jugger-wire module requires auction cancel",
     );
+    const auctionTenderAdd = requirePresent(
+      input.auctionTenderAdd,
+      "Jugger-wire module requires auction tender add",
+    );
+    const auctionTenderSell = requirePresent(
+      input.auctionTenderSell,
+      "Jugger-wire module requires auction tender sell",
+    );
+    const auctionTenderCancel = requirePresent(
+      input.auctionTenderCancel,
+      "Jugger-wire module requires auction tender cancel",
+    );
     try {
       const fightWire = new FightWireMapper(
         {
@@ -212,6 +230,9 @@ export class JuggerWireModule {
         auctionBid,
         auctionBuyout,
         auctionCancel,
+        auctionTenderAdd,
+        auctionTenderSell,
+        auctionTenderCancel,
         identity,
         outbox,
         longPoll,

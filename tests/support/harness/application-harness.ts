@@ -75,10 +75,14 @@ export class ApplicationHarness {
     return this.applicationValue;
   }
 
-  async elapseCombat(ms: number): Promise<void> {
+  async advanceClock(ms: number): Promise<void> {
     if (this.clock instanceof MutableClock) this.clock.advanceMs(ms);
     else if (this.clock instanceof FakeClock) this.clock.advanceSeconds(ms / 1000);
-    else throw new Error("Application harness clock cannot elapse combat delays");
+    else throw new Error("Application harness clock cannot advance");
+  }
+
+  async elapseCombat(ms: number): Promise<void> {
+    await this.advanceClock(ms);
     await this.delay.fireDue(this.clock.now());
   }
 

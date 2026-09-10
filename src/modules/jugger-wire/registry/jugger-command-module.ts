@@ -17,6 +17,9 @@ import type { AuctionList } from "../../../app/auction-list.ts";
 import type { AuctionBid } from "../../../app/auction-bid.ts";
 import type { AuctionBuyout } from "../../../app/auction-buyout.ts";
 import type { AuctionCancel } from "../../../app/auction-cancel.ts";
+import type { AuctionTenderAdd } from "../../../app/auction-tender-add.ts";
+import type { AuctionTenderSell } from "../../../app/auction-tender-sell.ts";
+import type { AuctionTenderCancel } from "../../../app/auction-tender-cancel.ts";
 import type { AuctionService } from "../../auction/application/auction-service.ts";
 import type { MailService } from "../../mail/application/mail-service.ts";
 import { AttackBotCommand } from "../commands/oa/attack-bot-command.ts";
@@ -48,6 +51,11 @@ import { AuctionLotAddCommand } from "../commands/oa/auction-lot-add-command.ts"
 import { AuctionBidCommand } from "../commands/oa/auction-bid-command.ts";
 import { AuctionBuyoutCommand } from "../commands/oa/auction-buyout-command.ts";
 import { AuctionCancelCommand } from "../commands/oa/auction-cancel-command.ts";
+import { AuctionTendersCommand } from "../commands/oa/auction-tenders-command.ts";
+import { AuctionMyTendersCommand } from "../commands/oa/auction-my-tenders-command.ts";
+import { AuctionTenderAddCommand } from "../commands/oa/auction-tender-add-command.ts";
+import { AuctionTenderCancelCommand } from "../commands/oa/auction-tender-cancel-command.ts";
+import { AuctionTenderSellCommand } from "../commands/oa/auction-tender-sell-command.ts";
 import { PostSendCommand } from "../commands/oa/post-send-command.ts";
 import { PostSendCodCommand } from "../commands/oa/post-send-cod-command.ts";
 import { PostPickCommand } from "../commands/oa/post-pick-command.ts";
@@ -109,6 +117,9 @@ export class JuggerCommandModule {
     auctionBid: AuctionBid,
     auctionBuyout: AuctionBuyout,
     auctionCancel: AuctionCancel,
+    auctionTenderAdd: AuctionTenderAdd,
+    auctionTenderSell: AuctionTenderSell,
+    auctionTenderCancel: AuctionTenderCancel,
     sessions: SessionPresence,
     outbox: EsrvOutbox,
     wake: Readonly<{ wake(accountId: number): void }>,
@@ -246,6 +257,27 @@ export class JuggerCommandModule {
         bootstrap,
         characters,
         auctionCancel,
+        auctionBoard,
+        auction,
+        catalog,
+      ),
+      new AuctionTendersCommand(characters, inventory, auctionBoard, auction, catalog),
+      new AuctionMyTendersCommand(characters, auctionBoard, auction, catalog),
+      new AuctionTenderAddCommand(bootstrap, characters, auctionTenderAdd),
+      new AuctionTenderCancelCommand(
+        bootstrap,
+        characters,
+        inventory,
+        auctionTenderCancel,
+        auctionBoard,
+        auction,
+        catalog,
+      ),
+      new AuctionTenderSellCommand(
+        bootstrap,
+        characters,
+        inventory,
+        auctionTenderSell,
         auctionBoard,
         auction,
         catalog,

@@ -22,6 +22,11 @@ export type Listing = Readonly<{
   expiresAt: Date;
   createdAt: Date;
   attachment: ListingAttachment;
+  wholeStackOnly: 0 | 1;
+  requiredDurability: number;
+  requiredDurabilityMax: number;
+  magicId: number;
+  requiredUpgradeId: number;
 }>;
 
 export type NewListing = Omit<Listing, "id">;

@@ -1,8 +1,10 @@
+import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
 import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../character/application/character-service.ts";
 import { InventoryItem } from "../../inventory/domain/inventory-item.ts";
 import type { Listing } from "../../auction/domain/listing.ts";
 import type { ListingAttachment } from "../../auction/domain/listing-attachment.ts";
+import { LISTING_KIND_LOT, LISTING_KIND_TENDER } from "../../auction/domain/listing-kind.ts";
 import { lotFlags } from "../../auction/domain/listing-flags.ts";
 import { formatRtime, remainingSec } from "../../auction/domain/listing-rtime.ts";
 import { PRICE_TYPE_GOLD } from "../../auction/domain/listing-tax.ts";
@@ -55,23 +57,34 @@ async function listingToWire(
 ): Promise<object> {
   const { rtime, rtime_num } = formatRtime(remainingSec(row.expiresAt, now));
   const token = buildUserMacro(owner);
-  const lotHasBid = row.bidderHeroId !== null;
+  const lotHasBid = row.kind === LISTING_KIND_LOT && row.bidderHeroId !== null;
   const cancel =
     row.ownerHeroId === viewerId && !lotHasBid ? moneyNumberFromMinorUnits(row.cancelFeeMinor) : 0;
   const definition = await catalog.artifact(row.artikulId);
   if (!definition) throw new Error(`Artifact catalog entry ${row.artikulId} is missing`);
-  const item = itemFromAttachment(row.ownerHeroId, row.attachment);
-  const artifact = await buildBagItemBlock(definition, item, catalog);
-  return {
+  const artifact =
+    row.kind === LISTING_KIND_TENDER
+      ? catalogStaticArtifact(definition, row.quality)
+      : {
+          ...(await buildBagItemBlock(
+            definition,
+            itemFromAttachment(row.ownerHeroId, row.attachment),
+            catalog,
+          )),
+          cnt: row.amount,
+        };
+  const out: Record<string, unknown> = {
     id: row.id,
-    artifact: { ...artifact, cnt: row.amount },
+    artifact,
     amount: row.amount,
     rtime,
     rtime_num,
-    bid: moneyNumberFromMinorUnits(row.currentBidMinor),
+    bid: moneyNumberFromMinorUnits(
+      row.kind === LISTING_KIND_TENDER ? row.buyoutMinor : row.currentBidMinor,
+    ),
     buyout: moneyNumberFromMinorUnits(row.buyoutMinor),
     cancel,
-    flags: lotFlags(row.ownerHeroId, row.bidderHeroId, viewerId),
+    flags: lotFlags(row.ownerHeroId, row.bidderHeroId, viewerId, row.wholeStackOnly),
     user_id: String(row.ownerHeroId),
     user_nick: token.token,
     bid_user_id: String(row.bidderHeroId ?? 0),
@@ -79,6 +92,30 @@ async function listingToWire(
     overbid_user: "",
     price_type: PRICE_TYPE_GOLD,
     macroses: [token.macro],
+  };
+  if (row.kind === LISTING_KIND_TENDER) {
+    out.required_durability = String(row.requiredDurability);
+    out.required_durability_max = String(row.requiredDurabilityMax);
+    out.required_upgrade_id = String(row.requiredUpgradeId);
+    out.magic_id = String(row.magicId);
+  }
+  return out;
+}
+
+function catalogStaticArtifact(definition: ArtifactDefinition, quality: number): object {
+  return {
+    id: definition.id,
+    title: definition.title,
+    picture: definition.picture,
+    type_id: definition.typeId,
+    kind_id: definition.kindId,
+    quality,
+    level_min: definition.levelMin,
+    price: moneyNumberFromMinorUnits(definition.priceMinor),
+    flags: definition.flags,
+    durability: definition.durability,
+    durability_max: definition.durabilityMax,
+    cnt: 1,
   };
 }
 

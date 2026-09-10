@@ -94,6 +94,11 @@ export class AuctionList {
           expiresAt: new Date(now.getTime() + hours * 3600 * 1000),
           createdAt: now,
           attachment: listingAttachmentFromSnapshot(snapshot),
+          wholeStackOnly: 0,
+          requiredDurability: 0,
+          requiredDurabilityMax: 0,
+          magicId: 0,
+          requiredUpgradeId: 0,
         });
       });
     } catch (error) {
