@@ -22,10 +22,8 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и pre-baseline миграции `drizzle/0000_foundation_init.sql` плюс последующие
-`drizzle/0001_inventory_item_upgrade.sql`,
-`drizzle/0002_inventory_item_tempeffect.sql`,
-`drizzle/0003_inventory_item_expire_use.sql` и
-`drizzle/0004_content_draft_use_types.sql`. Поля ниже совпадают с runtime.
+`drizzle/0001`…`0007` и `drizzle/0008_mail_letters.sql`. Поля ниже совпадают с
+runtime.
 
 ### `identity`
 
@@ -211,6 +209,16 @@ common_conf|welcome_message`.
 
 Публикация — [CONTENT_PIPELINE.md](CONTENT_PIPELINE.md).
 
+### `mail`
+
+- `letters(id integer GENERATED ALWAYS AS IDENTITY START 1, owner_hero_id FK
+heroes ON DELETE RESTRICT, folder inbox|outbox, peer_hero_id FK heroes NULL,
+peer_nick, subject, body, sent_at timestamptz, expires_at timestamptz, flags,
+money_come_minor, payment_minor, tax_minor, money_type 0|1, pair_id, system
+0|1)`.
+
+Unix `stime`/`rtime` только в jugger-wire. JSONB вложений нет (MAIL-02).
+
 ## План (не в runtime)
 
 Таблицы ниже не созданы и не являются baseline. Их нельзя добавлять «на будущее»
@@ -247,8 +255,9 @@ Durable sides/turns/effects, active participants и JSONB event log не
 
 ### `quests` / `social` / `economy` / `professions` / `instances`
 
-Модулей в runtime нет. Целевые API — в [MODULES.md](MODULES.md). Схемы
-появляются вместе с первым подтверждённым OA этого модуля.
+`social` / `economy` модулей в runtime нет. Mailbox MAIL-01 живёт в `mail`, не
+в `social`. Целевые API — в [MODULES.md](MODULES.md). Схемы появляются вместе
+с первым подтверждённым OA этого модуля.
 
 Перед глобальным изменением границ character/inventory/world/combat или началом
 economy/social/instances нужен отдельный architecture checkpoint: подтвердить

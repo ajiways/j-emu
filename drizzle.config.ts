@@ -11,6 +11,7 @@ export default defineConfig({
     "./src/modules/character/infrastructure/schema.ts",
     "./src/modules/inventory/infrastructure/schema.ts",
     "./src/modules/combat/infrastructure/schema.ts",
+    "./src/modules/mail/infrastructure/schema.ts",
   ],
   out: "./drizzle",
 });

@@ -35,6 +35,7 @@ import { buildTravelMutation } from "./travel-mutation-block.ts";
 import { upgradeMutation } from "./upgrade-mutation-block.ts";
 import type { GearUpgradeResult } from "../../inventory/domain/apply-gear-upgrade.ts";
 import type { PresenceService } from "../../world/application/presence-service.ts";
+import type { UnreadMailQuery } from "../../mail/ports/unread-mail.ts";
 import type { FightWireMapper } from "./fight-wire-mapper.ts";
 
 export type { HuntBlock, UserUnitframeBlock, HeroStateBlock };
@@ -49,6 +50,7 @@ export class BootstrapReadModel {
     private readonly clock: Clock,
     private readonly presence: PresenceService,
     private readonly fightWire: FightWireMapper,
+    private readonly unreadMail: UnreadMailQuery,
     private readonly policy: Readonly<{
       bagCapacity: number;
       pocketCapacity: number;
@@ -322,6 +324,7 @@ export class BootstrapReadModel {
       combat: this.combat,
       world: this.world,
       clock: this.clock,
+      unreadMail: this.unreadMail,
     });
   }
 

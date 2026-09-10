@@ -793,11 +793,13 @@
 - **depends_on:** `INV-02`
 - **Behavior evidence:** legacy `MAIL.md` and `src/mail/`.
 - **Content set:** mail-макросы/шаблоны и welcome message policy.
-- **Architecture checkpoint / decision:** pending — mailbox ownership,
-  sender/recipient identity и list/send/delete transaction boundary.
+- **Architecture checkpoint / decision:** closed — модуль `mail` владеет
+  `mail.letters`; send postage — composition UoW + `debitMoney`; отдельный
+  `ARC-SOC` / `social` mailbox не нужны. Welcome — named `WELCOME_LETTER`, не
+  catalog. Вложения/COD/sweep — MAIL-02. Контракт: [MAIL.md](../modules/MAIL.md).
 - **Acceptance:** inbox/outbox, plain send/delete и welcome letter
   restart-safe, paginated, точный list/macros wire.
-- **Status:** `queued`
+- **Status:** `done`
 
 ### MAIL-02 — Attachments, COD and expiry
 

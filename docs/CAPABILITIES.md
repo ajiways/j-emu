@@ -211,10 +211,20 @@ waiter-handoff без сброса HP. CEF экрана результата, F5
 Board, dialogs, book, goals, scripts, AREA waiting, quest fights, rewards,
 markers и curated chain пока существуют только в legacy corpus.
 
+## Mail — частично
+
+Есть raw-AMF: `post|list` кладёт restart-safe welcome от «Почтальона»,
+`post|list_sent`, plain `post|send` (postage 1g, без вложений и золота в
+письме), `post|delete`, no-op `post|read`, `user|bag_order`, `state.new_message`
+из unread inbox, macros `[[USER key]]`. Dual-hero send переживает reconnect/
+restart. CEF почты не прогонялся.
+
+Не перенесены attachments, COD, pick/batch-pick, retract, TTL sweep, system
+chat о письме.
+
 ## После core — не перенесено
 
-Chat/party, полный корпус магазинов (DATA-05), mail, auction и trade
-рассматриваются после цикла 1–8.
+Chat/party, полный корпус магазинов (DATA-05), auction и trade.
 
 ## Store — частично
 

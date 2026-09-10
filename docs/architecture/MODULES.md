@@ -1,8 +1,8 @@
 # Модули
 
 Документ описывает ownership target. Реализованы `identity`, `character`,
-`inventory`, `catalog`, `world`, `combat`, `content` и `jugger-wire`, но их
-полный target API ещё не перенесён. `quests`, `social`, `economy`,
+`inventory`, `catalog`, `world`, `combat`, `content`, `mail` и `jugger-wire`,
+но их полный target API ещё не перенесён. `quests`, `social`, `economy`,
 `professions` и `instances` ниже являются планом, а не возможностями runtime.
 Фактический статус находится в [CAPABILITIES.md](../CAPABILITIES.md).
 
@@ -30,8 +30,11 @@ area presence roster:
   pocket unique, artifact_actions, move_ready_at, area_links, ghost/injury,
   store types/lots, reputation tracks и durability;
 - `combat` — hunt lifecycle, CMB-02…04 reconnect/ghost settlement и finished
-  history; `quests`, `social`, `economy`, `professions`, `instances` в runtime
-  нет. Репутация Радвея **5** есть (REP-01, product частично).
+  history;
+- `mail` — `mail.letters` inbox/outbox, welcome «Почтальон», plain send/delete
+  и postage 1g; вложения/COD/sweep — MAIL-02. Target `social` mailbox ещё
+  план. Репутация Радвея **5** есть (REP-01, product частично).
+  `quests`, `economy`, `professions`, `instances` в runtime нет.
 
 Во всех разделах ниже **API**, **события** и **шов извлечения** описывают
 целевую границу. Они не доказывают регистрацию команды, наличие таблиц или
@@ -149,9 +152,20 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 
 **Шов извлечения:** входные `QuestSignal` создаются адаптерами событий combat/world/inventory. Награда исполняется saga через публичные API character/inventory/economy.
 
+### `mail` — MAIL-01 runtime
+
+**Владеет:** строками `mail.letters` (inbox/outbox copies). Не владеет балансом,
+bag и chat.
+
+**API:** `listInbox`, `listOutbox`, `delete`, `hasUnread`, `deliverPlayerPair`.
+Send postage — composition `MailSend` + character `debitMoney`. Контракт:
+[MAIL.md](../modules/MAIL.md).
+
+**Шов извлечения:** не цель MAIL-01. Target mailbox в `social` ниже — план.
+
 ### `social` — после core
 
-**Владеет:** друзьями/игнором, группами, приглашениями, каналами и сообщениями, mailbox как социальной доставкой. Вложения письма — reservation/reference, не JSON-копия предмета.
+**Владеет:** друзьями/игнором, группами, приглашениями, каналами и сообщениями, mailbox как социальной доставкой (план; runtime mailbox — `mail`). Вложения письма — reservation/reference, не JSON-копия предмета.
 
 **API:** `createParty`, `inviteToParty`, `changeParty`, `postMessage`, `sendMail`, `claimMail`, `getSocialSnapshot`.
 

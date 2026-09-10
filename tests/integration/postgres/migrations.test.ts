@@ -43,6 +43,7 @@ import {
 } from "../../../src/modules/content/infrastructure/schema.ts";
 import { accounts, sessions } from "../../../src/modules/identity/infrastructure/schema.ts";
 import { items } from "../../../src/modules/inventory/infrastructure/schema.ts";
+import { letters } from "../../../src/modules/mail/infrastructure/schema.ts";
 import { areaLinks, areas, huntSpawns } from "../../../src/modules/world/infrastructure/schema.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
@@ -63,7 +64,7 @@ describe("Drizzle migrations", () => {
   it("creates only the live module schemas and tables", async () => {
     const schemas = await names(
       sql`SELECT schema_name AS name FROM information_schema.schemata
-          WHERE schema_name IN ('identity','character','catalog','inventory','world','combat','content','quests','social','economy')`,
+          WHERE schema_name IN ('identity','character','catalog','inventory','world','combat','content','mail','quests','social','economy')`,
     );
     expect(schemas.sort()).toEqual([
       "catalog",
@@ -72,13 +73,14 @@ describe("Drizzle migrations", () => {
       "content",
       "identity",
       "inventory",
+      "mail",
       "world",
     ]);
 
     const tables = await names(
       sql`SELECT table_schema || '.' || table_name AS name
           FROM information_schema.tables
-          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content')
+          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content','mail')
             AND table_type = 'BASE TABLE'`,
     );
     expect(tables.sort()).toEqual(
@@ -114,6 +116,7 @@ describe("Drizzle migrations", () => {
         "identity.accounts",
         "identity.sessions",
         "inventory.items",
+        "mail.letters",
         "world.area_links",
         "world.areas",
         "world.hunt_spawns",
@@ -150,6 +153,7 @@ describe("Drizzle migrations", () => {
       heroReputations,
       experienceGrants,
       items,
+      letters,
       finishedFights,
       drafts,
       draftVersions,
@@ -157,7 +161,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(34);
+    ]).toHaveLength(35);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -172,6 +176,7 @@ describe("Drizzle migrations", () => {
       "0005_catalog_bot_spell_book.sql",
       "0006_world_hunt_spawn_wander.sql",
       "0007_catalog_store_lot_pay.sql",
+      "0008_mail_letters.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -185,8 +190,9 @@ describe("Drizzle migrations", () => {
       "0005_catalog_bot_spell_book",
       "0006_world_hunt_spawn_wander",
       "0007_catalog_store_lot_pay",
+      "0008_mail_letters",
     ]);
-    expect(await appliedCount()).toBe(8);
+    expect(await appliedCount()).toBe(9);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -261,6 +267,26 @@ describe("Drizzle migrations", () => {
     ).toEqual([
       { column_name: "pay", is_nullable: "NO", data_type: "jsonb" },
       { column_name: "requires", is_nullable: "YES", data_type: "jsonb" },
+    ]);
+    const mailLetters = await database.session().execute<{
+      column_name: string;
+      is_nullable: string;
+    }>(
+      sql`SELECT column_name, is_nullable
+          FROM information_schema.columns
+          WHERE table_schema = 'mail' AND table_name = 'letters'
+            AND column_name IN ('body', 'money_come_minor', 'system')
+          ORDER BY column_name`,
+    );
+    expect(
+      [...mailLetters].map((row) => ({
+        column_name: row.column_name,
+        is_nullable: row.is_nullable,
+      })),
+    ).toEqual([
+      { column_name: "body", is_nullable: "NO" },
+      { column_name: "money_come_minor", is_nullable: "NO" },
+      { column_name: "system", is_nullable: "NO" },
     ]);
   });
 

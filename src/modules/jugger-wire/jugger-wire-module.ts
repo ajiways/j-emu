@@ -1,5 +1,7 @@
 import type { StorePurchase } from "../../app/store-purchase.ts";
 import type { StoreRepair } from "../../app/store-repair.ts";
+import type { MailSend } from "../../app/mail-send.ts";
+import type { MailService } from "../mail/application/mail-service.ts";
 import type { FastifyInstance } from "fastify";
 import type { AppConfig } from "../../app/config.ts";
 import type { PlayableAccountRegistration } from "../../app/playable-account-registration.ts";
@@ -76,6 +78,8 @@ export class JuggerWireModule {
     longPoll: LongPollCoordinator;
     storePurchase: StorePurchase;
     storeRepair: StoreRepair;
+    mail: MailService;
+    mailSend: MailSend;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -125,6 +129,8 @@ export class JuggerWireModule {
       input.storeRepair,
       "Jugger-wire module requires store repair",
     );
+    const mail = requirePresent(input.mail, "Jugger-wire module requires mail");
+    const mailSend = requirePresent(input.mailSend, "Jugger-wire module requires mail send");
     try {
       const fightWire = new FightWireMapper(
         {
@@ -144,6 +150,7 @@ export class JuggerWireModule {
           clock,
           presence,
           fightWire,
+          mail,
           bootstrapPolicy,
         ),
         new HeroSheetReadModel({
@@ -163,6 +170,8 @@ export class JuggerWireModule {
         huntFanout,
         storePurchase,
         storeRepair,
+        mail,
+        mailSend,
         identity,
         outbox,
         longPoll,

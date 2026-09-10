@@ -37,6 +37,12 @@ export class OaCommandRegistry {
     "store|list",
     "store|buy",
     "store|repair",
+    "post|list",
+    "post|list_sent",
+    "post|send",
+    "post|delete",
+    "post|read",
+    "user|bag_order",
   ] as const;
 
   private readonly commands: ReadonlyMap<string, OaCommand>;

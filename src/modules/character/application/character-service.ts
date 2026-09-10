@@ -214,6 +214,11 @@ export class CharacterService
     return this.heroes.findByAccountId(accountId);
   }
 
+  async getById(id: number): Promise<Hero | null> {
+    if (!Number.isInteger(id) || id < 1) throw new Error("Hero id is required");
+    return this.heroes.findById(id);
+  }
+
   async getByNick(nick: string): Promise<Hero | null> {
     const trimmed = nick.trim();
     if (!trimmed) throw new Error("Hero nick is required");

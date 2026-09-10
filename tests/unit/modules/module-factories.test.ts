@@ -10,6 +10,9 @@ import { WorldModule } from "../../../src/modules/world/world-module.ts";
 import type { AppConfig } from "../../../src/app/config.ts";
 import type { StorePurchase } from "../../../src/app/store-purchase.ts";
 import type { StoreRepair } from "../../../src/app/store-repair.ts";
+import type { MailSend } from "../../../src/app/mail-send.ts";
+import { MailModule } from "../../../src/modules/mail/mail-module.ts";
+import type { MailService } from "../../../src/modules/mail/application/mail-service.ts";
 import type { PlayableAccountRegistration } from "../../../src/app/playable-account-registration.ts";
 import type { PlayableDevelopmentIdentity } from "../../../src/app/playable-development-identity.ts";
 import type { Catalog } from "../../../src/modules/catalog/ports/catalog.ts";
@@ -236,6 +239,16 @@ describe("module factories", () => {
     ).toThrow(/Combat module requires a combat delay/);
   });
 
+  it("fails fast when required mail dependencies are missing", () => {
+    expect(() => MailModule.create({ database, clock })).toThrow(/Mail module requires a database/);
+    expect(() =>
+      MailModule.create({
+        database: {} as PostgresDatabase,
+        clock: undefined as unknown as Clock,
+      }),
+    ).toThrow(/Mail module requires a clock/);
+  });
+
   it("fails fast when required jugger-wire dependencies are missing", async () => {
     await expect(
       JuggerWireModule.create({
@@ -260,6 +273,8 @@ describe("module factories", () => {
         longPoll: {} as LongPollCoordinator,
         storePurchase: {} as StorePurchase,
         storeRepair: {} as StoreRepair,
+        mail: {} as MailService,
+        mailSend: {} as MailSend,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -295,6 +310,8 @@ describe("module factories", () => {
       random: { unit: () => 0 },
     });
     await expect(inventory.close()).resolves.toBeUndefined();
+    const mail = MailModule.create({ database: {} as PostgresDatabase, clock });
+    await expect(mail.close()).resolves.toBeUndefined();
   });
 
   it("rejects a missing Pub1 directory during jugger-wire startup", async () => {
@@ -355,6 +372,8 @@ describe("module factories", () => {
         longPoll: new LongPollCoordinator(),
         storePurchase: {} as StorePurchase,
         storeRepair: {} as StoreRepair,
+        mail: {} as MailService,
+        mailSend: {} as MailSend,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

@@ -15,7 +15,7 @@ export type HeroStateBlock = Readonly<{
   instance: 0;
   alliance_read: 0;
   alliance_write: 0;
-  new_message: 0;
+  new_message: 0 | 1;
   enable_log: 0;
   fight_id?: number;
   ghost?: 1;
@@ -27,12 +27,13 @@ export type HeroStateBlock = Readonly<{
 export type HeroStateOverlay = Readonly<{
   fightId: number | null;
   resurrectZoneTitle: string;
+  newMessage: 0 | 1;
 }>;
 
 export function buildHeroState(
   hero: Hero,
   clock: Clock,
-  overlay?: HeroStateOverlay,
+  overlay: HeroStateOverlay,
 ): HeroStateBlock {
   const base: HeroStateBlock = {
     server_time: clock.unixSeconds(),
@@ -47,21 +48,21 @@ export function buildHeroState(
     instance: 0,
     alliance_read: 0,
     alliance_write: 0,
-    new_message: 0,
+    new_message: overlay.newMessage,
     enable_log: 0,
   };
   return {
     ...base,
-    ...(overlay?.fightId != null ? { fight_id: overlay.fightId } : {}),
+    ...(overlay.fightId != null ? { fight_id: overlay.fightId } : {}),
     ...(hero.ghost ? ghostFields(hero, overlay) : {}),
   };
 }
 
 function ghostFields(
   hero: Hero,
-  overlay: HeroStateOverlay | undefined,
+  overlay: HeroStateOverlay,
 ): Pick<HeroStateBlock, "ghost" | "resurrect_time" | "resurrect_zones" | "injury"> {
-  if (!overlay?.resurrectZoneTitle) {
+  if (!overlay.resurrectZoneTitle) {
     throw new Error(`Ghost hero ${hero.id} requires a resurrect zone title`);
   }
   return {

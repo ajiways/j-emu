@@ -12,11 +12,13 @@ describe("buildHeroState", () => {
     const idle = buildHeroState(testHero(), clock, {
       fightId: null,
       resurrectZoneTitle: "Горное поселение",
+      newMessage: 0,
     });
     expect(idle).not.toHaveProperty("fight_id");
     const fighting = buildHeroState(testHero(), clock, {
       fightId: 9,
       resurrectZoneTitle: "Горное поселение",
+      newMessage: 0,
     });
     expect(fighting.fight_id).toBe(9);
   });
@@ -28,6 +30,7 @@ describe("buildHeroState", () => {
     const state = buildHeroState(hero, clock, {
       fightId: null,
       resurrectZoneTitle: "Горное поселение",
+      newMessage: 0,
     });
     expect(state).toMatchObject({
       ghost: 1,

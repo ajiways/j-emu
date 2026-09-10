@@ -10,6 +10,8 @@ import type { HeroSheetReadModel } from "../application/hero-sheet-read-model.ts
 import type { FightWireMapper } from "../application/fight-wire-mapper.ts";
 import type { StorePurchase } from "../../../app/store-purchase.ts";
 import type { StoreRepair } from "../../../app/store-repair.ts";
+import type { MailSend } from "../../../app/mail-send.ts";
+import type { MailService } from "../../mail/application/mail-service.ts";
 import { AttackBotCommand } from "../commands/oa/attack-bot-command.ts";
 import { BagDropCommand } from "../commands/oa/bag-drop-command.ts";
 import { BookQuestListCommand } from "../commands/oa/book-quest-list-command.ts";
@@ -27,9 +29,15 @@ import { ResurrectCommand } from "../commands/oa/resurrect-command.ts";
 import { StoreBuyCommand } from "../commands/oa/store-buy-command.ts";
 import { StoreListCommand } from "../commands/oa/store-list-command.ts";
 import { StoreRepairCommand } from "../commands/oa/store-repair-command.ts";
+import { PostDeleteCommand } from "../commands/oa/post-delete-command.ts";
+import { PostListCommand } from "../commands/oa/post-list-command.ts";
+import { PostListSentCommand } from "../commands/oa/post-list-sent-command.ts";
+import { PostReadCommand } from "../commands/oa/post-read-command.ts";
+import { PostSendCommand } from "../commands/oa/post-send-command.ts";
 import { UseArtifactCommand } from "../commands/oa/use-artifact-command.ts";
 import { UpgradeCommand } from "../commands/oa/upgrade-command.ts";
 import { UserBagCommand } from "../commands/oa/user-bag-command.ts";
+import { UserBagOrderCommand } from "../commands/oa/user-bag-order-command.ts";
 import { UserFlashMessageCommand } from "../commands/oa/user-flash-message-command.ts";
 import { FriendlyDuelAcceptCommand } from "../commands/oa/friendly-duel-accept-command.ts";
 import { FriendlyDuelProposeCommand } from "../commands/oa/friendly-duel-propose-command.ts";
@@ -73,6 +81,8 @@ export class JuggerCommandModule {
     huntFanout: HuntAreaFanout,
     storePurchase: StorePurchase,
     storeRepair: StoreRepair,
+    mail: MailService,
+    mailSend: MailSend,
     sessions: SessionPresence,
     outbox: EsrvOutbox,
     wake: Readonly<{ wake(accountId: number): void }>,
@@ -182,6 +192,12 @@ export class JuggerCommandModule {
       new StoreListCommand(characters, catalog),
       new StoreBuyCommand(bootstrap, characters, storePurchase),
       new StoreRepairCommand(bootstrap, sheet, characters, storeRepair),
+      new PostListCommand(characters, mail),
+      new PostListSentCommand(characters, mail),
+      new PostSendCommand(bootstrap, characters, mailSend),
+      new PostDeleteCommand(bootstrap, characters, mail),
+      new PostReadCommand(),
+      new UserBagOrderCommand(bootstrap),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     this.esrv = EsrvCommandRegistry.create(combat, fightWire);
