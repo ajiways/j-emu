@@ -66,5 +66,7 @@ describe("friendly duel Battle", () => {
     expect(battle.tryPlayerMelee(1, "center")).toEqual({ kind: "ignored" });
     battle.grantTurn(2, AUTH_NOW);
     expect(battle.tryPlayerMelee(2, "left").kind).toBe("resolved");
+    expect(battle.pairedOpponent(1)).toEqual({ kind: "human", accountId: 2 });
+    expect(() => battle.resolveBotMelee()).toThrow(/no bot to take a turn/);
   });
 });

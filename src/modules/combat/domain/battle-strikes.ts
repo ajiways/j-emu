@@ -1,62 +1,54 @@
-import type { BattleRules } from "./battle-rules.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { resolveBotTurn } from "./hunt-bot-turn.ts";
-import { tryPlayerMelee, type BotMeleeResult, type PlayerMeleeResult } from "./hunt-melee.ts";
-import { tryPvpMelee } from "./pvp-melee.ts";
+import { type BotMeleeResult } from "./hunt-melee.ts";
+import { tryPairedMelee, type PlayerMeleeResult } from "./paired-melee.ts";
 import { resolveGloveFinisher, type EndingGloveResult, type KeepTurnResult } from "./hunt-cast.ts";
 import type { RandomSource } from "./random-source.ts";
+import type { BattleRules } from "./battle-rules.ts";
+import { resolveMeleeTarget, type BotMeleePresence } from "./melee-target.ts";
 
-export function applyPvpMelee(
+export function applyPairedMelee(
   input: Readonly<{
     attacker: HuntHuman;
-    defender: HuntHuman;
     side: "left" | "center" | "right";
     finished: boolean;
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
+    humans: readonly HuntHuman[];
+    bot: BotMeleePresence | null;
     duel: FightDuel;
   }>,
-): Readonly<{ result: PlayerMeleeResult; finished: boolean }> {
-  const resolved = tryPvpMelee(input.attacker, input.defender, input.side, {
-    finished: input.finished,
-    rules: input.rules,
-    random: input.random,
-    fightId: input.fightId,
-  });
+): Readonly<{ result: PlayerMeleeResult; botHp: number | null; finished: boolean }> {
+  const botHp = input.bot === null ? null : input.bot.hp;
+  if (input.attacker.waiting || !input.attacker.turnActive || input.finished) {
+    return { result: { kind: "ignored" }, botHp, finished: input.finished };
+  }
+  const resolved = tryPairedMelee(
+    input.attacker,
+    resolveMeleeTarget({
+      attackerHeroId: input.attacker.heroId,
+      duel: input.duel,
+      humans: input.humans,
+      bot: input.bot,
+    }),
+    input.side,
+    {
+      finished: input.finished,
+      rules: input.rules,
+      random: input.random,
+      fightId: input.fightId,
+      humans: input.humans,
+      bot: input.bot,
+    },
+  );
   if (resolved.result.kind === "resolved") input.duel.addHit(input.attacker.heroId);
   return resolved;
 }
 
-export function applyHuntMelee(
-  input: Readonly<{
-    human: HuntHuman;
-    side: "left" | "center" | "right";
-    finished: boolean;
-    rules: BattleRules;
-    random: RandomSource;
-    botHp: number;
-    hunt: HuntBattleInit;
-    fightId: string;
-    duel: FightDuel;
-  }>,
-): Readonly<{ result: PlayerMeleeResult; botHp: number; finished: boolean }> {
-  const resolved = tryPlayerMelee(input.human, input.side, {
-    finished: input.finished,
-    rules: input.rules,
-    random: input.random,
-    botHp: input.botHp,
-    botFightId: input.hunt.botFightId,
-    botMaxHp: input.hunt.botMaxHp,
-    fightId: input.fightId,
-  });
-  if (resolved.result.kind === "resolved") input.duel.addHit(input.human.heroId);
-  return { result: resolved.result, botHp: resolved.botHp, finished: resolved.finished };
-}
-
-export function applyHuntGloveEnding(
+export function applyPairedGloveEnding(
   input: Readonly<{
     human: HuntHuman;
     spellId: number;
@@ -64,9 +56,9 @@ export function applyHuntGloveEnding(
     finished: boolean;
     rules: BattleRules;
     random: RandomSource;
-    botHp: number;
-    hunt: HuntBattleInit;
     fightId: string;
+    humans: readonly HuntHuman[];
+    bot: BotMeleePresence | null;
     duel: FightDuel;
   }>,
 ): KeepTurnResult | EndingGloveResult {
@@ -74,10 +66,10 @@ export function applyHuntGloveEnding(
     finished: input.finished,
     rules: input.rules,
     random: input.random,
-    botHp: input.botHp,
-    botFightId: input.hunt.botFightId,
-    botMaxHp: input.hunt.botMaxHp,
     fightId: input.fightId,
+    humans: input.humans,
+    bot: input.bot,
+    duel: input.duel,
   });
   if (ending.kind === "ending") input.duel.addHit(input.human.heroId);
   return ending;

@@ -39,13 +39,7 @@ export class CombatMeleeLoop {
       await this.settleFinished(battle, resolved.events, accountId);
       return;
     }
-    if (battle.kind === "friendly-duel") {
-      this.scheduler.schedule(battle.id, battle.turnGrantDelayMs, () =>
-        this.runGrant(battle.id, battle.opponentAccountId(accountId)),
-      );
-      return;
-    }
-    this.scheduleBotAndGrant(battle);
+    this.followUpAfterStrike(battle, accountId);
   }
 
   keepTurn(accountId: number, sequence: string | number, events: readonly CombatEvent[]): void {
@@ -68,12 +62,23 @@ export class CombatMeleeLoop {
       await this.settleFinished(battle, events, accountId);
       return;
     }
-    this.scheduleBotAndGrant(battle);
+    this.followUpAfterStrike(battle, accountId);
   }
 
   grantAfterPair(battle: Battle, accountId: number): void {
     this.scheduler.schedule(battle.id, battle.turnGrantDelayMs, () =>
       this.runGrant(battle.id, accountId),
+    );
+  }
+
+  private followUpAfterStrike(battle: Battle, accountId: number): void {
+    const opponent = battle.pairedOpponent(accountId);
+    if (opponent.kind === "bot") {
+      this.scheduleBotAndGrant(battle);
+      return;
+    }
+    this.scheduler.schedule(battle.id, battle.turnGrantDelayMs, () =>
+      this.runGrant(battle.id, opponent.accountId),
     );
   }
 

@@ -3,8 +3,11 @@ import type { BattleRules } from "./battle-rules.ts";
 import type { CombatPocketRow, CombatSpell } from "./combat-loadout.ts";
 import { rollMeleeDamage } from "./melee-damage.ts";
 import { FightCastDenied } from "./fight-cast-denied.ts";
+import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { pocketHealAmount, spellCharging, spellKind, spellPcStr } from "./hunt-human-cast-state.ts";
+import { resolveMeleeTarget, type BotMeleePresence } from "./melee-target.ts";
+import { applyDamageToMeleeTarget } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
 
 export type KeepTurnResult =
@@ -14,7 +17,7 @@ export type KeepTurnResult =
 export type EndingGloveResult = Readonly<{
   kind: "ending";
   events: readonly BattleEvent[];
-  botHp: number;
+  botHp: number | null;
   finished: boolean;
 }>;
 
@@ -157,10 +160,10 @@ export function resolveGloveFinisher(
     finished: boolean;
     rules: BattleRules;
     random: RandomSource;
-    botHp: number;
-    botFightId: number;
-    botMaxHp: number;
     fightId: string;
+    humans: readonly HuntHuman[];
+    bot: BotMeleePresence | null;
+    duel: FightDuel;
   }>,
 ): KeepTurnResult | EndingGloveResult {
   if (!human.authed || input.finished) return { kind: "ignored" };
@@ -173,28 +176,36 @@ export function resolveGloveFinisher(
   if (human.casts.cp < glove.cost) {
     return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };
   }
+  const target = resolveMeleeTarget({
+    attackerHeroId: human.heroId,
+    duel: input.duel,
+    humans: input.humans,
+    bot: input.bot,
+  });
   human.endTurn();
   const cp = human.casts.spendCombo(glove.cost);
   const damage = endingGloveDamage(glove.spell, human.strength, input.random, input.rules);
-  const applied = Math.min(input.botHp, damage);
-  human.creditDamageToBot(applied);
-  const botHp = input.botHp - applied;
-  const killed = botHp === 0;
+  const hit = applyDamageToMeleeTarget(human, target, damage, {
+    humans: input.humans,
+    bot: input.bot,
+  });
   const events: BattleEvent[] = [
     { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },
     {
       type: "damage",
       sourceId: human.heroId,
-      targetId: input.botFightId,
+      targetId: hit.targetId,
       animation: glove.spell.animData ?? "magic_electroball",
       hpChange: -damage,
-      targetMaxHp: input.botMaxHp,
-      killed,
+      targetMaxHp: hit.targetMaxHp,
+      killed: hit.killed,
       comboCp: cp,
     },
   ];
-  if (killed) events.push({ type: "finished", winnerTeam: 1, fightId: input.fightId });
-  return { kind: "ending", events, botHp, finished: killed };
+  if (hit.finished) {
+    events.push({ type: "finished", winnerTeam: human.team, fightId: input.fightId });
+  }
+  return { kind: "ending", events, botHp: hit.botHp, finished: hit.finished };
 }
 
 function isEndingGlove(spell: CombatSpell): boolean {

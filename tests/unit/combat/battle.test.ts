@@ -180,6 +180,12 @@ describe("Battle", () => {
     expect(bootstrap[0]).toMatchObject({ type: "hunt-bootstrap", waiting: true });
     expect(bootstrap.some((event) => event.type === "turn-granted")).toBe(false);
     expect(battle.tryPlayerMelee(2, "center")).toEqual({ kind: "ignored" });
+    const hit = battle.tryPlayerMelee(1, "left");
+    expect(hit).toMatchObject({
+      kind: "resolved",
+      events: [{ type: "turn-wait" }, { type: "damage", sourceId: 1, targetId: 1_000_000 }],
+    });
+    expect(battle.pairedOpponent(1)).toEqual({ kind: "bot" });
   });
 
   it("resumes a paired hunter without resetting the turn deadline", () => {

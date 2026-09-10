@@ -94,6 +94,13 @@ SINGLE/MULTI framing, exact `sq`, source IDs и packet order менять нел
 Join/waiter WLD-02 не ломается: пока A в дуэли, B без `attacknow`/`oppnew`.
 Если A умер и бот жив — authed B получает `oppnew`, затем `attacknow`.
 
+Player melee и ending glove бьют `FightDuel.otherId`, а не `Battle.kind`.
+Цель — живой human в паре или hunt bot; иначе fail-fast. После удара
+bot-counter ставится только если opponent — бот, иначе grant этому human.
+`Battle.kind` остаётся для bootstrap, join, practice settlement и history,
+не для формулы удара. Hybrid (люди и боты в обеих командах) ещё не playable
+slice; finish — когда на стороне цели не осталось живых.
+
 CEF (кнопки после паузы, скрытие на свой удар) в этом срезе не прогонялся.
 
 ### Wire
@@ -333,7 +340,8 @@ Quest loot; dungeon personal/chance; party lottery; honor; полный
 ## CMB-08 — duels and team shuffle
 
 Срез закрыт (raw-AMF). `FightDuel` на том же `Battle`: hunt human↔bot и
-friendly human↔human. OA `user|friendly_duel_propose` / `accept`; esrv
+friendly human↔human. Melee не ветвится hunt/PvP: удар идёт в текущего
+соперника пары. OA `user|friendly_duel_propose` / `accept`; esrv
 `user|friendly_duel_request` и `fight|conf` challenger-у. Invites
 process-local, TTL 60s, fail-fast `203`. Practice settlement возвращает
 HP/MP/pocket, без лута/EXP/травмы; `fight|conf.is_pvp=1`, `type:"6"`.

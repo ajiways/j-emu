@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
+import type { FriendlyDuelStartInput } from "../../../src/modules/combat/ports/combat-port.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { createCombatService } from "../../support/create-combat-service.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
@@ -121,4 +123,59 @@ describe("CombatService melee turns", () => {
     ]);
     expect(await combat.execute(1, { kind: "poll" })).toEqual([]);
   });
+
+  it("grants the paired human after a duel strike without a bot counter", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat, delay } = createCombatService({
+      clock,
+      random: new SequenceRandom([1]),
+    });
+    const fightId = await combat.nextFightId();
+    await combat.startFriendlyDuel({
+      fightId,
+      arena: "1_1",
+      areaId: "503",
+      challenger: duelFighter(1, 1),
+      acceptor: duelFighter(2, 2),
+    });
+    await combat.execute(1, { kind: "authenticate", fightId, sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(2, { kind: "authenticate", fightId, sequence: 1 });
+    await combat.execute(2, { kind: "poll" });
+    await combat.execute(1, { kind: "strike", side: "center", sequence: 2 });
+    const melee = await combat.execute(1, { kind: "poll" });
+    expect(melee.map((event) => event.type)).toEqual(["turn-wait", "damage", "command-accepted"]);
+    expect(melee.some((event) => event.type === "damage" && event.targetId === 2)).toBe(true);
+
+    clock.advanceMs(1400);
+    await delay.fireDue(clock.now());
+    expect(await combat.execute(1, { kind: "poll" })).toEqual([]);
+    expect(await combat.execute(2, { kind: "poll" })).toEqual([]);
+
+    clock.advanceMs(1100);
+    await delay.fireDue(clock.now());
+    expect(await combat.execute(2, { kind: "poll" })).toEqual([
+      { type: "turn-granted", timeoutSeconds: 20 },
+    ]);
+    expect(await combat.execute(1, { kind: "poll" })).toEqual([]);
+  });
 });
+
+function duelFighter(accountId: number, heroId: number): FriendlyDuelStartInput["challenger"] {
+  return {
+    accountId,
+    heroId,
+    heroNick: `H${heroId}`,
+    heroLevel: 1,
+    heroKind: 1,
+    heroHp: 27,
+    heroMaxHp: 27,
+    heroMp: 10,
+    heroMaxMp: 10,
+    heroStrength: 10,
+    loadout: EMPTY_COMBAT_LOADOUT,
+    avatar: "avatar_small.jpg",
+    body: "m1",
+    sk: "1",
+  };
+}

@@ -1,0 +1,90 @@
+import { describe, expect, it } from "vitest";
+import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
+import { FightDuel } from "../../../src/modules/combat/domain/fight-duel.ts";
+import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
+import {
+  enemySideCleared,
+  resolveMeleeTarget,
+} from "../../../src/modules/combat/domain/melee-target.ts";
+
+function human(heroId: number, team: 1 | 2, waiting = false): HuntHuman {
+  return new HuntHuman({
+    accountId: heroId,
+    heroId,
+    nick: `H${heroId}`,
+    level: 1,
+    kind: 1,
+    hp: 27,
+    maxHp: 27,
+    mp: 10,
+    maxMp: 10,
+    team,
+    waiting,
+    strength: 10,
+    loadout: EMPTY_COMBAT_LOADOUT,
+    appearance: null,
+  });
+}
+
+describe("resolveMeleeTarget", () => {
+  it("resolves the hunt bot while a teammate waits", () => {
+    const opener = human(1, 1);
+    const waiter = human(2, 1, true);
+    const target = resolveMeleeTarget({
+      attackerHeroId: 1,
+      duel: new FightDuel(1, 1_000_000, 1),
+      humans: [opener, waiter],
+      bot: { fightId: 1_000_000, hp: 20, maxHp: 20, team: 2 },
+    });
+    expect(target).toEqual({ kind: "bot", id: 1_000_000, team: 2, hp: 20, maxHp: 20 });
+  });
+
+  it("resolves the paired human when there is no bot", () => {
+    const challenger = human(1, 1);
+    const acceptor = human(2, 2);
+    const target = resolveMeleeTarget({
+      attackerHeroId: 1,
+      duel: new FightDuel(1, 2, 1),
+      humans: [challenger, acceptor],
+      bot: null,
+    });
+    expect(target).toEqual({ kind: "human", human: acceptor });
+  });
+
+  it("fails when the pair id is neither a human nor the hunt bot", () => {
+    expect(() =>
+      resolveMeleeTarget({
+        attackerHeroId: 1,
+        duel: new FightDuel(1, 99, 1),
+        humans: [human(1, 1)],
+        bot: { fightId: 1_000_000, hp: 20, maxHp: 20, team: 2 },
+      }),
+    ).toThrow(/neither a human nor the hunt bot/);
+  });
+});
+
+describe("enemySideCleared", () => {
+  it("stays uncleared while a bot remains on the killed human's team", () => {
+    const dead = human(2, 2);
+    dead.applyDamage(27);
+    expect(
+      enemySideCleared(2, [human(1, 1), dead], {
+        fightId: 1_000_000,
+        hp: 10,
+        maxHp: 10,
+        team: 2,
+      }),
+    ).toBe(false);
+  });
+
+  it("clears hunt team 2 after the bot dies", () => {
+    expect(
+      enemySideCleared(2, [human(1, 1)], {
+        fightId: 1_000_000,
+        hp: 0,
+        maxHp: 20,
+        team: 2,
+      }),
+    ).toBe(true);
+  });
+});
