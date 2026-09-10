@@ -15,7 +15,7 @@ area presence roster:
 
 - `character` хранит hero scalars, personal details, naked `hero_skills`,
   `hero_reputations` (Радвей 5), `hp_time`, `regen_at`, `ghost` / `injury_time`
-  / `injury_artikul_id`, `hero_bot_kills` (BOOK-01); internal ports `grantExperience`, `syncResources`,
+  / `injury_artikul_id`, `hero_bot_kills` (BOOK-01), `hero_professions` (PRF-01); internal ports `grantExperience`, `syncResources`,
   `noteHp`, `noteDefeat`, `resurrect`, `creditMoney`, `debitMoney` и
   `grantReputation` пишут этот state; `move_ready_at` и `setArea` на том же
   aggregate;
@@ -24,8 +24,8 @@ area presence roster:
   `grantToBag`, `listPocket`, `applyDeathDurability` и `repair`;
 - `catalog` и `world` читают artifacts, skills, levels, appearance,
   game-wide bootstrap documents, areas 503/501/504/542, travel `area_links`, hunt
-  503 и витрину 504 (`store_types` type `-131`, lots 23/24) и reputation track
-  5 из active release;
+  503 и витрину 504 (`store_types` type `-131`, lots 23/24), reputation track
+  5 и professions 2/6 из active release;
 - equipment-derived skills/vitals считаются из persisted naked skills и
   artifact bonuses; `0000_foundation_init` держит wear/occupancy, bag economy,
   pocket unique, artifact_actions, move_ready_at, area_links, ghost/injury,
@@ -49,7 +49,8 @@ area presence roster:
   `battleground.finished_*`, Раскоп `general|2` (rooms 635/636/637, return
   500). POST-04 / HERO-01 leftover.
 - Репутация Радвея **5** есть (REP-01, product частично).
-  `quests`, `economy`, `professions` в runtime нет.
+  `quests`, `economy` в runtime нет. PRF-01: `catalog.professions` и
+  `hero_professions` (пара 2+6). Assistants/craft — leftover.
 
 Во всех разделах ниже **API**, **события** и **шов извлечения** описывают
 целевую границу. Они не доказывают регистрацию команды, наличие таблиц или
@@ -253,13 +254,15 @@ Loot routing и HELP — composition ports, combat party-таблицы не и�
 
 **Шов извлечения:** settlement — saga с inventory reservations и идемпотентными ключами. Аналитика рынка строит проекцию событий, не расширяет transactional schema.
 
-### `professions` — отложено
+### `professions` — PRF-01 licenses; jobs leftover
 
-**Владеет:** изученными профессиями/рецептами, помощниками, работами на ресурсных узлах, мастерством и cooldown.
+**Владеет (PRF-01):** нет runtime jobs. Catalog владеет `catalog.professions`;
+character владеет `hero_professions` и `learnProfession`. Контракт:
+[PROFESSIONS.md](../modules/PROFESSIONS.md).
 
-**API:** `learnProfession`, `learnRecipe`, `startGathering`, `claimGathering`, `craft`, `getProfessionState`.
+**API leftover:** `startGathering`, `claimGathering`, `craft`.
 
-**События:** `professions.mastery-changed.v1`, `professions.gathering-finished.v1`, `professions.craft-finished.v1`.
+**События leftover:** `professions.mastery-changed.v1`, `professions.gathering-finished.v1`, `professions.craft-finished.v1`.
 
 **Шов извлечения:** каталог рецептов и узлов читается через catalog/world ports; ингредиенты и результат проходят атомарную orchestration с inventory.
 

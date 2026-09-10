@@ -120,6 +120,7 @@ export class CompositionRoot {
         creationPolicy: policy.heroCreation,
         progression: catalog.progression,
         reputationCatalog: catalog.catalog,
+        professionCatalog: catalog.catalog,
         equipmentModifiers: inventory.service,
         clock,
         regenPolicy: policy.regen,
@@ -374,6 +375,7 @@ export class CompositionRoot {
       );
       return new Application(
         wire.http,
+        characters.service,
         characters.service,
         characters.service,
         characters.service,

@@ -321,10 +321,19 @@ kill/duel/fatality/daily, type:2 только при value > 0, всегда SUM
 
 Не перенесены tracks 7/11/…, kill overlay, SET_FLAG, chat notify, GRANT_REP.
 
+## Professions — частично
+
+Есть raw-AMF и PostgreSQL: каталог Старатель **2** + Знаковед **6**,
+`learnProfession` value 1, `user|professions` 16 слотов и кап с 7 ур. (59),
+`common|conf.profession_info` только эти id. Reconnect/restart читает
+Postgres. CEF вкладки профессий не прогонялся; квестового GRANT нет.
+
+Не перенесены ассистенты/ферма, рецепты/крафт, ids 1/3/4/5/7–16, смена
+лицензии.
+
 ## Вне первой волны
 
-Professions, achievements, daily quests, heroism,
-gear spells, info pages и content editor.
+Achievements, daily quests, heroism, gear spells, info pages и content editor.
 
 Clan и встроенные playerbots не переносятся.
 

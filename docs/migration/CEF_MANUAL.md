@@ -63,6 +63,11 @@ product-status только вместе с CEF-фактом в `CAPABILITIES.md
 - [ ] BOOK-01: вход в пещеру огра 542 → книга инстансов active artikul `1`;
       после TTL строка blocked.
 
+## Professions
+
+- [ ] PRF-01: выдать Старатель 2 + Знаковед 6 → вкладка профессий два
+      active слота; на L7 `max_profession_skill` 59; F5/рестарт.
+
 ## World / economy / HUD
 
 - [ ] Store CEF: лавка 504 вкладка оружия, лоты 23/24, покупка, отказ

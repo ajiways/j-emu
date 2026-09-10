@@ -97,6 +97,9 @@ export class ContentPublicationService {
     await this.catalog.materializeBattlegrounds(release.id, {
       battlegrounds: validated.battlegrounds,
     });
+    await this.catalog.materializeProfessions(release.id, {
+      professions: validated.professions,
+    });
     await this.store.activate(release.id);
     return release;
   }

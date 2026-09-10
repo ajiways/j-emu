@@ -130,6 +130,9 @@ pay jsonb, requires jsonb)` PK `(release_id, area_id, lot_id)`; FK на
 - `reputation_tracks(release_id, object_id, type, title, image, unlock_flag)`
   PK `(release_id, object_id)`; type 2; `object_id > 0 AND <> 36`. Slice:
   только Радвей **5**, empty unlock.
+- `professions(release_id, id, title, type, skill_id, picture, position,
+skill_step_override, skill_minlvl_override, description, info_url,
+user_stat_id)` PK `(release_id, id)`; type 1 or 2; id 1…16; slice ids 2 and 6.
 - `bonuses(release_id, id, kind, skill_id, delta, need_value, artikul_id, title, chat_msg)`
   PK `(release_id, id)`; kind `'skill'`; FK на `skill_definitions` и
   `artifacts`. Slice: **601** AGRILKA_MOBOV.
@@ -277,6 +280,7 @@ model остаются планом. `heroes.ghost` / `injury_time` / `injury_ar
 `heroes.regen_at`, `hp_time`, `experience_grants`, `hero_skills`,
 `hero_reputations`, HP/MP/EXP и appearance bootstrap уже находятся в runtime.
 BOOK-01 `hero_bot_kills` — runtime.
+PRF-01 `hero_professions` — runtime.
 
 ### `inventory`
 
@@ -289,6 +293,7 @@ level_curves — отдельные таблицы поверх текущих `
 `level_skill_values` уже в runtime и не является будущей таблицей.
 `store_types` / `store_lots` — runtime ECO-01/ECO-02 (`pay` / `requires`).
 `reputation_tracks` — runtime REP-01 (только object_id 5).
+`professions` — runtime PRF-01 (ids 2 and 6).
 
 ### `world`
 
@@ -312,6 +317,8 @@ Party SOC-02/SOC-03 живёт в `party` (`parties` / `party_members` /
 DNG-01/DNG-02: `instance.copies` / `binds` / `killed_spawns` (строки, не dump
 JSONB `killed_spawns_json`). `copies.copy_type` `dungeon|bg`.
 `heroes.instance_copy_id` nullable без FK.
+PRF-01: `catalog.professions` pair 2+6; `character.hero_professions`.
+Контракт: [PROFESSIONS.md](../modules/PROFESSIONS.md).
 Контракт: [INSTANCE.md](../modules/INSTANCE.md), книга —
 [BOOK.md](../modules/BOOK.md).
 BG-01: `battleground.finished_matches` / `finished_players` (typed, не jsonb);

@@ -8,8 +8,10 @@ import type { ArtifactDefinition } from "../domain/artifact-definition.ts";
 import type { UseScript } from "../domain/use-script.ts";
 import type { StoreLot, StoreType } from "../domain/store-lot.ts";
 import type { ReputationTrack } from "../domain/reputation-track.ts";
+import type { ProfessionDefinition } from "../domain/profession-definition.ts";
 import type { Catalog } from "../ports/catalog.ts";
 import { loadReputationTrack, loadReputationTracks } from "./postgres-catalog-reputation.ts";
+import { loadProfession, loadProfessions } from "./postgres-catalog-profession.ts";
 import { loadStoreLots, loadStoreTypes } from "./postgres-catalog-store.ts";
 import { artifactDefinitionFromRow } from "./artifact-definition-from-row.ts";
 import { loadBonus, loadUseScript } from "./postgres-catalog-use.ts";
@@ -225,6 +227,14 @@ export class PostgresCatalog implements Catalog {
 
   async reputationTracks(): Promise<readonly ReputationTrack[]> {
     return loadReputationTracks(this.database, await this.revision.requireId());
+  }
+
+  async profession(id: number): Promise<ProfessionDefinition | null> {
+    return loadProfession(this.database, await this.revision.requireId(), id);
+  }
+
+  async professions(): Promise<readonly ProfessionDefinition[]> {
+    return loadProfessions(this.database, await this.revision.requireId());
   }
 
   private async requireGameWide(

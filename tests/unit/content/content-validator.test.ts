@@ -235,6 +235,15 @@ describe("ContentValidator", () => {
     ).toThrow(/reputation track 5 is required/);
   });
 
+  it("rejects a bundle without professions 2 and 6", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        professions: [],
+      }),
+    ).toThrow(/profession 2 is required/);
+  });
+
   it("rejects a bundle without exactly one playable battleground", () => {
     expect(() =>
       new ContentValidator().validate({

@@ -9,9 +9,10 @@ import type {
 } from "./bootstrap-content.ts";
 import type { DungeonDocument } from "./content-dungeon.ts";
 import type { BattlegroundDocument } from "./content-battleground.ts";
+import type { ProfessionDocument } from "./content-profession.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v23";
-export const CONTENT_VALIDATOR_VERSION = "23";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v24";
+export const CONTENT_VALIDATOR_VERSION = "24";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;
@@ -294,8 +295,7 @@ export type UseScriptDocument = Readonly<{
   effects: readonly UseScriptEffectDocument[];
 }>;
 
-export type ContentBundle = Readonly<{
-  schemaVersion: string;
+type PlayableSliceDocuments = {
   artifacts: readonly ArtifactDocument[];
   bots: readonly BotDocument[];
   areas: readonly AreaDocument[];
@@ -306,6 +306,7 @@ export type ContentBundle = Readonly<{
   storeTypes: readonly StoreTypeDocument[];
   storeLots: readonly StoreLotDocument[];
   reputationTracks: readonly ReputationTrackDocument[];
+  professions: readonly ProfessionDocument[];
   bonuses: readonly BonusDocument[];
   useScripts: readonly UseScriptDocument[];
   skills: readonly SkillDocument[];
@@ -315,7 +316,9 @@ export type ContentBundle = Readonly<{
   chrome: BootstrapChromeDocument;
   commonConf: CommonConfBlock;
   welcomeMessage: WelcomeMessageDocument;
-}>;
+};
+
+export type ContentBundle = Readonly<{ schemaVersion: string } & PlayableSliceDocuments>;
 
 export type ContentEntry = Readonly<{
   type:
@@ -329,6 +332,7 @@ export type ContentEntry = Readonly<{
     | "store_type"
     | "store_lot"
     | "reputation_track"
+    | "profession"
     | "bonus"
     | "use_script"
     | "skill"
@@ -351,6 +355,7 @@ export type ContentEntry = Readonly<{
     | StoreTypeDocument
     | StoreLotDocument
     | ReputationTrackDocument
+    | ProfessionDocument
     | BonusDocument
     | UseScriptDocument
     | SkillDocument
@@ -362,31 +367,14 @@ export type ContentEntry = Readonly<{
     | WelcomeMessageDocument;
 }>;
 
-export type ValidatedContentBundle = Readonly<{
-  schemaVersion: string;
-  validatorVersion: string;
-  checksum: string;
-  artifacts: readonly ArtifactDocument[];
-  bots: readonly BotDocument[];
-  areas: readonly AreaDocument[];
-  areaLinks: readonly AreaLinkDocument[];
-  huntSpawns: readonly HuntSpawnDocument[];
-  dungeons: readonly DungeonDocument[];
-  battlegrounds: readonly BattlegroundDocument[];
-  storeTypes: readonly StoreTypeDocument[];
-  storeLots: readonly StoreLotDocument[];
-  reputationTracks: readonly ReputationTrackDocument[];
-  bonuses: readonly BonusDocument[];
-  useScripts: readonly UseScriptDocument[];
-  skills: readonly SkillDocument[];
-  levels: readonly LevelBoundaryDocument[];
-  appearances: readonly AppearanceDocument[];
-  hudDefaults: HudDefaultsDocument;
-  chrome: BootstrapChromeDocument;
-  commonConf: CommonConfBlock;
-  welcomeMessage: WelcomeMessageDocument;
-  entries: readonly ContentEntry[];
-}>;
+export type ValidatedContentBundle = Readonly<
+  {
+    schemaVersion: string;
+    validatorVersion: string;
+    checksum: string;
+    entries: readonly ContentEntry[];
+  } & PlayableSliceDocuments
+>;
 
 export type PublishedRelease = Readonly<{
   id: string;

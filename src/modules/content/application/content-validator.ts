@@ -11,6 +11,7 @@ import {
 import { ContentValidationError } from "./content-validation-error.ts";
 import { collectStoreIssues } from "./collect-store-issues.ts";
 import { collectReputationIssues } from "./collect-reputation-issues.ts";
+import { collectProfessionIssues, overlayProfessionInfo } from "./collect-profession-issues.ts";
 import { collectSetIssues } from "./collect-set-issues.ts";
 import { collectUpgradeIssues } from "./collect-upgrade-issues.ts";
 import { collectUseIssues } from "./collect-use-issues.ts";
@@ -163,6 +164,7 @@ export class ContentValidator {
     issues.push(...collectBotLootIssues(bundle));
     issues.push(...collectStoreIssues(bundle));
     issues.push(...collectReputationIssues(bundle));
+    issues.push(...collectProfessionIssues(bundle));
     issues.push(...collectUpgradeIssues(bundle));
     issues.push(...collectSetIssues(bundle));
     issues.push(...collectUseIssues(bundle));
@@ -184,6 +186,7 @@ export class ContentValidator {
     }
     if (issues.length > 0) throw new ContentValidationError(issues);
 
+    const commonConf = overlayProfessionInfo(bundle);
     const entries: ContentEntry[] = [
       ...bundle.artifacts.map((document) => entry("artifact", String(document.id), document)),
       ...bundle.bots.map((document) => entry("bot", String(document.id), document)),
@@ -205,6 +208,7 @@ export class ContentValidator {
       ...bundle.reputationTracks.map((document) =>
         entry("reputation_track", String(document.objectId), document),
       ),
+      ...bundle.professions.map((document) => entry("profession", String(document.id), document)),
       ...bundle.bonuses.map((document) => entry("bonus", String(document.id), document)),
       ...bundle.useScripts.map((document) =>
         entry("use_script", String(document.bonusId), document),
@@ -216,7 +220,7 @@ export class ContentValidator {
       ),
       entry("hud_defaults", "hud_defaults", bundle.hudDefaults),
       entry("chrome", "chrome", bundle.chrome),
-      entry("common_conf", "common_conf", bundle.commonConf),
+      entry("common_conf", "common_conf", commonConf),
       entry("welcome_message", "welcome_message", bundle.welcomeMessage),
     ].sort((left, right) => {
       const typeOrder = left.type.localeCompare(right.type);
@@ -244,6 +248,7 @@ export class ContentValidator {
       storeTypes: bundle.storeTypes,
       storeLots: bundle.storeLots,
       reputationTracks: bundle.reputationTracks,
+      professions: bundle.professions,
       bonuses: bundle.bonuses,
       useScripts: bundle.useScripts,
       skills: bundle.skills,
@@ -251,7 +256,7 @@ export class ContentValidator {
       appearances: bundle.appearances,
       hudDefaults: bundle.hudDefaults,
       chrome: bundle.chrome,
-      commonConf: bundle.commonConf,
+      commonConf,
       welcomeMessage: bundle.welcomeMessage,
       entries,
     };

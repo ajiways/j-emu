@@ -12,6 +12,7 @@ import {
 } from "./parse-bootstrap-content.ts";
 import { storeLotsSchema, storeTypesSchema } from "./parse-store-content.ts";
 import { reputationTracksSchema } from "./parse-reputation-content.ts";
+import { professionsSchema } from "./parse-profession-content.ts";
 import { dungeonsSchema } from "./parse-dungeon-content.ts";
 import { battlegroundsSchema } from "./parse-battleground-content.ts";
 import { bonusDocumentSchema, useScriptDocumentSchema } from "./parse-use-content.ts";
@@ -375,6 +376,7 @@ const bundleSchema = z
     storeTypes: storeTypesSchema,
     storeLots: storeLotsSchema,
     reputationTracks: reputationTracksSchema,
+    professions: professionsSchema,
     bonuses: z.array(bonusDocumentSchema),
     useScripts: z.array(useScriptDocumentSchema),
     skills: z.array(skillDocumentSchema).min(1),

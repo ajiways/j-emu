@@ -3,6 +3,7 @@ import { requirePresent } from "../../shared/kernel/require-present.ts";
 import type { Clock } from "../../shared/kernel/clock.ts";
 import type { CatalogProgression } from "../catalog/ports/catalog-progression.ts";
 import type { ReputationCatalog } from "../catalog/ports/reputation-catalog.ts";
+import type { ProfessionCatalog } from "../catalog/ports/profession-catalog.ts";
 import { CharacterService } from "./application/character-service.ts";
 import type { HeroCreationPolicy } from "./domain/hero.ts";
 import { Hero } from "./domain/hero.ts";
@@ -11,6 +12,7 @@ import { PostgresExperienceGrantRepository } from "./infrastructure/postgres-exp
 import { PostgresHeroBestiary } from "./infrastructure/postgres-hero-bestiary.ts";
 import { PostgresHeroLearnedBonusRepository } from "./infrastructure/postgres-hero-learned-bonus-repository.ts";
 import { PostgresHeroRepository } from "./infrastructure/postgres-hero-repository.ts";
+import { PostgresHeroProfessionRepository } from "./infrastructure/postgres-hero-profession-repository.ts";
 import { PostgresHeroReputationRepository } from "./infrastructure/postgres-hero-reputation-repository.ts";
 import { PostgresHeroSkillRepository } from "./infrastructure/postgres-hero-skill-repository.ts";
 import { PostgresPersonalDetailsRepository } from "./infrastructure/postgres-personal-details-repository.ts";
@@ -29,6 +31,7 @@ export class CharacterModule {
     creationPolicy: HeroCreationPolicy;
     progression: CatalogProgression;
     reputationCatalog: ReputationCatalog;
+    professionCatalog: ProfessionCatalog;
     equipmentModifiers: EquippedModifiers;
     clock: Clock;
     regenPolicy: RegenPolicy;
@@ -46,6 +49,10 @@ export class CharacterModule {
     const reputationCatalog = requirePresent(
       input.reputationCatalog,
       "Character module requires a reputation catalog",
+    );
+    const professionCatalog = requirePresent(
+      input.professionCatalog,
+      "Character module requires a profession catalog",
     );
     const equipmentModifiers = requirePresent(
       input.equipmentModifiers,
@@ -74,12 +81,14 @@ export class CharacterModule {
         database,
         heroes,
         new PostgresHeroReputationRepository(database),
+        new PostgresHeroProfessionRepository(database),
         skills,
         new PostgresHeroLearnedBonusRepository(database),
         new PostgresPersonalDetailsRepository(database),
         creationPolicy,
         progression,
         reputationCatalog,
+        professionCatalog,
         equipmentModifiers,
         new PostgresExperienceGrantRepository(database),
         clock,

@@ -9,6 +9,7 @@ export default defineConfig({
     "./src/modules/catalog/infrastructure/schema-bot-spell-book.ts",
     "./src/modules/catalog/infrastructure/schema-dungeons.ts",
     "./src/modules/catalog/infrastructure/schema-battlegrounds.ts",
+    "./src/modules/catalog/infrastructure/schema-professions.ts",
     "./src/modules/world/infrastructure/schema.ts",
     "./src/modules/battleground/infrastructure/schema.ts",
     "./src/modules/character/infrastructure/schema.ts",

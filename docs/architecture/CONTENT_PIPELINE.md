@@ -29,7 +29,7 @@ counts/checksums и completeness gates:
 
 ## Текущий playable slice
 
-Текущая `playable-slice/v23` release — минимальный bundle: 31 artifacts
+Текущая `playable-slice/v24` release — минимальный bundle: 31 artifacts
 (9095 + dump-proven L1 greyset **20/21/26**, glove spells **9098/9100/9099**, pocketables **93** и **99**, food **77**,
 shop wear **23** и **24**, arsenal amulet **621**, upgrade crystals **553/1310/4603/11408/13224**, recruit set **27/28/30/33/35/106** и mix **43/46**,
 USE **640/623/2371/55/584**; без 209 и патронташа), 8 bots (2/4/24/32/99/353/354/373) с overlay reward scalars; loot entries только у bot 2 (77/93/99),
@@ -253,6 +253,8 @@ source group ведутся только в
 - `catalog`: REP-01 subset `reputation_tracks.json` track **5** only; SUM 36
   и kill overlay не публиковать. Полный корпус треков/`reputation_kills` —
   DATA-05.
+- `catalog`: PRF-01 pair `profession_info` ids **2** and **6**; publication
+  replaces `common_conf.profession_info`. Full Pub1 professions — POST-02.
 - `catalog`: `reputation_tracks.json` и `reputation_kills.json` (остаток DATA-05);
   validator проверяет track levels, thresholds/rewards и bot refs. Quest reward/gate refs
   проверяет quest validator, поэтому authored reputation не зависит обратно от

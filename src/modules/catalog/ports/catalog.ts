@@ -10,8 +10,9 @@ import type { LevelBoundary } from "../domain/level-boundary.ts";
 import type { SkillDefinition } from "../domain/skill-definition.ts";
 import type { StoreLot, StoreType } from "../domain/store-lot.ts";
 import type { ReputationCatalog } from "./reputation-catalog.ts";
+import type { ProfessionCatalog } from "./profession-catalog.ts";
 
-export interface Catalog extends ReputationCatalog {
+export interface Catalog extends ReputationCatalog, ProfessionCatalog {
   artifact(id: number): Promise<ArtifactDefinition | null>;
   bonus(id: number): Promise<ArtifactBonus | null>;
   useScript(bonusId: number): Promise<UseScript | null>;

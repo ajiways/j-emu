@@ -2,6 +2,7 @@ import type { ArtifactBonus } from "../../catalog/domain/artifact-bonus.ts";
 import type { ArtifactSkillBonus } from "../../catalog/domain/artifact-skill-bonus.ts";
 import type { CatalogProgression } from "../../catalog/ports/catalog-progression.ts";
 import type { ReputationCatalog } from "../../catalog/ports/reputation-catalog.ts";
+import type { ProfessionCatalog } from "../../catalog/ports/profession-catalog.ts";
 import type { ProgressionSnapshot } from "../../catalog/domain/progression-snapshot.ts";
 import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../shared/kernel/unit-of-work.ts";
@@ -50,7 +51,15 @@ import type {
 } from "../ports/character-reputation.ts";
 import type { ExperienceGrantRepository } from "../ports/experience-grant-repository.ts";
 import type { HeroReputationRepository } from "../ports/hero-reputation-repository.ts";
+import type { HeroProfessionRepository } from "../ports/hero-profession-repository.ts";
 import { grantHeroReputation } from "./grant-hero-reputation.ts";
+import { grantHeroProfession } from "./grant-hero-profession.ts";
+import type {
+  CharacterProfessions,
+  LearnProfessionCommand,
+  LearnProfessionResult,
+  HeroProfessionLicense,
+} from "../ports/character-professions.ts";
 
 export class CharacterService
   implements
@@ -59,7 +68,8 @@ export class CharacterService
     CharacterMoney,
     CharacterLocation,
     CharacterPresence,
-    CharacterReputation
+    CharacterReputation,
+    CharacterProfessions
 {
   private readonly grants: ExperienceGrantService;
   private readonly resources: ResourceService;
@@ -68,12 +78,14 @@ export class CharacterService
     private readonly unitOfWork: UnitOfWork,
     private readonly heroes: HeroRepository,
     private readonly heroReputations: HeroReputationRepository,
+    private readonly heroProfessions: HeroProfessionRepository,
     private readonly skills: HeroSkillRepository,
     private readonly learnedBonuses: HeroLearnedBonusRepository,
     private readonly personalDetailsStore: PersonalDetailsRepository,
     private readonly creationPolicy: HeroCreationPolicy,
     private readonly progression: CatalogProgression,
     private readonly reputationCatalog: ReputationCatalog,
+    private readonly professionCatalog: ProfessionCatalog,
     private readonly equipment: EquippedModifiers,
     grantStore: ExperienceGrantRepository,
     private readonly clock: Clock,
@@ -154,6 +166,19 @@ export class CharacterService
       throw new Error("Character id is required");
     }
     return this.heroReputations.listByHeroId(characterId);
+  }
+
+  learnProfession(command: LearnProfessionCommand): Promise<LearnProfessionResult> {
+    return this.unitOfWork.run(() =>
+      grantHeroProfession(this.heroes, this.heroProfessions, this.professionCatalog, command),
+    );
+  }
+
+  async professionLicenses(characterId: number): Promise<readonly HeroProfessionLicense[]> {
+    if (!Number.isInteger(characterId) || characterId < 1) {
+      throw new Error("Character id is required");
+    }
+    return this.heroProfessions.listByHeroId(characterId);
   }
 
   async setArea(command: SetAreaCommand): Promise<void> {

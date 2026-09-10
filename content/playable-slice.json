@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v23",
+  "schemaVersion": "playable-slice/v24",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -2877,6 +2877,34 @@
       "title": "Репутация Радвея",
       "image": "rep_radvey_sm.png",
       "unlockFlag": ""
+    }
+  ],
+  "professions": [
+    {
+      "id": 2,
+      "title": "Cтаратель",
+      "type": 2,
+      "skillId": "PR_GEOLOGY",
+      "picture": "geology.png",
+      "position": 2,
+      "skillStepOverride": null,
+      "skillMinlvlOverride": null,
+      "description": "Вы можете владеть только одной профессией. Для смены профессии откажитесь от текущей и купите лицензию у гремлиновода.",
+      "infoUrl": "/info/info/index.php?obj=cat&id=324&page=2",
+      "userStatId": null
+    },
+    {
+      "id": 6,
+      "title": "Знаковед",
+      "type": 1,
+      "skillId": "PR_JEWELRY",
+      "picture": "jewelry.png",
+      "position": 5,
+      "skillStepOverride": null,
+      "skillMinlvlOverride": null,
+      "description": "Вы можете владеть только одной профессией. Для смены профессии откажитесь от текущей и купите справочник в Башне таинств.",
+      "infoUrl": "/info/info/index.php?obj=cat&id=325&page=2",
+      "userStatId": null
     }
   ],
   "bonuses": [

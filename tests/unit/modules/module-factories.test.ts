@@ -43,6 +43,7 @@ import type { BattlegroundCatalog } from "../../../src/modules/battleground/port
 import type { InstanceService } from "../../../src/modules/instance/application/instance-service.ts";
 import type { CatalogProgression } from "../../../src/modules/catalog/ports/catalog-progression.ts";
 import type { ReputationCatalog } from "../../../src/modules/catalog/ports/reputation-catalog.ts";
+import type { ProfessionCatalog } from "../../../src/modules/catalog/ports/profession-catalog.ts";
 import type { ReleaseArtifacts } from "../../../src/modules/catalog/ports/release-artifacts.ts";
 import type { EquippedModifiers } from "../../../src/modules/character/ports/equipped-modifiers.ts";
 import type { CharacterService } from "../../../src/modules/character/application/character-service.ts";
@@ -70,7 +71,7 @@ import {
 
 const database = undefined as unknown as PostgresDatabase;
 const progression = {} as CatalogProgression;
-const reputationCatalog = {} as ReputationCatalog;
+const reputationCatalog = {} as ReputationCatalog & ProfessionCatalog;
 const equipmentModifiers = {} as EquippedModifiers;
 const releaseArtifacts = {} as ReleaseArtifacts;
 const clock = {} as Clock;
@@ -98,6 +99,7 @@ describe("module factories", () => {
         creationPolicy: PLAYABLE_HERO_CREATION,
         progression,
         reputationCatalog,
+        professionCatalog: reputationCatalog,
         equipmentModifiers,
         clock,
         regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -110,6 +112,7 @@ describe("module factories", () => {
         creationPolicy: PLAYABLE_HERO_CREATION,
         progression,
         reputationCatalog,
+        professionCatalog: reputationCatalog,
         equipmentModifiers,
         clock: undefined as unknown as Clock,
         regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -122,6 +125,20 @@ describe("module factories", () => {
         creationPolicy: PLAYABLE_HERO_CREATION,
         progression,
         reputationCatalog,
+        professionCatalog: undefined as unknown as ProfessionCatalog,
+        equipmentModifiers,
+        clock,
+        regenPolicy: PLAYABLE_REGEN_POLICY,
+        activeFight,
+      }),
+    ).toThrow(/Character module requires a profession catalog/);
+    expect(() =>
+      CharacterModule.create({
+        database: {} as PostgresDatabase,
+        creationPolicy: PLAYABLE_HERO_CREATION,
+        progression,
+        reputationCatalog,
+        professionCatalog: reputationCatalog,
         equipmentModifiers,
         clock,
         regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -134,6 +151,7 @@ describe("module factories", () => {
         creationPolicy: { ...PLAYABLE_HERO_CREATION, exp: 2 },
         progression,
         reputationCatalog,
+        professionCatalog: reputationCatalog,
         equipmentModifiers,
         clock,
         regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -410,6 +428,7 @@ describe("module factories", () => {
       creationPolicy: PLAYABLE_HERO_CREATION,
       progression,
       reputationCatalog,
+      professionCatalog: reputationCatalog,
       equipmentModifiers,
       clock,
       regenPolicy: PLAYABLE_REGEN_POLICY,

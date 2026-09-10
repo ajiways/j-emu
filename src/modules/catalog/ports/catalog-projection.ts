@@ -18,6 +18,7 @@ import type {
 } from "../../content/domain/content-document.ts";
 import type { DungeonDocument } from "../../content/domain/content-dungeon.ts";
 import type { BattlegroundDocument } from "../../content/domain/content-battleground.ts";
+import type { ProfessionDocument } from "../../content/domain/content-profession.ts";
 
 export type CatalogMaterialization = Readonly<{
   artifacts: readonly ArtifactDocument[];
@@ -50,6 +51,10 @@ export type CatalogBattlegroundMaterialization = Readonly<{
   battlegrounds: readonly BattlegroundDocument[];
 }>;
 
+export type CatalogProfessionMaterialization = Readonly<{
+  professions: readonly ProfessionDocument[];
+}>;
+
 export interface CatalogProjection {
   materialize(releaseId: string, documents: CatalogMaterialization): Promise<void>;
   materializeStore(releaseId: string, documents: CatalogStoreMaterialization): Promise<void>;
@@ -61,5 +66,9 @@ export interface CatalogProjection {
   materializeBattlegrounds(
     releaseId: string,
     documents: CatalogBattlegroundMaterialization,
+  ): Promise<void>;
+  materializeProfessions(
+    releaseId: string,
+    documents: CatalogProfessionMaterialization,
   ): Promise<void>;
 }

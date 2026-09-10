@@ -1022,11 +1022,14 @@
 - **Behavior evidence:** legacy profession routes, `assistant.ts` и evidence.
 - **Content set:** 1–2 representative профессии (одна добывающая, одна
   крафтовая) как generic engine proof; полный список — DATA POST-02.
-- **Architecture checkpoint / decision:** pending — module ownership,
-  scheduler clock и quest/inventory/world ports.
+- **Architecture checkpoint / decision:** complete — отдельный ADR не нужен.
+  `catalog.professions` — authored pair 2+6; `character.hero_professions` —
+  лицензии; composition OA/init `user|professions` и `learnProfession`.
+  Scheduler / assistants / craft — PRF-02/03. Контракт:
+  [PROFESSIONS.md](../modules/PROFESSIONS.md).
 - **Acceptance:** representative профессия публикуется и grant/bootstrap
   проходит raw-AMF E2E.
-- **Status:** `next`
+- **Status:** `done`
 
 ### PRF-02 — Assistants and gathering
 
@@ -1039,7 +1042,7 @@
   expiry processing без request-time fallback.
 - **Acceptance:** deploy, finish, claim/repeat/revoke и upgrade переживают
   restart и атомарно дают inventory/mastery/stat изменения.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### PRF-03 — Crafting
 

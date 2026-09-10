@@ -37,6 +37,7 @@ import {
   battlegroundRooms,
   battlegrounds,
 } from "../../../src/modules/catalog/infrastructure/schema-battlegrounds.ts";
+import { professions } from "../../../src/modules/catalog/infrastructure/schema-professions.ts";
 import {
   finishedMatches,
   finishedPlayers,
@@ -45,6 +46,7 @@ import {
   experienceGrants,
   heroes,
   heroBotKills,
+  heroProfessions,
   heroLearnedBonuses,
   heroPersonalDetails,
   heroReputations,
@@ -146,8 +148,10 @@ describe("Drizzle migrations", () => {
         "catalog.store_types",
         "catalog.use_scripts",
         "catalog.reputation_tracks",
+        "catalog.professions",
         "character.experience_grants",
         "character.hero_bot_kills",
+        "character.hero_professions",
         "character.hero_learned_bonuses",
         "character.hero_personal_details",
         "character.hero_reputations",
@@ -205,6 +209,7 @@ describe("Drizzle migrations", () => {
       storeTypes,
       storeLots,
       reputationTracks,
+      professions,
       bonuses,
       useScripts,
       areas,
@@ -216,6 +221,7 @@ describe("Drizzle migrations", () => {
       heroSkills,
       heroReputations,
       heroBotKills,
+      heroProfessions,
       experienceGrants,
       items,
       letters,
@@ -237,7 +243,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(56);
+    ]).toHaveLength(58);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -262,6 +268,7 @@ describe("Drizzle migrations", () => {
       "0015_catalog_dungeon_spawn_zone.sql",
       "0016_battleground_history_and_copy_type.sql",
       "0017_character_hero_bot_kills.sql",
+      "0018_profession_catalog_and_hero_licenses.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -285,8 +292,9 @@ describe("Drizzle migrations", () => {
       "0015_catalog_dungeon_spawn_zone",
       "0016_battleground_history_and_copy_type",
       "0017_character_hero_bot_kills",
+      "0018_profession_catalog_and_hero_licenses",
     ]);
-    expect(await appliedCount()).toBe(18);
+    expect(await appliedCount()).toBe(19);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -336,6 +344,7 @@ describe("Drizzle migrations", () => {
     expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/bonus/);
     expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/use_script/);
     expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/dungeon/);
+    expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/profession/);
     const tempeffectCheck = await database.session().execute<{ check_clause: string }>(
       sql`SELECT check_clause
           FROM information_schema.check_constraints

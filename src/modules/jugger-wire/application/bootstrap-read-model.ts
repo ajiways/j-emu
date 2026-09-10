@@ -26,6 +26,7 @@ import { buildUserPocket } from "./user-pocket-block.ts";
 import { buildUserConf } from "./user-conf-block.ts";
 import { emptyUserMagic } from "./user-magic-block.ts";
 import { buildUserSkills, skillsExpireBlock, type UserSkillsBlock } from "./user-skills-block.ts";
+import { userProfessionsWire } from "../../character/domain/profession-wire.ts";
 import { buildUserUnitframe, type UserUnitframeBlock } from "./user-unitframe-block.ts";
 import { wornSetPortrait } from "./worn-set-portrait.ts";
 import { buildUserView, type UserViewBlock } from "./user-view-block.ts";
@@ -283,7 +284,10 @@ export class BootstrapReadModel {
         info: withHttpsFproxy(await this.characters.personalDetails(accountId)),
       },
       "user|skills": await this.skills(accountId),
-      "user|professions": chrome.block("user|professions"),
+      "user|professions": userProfessionsWire(
+        await this.characters.professionLicenses(hero.id),
+        hero.level,
+      ),
       "pet|list": chrome.block("pet|list"),
       "user|mount_list": chrome.block("user|mount_list"),
       ...book,

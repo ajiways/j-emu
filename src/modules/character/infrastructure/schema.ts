@@ -195,3 +195,23 @@ export const heroBotKills = characterSchema.table(
     check("hero_bot_kills_win_cnt_check", sql`${table.winCnt} > 0`),
   ],
 );
+
+export const heroProfessions = characterSchema.table(
+  "hero_professions",
+  {
+    heroId: integer("hero_id")
+      .notNull()
+      .references(() => heroes.id, { onDelete: "restrict" }),
+    professionId: integer("profession_id").notNull(),
+    value: integer("value").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.heroId, table.professionId] }),
+    check("hero_professions_hero_id_check", sql`${table.heroId} > 0`),
+    check(
+      "hero_professions_profession_id_check",
+      sql`${table.professionId} >= 1 AND ${table.professionId} <= 16`,
+    ),
+    check("hero_professions_value_check", sql`${table.value} > 0`),
+  ],
+);
