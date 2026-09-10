@@ -232,9 +232,20 @@ DelayScheduler. Buyout/bid/fill/expiry гонки — один победите�
 
 Не перенесены `addToLot` и playerbots.
 
+## Trade — частично
+
+Есть raw-AMF: `trade|request` / `confirm` / `put` / `put_money` / `withdraw`,
+`session_ready` / `session_decline` / `session_confirm` / `decline`. Инвайт
+esrv `common|window` на `2:`; сессия process-local через disconnect; settle
+в одной UoW списывает налог и меняет bag/деньги. CEF окна обмена не
+прогонялся.
+
+Не перенесены system-чат «согласился торговать» (SOC-01) и persist сессии
+через restart процесса.
+
 ## После core — не перенесено
 
-Chat/party, полный корпус магазинов (DATA-05) и trade.
+Chat/party, полный корпус магазинов (DATA-05).
 
 ## Store — частично
 

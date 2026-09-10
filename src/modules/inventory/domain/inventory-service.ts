@@ -26,6 +26,7 @@ import { grantToBag } from "./grant-to-bag.ts";
 import { consumeFromBag, countBagByArtifact } from "./consume-from-bag.ts";
 import { takeFromBagForMail } from "./take-from-bag-for-mail.ts";
 import { takeFromBagForAuction } from "./take-from-bag-for-auction.ts";
+import { takeFromBagForTrade } from "./take-from-bag-for-trade.ts";
 import { canFitMailSnapshots } from "./can-fit-mail-snapshots.ts";
 import { grantMailSnapshots } from "./grant-mail-snapshots.ts";
 import type { MailItemSnapshot } from "./mail-item-snapshot.ts";
@@ -268,6 +269,14 @@ export class InventoryService {
     quantity: number;
   }): Promise<MailItemSnapshot> {
     return takeFromBagForAuction(this.inventory, this.catalog, command);
+  }
+
+  takeFromBagForTrade(command: {
+    characterId: number;
+    itemId: number;
+    quantity: number;
+  }): Promise<MailItemSnapshot> {
+    return takeFromBagForTrade(this.inventory, this.catalog, command);
   }
 
   canFitMailSnapshots(command: {

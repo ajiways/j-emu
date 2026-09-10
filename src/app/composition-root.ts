@@ -42,6 +42,8 @@ import { AuctionTenderAdd } from "./auction-tender-add.ts";
 import { AuctionTenderSell } from "./auction-tender-sell.ts";
 import { AuctionTenderCancel } from "./auction-tender-cancel.ts";
 import { AuctionTtlSweep } from "./auction-ttl-sweep.ts";
+import { TradeDesk } from "./trade-desk.ts";
+import { TradeModule } from "../modules/trade/trade-module.ts";
 import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 
@@ -241,6 +243,16 @@ export class CompositionRoot {
       const auctionSweep = new AuctionTtlSweep(auctionExpiry, delay, clock);
       auctionSweep.start();
       closers.push(auctionSweep);
+      const trade = TradeModule.create();
+      closers.push(trade);
+      const tradeDesk = new TradeDesk({
+        sessions: trade.sessions,
+        unitOfWork: database,
+        characters: characters.service,
+        inventory: inventory.service,
+        catalog: catalog.catalog,
+        presence: identity.service,
+      });
       const wire = await JuggerWireModule.create({
         config,
         identity: identity.service,
@@ -281,6 +293,7 @@ export class CompositionRoot {
         auctionTenderAdd,
         auctionTenderSell,
         auctionTenderCancel,
+        trade: tradeDesk,
       });
       closers.push(wire);
       return new Application(

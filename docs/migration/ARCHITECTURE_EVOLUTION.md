@@ -196,8 +196,17 @@ take-by-instance в composition UoW. Dual-write hero↔economy wallet запре
 `FOR UPDATE` строки; settlement mail. `original_item_id=0` на заказе: instance
 нет до fill.
 
-Отдельный `ARC-ECO` потребуется позже только если trade нельзя провести без
-ledger, reservations и переноса balance с hero.
+**Решение TRD-01:** модуль `trade` держит process-local сессию (как hunt).
+Tray id — ephemeral счётчик с 1, не PostgreSQL identity. Disconnect в том же
+процессе держит сессию; restart процесса рвёт стол. Инвайт — esrv
+`common|window`. Dual-write hero↔economy wallet запрещён.
+
+**Решение TRD-02:** settle — composition UoW на двух героях: inventory
+snapshot grant + character `debitMoney`/`creditMoney`. Налог dump
+`0.25 × V^log₁₀(5)`, wire float / settle 2dp. Serial gate как dump.
+
+Отдельный `ARC-ECO` потребуется позже только если понадобятся ledger,
+reservation rows или persist сессии через restart.
 
 ### `ARC-QST` — quest definitions, progress и rewards
 

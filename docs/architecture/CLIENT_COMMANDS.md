@@ -66,6 +66,8 @@ Response descriptor явно определяет один из варианто
   `post|send`/`send_cod`/`pick`/`batch_pick`/`delete`/`retract`,
   `auction|lot_add`/`bid`/`buyout`/`cancel`,
   `auction|tender_add`/`tender_sell`/`tender_cancel`,
+  `trade|request`/`confirm`/`put`/`put_money`/`withdraw`/
+  `session_ready`/`session_decline`/`session_confirm`/`decline`,
   `user|bag_order` и других подтверждённых мутаций;
 - protocol error с точным `status` и `error` (store buy dump-proven **2** для
   пустой корзины / не-лавки / неизвестного лота / нехватки золота — не 203).

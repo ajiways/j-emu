@@ -852,12 +852,13 @@
 - **depends_on:** `INV-02`
 - **Behavior evidence:** legacy `TRADE.md` and `src/trade/`.
 - **Content set:** trade fee policy.
-- **Architecture checkpoint / decision:** pending — session lifetime,
-  invite/window delivery и restart behavior.
+- **Architecture checkpoint / decision:** closed — process-local `trade`
+  sessions; tray ids ephemeral from 1; disconnect keeps the same RAM session;
+  process restart drops open trays. Контракт: [TRADE.md](../modules/TRADE.md).
 - **Acceptance:** request/accept/cancel, item/money offers и
   confirmation-key rotation держат один process-local session consistent
   через disconnect.
-- **Status:** `queued`
+- **Status:** `done`
 
 ### TRD-02 — Direct trade settlement
 
@@ -865,12 +866,13 @@
 - **depends_on:** `TRD-01`, `ECO-02`
 - **Behavior evidence:** legacy `TRADE.md` settlement и tax evidence.
 - **Content set:** validated tax policy.
-- **Architecture checkpoint / decision:** pending — item/fund reservations и
-  одна atomic two-hero settlement transaction.
+- **Architecture checkpoint / decision:** closed — одна composition UoW на
+  оба героя: canFit снимков, debit pledged+tax, credit pledged партнёра,
+  grant снимков; serial gate. Контракт: [TRADE.md](../modules/TRADE.md).
 - **Acceptance:** double confirmation меняет предметы/деньги один раз,
   списывает документированный налог и отклоняет NOGIVE/stale offers без
   дублирования.
-- **Status:** `queued`
+- **Status:** `done`
 
 ## Wave 8 — social engines
 

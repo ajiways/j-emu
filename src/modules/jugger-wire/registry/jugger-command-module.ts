@@ -20,6 +20,7 @@ import type { AuctionCancel } from "../../../app/auction-cancel.ts";
 import type { AuctionTenderAdd } from "../../../app/auction-tender-add.ts";
 import type { AuctionTenderSell } from "../../../app/auction-tender-sell.ts";
 import type { AuctionTenderCancel } from "../../../app/auction-tender-cancel.ts";
+import type { TradeDesk } from "../../../app/trade-desk.ts";
 import type { AuctionService } from "../../auction/application/auction-service.ts";
 import type { MailService } from "../../mail/application/mail-service.ts";
 import { AttackBotCommand } from "../commands/oa/attack-bot-command.ts";
@@ -56,6 +57,15 @@ import { AuctionMyTendersCommand } from "../commands/oa/auction-my-tenders-comma
 import { AuctionTenderAddCommand } from "../commands/oa/auction-tender-add-command.ts";
 import { AuctionTenderCancelCommand } from "../commands/oa/auction-tender-cancel-command.ts";
 import { AuctionTenderSellCommand } from "../commands/oa/auction-tender-sell-command.ts";
+import { TradeRequestCommand } from "../commands/oa/trade-request-command.ts";
+import { TradeConfirmCommand } from "../commands/oa/trade-confirm-command.ts";
+import { TradePutCommand } from "../commands/oa/trade-put-command.ts";
+import { TradePutMoneyCommand } from "../commands/oa/trade-put-money-command.ts";
+import { TradeWithdrawCommand } from "../commands/oa/trade-withdraw-command.ts";
+import { TradeSessionReadyCommand } from "../commands/oa/trade-session-ready-command.ts";
+import { TradeSessionDeclineCommand } from "../commands/oa/trade-session-decline-command.ts";
+import { TradeSessionConfirmCommand } from "../commands/oa/trade-session-confirm-command.ts";
+import { TradeDeclineCommand } from "../commands/oa/trade-decline-command.ts";
 import { PostSendCommand } from "../commands/oa/post-send-command.ts";
 import { PostSendCodCommand } from "../commands/oa/post-send-cod-command.ts";
 import { PostPickCommand } from "../commands/oa/post-pick-command.ts";
@@ -85,6 +95,7 @@ import type { EsrvOutbox } from "../application/esrv-outbox.ts";
 import { AcceptFriendlyDuel } from "../application/accept-friendly-duel.ts";
 import { FriendlyDuelInvites } from "../application/friendly-duel-invites.ts";
 import { ProposeFriendlyDuel } from "../application/propose-friendly-duel.ts";
+import { TradeMutation } from "../application/trade-mutation.ts";
 
 export class JuggerCommandModule {
   readonly oa: OaCommandRegistry;
@@ -120,6 +131,7 @@ export class JuggerCommandModule {
     auctionTenderAdd: AuctionTenderAdd,
     auctionTenderSell: AuctionTenderSell,
     auctionTenderCancel: AuctionTenderCancel,
+    trade: TradeDesk,
     sessions: SessionPresence,
     outbox: EsrvOutbox,
     wake: Readonly<{ wake(accountId: number): void }>,
@@ -149,6 +161,15 @@ export class JuggerCommandModule {
       wake,
       fightWire,
       bootstrap,
+    );
+    const tradeMutation = new TradeMutation(
+      trade,
+      bootstrap,
+      characters,
+      inventory,
+      catalog,
+      outbox,
+      wake,
     );
     this.oa = new OaCommandRegistry([
       new CommonInitCommand(unitOfWork, characters, bootstrap),
@@ -282,6 +303,15 @@ export class JuggerCommandModule {
         auction,
         catalog,
       ),
+      new TradeRequestCommand(tradeMutation),
+      new TradeConfirmCommand(tradeMutation),
+      new TradePutCommand(tradeMutation),
+      new TradePutMoneyCommand(tradeMutation),
+      new TradeWithdrawCommand(tradeMutation),
+      new TradeSessionReadyCommand(tradeMutation),
+      new TradeSessionDeclineCommand(tradeMutation),
+      new TradeSessionConfirmCommand(tradeMutation),
+      new TradeDeclineCommand(tradeMutation),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     this.esrv = EsrvCommandRegistry.create(combat, fightWire);

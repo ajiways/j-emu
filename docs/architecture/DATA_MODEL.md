@@ -232,6 +232,11 @@ required_upgrade_id)`.
 
 JSONB снимка dump нет. Unix `rtime` только в jugger-wire.
 
+### `trade`
+
+Таблиц нет. Сессия process-local (TRD-01); settle пишет только `heroes.money_minor`
+и `inventory.items` через composition UoW (TRD-02).
+
 ## План (не в runtime)
 
 Таблицы ниже не созданы и не являются baseline. Их нельзя добавлять «на будущее»
@@ -271,6 +276,7 @@ Durable sides/turns/effects, active participants и JSONB event log не
 `social` / `economy` модулей в runtime нет. Mailbox MAIL-02 живёт в `mail`
 (`letters` + `letter_attachments`), не в `social` и без JSONB снимка dump.
 Лоты и заказы AUC-01/AUC-02 живут в `auction.listings`, не в `economy`.
+P2P обмен TRD-01/TRD-02 живёт в `trade` без таблиц, не в `economy`.
 Целевые API — в [MODULES.md](MODULES.md). Схемы появляются вместе с первым
 подтверждённым OA этого модуля.
 

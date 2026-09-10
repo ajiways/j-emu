@@ -29,6 +29,7 @@ storage / publishers ----^            <- ports
 | `quests`      | свои definitions/state                                              | combat/world/inventory/character signals |
 | `mail`        | character nick/id display query (composition владеет money/bag UoW) | ничего                                   |
 | `auction`     | catalog price/title query (composition владеет money/bag/mail UoW)  | ничего                                   |
+| `trade`       | catalog price query (composition владеет money/bag UoW)             | ничего                                   |
 | `social`      | identity/character display query                                    | character rename, instances lifecycle    |
 | `economy`     | inventory reservation API, catalog price query                      | reservation expired                      |
 | `professions` | inventory reservation API, catalog/world query                      | timer, catalog revision                  |

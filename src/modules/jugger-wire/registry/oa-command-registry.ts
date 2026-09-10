@@ -60,6 +60,15 @@ export class OaCommandRegistry {
     "auction|tender_add",
     "auction|tender_cancel",
     "auction|tender_sell",
+    "trade|request",
+    "trade|confirm",
+    "trade|put",
+    "trade|put_money",
+    "trade|withdraw",
+    "trade|session_ready",
+    "trade|session_decline",
+    "trade|session_confirm",
+    "trade|decline",
   ] as const;
 
   private readonly commands: ReadonlyMap<string, OaCommand>;

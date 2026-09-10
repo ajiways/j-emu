@@ -10,6 +10,7 @@ import type { AuctionCancel } from "../../app/auction-cancel.ts";
 import type { AuctionTenderAdd } from "../../app/auction-tender-add.ts";
 import type { AuctionTenderSell } from "../../app/auction-tender-sell.ts";
 import type { AuctionTenderCancel } from "../../app/auction-tender-cancel.ts";
+import type { TradeDesk } from "../../app/trade-desk.ts";
 import type { AuctionService } from "../auction/application/auction-service.ts";
 import type { MailService } from "../mail/application/mail-service.ts";
 import type { FastifyInstance } from "fastify";
@@ -100,6 +101,7 @@ export class JuggerWireModule {
     auctionTenderAdd: AuctionTenderAdd;
     auctionTenderSell: AuctionTenderSell;
     auctionTenderCancel: AuctionTenderCancel;
+    trade: TradeDesk;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -182,6 +184,7 @@ export class JuggerWireModule {
       input.auctionTenderCancel,
       "Jugger-wire module requires auction tender cancel",
     );
+    const trade = requirePresent(input.trade, "Jugger-wire module requires trade desk");
     try {
       const fightWire = new FightWireMapper(
         {
@@ -233,6 +236,7 @@ export class JuggerWireModule {
         auctionTenderAdd,
         auctionTenderSell,
         auctionTenderCancel,
+        trade,
         identity,
         outbox,
         longPoll,

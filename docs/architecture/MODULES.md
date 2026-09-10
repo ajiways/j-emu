@@ -1,10 +1,10 @@
 # Модули
 
 Документ описывает ownership target. Реализованы `identity`, `character`,
-`inventory`, `catalog`, `world`, `combat`, `content`, `mail`, `auction` и
-`jugger-wire`, но их полный target API ещё не перенесён. `quests`, `social`,
-`economy`, `professions` и `instances` ниже являются планом, а не возможностями
-runtime.
+`inventory`, `catalog`, `world`, `combat`, `content`, `mail`, `auction`,
+`trade` и `jugger-wire`, но их полный target API ещё не перенесён. `quests`,
+`social`, `economy`, `professions` и `instances` ниже являются планом, а не
+возможностями runtime.
 Фактический статус находится в [CAPABILITIES.md](../CAPABILITIES.md).
 
 ## Текущий runtime checkpoint
@@ -36,7 +36,9 @@ area presence roster:
   send/pick/COD/retract и TTL sweep. Target `social` mailbox ещё план.
 - `auction` — `auction.listings` лоты и заказы, bid/buyout/cancel/fill и TTL
   sweep через mail settlement. Target `economy` listings ещё план.
-  Репутация Радвея **5** есть (REP-01, product частично).
+- `trade` — process-local P2P сессия (инвайт, стол, confirm_key), settle в
+  composition UoW. Target `economy` trade ещё план.
+- Репутация Радвея **5** есть (REP-01, product частично).
   `quests`, `economy`, `professions`, `instances` в runtime нет.
 
 Во всех разделах ниже **API**, **события** и **шов извлечения** описывают
@@ -182,6 +184,19 @@ take + mail `deliverSystemInbox`. Контракт:
 **Шов извлечения:** не цель AUC-01/AUC-02. Target listings в `economy` ниже —
 план.
 
+### `trade` — TRD-01 / TRD-02 runtime
+
+**Владеет:** process-local сессией обмена (тарелки, `confirm_key`,
+`confirmed`). Не владеет балансом и bag. Таблиц нет.
+
+**API:** `request`, `confirm`, `put`, `putMoney`, `withdraw`, `ready`,
+`sessionDecline`, `sessionConfirm`, `decline`. Put/withdraw/decline/settle —
+composition + inventory take/grant + character money. Контракт:
+[TRADE.md](../modules/TRADE.md).
+
+**Шов извлечения:** не цель TRD-01/TRD-02. Target trade в `economy` ниже —
+план.
+
 ### `social` — после core
 
 **Владеет:** друзьями/игнором, группами, приглашениями, каналами и сообщениями, mailbox как социальной доставкой (план; runtime mailbox — `mail`). Вложения письма — reservation/reference, не JSON-копия предмета.
@@ -194,9 +209,9 @@ take + mail `deliverSystemInbox`. Контракт:
 
 ### `economy` — после core
 
-**Владеет:** кошельками, неизменяемым ledger, торговыми предложениями, ставками и денежными резервами. Authored витрина ECO-01/ECO-02 живёт в `catalog`, balance — на `heroes.money_minor` / `money_gold_minor`; лоты и заказы AUC-01/AUC-02 живут в `auction`, не здесь. Этого модуля в runtime нет.
+**Владеет:** кошельками, неизменяемым ledger, торговыми предложениями, ставками и денежными резервами. Authored витрина ECO-01/ECO-02 живёт в `catalog`, balance — на `heroes.money_minor` / `money_gold_minor`; лоты и заказы AUC-01/AUC-02 живут в `auction`; P2P обмен TRD-01/TRD-02 живёт в `trade` (RAM), не здесь. Этого модуля в runtime нет.
 
-**API:** `getBalance`, `postTransfer`, `reserveFunds`. Покупка лота ECO-01/ECO-02 — composition, не `buyStoreLot`. Аукцион open/bid/buyout/cancel/tender fill — модуль `auction`.
+**API:** `getBalance`, `postTransfer`, `reserveFunds`. Покупка лота ECO-01/ECO-02 — composition, не `buyStoreLot`. Аукцион open/bid/buyout/cancel/tender fill — модуль `auction`. Обмен request/put/settle — модуль `trade`.
 
 **События:** `economy.ledger-posted.v1`, `economy.listing-opened.v1`, `economy.trade-settled.v1`, `economy.listing-closed.v1`.
 

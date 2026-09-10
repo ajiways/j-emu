@@ -20,7 +20,9 @@ import type { AuctionCancel } from "../../../src/app/auction-cancel.ts";
 import type { AuctionTenderAdd } from "../../../src/app/auction-tender-add.ts";
 import type { AuctionTenderSell } from "../../../src/app/auction-tender-sell.ts";
 import type { AuctionTenderCancel } from "../../../src/app/auction-tender-cancel.ts";
+import type { TradeDesk } from "../../../src/app/trade-desk.ts";
 import { AuctionModule } from "../../../src/modules/auction/auction-module.ts";
+import { TradeModule } from "../../../src/modules/trade/trade-module.ts";
 import type { AuctionService } from "../../../src/modules/auction/application/auction-service.ts";
 import { MailModule } from "../../../src/modules/mail/mail-module.ts";
 import type { MailService } from "../../../src/modules/mail/application/mail-service.ts";
@@ -318,6 +320,7 @@ describe("module factories", () => {
         auctionTenderAdd: {} as AuctionTenderAdd,
         auctionTenderSell: {} as AuctionTenderSell,
         auctionTenderCancel: {} as AuctionTenderCancel,
+        trade: {} as TradeDesk,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -364,6 +367,8 @@ describe("module factories", () => {
       clock,
     });
     await expect(auction.close()).resolves.toBeUndefined();
+    const trade = TradeModule.create();
+    await expect(trade.close()).resolves.toBeUndefined();
   });
 
   it("rejects a missing Pub1 directory during jugger-wire startup", async () => {
@@ -436,6 +441,7 @@ describe("module factories", () => {
         auctionTenderAdd: {} as AuctionTenderAdd,
         auctionTenderSell: {} as AuctionTenderSell,
         auctionTenderCancel: {} as AuctionTenderCancel,
+        trade: {} as TradeDesk,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });
