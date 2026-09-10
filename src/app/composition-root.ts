@@ -43,6 +43,8 @@ import { AuctionTenderSell } from "./auction-tender-sell.ts";
 import { AuctionTenderCancel } from "./auction-tender-cancel.ts";
 import { AuctionTtlSweep } from "./auction-ttl-sweep.ts";
 import { TradeDesk } from "./trade-desk.ts";
+import { ChatDesk } from "./chat-desk.ts";
+import { ChatFightSettlement } from "./chat-fight-settlement.ts";
 import { TradeModule } from "../modules/trade/trade-module.ts";
 import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
@@ -196,18 +198,36 @@ export class CompositionRoot {
       );
       const longPoll = new LongPollCoordinator();
       const outbox = new EsrvOutbox();
+      const chatDesk = new ChatDesk({
+        characters: characters.service,
+        world: world.service,
+        catalog: catalog.catalog,
+        combat: combat.combat,
+        presence,
+        clock,
+        outbox,
+        wake: longPoll,
+      });
       const presenceFanout = new PresenceFanout(presence, outbox, longPoll);
       const huntFanout = new HuntAreaFanout(presence, longPoll);
       combat.bindWake({ wake: (accountId) => longPoll.wake(accountId) });
       world.service.bindAreaWake(huntFanout);
       combat.bindTerminalObserver(new HuntLockRelease(world.service, huntFanout));
       combat.bindSettlement(
-        new HuntFightSettlement(
-          database,
-          catalog.catalog,
-          characters.service,
-          inventory.service,
-          extras.lootRandom ?? new SystemRandomSource(),
+        new ChatFightSettlement(
+          new HuntFightSettlement(
+            database,
+            catalog.catalog,
+            characters.service,
+            inventory.service,
+            extras.lootRandom ?? new SystemRandomSource(),
+          ),
+          chatDesk,
+          {
+            failed(fightId, error) {
+              process.stderr.write(`fight-chat ${fightId}: ${error.message}\n`);
+            },
+          },
         ),
       );
       const registration = new PlayableAccountRegistration(
@@ -294,6 +314,7 @@ export class CompositionRoot {
         auctionTenderSell,
         auctionTenderCancel,
         trade: tradeDesk,
+        chat: chatDesk,
       });
       closers.push(wire);
       return new Application(

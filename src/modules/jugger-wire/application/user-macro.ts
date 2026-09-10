@@ -1,3 +1,5 @@
+import { macroKeyId } from "../../../shared/kernel/macro-key-id.ts";
+
 export type UserMacroSource = Readonly<{
   nick: string;
   level: number;
@@ -42,15 +44,4 @@ export function buildUserMacro(source: UserMacroSource): UserMacroToken {
       macro_type: "USER",
     },
   };
-}
-
-function macroKeyId(kind: string, id: string): string {
-  const s = `${kind}:${id}`;
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-  const a = h.toString(16).padStart(8, "0");
-  let h2 = 0;
-  for (let i = s.length - 1; i >= 0; i--) h2 = (h2 * 33 + s.charCodeAt(i)) >>> 0;
-  const b = h2.toString(16).padStart(8, "0");
-  return `${a}${b}${a}${b}`.slice(0, 32);
 }

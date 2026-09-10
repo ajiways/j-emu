@@ -19,23 +19,24 @@ storage / publishers ----^            <- ports
 
 ## 2. Разрешённые связи
 
-| Потребитель   | Синхронно может вызывать                                            | Асинхронно потребляет                    |
-| ------------- | ------------------------------------------------------------------- | ---------------------------------------- |
-| `jugger-wire` | bootstrap query, публичные API всех сценариев                       | события для push/read models             |
-| `character`   | catalog query для validation/rules                                  | combat outcome, inventory equipment view |
-| `inventory`   | catalog item query                                                  | catalog revision                         |
-| `world`       | catalog creature query                                              | combat finished, instances lifecycle     |
-| `combat`      | только собственное storage; snapshots передаются во входной команде | abort/lease commands через inbox         |
-| `quests`      | свои definitions/state                                              | combat/world/inventory/character signals |
-| `mail`        | character nick/id display query (composition владеет money/bag UoW) | ничего                                   |
-| `auction`     | catalog price/title query (composition владеет money/bag/mail UoW)  | ничего                                   |
-| `trade`       | catalog price query (composition владеет money/bag UoW)             | ничего                                   |
-| `social`      | identity/character display query                                    | character rename, instances lifecycle    |
-| `economy`     | inventory reservation API, catalog price query                      | reservation expired                      |
-| `professions` | inventory reservation API, catalog/world query                      | timer, catalog revision                  |
-| `instances`   | world admission API, combat start API, social party query           | combat finished, party changed           |
-| `content`     | validation ports                                                    | ничего из gameplay runtime               |
-| `catalog`     | ничего                                                              | publication bundle                       |
+| Потребитель   | Синхронно может вызывать                                                             | Асинхронно потребляет                    |
+| ------------- | ------------------------------------------------------------------------------------ | ---------------------------------------- |
+| `jugger-wire` | bootstrap query, публичные API всех сценариев                                        | события для push/read models             |
+| `character`   | catalog query для validation/rules                                                   | combat outcome, inventory equipment view |
+| `inventory`   | catalog item query                                                                   | catalog revision                         |
+| `world`       | catalog creature query                                                               | combat finished, instances lifecycle     |
+| `combat`      | только собственное storage; snapshots передаются во входной команде                  | abort/lease commands через inbox         |
+| `quests`      | свои definitions/state                                                               | combat/world/inventory/character signals |
+| `mail`        | character nick/id display query (composition владеет money/bag UoW)                  | ничего                                   |
+| `auction`     | catalog price/title query (composition владеет money/bag/mail UoW)                   | ничего                                   |
+| `trade`       | catalog price query (composition владеет money/bag UoW)                              | ничего                                   |
+| `chat`        | character nick, presence roster, catalog smiles/artifacts (composition владеет esrv) | ничего                                   |
+| `social`      | identity/character display query                                                     | character rename, instances lifecycle    |
+| `economy`     | inventory reservation API, catalog price query                                       | reservation expired                      |
+| `professions` | inventory reservation API, catalog/world query                                       | timer, catalog revision                  |
+| `instances`   | world admission API, combat start API, social party query                            | combat finished, party changed           |
+| `content`     | validation ports                                                                     | ничего из gameplay runtime               |
+| `catalog`     | ничего                                                                               | publication bundle                       |
 
 Если появляются два встречных синхронных вызова, граница неверна. Координацию выносить в application saga, а не добавлять обратный import.
 

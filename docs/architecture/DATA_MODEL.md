@@ -237,6 +237,11 @@ JSONB снимка dump нет. Unix `rtime` только в jugger-wire.
 Таблиц нет. Сессия process-local (TRD-01); settle пишет только `heroes.money_minor`
 и `inventory.items` через composition UoW (TRD-02).
 
+### `chat`
+
+Таблиц нет. Сообщения process-local через esrv outbox (SOC-01). Рестарт процесса
+теряет недоставленные кадры.
+
 ## План (не в runtime)
 
 Таблицы ниже не созданы и не являются baseline. Их нельзя добавлять «на будущее»
@@ -277,6 +282,7 @@ Durable sides/turns/effects, active participants и JSONB event log не
 (`letters` + `letter_attachments`), не в `social` и без JSONB снимка dump.
 Лоты и заказы AUC-01/AUC-02 живут в `auction.listings`, не в `economy`.
 P2P обмен TRD-01/TRD-02 живёт в `trade` без таблиц, не в `economy`.
+Чат SOC-01 живёт в `chat` без таблиц, не в `social`.
 Целевые API — в [MODULES.md](MODULES.md). Схемы появляются вместе с первым
 подтверждённым OA этого модуля.
 

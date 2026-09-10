@@ -158,7 +158,7 @@ CEF отложен до редактора выдачи предметов.
 chat auth — пустое тело; restart очищает очередь и собирает roster из sessions.
 
 - Roster: `identity.sessions` ⨝ `heroes.area_id`; delivery process-local;
-- Long-poll wake per-account. `chat|add` и party `4:` не в срезе.
+- Long-poll wake per-account. Party `4:` не в срезе. `chat|add` — SOC-01.
 
 ## World transitions — готово
 
@@ -240,12 +240,21 @@ esrv `common|window` на `2:`; сессия process-local через disconnect
 в одной UoW списывает налог и меняет bag/деньги. CEF окна обмена не
 прогонялся.
 
-Не перенесены system-чат «согласился торговать» (SOC-01) и persist сессии
-через restart процесса.
+Не перенесены persist сессии через restart процесса.
+
+## Chat — частично
+
+Есть raw-AMF: `chat|add` area/private/system, dump stub echo + `state`, fan-out
+соседям на `2:` отдельными `chat|message` кадрами. Hunt start/end и loot/money
+system-строки после UoW settlement; сбой enqueue не откатывает награды.
+`trade|confirm` шлёт «согласился торговать». CEF чата не прогонялся.
+
+Не перенесены party `4:`, кланы, one-fight TEMPEFFECT expiry chat, quest
+announce.
 
 ## После core — не перенесено
 
-Chat/party, полный корпус магазинов (DATA-05).
+Party, полный корпус магазинов (DATA-05).
 
 ## Store — частично
 

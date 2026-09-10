@@ -884,14 +884,15 @@
   `QUEST_MACROS_CHAT.md`, `lootNotify.ts`.
 - **Content set:** approved macros/smiles плюс system templates для fight/loot
   settlement notifications (замена бывшего `CHT-01`).
-- **Architecture checkpoint / decision:** pending — chat/outbox module
-  boundary, retention policy и post-commit notification port для
-  fight/loot settlement без прямой зависимости combat → chat.
+- **Architecture checkpoint / decision:** отдельный `ARC-SOC`/`ARC-RTM` не
+  нужен. Модуль `chat` без таблиц; fan-out process-local `EsrvOutbox`;
+  `ChatFightSettlement` вызывает chat **после** UoW; combat не импортирует
+  chat. Контракт: [CHAT.md](../modules/CHAT.md).
 - **Acceptance:** area/private/system сообщения и требуемые макросы доходят до
   правильного канала без утечки session-данных; fight/loot system messages
   доходят через esrv после durable settlement без rollback committed rewards
   при сбое доставки.
-- **Status:** `queued`
+- **Status:** `done`
 
 ### SOC-02 — Party
 

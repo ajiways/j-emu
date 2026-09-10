@@ -7,13 +7,13 @@ const maxLines = 400;
 const reviewThreshold = 250;
 const lineJustifications: Readonly<Record<string, string>> = {
   "src/app/composition-root.ts":
-    "Wires identity through mail/auction/trade composition UoW and shared DelayScheduler sweeps",
+    "Wires identity through mail/auction/trade/chat composition UoW and shared DelayScheduler sweeps",
   "src/modules/auction/infrastructure/postgres-listing-repository.ts":
     "Auction listing rows plus snapshot columns, search filters, and FOR UPDATE lock/sweep",
   "src/modules/jugger-wire/jugger-wire-module.ts":
-    "HTTP/TCP servers and OA command module factory including mail, auction, and trade ports",
+    "HTTP/TCP servers and OA command module factory including mail, auction, trade, and chat ports",
   "src/modules/jugger-wire/registry/jugger-command-module.ts":
-    "Static OA command constructors including mail, auction, and trade ports",
+    "Static OA command constructors including mail, auction, trade, and chat ports",
   "src/modules/character/application/character-service.ts":
     "Character application facade: progression, resources, money, reputation, learn-bonus, location, and presence",
   "src/modules/world/domain/hunt-wander.ts":

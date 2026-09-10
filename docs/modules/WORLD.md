@@ -339,7 +339,8 @@ Representative dump-proven, не полный `hunt_spawns.json` (DATA-04):
 ### Architecture decision
 
 Отдельный `ARC-RTM` не нужен. ADR-0017 достаточны: durable outbox table не
-создаём «на будущее». Social-модуля нет; party `4:` и `chat|add` не в срезе.
+создаём «на будущее». Social-модуля нет; party `4:` — SOC-02. `chat|add` —
+[CHAT.md](CHAT.md) (SOC-01).
 
 **Roster (gameplay state)** — PostgreSQL: `identity.sessions` ⨝
 `character.heroes.area_id`. Кто онлайн в локации переживает restart процесса.
@@ -392,7 +393,7 @@ COME_IN/`exit` после `setArea`: remove в from, add в to (если from≠
 
 ### Out of scope
 
-`chat|add` / area chat fan-out; party `4:`; OA `FIGHT_JOIN` / `FIGHT_HELP`; ghost/injury change; playerbots; dungeon/BG shards; transactional
+party `4:`; OA `FIGHT_JOIN` / `FIGHT_HELP`; ghost/injury change; playerbots; dungeon/BG shards; transactional
 outbox; durable cursors.
 
 ### Acceptance

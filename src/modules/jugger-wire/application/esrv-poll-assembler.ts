@@ -6,6 +6,7 @@ import type { WorldService } from "../../world/domain/world-service.ts";
 import { areaEsrvChannel, personalEsrvChannel } from "./esrv-channel.ts";
 import type { EsrvOutbox } from "./esrv-outbox.ts";
 import type { FightWireMapper } from "./fight-wire-mapper.ts";
+import { isChatOnlyFragment } from "./esrv-chat-only-fragment.ts";
 import { locationAreaBlocks } from "./location-area-read.ts";
 
 type EsrvFrame = Readonly<{
@@ -47,6 +48,14 @@ export class EsrvPollAssembler {
     ];
     const personal: Record<string, unknown> = {};
     for (const fragment of this.outbox.take(accountId)) {
+      if (isChatOnlyFragment(fragment)) {
+        frames.push({
+          channel: personalEsrvChannel(accountId),
+          ctime,
+          object: fragment,
+        });
+        continue;
+      }
       Object.assign(personal, fragment);
     }
     const loot = await this.combat.takeLoot(accountId);

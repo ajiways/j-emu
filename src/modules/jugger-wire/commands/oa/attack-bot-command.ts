@@ -15,6 +15,7 @@ import type {
   FightWireMapper,
 } from "../../application/fight-wire-mapper.ts";
 import type { HuntAreaFanout } from "../../application/hunt-area-fanout.ts";
+import type { ChatDesk } from "../../../../app/chat-desk.ts";
 import { HuntCombatLoadout } from "../../application/hunt-combat-loadout.ts";
 import { huntBotSpellBookFromCatalog } from "../../application/hunt-bot-spell-book-from-catalog.ts";
 import { HuntMapAttack } from "../../application/hunt-map-attack.ts";
@@ -44,11 +45,12 @@ export class AttackBotCommand implements OaCommand {
     private readonly inventory: InventoryService,
     private readonly world: WorldService,
     private readonly catalog: Catalog,
-    combat: CombatPort,
+    private readonly combat: CombatPort,
     private readonly fightWire: FightWireMapper,
     huntFanout: HuntAreaFanout,
+    private readonly chat: ChatDesk,
   ) {
-    this.huntAttack = new HuntMapAttack(world, combat, huntFanout);
+    this.huntAttack = new HuntMapAttack(world, this.combat, huntFanout);
   }
 
   decode(envelope: ObjectActionEnvelope): AttackBotRequest {
@@ -82,6 +84,8 @@ export class AttackBotCommand implements OaCommand {
     if (!bot) throw new Error(`Bot catalog entry ${spawn.botId} is missing`);
     await this.inventory.ensureStarterInventory(hero.id);
     const loadout = await new HuntCombatLoadout(this.inventory, this.catalog).snapshot(hero.id);
+    const occupied = this.world.occupiedFightId(area.id, spawn.id);
+    const joining = occupied !== null && (await this.combat.hasFight(occupied));
     const heroStrength = await this.characters.combatStrength(hero.id);
     const fight = await this.huntAttack.execute({
       accountId: context.accountId,
@@ -108,6 +112,20 @@ export class AttackBotCommand implements OaCommand {
       loadout,
       botSpellBook: huntBotSpellBookFromCatalog(bot.spellBook),
     });
+    if (!joining) {
+      try {
+        await this.chat.notifyHuntStarted({
+          accountId: context.accountId,
+          fightId: fight.fightId,
+          areaId: area.id,
+          heroNick: hero.nick,
+          botNick: bot.title,
+        });
+      } catch (error) {
+        const failure = error instanceof Error ? error : new Error(String(error));
+        process.stderr.write(`hunt-start-chat ${fight.fightId}: ${failure.message}\n`);
+      }
+    }
     return {
       "common|action": { status: 100 },
       "fight|conf": this.fightWire.fightConfiguration(fight),

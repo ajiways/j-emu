@@ -68,9 +68,11 @@ Response descriptor явно определяет один из варианто
   `auction|tender_add`/`tender_sell`/`tender_cancel`,
   `trade|request`/`confirm`/`put`/`put_money`/`withdraw`/
   `session_ready`/`session_decline`/`session_confirm`/`decline`,
+  `chat|add`,
   `user|bag_order` и других подтверждённых мутаций;
 - protocol error с точным `status` и `error` (store buy dump-proven **2** для
-  пустой корзины / не-лавки / неизвестного лота / нехватки золота — не 203).
+  пустой корзины / не-лавки / неизвестного лота / нехватки золота — не 203;
+  private chat missing nick — тот же nested **2**).
 
 `sq` зеркалирует transport, а не application handler. Неизвестный registry key
 возвращает `status:203`; ошибка сессии — `status:4`; внутренняя ошибка логируется

@@ -122,8 +122,10 @@ Long-poll wait per-account для esrv и fproxy; fproxy poll сначала о�
 **Решение RTM-01:** текущих границ достаточно; отдельный `ARC-RTM` не нужен.
 Roster живёт в Postgres (`sessions` + `area_id`). Delivery queue и waiters —
 process-local в `jugger-wire`. Durable outbox table не создаётся. Party/chat
-не владеют Fastify. `4:` — `SOC-02`, `chat|add` — `SOC-01` в
-[ROADMAP.md](ROADMAP.md).
+не владеют Fastify. `4:` — `SOC-02`. **Решение SOC-01:** текущих границ
+достаточно; отдельный `ARC-SOC`/`ARC-RTM` не нужен. Чат — `src/modules/chat`
+без таблиц; fan-out process-local esrv; combat не импортирует chat. Контракт:
+[CHAT.md](../modules/CHAT.md).
 
 **Решение MAIL-01/MAIL-02:** текущих границ достаточно; отдельный `ARC-SOC`
 не нужен. Mailbox — `src/modules/mail` / `mail.letters` + snapshot
@@ -204,6 +206,7 @@ Tray id — ephemeral счётчик с 1, не PostgreSQL identity. Disconnect 
 **Решение TRD-02:** settle — composition UoW на двух героях: inventory
 snapshot grant + character `debitMoney`/`creditMoney`. Налог dump
 `0.25 × V^log₁₀(5)`, wire float / settle 2dp. Serial gate как dump.
+`trade|confirm` system-чат — SOC-01 `ChatDesk.deliverSystem`, не фейк в trade.
 
 Отдельный `ARC-ECO` потребуется позже только если понадобятся ledger,
 reservation rows или persist сессии через restart.

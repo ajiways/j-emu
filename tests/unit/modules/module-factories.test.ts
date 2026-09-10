@@ -21,6 +21,7 @@ import type { AuctionTenderAdd } from "../../../src/app/auction-tender-add.ts";
 import type { AuctionTenderSell } from "../../../src/app/auction-tender-sell.ts";
 import type { AuctionTenderCancel } from "../../../src/app/auction-tender-cancel.ts";
 import type { TradeDesk } from "../../../src/app/trade-desk.ts";
+import type { ChatDesk } from "../../../src/app/chat-desk.ts";
 import { AuctionModule } from "../../../src/modules/auction/auction-module.ts";
 import { TradeModule } from "../../../src/modules/trade/trade-module.ts";
 import type { AuctionService } from "../../../src/modules/auction/application/auction-service.ts";
@@ -321,6 +322,7 @@ describe("module factories", () => {
         auctionTenderSell: {} as AuctionTenderSell,
         auctionTenderCancel: {} as AuctionTenderCancel,
         trade: {} as TradeDesk,
+        chat: {} as ChatDesk,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -442,6 +444,7 @@ describe("module factories", () => {
         auctionTenderSell: {} as AuctionTenderSell,
         auctionTenderCancel: {} as AuctionTenderCancel,
         trade: {} as TradeDesk,
+        chat: {} as ChatDesk,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

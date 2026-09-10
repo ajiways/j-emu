@@ -2,7 +2,7 @@
 
 Документ описывает ownership target. Реализованы `identity`, `character`,
 `inventory`, `catalog`, `world`, `combat`, `content`, `mail`, `auction`,
-`trade` и `jugger-wire`, но их полный target API ещё не перенесён. `quests`,
+`trade`, `chat` и `jugger-wire`, но их полный target API ещё не перенесён. `quests`,
 `social`, `economy`, `professions` и `instances` ниже являются планом, а не
 возможностями runtime.
 Фактический статус находится в [CAPABILITIES.md](../CAPABILITIES.md).
@@ -38,6 +38,8 @@ area presence roster:
   sweep через mail settlement. Target `economy` listings ещё план.
 - `trade` — process-local P2P сессия (инвайт, стол, confirm_key), settle в
   composition UoW. Target `economy` trade ещё план.
+- `chat` — process-local area/private/system fan-out через esrv outbox, без
+  таблиц. Target `social` channels ещё план.
 - Репутация Радвея **5** есть (REP-01, product частично).
   `quests`, `economy`, `professions`, `instances` в runtime нет.
 
@@ -196,6 +198,18 @@ composition + inventory take/grant + character money. Контракт:
 
 **Шов извлечения:** не цель TRD-01/TRD-02. Target trade в `economy` ниже —
 план.
+
+### `chat` — SOC-01 runtime
+
+**Владеет:** expand macros и fan-out policy. Не пишет `heroes` / combat /
+inventory. Таблиц нет.
+
+**API:** `add`, `deliverSystem`, `notifyHuntStarted`, `notifyFightEnded`.
+Delivery — composition `ChatDesk` + esrv outbox. Combat не импортирует chat;
+post-commit обёртка `ChatFightSettlement`. Контракт:
+[CHAT.md](../modules/CHAT.md).
+
+**Шов извлечения:** не цель SOC-01. Target channels в `social` ниже — план.
 
 ### `social` — после core
 

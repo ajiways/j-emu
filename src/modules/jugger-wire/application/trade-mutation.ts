@@ -1,5 +1,6 @@
 import type { TradeDesk } from "../../../app/trade-desk.ts";
 import type { TradeResult } from "../../../app/trade-desk.ts";
+import type { ChatDesk } from "../../../app/chat-desk.ts";
 import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../character/application/character-service.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
@@ -11,11 +12,13 @@ import { ProtocolError } from "./protocol-error.ts";
 import { tradeInviteWindow } from "./trade-invite-window.ts";
 import { buildTradeSessionBlock, closedTradeSession } from "./trade-session-block.ts";
 import { emptyUserMagic } from "./user-magic-block.ts";
+import { buildUserMacro } from "./user-macro.ts";
 import type { OaEncodedResponse } from "../commands/oa/oa-command.ts";
 
 export class TradeMutation {
   constructor(
     private readonly trade: TradeDesk,
+    private readonly chat: ChatDesk,
     private readonly bootstrap: BootstrapReadModel,
     private readonly characters: CharacterService,
     private readonly inventory: InventoryService,
@@ -49,8 +52,28 @@ export class TradeMutation {
     }
     const peerAccountId = result.peerAccountId;
     if (peerAccountId === null) return;
+    if (oaKey === "trade|confirm") {
+      await this.notifyTradeAccepted(result.viewerAccountId, peerAccountId);
+    }
     this.outbox.enqueue(peerAccountId, await this.peerBlocks(oaKey, result, peerAccountId));
     this.wake.wake(peerAccountId);
+  }
+
+  private async notifyTradeAccepted(
+    inviteeAccountId: number,
+    openerAccountId: number,
+  ): Promise<void> {
+    const invitee = await this.requireHero(inviteeAccountId);
+    const token = buildUserMacro({
+      nick: invitee.nick,
+      level: invitee.level,
+      kind: invitee.kind,
+    });
+    await this.chat.deliverSystem(
+      openerAccountId,
+      `Пользователь ${token.token} согласился торговать с Вами.`,
+      { [token.key]: token.macro },
+    );
   }
 
   private async viewerBlocks(

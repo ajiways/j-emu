@@ -21,11 +21,13 @@ import type { AuctionTenderAdd } from "../../../app/auction-tender-add.ts";
 import type { AuctionTenderSell } from "../../../app/auction-tender-sell.ts";
 import type { AuctionTenderCancel } from "../../../app/auction-tender-cancel.ts";
 import type { TradeDesk } from "../../../app/trade-desk.ts";
+import type { ChatDesk } from "../../../app/chat-desk.ts";
 import type { AuctionService } from "../../auction/application/auction-service.ts";
 import type { MailService } from "../../mail/application/mail-service.ts";
 import { AttackBotCommand } from "../commands/oa/attack-bot-command.ts";
 import { BagDropCommand } from "../commands/oa/bag-drop-command.ts";
 import { BookQuestListCommand } from "../commands/oa/book-quest-list-command.ts";
+import { ChatAddCommand } from "../commands/oa/chat-add-command.ts";
 import { ChatConfCommand } from "../commands/oa/chat-conf-command.ts";
 import { CommonConfCommand } from "../commands/oa/common-conf-command.ts";
 import { CommonInitCommand } from "../commands/oa/common-init-command.ts";
@@ -132,6 +134,7 @@ export class JuggerCommandModule {
     auctionTenderSell: AuctionTenderSell,
     auctionTenderCancel: AuctionTenderCancel,
     trade: TradeDesk,
+    chat: ChatDesk,
     sessions: SessionPresence,
     outbox: EsrvOutbox,
     wake: Readonly<{ wake(accountId: number): void }>,
@@ -164,6 +167,7 @@ export class JuggerCommandModule {
     );
     const tradeMutation = new TradeMutation(
       trade,
+      chat,
       bootstrap,
       characters,
       inventory,
@@ -188,6 +192,7 @@ export class JuggerCommandModule {
       new FriendlyDuelProposeCommand(propose),
       new FriendlyDuelAcceptCommand(accept),
       new ChatConfCommand(bootstrap, sheet),
+      new ChatAddCommand(chat, bootstrap),
       new BookQuestListCommand(bootstrap, sheet),
       new EmptyCollectionOaCommand("companion|list_user_companions", "companions", bootstrap),
       new EmptyCollectionOaCommand("craft|user_recipes_list", "recipes", bootstrap),
@@ -203,6 +208,7 @@ export class JuggerCommandModule {
         combat,
         fightWire,
         huntFanout,
+        chat,
       ),
       new PutOnCommand(unitOfWork, bootstrap, characters, inventory, catalog, combat),
       new PutOffCommand(unitOfWork, bootstrap, characters, inventory, catalog, combat),

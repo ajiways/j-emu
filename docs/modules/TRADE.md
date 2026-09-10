@@ -6,8 +6,8 @@ P2P обмен реализован на raw-AMF. CEF окна обмена не
 **готово** не ставить. Точный product-status:
 [CAPABILITIES.md](../CAPABILITIES.md).
 
-Не переносить playerbots, stub `TradeBot` и system-чат «согласился торговать»
-(SOC-01 нет — чат не выдумывать).
+Не переносить playerbots и stub `TradeBot`. System-чат «согласился торговать»
+после `trade|confirm` — [CHAT.md](CHAT.md) (SOC-01).
 
 ## Источники поведения
 
@@ -77,7 +77,7 @@ Wire — неотсечённый float (live 5×0.62 → `0.551298…`). Ready/
 | OA                       | Form             | Успех                                                                     |
 | ------------------------ | ---------------- | ------------------------------------------------------------------------- |
 | `trade\|request`         | `{nick}`         | инициатор: `my_tray`, `opponent_tray: []`; инвайтее esrv `common\|window` |
-| `trade\|confirm`         | `{tray_id}`      | оба видят две тарелки; инициатору esrv `trade\|session` (чат SOC-01 нет)  |
+| `trade\|confirm`         | `{tray_id}`      | оба видят две тарелки; инициатору esrv `trade                             | session` и system-чат |
 | `trade\|put`             | `{item, amount}` | bag → стол; NOGIVE/clan → 203; крутит ключ                                |
 | `trade\|put_money`       | `{amount}`       | залог серебра, не списывается до settle                                   |
 | `trade\|withdraw`        | `{item, amount}` | стол → bag                                                                |

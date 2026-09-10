@@ -6,6 +6,7 @@ export class OaCommandRegistry {
     "battlepass|list",
     "book|quest_list",
     "chat|conf",
+    "chat|add",
     "common|conf",
     "common|init",
     "common|init2",

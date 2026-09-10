@@ -54,8 +54,11 @@ describe("direct trade session", () => {
       id: trayId,
     });
 
-    const peer = personalObject(await a.pollEsrv())["trade|session"];
+    const peerPackets = await a.pollEsrv();
+    const peer = personalObject(peerPackets)["trade|session"];
     expect(peer).toMatchObject({ status: 100 });
+    const acceptedChat = chatMessageTexts(peerPackets);
+    expect(acceptedChat.some((msg) => msg.includes("согласился торговать"))).toBe(true);
 
     const nogive = await a.objectAction({
       object: "trade",
@@ -238,15 +241,37 @@ function nickFrom(payload: Record<string, AmfValue>): string {
 }
 
 function personalObject(packets: readonly AmfValue[]): Record<string, AmfValue> {
+  let first: Record<string, AmfValue> | undefined;
   for (const packet of packets) {
     if (!packet || typeof packet !== "object" || Array.isArray(packet)) continue;
     if (typeof packet.channel !== "string" || !packet.channel.startsWith("2:")) continue;
     if (!packet.object || typeof packet.object !== "object" || Array.isArray(packet.object)) {
       continue;
     }
-    return packet.object as Record<string, AmfValue>;
+    const object = packet.object as Record<string, AmfValue>;
+    if ("trade|session" in object || "common|window" in object) return object;
+    if (!first) first = object;
   }
+  if (first) return first;
   throw new Error("personal esrv object is missing");
+}
+
+function chatMessageTexts(packets: readonly AmfValue[]): string[] {
+  const texts: string[] = [];
+  for (const packet of packets) {
+    if (!packet || typeof packet !== "object" || Array.isArray(packet)) continue;
+    if (typeof packet.channel !== "string" || !packet.channel.startsWith("2:")) continue;
+    if (!packet.object || typeof packet.object !== "object" || Array.isArray(packet.object)) {
+      continue;
+    }
+    const block = (packet.object as Record<string, AmfValue>)["chat|message"];
+    if (!block || typeof block !== "object" || Array.isArray(block)) continue;
+    const message = (block as Record<string, AmfValue>).message;
+    if (!message || typeof message !== "object" || Array.isArray(message)) continue;
+    const msg = (message as Record<string, AmfValue>).msg;
+    if (typeof msg === "string") texts.push(msg);
+  }
+  return texts;
 }
 
 function requireNumber(value: AmfValue | undefined): number {
