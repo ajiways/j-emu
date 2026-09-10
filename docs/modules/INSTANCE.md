@@ -1,23 +1,26 @@
 # Instance
 
-Runtime DNG-01: authored dungeon definition creates a PostgreSQL copy, binds
-the entering hero, isolates hunt/presence per copy, expires by
+Runtime DNG-01/DNG-02: authored dungeon definition creates a PostgreSQL copy,
+binds the entering hero, isolates hunt/presence per copy, expires by
 `duration_sec`, and returns occupants to the parent area. Active combat stays
-in RAM.
+in RAM. Extra `has_clear: false` dungeons publish through the same typed
+document; a spawn authors either `route` or `zone`, not both.
 
-Representative content: ogre cave artikul `1`, start `542`, parent `501`,
-`duration_sec=3600`, `level_min=3`, `has_clear: false`. Product status:
+Published content: ogre cave `1`/542/bot 99, kopi `11`/654/bot 354, tomb
+`12`/653/bot 353, usadba `14`/673/bot 373. Product status:
 [CAPABILITIES.md](../CAPABILITIES.md).
 
-BG match, dungeon clear bar / coins, quest `personal_only`, remaining
-dungeons — not in this slice.
+BG match, dungeon clear bar / coins, quest `personal_only`, `has_clear: true`
+fixtures — not in this slice.
 
 ## Sources
 
 - `jgr-emu/docs/DUNGEON.md`, `FIGHT_JOIN.md`;
 - `jgr-emu/src/dungeon/` (catalog, copy/bind/expiry);
 - `_research/giga_dump_2026-08-11/DUNGEON_INSTANCE.md`;
-- fixture `jgr-emu/fixtures/dungeons/ogre_cave.json`.
+- fixtures `jgr-emu/fixtures/dungeons/ogre_cave.json`,
+  `bezdonnye_kopi.json`, `usypalnica_geroev.json`,
+  `zabroshennaya_usadba.json`.
 
 ## Ownership
 
@@ -66,4 +69,5 @@ Death/RESURRECT in a copy → start area of the same live copy (ogre is already
 
 Clear bar / coins, `loot.bands` / `personal_guaranteed`, bind warning on
 invite, `book|instances`, dungeon shops, hunt join team 2, abort fight on
-expiry, remaining fixtures (DNG-02), daily 06:00 MSK wipe.
+expiry, `has_clear: true` fixtures (2/4/6/7), POST-03 mass importer, daily
+06:00 MSK wipe.

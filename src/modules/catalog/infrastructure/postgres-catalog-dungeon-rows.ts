@@ -4,6 +4,7 @@ import {
   dungeonAreas,
   dungeonSpawnEncounters,
   dungeonSpawnRoutes,
+  dungeonSpawnZones,
   dungeonSpawns,
   dungeons,
 } from "./schema-dungeons.ts";
@@ -88,4 +89,20 @@ export async function insertDungeons(
     ),
   );
   if (routeRows.length > 0) await session.insert(dungeonSpawnRoutes).values(routeRows);
+  const zoneRows = rows.flatMap((dungeon) =>
+    dungeon.areas.flatMap((area) =>
+      area.spawns.flatMap((spawn) =>
+        spawn.zone.map((point, ord) => ({
+          releaseId,
+          artikulId: dungeon.artikulId,
+          areaId: area.areaId,
+          spawnKey: spawn.spawnKey,
+          ord,
+          x: point.x,
+          y: point.y,
+        })),
+      ),
+    ),
+  );
+  if (zoneRows.length > 0) await session.insert(dungeonSpawnZones).values(zoneRows);
 }

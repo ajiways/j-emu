@@ -43,7 +43,7 @@ area presence roster:
 - `party` — `party.parties` / `party_members` / `party_invites` /
   `party_bag_items`. Target `social` groups ещё план.
 - `instance` — `instance.copies` / `binds` / `killed_spawns`, dungeon hunt
-  RAM overlay, COME_IN 542 ogre cave. BG/clear/loot bands — DNG-02/BG-01.
+  RAM overlay, COME_IN ogre/kopi/tomb/usadba. BG/clear/loot bands — leftover / BG-01.
 - Репутация Радвея **5** есть (REP-01, product частично).
   `quests`, `economy`, `professions` в runtime нет.
 
@@ -259,7 +259,7 @@ Loot routing и HELP — composition ports, combat party-таблицы не и�
 
 **Шов извлечения:** каталог рецептов и узлов читается через catalog/world ports; ингредиенты и результат проходят атомарную orchestration с inventory.
 
-### `instance` — DNG-01
+### `instance` — DNG-01 / DNG-02
 
 **Владеет:** dungeon copy rows, hero binds, unix expiry, killed-spawn
 rows, dungeon enter policy. Не владеет party, outdoor areas/hunt и active
@@ -269,7 +269,7 @@ combat.
 `DungeonHuntWorld` snapshot/lock/forget. Delivery `common|instance_conf` —
 composition / jugger-wire. Контракт: [INSTANCE.md](../modules/INSTANCE.md).
 
-**Шов извлечения:** не цель DNG-01. Target `instances` events ниже не
+**Шов извлечения:** не цель DNG-02. Target `instances` events ниже не
 копировать в runtime.
 
 ### `content`

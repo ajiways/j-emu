@@ -11,6 +11,7 @@ import {
   dungeonAreas,
   dungeonSpawnEncounters,
   dungeonSpawnRoutes,
+  dungeonSpawnZones,
   dungeonSpawns,
   dungeons,
 } from "./schema-dungeons.ts";
@@ -110,11 +111,21 @@ export class PostgresDungeonCatalog implements DungeonCatalog {
           eq(dungeonSpawnRoutes.artikulId, row.artikulId),
         ),
       );
+    const zoneRows = await this.database
+      .session()
+      .select()
+      .from(dungeonSpawnZones)
+      .where(
+        and(
+          eq(dungeonSpawnZones.releaseId, releaseId),
+          eq(dungeonSpawnZones.artikulId, row.artikulId),
+        ),
+      );
     const areas: DungeonAreaDefinition[] = areaRows.map((area) => ({
       areaId: area.areaId,
       spawns: spawnRows
         .filter((spawn) => spawn.areaId === area.areaId)
-        .map((spawn) => spawnFromRow(spawn, encounterRows, routeRows)),
+        .map((spawn) => spawnFromRow(spawn, encounterRows, routeRows, zoneRows)),
     }));
     if (row.hasClear !== 0 && row.hasClear !== 1) {
       throw new Error(`Dungeon ${row.artikulId} has_clear is invalid`);
@@ -161,6 +172,13 @@ function spawnFromRow(
     waitMin: number;
     waitMax: number;
   }[],
+  zones: readonly {
+    areaId: string;
+    spawnKey: string;
+    ord: number;
+    x: number;
+    y: number;
+  }[],
 ): DungeonSpawnDefinition {
   const encounter = encounters
     .filter((entry) => entry.areaId === spawn.areaId && entry.spawnKey === spawn.spawnKey)
@@ -179,6 +197,10 @@ function spawnFromRow(
     positionY: spawn.positionY,
     waitMin: spawn.waitMin,
     waitMax: spawn.waitMax,
+    zone: zones
+      .filter((point) => point.areaId === spawn.areaId && point.spawnKey === spawn.spawnKey)
+      .sort((left, right) => left.ord - right.ord)
+      .map((point) => ({ x: point.x, y: point.y })),
     route: routes
       .filter((stop) => stop.areaId === spawn.areaId && stop.spawnKey === spawn.spawnKey)
       .sort((left, right) => left.ord - right.ord)

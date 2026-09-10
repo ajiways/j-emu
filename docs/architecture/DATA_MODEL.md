@@ -22,7 +22,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и pre-baseline миграции `drizzle/0000_foundation_init.sql` плюс последующие
-`drizzle/0001`…`0012`. Поля ниже совпадают с runtime.
+`drizzle/0001`…`0015`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -134,6 +134,12 @@ pay jsonb, requires jsonb)` PK `(release_id, area_id, lot_id)`; FK на
 - `use_scripts(release_id, bonus_id, fail_plaque, require jsonb, effects jsonb)`
   PK `(release_id, bonus_id)`; **нет** FK на `bonuses` (script **2827** без
   bonus row).
+- `dungeons(release_id, artikul_id, title, start_area_id, parent_area_id,
+level_min, duration_sec, img_url, has_clear)` PK `(release_id, artikul_id)`.
+  Slice: `has_clear=0` artikul 1/11/12/14.
+- `dungeon_areas` / `dungeon_spawns` / `dungeon_spawn_encounters` /
+  `dungeon_spawn_routes` / `dungeon_spawn_zones` — spawn authors route **или**
+  zone, не оба. Не jsonb.
 
 Отдельных spell-таблиц нет: fight spell живёт в `artifacts.extra`.
 `common|conf`, empty chrome и HUD defaults читаются из
@@ -199,7 +205,7 @@ finish/read request path. Полный контракт:
 - `drafts(id, content_type, content_key)` UNIQUE `(content_type, content_key)`;
   `content_type` ∈ `artifact|bot|area|area_link|hunt_spawn|store_type|store_lot|
 reputation_track|bonus|use_script|skill|level|appearance|hud_defaults|chrome|
-common_conf|welcome_message`.
+common_conf|welcome_message|dungeon`.
 - `draft_versions(id, draft_id, version, schema_version, document jsonb, created_at)`.
 - `releases(id, version UNIQUE nextval, checksum UNIQUE, schema_version, validator_version, created_at, activated_at)`.
 - `release_entries(release_id, content_type, content_key, draft_version_id, digest)`.
@@ -296,7 +302,7 @@ P2P обмен TRD-01/TRD-02 живёт в `trade` без таблиц, не в 
 Чат SOC-01 живёт в `chat` без таблиц, не в `social`.
 Party SOC-02/SOC-03 живёт в `party` (`parties` / `party_members` /
 `party_invites` / `party_bag_items`), не в `social`.
-DNG-01: `instance.copies` / `binds` / `killed_spawns` (строки, не dump
+DNG-01/DNG-02: `instance.copies` / `binds` / `killed_spawns` (строки, не dump
 JSONB `killed_spawns_json`). `heroes.instance_copy_id` nullable без FK.
 Контракт: [INSTANCE.md](../modules/INSTANCE.md).
 

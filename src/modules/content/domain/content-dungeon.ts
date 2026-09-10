@@ -10,6 +10,11 @@ type DungeonRouteStopDocument = Readonly<{
   waitMax: number;
 }>;
 
+type DungeonZonePointDocument = Readonly<{
+  x: number;
+  y: number;
+}>;
+
 type DungeonSpawnDocument = Readonly<{
   spawnKey: string;
   huntBotId: number;
@@ -21,6 +26,7 @@ type DungeonSpawnDocument = Readonly<{
   positionY: number;
   waitMin: number;
   waitMax: number;
+  zone: readonly DungeonZonePointDocument[];
   route: readonly DungeonRouteStopDocument[];
 }>;
 

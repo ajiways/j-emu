@@ -19,7 +19,7 @@ export function dungeonSpawnToHunt(
       waitMax: spawn.waitMax,
       respawnTimeMin: 0,
       respawnTimeMax: 0,
-      zone: [],
+      zone: spawn.zone,
       route: spawn.route,
     },
   );

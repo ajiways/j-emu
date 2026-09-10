@@ -267,16 +267,18 @@ hunt join team 2.
 
 ## Instance — частично
 
-Есть raw-AMF и PostgreSQL: COME_IN 542 ogre cave (artikul `1`) создаёт copy,
+Есть raw-AMF и PostgreSQL: COME_IN 542 ogre cave (artikul `1`) и remaining
+`has_clear: false` копи/усыпальница/усадьба (11/12/14) создают copy,
 auto-party, `common|instance_conf` без `progress_*`, `state.instance=1`,
-per-copy hunt id, bind на exit/re-enter, presence isolation двух копий,
-kill без respawn, TTL kick в 501, expired bind status `2`. Combat
-`fight|conf.instance_id` = copy id, `can_leave:0`. Restart читает copy/bind
-и killed spawns. CEF данжа не прогонялся.
+per-copy hunt id (route или zone), bind на exit/re-enter, presence isolation
+двух копий, kill без respawn (ogre), TTL kick на parent, expired bind status
+`2`. Combat `fight|conf.instance_id` = copy id, `can_leave:0`. Restart читает
+copy/bind и killed spawns. CEF данжа не прогонялся.
 
 Не перенесены clear bar/coins, `personal_guaranteed` / `loot.bands`,
 `book|instances`, dungeon shops, hunt join team 2, abort fight on expiry,
-остальные данжи (DNG-02), daily 06:00 MSK wipe.
+`has_clear: true` fixtures (2/4/6/7), POST-03 mass importer, daily 06:00 MSK
+wipe.
 
 ## После core — не перенесено
 

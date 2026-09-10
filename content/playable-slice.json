@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v21",
+  "schemaVersion": "playable-slice/v22",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -1386,6 +1386,102 @@
         "sk": "15",
         "body": "skin(5,10,6,0,0,1,2,0);size(1.2)"
       }
+    },
+    {
+      "id": 354,
+      "title": "Хозяин копей",
+      "level": 8,
+      "maxHp": 1266,
+      "strength": 240,
+      "baseExp": 170,
+      "moneyMin": 0,
+      "moneyMax": 0,
+      "lootDropCnt": 1,
+      "lootBonusChance": 0,
+      "lootBonusMin": 0,
+      "lootBonusMax": 0,
+      "lootNothingWeight": 1,
+      "lootEntries": [],
+      "spellBook": {
+        "nothingWeight": 100,
+        "spells": []
+      },
+      "hunt": {
+        "nick": "Хозяин копей",
+        "swf": "worm2.swf",
+        "scale": 100,
+        "fps": 15,
+        "speed": 10,
+        "avatar": "avatar_cherv4_sm.jpg",
+        "kind": 0,
+        "hideOnMap": 0,
+        "sk": "51",
+        "body": "armor(3#2)"
+      }
+    },
+    {
+      "id": 353,
+      "title": "Лангерд Проклятый",
+      "level": 12,
+      "maxHp": 1481,
+      "strength": 339,
+      "baseExp": 200,
+      "moneyMin": 0,
+      "moneyMax": 0,
+      "lootDropCnt": 1,
+      "lootBonusChance": 0,
+      "lootBonusMin": 0,
+      "lootBonusMax": 0,
+      "lootNothingWeight": 1,
+      "lootEntries": [],
+      "spellBook": {
+        "nothingWeight": 100,
+        "spells": []
+      },
+      "hunt": {
+        "nick": "Лангерд Проклятый",
+        "swf": "skeleton_2.swf",
+        "scale": 100,
+        "fps": 15,
+        "speed": 10,
+        "avatar": "avatar_skeleton4_sm.jpg",
+        "kind": 0,
+        "hideOnMap": 0,
+        "sk": "1",
+        "body": "armor(13#2049,13#4100,13#8200,13#2064,13#4128,13#4160,13#4224,13#8448);skin(9,0,0,0,0,0,0,0);head(1,2,1,);size(1)"
+      }
+    },
+    {
+      "id": 373,
+      "title": "Пушок",
+      "level": 14,
+      "maxHp": 2591,
+      "strength": 404,
+      "baseExp": 300,
+      "moneyMin": 0,
+      "moneyMax": 0,
+      "lootDropCnt": 1,
+      "lootBonusChance": 0,
+      "lootBonusMin": 0,
+      "lootBonusMax": 0,
+      "lootNothingWeight": 1,
+      "lootEntries": [],
+      "spellBook": {
+        "nothingWeight": 100,
+        "spells": []
+      },
+      "hunt": {
+        "nick": "Пушок",
+        "swf": "tiger_1.swf",
+        "scale": 100,
+        "fps": 15,
+        "speed": 10,
+        "avatar": "avatar_tiger1_sm.jpg",
+        "kind": 0,
+        "hideOnMap": 0,
+        "sk": "62",
+        "body": "size(1.2)"
+      }
     }
   ],
   "areas": [
@@ -1497,6 +1593,120 @@
       "soundIntro": "",
       "soundBg": "",
       "instArtikulId": 0,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0
+    },
+    {
+      "id": "541",
+      "title": "Заброшенные штольни",
+      "parentId": "",
+      "map": "les_vorovok_2.swf",
+      "fightBackground": "8_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 30,
+      "code": "",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 0,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0
+    },
+    {
+      "id": "654",
+      "title": "Бездонные копи",
+      "parentId": "541",
+      "map": "inst_kopi.swf",
+      "fightBackground": "5_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 30,
+      "code": "",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 11,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0
+    },
+    {
+      "id": "651",
+      "title": "Аллея памяти",
+      "parentId": "",
+      "map": "kladbische_4.swf",
+      "fightBackground": "10_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 0,
+      "code": "",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 0,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0
+    },
+    {
+      "id": "653",
+      "title": "Усыпальница героев",
+      "parentId": "651",
+      "map": "inst_sklep.swf",
+      "fightBackground": "3_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 30,
+      "code": "",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 12,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0
+    },
+    {
+      "id": "499",
+      "title": "Пригород Бранендаля",
+      "parentId": "",
+      "map": "branendal_prigorod.swf",
+      "fightBackground": "2_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 0,
+      "code": "",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 0,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0
+    },
+    {
+      "id": "673",
+      "title": "Заброшенная усадьба",
+      "parentId": "499",
+      "map": "inst_usadba.swf",
+      "fightBackground": "2_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 30,
+      "code": "",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 14,
       "haveTradeChannel": 0,
       "haveKindChannel": 0,
       "hideFinishedFights": 0,
@@ -1664,6 +1874,126 @@
           "area_id": 501
         }
       }
+    },
+    {
+      "fromAreaId": "541",
+      "itemId": 4,
+      "toAreaId": "654",
+      "title": "Бездонные копи",
+      "picture": "images/data/area_links/alt_inst_kopi.jpg?ux=1302255285",
+      "description": "В инстансе обитает <b>Хозяин копей [8]</b>.\r\nИнстанс «Бездонные копи» доступен с 7-го уровня на 2 часа каждые 48 часов.",
+      "flags": 256,
+      "direction": 0,
+      "confirmQuestion": "",
+      "toId": "654",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 654
+        }
+      }
+    },
+    {
+      "fromAreaId": "654",
+      "itemId": 2,
+      "toAreaId": "541",
+      "title": "Выход",
+      "picture": "images/data/area_links/alt_les_vorovok_2.jpg?ux=1279180720",
+      "description": "Здесь обитает <b>Разбойник [7]</b>.\r\n<br>Здесь добываются <b>Мята [1]</b>, <b>Эссенция кислоты [1]</b>, <b>Эссенция льда [60]</b>.",
+      "flags": 2048,
+      "direction": 1,
+      "confirmQuestion": "",
+      "toId": "541",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 541
+        }
+      }
+    },
+    {
+      "fromAreaId": "651",
+      "itemId": 7,
+      "toAreaId": "653",
+      "title": "Усыпальница героев",
+      "picture": "images/data/area_links/alt_inst_sklep.jpg?ux=1302255267",
+      "description": "В инстансе обитает <b>Лангерд Проклятый [12]</b>.\r\nИнстанс «Усыпальница героев» доступен с 10-го уровня на 2 часа каждые 48 часов.",
+      "flags": 256,
+      "direction": 0,
+      "confirmQuestion": "",
+      "toId": "653",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 653
+        }
+      }
+    },
+    {
+      "fromAreaId": "653",
+      "itemId": 10,
+      "toAreaId": "651",
+      "title": "Выход",
+      "picture": "images/data/area_links/alt_kladbische_4.jpg?ux=1302255256",
+      "description": "",
+      "flags": 2048,
+      "direction": 1,
+      "confirmQuestion": "",
+      "toId": "651",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 651
+        }
+      }
+    },
+    {
+      "fromAreaId": "499",
+      "itemId": 11,
+      "toAreaId": "673",
+      "title": "Заброшенная усадьба",
+      "picture": "images/data/area_links/alt_prigorod.jpg?ux=1266324055",
+      "description": "В инстансе обитает <b>Пушок [14]</b>.\r\nИнстанс «Заброшенная усадьба» доступен с 12-го уровня на 2 часа каждые 48 часов.",
+      "flags": 256,
+      "direction": 0,
+      "confirmQuestion": "",
+      "toId": "673",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 673
+        }
+      }
+    },
+    {
+      "fromAreaId": "673",
+      "itemId": 5,
+      "toAreaId": "499",
+      "title": "Выход",
+      "picture": "images/data/area_links/alt_prigorod.jpg?ux=1266324055",
+      "description": "Здесь обитают <b>Гарпина [12]</b> и <b>Озерная Гарпина [13]</b>.\r\n<br>Здесь добываются <b>Халцедон [120]</b>, <b>Алоэ [180]</b>, <b>Эссенция тьмы [120]</b>.",
+      "flags": 2048,
+      "direction": 3,
+      "confirmQuestion": "",
+      "toId": "499",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 499
+        }
+      }
     }
   ],
   "huntSpawns": [
@@ -1787,6 +2117,7 @@
               "positionY": 547,
               "waitMin": 2,
               "waitMax": 8,
+              "zone": [],
               "route": [
                 { "x": 647, "y": 536, "waitMin": 2, "waitMax": 8 },
                 { "x": 494, "y": 534, "waitMin": 2, "waitMax": 8 },
@@ -1798,6 +2129,122 @@
                 { "x": 1016, "y": 737, "waitMin": 2, "waitMax": 8 },
                 { "x": 999, "y": 648, "waitMin": 2, "waitMax": 8 }
               ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "artikulId": 11,
+      "title": "Бездонные копи",
+      "startAreaId": "654",
+      "parentAreaId": "541",
+      "levelMin": 7,
+      "durationSec": 7200,
+      "imgUrl": "alt_inst_kopi.jpg",
+      "hasClear": false,
+      "areas": [
+        {
+          "areaId": "654",
+          "spawns": [
+            {
+              "spawnKey": "boss",
+              "huntBotId": 354,
+              "encounter": [{ "botId": 354, "count": 1 }],
+              "isBoss": true,
+              "countsForClear": true,
+              "huntMask": "bot_1",
+              "positionX": 436,
+              "positionY": 576,
+              "waitMin": 2,
+              "waitMax": 8,
+              "zone": [
+                { "x": 458, "y": 470 },
+                { "x": 326, "y": 463 },
+                { "x": 351, "y": 604 },
+                { "x": 456, "y": 735 },
+                { "x": 624, "y": 835 },
+                { "x": 700, "y": 766 },
+                { "x": 638, "y": 604 }
+              ],
+              "route": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "artikulId": 12,
+      "title": "Усыпальница героев",
+      "startAreaId": "653",
+      "parentAreaId": "651",
+      "levelMin": 10,
+      "durationSec": 7200,
+      "imgUrl": "alt_inst_sklep.jpg",
+      "hasClear": false,
+      "areas": [
+        {
+          "areaId": "653",
+          "spawns": [
+            {
+              "spawnKey": "boss",
+              "huntBotId": 353,
+              "encounter": [{ "botId": 353, "count": 1 }],
+              "isBoss": true,
+              "countsForClear": true,
+              "huntMask": "bot_1",
+              "positionX": 506,
+              "positionY": 660,
+              "waitMin": 2,
+              "waitMax": 8,
+              "zone": [
+                { "x": 493, "y": 466 },
+                { "x": 318, "y": 503 },
+                { "x": 268, "y": 581 },
+                { "x": 455, "y": 777 },
+                { "x": 524, "y": 803 },
+                { "x": 603, "y": 708 },
+                { "x": 625, "y": 554 }
+              ],
+              "route": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "artikulId": 14,
+      "title": "Заброшенная усадьба",
+      "startAreaId": "673",
+      "parentAreaId": "499",
+      "levelMin": 12,
+      "durationSec": 7200,
+      "imgUrl": "alt_prigorod.jpg",
+      "hasClear": false,
+      "areas": [
+        {
+          "areaId": "673",
+          "spawns": [
+            {
+              "spawnKey": "boss",
+              "huntBotId": 373,
+              "encounter": [{ "botId": 373, "count": 1 }],
+              "isBoss": true,
+              "countsForClear": true,
+              "huntMask": "bot_1",
+              "positionX": 320,
+              "positionY": 635,
+              "waitMin": 2,
+              "waitMax": 8,
+              "zone": [
+                { "x": 325, "y": 550 },
+                { "x": 262, "y": 588 },
+                { "x": 244, "y": 628 },
+                { "x": 391, "y": 764 },
+                { "x": 500, "y": 785 },
+                { "x": 576, "y": 716 }
+              ],
+              "route": []
             }
           ]
         }

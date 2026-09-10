@@ -19,6 +19,13 @@ const dungeonRouteStopSchema = z
     message: "dungeon route wait max is below min",
   });
 
+const dungeonZonePointSchema = z
+  .object({
+    x: z.number().int(),
+    y: z.number().int(),
+  })
+  .strict();
+
 const dungeonSpawnSchema = z
   .object({
     spawnKey: z.string().min(1),
@@ -31,6 +38,7 @@ const dungeonSpawnSchema = z
     positionY: z.number().int(),
     waitMin: z.number().int().nonnegative(),
     waitMax: z.number().int().nonnegative(),
+    zone: z.array(dungeonZonePointSchema),
     route: z.array(dungeonRouteStopSchema),
   })
   .strict()
@@ -39,6 +47,12 @@ const dungeonSpawnSchema = z
   })
   .refine((spawn) => spawn.route.length !== 1, {
     message: "dungeon spawn route must be empty or have at least 2 stops",
+  })
+  .refine((spawn) => spawn.zone.length === 0 || spawn.zone.length >= 3, {
+    message: "dungeon spawn zone must be empty or have at least 3 points",
+  })
+  .refine((spawn) => !(spawn.zone.length >= 3 && spawn.route.length >= 2), {
+    message: "dungeon spawn cannot author both a route and a zone",
   });
 
 const dungeonAreaSchema = z

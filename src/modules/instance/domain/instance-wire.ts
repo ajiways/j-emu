@@ -22,7 +22,7 @@ export function instanceConf(
 }> {
   if (!artikulId) throw new Error("Instance artikul is required");
   if (hasClear) {
-    throw new Error(`Dungeon ${artikulId} progress bar is outside DNG-01`);
+    throw new Error(`Dungeon ${artikulId} progress bar is outside this slice`);
   }
   return { artikul_id: artikulId, status: 100 };
 }

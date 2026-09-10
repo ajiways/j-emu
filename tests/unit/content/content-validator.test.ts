@@ -241,6 +241,42 @@ describe("parseContentBundle", () => {
     expect(() => parseContentBundle({ ...playable, schemaVersion: "v0" })).toThrow();
   });
 
+  it("rejects a dungeon spawn that authors both a route and a zone", () => {
+    const dungeon = playable.dungeons[0];
+    const area = dungeon?.areas[0];
+    const spawn = area?.spawns[0];
+    if (!dungeon || !area || !spawn) throw new Error("playable bundle has no dungeon spawn");
+    expect(() =>
+      parseContentBundle({
+        ...playable,
+        dungeons: [
+          {
+            ...dungeon,
+            areas: [
+              {
+                ...area,
+                spawns: [
+                  {
+                    ...spawn,
+                    zone: [
+                      { x: 1, y: 1 },
+                      { x: 2, y: 2 },
+                      { x: 3, y: 3 },
+                    ],
+                    route: [
+                      { x: 1, y: 1, waitMin: 1, waitMax: 1 },
+                      { x: 2, y: 2, waitMin: 1, waitMax: 1 },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    ).toThrow(/cannot author both a route and a zone/);
+  });
+
   it("rejects a hunt spawn zone with fewer than 3 points", () => {
     const spawn = playable.huntSpawns[0];
     if (!spawn) throw new Error("playable bundle has no hunt spawns");

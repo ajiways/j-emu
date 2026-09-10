@@ -43,7 +43,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/catalog/infrastructure/postgres-catalog-projection.ts":
     "Active-release materialization for artifacts, bots, store, reputation, and dungeon catalog rows",
   "src/modules/jugger-wire/application/bootstrap-read-model.ts":
-    "Flat OA bootstrap/mutation blocks including drink purge, USE mutation, CMB-04 init2 fight|conf, SOC-02 party restore, and DNG-01 dungeon hunt",
+    "Flat OA bootstrap/mutation blocks including drink purge, USE mutation, CMB-04 init2 fight|conf, SOC-02 party restore, and dungeon hunt",
   "src/app/chat-desk.ts":
     "Player chat add plus area/private/party fan-out and hunt/loot system lines",
   "src/app/instance-desk.ts":

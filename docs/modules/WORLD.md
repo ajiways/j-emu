@@ -55,22 +55,29 @@ gates / `store|*` — ECO-01/ECO-02 (raw-AMF; CEF не прогонялся). Du
 `status:203` `нельзя во время боя` (live `fightBusy`). Это не live-исключение
 для PUT_ON; для travel live уже режет.
 
-### Content set (`playable-slice/v12`)
+### Content set (`playable-slice/v22`)
 
 Dump-proven subset, не весь L1–8 (это DATA-04 corpus):
 
-| Area | Title              | `ftime_max` | `code`  | SWF / fight_bg                         |
-| ---- | ------------------ | ----------- | ------- | -------------------------------------- |
-| 503  | Горное поселение   | 0           | `""`    | `forestvillage.swf` / `2_1` (уже в v8) |
-| 504  | Деревенская лавка  | 0           | `store` | `forestvillage.swf` / `2_1`            |
-| 501  | Ущелье разлуки     | 15          | `""`    | `uschelierazluki.swf` / `2_1`          |
-| 542  | Мрачная пещера     | 30          | `""`    | `noob_cave.swf` / `5_1`                |
-| 495  | Площадь Бранендаля | 0           | `""`    | `branendal_ploshad.swf` / `2_1`        |
-| 552  | Арсенал            | 0           | `store` | `branendal_ploshad.swf` / `2_1`        |
+| Area | Title               | `ftime_max` | `code`  | SWF / fight_bg                         |
+| ---- | ------------------- | ----------- | ------- | -------------------------------------- |
+| 503  | Горное поселение    | 0           | `""`    | `forestvillage.swf` / `2_1` (уже в v8) |
+| 504  | Деревенская лавка   | 0           | `store` | `forestvillage.swf` / `2_1`            |
+| 501  | Ущелье разлуки      | 15          | `""`    | `uschelierazluki.swf` / `2_1`          |
+| 542  | Мрачная пещера      | 30          | `""`    | `noob_cave.swf` / `5_1`                |
+| 541  | Заброшенные штольни | 30          | `""`    | `les_vorovok_2.swf` / `8_1`            |
+| 654  | Бездонные копи      | 30          | `""`    | `inst_kopi.swf` / `5_1`                |
+| 651  | Аллея памяти        | 0           | `""`    | `kladbische_4.swf` / `10_1`            |
+| 653  | Усыпальница героев  | 30          | `""`    | `inst_sklep.swf` / `3_1`               |
+| 499  | Пригород Бранендаля | 0           | `""`    | `branendal_prigorod.swf` / `2_1`       |
+| 673  | Заброшенная усадьба | 30          | `""`    | `inst_usadba.swf` / `2_1`              |
+| 495  | Площадь Бранендаля  | 0           | `""`    | `branendal_ploshad.swf` / `2_1`        |
+| 552  | Арсенал             | 0           | `store` | `branendal_ploshad.swf` / `2_1`        |
 
 Provenance: `radvei_areas.json` + `AREA_SIDEBAR.md`. Не публиковать 498, 502,
-NPC `href`, AREA-attack (Грызл/Хисса). Area 542 — DNG-01 dungeon start, не
-outdoor hunt.
+NPC `href`, AREA-attack (Грызл/Хисса). Area 542/654/653/673 — dungeon starts,
+не outdoor hunt. Parents 541/651/499 без outdoor hunt в этом slice; e2e
+ставит их через `setArea`.
 
 Authored **travel links only** (sidebar `(flags & 0x10) == 0`):
 
@@ -82,12 +89,19 @@ Authored **travel links only** (sidebar `(flags & 0x10) == 0`):
 | 501  | 2         | В Горное поселение  | 0     | 1           | 503 |
 | 504  | 0         | `""`                | 0     | 0           | 503 |
 | 542  | 7         | Выход               | 2048  | 3           | 501 |
+| 541  | 4         | Бездонные копи      | 256   | 0           | 654 |
+| 654  | 2         | Выход               | 2048  | 1           | 541 |
+| 651  | 7         | Усыпальница героев  | 256   | 0           | 653 |
+| 653  | 10        | Выход               | 2048  | 1           | 651 |
+| 499  | 11        | Заброшенная усадьба | 256   | 0           | 673 |
+| 673  | 5         | Выход               | 2048  | 3           | 499 |
 
 Картинки/описания — как в dump (`?ux=` оставлять). `href` всегда
 `{ object:"common", action:"action", form:{ code:"COME_IN", area_id:<number> } }`.
 `to_id` — строка dest. `confirm_question` — `""`.
 
-`parent_id`: 504 → `"503"`; 552 → `"495"`; 501, 503 и 495 → `""` (dump `498`
+`parent_id`: 504 → `"503"`; 552 → `"495"`; 654 → `"541"`; 653 → `"651"`;
+673 → `"499"`; 501, 503, 495, 541, 651, 499 → `""` (dump `498`/`508`
 не в slice; dump parent **494** площади тоже нет в `radvei_areas.json`
 `areas` keys — это gap, не relocated shop). Walk 503→495/552 нет. ECO-02
 публикует dump-двери 495 item 238 flags 16 → 552 и 552 item 0 exit → 495;

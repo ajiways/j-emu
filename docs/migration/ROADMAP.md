@@ -958,14 +958,22 @@
 - **Behavior evidence:** остальные authored dungeon JSON
   (`fixtures/dungeons/*.json`) как evidence для generic instance engine, не
   7 отдельных ручных capability.
-- **Content set:** массовый импорт всех authored данжей через один typed
-  importer (POST-03 в `CONTENT_MATRIX.md`).
-- **Architecture checkpoint / decision:** pending — importer/validator на
-  authored dungeon schema, не per-dungeon код.
-- **Acceptance:** каждый импортированный данж проходит
-  enter/floor/clear/boss/loot/exit сценарий без runtime JSON reads и без
-  добавления кода на дополнительный данж.
-- **Status:** `next`
+- **Content set:** remaining `has_clear: false` fixtures in the typed dungeon
+  document (kopi 11/654/bot 354, tomb 12/653/bot 353, usadba 14/673/bot 373)
+  plus parent areas 541/651/499 and door links `flags` 256. Bundle
+  `playable-slice/v22`. POST-03 mass fixture importer stays deferred.
+- **Architecture checkpoint / decision:** complete — отдельный ADR не нужен
+  (ADR-0016, ADR-0018, ADR-0020). Typed dungeon document + validator уже
+  generic: N данжей в одном bundle без per-dungeon кода. Spawn document
+  получает `zone` (XOR с `route`, как outdoor hunt) в
+  `catalog.dungeon_spawn_zones`, не jsonb и не отдельный mapper на данж.
+  `has_clear: true` (2/4/6/7), `loot.bands`, coins, shops — leftover:
+  `instanceConf` fail-fast на progress bar, а bots/areas/loot artifacts нет в
+  ACTIVE-MIN. Контракт: [INSTANCE.md](../modules/INSTANCE.md).
+- **Acceptance:** каждый опубликованный `has_clear: false` данж проходит
+  enter/bind/hunt/exit/rejoin/expiry без runtime JSON reads и без кода на
+  дополнительный данж.
+- **Status:** `done`
 
 ### BG-01 — «Раскоп» queue and match
 
@@ -979,7 +987,7 @@
 - **Acceptance:** два героя queue/confirm, входят в изолированный матч,
   бьются до score/timeout, получают упорядоченные finish-пакеты и
   сохраняют историю; restart чистит только ephemeral queue/match state.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### BOOK-01 — Bestiary and instance books
 

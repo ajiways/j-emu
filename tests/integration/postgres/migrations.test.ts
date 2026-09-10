@@ -28,6 +28,7 @@ import {
   dungeonAreas,
   dungeonSpawnEncounters,
   dungeonSpawnRoutes,
+  dungeonSpawnZones,
   dungeonSpawns,
   dungeons,
 } from "../../../src/modules/catalog/infrastructure/schema-dungeons.ts";
@@ -118,6 +119,7 @@ describe("Drizzle migrations", () => {
         "catalog.dungeon_areas",
         "catalog.dungeon_spawn_encounters",
         "catalog.dungeon_spawn_routes",
+        "catalog.dungeon_spawn_zones",
         "catalog.dungeon_spawns",
         "catalog.dungeons",
         "catalog.game_wide_documents",
@@ -174,6 +176,7 @@ describe("Drizzle migrations", () => {
       dungeonSpawns,
       dungeonSpawnEncounters,
       dungeonSpawnRoutes,
+      dungeonSpawnZones,
       skillDefinitions,
       levelBoundaries,
       levelSkillValues,
@@ -211,7 +214,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(49);
+    ]).toHaveLength(50);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -233,6 +236,7 @@ describe("Drizzle migrations", () => {
       "0012_party_foundation.sql",
       "0013_party_bag_items.sql",
       "0014_instance_foundation.sql",
+      "0015_catalog_dungeon_spawn_zone.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -253,8 +257,9 @@ describe("Drizzle migrations", () => {
       "0012_party_foundation",
       "0013_party_bag_items",
       "0014_instance_foundation",
+      "0015_catalog_dungeon_spawn_zone",
     ]);
-    expect(await appliedCount()).toBe(15);
+    expect(await appliedCount()).toBe(16);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );

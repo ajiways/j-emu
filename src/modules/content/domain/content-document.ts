@@ -9,8 +9,8 @@ import type {
 } from "./bootstrap-content.ts";
 import type { DungeonDocument } from "./content-dungeon.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v21";
-export const CONTENT_VALIDATOR_VERSION = "21";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v22";
+export const CONTENT_VALIDATOR_VERSION = "22";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;

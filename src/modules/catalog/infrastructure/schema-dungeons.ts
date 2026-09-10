@@ -110,3 +110,23 @@ export const dungeonSpawnRoutes = catalogSchema.table(
     check("dungeon_spawn_routes_wait_min_check", sql`${table.waitMin} >= 0`),
   ],
 );
+
+export const dungeonSpawnZones = catalogSchema.table(
+  "dungeon_spawn_zones",
+  {
+    releaseId: uuid("release_id").notNull(),
+    artikulId: integer("artikul_id").notNull(),
+    areaId: text("area_id").notNull(),
+    spawnKey: text("spawn_key").notNull(),
+    ord: integer("ord").notNull(),
+    x: integer("x").notNull(),
+    y: integer("y").notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.releaseId, table.artikulId, table.areaId, table.spawnKey, table.ord],
+    }),
+    check("dungeon_spawn_zones_artikul_id_check", sql`${table.artikulId} > 0`),
+    check("dungeon_spawn_zones_ord_check", sql`${table.ord} >= 0`),
+  ],
+);

@@ -1,4 +1,4 @@
-import type { HuntRouteStop } from "../../world/domain/hunt-spawn.ts";
+import type { HuntMaskPoint, HuntRouteStop } from "../../world/domain/hunt-spawn.ts";
 
 type DungeonEncounter = Readonly<{
   botId: number;
@@ -16,6 +16,7 @@ export type DungeonSpawnDefinition = Readonly<{
   positionY: number;
   waitMin: number;
   waitMax: number;
+  zone: readonly HuntMaskPoint[];
   route: readonly HuntRouteStop[];
 }>;
 
