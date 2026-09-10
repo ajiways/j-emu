@@ -1,13 +1,9 @@
 import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
-import type { ArtifactSpell } from "../../catalog/domain/artifact-spell.ts";
 import type { Catalog } from "../../catalog/ports/catalog.ts";
-import type {
-  CombatGloveLoadout,
-  CombatLoadout,
-  CombatSpell,
-} from "../../combat/domain/combat-loadout.ts";
+import type { CombatGloveLoadout, CombatLoadout } from "../../combat/domain/combat-loadout.ts";
 import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
+import { toCombatSpell } from "./to-combat-spell.ts";
 
 const GLOVE_SLOT = 32;
 
@@ -78,24 +74,4 @@ export class HuntCombatLoadout {
     if (!definition) throw new Error(`Artifact catalog entry ${id} is missing`);
     return definition;
   }
-}
-
-function toCombatSpell(spell: ArtifactSpell): CombatSpell {
-  return {
-    ...(spell.animData !== undefined ? { animData: spell.animData } : {}),
-    ...(spell.groupId !== undefined ? { groupId: spell.groupId } : {}),
-    ...(spell.cooldown !== undefined ? { cooldown: spell.cooldown } : {}),
-    ...(spell.endTurn !== undefined ? { endTurn: spell.endTurn } : {}),
-    ...(spell.flags !== undefined ? { flags: spell.flags } : {}),
-    ...(spell.persRestr !== undefined ? { persRestr: spell.persRestr } : {}),
-    ...(spell.targetRestr !== undefined ? { targetRestr: spell.targetRestr } : {}),
-    effects: spell.effects.map((effect) => ({
-      kind: effect.kind,
-      ...(effect.amount !== undefined ? { amount: effect.amount } : {}),
-      ...(effect.dmgType !== undefined ? { dmgType: effect.dmgType } : {}),
-      ...(effect.charging !== undefined ? { charging: effect.charging } : {}),
-      ...(effect.targetCount !== undefined ? { targetCount: effect.targetCount } : {}),
-      ...(effect.skills ? { skills: effect.skills } : {}),
-    })),
-  };
 }

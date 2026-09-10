@@ -44,6 +44,7 @@ export type BattleEvent =
       killed: boolean;
       comboCp?: number;
       dRage?: number;
+      dmgType?: number;
     }>
   | Readonly<{ type: "turn-granted"; timeoutSeconds: number }>
   | Readonly<{ type: "turn-wait"; timeoutSeconds: number }>

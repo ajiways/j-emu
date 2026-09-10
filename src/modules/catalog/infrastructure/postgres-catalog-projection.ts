@@ -19,6 +19,7 @@ import type {
 import { insertReputationTracks } from "./postgres-catalog-reputation-rows.ts";
 import { insertStoreLots, insertStoreTypes } from "./postgres-catalog-store-rows.ts";
 import { insertBonuses, insertUseScripts } from "./postgres-catalog-use-rows.ts";
+import { insertBotSpellBooks } from "./postgres-catalog-bot-spell-rows.ts";
 import {
   appearancePresets,
   artifacts,
@@ -37,6 +38,7 @@ export class PostgresCatalogProjection implements CatalogProjection {
     const session = this.database.session();
     await insertArtifacts(session, releaseId, documents.artifacts);
     await insertBots(session, releaseId, documents.bots);
+    await insertBotSpellBooks(session, releaseId, documents.bots);
     await insertSkills(session, releaseId, documents.skills);
     await insertBonuses(session, releaseId, documents.bonuses);
     await insertUseScripts(session, releaseId, documents.useScripts);

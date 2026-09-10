@@ -16,7 +16,7 @@ export function fightCastEvent(event: DamageEvent): Readonly<Record<string, unkn
         absorb: 0,
         dRage: event.dRage ?? 0,
         deflect: 0,
-        dmgType: heal ? 0 : 1,
+        dmgType: heal ? 0 : (event.dmgType ?? 1),
         drain: 0,
         et: "hpChange",
         hp: event.hpChange,

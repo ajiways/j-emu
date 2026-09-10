@@ -2,7 +2,9 @@ import path from "node:path";
 import { BotDefinition } from "../../src/modules/catalog/domain/bot-definition.ts";
 import { BotLootEntry } from "../../src/modules/catalog/domain/bot-loot-entry.ts";
 import { BotReward } from "../../src/modules/catalog/domain/bot-reward.ts";
+import { BotSpellBook } from "../../src/modules/catalog/domain/bot-spell-book.ts";
 import { HuntLook } from "../../src/modules/catalog/domain/hunt-look.ts";
+import { artifactExtraFromJson } from "../../src/modules/catalog/infrastructure/artifact-extra-from-json.ts";
 import type { BotDocument } from "../../src/modules/content/domain/content-document.ts";
 import { loadContentBundleFile } from "../../src/modules/content/infrastructure/load-content-bundle-file.ts";
 
@@ -48,6 +50,26 @@ function botDefinitionFromDocument(document: BotDocument): BotDefinition {
         (entry) =>
           new BotLootEntry(entry.artikulId, entry.dropWeight, entry.countMin, entry.countMax),
       ),
+    ),
+    new BotSpellBook(
+      document.spellBook.nothingWeight,
+      document.spellBook.spells.map((card) => {
+        const extra = artifactExtraFromJson(card.artikulId, { spell: card.spell });
+        if (!extra.spell) {
+          throw new Error(
+            `Playable bot ${document.id} spell ${card.artikulId} is missing extra.spell`,
+          );
+        }
+        return {
+          artikulId: card.artikulId,
+          slot: card.slot,
+          weight: card.weight,
+          maxCasts: card.maxCasts,
+          gate: card.gate,
+          hpPct: card.hpPct,
+          spell: extra.spell,
+        };
+      }),
     ),
   );
 }

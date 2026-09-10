@@ -3,7 +3,7 @@ import { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import type { HuntBattleInit } from "../../../src/modules/combat/domain/hunt-battle-init.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
-import { GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
+import { EMPTY_HUNT_BOT_SPELL_BOOK, GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
 function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
@@ -31,6 +31,7 @@ function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
     areaId: "503",
     startedAt: new Date("2026-09-07T12:00:00.000Z"),
     loadout: EMPTY_COMBAT_LOADOUT,
+    botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
     ...overrides,
   };
 }
@@ -111,6 +112,42 @@ describe("Battle", () => {
       targetMaxHp: 27,
     });
     expect(battle.grantTurn(1, AUTH_NOW)).toEqual({ type: "turn-granted", timeoutSeconds: 20 });
+  });
+
+  it("casts magic_direct from a Hissa book instead of melee", () => {
+    const battle = createBattle(new SequenceRandom([8, 0.95, 1]), {
+      botArtikulId: 4,
+      botNick: "Хисса",
+      botStrength: 15,
+      botSpellBook: {
+        nothingWeight: 100,
+        spells: [
+          {
+            artikulId: 396,
+            slot: "turn_roulette",
+            weight: 10,
+            maxCasts: null,
+            gate: null,
+            hpPct: null,
+            spell: {
+              animData: "magic_direct",
+              endTurn: true,
+              effects: [{ kind: 1, skills: [{ skillId: "pcSTR", value: -50 }] }, { kind: 4 }],
+            },
+          },
+        ],
+      },
+    });
+    battle.authenticate(1, AUTH_NOW);
+    battle.tryPlayerMelee(1, "left");
+    const bot = battle.resolveBotMelee();
+    expect(bot.events[0]).toMatchObject({
+      type: "damage",
+      animation: "magic_direct",
+      hpChange: -1,
+      sourceId: 1_000_000,
+      targetId: 1,
+    });
   });
 
   it("rejects a bot fight id that collides with the hero", () => {

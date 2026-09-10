@@ -186,6 +186,32 @@ const botLootEntrySchema = z
     message: "loot countMax must be >= countMin",
   });
 
+const botSpellCardSchema = z
+  .object({
+    artikulId: z.number().int().positive(),
+    slot: z.enum(["fight_start", "prefer", "turn_roulette", "never"]),
+    weight: z.number().int().nonnegative(),
+    maxCasts: z.number().int().positive().nullable(),
+    gate: z.literal("self_hp_le").nullable(),
+    hpPct: z.number().int().min(1).max(100).nullable(),
+    spell: artifactSpellSchema,
+  })
+  .strict()
+  .refine((card) => (card.gate === "self_hp_le") === (card.hpPct !== null), {
+    message: "hpPct is required exactly when gate is self_hp_le",
+  });
+
+const botSpellBookSchema = z
+  .object({
+    nothingWeight: z.number().int().nonnegative(),
+    spells: z.array(botSpellCardSchema),
+  })
+  .strict()
+  .refine(
+    (book) => new Set(book.spells.map((card) => card.artikulId)).size === book.spells.length,
+    { message: "spellBook artikul ids must be unique" },
+  );
+
 const botSchema = z
   .object({
     id: z.number().int().positive(),
@@ -203,6 +229,7 @@ const botSchema = z
     lootBonusMax: z.number().int().nonnegative(),
     lootNothingWeight: z.number().int().nonnegative(),
     lootEntries: z.array(botLootEntrySchema),
+    spellBook: botSpellBookSchema,
   })
   .strict()
   .refine((bot) => bot.moneyMax >= bot.moneyMin, { message: "moneyMax must be >= moneyMin" })

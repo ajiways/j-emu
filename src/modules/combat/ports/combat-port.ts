@@ -1,5 +1,6 @@
 import type { BattleEvent } from "../domain/battle-event.ts";
 import type { CombatLoadout } from "../domain/combat-loadout.ts";
+import type { HuntBotSpellBook } from "../domain/hunt-bot-spell-book.ts";
 import type { FightLootBlock } from "../domain/fight-loot-block.ts";
 
 type CommandSequence = string | number;
@@ -48,6 +49,7 @@ export type HuntStartInput = Readonly<{
   arena: string;
   areaId: string;
   loadout: CombatLoadout;
+  botSpellBook: HuntBotSpellBook;
 }>;
 
 export type HuntJoinInput = Readonly<{

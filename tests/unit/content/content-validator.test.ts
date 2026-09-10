@@ -37,15 +37,13 @@ describe("ContentValidator", () => {
     if (!bot) throw new Error("playable bundle has no bots");
     const bundle: ContentBundle = {
       ...playable,
-      bots: [
-        {
-          ...bot,
-          lootEntries: [
-            ...bot.lootEntries,
-            { artikulId: 8, dropWeight: 1, countMin: 1, countMax: 1 },
-          ],
-        },
-      ],
+      bots: replaceBot(bot, {
+        ...bot,
+        lootEntries: [
+          ...bot.lootEntries,
+          { artikulId: 8, dropWeight: 1, countMin: 1, countMax: 1 },
+        ],
+      }),
     };
     expect(() => new ContentValidator().validate(bundle)).toThrow(
       /loot artikul 8 is not in the bundle/,
@@ -58,9 +56,24 @@ describe("ContentValidator", () => {
     if (!bot || !entry) throw new Error("playable bundle has no bot loot");
     const bundle: ContentBundle = {
       ...playable,
-      bots: [{ ...bot, lootEntries: [...bot.lootEntries, entry] }],
+      bots: replaceBot(bot, { ...bot, lootEntries: [...bot.lootEntries, entry] }),
     };
     expect(() => new ContentValidator().validate(bundle)).toThrow(/duplicate loot artikul/);
+  });
+
+  it("rejects Gryzl with a non-empty spell book", () => {
+    const gryzl = playable.bots.find((row) => row.id === 2);
+    const hissa = playable.bots.find((row) => row.id === 4);
+    const card = hissa?.spellBook.spells[0];
+    if (!gryzl || !card) throw new Error("playable bundle is missing bots 2/4");
+    const bundle: ContentBundle = {
+      ...playable,
+      bots: replaceBot(gryzl, {
+        ...gryzl,
+        spellBook: { nothingWeight: 100, spells: [card] },
+      }),
+    };
+    expect(() => new ContentValidator().validate(bundle)).toThrow(/bot 2 spellBook must be empty/);
   });
 
   it("rejects an area_link whose destination is not in the bundle", () => {
@@ -314,3 +327,10 @@ describe("parseContentBundle", () => {
     ).toThrow(/lootEntries artikul ids must be unique/);
   });
 });
+
+function replaceBot(
+  bot: ContentBundle["bots"][number],
+  next: ContentBundle["bots"][number],
+): ContentBundle["bots"] {
+  return playable.bots.map((row) => (row.id === bot.id ? next : row));
+}

@@ -1,4 +1,5 @@
 import type { BotReward } from "./bot-reward.ts";
+import type { BotSpellBook } from "./bot-spell-book.ts";
 import type { HuntLook } from "./hunt-look.ts";
 
 export class BotDefinition {
@@ -10,6 +11,7 @@ export class BotDefinition {
     readonly strength: number,
     readonly hunt: HuntLook,
     readonly reward: BotReward,
+    readonly spellBook: BotSpellBook,
   ) {
     if (!Number.isInteger(id) || id <= 0) throw new Error("Invalid bot id");
     if (!title) throw new Error("Bot title is required");

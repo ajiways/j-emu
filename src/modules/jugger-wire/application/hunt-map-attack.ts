@@ -97,6 +97,7 @@ export class HuntMapAttack {
         arena: input.arena,
         areaId: input.areaId,
         loadout: input.loadout,
+        botSpellBook: input.botSpellBook,
       });
       await this.fanout.wakeArea(input.areaId);
       return fight;

@@ -6,6 +6,7 @@ export default defineConfig({
     "./src/modules/identity/infrastructure/schema.ts",
     "./src/modules/content/infrastructure/schema.ts",
     "./src/modules/catalog/infrastructure/schema.ts",
+    "./src/modules/catalog/infrastructure/schema-bot-spell-book.ts",
     "./src/modules/world/infrastructure/schema.ts",
     "./src/modules/character/infrastructure/schema.ts",
     "./src/modules/inventory/infrastructure/schema.ts",

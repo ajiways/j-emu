@@ -8,8 +8,8 @@ import type {
   WelcomeMessageDocument,
 } from "./bootstrap-content.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v17";
-export const CONTENT_VALIDATOR_VERSION = "17";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v18";
+export const CONTENT_VALIDATOR_VERSION = "18";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;
@@ -129,6 +129,21 @@ type BotLootEntryDocument = Readonly<{
   countMax: number;
 }>;
 
+type BotSpellDocument = Readonly<{
+  artikulId: number;
+  slot: "fight_start" | "prefer" | "turn_roulette" | "never";
+  weight: number;
+  maxCasts: number | null;
+  gate: "self_hp_le" | null;
+  hpPct: number | null;
+  spell: ArtifactSpellDocument;
+}>;
+
+type BotSpellBookDocument = Readonly<{
+  nothingWeight: number;
+  spells: readonly BotSpellDocument[];
+}>;
+
 export type BotDocument = Readonly<{
   id: number;
   title: string;
@@ -145,6 +160,7 @@ export type BotDocument = Readonly<{
   lootBonusMax: number;
   lootNothingWeight: number;
   lootEntries: readonly BotLootEntryDocument[];
+  spellBook: BotSpellBookDocument;
 }>;
 
 export type AreaDocument = Readonly<{

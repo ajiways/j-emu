@@ -651,25 +651,31 @@
   CEF не прогонялся — см. [CEF_MANUAL.md](CEF_MANUAL.md).
 - **Status:** `done`
 
-Очередь после CMB-05 — **развилка**: одновременно dependency-ready
-`CMB-06`, `CMB-07`, `CMB-08`, `CMB-09`, `WLD-03`, `MAIL-01`, `TRD-01`,
-`SOC-01`, `PRF-01`, `QST-ENG-01`. Автопилот не выбирает `next`.
-
 ### CMB-06 — Bot AI and spellbook casting
 
 - **ID:** `CMB-06`
 - **depends_on:** `CMB-02`, `CMB-05`
 - **Behavior evidence:** legacy `BOT_SPELLS.md`, `botAi.ts`, `botSpells.ts`
   (invented frequencies — `legacy behavior`).
-- **Content set:** 2 representative бота с книгой заклинаний разного типа
-  (например, один hot/heal-кастер, один AOE); массовый импорт полного
-  `bot_spell_book.json` — отдельная DATA-03 задача, не блокирует эту
-  capability.
-- **Architecture checkpoint / decision:** pending — AI decision port внутри
-  domain `Battle` (turn-based выбор заклинания), не отдельный process/scheduler.
-- **Acceptance:** бот с книгой заклинаний кастует по книге, а не только бьёт
-  врукопашную; бот без книги ведёт себя как раньше (regression-safe).
-- **Status:** `queued`
+- **Content set:** dump-proven offensive books on Hissa **4** / 50101 (396
+  `magic_direct`, `pcSTR: -50`), Spirit **32** / 50102 (422 `magic_darkball`),
+  Red gryzl **24** / 50103 (394); Gryzl **2** empty book. Full
+  `bot_spell_book.json` — DATA-03, не эта capability. Heal+AOE dump-бот
+  (Пещерный огр 99, area 542) не в playable 503/501/504 — не добавлять
+  (WLD). Движок всё же принимает kind-2 heal и `targetCount>=2` AOE.
+- **Architecture checkpoint / decision:** complete. Выбор AI — чистая
+  функция `pickBotSpell` в combat domain, не scheduler/process. Книга
+  снапшотится на ATTACK_BOT (`HuntStartInput.botSpellBook`); combat не
+  читает catalog mid-fight. Catalog `BotDefinition.spellBook`; execution
+  blob живёт на карточке книги (нет type_id 72 dump в репозитории). Kind-1
+  урон: `STR/10 × (1+pcSTR/100)` затем тот же `damageSpread`, что melee.
+  Charging/self-buff 397/428/395, DoT ticks, MAGSTR/MAGRES, virus 631,
+  summon — вне среза. Пустая книга не зовёт `random.unit()`. ADR-0017–0020
+  достаточны, `ARC-*` нет.
+- **Acceptance:** бот с книгой кастует по книге (raw-AMF Hissa 50101
+  `magic_direct`); бот без книги остаётся melee-only (Gryzl regression).
+  CEF не прогонялся — см. [CEF_MANUAL.md](CEF_MANUAL.md).
+- **Status:** `done`
 
 ### CMB-07 — Generic weighted loot table engine
 
@@ -684,7 +690,7 @@
 - **Acceptance:** таблица лута работает для произвольного набора entries и
   весов, включая edge cases (одна entry, все веса равны, `nothing_weight`
   доминирует).
-- **Status:** `queued`
+- **Status:** `next`
 
 ### CMB-08 — Duels and team shuffle
 

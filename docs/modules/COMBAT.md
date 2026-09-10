@@ -4,9 +4,10 @@
 
 Есть hunt melee loop (raw-AMF L/C/R, delay grant/bot-counter, kill, waiter
 re-pair), map `joinHunt`, CMB-02 pocket/glove/rage casts, CMB-03 terminal
-settlement, CMB-04 reconnect/ghost/RESURRECT и CMB-05 STR-урон (raw-AMF).
-Shuffle 3↔3 не в этом срезе. CEF экрана результата, F5 в бою и призрака не
-прогонялся — product status combat остаётся частично.
+settlement, CMB-04 reconnect/ghost/RESURRECT, CMB-05 STR-урон и CMB-06
+bot spell book (raw-AMF). Shuffle 3↔3 не в этом срезе. CEF экрана
+результата, F5 в бою, призрака и плевка Хиссы не прогонялся — product
+status combat остаётся частично.
 
 ## Источники поведения
 
@@ -277,6 +278,35 @@ e2e смерти; production path его не передаёт.
 
 `rollMeleeOutcome` dodge/block/crit/DEF; kind-1 overlay; FIGHT_MAGIC;
 weapon DPS aparte от STR.
+
+## CMB-06 — bot spell book
+
+Срез закрыт (raw-AMF). `pickBotSpell` — чистая функция в combat domain:
+`fight_start` (burn if gated) → `prefer` → roulette + NOTHING. Книга
+снапшотится на ATTACK_BOT (`HuntStartInput.botSpellBook`); combat не
+читает catalog mid-fight. Пустая книга не зовёт `random.unit()` — Gryzl
+остаётся melee-only. Kind-1 урон =
+`max(1, round(STR/10 × (1+pcSTR/100) × [0.85…1.15]))`. Kind-2 heal и
+AOE `targetCount>=2` есть в движке; в slice нет heal-бота (огр 99 / area
+542 — WLD). Charging/self-buff, DoT ticks, MAGSTR/MAGRES, virus, summon —
+вне среза. Полный `bot_spell_book.json` — DATA-03.
+
+Content: Грызль **2** пустая книга / 50310; Хисса **4** spell **396**
+`magic_direct` / 50101; дух **32** **422** `magic_darkball` / 50102;
+рыжий грызль **24** **394** `magic_direct` / 50103. Execution blob на
+карточке книги (нет type_id 72 dump). Catalog tables
+`catalog.bot_spell_books` / `bot_spell_book_spells`. Schema
+`playable-slice/v18`. CEF плевка Хиссы не прогонялся.
+
+### Architecture decision
+
+Отдельный `ARC-*` не нужен. AI choice не process/scheduler. ADR-0017–0020
+достаточны.
+
+### Out of scope (CMB-06 leftover)
+
+DoT ticks (kind 4); charging overlay 397/428/395; MAGSTR/MAGRES;
+virus 631; summon; full `bot_spell_book.json`; heal+AOE dump bot 99.
 
 ## Границы модулей
 

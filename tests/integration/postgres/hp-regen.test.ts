@@ -18,7 +18,7 @@ import { playableCharacterModuleInput } from "../../support/playable-character-m
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
-import { GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
+import { EMPTY_HUNT_BOT_SPELL_BOOK, GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
 const policy = loadGamePolicy(path.resolve(process.cwd(), "config/development.json"));
@@ -181,6 +181,7 @@ describe("HP regeneration persistence", () => {
       arena: "2_1",
       areaId: "503",
       loadout: EMPTY_COMBAT_LOADOUT,
+      botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
     });
     clock.advanceSeconds(5);
     const synced = await characters.service.syncResources({ characterId: hero.id });
@@ -213,6 +214,7 @@ describe("HP regeneration persistence", () => {
       arena: "2_1",
       areaId: "503",
       loadout: EMPTY_COMBAT_LOADOUT,
+      botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
     });
     const locked = await characters.service.lockByAccountId(hero.accountId);
     await characters.service.applyEquipmentVitals(locked, []);

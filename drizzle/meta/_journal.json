@@ -36,6 +36,13 @@
       "when": 1788988522750,
       "tag": "0004_content_draft_use_types",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789025132042,
+      "tag": "0005_catalog_bot_spell_book",
+      "breakpoints": true
     }
   ]
 }

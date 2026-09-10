@@ -3,9 +3,9 @@ import type { BattleRules } from "./battle-rules.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import { huntBotSnap } from "./hunt-bot-snap.ts";
 import { HuntHuman } from "./hunt-human.ts";
+import { resolveBotTurn } from "./hunt-bot-turn.ts";
 import {
   grantTurn as grantHumanTurn,
-  resolveBotMelee as resolvePairedBotMelee,
   tryPlayerMelee as resolvePlayerMelee,
   type BotMeleeResult,
   type PlayerMeleeResult,
@@ -29,6 +29,7 @@ export class Battle {
   private finishedValue = false;
   private pairedAccountIdValue: number;
   private readonly humans: HuntHuman[] = [];
+  private readonly botCasts = new Map<number, number>();
 
   constructor(
     readonly init: HuntBattleInit,
@@ -267,14 +268,20 @@ export class Battle {
 
   resolveBotMelee(): BotMeleeResult {
     if (this.finishedValue) throw new Error("Cannot resolve bot melee on a finished battle");
-    const result = resolvePairedBotMelee(this.requireHuman(this.pairedAccountIdValue), {
+    const result = resolveBotTurn(this.requireHuman(this.pairedAccountIdValue), {
       rules: this.rules,
       random: this.random,
       botFightId: this.botFightId,
       botStrength: this.init.botStrength,
+      botHp: this.botHpValue,
+      botMaxHp: this.init.botMaxHp,
       fightId: this.id,
       hasWaiter: this.hasWaitingHuman(),
+      book: this.init.botSpellBook,
+      casts: this.botCasts,
+      living: this.livingHumans(),
     });
+    this.botHpValue = result.botHp;
     if (result.events.some((event) => event.type === "finished")) this.finishedValue = true;
     return result;
   }

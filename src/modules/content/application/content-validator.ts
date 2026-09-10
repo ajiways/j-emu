@@ -14,6 +14,7 @@ import { collectReputationIssues } from "./collect-reputation-issues.ts";
 import { collectSetIssues } from "./collect-set-issues.ts";
 import { collectUpgradeIssues } from "./collect-upgrade-issues.ts";
 import { collectUseIssues } from "./collect-use-issues.ts";
+import { collectBotSpellIssues } from "./collect-bot-spell-issues.ts";
 
 const REQUIRED_SKILL_IDS = [
   "HPREG",
@@ -163,6 +164,7 @@ export class ContentValidator {
     issues.push(...collectUpgradeIssues(bundle));
     issues.push(...collectSetIssues(bundle));
     issues.push(...collectUseIssues(bundle));
+    issues.push(...collectBotSpellIssues(bundle));
     if (!bundle.levels.some((level) => level.level === 1)) {
       issues.push("level 1 boundary is required");
     }

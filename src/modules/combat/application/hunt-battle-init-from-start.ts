@@ -33,5 +33,6 @@ export function huntBattleInitFromStart(
     loadout: input.loadout,
     heroStrength: input.heroStrength,
     botStrength: input.botStrength,
+    botSpellBook: input.botSpellBook,
   };
 }

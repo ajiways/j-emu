@@ -21,6 +21,10 @@ import {
   reputationTracks,
 } from "../../../src/modules/catalog/infrastructure/schema.ts";
 import {
+  botSpellBookSpells,
+  botSpellBooks,
+} from "../../../src/modules/catalog/infrastructure/schema-bot-spell-book.ts";
+import {
   experienceGrants,
   heroes,
   heroLearnedBonuses,
@@ -83,6 +87,8 @@ describe("Drizzle migrations", () => {
         "catalog.artifacts",
         "catalog.bonuses",
         "catalog.bot_loot_entries",
+        "catalog.bot_spell_book_spells",
+        "catalog.bot_spell_books",
         "catalog.bots",
         "catalog.game_wide_documents",
         "catalog.level_boundaries",
@@ -121,6 +127,8 @@ describe("Drizzle migrations", () => {
       sessions,
       artifacts,
       botLootEntries,
+      botSpellBooks,
+      botSpellBookSpells,
       bots,
       skillDefinitions,
       levelBoundaries,
@@ -149,7 +157,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(32);
+    ]).toHaveLength(34);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -161,6 +169,7 @@ describe("Drizzle migrations", () => {
       "0002_inventory_item_tempeffect.sql",
       "0003_inventory_item_expire_use.sql",
       "0004_content_draft_use_types.sql",
+      "0005_catalog_bot_spell_book.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -171,8 +180,9 @@ describe("Drizzle migrations", () => {
       "0002_inventory_item_tempeffect",
       "0003_inventory_item_expire_use",
       "0004_content_draft_use_types",
+      "0005_catalog_bot_spell_book",
     ]);
-    expect(await appliedCount()).toBe(5);
+    expect(await appliedCount()).toBe(6);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );

@@ -1,5 +1,11 @@
 import type { CombatPort } from "../../src/modules/combat/ports/combat-port.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../src/modules/combat/domain/combat-loadout.ts";
+import type { HuntBotSpellBook } from "../../src/modules/combat/domain/hunt-bot-spell-book.ts";
+
+export const EMPTY_HUNT_BOT_SPELL_BOOK: HuntBotSpellBook = {
+  nothingWeight: 100,
+  spells: [],
+};
 
 export const GRYZL_FIGHT_LOOK = {
   botAvatar: "avatar_gryzl1_sm.jpg",
@@ -30,6 +36,7 @@ export function unitHuntStart(
     arena: "1_1",
     areaId: "503",
     loadout: EMPTY_COMBAT_LOADOUT,
+    botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
     ...overrides,
   };
 }

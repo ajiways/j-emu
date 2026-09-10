@@ -19,6 +19,7 @@ import { BotLootEntry } from "../domain/bot-loot-entry.ts";
 import { BotReward } from "../domain/bot-reward.ts";
 import { HudDefaults } from "../domain/hud-defaults.ts";
 import { HuntLook } from "../domain/hunt-look.ts";
+import { loadBotSpellBook } from "./postgres-catalog-bot-spell-rows.ts";
 import { LevelBoundary } from "../domain/level-boundary.ts";
 import { SkillDefinition } from "../domain/skill-definition.ts";
 import {
@@ -104,6 +105,7 @@ export class PostgresCatalog implements Catalog {
             new BotLootEntry(entry.artikulId, entry.dropWeight, entry.countMin, entry.countMax),
         ),
       ),
+      await loadBotSpellBook(this.database.session(), releaseId, id),
     );
   }
 

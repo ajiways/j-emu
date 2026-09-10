@@ -16,6 +16,7 @@ import type {
 } from "../../application/fight-wire-mapper.ts";
 import type { HuntAreaFanout } from "../../application/hunt-area-fanout.ts";
 import { HuntCombatLoadout } from "../../application/hunt-combat-loadout.ts";
+import { huntBotSpellBookFromCatalog } from "../../application/hunt-bot-spell-book-from-catalog.ts";
 import { HuntMapAttack } from "../../application/hunt-map-attack.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
@@ -105,6 +106,7 @@ export class AttackBotCommand implements OaCommand {
       arena: area.fightBackground,
       areaId: area.id,
       loadout,
+      botSpellBook: huntBotSpellBookFromCatalog(bot.spellBook),
     });
     return {
       "common|action": { status: 100 },

@@ -18,7 +18,7 @@ import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-his
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
-import { GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
+import { EMPTY_HUNT_BOT_SPELL_BOOK, GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
@@ -68,6 +68,7 @@ describe("finished fight history storage", () => {
       arena: "1_1",
       areaId: hero.areaId,
       loadout: EMPTY_COMBAT_LOADOUT,
+      botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
     });
     expect(start.participantId).toBe(hero.id);
     const fightId = BigInt(start.fightId);

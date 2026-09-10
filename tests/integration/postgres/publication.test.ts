@@ -65,6 +65,8 @@ describe("content publication", () => {
         countMax: entry.countMax,
       })),
     ).toEqual([...authored.lootEntries]);
+    const hissa = await catalog.bot(4);
+    expect(hissa?.spellBook.spells.map((card) => card.artikulId)).toEqual([396]);
   });
 
   it("does not change the active revision when a candidate is invalid", async () => {

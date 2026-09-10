@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v17",
+  "schemaVersion": "playable-slice/v18",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -1140,6 +1140,10 @@
           "countMax": 25
         }
       ],
+      "spellBook": {
+        "nothingWeight": 100,
+        "spells": []
+      },
       "hunt": {
         "nick": "Грызл",
         "swf": "gryzl1.swf",
@@ -1168,6 +1172,41 @@
       "lootBonusMax": 0,
       "lootNothingWeight": 1,
       "lootEntries": [],
+      "spellBook": {
+        "nothingWeight": 100,
+        "spells": [
+          {
+            "artikulId": 396,
+            "slot": "turn_roulette",
+            "weight": 10,
+            "maxCasts": null,
+            "gate": null,
+            "hpPct": null,
+            "spell": {
+              "animData": "magic_direct",
+              "endTurn": true,
+              "targetRestr": {
+                "opp": true,
+                "dead": false
+              },
+              "effects": [
+                {
+                  "kind": 1,
+                  "skills": [
+                    {
+                      "skill_id": "pcSTR",
+                      "value": -50
+                    }
+                  ]
+                },
+                {
+                  "kind": 4
+                }
+              ]
+            }
+          }
+        ]
+      },
       "hunt": {
         "nick": "Хисса",
         "swf": "snake1.swf",
@@ -1196,6 +1235,32 @@
       "lootBonusMax": 0,
       "lootNothingWeight": 1,
       "lootEntries": [],
+      "spellBook": {
+        "nothingWeight": 100,
+        "spells": [
+          {
+            "artikulId": 394,
+            "slot": "turn_roulette",
+            "weight": 10,
+            "maxCasts": null,
+            "gate": null,
+            "hpPct": null,
+            "spell": {
+              "animData": "magic_direct",
+              "endTurn": true,
+              "targetRestr": {
+                "opp": true,
+                "dead": false
+              },
+              "effects": [
+                {
+                  "kind": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
       "hunt": {
         "nick": "Рыжий грызл",
         "swf": "gryzl2.swf",
@@ -1224,6 +1289,35 @@
       "lootBonusMax": 0,
       "lootNothingWeight": 1,
       "lootEntries": [],
+      "spellBook": {
+        "nothingWeight": 100,
+        "spells": [
+          {
+            "artikulId": 422,
+            "slot": "turn_roulette",
+            "weight": 10,
+            "maxCasts": null,
+            "gate": null,
+            "hpPct": null,
+            "spell": {
+              "animData": "magic_darkball",
+              "endTurn": true,
+              "targetRestr": {
+                "opp": true,
+                "dead": false
+              },
+              "effects": [
+                {
+                  "kind": 1
+                },
+                {
+                  "kind": 4
+                }
+              ]
+            }
+          }
+        ]
+      },
       "hunt": {
         "nick": "Заблудший дух",
         "swf": "svetlyak_blue.swf",

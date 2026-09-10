@@ -1,11 +1,13 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { requireCombatLoadout } from "./combat-loadout.ts";
+import { requireHuntBotSpellBook } from "./hunt-bot-spell-book.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 
 export function requireHuntBattleInit(init: HuntBattleInit, rules: BattleRules): void {
   if (!init.areaId) throw new Error("Battle area is required");
   requireCombatLoadout(init.loadout);
+  requireHuntBotSpellBook(init.botSpellBook);
   requireWireIdentity(init.accountId, "account id");
   requireWireIdentity(init.heroId, "hero id");
   requireWireIdentity(init.botArtikulId, "bot artikul id");

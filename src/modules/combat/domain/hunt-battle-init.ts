@@ -1,4 +1,5 @@
 import type { CombatLoadout } from "./combat-loadout.ts";
+import type { HuntBotSpellBook } from "./hunt-bot-spell-book.ts";
 
 export type HuntBattleInit = Readonly<{
   fightId: string;
@@ -26,4 +27,5 @@ export type HuntBattleInit = Readonly<{
   loadout: CombatLoadout;
   heroStrength: number;
   botStrength: number;
+  botSpellBook: HuntBotSpellBook;
 }>;

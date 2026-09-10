@@ -9,23 +9,23 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/character/application/character-service.ts":
     "Character application facade: progression, resources, money, reputation, learn-bonus, location, and presence",
   "src/modules/content/domain/content-document.ts":
-    "Playable bundle DTO including store, reputation, bonuses, use scripts, artifacts, bots, areas, and bootstrap documents",
+    "Playable bundle DTO including store, reputation, bonuses, use scripts, artifacts, bot spell books, areas, and bootstrap documents",
   "src/modules/character/domain/hero.ts":
     "Hero aggregate owns vitals, money, location lock, and CMB-04 ghost/injury clock",
   "src/modules/combat/application/combat-service.ts":
     "Process-local hunt service: start/join/auth/resume/poll, CMB-02 casts, CMB-03 loot/exit take and leave ack",
   "src/modules/combat/domain/battle.ts":
-    "Hunt aggregate owns pairing, melee, casts, and CMB-04 resume bootstrap for one RAM fight",
+    "Hunt aggregate owns pairing, melee, CMB-06 bot spell turns, casts, and CMB-04 resume bootstrap for one RAM fight",
   "src/modules/content/application/content-validator.ts":
-    "Single bundle completeness gate including store 504, reputation, set bonuses, USE representatives, fight extra blobs, and bot loot",
+    "Single bundle completeness gate including store 504, reputation, set bonuses, USE representatives, fight extra blobs, bot loot, and bot spell books",
   "src/modules/inventory/domain/inventory-service.ts":
     "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag, INV-05 repair, INV-06 upgrade, INV-07 set-bonus, and INV-08 USE/drink",
   "src/modules/catalog/infrastructure/schema.ts":
     "Catalog projection tables including bot loot, store, reputation, bonuses, and use_scripts",
   "src/modules/catalog/infrastructure/postgres-catalog.ts":
-    "Active-release catalog reads for artifacts, bots, skills, store, reputation, bonuses, and use scripts",
+    "Active-release catalog reads for artifacts, bots, spell books, skills, store, reputation, bonuses, and use scripts",
   "src/modules/content/domain/parse-content-bundle.ts":
-    "Zod playable-slice document including store lots, reputation, bonuses, and use scripts",
+    "Zod playable-slice document including store lots, reputation, bonuses, use scripts, and bot spell books",
   "src/modules/jugger-wire/application/bootstrap-read-model.ts":
     "Flat OA bootstrap/mutation blocks including drink purge, USE mutation, and CMB-04 init2 fight|conf",
 };
