@@ -109,7 +109,9 @@ import type { PartySnapshot } from "../application/party-snapshot.ts";
 import type { InstanceDesk } from "../../../app/instance-desk.ts";
 import type { DungeonHuntWorld } from "../../instance/application/dungeon-hunt-world.ts";
 import type { BattlegroundDesk } from "../../../app/battleground-desk.ts";
+import type { BookDesk } from "../../../app/book-desk.ts";
 import { ArenaOaCommand, ARENA_OA_KEYS } from "../commands/oa/arena-oa-command.ts";
+import { BookOaCommand, BOOK_OA_KEYS } from "../commands/oa/book-oa-command.ts";
 import { AttackNickCommand } from "../commands/oa/attack-nick-command.ts";
 
 export class JuggerCommandModule {
@@ -159,6 +161,7 @@ export class JuggerCommandModule {
     instanceDesk: InstanceDesk,
     dungeonHunt: DungeonHuntWorld,
     battleground: BattlegroundDesk,
+    book: BookDesk,
   ) {
     this.fightWire = fightWire;
     const invites = new FriendlyDuelInvites(clock);
@@ -379,6 +382,7 @@ export class JuggerCommandModule {
       ),
       ...PARTY_OA_KEYS.map((key) => new PartyOaCommand(key, partyDesk)),
       ...ARENA_OA_KEYS.map((key) => new ArenaOaCommand(key, battleground)),
+      ...BOOK_OA_KEYS.map((key) => new BookOaCommand(key, book)),
       new AttackNickCommand(battleground),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);

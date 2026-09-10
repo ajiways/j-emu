@@ -120,6 +120,13 @@
       "when": 1789075020210,
       "tag": "0016_battleground_history_and_copy_type",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1789077710078,
+      "tag": "0017_character_hero_bot_kills",
+      "breakpoints": true
     }
   ]
 }

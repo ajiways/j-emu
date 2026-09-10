@@ -5,6 +5,8 @@ export class OaCommandRegistry {
   static readonly requiredKeys = [
     "battlepass|list",
     "book|quest_list",
+    "book|bestiary_info",
+    "book|instances",
     "chat|conf",
     "chat|add",
     "common|conf",

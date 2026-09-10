@@ -15,7 +15,7 @@ area presence roster:
 
 - `character` хранит hero scalars, personal details, naked `hero_skills`,
   `hero_reputations` (Радвей 5), `hp_time`, `regen_at`, `ghost` / `injury_time`
-  / `injury_artikul_id`; internal ports `grantExperience`, `syncResources`,
+  / `injury_artikul_id`, `hero_bot_kills` (BOOK-01); internal ports `grantExperience`, `syncResources`,
   `noteHp`, `noteDefeat`, `resurrect`, `creditMoney`, `debitMoney` и
   `grantReputation` пишут этот state; `move_ready_at` и `setArea` на том же
   aggregate;
@@ -43,8 +43,8 @@ area presence roster:
 - `party` — `party.parties` / `party_members` / `party_invites` /
   `party_bag_items`. Target `social` groups ещё план.
 - `instance` — `instance.copies` / `binds` / `killed_spawns`, dungeon hunt
-  RAM overlay, COME_IN ogre/kopi/tomb/usadba, `copy_type` `dungeon|bg`.
-  Clear/loot bands — leftover.
+  RAM overlay, COME_IN ogre/kopi/tomb/usadba, `copy_type` `dungeon|bg`,
+  `book|instances` read model. Clear/loot bands — leftover.
 - `battleground` — RAM queue/invite/ban/live score, typed
   `battleground.finished_*`, Раскоп `general|2` (rooms 635/636/637, return
   500). POST-04 / HERO-01 leftover.

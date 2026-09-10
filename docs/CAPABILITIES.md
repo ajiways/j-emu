@@ -273,10 +273,12 @@ auto-party, `common|instance_conf` без `progress_*`, `state.instance=1`,
 per-copy hunt id (route или zone), bind на exit/re-enter, presence isolation
 двух копий, kill без respawn (ogre), TTL kick на parent, expired bind status
 `2`. Combat `fight|conf.instance_id` = copy id, `can_leave:0`. Restart читает
-copy/bind и killed spawns. CEF данжа не прогонялся.
+copy/bind и killed spawns. `book|instances` active/blocked по bind+expiry.
+`book|bestiary_info` — `hero_bot_kills` после hunt win (Грызль 2). CEF книги
+не прогонялся.
 
 Не перенесены clear bar/coins, `personal_guaranteed` / `loot.bands`,
-`book|instances`, dungeon shops, hunt join team 2, abort fight on expiry,
+dungeon shops, hunt join team 2, abort fight on expiry,
 `has_clear: true` fixtures (2/4/6/7), POST-03 mass importer, daily 06:00 MSK
 wipe.
 

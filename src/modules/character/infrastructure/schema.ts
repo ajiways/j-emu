@@ -178,3 +178,20 @@ export const heroLearnedBonuses = characterSchema.table(
     check("hero_learned_bonuses_artikul_id_check", sql`${table.artikulId} > 0`),
   ],
 );
+
+export const heroBotKills = characterSchema.table(
+  "hero_bot_kills",
+  {
+    heroId: integer("hero_id")
+      .notNull()
+      .references(() => heroes.id, { onDelete: "restrict" }),
+    botId: integer("bot_id").notNull(),
+    winCnt: integer("win_cnt").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.heroId, table.botId] }),
+    check("hero_bot_kills_hero_id_check", sql`${table.heroId} > 0`),
+    check("hero_bot_kills_bot_id_check", sql`${table.botId} > 0`),
+    check("hero_bot_kills_win_cnt_check", sql`${table.winCnt} > 0`),
+  ],
+);

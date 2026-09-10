@@ -15,6 +15,7 @@ export interface InstanceRepository {
   setPendingKick(copyId: number, pending: boolean): Promise<void>;
   listExpired(nowUnix: number): Promise<readonly InstanceCopyRecord[]>;
   getBind(heroId: number, dungeonArtikulId: string): Promise<InstanceBindRecord | null>;
+  listBinds(heroId: number): Promise<readonly InstanceBindRecord[]>;
   upsertBind(
     heroId: number,
     dungeonArtikulId: string,

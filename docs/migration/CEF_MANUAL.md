@@ -56,6 +56,13 @@ product-status только вместе с CEF-фактом в `CAPABILITIES.md
 - [ ] BG-01 leftover: invite TTL 120s → бан часа; F5 в комнате без RAM match
       выкидывает в 500.
 
+## Book
+
+- [ ] BOOK-01: победа над Грызлем 50310 → вкладка бестиария `win_cnt` 1,
+      F5/рестарт сохраняет счётчик.
+- [ ] BOOK-01: вход в пещеру огра 542 → книга инстансов active artikul `1`;
+      после TTL строка blocked.
+
 ## World / economy / HUD
 
 - [ ] Store CEF: лавка 504 вкладка оружия, лоты 23/24, покупка, отказ

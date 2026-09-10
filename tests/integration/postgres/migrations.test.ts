@@ -44,6 +44,7 @@ import {
 import {
   experienceGrants,
   heroes,
+  heroBotKills,
   heroLearnedBonuses,
   heroPersonalDetails,
   heroReputations,
@@ -146,6 +147,7 @@ describe("Drizzle migrations", () => {
         "catalog.use_scripts",
         "catalog.reputation_tracks",
         "character.experience_grants",
+        "character.hero_bot_kills",
         "character.hero_learned_bonuses",
         "character.hero_personal_details",
         "character.hero_reputations",
@@ -213,6 +215,7 @@ describe("Drizzle migrations", () => {
       heroPersonalDetails,
       heroSkills,
       heroReputations,
+      heroBotKills,
       experienceGrants,
       items,
       letters,
@@ -234,7 +237,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(55);
+    ]).toHaveLength(56);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -258,6 +261,7 @@ describe("Drizzle migrations", () => {
       "0014_instance_foundation.sql",
       "0015_catalog_dungeon_spawn_zone.sql",
       "0016_battleground_history_and_copy_type.sql",
+      "0017_character_hero_bot_kills.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -280,8 +284,9 @@ describe("Drizzle migrations", () => {
       "0014_instance_foundation",
       "0015_catalog_dungeon_spawn_zone",
       "0016_battleground_history_and_copy_type",
+      "0017_character_hero_bot_kills",
     ]);
-    expect(await appliedCount()).toBe(17);
+    expect(await appliedCount()).toBe(18);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );

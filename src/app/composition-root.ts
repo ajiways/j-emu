@@ -254,6 +254,7 @@ export class CompositionRoot {
               catalog.catalog,
               partyNotify,
             ),
+            characters.bestiary,
           ),
           chatDesk,
           {
@@ -361,6 +362,7 @@ export class CompositionRoot {
         dungeonHunt: instance.hunt,
         battlegrounds: catalog.battlegrounds,
         instances: instance.service,
+        bestiary: characters.bestiary,
         database,
         delay,
       });

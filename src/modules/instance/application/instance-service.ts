@@ -4,6 +4,7 @@ import type { DungeonCatalog } from "../../catalog/ports/dungeon-catalog.ts";
 import type { DungeonDefinition } from "../../catalog/domain/dungeon-definition.ts";
 import { dungeonContainsArea } from "../../catalog/domain/dungeon-definition.ts";
 import { isCopyLive, type InstanceCopyRecord } from "../domain/instance-copy.ts";
+import { bookInstancesWire } from "../domain/book-instances-wire.ts";
 import { InstanceDeniedError } from "../domain/instance-denied-error.ts";
 import type { InstanceRepository } from "../ports/instance-repository.ts";
 
@@ -112,6 +113,26 @@ export class InstanceService {
 
   isDungeonArea(dungeon: DungeonDefinition, areaId: string): boolean {
     return dungeonContainsArea(dungeon, areaId);
+  }
+
+  async bookInstances(heroId: number): Promise<ReturnType<typeof bookInstancesWire>> {
+    if (!Number.isInteger(heroId) || heroId < 1) {
+      throw new Error("Book instances require a positive hero id");
+    }
+    const snaps = [];
+    for (const bind of await this.copies.listBinds(heroId)) {
+      const dungeon = await this.dungeons.byArtikul(bind.dungeonArtikulId);
+      if (!dungeon) {
+        throw new Error(`Dungeon ${bind.dungeonArtikulId} is missing for book bind`);
+      }
+      const copy = await this.copies.getCopy(bind.copyId);
+      if (!copy) throw new Error(`Instance copy ${bind.copyId} is missing for book bind`);
+      if (copy.copyType !== "dungeon") {
+        throw new Error(`Book bind copy ${copy.id} type ${copy.copyType} is not dungeon`);
+      }
+      snaps.push({ artikulId: bind.dungeonArtikulId, expiresUnix: copy.expiresUnix });
+    }
+    return bookInstancesWire(snaps, this.clock.unixSeconds());
   }
 
   private async firstLiveMateCopy(

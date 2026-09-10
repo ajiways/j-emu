@@ -11,8 +11,8 @@ Published content: ogre cave `1`/542/bot 99, kopi `11`/654/bot 354, tomb
 [CAPABILITIES.md](../CAPABILITIES.md).
 
 BG match is [BATTLEGROUND.md](BATTLEGROUND.md) (`copy_type='bg'`, no dungeon
-bind). Dungeon clear bar / coins, quest `personal_only`, `has_clear: true`
-fixtures — not in this slice.
+bind). Instance book tab is [BOOK.md](BOOK.md). Dungeon clear bar / coins,
+quest `personal_only`, `has_clear: true` fixtures — not in this slice.
 
 ## Sources
 
@@ -69,6 +69,6 @@ Death/RESURRECT in a copy → start area of the same live copy (ogre is already
 ## Out of slice
 
 Clear bar / coins, `loot.bands` / `personal_guaranteed`, bind warning on
-invite, `book|instances`, dungeon shops, hunt join team 2, abort fight on
+invite, dungeon shops, hunt join team 2, abort fight on
 expiry, `has_clear: true` fixtures (2/4/6/7), POST-03 mass importer, daily
 06:00 MSK wipe.

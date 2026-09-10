@@ -381,6 +381,14 @@ describe("module factories", () => {
         dungeonHunt: {} as DungeonHuntWorld,
         battlegrounds: {} as BattlegroundCatalog,
         instances: {} as InstanceService,
+        bestiary: {
+          noteWin: async () => {
+            throw new Error("Bestiary is not bound in this factory test");
+          },
+          listWins: async () => {
+            throw new Error("Bestiary is not bound in this factory test");
+          },
+        },
         database: {} as PostgresDatabase,
         delay: combatDelay,
       }),
@@ -566,6 +574,14 @@ describe("module factories", () => {
           }),
         } as BattlegroundCatalog,
         instances: {} as InstanceService,
+        bestiary: {
+          noteWin: async () => {
+            throw new Error("Bestiary is not bound in this factory test");
+          },
+          listWins: async () => {
+            throw new Error("Bestiary is not bound in this factory test");
+          },
+        },
         database: {} as PostgresDatabase,
         delay: combatDelay,
       }),

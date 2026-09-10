@@ -1004,11 +1004,14 @@
 - **Behavior evidence:** legacy `BESTIARY.md`, `DUNGEON.md`.
 - **Content set:** без нового контента — read model поверх существующих
   combat kills и instance binds.
-- **Architecture checkpoint / decision:** pending — read model над combat
-  kills и instance binds без копирования mutable state.
+- **Architecture checkpoint / decision:** complete — отдельный ADR не нужен.
+  `character.hero_bot_kills` — durable hunt-win aggregate (не копия RAM боя
+  и не 72h `finished_fights`). `book|instances` читает `instance.binds` +
+  `copies` без второй таблицы. Контракт:
+  [BOOK.md](../modules/BOOK.md).
 - **Acceptance:** bestiary kill counters и active/completed instance entries
   совпадают с persisted outcome в точном book wire.
-- **Status:** `next`
+- **Status:** `done`
 
 ## Wave 10 — professions engine
 
@@ -1023,7 +1026,7 @@
   scheduler clock и quest/inventory/world ports.
 - **Acceptance:** representative профессия публикуется и grant/bootstrap
   проходит raw-AMF E2E.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### PRF-02 — Assistants and gathering
 

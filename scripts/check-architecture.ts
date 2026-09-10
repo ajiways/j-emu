@@ -55,7 +55,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/app/party-bag-ops.ts":
     "Party bag give/drop/dump plus lottery rounds under the party UoW lock",
   "src/app/hunt-fight-settlement.ts":
-    "Hunt finish UoW: EXP/money/loot plus party money split and deferred bag deposit",
+    "Hunt finish UoW: EXP/money/loot plus party money split, deferred bag deposit, and bestiary kill credit",
   "src/app/party-join-ops.ts":
     "Party invite/confirm/join windows and dump join_confirm pending path",
   "src/app/battleground-match-runtime.ts":

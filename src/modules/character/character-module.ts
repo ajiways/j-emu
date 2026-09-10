@@ -8,6 +8,7 @@ import type { HeroCreationPolicy } from "./domain/hero.ts";
 import { Hero } from "./domain/hero.ts";
 import type { RegenPolicy } from "./domain/regen-policy.ts";
 import { PostgresExperienceGrantRepository } from "./infrastructure/postgres-experience-grant-repository.ts";
+import { PostgresHeroBestiary } from "./infrastructure/postgres-hero-bestiary.ts";
 import { PostgresHeroLearnedBonusRepository } from "./infrastructure/postgres-hero-learned-bonus-repository.ts";
 import { PostgresHeroRepository } from "./infrastructure/postgres-hero-repository.ts";
 import { PostgresHeroReputationRepository } from "./infrastructure/postgres-hero-reputation-repository.ts";
@@ -15,9 +16,13 @@ import { PostgresHeroSkillRepository } from "./infrastructure/postgres-hero-skil
 import { PostgresPersonalDetailsRepository } from "./infrastructure/postgres-personal-details-repository.ts";
 import type { ActiveFightQuery } from "./ports/active-fight-query.ts";
 import type { EquippedModifiers } from "./ports/equipped-modifiers.ts";
+import type { HeroBestiary } from "./ports/hero-bestiary.ts";
 
 export class CharacterModule {
-  private constructor(readonly service: CharacterService) {}
+  private constructor(
+    readonly service: CharacterService,
+    readonly bestiary: HeroBestiary,
+  ) {}
 
   static create(input: {
     database: PostgresDatabase;
@@ -81,6 +86,7 @@ export class CharacterModule {
         regenPolicy,
         activeFight,
       ),
+      new PostgresHeroBestiary(database),
     );
   }
 

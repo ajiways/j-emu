@@ -80,6 +80,19 @@ export class PostgresInstanceRepository implements InstanceRepository {
     };
   }
 
+  async listBinds(heroId: number): Promise<readonly InstanceBindRecord[]> {
+    if (!Number.isInteger(heroId) || heroId < 1) {
+      throw new Error("Bind list requires a positive hero id");
+    }
+    const rows = await this.database.session().select().from(binds).where(eq(binds.heroId, heroId));
+    return rows.map((row) => ({
+      heroId: row.heroId,
+      dungeonArtikulId: row.dungeonArtikulId,
+      copyId: row.copyId,
+      boundUnix: row.boundUnix,
+    }));
+  }
+
   async upsertBind(
     heroId: number,
     dungeonArtikulId: string,

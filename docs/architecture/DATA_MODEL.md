@@ -60,7 +60,9 @@ naked skills — отдельными строками `hero_skills`. `hp_time` 
 до полного HP; `regen_at` — unix-second truncated timestamp ленивого регена.
 `ghost` / `injury_time` / `injury_artikul_id` — CMB-04; SQL DEFAULT только для
 старых строк, runtime пишет явные значения. Репутация Радвея **5** — runtime
-REP-01 (`hero_reputations` + derived SUM 36 на чтении).
+REP-01 (`hero_reputations` + derived SUM 36 на чтении). BOOK-01:
+`hero_bot_kills(hero_id, bot_id, win_cnt)` PK, `win_cnt > 0`, bot_id = catalog
+artikul; инкремент в hunt finish UoW.
 
 ### `inventory`
 
@@ -274,6 +276,7 @@ Mana regen (`MPREG`/`mp_time` formula) и расширенная statistics
 model остаются планом. `heroes.ghost` / `injury_time` / `injury_artikul_id`,
 `heroes.regen_at`, `hp_time`, `experience_grants`, `hero_skills`,
 `hero_reputations`, HP/MP/EXP и appearance bootstrap уже находятся в runtime.
+BOOK-01 `hero_bot_kills` — runtime.
 
 ### `inventory`
 
@@ -309,7 +312,8 @@ Party SOC-02/SOC-03 живёт в `party` (`parties` / `party_members` /
 DNG-01/DNG-02: `instance.copies` / `binds` / `killed_spawns` (строки, не dump
 JSONB `killed_spawns_json`). `copies.copy_type` `dungeon|bg`.
 `heroes.instance_copy_id` nullable без FK.
-Контракт: [INSTANCE.md](../modules/INSTANCE.md).
+Контракт: [INSTANCE.md](../modules/INSTANCE.md), книга —
+[BOOK.md](../modules/BOOK.md).
 BG-01: `battleground.finished_matches` / `finished_players` (typed, не jsonb);
 queue/invite/ban/live score — RAM. Контракт:
 [BATTLEGROUND.md](../modules/BATTLEGROUND.md).

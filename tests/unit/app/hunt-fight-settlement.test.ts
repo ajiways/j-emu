@@ -19,6 +19,7 @@ describe("HuntFightSettlement", () => {
   it("grants EXP/money/loot on win once and skips them on loss", async () => {
     const characters = recordingCharacters();
     const inventory = recordingInventory();
+    const bestiary = recordingBestiary();
     const settlement = new HuntFightSettlement(
       identityUow(),
       fakeCatalog(),
@@ -28,6 +29,7 @@ describe("HuntFightSettlement", () => {
       { routeFor: async () => null },
       { deposit: async () => undefined },
       { notify: async () => undefined },
+      bestiary,
     );
     const win = await settlement.persistFinished(outcome("win", 27, 20));
     expect(characters.notes).toEqual([{ characterId: 1, hp: 27 }]);
@@ -39,6 +41,7 @@ describe("HuntFightSettlement", () => {
     expect(inventory.refills).toHaveLength(1);
     expect(inventory.deaths).toEqual([]);
     expect(inventory.grants).toEqual([]);
+    expect(bestiary.wins).toEqual([{ heroId: 1, botId: bot.id }]);
     expect(win.get(10)).toMatchObject({
       status: 100,
       fight_id: 9,
@@ -52,13 +55,16 @@ describe("HuntFightSettlement", () => {
     characters.notes.length = 0;
     characters.grants.length = 0;
     characters.credits.length = 0;
+    bestiary.wins.length = 0;
     const again = await settlement.persistFinished(outcome("win", 27, 20));
     expect(again.get(10)).toEqual(win.get(10));
     expect(characters.notes).toEqual([]);
     expect(characters.grants).toEqual([]);
+    expect(bestiary.wins).toEqual([]);
 
     const lossCharacters = recordingCharacters();
     const lossInventory = recordingInventory();
+    const lossBestiary = recordingBestiary();
     const loss = new HuntFightSettlement(
       identityUow(),
       fakeCatalog(),
@@ -68,6 +74,7 @@ describe("HuntFightSettlement", () => {
       { routeFor: async () => null },
       { deposit: async () => undefined },
       { notify: async () => undefined },
+      lossBestiary,
     );
     const lost = await loss.persistFinished(outcome("loss", 0, 20));
     expect(lossCharacters.notes).toEqual([]);
@@ -75,6 +82,7 @@ describe("HuntFightSettlement", () => {
     expect(lossCharacters.grants).toEqual([]);
     expect(lossCharacters.credits).toEqual([]);
     expect(lossInventory.deaths).toHaveLength(1);
+    expect(lossBestiary.wins).toEqual([]);
     expect(lost.get(10)).toMatchObject({ experience: 0, money: "0", loot: [] });
   });
 
@@ -89,6 +97,7 @@ describe("HuntFightSettlement", () => {
       { routeFor: async () => null },
       { deposit: async () => undefined },
       { notify: async () => undefined },
+      recordingBestiary(),
     );
     const win = await settlement.persistFinished(outcome("win", 27, 20));
     expect(inventory.grants).toEqual([{ characterId: 1, artifactId: 77, quantity: 1 }]);
@@ -108,6 +117,7 @@ describe("HuntFightSettlement", () => {
       { routeFor: async () => null },
       { deposit: async () => undefined },
       { notify: async () => undefined },
+      recordingBestiary(),
     );
     const result = await settlement.persistFinished({
       mode: "hunt",
@@ -143,6 +153,7 @@ describe("HuntFightSettlement", () => {
       { routeFor: async () => null },
       { deposit: async () => undefined },
       { notify: async () => undefined },
+      recordingBestiary(),
     );
     const loot = await settlement.persistFinished({
       mode: "friendly-practice",
@@ -201,6 +212,18 @@ function human(
     damageToBot,
     leftLive: false,
     pocket: [],
+  };
+}
+
+function recordingBestiary() {
+  return {
+    wins: [] as Array<{ heroId: number; botId: number }>,
+    async noteWin(heroId: number, botId: number) {
+      this.wins.push({ heroId, botId });
+    },
+    async listWins() {
+      return [];
+    },
   };
 }
 

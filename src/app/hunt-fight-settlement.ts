@@ -34,9 +34,11 @@ import type {
 } from "../modules/combat/ports/fight-settlement.ts";
 import type { FightLootRouting } from "../modules/combat/ports/fight-loot-routing.ts";
 import type { FightPartyLootNotify } from "../modules/combat/ports/fight-party-loot-notify.ts";
-import type { PartyBagDeposit } from "../modules/party/ports/party-bag-deposit.ts";
+import { bestiaryCreditHeroIds } from "../modules/character/domain/bestiary-kill-credit.ts";
+import type { HeroBestiary } from "../modules/character/ports/hero-bestiary.ts";
 import { splitMinorUnits } from "../modules/combat/domain/split-minor-units.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
+import type { PartyBagDeposit } from "../modules/party/ports/party-bag-deposit.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
 
 type SettlementCharacters = CharacterResources &
@@ -60,6 +62,7 @@ export class HuntFightSettlement implements FightSettlement {
     private readonly lootRouting: FightLootRouting,
     private readonly partyBag: PartyBagDeposit,
     private readonly partyLoot: FightPartyLootNotify,
+    private readonly bestiary: HeroBestiary,
   ) {}
 
   persistHumanLeft(snapshot: HumanLeftSnapshot): Promise<void> {
@@ -94,7 +97,10 @@ export class HuntFightSettlement implements FightSettlement {
     const experience = win
       ? splitFightExperience(bot.reward.baseExp, outcome.botLevel, shares)
       : new Map<number, number>();
-    const top = win ? (rankDamageShares(shares)[0] ?? null) : null;
+    const top = win ? rankDamageShares(shares)[0] : undefined;
+    if (win && top === undefined) {
+      throw new Error("Hunt win is missing a top damager");
+    }
     const over = top ? overlevel(top.level, outcome.botLevel) : 0;
     let moneyMinor = 0;
     let rolled: readonly { artikulId: number; quantity: number }[] = [];
@@ -178,6 +184,14 @@ export class HuntFightSettlement implements FightSettlement {
             artikulList: isTop && !deferItems ? artikulList : [],
           }),
         );
+      }
+      for (const heroId of bestiaryCreditHeroIds({
+        kind: outcome.kind,
+        topCharacterId: top === undefined ? null : top.characterId,
+        humanIds: outcome.humans.map((human) => human.characterId),
+        partyMemberIds: route?.memberCharacterIds ?? null,
+      })) {
+        await this.bestiary.noteWin(heroId, outcome.botId);
       }
     });
     this.finished.set(outcome.fightId, lootByAccount);

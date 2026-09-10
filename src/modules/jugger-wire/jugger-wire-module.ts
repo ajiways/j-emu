@@ -50,10 +50,12 @@ import type { InstanceHuntWorld } from "../instance/ports/instance-hunt.ts";
 import type { DungeonHuntWorld } from "../instance/application/dungeon-hunt-world.ts";
 import type { BattlegroundCatalog } from "../battleground/ports/battleground-catalog.ts";
 import type { InstanceService } from "../instance/application/instance-service.ts";
+import type { HeroBestiary } from "../character/ports/hero-bestiary.ts";
 import type { PostgresDatabase } from "../../infrastructure/postgres/database.ts";
 import type { DelayScheduler } from "../../shared/kernel/delay-scheduler.ts";
 import { createBattlegroundOps } from "../../app/battleground-ops.ts";
 import type { BattlegroundDesk } from "../../app/battleground-desk.ts";
+import { BookDesk } from "../../app/book-desk.ts";
 
 export type JuggerWireBootstrapPolicy = Readonly<{
   bagCapacity: number;
@@ -129,6 +131,7 @@ export class JuggerWireModule {
     dungeonHunt: DungeonHuntWorld;
     battlegrounds: BattlegroundCatalog;
     instances: InstanceService;
+    bestiary: HeroBestiary;
     database: PostgresDatabase;
     delay: DelayScheduler;
   }): Promise<JuggerWireModule> {
@@ -243,6 +246,7 @@ export class JuggerWireModule {
       "Jugger-wire module requires battlegrounds",
     );
     const instances = requirePresent(input.instances, "Jugger-wire module requires instances");
+    const bestiary = requirePresent(input.bestiary, "Jugger-wire module requires bestiary");
     const database = requirePresent(input.database, "Jugger-wire module requires database");
     const delay = requirePresent(input.delay, "Jugger-wire module requires delay");
     try {
@@ -292,6 +296,7 @@ export class JuggerWireModule {
         unreadMail: mail,
         party,
       });
+      const book = new BookDesk({ characters, bestiary, instances });
       const commands = new JuggerCommandModule(
         bootstrap,
         new HeroSheetReadModel({
@@ -336,6 +341,7 @@ export class JuggerWireModule {
         instanceDesk,
         dungeonHunt,
         battleground,
+        book,
       );
       const esrvPoll = new EsrvPollAssembler(
         characters,
