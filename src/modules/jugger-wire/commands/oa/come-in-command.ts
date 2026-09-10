@@ -18,6 +18,9 @@ import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-comman
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
 import { requireNoActiveFight } from "./require-no-active-fight.ts";
 import type { PresenceFanout } from "../../application/presence-fanout.ts";
+import type { InstanceDesk } from "../../../../app/instance-desk.ts";
+import { InstanceDeniedError } from "../../../instance/domain/instance-denied-error.ts";
+import { PartyDeniedError } from "../../../party/domain/party-denied-error.ts";
 
 const SLICE_SPEED = 0;
 const OVERLOAD_ERROR = "Вы не можете перемещаться, т.к. рюкзак перегружен!";
@@ -37,6 +40,7 @@ export class ComeInCommand implements OaCommand {
     private readonly combat: CombatPort,
     private readonly clock: Clock,
     private readonly presence: PresenceFanout,
+    private readonly instances: InstanceDesk,
   ) {}
 
   decode(envelope: ObjectActionEnvelope): ComeInRequest {
@@ -67,22 +71,31 @@ export class ComeInCommand implements OaCommand {
         await this.characters.syncResources({ characterId: locked.id });
         const ftime = travelFtime(dest.ftimeMax, SLICE_SPEED);
         const fromAreaId = locked.areaId;
+        const fromCopyId = locked.instanceCopyId;
+        const plan = await this.instances.prepareTravel(locked, dest.id);
         await this.characters.setArea({
           characterId: locked.id,
           areaId: dest.id,
           moveReadyAt: ftime > 0 ? addTravelSeconds(this.clock.now(), ftime) : null,
+          instanceCopyId: plan.copyId,
         });
+        const blocks = await this.bootstrap.travelMutation(context.accountId, "COME_IN");
         return {
           fromAreaId,
           toAreaId: dest.id,
-          blocks: await this.bootstrap.travelMutation(context.accountId, "COME_IN"),
+          fromCopyId,
+          blocks: await this.instances.decorateComeIn(blocks, plan, context.accountId, locked.id),
         };
       });
-      await this.presence.afterMove(context.accountId, moved.fromAreaId, moved.toAreaId);
+      await this.presence.afterMove(
+        context.accountId,
+        moved.fromAreaId,
+        moved.toAreaId,
+        moved.fromCopyId,
+      );
       return moved.blocks;
     } catch (error) {
-      if (error instanceof MissingLinkError) throw new ProtocolError(203, error.message);
-      throw error;
+      throw this.asProtocol(error);
     }
   }
 
@@ -94,8 +107,14 @@ export class ComeInCommand implements OaCommand {
     try {
       return this.encode(await this.handle({ accountId }, this.decode(envelope)));
     } catch (error) {
-      if (error instanceof MissingLinkError) throw new ProtocolError(203, error.message);
-      throw error;
+      throw this.asProtocol(error);
     }
+  }
+
+  private asProtocol(error: unknown): never {
+    if (error instanceof MissingLinkError) throw new ProtocolError(203, error.message);
+    if (error instanceof InstanceDeniedError) throw new ProtocolError(error.status, error.message);
+    if (error instanceof PartyDeniedError) throw new ProtocolError(2, error.message);
+    throw error;
   }
 }

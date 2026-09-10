@@ -11,6 +11,7 @@ export function toPresenceHero(hero: Hero): PresenceHero {
     body: hero.body,
     sk: hero.sk,
     areaId: hero.areaId,
+    instanceCopyId: hero.instanceCopyId,
     ghost: hero.ghost,
     injuryTime: hero.injuryTime,
     injuryArtikulId: hero.injuryArtikulId,

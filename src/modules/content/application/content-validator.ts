@@ -14,6 +14,7 @@ import { collectReputationIssues } from "./collect-reputation-issues.ts";
 import { collectSetIssues } from "./collect-set-issues.ts";
 import { collectUpgradeIssues } from "./collect-upgrade-issues.ts";
 import { collectUseIssues } from "./collect-use-issues.ts";
+import { collectDungeonIssues } from "./collect-dungeon-issues.ts";
 import { collectBotSpellIssues } from "./collect-bot-spell-issues.ts";
 
 const REQUIRED_SKILL_IDS = [
@@ -165,6 +166,7 @@ export class ContentValidator {
     issues.push(...collectSetIssues(bundle));
     issues.push(...collectUseIssues(bundle));
     issues.push(...collectBotSpellIssues(bundle));
+    issues.push(...collectDungeonIssues(bundle));
     if (!bundle.levels.some((level) => level.level === 1)) {
       issues.push("level 1 boundary is required");
     }
@@ -188,6 +190,7 @@ export class ContentValidator {
         entry("area_link", `${document.fromAreaId}:${document.itemId}`, document),
       ),
       ...bundle.huntSpawns.map((document) => entry("hunt_spawn", String(document.id), document)),
+      ...bundle.dungeons.map((document) => entry("dungeon", String(document.artikulId), document)),
       ...bundle.storeTypes.map((document) =>
         entry("store_type", `${document.areaId}:${document.typeId}`, document),
       ),
@@ -231,6 +234,7 @@ export class ContentValidator {
       areas: bundle.areas,
       areaLinks: bundle.areaLinks,
       huntSpawns: bundle.huntSpawns,
+      dungeons: bundle.dungeons,
       storeTypes: bundle.storeTypes,
       storeLots: bundle.storeLots,
       reputationTracks: bundle.reputationTracks,

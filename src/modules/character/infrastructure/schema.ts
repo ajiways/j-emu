@@ -50,6 +50,7 @@ export const heroes = characterSchema.table(
       .notNull()
       .default(sql`0`),
     injuryArtikulId: integer("injury_artikul_id").notNull().default(0),
+    instanceCopyId: integer("instance_copy_id"),
     version: integer("version").notNull(),
   },
   (table) => [
@@ -68,6 +69,10 @@ export const heroes = characterSchema.table(
     check("heroes_hp_time_check", sql`${table.hpTime} >= 0`),
     check("heroes_injury_time_check", sql`${table.injuryTime} >= 0`),
     check("heroes_injury_artikul_id_check", sql`${table.injuryArtikulId} >= 0`),
+    check(
+      "heroes_instance_copy_id_check",
+      sql`${table.instanceCopyId} IS NULL OR ${table.instanceCopyId} > 0`,
+    ),
     check("heroes_version_check", sql`${table.version} > 0`),
   ],
 );

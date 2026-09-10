@@ -74,6 +74,11 @@ export class HuntWanderRuntime {
     this.hide(bot, areaId, spawnId);
   }
 
+  forget(areaId: string, spawnId: number): void {
+    this.live.delete(spawnKey(areaId, spawnId));
+    this.delay.cancel(delayToken(areaId, spawnId));
+  }
+
   private hide(bot: LiveHuntBot, areaId: string, spawnId: number): void {
     hideForRespawn(bot, this.nowMs(), this.random);
     this.schedule(areaId, spawnId, bot);

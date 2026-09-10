@@ -134,7 +134,9 @@ function memoryHeroes(hero: Hero, saves: Hero[]): HeroRepository {
     findByAccountId: async () => hero,
     findByNick: async (nick: string) =>
       hero.nick.toLowerCase() === nick.trim().toLowerCase() ? hero : null,
-    listByAreaId: async (areaId) => (hero.areaId === areaId ? [hero] : []),
+    listByAreaShard: async (areaId, instanceCopyId) =>
+      hero.areaId === areaId && hero.instanceCopyId === instanceCopyId ? [hero] : [],
+    listByInstanceCopyId: async (copyId) => (hero.instanceCopyId === copyId ? [hero] : []),
     lockByAccountId: async () => hero,
     lockById: async (id) => (id === hero.id ? hero : null),
     create: async () => {

@@ -45,6 +45,9 @@ import { JuggerHttpServer } from "./infrastructure/http/jugger-http-server.ts";
 import { FightTcpServer } from "./infrastructure/tcp/fight-tcp-server.ts";
 import { JuggerCommandModule } from "./registry/jugger-command-module.ts";
 import type { PartySnapshot } from "./application/party-snapshot.ts";
+import type { InstanceDesk } from "../../app/instance-desk.ts";
+import type { InstanceHuntWorld } from "../instance/ports/instance-hunt.ts";
+import type { DungeonHuntWorld } from "../instance/application/dungeon-hunt-world.ts";
 
 export type JuggerWireBootstrapPolicy = Readonly<{
   bagCapacity: number;
@@ -114,6 +117,9 @@ export class JuggerWireModule {
     partySnapshot: PartySnapshot;
     partyNotify: PartyNotify;
     partyBag: PartyBagOps;
+    instanceHunt: InstanceHuntWorld;
+    instanceDesk: InstanceDesk;
+    dungeonHunt: DungeonHuntWorld;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -209,6 +215,18 @@ export class JuggerWireModule {
       "Jugger-wire module requires party notify",
     );
     const partyBag = requirePresent(input.partyBag, "Jugger-wire module requires party bag ops");
+    const instanceHunt = requirePresent(
+      input.instanceHunt,
+      "Jugger-wire module requires instance hunt",
+    );
+    const instanceDesk = requirePresent(
+      input.instanceDesk,
+      "Jugger-wire module requires instance desk",
+    );
+    const dungeonHunt = requirePresent(
+      input.dungeonHunt,
+      "Jugger-wire module requires dungeon hunt",
+    );
     try {
       const fightWire = new FightWireMapper(
         {
@@ -231,6 +249,7 @@ export class JuggerWireModule {
           mail,
           party,
           partySnapshot,
+          instanceHunt,
           bootstrapPolicy,
         ),
         new HeroSheetReadModel({
@@ -272,6 +291,8 @@ export class JuggerWireModule {
         partySnapshot,
         partyNotify,
         partyBag,
+        instanceDesk,
+        dungeonHunt,
       );
       const esrvPoll = new EsrvPollAssembler(
         characters,
@@ -281,6 +302,7 @@ export class JuggerWireModule {
         fightWire,
         outbox,
         clock,
+        instanceHunt,
       );
       const http = await new JuggerHttpServer({
         config,

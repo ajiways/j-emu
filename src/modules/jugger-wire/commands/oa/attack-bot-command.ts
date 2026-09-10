@@ -16,6 +16,8 @@ import type {
 } from "../../application/fight-wire-mapper.ts";
 import type { HuntAreaFanout } from "../../application/hunt-area-fanout.ts";
 import type { ChatDesk } from "../../../../app/chat-desk.ts";
+import type { DungeonHuntWorld } from "../../../instance/application/dungeon-hunt-world.ts";
+import { DungeonHuntMapAttack } from "../../../../app/dungeon-hunt-map-attack.ts";
 import type { PartyNotify } from "../../../../app/party-notify.ts";
 import type { PartyService } from "../../../party/application/party-service.ts";
 import { HuntCombatLoadout } from "../../application/hunt-combat-loadout.ts";
@@ -40,6 +42,7 @@ export class AttackBotCommand implements OaCommand {
   static readonly key = "common|object:ATTACK_BOT";
   readonly key = AttackBotCommand.key;
   private readonly huntAttack: HuntMapAttack;
+  private readonly dungeonAttack: DungeonHuntMapAttack;
 
   constructor(
     private readonly unitOfWork: UnitOfWork,
@@ -54,8 +57,10 @@ export class AttackBotCommand implements OaCommand {
     private readonly chat: ChatDesk,
     private readonly parties: PartyService,
     private readonly partyNotify: PartyNotify,
+    private readonly dungeonHunt: DungeonHuntWorld,
   ) {
     this.huntAttack = new HuntMapAttack(world, this.combat, huntFanout);
+    this.dungeonAttack = new DungeonHuntMapAttack(dungeonHunt, this.combat, huntFanout);
   }
 
   decode(envelope: ObjectActionEnvelope): AttackBotRequest {
@@ -81,7 +86,14 @@ export class AttackBotCommand implements OaCommand {
       return current;
     });
     const area = await this.world.area(hero.areaId);
-    const spawn = await this.world.spawn(area.id, request.botId);
+    const dungeonHit =
+      hero.instanceCopyId === null
+        ? null
+        : await this.dungeonHunt.spawn(hero.instanceCopyId, area.id, request.botId);
+    const spawn =
+      hero.instanceCopyId === null
+        ? await this.world.spawn(area.id, request.botId)
+        : dungeonHit?.spawn;
     if (!spawn) {
       throw new ProtocolError(203, `Hunt spawn ${request.botId} is not present in area ${area.id}`);
     }
@@ -89,10 +101,13 @@ export class AttackBotCommand implements OaCommand {
     if (!bot) throw new Error(`Bot catalog entry ${spawn.botId} is missing`);
     await this.inventory.ensureStarterInventory(hero.id);
     const loadout = await new HuntCombatLoadout(this.inventory, this.catalog).snapshot(hero.id);
-    const occupied = this.world.occupiedFightId(area.id, spawn.id);
+    const occupied =
+      hero.instanceCopyId === null
+        ? this.world.occupiedFightId(area.id, spawn.id)
+        : this.dungeonHunt.occupiedFightId(hero.instanceCopyId, area.id, spawn.id);
     const joining = occupied !== null && (await this.combat.hasFight(occupied));
     const heroStrength = await this.characters.combatStrength(hero.id);
-    const fight = await this.huntAttack.execute({
+    const fightInput = {
       accountId: context.accountId,
       heroId: hero.id,
       heroNick: hero.nick,
@@ -116,7 +131,11 @@ export class AttackBotCommand implements OaCommand {
       areaId: area.id,
       loadout,
       botSpellBook: huntBotSpellBookFromCatalog(bot.spellBook),
-    });
+    };
+    const fight =
+      hero.instanceCopyId === null
+        ? await this.huntAttack.execute(fightInput)
+        : await this.dungeonAttack.execute({ ...fightInput, copyId: hero.instanceCopyId });
     if (!joining) {
       try {
         await this.chat.notifyHuntStarted({
@@ -145,7 +164,12 @@ export class AttackBotCommand implements OaCommand {
     }
     return {
       "common|action": { status: 100 },
-      "fight|conf": this.fightWire.fightConfiguration(fight),
+      "fight|conf": this.fightWire.fightConfiguration(
+        fight,
+        hero.instanceCopyId === null
+          ? {}
+          : { canLeave: 0, instanceId: String(hero.instanceCopyId) },
+      ),
       "common|hunt": await this.bootstrap.hunt(context.accountId),
       "user|unitframe": await this.bootstrap.unitframe(context.accountId),
       state: await this.bootstrap.state(context.accountId),

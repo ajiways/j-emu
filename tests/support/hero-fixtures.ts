@@ -68,6 +68,7 @@ export function playableNewHero(accountId: number, nick: string): NewHero {
     ghost: false,
     injuryTime: 0,
     injuryArtikulId: 0,
+    instanceCopyId: null,
   };
 }
 
@@ -97,6 +98,7 @@ export function testHero(overrides: Partial<HeroRecord> = {}): Hero {
     ghost: false,
     injuryTime: 0,
     injuryArtikulId: 0,
+    instanceCopyId: null,
     ...overrides,
   });
 }

@@ -106,6 +106,8 @@ import { TradeMutation } from "../application/trade-mutation.ts";
 import type { PartyJoinService } from "../../party/application/party-join-service.ts";
 import type { PartyService } from "../../party/application/party-service.ts";
 import type { PartySnapshot } from "../application/party-snapshot.ts";
+import type { InstanceDesk } from "../../../app/instance-desk.ts";
+import type { DungeonHuntWorld } from "../../instance/application/dungeon-hunt-world.ts";
 
 export class JuggerCommandModule {
   readonly oa: OaCommandRegistry;
@@ -151,6 +153,8 @@ export class JuggerCommandModule {
     partySnapshot: PartySnapshot,
     partyNotify: PartyNotify,
     partyBag: PartyBagOps,
+    instanceDesk: InstanceDesk,
+    dungeonHunt: DungeonHuntWorld,
   ) {
     this.fightWire = fightWire;
     const invites = new FriendlyDuelInvites(clock);
@@ -235,6 +239,7 @@ export class JuggerCommandModule {
         chat,
         party,
         partyNotify,
+        dungeonHunt,
       ),
       new PutOnCommand(unitOfWork, bootstrap, characters, inventory, catalog, combat),
       new PutOffCommand(unitOfWork, bootstrap, characters, inventory, catalog, combat),
@@ -267,6 +272,7 @@ export class JuggerCommandModule {
         combat,
         clock,
         presence,
+        instanceDesk,
       ),
       new CommonExitCommand(
         unitOfWork,
@@ -277,8 +283,9 @@ export class JuggerCommandModule {
         combat,
         clock,
         presence,
+        instanceDesk,
       ),
-      new ResurrectCommand(bootstrap, characters, combat),
+      new ResurrectCommand(bootstrap, characters, combat, instanceDesk),
       new StoreListCommand(characters, catalog),
       new StoreBuyCommand(bootstrap, characters, storePurchase),
       new StoreRepairCommand(bootstrap, sheet, characters, storeRepair),

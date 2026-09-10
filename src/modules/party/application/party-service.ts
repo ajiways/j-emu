@@ -190,6 +190,17 @@ export class PartyService implements PartyMembershipQuery {
     });
   }
 
+  tagInstanceArtikul(heroId: number, artikulId: string): Promise<void> {
+    if (!artikulId) throw new Error("Party instance artikul is required");
+    return this.unitOfWork.run(async () => {
+      const mem = await this.parties.membershipByHero(heroId);
+      if (!mem) throw new Error(`Hero ${heroId} has no party to tag`);
+      const party = await this.lockRequired(mem.party.id);
+      if (party.instanceArtikulId === artikulId) return;
+      await this.parties.saveParty({ ...party, instanceArtikulId: artikulId });
+    });
+  }
+
   saveSettings(leaderHeroId: number, patch: PartySettingsPatch): Promise<PartyRecord> {
     requireWireIdentity(leaderHeroId, "hero id");
     return this.unitOfWork.run(async () => {

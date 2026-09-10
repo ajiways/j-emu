@@ -64,20 +64,24 @@ Dump-proven subset, не весь L1–8 (это DATA-04 corpus):
 | 503  | Горное поселение   | 0           | `""`    | `forestvillage.swf` / `2_1` (уже в v8) |
 | 504  | Деревенская лавка  | 0           | `store` | `forestvillage.swf` / `2_1`            |
 | 501  | Ущелье разлуки     | 15          | `""`    | `uschelierazluki.swf` / `2_1`          |
+| 542  | Мрачная пещера     | 30          | `""`    | `noob_cave.swf` / `5_1`                |
 | 495  | Площадь Бранендаля | 0           | `""`    | `branendal_ploshad.swf` / `2_1`        |
 | 552  | Арсенал            | 0           | `store` | `branendal_ploshad.swf` / `2_1`        |
 
 Provenance: `radvei_areas.json` + `AREA_SIDEBAR.md`. Не публиковать 498, 502,
-542, NPC `href`, AREA-attack (Грызл/Хисса), dungeon items.
+NPC `href`, AREA-attack (Грызл/Хисса). Area 542 — DNG-01 dungeon start, не
+outdoor hunt.
 
 Authored **travel links only** (sidebar `(flags & 0x10) == 0`):
 
-| from | item `id` | title              | flags | `direction` | to  |
-| ---- | --------- | ------------------ | ----- | ----------- | --- |
-| 503  | 5         | Деревенская лавка  | 8     | 0           | 504 |
-| 503  | 7         | Ущелье разлуки     | 0     | 2           | 501 |
-| 501  | 2         | В Горное поселение | 0     | 1           | 503 |
-| 504  | 0         | `""`               | 0     | 0           | 503 |
+| from | item `id` | title               | flags | `direction` | to  |
+| ---- | --------- | ------------------- | ----- | ----------- | --- |
+| 503  | 5         | Деревенская лавка   | 8     | 0           | 504 |
+| 503  | 7         | Ущелье разлуки      | 0     | 2           | 501 |
+| 501  | 1         | Мрачная пещера Огра | 256   | 0           | 542 |
+| 501  | 2         | В Горное поселение  | 0     | 1           | 503 |
+| 504  | 0         | `""`                | 0     | 0           | 503 |
+| 542  | 7         | Выход               | 2048  | 3           | 501 |
 
 Картинки/описания — как в dump (`?ux=` оставлять). `href` всегда
 `{ object:"common", action:"action", form:{ code:"COME_IN", area_id:<number> } }`.

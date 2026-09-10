@@ -15,9 +15,17 @@ const hero = {
   ghost: false,
   injuryTime: 0,
   injuryArtikulId: 0,
+  instanceCopyId: null as number | null,
 };
 
 describe("CharacterInfo", () => {
+  it("puts the live copy id on character-info and zero in the world", () => {
+    expect(
+      buildCharacterInfo({ ...hero, instanceCopyId: 12 }, "avatar_m_set_0_gray.png").instance_id,
+    ).toBe(12);
+    expect(buildCharacterInfo(hero, "avatar_m_set_0_gray.png").instance_id).toBe(0);
+  });
+
   it("uses accountId and keeps ghost/injury zeros on the wire", () => {
     expect(buildCharacterInfo(hero, "avatar_m_set_0_gray.png")).toEqual({
       id: 7,

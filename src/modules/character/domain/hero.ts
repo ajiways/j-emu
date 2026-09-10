@@ -33,6 +33,7 @@ export class Hero {
     private ghostValue: boolean,
     private injuryTimeValue: number,
     private injuryArtikulIdValue: number,
+    private instanceCopyIdValue: number | null,
   ) {}
 
   static assertCreationPolicy(policy: HeroCreationPolicy): void {
@@ -94,6 +95,7 @@ export class Hero {
       values.ghost,
       values.injuryTime,
       values.injuryArtikulId,
+      requireInstanceCopyId(values.instanceCopyId),
     );
   }
 
@@ -160,8 +162,11 @@ export class Hero {
   get injuryArtikulId(): number {
     return this.injuryArtikulIdValue;
   }
+  get instanceCopyId(): number | null {
+    return this.instanceCopyIdValue;
+  }
 
-  setArea(areaId: string, moveReadyAt: Date | null): void {
+  setArea(areaId: string, moveReadyAt: Date | null, instanceCopyId: number | null): void {
     if (!areaId) throw new Error("Hero area is required");
     if (moveReadyAt !== null) {
       if (!(moveReadyAt instanceof Date) || !Number.isFinite(moveReadyAt.getTime())) {
@@ -170,6 +175,7 @@ export class Hero {
     }
     this.areaIdValue = areaId;
     this.moveReadyAtValue = moveReadyAt;
+    this.instanceCopyIdValue = requireInstanceCopyId(instanceCopyId);
   }
 
   applyResourceClock(hp: number, hpTime: number, regenAt: Date): void {
@@ -269,6 +275,14 @@ export class Hero {
     }
     this.hpValue = hp;
   }
+}
+
+function requireInstanceCopyId(instanceCopyId: number | null): number | null {
+  if (instanceCopyId === null) return null;
+  if (!Number.isInteger(instanceCopyId) || instanceCopyId < 1) {
+    throw new Error("Hero instance copy id must be null or a positive integer");
+  }
+  return instanceCopyId;
 }
 
 function requireGhostState(ghost: boolean, injuryTime: number, injuryArtikulId: number): void {

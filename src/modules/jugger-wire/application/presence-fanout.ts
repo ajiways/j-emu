@@ -20,8 +20,18 @@ export class PresenceFanout {
     await this.deliver(await this.presence.leaveNotices(accountId));
   }
 
-  async afterMove(accountId: number, fromAreaId: string, toAreaId: string): Promise<void> {
-    for (const notice of await this.presence.moveNotices(accountId, fromAreaId, toAreaId)) {
+  async afterMove(
+    accountId: number,
+    fromAreaId: string,
+    toAreaId: string,
+    fromCopyId: number | null,
+  ): Promise<void> {
+    for (const notice of await this.presence.moveNotices(
+      accountId,
+      fromAreaId,
+      toAreaId,
+      fromCopyId,
+    )) {
       await this.deliver(notice);
     }
   }

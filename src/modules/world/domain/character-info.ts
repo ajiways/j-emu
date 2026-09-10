@@ -8,6 +8,7 @@ type CharacterInfoSource = Readonly<{
   ghost: boolean;
   injuryTime: number;
   injuryArtikulId: number;
+  instanceCopyId: number | null;
 }>;
 
 export type CharacterInfo = Readonly<{
@@ -15,7 +16,7 @@ export type CharacterInfo = Readonly<{
   nick: string;
   level: number;
   kind: number;
-  instance_id: 0;
+  instance_id: number;
   dead: 0 | 4;
   injury_time: number;
   injury_artikul_id: number;
@@ -44,7 +45,7 @@ export function buildCharacterInfo(hero: CharacterInfoSource, avatarSmall: strin
     nick: hero.nick,
     level: hero.level,
     kind: hero.kind,
-    instance_id: 0,
+    instance_id: hero.instanceCopyId === null ? 0 : hero.instanceCopyId,
     dead: hero.ghost ? 4 : 0,
     injury_time: hero.ghost ? requireInjuryTime(hero) : 0,
     injury_artikul_id: hero.ghost ? requireInjuryArtikulId(hero) : 0,

@@ -1,3 +1,5 @@
+import type { InstanceDesk } from "../../../../app/instance-desk.ts";
+import { InstanceDeniedError } from "../../../instance/domain/instance-denied-error.ts";
 import type { CharacterService } from "../../../character/application/character-service.ts";
 import type { CombatPort } from "../../../combat/ports/combat-port.ts";
 import { ResurrectUnavailableError } from "../../../character/domain/resurrect-unavailable-error.ts";
@@ -14,6 +16,7 @@ export class ResurrectCommand implements OaCommand {
     private readonly bootstrap: BootstrapReadModel,
     private readonly characters: CharacterService,
     private readonly combat: CombatPort,
+    private readonly instances: InstanceDesk,
   ) {}
 
   async execute(accountId: number): Promise<OaEncodedResponse> {
@@ -22,9 +25,15 @@ export class ResurrectCommand implements OaCommand {
     if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
     try {
       await this.characters.resurrect({ characterId: hero.id });
+      const current = await this.characters.getByAccountId(accountId);
+      if (!current) throw new Error(`Hero for account ${accountId} is missing`);
+      await this.instances.ensureResurrectArea(current);
     } catch (error) {
       if (error instanceof ResurrectUnavailableError) {
         throw new ProtocolError(203, "воскрешение недоступно");
+      }
+      if (error instanceof InstanceDeniedError) {
+        throw new ProtocolError(error.status, error.message);
       }
       throw error;
     }

@@ -73,15 +73,23 @@ export class FightWireMapper {
     }>,
   ) {}
 
-  fightConfiguration(start: FightStart): FightConfigurationBlock {
-    return this.configuration(start, this.policy.isPvp, this.policy.type);
+  fightConfiguration(
+    start: FightStart,
+    overlay: Readonly<{ canLeave?: 0 | 1; instanceId?: string }> = {},
+  ): FightConfigurationBlock {
+    return this.configuration(start, this.policy.isPvp, this.policy.type, overlay);
   }
 
   friendlyDuelConfiguration(start: FightStart): FightConfigurationBlock {
     return this.configuration(start, 1, "6");
   }
 
-  private configuration(start: FightStart, isPvp: 0 | 1, type: string): FightConfigurationBlock {
+  private configuration(
+    start: FightStart,
+    isPvp: 0 | 1,
+    type: string,
+    overlay: Readonly<{ canLeave?: 0 | 1; instanceId?: string }> = {},
+  ): FightConfigurationBlock {
     return {
       status: 100,
       conf: {
@@ -95,10 +103,10 @@ export class FightWireMapper {
         persSelf_sk: this.policy.heroSkill,
         persSelf_body: this.policy.heroBody,
         auto_fight: this.policy.autoFight,
-        can_leave: this.policy.canLeave,
+        can_leave: overlay.canLeave !== undefined ? overlay.canLeave : this.policy.canLeave,
         companion_enabled: this.policy.companionEnabled,
         is_pvp: isPvp,
-        instance_id: this.policy.instanceId,
+        instance_id: overlay.instanceId !== undefined ? overlay.instanceId : this.policy.instanceId,
         type,
         is_slaughter: this.policy.isSlaughter,
         flags: this.policy.flags,

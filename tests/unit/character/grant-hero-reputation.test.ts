@@ -72,7 +72,8 @@ function fakeHeroes(hero: Hero): HeroRepository {
     findByAccountId: async () => hero,
     findByNick: async (nick: string) =>
       hero.nick.toLowerCase() === nick.trim().toLowerCase() ? hero : null,
-    listByAreaId: async () => [hero],
+    listByAreaShard: async () => [hero],
+    listByInstanceCopyId: async (copyId: number) => (hero.instanceCopyId === copyId ? [hero] : []),
     lockByAccountId: async () => hero,
     lockById: async (id: number) => (id === hero.id ? hero : null),
     create: async () => hero,

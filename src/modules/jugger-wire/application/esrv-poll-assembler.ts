@@ -7,6 +7,7 @@ import { areaEsrvChannel, personalEsrvChannel } from "./esrv-channel.ts";
 import type { EsrvOutbox, EsrvOutboxEntry } from "./esrv-outbox.ts";
 import type { FightWireMapper } from "./fight-wire-mapper.ts";
 import { isChatOnlyFragment } from "./esrv-chat-only-fragment.ts";
+import type { InstanceHuntWorld } from "../../instance/ports/instance-hunt.ts";
 import { locationAreaBlocks } from "./location-area-read.ts";
 
 type EsrvFrame = Readonly<{
@@ -24,6 +25,7 @@ export class EsrvPollAssembler {
     private readonly fightWire: FightWireMapper,
     private readonly outbox: EsrvOutbox,
     private readonly clock: Clock,
+    private readonly instanceHunt: InstanceHuntWorld,
   ) {}
 
   async hasImmediateWork(accountId: number): Promise<boolean> {
@@ -37,7 +39,13 @@ export class EsrvPollAssembler {
   async assemble(accountId: number): Promise<readonly EsrvFrame[]> {
     const hero = await this.characters.getByAccountId(accountId);
     if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
-    const location = await locationAreaBlocks(this.world, this.catalog, hero, this.clock);
+    const location = await locationAreaBlocks(
+      this.world,
+      this.catalog,
+      hero,
+      this.clock,
+      this.instanceHunt,
+    );
     const ctime = this.clock.unixSeconds();
     const frames: EsrvFrame[] = [
       {

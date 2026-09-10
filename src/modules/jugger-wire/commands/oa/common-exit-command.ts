@@ -15,6 +15,8 @@ import { ProtocolError } from "../../application/protocol-error.ts";
 import type { PresenceFanout } from "../../application/presence-fanout.ts";
 import type { OaCommand, OaEncodedResponse } from "./oa-command.ts";
 import { requireNoActiveFight } from "./require-no-active-fight.ts";
+import type { InstanceDesk } from "../../../../app/instance-desk.ts";
+import { InstanceDeniedError } from "../../../instance/domain/instance-denied-error.ts";
 
 const OVERLOAD_ERROR = "Вы не можете перемещаться, т.к. рюкзак перегружен!";
 const CANNOT_MOVE = "Перемещение невозможно!";
@@ -32,35 +34,47 @@ export class CommonExitCommand implements OaCommand {
     private readonly combat: CombatPort,
     private readonly clock: Clock,
     private readonly presence: PresenceFanout,
+    private readonly instances: InstanceDesk,
   ) {}
 
   async execute(accountId: number): Promise<OaEncodedResponse> {
-    const moved = await this.unitOfWork.run(async () => {
-      const locked = await this.characters.lockByAccountId(accountId);
-      await requireNoActiveFight(this.combat, accountId);
-      const load = await this.inventory.bagLoad({ characterId: locked.id });
-      if (load.amount > load.amountMax) throw new ProtocolError(204, OVERLOAD_ERROR);
-      const now = this.clock.now();
-      if (travelLockActive(locked.moveReadyAt, now) && locked.moveReadyAt) {
-        throw new ProtocolError(204, waitLockError(waitLockSeconds(locked.moveReadyAt, now)));
-      }
-      const current = await this.world.area(locked.areaId);
-      if (!canExitInterior(current)) throw new ProtocolError(204, CANNOT_MOVE);
-      const parent = await this.world.area(current.parentId);
-      await this.characters.syncResources({ characterId: locked.id });
-      const fromAreaId = locked.areaId;
-      await this.characters.setArea({
-        characterId: locked.id,
-        areaId: parent.id,
-        moveReadyAt: locked.moveReadyAt,
+    try {
+      const moved = await this.unitOfWork.run(async () => {
+        const locked = await this.characters.lockByAccountId(accountId);
+        await requireNoActiveFight(this.combat, accountId);
+        const load = await this.inventory.bagLoad({ characterId: locked.id });
+        if (load.amount > load.amountMax) throw new ProtocolError(204, OVERLOAD_ERROR);
+        const now = this.clock.now();
+        if (travelLockActive(locked.moveReadyAt, now) && locked.moveReadyAt) {
+          throw new ProtocolError(204, waitLockError(waitLockSeconds(locked.moveReadyAt, now)));
+        }
+        const current = await this.world.area(locked.areaId);
+        if (!canExitInterior(current)) throw new ProtocolError(204, CANNOT_MOVE);
+        const parent = await this.world.area(current.parentId);
+        await this.characters.syncResources({ characterId: locked.id });
+        const fromAreaId = locked.areaId;
+        const fromCopyId = locked.instanceCopyId;
+        const plan = await this.instances.prepareTravel(locked, parent.id);
+        await this.characters.setArea({
+          characterId: locked.id,
+          areaId: parent.id,
+          moveReadyAt: locked.moveReadyAt,
+          instanceCopyId: plan.copyId,
+        });
+        return {
+          fromAreaId,
+          toAreaId: parent.id,
+          fromCopyId,
+          blocks: await this.bootstrap.travelMutation(accountId, "exit"),
+        };
       });
-      return {
-        fromAreaId,
-        toAreaId: parent.id,
-        blocks: await this.bootstrap.travelMutation(accountId, "exit"),
-      };
-    });
-    await this.presence.afterMove(accountId, moved.fromAreaId, moved.toAreaId);
-    return { kind: "flat", blocks: moved.blocks };
+      await this.presence.afterMove(accountId, moved.fromAreaId, moved.toAreaId, moved.fromCopyId);
+      return { kind: "flat", blocks: moved.blocks };
+    } catch (error) {
+      if (error instanceof InstanceDeniedError) {
+        throw new ProtocolError(error.status, error.message);
+      }
+      throw error;
+    }
   }
 }

@@ -43,6 +43,7 @@ export type HeroRecord = Readonly<{
   ghost: boolean;
   injuryTime: number;
   injuryArtikulId: number;
+  instanceCopyId: number | null;
 }>;
 
 export type NewHero = Omit<HeroRecord, "id">;

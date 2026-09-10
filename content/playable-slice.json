@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v20",
+  "schemaVersion": "playable-slice/v21",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -1354,6 +1354,38 @@
         "sk": "30",
         "body": ""
       }
+    },
+    {
+      "id": 99,
+      "title": "Пещерный огр",
+      "level": 5,
+      "maxHp": 270,
+      "strength": 100,
+      "baseExp": 100,
+      "moneyMin": 0,
+      "moneyMax": 0,
+      "lootDropCnt": 1,
+      "lootBonusChance": 0,
+      "lootBonusMin": 0,
+      "lootBonusMax": 0,
+      "lootNothingWeight": 1,
+      "lootEntries": [],
+      "spellBook": {
+        "nothingWeight": 100,
+        "spells": []
+      },
+      "hunt": {
+        "nick": "Пещерный огр",
+        "swf": "ogr1.swf",
+        "scale": 100,
+        "fps": 15,
+        "speed": 10,
+        "avatar": "avatar_ogr1_sm.jpg",
+        "kind": 0,
+        "hideOnMap": 0,
+        "sk": "15",
+        "body": "skin(5,10,6,0,0,1,2,0);size(1.2)"
+      }
     }
   ],
   "areas": [
@@ -1384,6 +1416,25 @@
       "fightBackground": "2_1",
       "regionMap": "radvei_map.swf",
       "ftimeMax": 15,
+      "code": "",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 0,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0
+    },
+    {
+      "id": "542",
+      "title": "Мрачная пещера",
+      "parentId": "501",
+      "map": "noob_cave.swf",
+      "fightBackground": "5_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 30,
       "code": "",
       "context": "",
       "soundIntro": "",
@@ -1515,6 +1566,26 @@
       }
     },
     {
+      "fromAreaId": "501",
+      "itemId": 1,
+      "toAreaId": "542",
+      "title": "Мрачная пещера Огра",
+      "picture": "images/data/area_links/alt_noob_cave.jpg?ux=1267273341",
+      "description": "В инстансе обитает <b>Пещерный огр [5]</b>.\r\nИнстанс «Мрачная пещера» доступен с 3-го уровня на 1 час каждый день.",
+      "flags": 256,
+      "direction": 0,
+      "confirmQuestion": "",
+      "toId": "542",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 542
+        }
+      }
+    },
+    {
       "fromAreaId": "504",
       "itemId": 0,
       "toAreaId": "503",
@@ -1571,6 +1642,26 @@
         "form": {
           "code": "COME_IN",
           "area_id": 495
+        }
+      }
+    },
+    {
+      "fromAreaId": "542",
+      "itemId": 7,
+      "toAreaId": "501",
+      "title": "Выход",
+      "picture": "images/data/area_links/alt_ushelie.jpg?ux=1265823135",
+      "description": "Здесь обитают <b>Заблудший дух [2]</b>, <b>Хисса [2]</b> и <b>Рыжий грызл [3]</b>.\r\n<br>Здесь добываются <b>Хрусталь [1]</b>, <b>Эссенция кислоты [1]</b>.",
+      "flags": 2048,
+      "direction": 3,
+      "confirmQuestion": "",
+      "toId": "501",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 501
         }
       }
     }
@@ -1669,6 +1760,48 @@
         { "x": 436, "y": 769 }
       ],
       "route": []
+    }
+  ],
+  "dungeons": [
+    {
+      "artikulId": 1,
+      "title": "Мрачная пещера",
+      "startAreaId": "542",
+      "parentAreaId": "501",
+      "levelMin": 3,
+      "durationSec": 3600,
+      "imgUrl": "alt_noob_cave.jpg",
+      "hasClear": false,
+      "areas": [
+        {
+          "areaId": "542",
+          "spawns": [
+            {
+              "spawnKey": "ogre",
+              "huntBotId": 99,
+              "encounter": [{ "botId": 99, "count": 1 }],
+              "isBoss": true,
+              "countsForClear": true,
+              "huntMask": "bot_1",
+              "positionX": 662,
+              "positionY": 547,
+              "waitMin": 2,
+              "waitMax": 8,
+              "route": [
+                { "x": 647, "y": 536, "waitMin": 2, "waitMax": 8 },
+                { "x": 494, "y": 534, "waitMin": 2, "waitMax": 8 },
+                { "x": 554, "y": 666, "waitMin": 2, "waitMax": 8 },
+                { "x": 547, "y": 834, "waitMin": 2, "waitMax": 8 },
+                { "x": 554, "y": 941, "waitMin": 2, "waitMax": 8 },
+                { "x": 688, "y": 922, "waitMin": 2, "waitMax": 8 },
+                { "x": 870, "y": 831, "waitMin": 2, "waitMax": 8 },
+                { "x": 1016, "y": 737, "waitMin": 2, "waitMax": 8 },
+                { "x": 999, "y": 648, "waitMin": 2, "waitMax": 8 }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "storeTypes": [

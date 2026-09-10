@@ -7,6 +7,7 @@ export default defineConfig({
     "./src/modules/content/infrastructure/schema.ts",
     "./src/modules/catalog/infrastructure/schema.ts",
     "./src/modules/catalog/infrastructure/schema-bot-spell-book.ts",
+    "./src/modules/catalog/infrastructure/schema-dungeons.ts",
     "./src/modules/world/infrastructure/schema.ts",
     "./src/modules/character/infrastructure/schema.ts",
     "./src/modules/inventory/infrastructure/schema.ts",
@@ -14,6 +15,7 @@ export default defineConfig({
     "./src/modules/mail/infrastructure/schema.ts",
     "./src/modules/auction/infrastructure/schema.ts",
     "./src/modules/party/infrastructure/schema.ts",
+    "./src/modules/instance/infrastructure/schema.ts",
   ],
   out: "./drizzle",
 });

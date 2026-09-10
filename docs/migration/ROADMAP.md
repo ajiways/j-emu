@@ -949,7 +949,7 @@
 - **Acceptance:** authored instance definition создаёт копию, bind'ит членов
   party, изолирует area/hunt state, expire'ится и возвращает участников без
   хранения active combat в PostgreSQL.
-- **Status:** `next`
+- **Status:** `done`
 
 ### DNG-02 — Remaining dungeons as bulk content
 
@@ -965,7 +965,7 @@
 - **Acceptance:** каждый импортированный данж проходит
   enter/floor/clear/boss/loot/exit сценарий без runtime JSON reads и без
   добавления кода на дополнительный данж.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### BG-01 — «Раскоп» queue and match
 

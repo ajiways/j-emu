@@ -7,9 +7,9 @@ export class HuntAreaFanout {
     private readonly longPoll: LongPollCoordinator,
   ) {}
 
-  async wakeArea(areaId: string): Promise<void> {
+  async wakeArea(areaId: string, instanceCopyId: number | null = null): Promise<void> {
     if (!areaId) throw new Error("Area id is required");
-    const roster = await this.presence.listPopulation(areaId);
+    const roster = await this.presence.listPopulation(areaId, instanceCopyId);
     for (const info of roster.population) {
       this.longPoll.wake(info.id);
     }

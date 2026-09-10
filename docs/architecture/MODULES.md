@@ -2,8 +2,8 @@
 
 Документ описывает ownership target. Реализованы `identity`, `character`,
 `inventory`, `catalog`, `world`, `combat`, `content`, `mail`, `auction`,
-`trade`, `chat`, `party` и `jugger-wire`, но их полный target API ещё не перенесён. `quests`,
-`social`, `economy`, `professions` и `instance` ниже являются планом, а не
+`trade`, `chat`, `party`, `instance` и `jugger-wire`, но их полный target API ещё не перенесён. `quests`,
+`social`, `economy` и `professions` ниже являются планом, а не
 возможностями runtime.
 Фактический статус находится в [CAPABILITIES.md](../CAPABILITIES.md).
 
@@ -23,7 +23,7 @@ area presence roster:
   `PUT_ON`/`PUT_OFF` (paperdoll и пояс), `drop`, `useFromBag`, `bagLoad`,
   `grantToBag`, `listPocket`, `applyDeathDurability` и `repair`;
 - `catalog` и `world` читают artifacts, skills, levels, appearance,
-  game-wide bootstrap documents, areas 503/501/504, travel `area_links`, hunt
+  game-wide bootstrap documents, areas 503/501/504/542, travel `area_links`, hunt
   503 и витрину 504 (`store_types` type `-131`, lots 23/24) и reputation track
   5 из active release;
 - equipment-derived skills/vitals считаются из persisted naked skills и
@@ -42,8 +42,10 @@ area presence roster:
   без таблиц. Target `social` channels ещё план.
 - `party` — `party.parties` / `party_members` / `party_invites` /
   `party_bag_items`. Target `social` groups ещё план.
+- `instance` — `instance.copies` / `binds` / `killed_spawns`, dungeon hunt
+  RAM overlay, COME_IN 542 ogre cave. BG/clear/loot bands — DNG-02/BG-01.
 - Репутация Радвея **5** есть (REP-01, product частично).
-  `quests`, `economy`, `professions`, `instance` в runtime нет.
+  `quests`, `economy`, `professions` в runtime нет.
 
 Во всех разделах ниже **API**, **события** и **шов извлечения** описывают
 целевую границу. Они не доказывают регистрацию команды, наличие таблиц или
@@ -257,14 +259,15 @@ Loot routing и HELP — composition ports, combat party-таблицы не и�
 
 **Шов извлечения:** каталог рецептов и узлов читается через catalog/world ports; ингредиенты и результат проходят атомарную orchestration с inventory.
 
-### `instance` — DNG-01 plan
+### `instance` — DNG-01
 
-**Владеет:** dungeon/BG copy rows, hero binds, expiry, killed-spawn
-projection. Не владеет party, outdoor areas/hunt и active combat.
+**Владеет:** dungeon copy rows, hero binds, unix expiry, killed-spawn
+rows, dungeon enter policy. Не владеет party, outdoor areas/hunt и active
+combat.
 
-**API:** `enter`, `leaveToParent`, `bind`, `expire`, `markSpawnKilled`,
-`copyForHero` — план DNG-01. Delivery `common|instance_conf` — composition /
-jugger-wire. Контракт: [INSTANCE.md](../modules/INSTANCE.md).
+**API:** `enterCopy`, `requireLiveCopy`, `markSpawnKilled`, `listExpired`,
+`DungeonHuntWorld` snapshot/lock/forget. Delivery `common|instance_conf` —
+composition / jugger-wire. Контракт: [INSTANCE.md](../modules/INSTANCE.md).
 
 **Шов извлечения:** не цель DNG-01. Target `instances` events ниже не
 копировать в runtime.

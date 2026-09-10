@@ -7,10 +7,13 @@ import type { ReleaseArtifacts } from "./ports/release-artifacts.ts";
 import { PostgresCatalog } from "./infrastructure/postgres-catalog.ts";
 import { PostgresCatalogProgression } from "./infrastructure/postgres-catalog-progression.ts";
 import { PostgresReleaseArtifacts } from "./infrastructure/postgres-release-artifacts.ts";
+import { PostgresDungeonCatalog } from "./infrastructure/postgres-dungeon-catalog.ts";
+import type { DungeonCatalog } from "./ports/dungeon-catalog.ts";
 
 export class CatalogModule {
   private constructor(
     readonly catalog: Catalog,
+    readonly dungeons: DungeonCatalog,
     readonly progression: CatalogProgression,
     readonly releaseArtifacts: ReleaseArtifacts,
   ) {}
@@ -21,6 +24,7 @@ export class CatalogModule {
     await revision.requireId();
     return new CatalogModule(
       new PostgresCatalog(database, revision),
+      new PostgresDungeonCatalog(database, revision),
       new PostgresCatalogProgression(database, revision),
       new PostgresReleaseArtifacts(database),
     );

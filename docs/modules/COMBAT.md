@@ -305,7 +305,7 @@ Content: Грызль **2** пустая книга / 50310; Хисса **4** sp
 рыжий грызль **24** **394** `magic_direct` / 50103. Execution blob на
 карточке книги (нет type_id 72 dump). Catalog tables
 `catalog.bot_spell_books` / `bot_spell_book_spells`. Schema
-`playable-slice/v20`. CEF плевка Хиссы не прогонялся.
+`playable-slice/v21`. CEF плевка Хиссы не прогонялся.
 
 ### Architecture decision
 

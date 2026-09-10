@@ -4,7 +4,8 @@ export interface HeroRepository {
   findById(id: number): Promise<Hero | null>;
   findByAccountId(accountId: number): Promise<Hero | null>;
   findByNick(nick: string): Promise<Hero | null>;
-  listByAreaId(areaId: string): Promise<readonly Hero[]>;
+  listByAreaShard(areaId: string, instanceCopyId: number | null): Promise<readonly Hero[]>;
+  listByInstanceCopyId(copyId: number): Promise<readonly Hero[]>;
   lockByAccountId(accountId: number): Promise<Hero | null>;
   lockById(id: number): Promise<Hero | null>;
   create(values: NewHero): Promise<Hero>;

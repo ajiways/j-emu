@@ -39,6 +39,7 @@ import type { UnreadMailQuery } from "../../mail/ports/unread-mail.ts";
 import type { PartyMembershipQuery } from "../../party/ports/party-membership-query.ts";
 import type { FightWireMapper } from "./fight-wire-mapper.ts";
 import type { PartySnapshot } from "./party-snapshot.ts";
+import type { InstanceHuntWorld } from "../../instance/ports/instance-hunt.ts";
 
 export type { HuntBlock, UserUnitframeBlock, HeroStateBlock };
 
@@ -55,6 +56,7 @@ export class BootstrapReadModel {
     private readonly unreadMail: UnreadMailQuery,
     private readonly party: PartyMembershipQuery,
     private readonly partySnapshot: PartySnapshot,
+    private readonly instanceHunt: InstanceHuntWorld,
     private readonly policy: Readonly<{
       bagCapacity: number;
       pocketCapacity: number;
@@ -89,17 +91,19 @@ export class BootstrapReadModel {
       characters: this.characters,
       catalog: this.catalog,
       world: this.world,
-      areaPopulation: await this.presence.listPopulation(hero.areaId),
+      areaPopulation: await this.presence.listPopulation(hero.areaId, hero.instanceCopyId),
       unitframe: await this.unitframe(accountId),
       skills: await this.skills(accountId),
       clock: this.clock,
       state: await this.heroState(hero, accountId),
+      instanceHunt: this.instanceHunt,
     });
   }
 
   async hunt(accountId: number): Promise<HuntBlock> {
     const hero = await this.requireHero(accountId);
-    return (await locationAreaBlocks(this.world, this.catalog, hero, this.clock)).hunt;
+    return (await locationAreaBlocks(this.world, this.catalog, hero, this.clock, this.instanceHunt))
+      .hunt;
   }
 
   async unitframe(accountId: number): Promise<UserUnitframeBlock> {
@@ -211,7 +215,13 @@ export class BootstrapReadModel {
 
   async resurrectMutation(accountId: number): Promise<Readonly<Record<string, unknown>>> {
     const hero = await this.requireHero(accountId);
-    const location = await locationAreaBlocks(this.world, this.catalog, hero, this.clock);
+    const location = await locationAreaBlocks(
+      this.world,
+      this.catalog,
+      hero,
+      this.clock,
+      this.instanceHunt,
+    );
     return {
       "common|action": { status: 100 },
       state: await this.heroState(hero, accountId),
@@ -219,7 +229,7 @@ export class BootstrapReadModel {
       "user|skills": await this.skills(accountId),
       "common|area_conf": location.areaConf,
       "common|hunt": location.hunt,
-      "chat|area_population": await this.presence.listPopulation(hero.areaId),
+      "chat|area_population": await this.presence.listPopulation(hero.areaId, hero.instanceCopyId),
     };
   }
 
@@ -284,7 +294,13 @@ export class BootstrapReadModel {
   async init2(accountId: number): Promise<Readonly<Record<string, unknown>>> {
     const hero = await this.requireHero(accountId);
     const resume = await this.combat.resumeFight(accountId);
-    const location = await locationAreaBlocks(this.world, this.catalog, hero, this.clock);
+    const location = await locationAreaBlocks(
+      this.world,
+      this.catalog,
+      hero,
+      this.clock,
+      this.instanceHunt,
+    );
     const chrome = await this.catalog.chrome();
     const partyBlocks = await this.partySnapshot.restore(hero.id);
     return {
@@ -292,7 +308,7 @@ export class BootstrapReadModel {
       state: await this.heroState(hero, accountId),
       "user|unitframe": await this.unitframe(accountId),
       "chat|conf": buildChatConf(hero.accountId, this.policy.chat),
-      "chat|area_population": await this.presence.listPopulation(hero.areaId),
+      "chat|area_population": await this.presence.listPopulation(hero.areaId, hero.instanceCopyId),
       "chat|message": buildWelcomeMessage(hero, chrome.welcomeTemplate, this.clock),
       "friend|info": chrome.block("friend|info"),
       "user|action_stats": chrome.block("user|action_stats"),
@@ -318,7 +334,16 @@ export class BootstrapReadModel {
       ),
       "common|occurrences_conf": chrome.block("common|occurrences_conf"),
       "common|farm_agregate": chrome.block("common|farm_agregate"),
-      ...(resume ? { "fight|conf": this.fightWire.fightConfiguration(resume) } : {}),
+      ...(resume
+        ? {
+            "fight|conf": this.fightWire.fightConfiguration(
+              resume,
+              hero.instanceCopyId === null
+                ? {}
+                : { canLeave: 0, instanceId: String(hero.instanceCopyId) },
+            ),
+          }
+        : {}),
       ...(partyBlocks !== null ? partyBlocks : {}),
     };
   }

@@ -18,9 +18,12 @@ export class PresenceService {
     private readonly catalog: Catalog,
   ) {}
 
-  async listPopulation(areaId: string): Promise<AreaPopulationBlock> {
+  async listPopulation(
+    areaId: string,
+    instanceCopyId: number | null = null,
+  ): Promise<AreaPopulationBlock> {
     await this.world.area(areaId);
-    const infos = await this.infosInArea(areaId);
+    const infos = await this.infosInArea(areaId, instanceCopyId);
     return areaPopulationBlock(infos);
   }
 
@@ -28,7 +31,11 @@ export class PresenceService {
     const hero = await this.characters.requirePresence(accountId);
     await this.world.area(hero.areaId);
     return {
-      recipientAccountIds: await this.neighborAccountIds(hero.areaId, accountId),
+      recipientAccountIds: await this.neighborAccountIds(
+        hero.areaId,
+        accountId,
+        hero.instanceCopyId,
+      ),
       add: await this.info(hero),
     };
   }
@@ -37,7 +44,11 @@ export class PresenceService {
     const hero = await this.characters.requirePresence(accountId);
     await this.world.area(hero.areaId);
     return {
-      recipientAccountIds: await this.neighborAccountIds(hero.areaId, accountId),
+      recipientAccountIds: await this.neighborAccountIds(
+        hero.areaId,
+        accountId,
+        hero.instanceCopyId,
+      ),
       removeNick: hero.nick,
     };
   }
@@ -46,11 +57,12 @@ export class PresenceService {
     accountId: number,
     fromAreaId: string,
     toAreaId: string,
+    fromCopyId: number | null,
   ): Promise<readonly PresenceNotice[]> {
     if (!fromAreaId) throw new Error("fromAreaId is required");
     if (!toAreaId) throw new Error("toAreaId is required");
-    if (fromAreaId === toAreaId) return [];
     const hero = await this.characters.requirePresence(accountId);
+    if (fromAreaId === toAreaId && fromCopyId === hero.instanceCopyId) return [];
     if (hero.areaId !== toAreaId) {
       throw new Error(`Hero for account ${accountId} is in ${hero.areaId}, not ${toAreaId}`);
     }
@@ -58,20 +70,27 @@ export class PresenceService {
     await this.world.area(toAreaId);
     return [
       {
-        recipientAccountIds: await this.neighborAccountIds(fromAreaId, accountId),
+        recipientAccountIds: await this.neighborAccountIds(fromAreaId, accountId, fromCopyId),
         removeNick: hero.nick,
       },
       {
-        recipientAccountIds: await this.neighborAccountIds(toAreaId, accountId),
+        recipientAccountIds: await this.neighborAccountIds(
+          toAreaId,
+          accountId,
+          hero.instanceCopyId,
+        ),
         add: await this.info(hero),
       },
     ];
   }
 
-  private async infosInArea(areaId: string): Promise<readonly CharacterInfo[]> {
+  private async infosInArea(
+    areaId: string,
+    instanceCopyId: number | null,
+  ): Promise<readonly CharacterInfo[]> {
     const online = new Set(await this.sessions.listAccountIdsWithSession());
     const infos: CharacterInfo[] = [];
-    for (const hero of await this.characters.listInArea(areaId)) {
+    for (const hero of await this.characters.listInArea(areaId, instanceCopyId)) {
       if (!online.has(hero.accountId)) continue;
       infos.push(await this.info(hero));
     }
@@ -81,8 +100,9 @@ export class PresenceService {
   private async neighborAccountIds(
     areaId: string,
     exceptAccountId: number,
+    instanceCopyId: number | null,
   ): Promise<readonly number[]> {
-    return (await this.infosInArea(areaId))
+    return (await this.infosInArea(areaId, instanceCopyId))
       .map((info) => info.id)
       .filter((id) => id !== exceptAccountId);
   }

@@ -24,9 +24,11 @@ import type { TradeDesk } from "../../../src/app/trade-desk.ts";
 import type { ChatDesk } from "../../../src/app/chat-desk.ts";
 import type { PartyNotify } from "../../../src/app/party-notify.ts";
 import type { PartyBagOps } from "../../../src/app/party-bag-ops.ts";
+import type { InstanceDesk } from "../../../src/app/instance-desk.ts";
 import { AuctionModule } from "../../../src/modules/auction/auction-module.ts";
 import { TradeModule } from "../../../src/modules/trade/trade-module.ts";
 import { PartyModule } from "../../../src/modules/party/party-module.ts";
+import { InstanceModule } from "../../../src/modules/instance/instance-module.ts";
 import type { AuctionService } from "../../../src/modules/auction/application/auction-service.ts";
 import { MailModule } from "../../../src/modules/mail/mail-module.ts";
 import type { MailService } from "../../../src/modules/mail/application/mail-service.ts";
@@ -36,6 +38,7 @@ import type { PartySnapshot } from "../../../src/modules/jugger-wire/application
 import type { PlayableAccountRegistration } from "../../../src/app/playable-account-registration.ts";
 import type { PlayableDevelopmentIdentity } from "../../../src/app/playable-development-identity.ts";
 import type { Catalog } from "../../../src/modules/catalog/ports/catalog.ts";
+import type { DungeonCatalog } from "../../../src/modules/catalog/ports/dungeon-catalog.ts";
 import type { CatalogProgression } from "../../../src/modules/catalog/ports/catalog-progression.ts";
 import type { ReputationCatalog } from "../../../src/modules/catalog/ports/reputation-catalog.ts";
 import type { ReleaseArtifacts } from "../../../src/modules/catalog/ports/release-artifacts.ts";
@@ -51,6 +54,8 @@ import type { EsrvOutbox } from "../../../src/modules/jugger-wire/application/es
 import { LongPollCoordinator } from "../../../src/modules/jugger-wire/application/long-poll-coordinator.ts";
 import type { PresenceFanout } from "../../../src/modules/jugger-wire/application/presence-fanout.ts";
 import type { HuntAreaFanout } from "../../../src/modules/jugger-wire/application/hunt-area-fanout.ts";
+import type { InstanceHuntWorld } from "../../../src/modules/instance/ports/instance-hunt.ts";
+import type { DungeonHuntWorld } from "../../../src/modules/instance/application/dungeon-hunt-world.ts";
 import type { Clock } from "../../../src/shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../src/shared/kernel/unit-of-work.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
@@ -303,6 +308,29 @@ describe("module factories", () => {
     ).toThrow(/Party module requires a clock/);
   });
 
+  it("fails fast when required instance dependencies are missing", () => {
+    expect(() =>
+      InstanceModule.create({
+        database,
+        clock,
+        delay: combatDelay,
+        random: { integer: () => 0, unit: () => 0 },
+        dungeons: {} as DungeonCatalog,
+        catalog: {} as Catalog,
+      }),
+    ).toThrow(/Instance module requires a database/);
+    expect(() =>
+      InstanceModule.create({
+        database: {} as PostgresDatabase,
+        clock: undefined as unknown as Clock,
+        delay: combatDelay,
+        random: { integer: () => 0, unit: () => 0 },
+        dungeons: {} as DungeonCatalog,
+        catalog: {} as Catalog,
+      }),
+    ).toThrow(/Instance module requires a clock/);
+  });
+
   it("fails fast when required jugger-wire dependencies are missing", async () => {
     await expect(
       JuggerWireModule.create({
@@ -346,6 +374,9 @@ describe("module factories", () => {
         partySnapshot: {} as PartySnapshot,
         partyNotify: {} as PartyNotify,
         partyBag: {} as PartyBagOps,
+        instanceHunt: {} as InstanceHuntWorld,
+        instanceDesk: {} as InstanceDesk,
+        dungeonHunt: {} as DungeonHuntWorld,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -399,6 +430,15 @@ describe("module factories", () => {
       clock,
     });
     await expect(party.close()).resolves.toBeUndefined();
+    const instance = InstanceModule.create({
+      database: {} as PostgresDatabase,
+      clock,
+      delay: combatDelay,
+      random: { integer: () => 0, unit: () => 0 },
+      dungeons: {} as DungeonCatalog,
+      catalog: {} as Catalog,
+    });
+    await expect(instance.close()).resolves.toBeUndefined();
   });
 
   it("rejects a missing Pub1 directory during jugger-wire startup", async () => {
@@ -478,6 +518,9 @@ describe("module factories", () => {
         partySnapshot: {} as PartySnapshot,
         partyNotify: {} as PartyNotify,
         partyBag: {} as PartyBagOps,
+        instanceHunt: {} as InstanceHuntWorld,
+        instanceDesk: {} as InstanceDesk,
+        dungeonHunt: {} as DungeonHuntWorld,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

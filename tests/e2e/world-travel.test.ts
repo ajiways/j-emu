@@ -63,7 +63,7 @@ describe("world travel", () => {
     expect(areaConf(gorge).area_ftime).toBe(15);
     expect(areaConfNested(gorge).ftime_max).toBe(15);
     expect(areaConfNested(gorge).swf).toBe("uschelierazluki.swf");
-    expect(sidebarTitles(gorge)).toEqual(["В Горное поселение"]);
+    expect(sidebarTitles(gorge)).toEqual(["Мрачная пещера Огра", "В Горное поселение"]);
 
     const early = await client.objectAction({
       object: "common",
@@ -163,7 +163,7 @@ describe("world travel", () => {
     const init2 = await again.objectAction({ object: "common", action: "init2", sq: 21 });
     expect(objectBlock(init2.state).area_id).toBe("501");
     expect(areaConf(init2).area_ftime).toBe(15);
-    expect(sidebarTitles(init2)).toEqual(["В Горное поселение"]);
+    expect(sidebarTitles(init2)).toEqual(["Мрачная пещера Огра", "В Горное поселение"]);
     expect(init2["chat|area_population"]).toBeTypeOf("object");
   });
 });

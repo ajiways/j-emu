@@ -160,7 +160,7 @@ export class CharacterService
     await this.unitOfWork.run(async () => {
       const hero = await this.heroes.lockById(command.characterId);
       if (!hero) throw new Error(`Hero ${command.characterId} is missing`);
-      hero.setArea(command.areaId, command.moveReadyAt);
+      hero.setArea(command.areaId, command.moveReadyAt, command.instanceCopyId);
       await this.heroes.save(hero);
     });
   }
@@ -197,6 +197,7 @@ export class CharacterService
         ghost: false,
         injuryTime: 0,
         injuryArtikulId: 0,
+        instanceCopyId: null,
       });
       await this.skills.replace(hero.id, [
         ...levelOne.managedSkills.map((skill) => ({ id: skill.id, value: skill.value })),
@@ -225,9 +226,17 @@ export class CharacterService
     return this.heroes.findByNick(trimmed);
   }
 
-  async listInArea(areaId: string): Promise<readonly PresenceHero[]> {
+  async listInArea(
+    areaId: string,
+    instanceCopyId: number | null,
+  ): Promise<readonly PresenceHero[]> {
     if (!areaId) throw new Error("Area id is required");
-    return (await this.heroes.listByAreaId(areaId)).map(toPresenceHero);
+    return (await this.heroes.listByAreaShard(areaId, instanceCopyId)).map(toPresenceHero);
+  }
+
+  async listInCopy(copyId: number): Promise<readonly PresenceHero[]> {
+    if (!Number.isInteger(copyId) || copyId < 1) throw new Error("Instance copy id is required");
+    return (await this.heroes.listByInstanceCopyId(copyId)).map(toPresenceHero);
   }
 
   async requirePresence(accountId: number): Promise<PresenceHero> {

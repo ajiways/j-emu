@@ -32,16 +32,9 @@ import { MailClaim } from "./mail-claim.ts";
 import { MailTtlSweep } from "./mail-ttl-sweep.ts";
 import { MailModule } from "../modules/mail/mail-module.ts";
 import { AuctionModule } from "../modules/auction/auction-module.ts";
-import { AuctionExpiry } from "./auction-expiry.ts";
-import { AuctionBoard } from "./auction-board.ts";
-import { AuctionList } from "./auction-list.ts";
-import { AuctionBid } from "./auction-bid.ts";
-import { AuctionBuyout } from "./auction-buyout.ts";
-import { AuctionCancel } from "./auction-cancel.ts";
-import { AuctionTenderAdd } from "./auction-tender-add.ts";
-import { AuctionTenderSell } from "./auction-tender-sell.ts";
-import { AuctionTenderCancel } from "./auction-tender-cancel.ts";
 import { AuctionTtlSweep } from "./auction-ttl-sweep.ts";
+import { createAuctionOps } from "./auction-ops.ts";
+import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
 import { TradeDesk } from "./trade-desk.ts";
 import { ChatDesk } from "./chat-desk.ts";
 import { ChatFightSettlement } from "./chat-fight-settlement.ts";
@@ -53,7 +46,10 @@ import { TradeModule } from "../modules/trade/trade-module.ts";
 import { PartyModule } from "../modules/party/party-module.ts";
 import { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
 import { buildUserBag } from "../modules/jugger-wire/application/user-bag-block.ts";
-import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
+import { InstanceModule } from "../modules/instance/instance-module.ts";
+import { InstanceDesk } from "./instance-desk.ts";
+import { InstanceTtlSweep } from "./instance-ttl-sweep.ts";
+import { InstanceHuntLockRelease } from "./instance-hunt-lock-release.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 
 export class CompositionRoot {
@@ -140,64 +136,14 @@ export class CompositionRoot {
       closers.push(mail);
       const auction = AuctionModule.create({ database, clock });
       closers.push(auction);
-      const auctionExpiry = new AuctionExpiry(
+      const auctionOps = createAuctionOps({
         database,
-        auction.service,
-        mail.service,
-        characters.service,
-      );
-      const auctionBoard = new AuctionBoard(auctionExpiry, auction.service);
-      const auctionList = new AuctionList(
-        database,
-        auctionExpiry,
-        characters.service,
-        inventory.service,
-        catalog.catalog,
-        auction.service,
-      );
-      const auctionBid = new AuctionBid(
-        database,
-        auctionExpiry,
-        characters.service,
-        mail.service,
-        auction.service,
-      );
-      const auctionBuyout = new AuctionBuyout(
-        database,
-        auctionExpiry,
-        characters.service,
-        mail.service,
-        auction.service,
-      );
-      const auctionCancel = new AuctionCancel(
-        database,
-        auctionExpiry,
-        characters.service,
-        mail.service,
-        auction.service,
-      );
-      const auctionTenderAdd = new AuctionTenderAdd(
-        database,
-        auctionExpiry,
-        characters.service,
-        catalog.catalog,
-        auction.service,
-      );
-      const auctionTenderSell = new AuctionTenderSell(
-        database,
-        auctionExpiry,
-        characters.service,
-        inventory.service,
-        mail.service,
-        auction.service,
-      );
-      const auctionTenderCancel = new AuctionTenderCancel(
-        database,
-        auctionExpiry,
-        characters.service,
-        mail.service,
-        auction.service,
-      );
+        auction: auction.service,
+        mail: mail.service,
+        characters: characters.service,
+        inventory: inventory.service,
+        catalog: catalog.catalog,
+      });
       const presence = new PresenceService(
         world.service,
         identity.service,
@@ -252,9 +198,45 @@ export class CompositionRoot {
       });
       const presenceFanout = new PresenceFanout(presence, outbox, longPoll);
       const huntFanout = new HuntAreaFanout(presence, longPoll);
+      const instance = InstanceModule.create({
+        database,
+        clock,
+        delay,
+        random: extras.wanderRandom ?? new SystemRandomSource(),
+        dungeons: catalog.dungeons,
+        catalog: catalog.catalog,
+      });
+      closers.push(instance);
+      instance.hunt.bindWake((copyId, areaId) => huntFanout.wakeArea(areaId, copyId));
+      const instanceDesk = new InstanceDesk({
+        instances: instance.service,
+        hunt: instance.hunt,
+        characters: characters.service,
+        parties: party.service,
+        partySnapshot,
+        combat: combat.combat,
+        world: world.service,
+        catalog: catalog.catalog,
+        clock,
+        unitOfWork: database,
+        presence,
+        presenceFanout,
+        chat: chatDesk,
+        outbox,
+        wake: longPoll,
+        unreadMail: mail.service,
+      });
       combat.bindWake({ wake: (accountId) => longPoll.wake(accountId) });
       world.service.bindAreaWake(huntFanout);
-      combat.bindTerminalObserver(new HuntLockRelease(world.service, huntFanout));
+      combat.bindTerminalObserver(
+        new InstanceHuntLockRelease(
+          new HuntLockRelease(world.service, huntFanout),
+          instance.hunt,
+          instance.service,
+          instanceDesk,
+          huntFanout,
+        ),
+      );
       combat.bindSettlement(
         new ChatFightSettlement(
           new HuntFightSettlement(
@@ -311,7 +293,10 @@ export class CompositionRoot {
       const mailSweep = new MailTtlSweep(mail.service, delay, clock);
       mailSweep.start();
       closers.push(mailSweep);
-      const auctionSweep = new AuctionTtlSweep(auctionExpiry, delay, clock);
+      const instanceSweep = new InstanceTtlSweep(instanceDesk, delay, clock);
+      instanceSweep.start();
+      closers.push(instanceSweep);
+      const auctionSweep = new AuctionTtlSweep(auctionOps.expiry, delay, clock);
       auctionSweep.start();
       closers.push(auctionSweep);
       const trade = TradeModule.create();
@@ -356,14 +341,14 @@ export class CompositionRoot {
         mailSend,
         mailClaim,
         auction: auction.service,
-        auctionBoard,
-        auctionList,
-        auctionBid,
-        auctionBuyout,
-        auctionCancel,
-        auctionTenderAdd,
-        auctionTenderSell,
-        auctionTenderCancel,
+        auctionBoard: auctionOps.board,
+        auctionList: auctionOps.list,
+        auctionBid: auctionOps.bid,
+        auctionBuyout: auctionOps.buyout,
+        auctionCancel: auctionOps.cancel,
+        auctionTenderAdd: auctionOps.tenderAdd,
+        auctionTenderSell: auctionOps.tenderSell,
+        auctionTenderCancel: auctionOps.tenderCancel,
         trade: tradeDesk,
         chat: chatDesk,
         party: party.service,
@@ -371,6 +356,9 @@ export class CompositionRoot {
         partySnapshot,
         partyNotify,
         partyBag: partyBagOps,
+        instanceHunt: instance.hunt,
+        instanceDesk,
+        dungeonHunt: instance.hunt,
       });
       closers.push(wire);
       return new Application(

@@ -296,10 +296,9 @@ P2P обмен TRD-01/TRD-02 живёт в `trade` без таблиц, не в 
 Чат SOC-01 живёт в `chat` без таблиц, не в `social`.
 Party SOC-02/SOC-03 живёт в `party` (`parties` / `party_members` /
 `party_invites` / `party_bag_items`), не в `social`.
-DNG-01 план: `instance.copies` / `binds` / `killed_spawns` (строки, не dump
-JSONB `killed_spawns_json`). Контракт: [INSTANCE.md](../modules/INSTANCE.md).
-Целевые API — в [MODULES.md](MODULES.md). Схемы появляются вместе с первым
-подтверждённым OA этого модуля.
+DNG-01: `instance.copies` / `binds` / `killed_spawns` (строки, не dump
+JSONB `killed_spawns_json`). `heroes.instance_copy_id` nullable без FK.
+Контракт: [INSTANCE.md](../modules/INSTANCE.md).
 
 Перед глобальным изменением границ character/inventory/world/combat или началом
 economy/social/instances нужен отдельный architecture checkpoint: подтвердить

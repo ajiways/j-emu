@@ -7,9 +7,10 @@ import type {
   SkillDocument,
   WelcomeMessageDocument,
 } from "./bootstrap-content.ts";
+import type { DungeonDocument } from "./content-dungeon.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v20";
-export const CONTENT_VALIDATOR_VERSION = "20";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v21";
+export const CONTENT_VALIDATOR_VERSION = "21";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;
@@ -298,6 +299,7 @@ export type ContentBundle = Readonly<{
   areas: readonly AreaDocument[];
   areaLinks: readonly AreaLinkDocument[];
   huntSpawns: readonly HuntSpawnDocument[];
+  dungeons: readonly DungeonDocument[];
   storeTypes: readonly StoreTypeDocument[];
   storeLots: readonly StoreLotDocument[];
   reputationTracks: readonly ReputationTrackDocument[];
@@ -319,6 +321,7 @@ export type ContentEntry = Readonly<{
     | "area"
     | "area_link"
     | "hunt_spawn"
+    | "dungeon"
     | "store_type"
     | "store_lot"
     | "reputation_track"
@@ -339,6 +342,7 @@ export type ContentEntry = Readonly<{
     | AreaDocument
     | AreaLinkDocument
     | HuntSpawnDocument
+    | DungeonDocument
     | StoreTypeDocument
     | StoreLotDocument
     | ReputationTrackDocument
@@ -362,6 +366,7 @@ export type ValidatedContentBundle = Readonly<{
   areas: readonly AreaDocument[];
   areaLinks: readonly AreaLinkDocument[];
   huntSpawns: readonly HuntSpawnDocument[];
+  dungeons: readonly DungeonDocument[];
   storeTypes: readonly StoreTypeDocument[];
   storeLots: readonly StoreLotDocument[];
   reputationTracks: readonly ReputationTrackDocument[];

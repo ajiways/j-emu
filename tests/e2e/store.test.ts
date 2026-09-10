@@ -116,6 +116,7 @@ describe("store RANK gate", () => {
       characterId: heroIdFrom(init),
       areaId: "552",
       moveReadyAt: null,
+      instanceCopyId: null,
     });
     const listed = await client.objectAction({ object: "store", action: "list", sq: 2 });
     const block = requireRecord(listed["store|list"], "store|list");

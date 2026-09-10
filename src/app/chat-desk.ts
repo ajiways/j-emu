@@ -128,7 +128,7 @@ export class ChatDesk {
         ...listed,
         macroses,
       });
-      const roster = await this.deps.presence.listPopulation(hero.areaId);
+      const roster = await this.deps.presence.listPopulation(hero.areaId, hero.instanceCopyId);
       for (const info of roster.population) {
         if (info.id === accountId) continue;
         this.deliver(info.id, remote);

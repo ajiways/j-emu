@@ -91,6 +91,9 @@ export class ContentPublicationService {
     await this.catalog.materializeReputation(release.id, {
       reputationTracks: validated.reputationTracks,
     });
+    await this.catalog.materializeDungeons(release.id, {
+      dungeons: validated.dungeons,
+    });
     await this.store.activate(release.id);
     return release;
   }

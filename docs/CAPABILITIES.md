@@ -262,8 +262,21 @@ same-area team 1, HELP ACTION в party chat, `state.party` из membership,
 init2 restore members/settings/bag. Reconnect/restart читает Postgres.
 CEF окна группы не прогонялся.
 
-Не перенесены dungeon bind, dungeon lottery rules 1, quest personal_only,
+Не перенесены dungeon bind warning на invite, dungeon lottery rules 1, quest personal_only,
 hunt join team 2.
+
+## Instance — частично
+
+Есть raw-AMF и PostgreSQL: COME_IN 542 ogre cave (artikul `1`) создаёт copy,
+auto-party, `common|instance_conf` без `progress_*`, `state.instance=1`,
+per-copy hunt id, bind на exit/re-enter, presence isolation двух копий,
+kill без respawn, TTL kick в 501, expired bind status `2`. Combat
+`fight|conf.instance_id` = copy id, `can_leave:0`. Restart читает copy/bind
+и killed spawns. CEF данжа не прогонялся.
+
+Не перенесены clear bar/coins, `personal_guaranteed` / `loot.bands`,
+`book|instances`, dungeon shops, hunt join team 2, abort fight on expiry,
+остальные данжи (DNG-02), daily 06:00 MSK wipe.
 
 ## После core — не перенесено
 

@@ -12,7 +12,7 @@ export type HeroStateBlock = Readonly<{
   money_gold: string;
   party: 0 | 1;
   clan: 0;
-  instance: 0;
+  instance: 0 | 1;
   alliance_read: 0;
   alliance_write: 0;
   new_message: 0 | 1;
@@ -46,7 +46,7 @@ export function buildHeroState(
     money_gold: moneyFromMinorUnits(hero.moneyGoldMinor),
     party: overlay.inParty ? 1 : 0,
     clan: 0,
-    instance: 0,
+    instance: hero.instanceCopyId === null ? 0 : 1,
     alliance_read: 0,
     alliance_write: 0,
     new_message: overlay.newMessage,

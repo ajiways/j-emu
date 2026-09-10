@@ -31,7 +31,7 @@ export async function completeMeleeHunt(
   return fightId;
 }
 
-async function finishStartedMeleeHunt(
+export async function finishStartedMeleeHunt(
   client: AuthenticatedClient,
   fightId: string,
   elapse: (ms: number) => Promise<void>,

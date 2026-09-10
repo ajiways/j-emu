@@ -25,6 +25,13 @@ import {
   botSpellBooks,
 } from "../../../src/modules/catalog/infrastructure/schema-bot-spell-book.ts";
 import {
+  dungeonAreas,
+  dungeonSpawnEncounters,
+  dungeonSpawnRoutes,
+  dungeonSpawns,
+  dungeons,
+} from "../../../src/modules/catalog/infrastructure/schema-dungeons.ts";
+import {
   experienceGrants,
   heroes,
   heroLearnedBonuses,
@@ -45,6 +52,17 @@ import { accounts, sessions } from "../../../src/modules/identity/infrastructure
 import { items } from "../../../src/modules/inventory/infrastructure/schema.ts";
 import { letters, letterAttachments } from "../../../src/modules/mail/infrastructure/schema.ts";
 import { listings } from "../../../src/modules/auction/infrastructure/schema.ts";
+import {
+  copies,
+  binds,
+  killedSpawns,
+} from "../../../src/modules/instance/infrastructure/schema.ts";
+import {
+  parties,
+  partyBagItems,
+  partyInvites,
+  partyMembers,
+} from "../../../src/modules/party/infrastructure/schema.ts";
 import { areaLinks, areas, huntSpawns } from "../../../src/modules/world/infrastructure/schema.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
@@ -65,7 +83,7 @@ describe("Drizzle migrations", () => {
   it("creates only the live module schemas and tables", async () => {
     const schemas = await names(
       sql`SELECT schema_name AS name FROM information_schema.schemata
-          WHERE schema_name IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','quests','social','economy')`,
+          WHERE schema_name IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','quests','social','economy')`,
     );
     expect(schemas.sort()).toEqual([
       "auction",
@@ -74,15 +92,17 @@ describe("Drizzle migrations", () => {
       "combat",
       "content",
       "identity",
+      "instance",
       "inventory",
       "mail",
+      "party",
       "world",
     ]);
 
     const tables = await names(
       sql`SELECT table_schema || '.' || table_name AS name
           FROM information_schema.tables
-          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content','mail','auction')
+          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance')
             AND table_type = 'BASE TABLE'`,
     );
     expect(tables.sort()).toEqual(
@@ -95,6 +115,11 @@ describe("Drizzle migrations", () => {
         "catalog.bot_spell_book_spells",
         "catalog.bot_spell_books",
         "catalog.bots",
+        "catalog.dungeon_areas",
+        "catalog.dungeon_spawn_encounters",
+        "catalog.dungeon_spawn_routes",
+        "catalog.dungeon_spawns",
+        "catalog.dungeons",
         "catalog.game_wide_documents",
         "catalog.level_boundaries",
         "catalog.level_skill_values",
@@ -118,9 +143,16 @@ describe("Drizzle migrations", () => {
         "content.releases",
         "identity.accounts",
         "identity.sessions",
+        "instance.binds",
+        "instance.copies",
+        "instance.killed_spawns",
         "inventory.items",
         "mail.letter_attachments",
         "mail.letters",
+        "party.parties",
+        "party.party_bag_items",
+        "party.party_invites",
+        "party.party_members",
         "world.area_links",
         "world.areas",
         "world.hunt_spawns",
@@ -137,6 +169,11 @@ describe("Drizzle migrations", () => {
       botSpellBooks,
       botSpellBookSpells,
       bots,
+      dungeons,
+      dungeonAreas,
+      dungeonSpawns,
+      dungeonSpawnEncounters,
+      dungeonSpawnRoutes,
       skillDefinitions,
       levelBoundaries,
       levelSkillValues,
@@ -160,6 +197,13 @@ describe("Drizzle migrations", () => {
       letters,
       letterAttachments,
       listings,
+      parties,
+      partyMembers,
+      partyInvites,
+      partyBagItems,
+      copies,
+      binds,
+      killedSpawns,
       finishedFights,
       drafts,
       draftVersions,
@@ -167,7 +211,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(37);
+    ]).toHaveLength(49);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -186,6 +230,9 @@ describe("Drizzle migrations", () => {
       "0009_mail_letter_attachments.sql",
       "0010_auction_listings.sql",
       "0011_auction_tenders.sql",
+      "0012_party_foundation.sql",
+      "0013_party_bag_items.sql",
+      "0014_instance_foundation.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -203,8 +250,11 @@ describe("Drizzle migrations", () => {
       "0009_mail_letter_attachments",
       "0010_auction_listings",
       "0011_auction_tenders",
+      "0012_party_foundation",
+      "0013_party_bag_items",
+      "0014_instance_foundation",
     ]);
-    expect(await appliedCount()).toBe(12);
+    expect(await appliedCount()).toBe(15);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -253,6 +303,7 @@ describe("Drizzle migrations", () => {
     );
     expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/bonus/);
     expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/use_script/);
+    expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/dungeon/);
     const tempeffectCheck = await database.session().execute<{ check_clause: string }>(
       sql`SELECT check_clause
           FROM information_schema.check_constraints

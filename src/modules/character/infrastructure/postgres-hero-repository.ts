@@ -1,4 +1,4 @@
-import { asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import { Hero, type HeroRecord, type NewHero } from "../domain/hero.ts";
 import type { HeroRepository } from "../ports/hero-repository.ts";
@@ -30,15 +30,30 @@ export class PostgresHeroRepository implements HeroRepository {
     return Hero.restore(recordFromRow(row, `hero nick ${trimmed}`));
   }
 
-  async listByAreaId(areaId: string): Promise<readonly Hero[]> {
+  async listByAreaShard(areaId: string, instanceCopyId: number | null): Promise<readonly Hero[]> {
     if (!areaId) throw new Error("Area id is required");
+    const copyFilter =
+      instanceCopyId === null
+        ? isNull(heroes.instanceCopyId)
+        : eq(heroes.instanceCopyId, instanceCopyId);
     const rows = await this.database
       .session()
       .select()
       .from(heroes)
-      .where(eq(heroes.areaId, areaId))
+      .where(and(eq(heroes.areaId, areaId), copyFilter))
       .orderBy(asc(heroes.accountId));
     return rows.map((row) => Hero.restore(recordFromRow(row, `hero area ${areaId}`)));
+  }
+
+  async listByInstanceCopyId(copyId: number): Promise<readonly Hero[]> {
+    if (!Number.isInteger(copyId) || copyId < 1) throw new Error("Instance copy id is required");
+    const rows = await this.database
+      .session()
+      .select()
+      .from(heroes)
+      .where(eq(heroes.instanceCopyId, copyId))
+      .orderBy(asc(heroes.accountId));
+    return rows.map((row) => Hero.restore(recordFromRow(row, `hero copy ${copyId}`)));
   }
 
   async lockByAccountId(accountId: number): Promise<Hero | null> {
@@ -83,6 +98,7 @@ export class PostgresHeroRepository implements HeroRepository {
         ghost: values.ghost,
         injuryTime: BigInt(values.injuryTime),
         injuryArtikulId: values.injuryArtikulId,
+        instanceCopyId: values.instanceCopyId,
         version: 1,
       })
       .returning();
@@ -117,6 +133,7 @@ export class PostgresHeroRepository implements HeroRepository {
         ghost: hero.ghost,
         injuryTime: BigInt(hero.injuryTime),
         injuryArtikulId: hero.injuryArtikulId,
+        instanceCopyId: hero.instanceCopyId,
         version: sql`${heroes.version} + 1`,
       })
       .where(eq(heroes.id, hero.id))
@@ -162,6 +179,7 @@ export class PostgresHeroRepository implements HeroRepository {
       ghost: boolean;
       injuryTime: bigint;
       injuryArtikulId: number;
+      instanceCopyId: number | null;
     }>,
     key: string,
   ): Hero | null {
@@ -198,6 +216,7 @@ function recordFromRow(
     ghost: boolean;
     injuryTime: bigint;
     injuryArtikulId: number;
+    instanceCopyId: number | null;
   },
   key: string,
 ): HeroRecord {
@@ -226,6 +245,7 @@ function recordFromRow(
     ghost: row.ghost,
     injuryTime: safeInteger(row.injuryTime, `injury_time for ${key}`),
     injuryArtikulId: row.injuryArtikulId,
+    instanceCopyId: row.instanceCopyId,
   };
 }
 

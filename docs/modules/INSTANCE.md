@@ -1,70 +1,69 @@
-# Instance (DNG-01 plan)
+# Instance
 
-## Статус
+Runtime DNG-01: authored dungeon definition creates a PostgreSQL copy, binds
+the entering hero, isolates hunt/presence per copy, expires by
+`duration_sec`, and returns occupants to the parent area. Active combat stays
+in RAM.
 
-Ownership и lifecycle зафиксированы. Runtime ещё нет: product-status
-[CAPABILITIES.md](../CAPABILITIES.md). Этот документ — план DNG-01, не
-готовая возможность.
+Representative content: ogre cave artikul `1`, start `542`, parent `501`,
+`duration_sec=3600`, `level_min=3`, `has_clear: false`. Product status:
+[CAPABILITIES.md](../CAPABILITIES.md).
 
 BG match, dungeon clear bar / coins, quest `personal_only`, remaining
-dungeons — не в срезе DNG-01.
+dungeons — not in this slice.
 
-## Источники поведения
+## Sources
 
 - `jgr-emu/docs/DUNGEON.md`, `FIGHT_JOIN.md`;
-- `jgr-emu/src/dungeon/` (`catalog.ts`, `clear.ts`, copy/bind/expiry);
+- `jgr-emu/src/dungeon/` (catalog, copy/bind/expiry);
 - `_research/giga_dump_2026-08-11/DUNGEON_INSTANCE.md`;
-- representative fixture: `jgr-emu/fixtures/dungeons/ogre_cave.json`
-  (artikul `1`, start `542`, parent `501`, `duration_sec=3600`,
-  `has_clear: false`).
+- fixture `jgr-emu/fixtures/dungeons/ogre_cave.json`.
 
-## Architecture decision
+## Ownership
 
-Отдельный ADR не нужен. ADR-0016 / ADR-0018 / ADR-0020 покрывают copy id с
-**1**, `instance_id=0` для мира и active combat только в RAM. `ARC-INS`
-закрыт ownership, не отдельным coding slice.
+No extra ADR. ADR-0016 / ADR-0018 / ADR-0020 cover copy id from **1**,
+world `instance_id=0`, and RAM-only active combat.
 
-Модуль `instance` (`src/modules/instance`), не `world` и не `party`:
+| Owner       | Holds                                                                                           |
+| ----------- | ----------------------------------------------------------------------------------------------- |
+| `instance`  | copy row, bind, unix expiry, killed-spawn rows, dungeon enter policy                            |
+| `world`     | authored outdoor areas / links / hunt; not copies                                               |
+| `party`     | membership; auto-create on enter via `ensureParty`                                              |
+| `catalog`   | immutable dungeon definition from the active release                                            |
+| `combat`    | RAM fight; composition overlays `fight\|conf.instance_id` and `can_leave:0`. No instance import |
+| composition | `COME_IN` start → enter; floor→floor keep copy; parent exit → presence `0`; TTL sweep           |
 
-| Owner       | Держит                                                                                         |
-| ----------- | ---------------------------------------------------------------------------------------------- |
-| `instance`  | copy row, bind, unix expiry, killed-spawn projection, dungeon enter policy                     |
-| `world`     | authored outdoor areas / links / hunt; не копии                                                |
-| `party`     | membership; auto-create on enter через уже существующий party API                              |
-| `catalog`   | immutable dungeon definition из active release (не runtime JSON)                               |
-| `combat`    | RAM fight; `fight\|conf.instance_id` = copy id, `can_leave:0` в данже. Не импортирует instance |
-| composition | `COME_IN` start area → instance enter; floor→floor keep copy; exit parent → presence `0`       |
+`heroes.instance_copy_id` is a nullable integer without FK (NULL = world) so
+character and instance schemas do not cycle. Binds FK to `instance.copies`
+and `character.heroes`. Copy id is PostgreSQL identity from 1.
 
-Dungeon и BG делят **copy identity** (id, type, expires_at). Не делят
-membership, score, queue. BG policy — `BG-01`, не таблицы DNG-01.
+Killed spawns are persistent instance rows, not combat JSONB. Hunt win
+writes the spawn key through composition and forgets the RAM wander entry.
+Dungeon hunt lives in a second `HuntWanderRuntime` keyed
+`dungeon:${copyId}:${areaId}`. Hunt id = dump `dungeonHuntId(copyId, spawn_key)`.
 
-Мутации copy/bind — одна Drizzle UoW, `FOR UPDATE` строки copy. Inventory
-transfer (boss trophy) только через `grantToBag` в composition, как party bag.
+Expiry: `duration_sec` from create; kick to `parent_area_id` bypassing travel
+lock. Occupant in a RAM fight → `pending_kick`, kick after finish. Sweep
+uses `DelayScheduler` at 15s, same pattern as mail TTL. Enter/travel on an
+expired bind fail-fast (status `2`); the runtime does not silently open a
+new copy.
 
-Killed spawns — persistent instance state, не combat. Finish hunt пишет spawn
-key в copy через composition port после settlement.
+## Wire
 
-Expiry: `duration_sec` с create; kick в `parent_area_id`. Боец в активном бою
-не телепортируется, пока бой в RAM; после finish — kick. Sweep как mail TTL
-(`DelayScheduler`), не в hot request path кроме явного enter/travel, который
-обязан видеть истекшую копию fail-fast.
+`COME_IN` into a dungeon start: level gate status `204`; no party → auto
+`party|create` chrome on the same flat; create or rejoin the bound copy;
+`common|instance_conf` `{ artikul_id, status:100 }` without `progress_*`;
+`state.instance=1`; hunt list of that copy. `character-info.instance_id` is
+the copy id (world `0`).
 
-Dump daily 06:00 MSK / wipe — **не** DNG-01; emu expiry = `duration_sec`.
+Exit to parent: presence copy `0`, bind remains. Reconnect/restart reads
+Postgres. `fight|conf.instance_id` is the copy id string; `can_leave:0`.
 
-## Wire (DNG-01)
+Death/RESURRECT in a copy → start area of the same live copy (ogre is already
+542). Outdoor temple 503 is not applied inside the dungeon.
 
-`COME_IN` в start area: auto-party если нет группы; create или join своей
-копии; bind; `common|instance_conf` `{ artikul_id, status:100 }` без
-`progress_*` (ogre `has_clear: false`); `state.instance=1`; hunt list копии.
+## Out of slice
 
-Exit в parent: presence copy `0`, bind остаётся. Reconnect/restart читает
-Postgres. `fight|conf.instance_id` = copy id (не 0).
-
-Death/RESURRECT в копии → start_area той же копии (CMB-04 outdoor temple 503
-не применяется внутри данжа).
-
-## Вне среза
-
-Clear bar / coins, `loot.bands` / `personal_guaranteed`, bind warning на
+Clear bar / coins, `loot.bands` / `personal_guaranteed`, bind warning on
 invite, `book|instances`, dungeon shops, hunt join team 2, abort fight on
-expiry, remaining fixtures (DNG-02).
+expiry, remaining fixtures (DNG-02), daily 06:00 MSK wipe.
