@@ -8,7 +8,9 @@ import {
 } from "./fight-effect-wire.ts";
 import { fightEventMap } from "./fight-event-map.ts";
 import { huntFightBootstrapEvents, huntFightRosterEvents } from "./hunt-fight-bootstrap-wire.ts";
+import { friendlyFightBootstrapEvents } from "./friendly-fight-bootstrap-wire.ts";
 import { huntOppNewEvent } from "./hunt-opp-new-event.ts";
+import { humanOppNewEvent } from "./human-opp-new-event.ts";
 
 export type FightConfigurationBlock = Readonly<{
   status: 100;
@@ -72,6 +74,14 @@ export class FightWireMapper {
   ) {}
 
   fightConfiguration(start: FightStart): FightConfigurationBlock {
+    return this.configuration(start, this.policy.isPvp, this.policy.type);
+  }
+
+  friendlyDuelConfiguration(start: FightStart): FightConfigurationBlock {
+    return this.configuration(start, 1, "6");
+  }
+
+  private configuration(start: FightStart, isPvp: 0 | 1, type: string): FightConfigurationBlock {
     return {
       status: 100,
       conf: {
@@ -87,9 +97,9 @@ export class FightWireMapper {
         auto_fight: this.policy.autoFight,
         can_leave: this.policy.canLeave,
         companion_enabled: this.policy.companionEnabled,
-        is_pvp: this.policy.isPvp,
+        is_pvp: isPvp,
         instance_id: this.policy.instanceId,
-        type: this.policy.type,
+        type,
         is_slaughter: this.policy.isSlaughter,
         flags: this.policy.flags,
       },
@@ -147,6 +157,8 @@ export class FightWireMapper {
         };
       case "hunt-bootstrap":
         return fightEventMap(huntFightBootstrapEvents(event));
+      case "friendly-bootstrap":
+        return fightEventMap(friendlyFightBootstrapEvents(event));
       case "roster-updated":
         return fightEventMap(huntFightRosterEvents(event));
       case "damage":
@@ -168,6 +180,10 @@ export class FightWireMapper {
         throw new Error("turn-wait must be encoded with the following damage event");
       case "opponent-new":
         return fightEventMap([huntOppNewEvent(event.bot)]);
+      case "opponent-new-human":
+        return fightEventMap([humanOppNewEvent(event.human, event.appearance)]);
+      case "opponent-wait":
+        return fightEventMap([{ et: "oppwait" }]);
       case "finished":
         return fightEventMap([{ et: "fightFinish", winner: event.winnerTeam }]);
     }

@@ -13,9 +13,9 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/character/domain/hero.ts":
     "Hero aggregate owns vitals, money, location lock, and CMB-04 ghost/injury clock",
   "src/modules/combat/application/combat-service.ts":
-    "Process-local hunt service: start/join/auth/resume/poll, CMB-02 casts, CMB-03 loot/exit take and leave ack",
+    "Process-local hunt/friendly service: start/join/auth/resume/poll, CMB-02 casts, CMB-03 loot/exit take and leave ack",
   "src/modules/combat/domain/battle.ts":
-    "Hunt aggregate owns pairing, melee, CMB-06 bot spell turns, casts, and CMB-04 resume bootstrap for one RAM fight",
+    "Hunt/friendly Battle owns FightDuel pairing, CMB-08 shuffle/waiter handoff, melee, CMB-06 bot turns, casts, and CMB-04 resume",
   "src/modules/content/application/content-validator.ts":
     "Single bundle completeness gate including store 504, reputation, set bonuses, USE representatives, fight extra blobs, bot loot, and bot spell books",
   "src/modules/inventory/domain/inventory-service.ts":

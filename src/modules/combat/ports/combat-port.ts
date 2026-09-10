@@ -79,10 +79,36 @@ export type FightExit = Readonly<{
   flee?: true;
 }>;
 
+export type FriendlyDuelStartInput = Readonly<{
+  challenger: FriendlyDuelFighterInput;
+  acceptor: FriendlyDuelFighterInput;
+  fightId: string;
+  arena: string;
+  areaId: string;
+}>;
+
+type FriendlyDuelFighterInput = Readonly<{
+  accountId: number;
+  heroId: number;
+  heroNick: string;
+  heroLevel: number;
+  heroKind: number;
+  heroHp: number;
+  heroMaxHp: number;
+  heroMp: number;
+  heroMaxMp: number;
+  heroStrength: number;
+  loadout: CombatLoadout;
+  avatar: string;
+  body: string;
+  sk: string;
+}>;
+
 export interface CombatPort {
   nextFightId(): Promise<string>;
   startHunt(input: HuntStartInput): Promise<FightStart>;
   joinHunt(input: HuntJoinInput): Promise<FightStart>;
+  startFriendlyDuel(input: FriendlyDuelStartInput): Promise<FightStart>;
   hasFight(fightId: string): Promise<boolean>;
   execute(accountId: number, command: FightCommand): Promise<readonly CombatEvent[]>;
   takePocketConsume(accountId: number): number | null;

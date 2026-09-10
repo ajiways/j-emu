@@ -163,6 +163,9 @@ export class JuggerWireModule {
         huntFanout,
         storePurchase,
         storeRepair,
+        identity,
+        outbox,
+        longPoll,
       );
       const esrvPoll = new EsrvPollAssembler(
         characters,

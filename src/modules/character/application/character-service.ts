@@ -206,6 +206,12 @@ export class CharacterService
     return this.heroes.findByAccountId(accountId);
   }
 
+  async getByNick(nick: string): Promise<Hero | null> {
+    const trimmed = nick.trim();
+    if (!trimmed) throw new Error("Hero nick is required");
+    return this.heroes.findByNick(trimmed);
+  }
+
   async listInArea(areaId: string): Promise<readonly PresenceHero[]> {
     if (!areaId) throw new Error("Area id is required");
     return (await this.heroes.listByAreaId(areaId)).map(toPresenceHero);

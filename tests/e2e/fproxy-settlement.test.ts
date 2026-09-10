@@ -215,7 +215,7 @@ describe("fproxy settlement two hunters and refill", () => {
     await harness.stop();
   });
 
-  it("gives loot to the opener and leaves the joiner without EXP", async () => {
+  it("splits EXP after 3↔3 handoffs and gives loot to the top damager", async () => {
     const a = await createIsolatedHero(application);
     const b = await createIsolatedHero(application);
     await putOnStarterGloveIfInBag(a, 2);
@@ -236,15 +236,16 @@ describe("fproxy settlement two hunters and refill", () => {
     await a.pollFight();
     expect(await b.fight({ rc: "auth", eid: fightId, sq: 5 })).toHaveLength(0);
     await b.pollFight();
-    await strikeUntilHuntFinish(a, (ms) => harness.elapseCombat(ms), 6);
+    await a.pollFight();
+    await strikeUntilHuntFinish(a, (ms) => harness.elapseCombat(ms), 6, b);
     const lootA = personalEsrvObject(await a.pollEsrv())["fight|loot"];
     const lootB = personalEsrvObject(await b.pollEsrv())["fight|loot"];
-    expect(lootA).toMatchObject({ experience: 15, money: "0.2" });
-    expect(lootB).toMatchObject({ experience: 0, money: "0" });
+    expect(lootA).toMatchObject({ experience: 11, money: "0.2" });
+    expect(lootB).toMatchObject({ experience: 4, money: "0" });
     const afterA = await a.objectAction({ object: "common", action: "init2", sq: 20 });
     const afterB = await b.objectAction({ object: "common", action: "init2", sq: 20 });
-    expect(unitframe(afterA).exp).toBe(16);
-    expect(unitframe(afterB).exp).toBe(1);
+    expect(unitframe(afterA).exp).toBe(12);
+    expect(unitframe(afterB).exp).toBe(5);
   });
 
   it("refills a spent 93 pocket cell from bag after a win", async () => {

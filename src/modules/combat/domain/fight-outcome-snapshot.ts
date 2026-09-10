@@ -18,7 +18,15 @@ export type FightHumanOutcome = Readonly<{
 
 export type FightOutcomeKind = "win" | "loss" | "last-leave";
 
-export type FightOutcomeSnapshot = Readonly<{
+export type PracticeRestore = Readonly<{
+  characterId: number;
+  hp: number;
+  mp: number;
+  pocket: readonly PocketCellSnapshot[];
+}>;
+
+type HuntFightOutcomeSnapshot = Readonly<{
+  mode: "hunt";
   fightId: string;
   botId: number;
   botLevel: number;
@@ -26,3 +34,14 @@ export type FightOutcomeSnapshot = Readonly<{
   kind: FightOutcomeKind;
   humans: readonly FightHumanOutcome[];
 }>;
+
+export type PracticeFightOutcomeSnapshot = Readonly<{
+  mode: "friendly-practice";
+  fightId: string;
+  winnerTeam: 1 | 2;
+  kind: FightOutcomeKind;
+  humans: readonly FightHumanOutcome[];
+  restore: readonly PracticeRestore[];
+}>;
+
+export type FightOutcomeSnapshot = HuntFightOutcomeSnapshot | PracticeFightOutcomeSnapshot;

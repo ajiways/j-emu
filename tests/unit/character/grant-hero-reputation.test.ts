@@ -70,6 +70,8 @@ function fakeHeroes(hero: Hero): HeroRepository {
   return {
     findById: async () => hero,
     findByAccountId: async () => hero,
+    findByNick: async (nick: string) =>
+      hero.nick.toLowerCase() === nick.trim().toLowerCase() ? hero : null,
     listByAreaId: async () => [hero],
     lockByAccountId: async () => hero,
     lockById: async (id: number) => (id === hero.id ? hero : null),

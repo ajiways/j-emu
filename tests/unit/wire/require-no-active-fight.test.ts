@@ -24,6 +24,9 @@ function fakeCombat(fightId: string | null): CombatPort {
     joinHunt: async () => {
       throw new Error("unused");
     },
+    startFriendlyDuel: async () => {
+      throw new Error("unused");
+    },
     hasFight: async () => false,
     nextFightId: async () => {
       throw new Error("unused");

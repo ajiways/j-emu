@@ -3,6 +3,12 @@ import type { CombatLoadout } from "./combat-loadout.ts";
 import { HuntHumanCastState } from "./hunt-human-cast-state.ts";
 import type { PocketCellSnapshot } from "./fight-outcome-snapshot.ts";
 
+export type HuntHumanAppearance = Readonly<{
+  avatar: string;
+  body: string;
+  sk: string;
+}>;
+
 export type HuntHumanSnap = Readonly<{
   id: number;
   nick: string;
@@ -12,7 +18,7 @@ export type HuntHumanSnap = Readonly<{
   maxHp: number;
   mp: number;
   maxMp: number;
-  team: 1;
+  team: 1 | 2;
 }>;
 
 type HuntHumanInit = Readonly<{
@@ -25,10 +31,11 @@ type HuntHumanInit = Readonly<{
   maxHp: number;
   mp: number;
   maxMp: number;
-  team: 1;
+  team: 1 | 2;
   waiting: boolean;
   strength: number;
   loadout: CombatLoadout;
+  appearance: HuntHumanAppearance | null;
 }>;
 
 export class HuntHuman {
@@ -79,8 +86,11 @@ export class HuntHuman {
   get strength(): number {
     return this.init.strength;
   }
-  get team(): 1 {
+  get team(): 1 | 2 {
     return this.init.team;
+  }
+  get appearance(): HuntHumanAppearance | null {
+    return this.init.appearance;
   }
   get waiting(): boolean {
     return this.waitingValue;
@@ -98,6 +108,12 @@ export class HuntHuman {
   pair(): void {
     if (!this.waitingValue) throw new Error("Hunt human is already paired");
     this.waitingValue = false;
+  }
+
+  unpair(): void {
+    if (this.waitingValue) throw new Error("Hunt human is already waiting");
+    this.waitingValue = true;
+    this.endTurn();
   }
 
   markResume(): void {
@@ -185,6 +201,12 @@ export class HuntHuman {
   }
 }
 
+function requireAppearance(appearance: HuntHumanAppearance): void {
+  if (!appearance.avatar) throw new Error("Hunt human avatar is required");
+  if (typeof appearance.body !== "string") throw new Error("Hunt human body is required");
+  if (!appearance.sk) throw new Error("Hunt human sk is required");
+}
+
 function requireHuntHumanInit(init: HuntHumanInit): void {
   requireWireIdentity(init.accountId, "account id");
   requireWireIdentity(init.heroId, "hero id");
@@ -207,7 +229,8 @@ function requireHuntHumanInit(init: HuntHumanInit): void {
   if (!Number.isInteger(init.maxMp) || init.maxMp < 1 || init.mp > init.maxMp) {
     throw new Error("Hunt human maxMp is invalid");
   }
-  if (init.team !== 1) throw new Error("Hunt human team must be 1");
+  if (init.team !== 1 && init.team !== 2) throw new Error("Hunt human team must be 1 or 2");
+  if (init.appearance) requireAppearance(init.appearance);
   if (!Number.isInteger(init.strength) || init.strength < 1) {
     throw new Error("Hunt human strength must be positive");
   }

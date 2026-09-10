@@ -14,6 +14,7 @@ import type { HistoryWriteObserver } from "./history-write-observer.ts";
 import { CombatMeleeLoop } from "./combat-melee-loop.ts";
 import { CombatTerminal } from "./combat-terminal.ts";
 import { huntBattleInitFromStart } from "./hunt-battle-init-from-start.ts";
+import { friendlyDuelInitFromStart } from "./friendly-duel-init-from-start.ts";
 import { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 import type {
   CombatEvent,
@@ -21,6 +22,7 @@ import type {
   FightCommand,
   FightExit,
   FightStart,
+  FriendlyDuelStartInput,
   HuntJoinInput,
   HuntStartInput,
 } from "../ports/combat-port.ts";
@@ -141,6 +143,36 @@ export class CombatService implements CombatPort {
     };
   }
 
+  async startFriendlyDuel(input: FriendlyDuelStartInput): Promise<FightStart> {
+    requireWireIdentity(input.challenger.accountId, "challenger account id");
+    requireWireIdentity(input.acceptor.accountId, "acceptor account id");
+    requireWireIdentity(input.challenger.heroId, "challenger hero id");
+    requireWireIdentity(input.acceptor.heroId, "acceptor hero id");
+    if (this.byAccount.has(input.challenger.accountId)) {
+      throw new Error("Challenger already has an active fight");
+    }
+    if (this.byAccount.has(input.acceptor.accountId)) {
+      throw new Error("Acceptor already has an active fight");
+    }
+    const fightId = requireFightId(input.fightId);
+    if (this.battleByFight.has(fightId)) throw new Error(`Fight ${fightId} is already active`);
+    const accessKey = randomBytes(16).toString("hex");
+    const battle = new Battle(
+      friendlyDuelInitFromStart(input, accessKey, this.scheduler.now()),
+      this.rules,
+      this.random,
+    );
+    this.byAccount.set(input.challenger.accountId, battle);
+    this.byAccount.set(input.acceptor.accountId, battle);
+    this.battleByFight.set(fightId, battle);
+    return {
+      fightId,
+      accessKey,
+      participantId: input.acceptor.heroId,
+      arena: input.arena,
+    };
+  }
+
   async joinHunt(input: HuntJoinInput): Promise<FightStart> {
     requireWireIdentity(input.accountId, "account id");
     requireWireIdentity(input.heroId, "hero id");
@@ -149,6 +181,7 @@ export class CombatService implements CombatPort {
     const fightId = requireFightId(input.fightId);
     const battle = this.battleByFight.get(fightId);
     if (!battle || battle.finished) throw new HuntJoinDenied("бой не найден");
+    if (battle.kind !== "hunt") throw new HuntJoinDenied("нельзя вмешаться в дуэль");
     if (battle.areaId !== input.areaId) throw new HuntJoinDenied("бой в другой локации");
     if (battle.hasHuman(input.accountId, input.heroId)) {
       throw new HuntJoinDenied("вы уже участвовали в этом бою");

@@ -240,7 +240,8 @@ AREA `action_id` / `quest_bot_artikul` — не этот срез.
 Первый боец уже держит бота → joiner в queue своей team, bootstrap с
 `oppwait` (без `attacknow`). Остальным authed humans — fproxy roster
 (`persList` + `persChangeInfo`), не полный re-bootstrap. Re-pair waiter
-после смерти союзника — CMB-01 (сделано); shuffle 3↔3 не в этом срезе.
+после смерти союзника — CMB-01 (сделано); CMB-08 waiter-handoff после
+3↔3 hits (сделано). Cross-swap двух живых пар — leftover CMB-08.
 
 Отказ join через ATTACK_BOT — **203** + `error` (`notPossible`), не 204:
 `уже в бою`, `бой не найден`, `бой в другой локации`,
@@ -275,7 +276,8 @@ fight id (второй human team 1, тот же access key). `hasFight` отл�
 ### Out of scope
 
 Wander/route ticker; respawn hide; Pub1 `.map` polygons; dungeon copies;
-quest/menu attack; OA `FIGHT_JOIN` / `FIGHT_HELP`; loot; shuffle 3↔3.
+quest/menu attack; OA `FIGHT_JOIN` / `FIGHT_HELP`; loot; hunt cross-swap
+двух 3↔3 пар.
 Не копировать live `10_000_000 + heroes.id` в `userId`.
 
 ### Acceptance

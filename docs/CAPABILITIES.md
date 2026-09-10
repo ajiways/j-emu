@@ -196,8 +196,11 @@ object `fight|loot` затем `fight|exit`. Melee damage = `STR/10 ±15%`
 и hunts 50310/50101–50103. F5 mid-hunt: init2 `fight|conf` с тем же
 `fightId`/`akey`, resume без `oppwait`, `attacknow` с остатком restTime.
 Ghost блокирует regen; OA `RESURRECT` снимает ghost. Duplicate settlement
-no-op. Restart посреди боя без награды. CEF экрана результата, F5 в бою,
-призрака, видимого урона и плевка Хиссы не прогонялся —
+no-op. Restart посреди боя без награды. CMB-08: OA
+`user|friendly_duel_propose`/`accept` между двумя героями в 503 (esrv
+request, `fight|conf` `is_pvp:1` `type:6`, practice restore); hunt 3↔3
+waiter-handoff без сброса HP. CEF экрана результата, F5 в бою,
+призрака, видимого урона, плевка Хиссы и дуэли не прогонялся —
 [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 
 Не перенесены: OA `FIGHT_JOIN` / `FIGHT_HELP`.

@@ -31,6 +31,8 @@ import { UseArtifactCommand } from "../commands/oa/use-artifact-command.ts";
 import { UpgradeCommand } from "../commands/oa/upgrade-command.ts";
 import { UserBagCommand } from "../commands/oa/user-bag-command.ts";
 import { UserFlashMessageCommand } from "../commands/oa/user-flash-message-command.ts";
+import { FriendlyDuelAcceptCommand } from "../commands/oa/friendly-duel-accept-command.ts";
+import { FriendlyDuelProposeCommand } from "../commands/oa/friendly-duel-propose-command.ts";
 import { UserMagicCommand } from "../commands/oa/user-magic-command.ts";
 import { UserPersonalDetailsCommand } from "../commands/oa/user-personal-details-command.ts";
 import { UserSavePersonalDetailsCommand } from "../commands/oa/user-save-personal-details-command.ts";
@@ -43,6 +45,11 @@ import { FproxyCommandRegistry } from "./fproxy-command-registry.ts";
 import { OaCommandRegistry } from "./oa-command-registry.ts";
 import type { PresenceFanout } from "../application/presence-fanout.ts";
 import type { HuntAreaFanout } from "../application/hunt-area-fanout.ts";
+import type { SessionPresence } from "../../identity/ports/session-presence.ts";
+import type { EsrvOutbox } from "../application/esrv-outbox.ts";
+import { AcceptFriendlyDuel } from "../application/accept-friendly-duel.ts";
+import { FriendlyDuelInvites } from "../application/friendly-duel-invites.ts";
+import { ProposeFriendlyDuel } from "../application/propose-friendly-duel.ts";
 
 export class JuggerCommandModule {
   readonly oa: OaCommandRegistry;
@@ -66,8 +73,36 @@ export class JuggerCommandModule {
     huntFanout: HuntAreaFanout,
     storePurchase: StorePurchase,
     storeRepair: StoreRepair,
+    sessions: SessionPresence,
+    outbox: EsrvOutbox,
+    wake: Readonly<{ wake(accountId: number): void }>,
   ) {
     this.fightWire = fightWire;
+    const invites = new FriendlyDuelInvites(clock);
+    const propose = new ProposeFriendlyDuel(
+      characters,
+      sessions,
+      combat,
+      catalog,
+      invites,
+      outbox,
+      wake,
+      clock,
+    );
+    const accept = new AcceptFriendlyDuel(
+      unitOfWork,
+      characters,
+      sessions,
+      combat,
+      catalog,
+      inventory,
+      world,
+      invites,
+      outbox,
+      wake,
+      fightWire,
+      bootstrap,
+    );
     this.oa = new OaCommandRegistry([
       new CommonInitCommand(unitOfWork, characters, bootstrap),
       new CommonInit2Command(unitOfWork, characters, bootstrap),
@@ -82,6 +117,8 @@ export class JuggerCommandModule {
       new UserViewCommand(bootstrap),
       new UserMagicCommand(bootstrap, sheet),
       new UserFlashMessageCommand(bootstrap),
+      new FriendlyDuelProposeCommand(propose),
+      new FriendlyDuelAcceptCommand(accept),
       new ChatConfCommand(bootstrap, sheet),
       new BookQuestListCommand(bootstrap, sheet),
       new EmptyCollectionOaCommand("companion|list_user_companions", "companions", bootstrap),

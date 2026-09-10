@@ -16,6 +16,20 @@ export class PostgresHeroRepository implements HeroRepository {
     return this.loadByAccountId(accountId, false);
   }
 
+  async findByNick(nick: string): Promise<Hero | null> {
+    const trimmed = nick.trim();
+    if (!trimmed) throw new Error("Hero nick is required");
+    const rows = await this.database
+      .session()
+      .select()
+      .from(heroes)
+      .where(sql`lower(${heroes.nick}) = ${trimmed.toLowerCase()}`);
+    if (rows.length > 1) throw new Error(`Hero nick ${trimmed} is not unique`);
+    const row = rows[0];
+    if (!row) return null;
+    return Hero.restore(recordFromRow(row, `hero nick ${trimmed}`));
+  }
+
   async listByAreaId(areaId: string): Promise<readonly Hero[]> {
     if (!areaId) throw new Error("Area id is required");
     const rows = await this.database

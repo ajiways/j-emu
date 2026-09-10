@@ -98,6 +98,7 @@ describe("HuntFightSettlement", () => {
       new SequenceRandom([0, 0, 0, 0]),
     );
     const result = await settlement.persistFinished({
+      mode: "hunt",
       fightId: "9",
       botId: bot.id,
       botLevel: bot.level,
@@ -117,11 +118,51 @@ describe("HuntFightSettlement", () => {
     expect(result.get(10)).toMatchObject({ experience: experience.get(1), money: minMoneyWire });
     expect(result.get(11)).toMatchObject({ experience: experience.get(2), money: "0" });
   });
+
+  it("restores practice HP/MP/pocket and skips loot", async () => {
+    const characters = recordingCharacters();
+    const inventory = recordingInventory();
+    const settlement = new HuntFightSettlement(
+      identityUow(),
+      fakeCatalog(),
+      characters,
+      inventory,
+      new SequenceRandom([0, 0, 0, 0]),
+    );
+    const loot = await settlement.persistFinished({
+      mode: "friendly-practice",
+      fightId: "8",
+      winnerTeam: 1,
+      kind: "win",
+      humans: [
+        { ...human(10, 1, 0, 0), leftLive: false },
+        { ...human(11, 2, 0, 3), leftLive: false },
+      ],
+      restore: [
+        { characterId: 1, hp: 27, mp: 10, pocket: [] },
+        { characterId: 2, hp: 27, mp: 10, pocket: [] },
+      ],
+    });
+    expect(characters.notes).toEqual([
+      { characterId: 1, hp: 27 },
+      { characterId: 2, hp: 27 },
+    ]);
+    expect(characters.mps).toEqual([
+      { characterId: 1, mp: 10 },
+      { characterId: 2, mp: 10 },
+    ]);
+    expect(characters.grants).toEqual([]);
+    expect(characters.credits).toEqual([]);
+    expect(characters.defeats).toEqual([]);
+    expect(inventory.grants).toEqual([]);
+    expect(loot.size).toBe(0);
+  });
 });
 
 function outcome(kind: "win" | "loss", hp: number, damageToBot: number): FightOutcomeSnapshot {
   const bot = playableHuntBot();
   return {
+    mode: "hunt",
     fightId: "9",
     botId: bot.id,
     botLevel: bot.level,
@@ -155,6 +196,7 @@ function identityUow(): UnitOfWork {
 function recordingCharacters() {
   return {
     notes: [] as Array<{ characterId: number; hp: number }>,
+    mps: [] as Array<{ characterId: number; mp: number }>,
     defeats: [] as Array<{ characterId: number; hp: 0 }>,
     grants: [] as Array<{ characterId: number; operationId: string; amount: number }>,
     credits: [] as Array<{ characterId: number; minorUnits: number }>,
@@ -162,8 +204,9 @@ function recordingCharacters() {
       this.notes.push(command);
       return snapshot(command.characterId, command.hp);
     },
-    async noteMp() {
-      throw new Error("unused");
+    async noteMp(command: { characterId: number; mp: number }) {
+      this.mps.push(command);
+      return snapshot(command.characterId, 27);
     },
     async noteDefeat(command: { characterId: number; hp: 0 }) {
       this.defeats.push(command);

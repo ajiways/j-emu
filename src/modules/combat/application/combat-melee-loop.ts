@@ -39,6 +39,12 @@ export class CombatMeleeLoop {
       await this.settleFinished(battle, resolved.events, accountId);
       return;
     }
+    if (battle.kind === "friendly-duel") {
+      this.scheduler.schedule(battle.id, battle.turnGrantDelayMs, () =>
+        this.runGrant(battle.id, battle.opponentAccountId(accountId)),
+      );
+      return;
+    }
     this.scheduleBotAndGrant(battle);
   }
 
@@ -87,7 +93,10 @@ export class CombatMeleeLoop {
     const result = battle.resolveBotMelee();
     this.enqueue(target, result.events);
     this.wakeAccount(target);
-    if (!result.killedPlayer) return;
+    if (!result.killedPlayer) {
+      await this.applyShuffle(battle);
+      return;
+    }
     if (battle.finished) {
       await this.settleFinished(battle, result.events, target);
       return;
@@ -109,6 +118,20 @@ export class CombatMeleeLoop {
     this.wakeAccount(waiter.accountId);
     this.scheduler.schedule(battle.id, battle.turnGrantDelayMs, () =>
       this.runGrant(battle.id, waiter.accountId),
+    );
+  }
+
+  private applyShuffle(battle: Battle): void {
+    const shuffle = battle.tryShuffleAfterHits();
+    if (shuffle.kind !== "waiter-handoff") return;
+    this.scheduler.cancel(battle.id);
+    this.enqueue(shuffle.actorAccountId, [{ type: "opponent-wait" }]);
+    this.wakeAccount(shuffle.actorAccountId);
+    if (!shuffle.waiterAuthed) return;
+    this.enqueue(shuffle.waiterAccountId, shuffle.events);
+    this.wakeAccount(shuffle.waiterAccountId);
+    this.scheduler.schedule(battle.id, battle.turnGrantDelayMs, () =>
+      this.runGrant(battle.id, shuffle.waiterAccountId),
     );
   }
 

@@ -4,10 +4,10 @@
 
 Есть hunt melee loop (raw-AMF L/C/R, delay grant/bot-counter, kill, waiter
 re-pair), map `joinHunt`, CMB-02 pocket/glove/rage casts, CMB-03 terminal
-settlement, CMB-04 reconnect/ghost/RESURRECT, CMB-05 STR-урон и CMB-06
-bot spell book (raw-AMF). Shuffle 3↔3 не в этом срезе. CEF экрана
-результата, F5 в бою, призрака и плевка Хиссы не прогонялся — product
-status combat остаётся частично.
+settlement, CMB-04 reconnect/ghost/RESURRECT, CMB-05 STR-урон, CMB-06
+bot spell book, CMB-07 loot и CMB-08 friendly duel + hunt 3↔3 waiter
+handoff (raw-AMF). Cross-swap двух живых пар и CEF дуэли/shuffle не
+прогонялись — product status combat остаётся частично.
 
 ## Источники поведения
 
@@ -329,6 +329,28 @@ Gryzl **2**: NOTHING 3460 доминирует 77/93/99; unit past NOTHING да�
 
 Quest loot; dungeon personal/chance; party lottery; honor; полный
 `bot_loot_entries` corpus.
+
+## CMB-08 — duels and team shuffle
+
+Срез закрыт (raw-AMF). `FightDuel` на том же `Battle`: hunt human↔bot и
+friendly human↔human. OA `user|friendly_duel_propose` / `accept`; esrv
+`user|friendly_duel_request` и `fight|conf` challenger-у. Invites
+process-local, TTL 60s, fail-fast `203`. Practice settlement возвращает
+HP/MP/pocket, без лута/EXP/травмы; `fight|conf.is_pvp=1`, `type:"6"`.
+После 3↔3 melee hits в hunt с waiter: бот уходит waiter-у, актор
+`oppwait`, HP/loadout без сброса. No-rotate — reset hits. bot↔bot и
+cross-swap двух 3↔3 пар — leftover (в playable slice один бот на точку).
+OA `FIGHT_JOIN` / `FIGHT_HELP` вне среза. CEF не прогонялся.
+
+### Architecture decision
+
+ADR-0017–0020 достаточны. Invites как active fight: RAM, restart →
+«вызов устарел». History type 6 — leftover.
+
+### Out of scope (CMB-08 leftover)
+
+Cross-swap двух живых 3↔3 дуэлей; bot↔bot; charging/DoT на shuffle hits;
+practice finished_fights type 6; real PvP assault; OA FIGHT_JOIN/HELP.
 
 ## Границы модулей
 

@@ -12,7 +12,10 @@ import {
   goldWireString,
   rollMoneyGold,
 } from "../modules/combat/domain/fight-money.ts";
-import type { FightOutcomeSnapshot } from "../modules/combat/domain/fight-outcome-snapshot.ts";
+import type {
+  FightOutcomeSnapshot,
+  PracticeFightOutcomeSnapshot,
+} from "../modules/combat/domain/fight-outcome-snapshot.ts";
 import {
   overlevel,
   scaleMoneyReward,
@@ -68,6 +71,7 @@ export class HuntFightSettlement implements FightSettlement {
   async persistFinished(
     outcome: FightOutcomeSnapshot,
   ): Promise<ReadonlyMap<number, FightLootBlock>> {
+    if (outcome.mode === "friendly-practice") return this.persistPractice(outcome);
     const cached = this.finished.get(outcome.fightId);
     if (cached) return cached;
     const bot = await this.catalog.bot(outcome.botId);
@@ -140,6 +144,30 @@ export class HuntFightSettlement implements FightSettlement {
             artikulList: isTop ? artikulList : [],
           }),
         );
+      }
+    });
+    this.finished.set(outcome.fightId, lootByAccount);
+    return lootByAccount;
+  }
+
+  private async persistPractice(
+    outcome: PracticeFightOutcomeSnapshot,
+  ): Promise<ReadonlyMap<number, FightLootBlock>> {
+    const cached = this.finished.get(outcome.fightId);
+    if (cached) return cached;
+    const lootByAccount = new Map<number, FightLootBlock>();
+    await this.unitOfWork.run(async () => {
+      for (const human of outcome.humans) {
+        const restore = outcome.restore.find((entry) => entry.characterId === human.characterId);
+        if (!restore) {
+          throw new Error(`Friendly duel restore for hero ${human.characterId} is missing`);
+        }
+        await this.characters.noteHp({ characterId: human.characterId, hp: restore.hp });
+        await this.characters.noteMp({ characterId: human.characterId, mp: restore.mp });
+        await this.inventory.refillPocketAfterFight({
+          characterId: human.characterId,
+          cells: restore.pocket,
+        });
       }
     });
     this.finished.set(outcome.fightId, lootByAccount);

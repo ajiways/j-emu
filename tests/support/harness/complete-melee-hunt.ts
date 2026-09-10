@@ -1,6 +1,11 @@
 import type { AuthenticatedClient } from "./authenticated-client.ts";
 import { MAP_HUNT_SPAWN_ID } from "./map-hunt-spawn.ts";
-import { bagItemByArtikulId, framesIncludeFightFinish, huntFightIdFrom } from "./wire-payload.ts";
+import {
+  bagItemByArtikulId,
+  fightEventTypes,
+  framesIncludeFightFinish,
+  huntFightIdFrom,
+} from "./wire-payload.ts";
 
 const STARTER_GLOVE_ARTIKUL = 9095;
 const MAX_MELEE_STRIKES = 40;
@@ -39,32 +44,44 @@ async function finishStartedMeleeHunt(
 }
 
 export async function strikeUntilHuntFinish(
-  client: AuthenticatedClient,
+  opener: AuthenticatedClient,
   elapse: (ms: number) => Promise<void>,
   sequenceStart: number,
+  joiner?: AuthenticatedClient,
 ): Promise<void> {
+  let striker = opener;
   let finished = false;
   for (let strike = 0; strike < MAX_MELEE_STRIKES && !finished; strike += 1) {
-    const castBody = await client.fight({
+    const castBody = await striker.fight({
       rc: "castSpell",
       srcType: 1,
       srcId: 2,
       sq: sequenceStart + strike,
     });
     if (castBody.length !== 0) throw new Error("castSpell must return an empty body");
-    const melee = await client.pollFight();
+    const melee = await striker.pollFight();
     if (framesIncludeFightFinish(melee)) {
       finished = true;
       break;
     }
     await elapse(1400);
-    const bot = await client.pollFight();
-    if (framesIncludeFightFinish(bot)) {
+    const bot = await striker.pollFight();
+    const other = joiner && striker === opener ? joiner : opener;
+    const otherFrames = joiner ? await other.pollFight() : [];
+    if (framesIncludeFightFinish(bot) || framesIncludeFightFinish(otherFrames)) {
       finished = true;
       break;
     }
+    const handedOff =
+      fightEventTypes(bot).includes("oppwait") || fightEventTypes(otherFrames).includes("oppnew");
+    if (joiner && handedOff) {
+      await elapse(2500);
+      await other.pollFight();
+      striker = other;
+      continue;
+    }
     await elapse(1100);
-    await client.pollFight();
+    await striker.pollFight();
   }
   if (!finished) throw new Error("Hunt fight did not finish");
 }

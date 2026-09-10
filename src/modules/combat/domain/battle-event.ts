@@ -49,6 +49,23 @@ export type BattleEvent =
   | Readonly<{ type: "turn-granted"; timeoutSeconds: number }>
   | Readonly<{ type: "turn-wait"; timeoutSeconds: number }>
   | Readonly<{ type: "opponent-new"; bot: HuntBotSnap }>
+  | Readonly<{ type: "opponent-wait" }>
+  | Readonly<{
+      type: "opponent-new-human";
+      human: HuntHumanSnap;
+      appearance: Readonly<{ avatar: string; body: string; sk: string }>;
+    }>
+  | Readonly<{
+      type: "friendly-bootstrap";
+      hero: HuntHumanSnap;
+      opponent: HuntHumanSnap;
+      opponentAppearance: Readonly<{ avatar: string; body: string; sk: string }>;
+      cp: number;
+      cpHits: readonly number[];
+      rage: number;
+      aggro: number;
+      loadout: CombatLoadout;
+    }>
   | Readonly<{ type: "finished"; winnerTeam: 1 | 2; fightId: string }>
   | Readonly<{
       type: "effect-use";

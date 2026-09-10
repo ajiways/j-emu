@@ -105,7 +105,7 @@ describe("hunt spawn lock", () => {
     await a.pollFight();
     await harness.elapseCombat(1100);
     await a.pollFight();
-    await strikeUntilHuntFinish(a, (ms) => harness.elapseCombat(ms), 7);
+    await strikeUntilHuntFinish(a, (ms) => harness.elapseCombat(ms), 7, b);
     await a.pollEsrv();
     expect(huntBotFromEsrv(await b.pollEsrv(), "503").fight_id).toBe(IDLE_HUNT_FIGHT_ID);
   });

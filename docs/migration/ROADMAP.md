@@ -704,12 +704,24 @@
 - **Behavior evidence:** legacy `FIGHT_JOIN.md`, `duel.ts`, `swap.ts`.
 - **Content set:** нет нового контента — чистая механика поверх
   существующего combat loadout.
-- **Architecture checkpoint / decision:** pending — `FightDuel` как generic
-  pairing (human/human, human/bot, bot/bot) поверх того же `Battle`, shuffle
-  3↔3 как реорганизация team-массивов, не новая сущность.
+- **Architecture checkpoint / decision:** действующие ADR-0017–0020
+  достаточны, `ARC-*` нет. Active fight остаётся RAM (ADR-0020). `FightDuel`
+  — pairing + счётчики ударов на том же `Battle` (hunt human↔bot и
+  friendly human↔human). bot↔bot — CMB-09, не этот срез. Shuffle 3↔3 —
+  реорганизация pairing, не новая сущность: `PAIR_HITS_TO_SWITCH = 3`.
+  Playable slice — 1 бот; representative path — 2 hunters × 1 bot, waiter
+  получает бота, актор `oppwait`, HP/loadout без сброса. Cross-swap двух
+  живых 3↔3 пар — leftover (нет второго dump-бота в одной точке). No-rotate
+  — reset hits на месте. Invites process-local, TTL 60s через `Clock`, ключ
+  target accountId; restart/TTL → `203` «вызов устарел». OA
+  `user|friendly_duel_propose` / `accept`; esrv `user|friendly_duel_request`
+  и `fight|conf` challenger-у. Practice settlement восстанавливает HP/MP/
+  pocket, без лута/EXP/травмы; history type 6 — leftover. OA `FIGHT_JOIN` /
+  `FIGHT_HELP` вне среза. CEF не прогоняется.
 - **Acceptance:** friendly duel propose/accept работает между двумя героями;
   shuffle 3↔3 перераспределяет живых участников без потери HP/state.
-- **Status:** `next`
+  CEF не прогонялся — см. [CEF_MANUAL.md](CEF_MANUAL.md).
+- **Status:** `done`
 
 ### CMB-09 — Quest-fight mode hook (engine only)
 
@@ -726,7 +738,7 @@
 - **Acceptance:** внешний вызывающий модуль может запросить fight с
   `mode:quest`-подобным флагом и получить `on_win`/`on_lose` без изменения
   ownership terminal settlement из CMB-03.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### WLD-03 — Hunt wander/respawn as a generic scheduler
 

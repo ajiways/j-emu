@@ -25,6 +25,8 @@ export class OaCommandRegistry {
     "jail|list",
     "user|bag",
     "user|flash_message",
+    "user|friendly_duel_accept",
+    "user|friendly_duel_propose",
     "user|magic",
     "user|personal_details",
     "user|save_personal_details",
