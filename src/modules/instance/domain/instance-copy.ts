@@ -1,6 +1,6 @@
 export type InstanceCopyRecord = Readonly<{
   id: number;
-  copyType: "dungeon";
+  copyType: "dungeon" | "bg";
   artikulId: string;
   createdUnix: number;
   expiresUnix: number;

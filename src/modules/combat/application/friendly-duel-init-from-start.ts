@@ -5,9 +5,10 @@ export function friendlyDuelInitFromStart(
   input: FriendlyDuelStartInput,
   accessKey: string,
   startedAt: Date,
+  kind: "friendly-duel" | "pvp",
 ): FriendlyDuelBattleInit {
   return {
-    kind: "friendly-duel",
+    kind,
     fightId: input.fightId,
     accessKey,
     arena: input.arena,

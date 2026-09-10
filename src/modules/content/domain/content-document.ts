@@ -8,9 +8,10 @@ import type {
   WelcomeMessageDocument,
 } from "./bootstrap-content.ts";
 import type { DungeonDocument } from "./content-dungeon.ts";
+import type { BattlegroundDocument } from "./content-battleground.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v22";
-export const CONTENT_VALIDATOR_VERSION = "22";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v23";
+export const CONTENT_VALIDATOR_VERSION = "23";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;
@@ -182,6 +183,7 @@ export type AreaDocument = Readonly<{
   hideFinishedFights: number;
   hideRunningFights: number;
   noClanChat: number;
+  bgId: string;
 }>;
 
 type AreaLinkHrefDocument = Readonly<{
@@ -300,6 +302,7 @@ export type ContentBundle = Readonly<{
   areaLinks: readonly AreaLinkDocument[];
   huntSpawns: readonly HuntSpawnDocument[];
   dungeons: readonly DungeonDocument[];
+  battlegrounds: readonly BattlegroundDocument[];
   storeTypes: readonly StoreTypeDocument[];
   storeLots: readonly StoreLotDocument[];
   reputationTracks: readonly ReputationTrackDocument[];
@@ -322,6 +325,7 @@ export type ContentEntry = Readonly<{
     | "area_link"
     | "hunt_spawn"
     | "dungeon"
+    | "battleground"
     | "store_type"
     | "store_lot"
     | "reputation_track"
@@ -343,6 +347,7 @@ export type ContentEntry = Readonly<{
     | AreaLinkDocument
     | HuntSpawnDocument
     | DungeonDocument
+    | BattlegroundDocument
     | StoreTypeDocument
     | StoreLotDocument
     | ReputationTrackDocument
@@ -367,6 +372,7 @@ export type ValidatedContentBundle = Readonly<{
   areaLinks: readonly AreaLinkDocument[];
   huntSpawns: readonly HuntSpawnDocument[];
   dungeons: readonly DungeonDocument[];
+  battlegrounds: readonly BattlegroundDocument[];
   storeTypes: readonly StoreTypeDocument[];
   storeLots: readonly StoreLotDocument[];
   reputationTracks: readonly ReputationTrackDocument[];

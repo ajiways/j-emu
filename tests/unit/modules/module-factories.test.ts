@@ -39,6 +39,8 @@ import type { PlayableAccountRegistration } from "../../../src/app/playable-acco
 import type { PlayableDevelopmentIdentity } from "../../../src/app/playable-development-identity.ts";
 import type { Catalog } from "../../../src/modules/catalog/ports/catalog.ts";
 import type { DungeonCatalog } from "../../../src/modules/catalog/ports/dungeon-catalog.ts";
+import type { BattlegroundCatalog } from "../../../src/modules/battleground/ports/battleground-catalog.ts";
+import type { InstanceService } from "../../../src/modules/instance/application/instance-service.ts";
 import type { CatalogProgression } from "../../../src/modules/catalog/ports/catalog-progression.ts";
 import type { ReputationCatalog } from "../../../src/modules/catalog/ports/reputation-catalog.ts";
 import type { ReleaseArtifacts } from "../../../src/modules/catalog/ports/release-artifacts.ts";
@@ -377,6 +379,10 @@ describe("module factories", () => {
         instanceHunt: {} as InstanceHuntWorld,
         instanceDesk: {} as InstanceDesk,
         dungeonHunt: {} as DungeonHuntWorld,
+        battlegrounds: {} as BattlegroundCatalog,
+        instances: {} as InstanceService,
+        database: {} as PostgresDatabase,
+        delay: combatDelay,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -521,6 +527,47 @@ describe("module factories", () => {
         instanceHunt: {} as InstanceHuntWorld,
         instanceDesk: {} as InstanceDesk,
         dungeonHunt: {} as DungeonHuntWorld,
+        battlegrounds: {
+          list: async () => {
+            throw new Error("Battleground catalog list is not bound in this factory test");
+          },
+          byKey: async () => {
+            throw new Error("Battleground catalog byKey is not bound in this factory test");
+          },
+          playable: async () => ({
+            id: 2,
+            type: "general",
+            title: "Раскоп",
+            flags: 2,
+            available: 1,
+            queueLevel: "[6 - 7]",
+            error: "",
+            playable: true,
+            instArtikulId: "10",
+            levelMin: 6,
+            levelMax: 7,
+            returnAreaId: "500",
+            westAreaId: "635",
+            arenaAreaId: "636",
+            eastAreaId: "637",
+            inviteTtlSec: 120,
+            banSec: 3600,
+            matchDurationSec: 600,
+            maxScore: 20,
+            pointsPerKill: 20,
+            fightBg: "5_1",
+            fightFlags: "128",
+            mapPicture: "m",
+            statsPicture: "s",
+            description: "d",
+            rules: "r",
+            roomPos: [],
+            leaderGroups: [],
+          }),
+        } as BattlegroundCatalog,
+        instances: {} as InstanceService,
+        database: {} as PostgresDatabase,
+        delay: combatDelay,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

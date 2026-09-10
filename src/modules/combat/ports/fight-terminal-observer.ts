@@ -3,7 +3,7 @@ export type FightFinishedNotice = Readonly<{
   fightId: string;
   winnerTeam: 1 | 2;
   outcome: "win" | "loss" | "last-leave";
-  purpose: "hunt" | "quest" | "friendly-duel";
+  purpose: "hunt" | "quest" | "friendly-duel" | "pvp";
 }>;
 
 export interface FightTerminalObserver {

@@ -33,6 +33,15 @@ import {
   dungeons,
 } from "../../../src/modules/catalog/infrastructure/schema-dungeons.ts";
 import {
+  battlegroundLeaderGroups,
+  battlegroundRooms,
+  battlegrounds,
+} from "../../../src/modules/catalog/infrastructure/schema-battlegrounds.ts";
+import {
+  finishedMatches,
+  finishedPlayers,
+} from "../../../src/modules/battleground/infrastructure/schema.ts";
+import {
   experienceGrants,
   heroes,
   heroLearnedBonuses,
@@ -84,10 +93,11 @@ describe("Drizzle migrations", () => {
   it("creates only the live module schemas and tables", async () => {
     const schemas = await names(
       sql`SELECT schema_name AS name FROM information_schema.schemata
-          WHERE schema_name IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','quests','social','economy')`,
+          WHERE schema_name IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','battleground','quests','social','economy')`,
     );
     expect(schemas.sort()).toEqual([
       "auction",
+      "battleground",
       "catalog",
       "character",
       "combat",
@@ -103,12 +113,14 @@ describe("Drizzle migrations", () => {
     const tables = await names(
       sql`SELECT table_schema || '.' || table_name AS name
           FROM information_schema.tables
-          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance')
+          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','battleground')
             AND table_type = 'BASE TABLE'`,
     );
     expect(tables.sort()).toEqual(
       [
         "auction.listings",
+        "battleground.finished_matches",
+        "battleground.finished_players",
         "catalog.appearance_presets",
         "catalog.artifacts",
         "catalog.bonuses",
@@ -122,6 +134,9 @@ describe("Drizzle migrations", () => {
         "catalog.dungeon_spawn_zones",
         "catalog.dungeon_spawns",
         "catalog.dungeons",
+        "catalog.battlegrounds",
+        "catalog.battleground_rooms",
+        "catalog.battleground_leader_groups",
         "catalog.game_wide_documents",
         "catalog.level_boundaries",
         "catalog.level_skill_values",
@@ -177,6 +192,9 @@ describe("Drizzle migrations", () => {
       dungeonSpawnEncounters,
       dungeonSpawnRoutes,
       dungeonSpawnZones,
+      battlegrounds,
+      battlegroundRooms,
+      battlegroundLeaderGroups,
       skillDefinitions,
       levelBoundaries,
       levelSkillValues,
@@ -207,6 +225,8 @@ describe("Drizzle migrations", () => {
       copies,
       binds,
       killedSpawns,
+      finishedMatches,
+      finishedPlayers,
       finishedFights,
       drafts,
       draftVersions,
@@ -214,7 +234,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(50);
+    ]).toHaveLength(55);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -237,6 +257,7 @@ describe("Drizzle migrations", () => {
       "0013_party_bag_items.sql",
       "0014_instance_foundation.sql",
       "0015_catalog_dungeon_spawn_zone.sql",
+      "0016_battleground_history_and_copy_type.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -258,8 +279,9 @@ describe("Drizzle migrations", () => {
       "0013_party_bag_items",
       "0014_instance_foundation",
       "0015_catalog_dungeon_spawn_zone",
+      "0016_battleground_history_and_copy_type",
     ]);
-    expect(await appliedCount()).toBe(16);
+    expect(await appliedCount()).toBe(17);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );

@@ -38,6 +38,7 @@ export const areas = worldSchema.table(
     soundIntro: text("sound_intro").notNull(),
     soundBg: text("sound_bg").notNull(),
     instArtikulId: integer("inst_artikul_id").notNull(),
+    bgId: text("bg_id").notNull(),
     haveTradeChannel: integer("have_trade_channel").notNull(),
     haveKindChannel: integer("have_kind_channel").notNull(),
     hideFinishedFights: integer("hide_finished_fights").notNull(),

@@ -1,7 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { friendlyAuthenticateEvents, huntAuthenticateEvents } from "./battle-authenticate.ts";
-import { friendlyHuman, huntJoiner, huntOpener, isFriendlyDuelInit } from "./battle-fighters.ts";
+import { friendlyHuman, huntJoiner, huntOpener, isHumanDuelInit } from "./battle-fighters.ts";
 import { FightDuel } from "./fight-duel.ts";
 import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
@@ -34,7 +34,7 @@ import type { FightOutcomeKind, FightOutcomeSnapshot } from "./fight-outcome-sna
 import type { ShuffleOutcome } from "./try-shuffle-after-hits.ts";
 
 export class Battle {
-  readonly kind: "hunt" | "friendly-duel";
+  readonly kind: "hunt" | "friendly-duel" | "pvp";
   readonly id: string;
   readonly accessKey: string;
   readonly arena: string;
@@ -63,9 +63,9 @@ export class Battle {
     this.turnTimeoutSeconds = rules.turnTimeoutSeconds;
     this.meleeBotCounterMs = rules.meleeBotCounterMs;
     this.turnGrantDelayMs = rules.turnGrantDelayMs;
-    if (isFriendlyDuelInit(init)) {
+    if (isHumanDuelInit(init)) {
       requireFriendlyDuelBattleInit(init, rules);
-      this.kind = "friendly-duel";
+      this.kind = init.kind;
       this.botHpValue = null;
       this.pairedAccountIdValue = init.challenger.accountId;
       this.humans.push(
@@ -96,8 +96,8 @@ export class Battle {
   get finished(): boolean {
     return this.finishedValue;
   }
-  get purpose(): "hunt" | "quest" | "friendly-duel" {
-    return this.kind === "friendly-duel" ? "friendly-duel" : this.huntInit().purpose;
+  get purpose(): "hunt" | "quest" | "friendly-duel" | "pvp" {
+    return this.kind === "hunt" ? this.huntInit().purpose : this.kind;
   }
 
   huntHistory() {
@@ -172,7 +172,7 @@ export class Battle {
     if (human.authed) throw new Error("Fight session is already authenticated");
     const resume = human.takeResume();
     human.authed = true;
-    if (this.kind === "friendly-duel") {
+    if (isHumanDuelInit(this.init)) {
       return friendlyAuthenticateEvents({
         human,
         opponent: this.requireHuman(this.opponentAccountId(accountId)),
@@ -376,7 +376,7 @@ export class Battle {
   }
 
   private huntInit(): HuntBattleInit {
-    if (isFriendlyDuelInit(this.init)) throw new Error("Friendly duel has no hunt bot");
+    if (isHumanDuelInit(this.init)) throw new Error("Human duel has no hunt bot");
     return this.init;
   }
 

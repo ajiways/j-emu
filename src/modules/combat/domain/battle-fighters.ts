@@ -10,6 +10,12 @@ export function isFriendlyDuelInit(
   return "kind" in init && init.kind === "friendly-duel";
 }
 
+export function isHumanDuelInit(
+  init: HuntBattleInit | FriendlyDuelBattleInit,
+): init is FriendlyDuelBattleInit {
+  return "kind" in init && (init.kind === "friendly-duel" || init.kind === "pvp");
+}
+
 export function huntOpener(init: HuntBattleInit): HuntHuman {
   return new HuntHuman({
     accountId: init.accountId,

@@ -115,9 +115,9 @@ export class CombatTerminal {
       this.queueExit(accountId, battle.id, exit);
       this.wakeAccount(accountId);
     }
-    await this.notifyFinished(battle, kind, winnerTeam);
     for (const accountId of battle.accountIds()) this.byAccount.delete(accountId);
     this.battleByFight.delete(battle.id);
+    await this.notifyFinished(battle, kind, winnerTeam);
   }
 
   private async notifyFinished(

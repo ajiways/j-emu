@@ -7,13 +7,13 @@ const maxLines = 400;
 const reviewThreshold = 250;
 const lineJustifications: Readonly<Record<string, string>> = {
   "src/app/composition-root.ts":
-    "Wires identity through mail/auction/trade/chat/party/instance composition UoW and shared DelayScheduler sweeps",
+    "Wires identity through mail/auction/trade/chat/party/instance/battleground composition UoW and shared DelayScheduler sweeps",
   "src/modules/auction/infrastructure/postgres-listing-repository.ts":
     "Auction listing rows plus snapshot columns, search filters, and FOR UPDATE lock/sweep",
   "src/modules/jugger-wire/jugger-wire-module.ts":
-    "HTTP/TCP servers and OA command module factory including mail, auction, trade, chat, party, and instance ports",
+    "HTTP/TCP servers and OA command module factory including mail, auction, trade, chat, party, instance, and battleground ports",
   "src/modules/jugger-wire/registry/jugger-command-module.ts":
-    "Static OA command constructors including mail, auction, trade, chat, party, and instance ports",
+    "Static OA command constructors including mail, auction, trade, chat, party, instance, and battleground ports",
   "src/modules/character/application/character-service.ts":
     "Character application facade: progression, resources, money, reputation, learn-bonus, location, and presence",
   "src/modules/character/infrastructure/postgres-hero-repository.ts":
@@ -21,9 +21,9 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/world/domain/hunt-wander.ts":
     "Hunt live motion: route, zone, home park, lock freeze, and respawn hide",
   "src/modules/content/domain/parse-content-bundle.ts":
-    "Zod playable-slice document including store lot pay/requires, reputation, bonuses, use scripts, bot spell books, hunt wander fields, and dungeons",
+    "Zod playable-slice document including store lot pay/requires, reputation, bonuses, use scripts, bot spell books, hunt wander fields, dungeons, and battlegrounds",
   "src/modules/content/domain/content-document.ts":
-    "Playable bundle DTO including store pay/requires, reputation, bonuses, use scripts, artifacts, bot spell books, areas, hunt wander, dungeons, and bootstrap documents",
+    "Playable bundle DTO including store pay/requires, reputation, bonuses, use scripts, artifacts, bot spell books, areas, hunt wander, dungeons, battlegrounds, and bootstrap documents",
   "src/modules/character/domain/hero.ts":
     "Hero aggregate owns vitals, money, location lock, instance copy presence, and CMB-04 ghost/injury clock",
   "src/modules/combat/application/combat-service.ts":
@@ -31,7 +31,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/combat/domain/battle.ts":
     "Hunt/friendly Battle owns FightDuel pairing, CMB-08 shuffle/waiter handoff, melee, CMB-06 bot turns, casts, and CMB-04 resume",
   "src/modules/content/application/content-validator.ts":
-    "Single bundle completeness gate including store 504/552 pay and RANK, reputation, set bonuses, USE representatives, fight extra blobs, bot loot, bot spell books, and dungeon definitions",
+    "Single bundle completeness gate including store 504/552 pay and RANK, reputation, set bonuses, USE representatives, fight extra blobs, bot loot, bot spell books, dungeon definitions, and battlegrounds",
   "src/modules/inventory/domain/inventory-service.ts":
     "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag, INV-05 repair, INV-06 upgrade, INV-07 set-bonus, INV-08 USE/drink, ECO-02 barter consume-by-artikul, MAIL-02 instance take/snapshot grant, AUC-01 auction take, and TRD-01 trade take",
   "src/modules/mail/infrastructure/postgres-letter-repository.ts":
@@ -41,7 +41,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/catalog/infrastructure/postgres-catalog.ts":
     "Active-release catalog reads for artifacts, bots, spell books, skills, store, reputation, bonuses, and use scripts",
   "src/modules/catalog/infrastructure/postgres-catalog-projection.ts":
-    "Active-release materialization for artifacts, bots, store, reputation, and dungeon catalog rows",
+    "Active-release materialization for artifacts, bots, store, reputation, dungeon, and battleground catalog rows",
   "src/modules/jugger-wire/application/bootstrap-read-model.ts":
     "Flat OA bootstrap/mutation blocks including drink purge, USE mutation, CMB-04 init2 fight|conf, SOC-02 party restore, and dungeon hunt",
   "src/app/chat-desk.ts":
@@ -58,6 +58,10 @@ const lineJustifications: Readonly<Record<string, string>> = {
     "Hunt finish UoW: EXP/money/loot plus party money split and deferred bag deposit",
   "src/app/party-join-ops.ts":
     "Party invite/confirm/join windows and dump join_confirm pending path",
+  "src/app/battleground-match-runtime.ts":
+    "Раскоп match: create bg copy, teleport sides, ATTACK PvP, score/timeout finish, history, and kick 500",
+  "src/modules/battleground/domain/battleground-wire.ts":
+    "Dump list overlay, invite window, instance map, live/finish stats, typed history, and leader-rating chrome",
   "src/modules/party/application/party-service.ts":
     "Party membership mutations: create/kick/leave/disband/leader/settings with FOR UPDATE",
   "src/modules/party/application/party-join-service.ts":

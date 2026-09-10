@@ -48,14 +48,15 @@ Travel lock — `character.heroes.move_ready_at` (`timestamptz`, `NULL` = мож
 ADR-0017…ADR-0020 достаточны: одна UoW на команду, typed static OA, content
 через active release, fail-fast без fixture fallback. Presence `131:` /
 `notifyAreaMove` — **RTM-01**. Hunt locks — **WLD-02**. Store lots / rank
-gates / `store|*` — ECO-01/ECO-02 (raw-AMF; CEF не прогонялся). Dungeon/BG copies и `common|instance_conf` —
-не этот срез.
+gates / `store|*` — ECO-01/ECO-02 (raw-AMF; CEF не прогонялся). Dungeon copies —
+[INSTANCE.md](INSTANCE.md). BG copies — [BATTLEGROUND.md](BATTLEGROUND.md);
+world владеет authored rooms и `bgId`.
 
 Именованное `FightRules`: активный бой → COME_IN и `common|exit` дают
 `status:203` `нельзя во время боя` (live `fightBusy`). Это не live-исключение
 для PUT_ON; для travel live уже режет.
 
-### Content set (`playable-slice/v22`)
+### Content set (`playable-slice/v23`)
 
 Dump-proven subset, не весь L1–8 (это DATA-04 corpus):
 
@@ -73,6 +74,10 @@ Dump-proven subset, не весь L1–8 (это DATA-04 corpus):
 | 673  | Заброшенная усадьба | 30          | `""`    | `inst_usadba.swf` / `2_1`              |
 | 495  | Площадь Бранендаля  | 0           | `""`    | `branendal_ploshad.swf` / `2_1`        |
 | 552  | Арсенал             | 0           | `store` | `branendal_ploshad.swf` / `2_1`        |
+| 500  | Перекресток         | 0           | `""`    | `perekrestok.swf` / `2_1`              |
+| 635  | Западный лагерь     | 20          | `""`    | `bg1_baza.swf` / `5_1`                 |
+| 636  | Раскоп              | 20          | `""`    | `bg1_shahta3.swf` / `5_1`              |
+| 637  | Восточный лагерь    | 20          | `""`    | `bg1_baza_2.swf` / `5_1`               |
 
 Provenance: `radvei_areas.json` + `AREA_SIDEBAR.md`. Не публиковать 498, 502,
 NPC `href`, AREA-attack (Грызл/Хисса). Area 542/654/653/673 — dungeon starts,
@@ -95,21 +100,25 @@ Authored **travel links only** (sidebar `(flags & 0x10) == 0`):
 | 653  | 10        | Выход               | 2048  | 1           | 651 |
 | 499  | 11        | Заброшенная усадьба | 256   | 0           | 673 |
 | 673  | 5         | Выход               | 2048  | 3           | 499 |
+| 635  | 6         | К раскопу           | 0     | 3           | 636 |
+| 636  | 1         | К западному лагерю  | 0     | 4           | 635 |
+| 636  | 6         | К восточному лагерю | 0     | 3           | 637 |
+| 637  | 1         | К раскопу           | 0     | 4           | 636 |
 
 Картинки/описания — как в dump (`?ux=` оставлять). `href` всегда
 `{ object:"common", action:"action", form:{ code:"COME_IN", area_id:<number> } }`.
 `to_id` — строка dest. `confirm_question` — `""`.
 
 `parent_id`: 504 → `"503"`; 552 → `"495"`; 654 → `"541"`; 653 → `"651"`;
-673 → `"499"`; 501, 503, 495, 541, 651, 499 → `""` (dump `498`/`508`
+673 → `"499"`; 635/636/637 → `"500"`; 501, 503, 495, 541, 651, 499, 500 → `""` (dump `498`/`508`
 не в slice; dump parent **494** площади тоже нет в `radvei_areas.json`
 `areas` keys — это gap, не relocated shop). Walk 503→495/552 нет. ECO-02
 публикует dump-двери 495 item 238 flags 16 → 552 и 552 item 0 exit → 495;
 e2e Арсенала ставит area через `characterLocation.setArea`, не COME_IN из
-деревни. Скаляры, которых нет в `radvei_areas` (sounds,
+деревни. Walk 503→500 нет: kick/teleport BG-01. Скаляры, которых нет в `radvei_areas` (sounds,
 `context`, channel flags): пустые строки / `0`. Не копировать village
 ambience 503 на 501/504. `client_data` остаётся `""`. Hunt на 501/504 — пустой
-массив, не подставлять 50310.
+массив, не подставлять 50310. Rooms 635/636/637 несут `bgId:"2"`.
 
 Невалидная ссылка (to-area нет в bundle, link с NPC href, parent не в
 release) отклоняет весь candidate release.

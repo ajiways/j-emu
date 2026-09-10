@@ -280,6 +280,19 @@ copy/bind и killed spawns. CEF данжа не прогонялся.
 `has_clear: true` fixtures (2/4/6/7), POST-03 mass importer, daily 06:00 MSK
 wipe.
 
+## Battlegrounds — частично
+
+Есть raw-AMF и PostgreSQL: `arena|list` / `bg_request` add+confirm для
+Раскопа `general|2` (L6–L7), isolated `copy_type='bg'` (rooms 635/636/637),
+`ATTACK` PvP `is_pvp:1` `type:"1"` `flags:"128"` до 20 очков, ordered
+`arena|bg_finish`, typed `battleground.finished_*`, kick в 500. Restart
+роняет RAM queue/match и выкидывает orphan из комнат на `common|init`.
+Deny очереди status **2**. CEF Раскопа не прогонялся.
+
+Не перенесены heroism/fairness seal (HERO-01), остальные BG-карты (POST-04),
+slaughter/fortress/companion, заполнение `arena|leader_rating`, overlay
+урона/EXP на stats.
+
 ## После core — не перенесено
 
 Полный корпус магазинов (DATA-05).
@@ -308,7 +321,7 @@ kill/duel/fatality/daily, type:2 только при value > 0, всегда SUM
 
 ## Вне первой волны
 
-Professions, dungeons, battlegrounds, achievements, daily quests, heroism,
+Professions, achievements, daily quests, heroism,
 gear spells, info pages и content editor.
 
 Clan и встроенные playerbots не переносятся.

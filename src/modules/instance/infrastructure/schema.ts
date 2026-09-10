@@ -21,7 +21,7 @@ export const copies = instanceSchema.table(
   },
   (table) => [
     check("copies_id_check", sql`${table.id} > 0`),
-    check("copies_copy_type_check", sql`${table.copyType} = 'dungeon'`),
+    check("copies_copy_type_check", sql`${table.copyType} IN ('dungeon', 'bg')`),
     check("copies_created_unix_check", sql`${table.createdUnix} > 0`),
     check("copies_expires_unix_check", sql`${table.expiresUnix} > ${table.createdUnix}`),
     check("copies_pending_kick_check", sql`${table.pendingKick} IN (0, 1)`),

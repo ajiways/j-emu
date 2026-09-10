@@ -30,6 +30,7 @@ describe("instance copy liveness", () => {
     };
     expect(isCopyLive(copy, 199)).toBe(true);
     expect(isCopyLive(copy, 200)).toBe(false);
+    expect(isCopyLive({ ...copy, copyType: "bg", artikulId: "10" }, 199)).toBe(true);
   });
 });
 

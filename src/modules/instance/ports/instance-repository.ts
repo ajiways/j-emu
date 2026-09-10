@@ -1,7 +1,7 @@
 import type { InstanceBindRecord, InstanceCopyRecord } from "../domain/instance-copy.ts";
 
 export type NewInstanceCopy = Readonly<{
-  copyType: "dungeon";
+  copyType: "dungeon" | "bg";
   artikulId: string;
   createdUnix: number;
   expiresUnix: number;

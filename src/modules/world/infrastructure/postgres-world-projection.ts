@@ -33,6 +33,7 @@ export class PostgresWorldProjection implements WorldProjection {
           soundIntro: area.soundIntro,
           soundBg: area.soundBg,
           instArtikulId: area.instArtikulId,
+          bgId: area.bgId,
           haveTradeChannel: area.haveTradeChannel,
           haveKindChannel: area.haveKindChannel,
           hideFinishedFights: area.hideFinishedFights,

@@ -234,6 +234,15 @@ describe("ContentValidator", () => {
       }),
     ).toThrow(/reputation track 5 is required/);
   });
+
+  it("rejects a bundle without exactly one playable battleground", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        battlegrounds: [],
+      }),
+    ).toThrow(/expected one playable battleground/);
+  });
 });
 
 describe("parseContentBundle", () => {

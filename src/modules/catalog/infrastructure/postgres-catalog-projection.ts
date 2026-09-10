@@ -11,6 +11,7 @@ import type {
 import { managedSkillSourceDigest } from "../../content/domain/progression-curve.ts";
 import type { ArtifactDocument, BotDocument } from "../../content/domain/content-document.ts";
 import type {
+  CatalogBattlegroundMaterialization,
   CatalogDungeonMaterialization,
   CatalogMaterialization,
   CatalogProjection,
@@ -22,6 +23,7 @@ import { insertStoreLots, insertStoreTypes } from "./postgres-catalog-store-rows
 import { insertBonuses, insertUseScripts } from "./postgres-catalog-use-rows.ts";
 import { insertBotSpellBooks } from "./postgres-catalog-bot-spell-rows.ts";
 import { insertDungeons } from "./postgres-catalog-dungeon-rows.ts";
+import { insertBattlegrounds } from "./postgres-catalog-battleground-rows.ts";
 import {
   appearancePresets,
   artifacts,
@@ -75,6 +77,13 @@ export class PostgresCatalogProjection implements CatalogProjection {
     documents: CatalogDungeonMaterialization,
   ): Promise<void> {
     await insertDungeons(this.database.session(), releaseId, documents.dungeons);
+  }
+
+  async materializeBattlegrounds(
+    releaseId: string,
+    documents: CatalogBattlegroundMaterialization,
+  ): Promise<void> {
+    await insertBattlegrounds(this.database.session(), releaseId, documents.battlegrounds);
   }
 }
 

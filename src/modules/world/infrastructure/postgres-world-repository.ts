@@ -49,6 +49,7 @@ export class PostgresWorldRepository implements WorldRepository {
       area.hideFinishedFights,
       area.hideRunningFights,
       area.noClanChat,
+      area.bgId,
       spawns.map((row) => spawnFromRow(row)),
     );
   }

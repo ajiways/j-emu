@@ -19,6 +19,7 @@ export class Area {
     readonly hideFinishedFights: number,
     readonly hideRunningFights: number,
     readonly noClanChat: number,
+    readonly bgId: string,
     readonly spawns: readonly HuntSpawn[],
   ) {
     if (!id) throw new Error("Area id is required");
@@ -26,5 +27,6 @@ export class Area {
     if (!map) throw new Error(`Area ${id} is missing map SWF`);
     if (!fightBackground) throw new Error(`Area ${id} is missing fight background`);
     if (!regionMap) throw new Error(`Area ${id} is missing region_map`);
+    if (typeof bgId !== "string") throw new Error(`Area ${id} bgId is required`);
   }
 }

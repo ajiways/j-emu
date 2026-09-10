@@ -305,7 +305,7 @@ Content: Грызль **2** пустая книга / 50310; Хисса **4** sp
 рыжий грызль **24** **394** `magic_direct` / 50103. Execution blob на
 карточке книги (нет type_id 72 dump). Catalog tables
 `catalog.bot_spell_books` / `bot_spell_book_spells`. Schema
-`playable-slice/v22`. CEF плевка Хиссы не прогонялся.
+`playable-slice/v23`. CEF плевка Хиссы не прогонялся.
 
 ### Architecture decision
 
@@ -360,7 +360,8 @@ ADR-0017–0020 достаточны. Invites как active fight: RAM, restart 
 ### Out of scope (CMB-08 leftover)
 
 Cross-swap двух живых 3↔3 дуэлей; bot↔bot; charging/DoT на shuffle hits;
-practice finished_fights type 6; real PvP assault; hunt join team 2.
+practice finished_fights type 6; hunt join team 2. Real PvP assault —
+BG-01, контракт [BATTLEGROUND.md](BATTLEGROUND.md).
 
 ## CMB-09 — quest-fight mode hook
 

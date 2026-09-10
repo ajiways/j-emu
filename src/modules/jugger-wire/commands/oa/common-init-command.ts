@@ -3,6 +3,7 @@ import { withSyncedResources } from "../../application/with-synced-resources.ts"
 import type { CharacterService } from "../../../character/application/character-service.ts";
 import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
 import type { OaCommand, OaEncodedResponse } from "./oa-command.ts";
+import type { BattlegroundDesk } from "../../../../app/battleground-desk.ts";
 
 export class CommonInitCommand implements OaCommand {
   static readonly key = "common|init";
@@ -12,9 +13,11 @@ export class CommonInitCommand implements OaCommand {
     private readonly unitOfWork: UnitOfWork,
     private readonly characters: CharacterService,
     private readonly bootstrap: BootstrapReadModel,
+    private readonly battleground: Pick<BattlegroundDesk, "reconcileAccount">,
   ) {}
 
   async execute(accountId: number): Promise<OaEncodedResponse> {
+    await this.battleground.reconcileAccount(accountId);
     return {
       kind: "flat",
       blocks: await withSyncedResources(this.unitOfWork, this.characters, accountId, () =>

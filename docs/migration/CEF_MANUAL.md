@@ -48,6 +48,14 @@ product-status только вместе с CEF-фактом в `CAPABILITIES.md
       653; L12+ в 499 → усадьба 673. Родители в slice без walk от 503 —
       поставить area штатным travel, когда двери станут достижимы, не patch БД.
 
+## Battleground
+
+- [ ] BG-01: два героя L6 и L7, `arena|list` Раскоп, `bg_request` add+confirm,
+      телепорт 637/635, COME_IN 636, ATTACK по нику до 20 очков, `arena|bg_finish`
+      и kick в 500.
+- [ ] BG-01 leftover: invite TTL 120s → бан часа; F5 в комнате без RAM match
+      выкидывает в 500.
+
 ## World / economy / HUD
 
 - [ ] Store CEF: лавка 504 вкладка оружия, лоты 23/24, покупка, отказ

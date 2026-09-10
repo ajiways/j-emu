@@ -34,6 +34,9 @@ function fakeCombat(): CombatPort {
     startFriendlyDuel: async () => {
       throw new Error("unused");
     },
+    startPvp: async () => {
+      throw new Error("unused");
+    },
     hasFight: async () => false,
     nextFightId: async () => {
       throw new Error("unused");

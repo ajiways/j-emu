@@ -13,6 +13,7 @@ import {
 import { storeLotsSchema, storeTypesSchema } from "./parse-store-content.ts";
 import { reputationTracksSchema } from "./parse-reputation-content.ts";
 import { dungeonsSchema } from "./parse-dungeon-content.ts";
+import { battlegroundsSchema } from "./parse-battleground-content.ts";
 import { bonusDocumentSchema, useScriptDocumentSchema } from "./parse-use-content.ts";
 
 const flag = z.union([z.literal(0), z.literal(1)]);
@@ -262,6 +263,7 @@ const areaSchema = z
     hideFinishedFights: flag,
     hideRunningFights: flag,
     noClanChat: flag,
+    bgId: z.string(),
   })
   .strict();
 
@@ -369,6 +371,7 @@ const bundleSchema = z
     areaLinks: z.array(areaLinkSchema),
     huntSpawns: z.array(huntSpawnSchema),
     dungeons: dungeonsSchema,
+    battlegrounds: battlegroundsSchema,
     storeTypes: storeTypesSchema,
     storeLots: storeLotsSchema,
     reputationTracks: reputationTracksSchema,

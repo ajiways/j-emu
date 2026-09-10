@@ -2,7 +2,7 @@
 
 Документ описывает ownership target. Реализованы `identity`, `character`,
 `inventory`, `catalog`, `world`, `combat`, `content`, `mail`, `auction`,
-`trade`, `chat`, `party`, `instance` и `jugger-wire`, но их полный target API ещё не перенесён. `quests`,
+`trade`, `chat`, `party`, `instance`, `battleground` и `jugger-wire`, но их полный target API ещё не перенесён. `quests`,
 `social`, `economy` и `professions` ниже являются планом, а не
 возможностями runtime.
 Фактический статус находится в [CAPABILITIES.md](../CAPABILITIES.md).
@@ -43,7 +43,11 @@ area presence roster:
 - `party` — `party.parties` / `party_members` / `party_invites` /
   `party_bag_items`. Target `social` groups ещё план.
 - `instance` — `instance.copies` / `binds` / `killed_spawns`, dungeon hunt
-  RAM overlay, COME_IN ogre/kopi/tomb/usadba. BG/clear/loot bands — leftover / BG-01.
+  RAM overlay, COME_IN ogre/kopi/tomb/usadba, `copy_type` `dungeon|bg`.
+  Clear/loot bands — leftover.
+- `battleground` — RAM queue/invite/ban/live score, typed
+  `battleground.finished_*`, Раскоп `general|2` (rooms 635/636/637, return
+  500). POST-04 / HERO-01 leftover.
 - Репутация Радвея **5** есть (REP-01, product частично).
   `quests`, `economy`, `professions` в runtime нет.
 
@@ -271,6 +275,20 @@ composition / jugger-wire. Контракт: [INSTANCE.md](../modules/INSTANCE.m
 
 **Шов извлечения:** не цель DNG-02. Target `instances` events ниже не
 копировать в runtime.
+
+### `battleground` — BG-01
+
+**Владеет:** RAM queue/invite/ban/live score, typed
+`battleground.finished_matches` / `finished_players`, Раскоп catalog card.
+Не владеет copy row (`instance` `copy_type='bg'`), outdoor areas и active
+PvP.
+
+**API:** composition `BattlegroundDesk` (`arena|*`, `ATTACK`); queue
+`add`/`delete`/`confirm`; history `record`/`list`. Контракт:
+[BATTLEGROUND.md](../modules/BATTLEGROUND.md).
+
+**Шов извлечения:** не цель BG-01. Combat не импортирует battleground;
+composition overlays PvP `type:"1"` / `flags:"128"`.
 
 ### `content`
 

@@ -178,6 +178,13 @@ export class Hero {
     this.instanceCopyIdValue = requireInstanceCopyId(instanceCopyId);
   }
 
+  setKind(kind: number): void {
+    if (!Number.isInteger(kind) || kind < 1) {
+      throw new Error("Hero kind must be a positive integer");
+    }
+    this.kindValue = kind;
+  }
+
   applyResourceClock(hp: number, hpTime: number, regenAt: Date): void {
     this.setHp(hp);
     this.setHpTime(hpTime);

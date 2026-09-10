@@ -94,6 +94,9 @@ export class ContentPublicationService {
     await this.catalog.materializeDungeons(release.id, {
       dungeons: validated.dungeons,
     });
+    await this.catalog.materializeBattlegrounds(release.id, {
+      battlegrounds: validated.battlegrounds,
+    });
     await this.store.activate(release.id);
     return release;
   }

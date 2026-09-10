@@ -50,6 +50,7 @@ import { InstanceModule } from "../modules/instance/instance-module.ts";
 import { InstanceDesk } from "./instance-desk.ts";
 import { InstanceTtlSweep } from "./instance-ttl-sweep.ts";
 import { InstanceHuntLockRelease } from "./instance-hunt-lock-release.ts";
+import { chainFightTerminal } from "./battleground-ops.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 
 export class CompositionRoot {
@@ -225,17 +226,16 @@ export class CompositionRoot {
         outbox,
         wake: longPoll,
         unreadMail: mail.service,
+        battlegrounds: catalog.battlegrounds,
       });
       combat.bindWake({ wake: (accountId) => longPoll.wake(accountId) });
       world.service.bindAreaWake(huntFanout);
-      combat.bindTerminalObserver(
-        new InstanceHuntLockRelease(
-          new HuntLockRelease(world.service, huntFanout),
-          instance.hunt,
-          instance.service,
-          instanceDesk,
-          huntFanout,
-        ),
+      const instanceHuntRelease = new InstanceHuntLockRelease(
+        new HuntLockRelease(world.service, huntFanout),
+        instance.hunt,
+        instance.service,
+        instanceDesk,
+        huntFanout,
       );
       combat.bindSettlement(
         new ChatFightSettlement(
@@ -359,8 +359,17 @@ export class CompositionRoot {
         instanceHunt: instance.hunt,
         instanceDesk,
         dungeonHunt: instance.hunt,
+        battlegrounds: catalog.battlegrounds,
+        instances: instance.service,
+        database,
+        delay,
       });
       closers.push(wire);
+      combat.bindTerminalObserver(
+        chainFightTerminal(instanceHuntRelease, {
+          afterFinished: (notice) => wire.battleground.afterFightFinished(notice),
+        }),
+      );
       return new Application(
         wire.http,
         characters.service,

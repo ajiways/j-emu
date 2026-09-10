@@ -23,6 +23,7 @@ const plaza = new Area(
   0,
   1,
   0,
+  "",
   [spawn],
 );
 const emptyPlaza = new Area(
@@ -43,6 +44,7 @@ const emptyPlaza = new Area(
   0,
   1,
   0,
+  "",
   [],
 );
 

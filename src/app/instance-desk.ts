@@ -21,6 +21,8 @@ import type { WorldService } from "../modules/world/domain/world-service.ts";
 import type { PresenceService } from "../modules/world/application/presence-service.ts";
 import type { UnreadMailQuery } from "../modules/mail/ports/unread-mail.ts";
 import type { InstanceHuntWorld } from "../modules/instance/ports/instance-hunt.ts";
+import type { BattlegroundCatalog } from "../modules/battleground/ports/battleground-catalog.ts";
+import { isBattlegroundRoom } from "../modules/battleground/domain/battleground-definition.ts";
 
 export type InstanceTravelPlan = Readonly<{
   copyId: number | null;
@@ -45,6 +47,7 @@ export type InstanceDeskDeps = Readonly<{
   outbox: EsrvOutbox;
   wake: Readonly<{ wake(accountId: number): void }>;
   unreadMail: UnreadMailQuery;
+  battlegrounds: BattlegroundCatalog;
 }>;
 
 export class InstanceDesk {
@@ -68,6 +71,26 @@ export class InstanceDesk {
     const copy = await this.deps.instances.getCopy(hero.instanceCopyId);
     if (!copy) {
       throw new Error(`Hero ${hero.id} instance copy ${hero.instanceCopyId} is missing`);
+    }
+    if (copy.copyType === "bg") {
+      const card = await this.deps.battlegrounds.playable();
+      if (copy.artikulId !== card.instArtikulId) {
+        throw new Error(
+          `Hero ${hero.id} bg copy ${copy.id} artikul ${copy.artikulId} is not playable`,
+        );
+      }
+      if (destAreaId === card.returnAreaId) {
+        return { copyId: null, enter: null, autoParty: false };
+      }
+      if (!isBattlegroundRoom(card, destAreaId)) {
+        throw new Error(
+          `Hero ${hero.id} cannot travel from bg copy ${copy.id} to area ${destAreaId}`,
+        );
+      }
+      if (!isCopyLive(copy, this.deps.clock.unixSeconds())) {
+        await this.deps.instances.requireLiveCopy(copy.id);
+      }
+      return { copyId: copy.id, enter: null, autoParty: false };
     }
     const dungeon = await this.requireDungeon(copy.artikulId);
     if (destAreaId === dungeon.parentAreaId) {
@@ -116,6 +139,7 @@ export class InstanceDesk {
   async ensureResurrectArea(hero: Hero): Promise<void> {
     if (hero.instanceCopyId === null) return;
     const copy = await this.deps.instances.requireLiveCopy(hero.instanceCopyId);
+    if (copy.copyType === "bg") return;
     const dungeon = await this.requireDungeon(copy.artikulId);
     if (hero.areaId === dungeon.startAreaId) return;
     await this.deps.characters.setArea({
@@ -128,6 +152,7 @@ export class InstanceDesk {
 
   async sweepExpired(): Promise<void> {
     for (const copy of await this.deps.instances.listExpired()) {
+      if (copy.copyType === "bg") continue;
       await this.kickCopy(copy.id, copy.artikulId, true);
     }
   }

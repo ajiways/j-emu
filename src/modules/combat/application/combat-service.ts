@@ -147,33 +147,11 @@ export class CombatService implements CombatPort {
   }
 
   async startFriendlyDuel(input: FriendlyDuelStartInput): Promise<FightStart> {
-    requireWireIdentity(input.challenger.accountId, "challenger account id");
-    requireWireIdentity(input.acceptor.accountId, "acceptor account id");
-    requireWireIdentity(input.challenger.heroId, "challenger hero id");
-    requireWireIdentity(input.acceptor.heroId, "acceptor hero id");
-    if (this.byAccount.has(input.challenger.accountId)) {
-      throw new Error("Challenger already has an active fight");
-    }
-    if (this.byAccount.has(input.acceptor.accountId)) {
-      throw new Error("Acceptor already has an active fight");
-    }
-    const fightId = requireFightId(input.fightId);
-    if (this.battleByFight.has(fightId)) throw new Error(`Fight ${fightId} is already active`);
-    const accessKey = randomBytes(16).toString("hex");
-    const battle = new Battle(
-      friendlyDuelInitFromStart(input, accessKey, this.scheduler.now()),
-      this.rules,
-      this.random,
-    );
-    this.byAccount.set(input.challenger.accountId, battle);
-    this.byAccount.set(input.acceptor.accountId, battle);
-    this.battleByFight.set(fightId, battle);
-    return {
-      fightId,
-      accessKey,
-      participantId: input.acceptor.heroId,
-      arena: input.arena,
-    };
+    return this.startHumanDuel(input, "friendly-duel");
+  }
+
+  async startPvp(input: FriendlyDuelStartInput): Promise<FightStart> {
+    return this.startHumanDuel(input, "pvp");
   }
 
   async joinHunt(input: HuntJoinInput): Promise<FightStart> {
@@ -339,6 +317,36 @@ export class CombatService implements CombatPort {
       return;
     }
     this.finishKeepTurn(accountId, command.sequence, resolved);
+  }
+
+  private startHumanDuel(input: FriendlyDuelStartInput, kind: "friendly-duel" | "pvp"): FightStart {
+    requireWireIdentity(input.challenger.accountId, "challenger account id");
+    requireWireIdentity(input.acceptor.accountId, "acceptor account id");
+    requireWireIdentity(input.challenger.heroId, "challenger hero id");
+    requireWireIdentity(input.acceptor.heroId, "acceptor hero id");
+    if (this.byAccount.has(input.challenger.accountId)) {
+      throw new Error("Challenger already has an active fight");
+    }
+    if (this.byAccount.has(input.acceptor.accountId)) {
+      throw new Error("Acceptor already has an active fight");
+    }
+    const fightId = requireFightId(input.fightId);
+    if (this.battleByFight.has(fightId)) throw new Error(`Fight ${fightId} is already active`);
+    const accessKey = randomBytes(16).toString("hex");
+    const battle = new Battle(
+      friendlyDuelInitFromStart(input, accessKey, this.scheduler.now(), kind),
+      this.rules,
+      this.random,
+    );
+    this.byAccount.set(input.challenger.accountId, battle);
+    this.byAccount.set(input.acceptor.accountId, battle);
+    this.battleByFight.set(fightId, battle);
+    return {
+      fightId,
+      accessKey,
+      participantId: input.acceptor.heroId,
+      arena: input.arena,
+    };
   }
 
   private finishKeepTurn(

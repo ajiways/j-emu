@@ -33,6 +33,7 @@ const plaza = new Area(
   0,
   1,
   0,
+  "",
   [parkedHuntSpawn(50310, 2, 883, 1499, "bot_1", 10)],
 );
 

@@ -165,6 +165,15 @@ export class CharacterService
     });
   }
 
+  async setKind(command: Readonly<{ characterId: number; kind: number }>): Promise<void> {
+    await this.unitOfWork.run(async () => {
+      const hero = await this.heroes.lockById(command.characterId);
+      if (!hero) throw new Error(`Hero ${command.characterId} is missing`);
+      hero.setKind(command.kind);
+      await this.heroes.save(hero);
+    });
+  }
+
   async getOrCreateForAccount(accountId: number, nick: string): Promise<Hero> {
     return this.unitOfWork.run(async () => {
       const existing = await this.heroes.findByAccountId(accountId);

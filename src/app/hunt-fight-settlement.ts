@@ -15,6 +15,7 @@ import {
 import type {
   FightOutcomeSnapshot,
   PracticeFightOutcomeSnapshot,
+  PvpFightOutcomeSnapshot,
 } from "../modules/combat/domain/fight-outcome-snapshot.ts";
 import {
   overlevel,
@@ -79,6 +80,7 @@ export class HuntFightSettlement implements FightSettlement {
     outcome: FightOutcomeSnapshot,
   ): Promise<ReadonlyMap<number, FightLootBlock>> {
     if (outcome.mode === "friendly-practice") return this.persistPractice(outcome);
+    if (outcome.mode === "pvp") return this.persistPvp(outcome);
     const cached = this.finished.get(outcome.fightId);
     if (cached) return cached;
     const bot = await this.catalog.bot(outcome.botId);
@@ -210,6 +212,26 @@ export class HuntFightSettlement implements FightSettlement {
           characterId: human.characterId,
           cells: restore.pocket,
         });
+      }
+    });
+    this.finished.set(outcome.fightId, lootByAccount);
+    return lootByAccount;
+  }
+
+  private async persistPvp(
+    outcome: PvpFightOutcomeSnapshot,
+  ): Promise<ReadonlyMap<number, FightLootBlock>> {
+    const cached = this.finished.get(outcome.fightId);
+    if (cached) return cached;
+    const lootByAccount = new Map<number, FightLootBlock>();
+    await this.unitOfWork.run(async () => {
+      for (const human of outcome.humans) {
+        await this.characters.noteHp({ characterId: human.characterId, hp: human.hp });
+        await this.inventory.refillPocketAfterFight({
+          characterId: human.characterId,
+          cells: human.pocket,
+        });
+        await this.applyDeathIfDefeated(human.characterId, human.hp);
       }
     });
     this.finished.set(outcome.fightId, lootByAccount);

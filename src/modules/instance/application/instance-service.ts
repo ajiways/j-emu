@@ -139,4 +139,19 @@ export class InstanceService {
       pendingKick: 0,
     });
   }
+
+  createBgCopy(artikulId: string, durationSec: number): Promise<InstanceCopyRecord> {
+    if (!artikulId) throw new Error("Battleground copy artikul is required");
+    if (!Number.isInteger(durationSec) || durationSec < 1) {
+      throw new Error("Battleground copy duration must be a positive integer");
+    }
+    const createdUnix = this.clock.unixSeconds();
+    return this.copies.insertCopy({
+      copyType: "bg",
+      artikulId,
+      createdUnix,
+      expiresUnix: createdUnix + durationSec,
+      pendingKick: 0,
+    });
+  }
 }

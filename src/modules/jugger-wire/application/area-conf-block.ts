@@ -36,6 +36,7 @@ type LocationAreaConf = Readonly<{
   no_clan_chat: number;
   hunt_bots: Readonly<Record<string, AreaHuntBotLook>>;
   hunt_farm: readonly [];
+  bg_id?: string;
 }>;
 
 export type LocationAreaConfBlock = Readonly<{
@@ -102,6 +103,7 @@ export function buildLocationAreaConf(
       no_clan_chat: area.noClanChat,
       hunt_bots: huntBots,
       hunt_farm: [],
+      ...(area.bgId ? { bg_id: area.bgId } : {}),
     },
   };
 }

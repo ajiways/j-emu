@@ -10,7 +10,8 @@ Published content: ogre cave `1`/542/bot 99, kopi `11`/654/bot 354, tomb
 `12`/653/bot 353, usadba `14`/673/bot 373. Product status:
 [CAPABILITIES.md](../CAPABILITIES.md).
 
-BG match, dungeon clear bar / coins, quest `personal_only`, `has_clear: true`
+BG match is [BATTLEGROUND.md](BATTLEGROUND.md) (`copy_type='bg'`, no dungeon
+bind). Dungeon clear bar / coins, quest `personal_only`, `has_clear: true`
 fixtures — not in this slice.
 
 ## Sources

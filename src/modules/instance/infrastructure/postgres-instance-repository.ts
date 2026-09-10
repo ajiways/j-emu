@@ -140,15 +140,15 @@ function copyFromRow(row: {
   expiresUnix: number;
   pendingKick: number;
 }): InstanceCopyRecord {
-  if (row.copyType !== "dungeon") {
-    throw new Error(`Instance copy ${row.id} type ${row.copyType} is not dungeon`);
+  if (row.copyType !== "dungeon" && row.copyType !== "bg") {
+    throw new Error(`Instance copy ${row.id} type ${row.copyType} is not dungeon or bg`);
   }
   if (row.pendingKick !== 0 && row.pendingKick !== 1) {
     throw new Error(`Instance copy ${row.id} pending_kick is invalid`);
   }
   return {
     id: row.id,
-    copyType: "dungeon",
+    copyType: row.copyType,
     artikulId: row.artikulId,
     createdUnix: row.createdUnix,
     expiresUnix: row.expiresUnix,

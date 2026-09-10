@@ -27,6 +27,7 @@ const area = new Area(
   0,
   1,
   0,
+  "",
   [spawn],
 );
 

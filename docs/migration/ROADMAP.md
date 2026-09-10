@@ -982,12 +982,20 @@
 - **Behavior evidence:** legacy `BATTLEGROUNDS.md`, `HEROISM.md`, `src/bg/`.
 - **Content set:** одна карта Раскопа как proof; остальные BG-карты —
   массовый импорт после доказанного движка.
-- **Architecture checkpoint / decision:** pending — matchmaking, instance и
-  PvP settlement.
+- **Architecture checkpoint / decision:** complete — отдельный ADR не нужен
+  (ADR-0016, ADR-0018, ADR-0020). `ARC-INS` уже закрыл ownership: dungeon
+  binds vs BG match policy на общем `instance.copies` identity
+  (`copy_type` `dungeon|bg`), без общей membership-таблицы и без legacy
+  `BG_INSTANCE_BASE`. Модуль `battleground` владеет RAM queue/invite/ban/
+  live score и typed history; `instance` — только bg-copy row; `combat` не
+  импортирует battleground (composition overlay PvP `type:"1"`). Контент:
+  одна карта Раскоп (`general|2`, rooms 635/636/637, return 500) в
+  `playable-slice/v23`. POST-04 / HERO-01 leftover. Контракт:
+  [BATTLEGROUND.md](../modules/BATTLEGROUND.md).
 - **Acceptance:** два героя queue/confirm, входят в изолированный матч,
   бьются до score/timeout, получают упорядоченные finish-пакеты и
   сохраняют историю; restart чистит только ephemeral queue/match state.
-- **Status:** `next`
+- **Status:** `done`
 
 ### BOOK-01 — Bestiary and instance books
 
@@ -1000,7 +1008,7 @@
   kills и instance binds без копирования mutable state.
 - **Acceptance:** bestiary kill counters и active/completed instance entries
   совпадают с persisted outcome в точном book wire.
-- **Status:** `queued`
+- **Status:** `next`
 
 ## Wave 10 — professions engine
 

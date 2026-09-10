@@ -18,7 +18,7 @@ export type FriendlyDuelFighterInit = Readonly<{
 }>;
 
 export type FriendlyDuelBattleInit = Readonly<{
-  kind: "friendly-duel";
+  kind: "friendly-duel" | "pvp";
   fightId: string;
   accessKey: string;
   arena: string;

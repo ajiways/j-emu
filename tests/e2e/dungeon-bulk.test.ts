@@ -205,7 +205,7 @@ function copyIdFrom(payload: Record<string, AmfValue>): number {
   return id;
 }
 
-function objectBlock(value: AmfValue): Record<string, AmfValue> {
+function objectBlock(value: AmfValue | undefined): Record<string, AmfValue> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("wire object block is missing");
   }

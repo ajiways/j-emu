@@ -44,4 +44,13 @@ export type PracticeFightOutcomeSnapshot = Readonly<{
   restore: readonly PracticeRestore[];
 }>;
 
-export type FightOutcomeSnapshot = HuntFightOutcomeSnapshot | PracticeFightOutcomeSnapshot;
+export type PvpFightOutcomeSnapshot = Readonly<{
+  mode: "pvp";
+  fightId: string;
+  winnerTeam: 1 | 2;
+  kind: FightOutcomeKind;
+  humans: readonly FightHumanOutcome[];
+}>;
+
+export type FightOutcomeSnapshot =
+  HuntFightOutcomeSnapshot | PracticeFightOutcomeSnapshot | PvpFightOutcomeSnapshot;

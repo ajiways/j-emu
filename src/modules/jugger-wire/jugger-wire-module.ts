@@ -48,6 +48,12 @@ import type { PartySnapshot } from "./application/party-snapshot.ts";
 import type { InstanceDesk } from "../../app/instance-desk.ts";
 import type { InstanceHuntWorld } from "../instance/ports/instance-hunt.ts";
 import type { DungeonHuntWorld } from "../instance/application/dungeon-hunt-world.ts";
+import type { BattlegroundCatalog } from "../battleground/ports/battleground-catalog.ts";
+import type { InstanceService } from "../instance/application/instance-service.ts";
+import type { PostgresDatabase } from "../../infrastructure/postgres/database.ts";
+import type { DelayScheduler } from "../../shared/kernel/delay-scheduler.ts";
+import { createBattlegroundOps } from "../../app/battleground-ops.ts";
+import type { BattlegroundDesk } from "../../app/battleground-desk.ts";
 
 export type JuggerWireBootstrapPolicy = Readonly<{
   bagCapacity: number;
@@ -74,6 +80,7 @@ export class JuggerWireModule {
     readonly http: FastifyInstance,
     private readonly longPoll: LongPollCoordinator,
     private readonly fightTcp: FightTcpServer,
+    readonly battleground: BattlegroundDesk,
   ) {}
 
   static async create(input: {
@@ -120,6 +127,10 @@ export class JuggerWireModule {
     instanceHunt: InstanceHuntWorld;
     instanceDesk: InstanceDesk;
     dungeonHunt: DungeonHuntWorld;
+    battlegrounds: BattlegroundCatalog;
+    instances: InstanceService;
+    database: PostgresDatabase;
+    delay: DelayScheduler;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -227,6 +238,13 @@ export class JuggerWireModule {
       input.dungeonHunt,
       "Jugger-wire module requires dungeon hunt",
     );
+    const battlegrounds = requirePresent(
+      input.battlegrounds,
+      "Jugger-wire module requires battlegrounds",
+    );
+    const instances = requirePresent(input.instances, "Jugger-wire module requires instances");
+    const database = requirePresent(input.database, "Jugger-wire module requires database");
+    const delay = requirePresent(input.delay, "Jugger-wire module requires delay");
     try {
       const fightWire = new FightWireMapper(
         {
@@ -236,22 +254,46 @@ export class JuggerWireModule {
         },
         fightWirePolicy,
       );
+      const bootstrap = new BootstrapReadModel(
+        characters,
+        inventory,
+        catalog,
+        world,
+        combat,
+        clock,
+        presence,
+        fightWire,
+        mail,
+        party,
+        partySnapshot,
+        instanceHunt,
+        bootstrapPolicy,
+      );
+      const battleground = await createBattlegroundOps({
+        database,
+        catalog,
+        battlegrounds,
+        characters,
+        inventory,
+        combat,
+        fightWire,
+        instances,
+        hunt: instanceHunt,
+        world,
+        clock,
+        delay,
+        unitOfWork,
+        presence,
+        presenceFanout,
+        outbox,
+        wake: longPoll,
+        bootstrap,
+        chat,
+        unreadMail: mail,
+        party,
+      });
       const commands = new JuggerCommandModule(
-        new BootstrapReadModel(
-          characters,
-          inventory,
-          catalog,
-          world,
-          combat,
-          clock,
-          presence,
-          fightWire,
-          mail,
-          party,
-          partySnapshot,
-          instanceHunt,
-          bootstrapPolicy,
-        ),
+        bootstrap,
         new HeroSheetReadModel({
           chat: bootstrapPolicy.chat,
           menuLinks: bootstrapPolicy.menuLinks,
@@ -293,6 +335,7 @@ export class JuggerWireModule {
         partyBag,
         instanceDesk,
         dungeonHunt,
+        battleground,
       );
       const esrvPoll = new EsrvPollAssembler(
         characters,
@@ -325,7 +368,7 @@ export class JuggerWireModule {
         await http.close();
         throw error;
       }
-      return new JuggerWireModule(http, longPoll, fightTcp);
+      return new JuggerWireModule(http, longPoll, fightTcp, battleground);
     } catch (error) {
       longPoll.shutdown();
       throw error;

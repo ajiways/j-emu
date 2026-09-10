@@ -110,6 +110,7 @@ export interface CombatPort {
   startHunt(input: HuntStartInput): Promise<FightStart>;
   joinHunt(input: HuntJoinInput): Promise<FightStart>;
   startFriendlyDuel(input: FriendlyDuelStartInput): Promise<FightStart>;
+  startPvp(input: FriendlyDuelStartInput): Promise<FightStart>;
   hasFight(fightId: string): Promise<boolean>;
   execute(accountId: number, command: FightCommand): Promise<readonly CombatEvent[]>;
   takePocketConsume(accountId: number): number | null;

@@ -84,11 +84,22 @@ export class FightWireMapper {
     return this.configuration(start, 1, "6");
   }
 
+  pvpConfiguration(
+    start: FightStart,
+    overlay: Readonly<{ instanceId: string; flags: string }>,
+  ): FightConfigurationBlock {
+    return this.configuration(start, 1, "1", {
+      canLeave: 1,
+      instanceId: overlay.instanceId,
+      flags: overlay.flags,
+    });
+  }
+
   private configuration(
     start: FightStart,
     isPvp: 0 | 1,
     type: string,
-    overlay: Readonly<{ canLeave?: 0 | 1; instanceId?: string }> = {},
+    overlay: Readonly<{ canLeave?: 0 | 1; instanceId?: string; flags?: string }> = {},
   ): FightConfigurationBlock {
     return {
       status: 100,
@@ -109,7 +120,7 @@ export class FightWireMapper {
         instance_id: overlay.instanceId !== undefined ? overlay.instanceId : this.policy.instanceId,
         type,
         is_slaughter: this.policy.isSlaughter,
-        flags: this.policy.flags,
+        flags: overlay.flags !== undefined ? overlay.flags : this.policy.flags,
       },
     };
   }

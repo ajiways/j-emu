@@ -10,7 +10,9 @@ export function requireFriendlyDuelBattleInit(
   init: FriendlyDuelBattleInit,
   rules: BattleRules,
 ): void {
-  if (init.kind !== "friendly-duel") throw new Error("Friendly duel init kind is required");
+  if (init.kind !== "friendly-duel" && init.kind !== "pvp") {
+    throw new Error("Human duel init kind is required");
+  }
   requireWireIdentity(
     Number(parseDecimalId(init.fightId, "friendly duel fight id")),
     "friendly duel fight id",

@@ -236,6 +236,7 @@ function fakeWorld(areaId: string): WorldService {
         0,
         0,
         0,
+        "",
         [],
       ),
   } as unknown as WorldService;

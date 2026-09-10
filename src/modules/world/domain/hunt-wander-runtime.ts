@@ -61,7 +61,7 @@ export class HuntWanderRuntime {
     const bot = this.ensure(areaId, spawn);
     const dirty = tickLiveBot(bot, this.nowMs(), locked, this.random);
     this.schedule(areaId, spawn.id, bot);
-    if (dirty) this.notify(areaId);
+    if (dirty) void this.notify(areaId);
   }
 
   respawn(areaId: string, spawn: HuntSpawn): void {
@@ -82,7 +82,7 @@ export class HuntWanderRuntime {
   private hide(bot: LiveHuntBot, areaId: string, spawnId: number): void {
     hideForRespawn(bot, this.nowMs(), this.random);
     this.schedule(areaId, spawnId, bot);
-    this.notify(areaId);
+    void this.notify(areaId);
   }
 
   private schedule(areaId: string, spawnId: number, bot: LiveHuntBot): void {
@@ -97,17 +97,17 @@ export class HuntWanderRuntime {
     });
   }
 
-  private onDue(areaId: string, spawnId: number): void {
+  private async onDue(areaId: string, spawnId: number): Promise<void> {
     const bot = this.live.get(spawnKey(areaId, spawnId));
     if (!bot) throw new Error(`Hunt wander due for missing spawn ${areaId}:${spawnId}`);
     const dirty = tickLiveBot(bot, this.nowMs(), bot.locked, this.random);
     this.schedule(areaId, spawnId, bot);
-    if (dirty) this.notify(areaId);
+    if (dirty) await this.notify(areaId);
   }
 
-  private notify(areaId: string): void {
+  private async notify(areaId: string): Promise<void> {
     if (!this.wake) return;
-    void this.wake.wakeArea(areaId);
+    await this.wake.wakeArea(areaId);
   }
 
   private nowMs(): number {

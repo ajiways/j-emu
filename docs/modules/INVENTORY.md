@@ -188,7 +188,7 @@ wire = `flags & 8 ? 1 : 0`. Стартовая 9095: `flags: 40`
 Unique paperdoll/bag: `bagStack = 1`, стакать нельзя. `priceMinor` missing ≠ 0.
 
 9095: `priceMinor: 0`, `flags: 40`, `bagStack: 1`. Provenance: live dump
-instance flags/price; unique wearable. Bundle сейчас `playable-slice/v22`.
+instance flags/price; unique wearable. Bundle сейчас `playable-slice/v23`.
 
 Второго stackable/sellable артикула в slice нет. E2E/CEF — throw-away 9095.
 Void-sell без dump-proven priced artifact не выдумывался.
@@ -324,7 +324,7 @@ PUT_OFF: `pocket → bag`, затем merge одинаковых bag-стако�
 
 ### Content
 
-`playable-slice/v22`. Pocket occupancy — partial unique в `0000_foundation_init`.
+`playable-slice/v23`. Pocket occupancy — partial unique в `0000_foundation_init`.
 
 | id  | title                 | picture                  | typeId | kindId | slotMask  | weight | priceMinor | flags | bagStack |
 | --- | --------------------- | ------------------------ | ------ | ------ | --------- | ------ | ---------- | ----- | -------- |
@@ -510,7 +510,7 @@ missing item **203** `нельзя починить`. Недостаточно �
 
 ### Content
 
-`playable-slice/v22`. Все артефакты обязаны иметь оба поля.
+`playable-slice/v23`. Все артефакты обязаны иметь оба поля.
 
 | id                 | occupancy bit | dur   | provenance                                |
 | ------------------ | ------------- | ----- | ----------------------------------------- |
@@ -585,7 +585,7 @@ stat из пула. Types 2 и 3 — одна lineage. Bonus =
 
 ### Content
 
-`playable-slice/v22`. Dump `Pub1/images/locale/ru/amf/artifact_artikul_*.amf`.
+`playable-slice/v23`. Dump `Pub1/images/locale/ru/amf/artifact_artikul_*.amf`.
 `bagStack` 9999 — authored cap для weight-0 type 73. `level_max=-1` → `0`,
 кроме 13224 (`35`).
 

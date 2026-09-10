@@ -29,6 +29,7 @@ const plaza = new Area(
   0,
   1,
   0,
+  "",
   [],
 );
 
@@ -50,6 +51,7 @@ const shop = new Area(
   0,
   0,
   0,
+  "",
   [],
 );
 

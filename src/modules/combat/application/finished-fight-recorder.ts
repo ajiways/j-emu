@@ -10,7 +10,7 @@ export class FinishedFightRecorder {
   ) {}
 
   async record(battle: Battle, winnerTeam: 1 | 2): Promise<void> {
-    if (battle.kind === "friendly-duel") return;
+    if (battle.kind !== "hunt") return;
     await this.store.record(
       huntFinishedFightRecord({
         fightId: battle.id,

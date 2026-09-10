@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v22",
+  "schemaVersion": "playable-slice/v23",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -423,9 +423,21 @@
       "durability": 15,
       "durabilityMax": 15,
       "skills": [
-        { "id": "MPMAX", "value": 5, "flags": 0 },
-        { "id": "STR", "value": 14, "flags": 0 },
-        { "id": "VIT", "value": 12, "flags": 0 }
+        {
+          "id": "MPMAX",
+          "value": 5,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 14,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 12,
+          "flags": 0
+        }
       ],
       "artifact_actions": {},
       "extra": {}
@@ -725,12 +737,36 @@
       "durability": 30,
       "durabilityMax": 30,
       "skills": [
-        { "id": "DEF", "value": 4, "flags": 0 },
-        { "id": "DEX", "value": 4, "flags": 0 },
-        { "id": "MAGSTR", "value": 1, "flags": 0 },
-        { "id": "RAG", "value": 4, "flags": 0 },
-        { "id": "STR", "value": 17, "flags": 0 },
-        { "id": "VIT", "value": 15, "flags": 0 }
+        {
+          "id": "DEF",
+          "value": 4,
+          "flags": 0
+        },
+        {
+          "id": "DEX",
+          "value": 4,
+          "flags": 0
+        },
+        {
+          "id": "MAGSTR",
+          "value": 1,
+          "flags": 0
+        },
+        {
+          "id": "RAG",
+          "value": 4,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 17,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 15,
+          "flags": 0
+        }
       ],
       "artifact_actions": {},
       "extra": {
@@ -762,12 +798,36 @@
       "durability": 30,
       "durabilityMax": 30,
       "skills": [
-        { "id": "DEF", "value": 5, "flags": 0 },
-        { "id": "DEX", "value": 4, "flags": 0 },
-        { "id": "MAGSTR", "value": 1, "flags": 0 },
-        { "id": "RAG", "value": 4, "flags": 0 },
-        { "id": "STR", "value": 18, "flags": 0 },
-        { "id": "VIT", "value": 14, "flags": 0 }
+        {
+          "id": "DEF",
+          "value": 5,
+          "flags": 0
+        },
+        {
+          "id": "DEX",
+          "value": 4,
+          "flags": 0
+        },
+        {
+          "id": "MAGSTR",
+          "value": 1,
+          "flags": 0
+        },
+        {
+          "id": "RAG",
+          "value": 4,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 18,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 14,
+          "flags": 0
+        }
       ],
       "artifact_actions": {},
       "extra": {
@@ -799,12 +859,36 @@
       "durability": 30,
       "durabilityMax": 30,
       "skills": [
-        { "id": "DEF", "value": 3, "flags": 0 },
-        { "id": "DEX", "value": 3, "flags": 0 },
-        { "id": "MAGSTR", "value": 1, "flags": 0 },
-        { "id": "RAG", "value": 4, "flags": 0 },
-        { "id": "STR", "value": 15, "flags": 0 },
-        { "id": "VIT", "value": 13, "flags": 0 }
+        {
+          "id": "DEF",
+          "value": 3,
+          "flags": 0
+        },
+        {
+          "id": "DEX",
+          "value": 3,
+          "flags": 0
+        },
+        {
+          "id": "MAGSTR",
+          "value": 1,
+          "flags": 0
+        },
+        {
+          "id": "RAG",
+          "value": 4,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 15,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 13,
+          "flags": 0
+        }
       ],
       "artifact_actions": {},
       "extra": {
@@ -836,11 +920,31 @@
       "durability": 30,
       "durabilityMax": 30,
       "skills": [
-        { "id": "DEF", "value": 3, "flags": 0 },
-        { "id": "DEX", "value": 3, "flags": 0 },
-        { "id": "RAG", "value": 3, "flags": 0 },
-        { "id": "STR", "value": 13, "flags": 0 },
-        { "id": "VIT", "value": 11, "flags": 0 }
+        {
+          "id": "DEF",
+          "value": 3,
+          "flags": 0
+        },
+        {
+          "id": "DEX",
+          "value": 3,
+          "flags": 0
+        },
+        {
+          "id": "RAG",
+          "value": 3,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 13,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 11,
+          "flags": 0
+        }
       ],
       "artifact_actions": {},
       "extra": {
@@ -872,12 +976,36 @@
       "durability": 30,
       "durabilityMax": 30,
       "skills": [
-        { "id": "DEF", "value": 4, "flags": 0 },
-        { "id": "DEX", "value": 4, "flags": 0 },
-        { "id": "MAGSTR", "value": 1, "flags": 0 },
-        { "id": "RAG", "value": 4, "flags": 0 },
-        { "id": "STR", "value": 16, "flags": 0 },
-        { "id": "VIT", "value": 13, "flags": 0 }
+        {
+          "id": "DEF",
+          "value": 4,
+          "flags": 0
+        },
+        {
+          "id": "DEX",
+          "value": 4,
+          "flags": 0
+        },
+        {
+          "id": "MAGSTR",
+          "value": 1,
+          "flags": 0
+        },
+        {
+          "id": "RAG",
+          "value": 4,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 16,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 13,
+          "flags": 0
+        }
       ],
       "artifact_actions": {},
       "extra": {
@@ -909,11 +1037,31 @@
       "durability": 0,
       "durabilityMax": 0,
       "skills": [
-        { "id": "DEF", "value": 1, "flags": 0 },
-        { "id": "DEX", "value": 2, "flags": 0 },
-        { "id": "RAG", "value": 2, "flags": 0 },
-        { "id": "STR", "value": 7, "flags": 0 },
-        { "id": "VIT", "value": 6, "flags": 0 }
+        {
+          "id": "DEF",
+          "value": 1,
+          "flags": 0
+        },
+        {
+          "id": "DEX",
+          "value": 2,
+          "flags": 0
+        },
+        {
+          "id": "RAG",
+          "value": 2,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 7,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 6,
+          "flags": 0
+        }
       ],
       "artifact_actions": {},
       "extra": {}
@@ -935,9 +1083,21 @@
       "durability": 30,
       "durabilityMax": 30,
       "skills": [
-        { "id": "DEX", "value": 12, "flags": 0 },
-        { "id": "STR", "value": 17, "flags": 0 },
-        { "id": "VIT", "value": 13, "flags": 0 }
+        {
+          "id": "DEX",
+          "value": 12,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 17,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 13,
+          "flags": 0
+        }
       ],
       "artifact_actions": {},
       "extra": {
@@ -969,10 +1129,26 @@
       "durability": 30,
       "durabilityMax": 30,
       "skills": [
-        { "id": "DEF", "value": 15, "flags": 0 },
-        { "id": "MAGSTR", "value": 3, "flags": 0 },
-        { "id": "STR", "value": 23, "flags": 0 },
-        { "id": "VIT", "value": 18, "flags": 0 }
+        {
+          "id": "DEF",
+          "value": 15,
+          "flags": 0
+        },
+        {
+          "id": "MAGSTR",
+          "value": 3,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 23,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 18,
+          "flags": 0
+        }
       ],
       "artifact_actions": {},
       "extra": {
@@ -1004,8 +1180,16 @@
       "durability": 0,
       "durabilityMax": 0,
       "skills": [
-        { "id": "STR", "value": 6, "flags": 0 },
-        { "id": "VIT", "value": 4, "flags": 0 }
+        {
+          "id": "STR",
+          "value": 6,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 4,
+          "flags": 0
+        }
       ],
       "artifact_actions": {
         "850": {
@@ -1016,7 +1200,9 @@
           "title": "Съесть"
         }
       },
-      "extra": { "param1": 1800 }
+      "extra": {
+        "param1": 1800
+      }
     },
     {
       "id": 623,
@@ -1094,8 +1280,16 @@
       "durability": 15,
       "durabilityMax": 15,
       "skills": [
-        { "id": "STR", "value": 10, "flags": 0 },
-        { "id": "VIT", "value": 10, "flags": 0 }
+        {
+          "id": "STR",
+          "value": 10,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 10,
+          "flags": 0
+        }
       ],
       "artifact_actions": {},
       "extra": {}
@@ -1502,7 +1696,8 @@
       "haveKindChannel": 0,
       "hideFinishedFights": 0,
       "hideRunningFights": 1,
-      "noClanChat": 0
+      "noClanChat": 0,
+      "bgId": ""
     },
     {
       "id": "501",
@@ -1521,7 +1716,8 @@
       "haveKindChannel": 0,
       "hideFinishedFights": 0,
       "hideRunningFights": 0,
-      "noClanChat": 0
+      "noClanChat": 0,
+      "bgId": ""
     },
     {
       "id": "542",
@@ -1540,7 +1736,8 @@
       "haveKindChannel": 0,
       "hideFinishedFights": 0,
       "hideRunningFights": 0,
-      "noClanChat": 0
+      "noClanChat": 0,
+      "bgId": ""
     },
     {
       "id": "504",
@@ -1559,7 +1756,8 @@
       "haveKindChannel": 0,
       "hideFinishedFights": 0,
       "hideRunningFights": 0,
-      "noClanChat": 0
+      "noClanChat": 0,
+      "bgId": ""
     },
     {
       "id": "495",
@@ -1578,7 +1776,8 @@
       "haveKindChannel": 0,
       "hideFinishedFights": 0,
       "hideRunningFights": 0,
-      "noClanChat": 0
+      "noClanChat": 0,
+      "bgId": ""
     },
     {
       "id": "552",
@@ -1597,7 +1796,8 @@
       "haveKindChannel": 0,
       "hideFinishedFights": 0,
       "hideRunningFights": 0,
-      "noClanChat": 0
+      "noClanChat": 0,
+      "bgId": ""
     },
     {
       "id": "541",
@@ -1616,7 +1816,8 @@
       "haveKindChannel": 0,
       "hideFinishedFights": 0,
       "hideRunningFights": 0,
-      "noClanChat": 0
+      "noClanChat": 0,
+      "bgId": ""
     },
     {
       "id": "654",
@@ -1635,7 +1836,8 @@
       "haveKindChannel": 0,
       "hideFinishedFights": 0,
       "hideRunningFights": 0,
-      "noClanChat": 0
+      "noClanChat": 0,
+      "bgId": ""
     },
     {
       "id": "651",
@@ -1654,7 +1856,8 @@
       "haveKindChannel": 0,
       "hideFinishedFights": 0,
       "hideRunningFights": 0,
-      "noClanChat": 0
+      "noClanChat": 0,
+      "bgId": ""
     },
     {
       "id": "653",
@@ -1673,7 +1876,8 @@
       "haveKindChannel": 0,
       "hideFinishedFights": 0,
       "hideRunningFights": 0,
-      "noClanChat": 0
+      "noClanChat": 0,
+      "bgId": ""
     },
     {
       "id": "499",
@@ -1692,7 +1896,8 @@
       "haveKindChannel": 0,
       "hideFinishedFights": 0,
       "hideRunningFights": 0,
-      "noClanChat": 0
+      "noClanChat": 0,
+      "bgId": ""
     },
     {
       "id": "673",
@@ -1711,7 +1916,88 @@
       "haveKindChannel": 0,
       "hideFinishedFights": 0,
       "hideRunningFights": 0,
-      "noClanChat": 0
+      "noClanChat": 0,
+      "bgId": ""
+    },
+    {
+      "id": "500",
+      "title": "Перекресток",
+      "parentId": "",
+      "map": "perekrestok.swf",
+      "fightBackground": "2_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 0,
+      "code": "",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 0,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0,
+      "bgId": ""
+    },
+    {
+      "id": "635",
+      "title": "Западный лагерь",
+      "parentId": "500",
+      "map": "bg1_baza.swf",
+      "fightBackground": "5_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 20,
+      "code": "",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 10,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0,
+      "bgId": "2"
+    },
+    {
+      "id": "636",
+      "title": "Раскоп",
+      "parentId": "500",
+      "map": "bg1_shahta3.swf",
+      "fightBackground": "5_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 20,
+      "code": "",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 10,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0,
+      "bgId": "2"
+    },
+    {
+      "id": "637",
+      "title": "Восточный лагерь",
+      "parentId": "500",
+      "map": "bg1_baza_2.swf",
+      "fightBackground": "5_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 20,
+      "code": "",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 10,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0,
+      "bgId": "2"
     }
   ],
   "areaLinks": [
@@ -1994,6 +2280,86 @@
           "area_id": 499
         }
       }
+    },
+    {
+      "fromAreaId": "635",
+      "itemId": 6,
+      "toAreaId": "636",
+      "title": "К раскопу",
+      "picture": "",
+      "description": "",
+      "flags": 0,
+      "direction": 3,
+      "confirmQuestion": "",
+      "toId": "636",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 636
+        }
+      }
+    },
+    {
+      "fromAreaId": "636",
+      "itemId": 1,
+      "toAreaId": "635",
+      "title": "К западному лагерю",
+      "picture": "",
+      "description": "",
+      "flags": 0,
+      "direction": 4,
+      "confirmQuestion": "",
+      "toId": "635",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 635
+        }
+      }
+    },
+    {
+      "fromAreaId": "636",
+      "itemId": 6,
+      "toAreaId": "637",
+      "title": "К восточному лагерю",
+      "picture": "",
+      "description": "",
+      "flags": 0,
+      "direction": 3,
+      "confirmQuestion": "",
+      "toId": "637",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 637
+        }
+      }
+    },
+    {
+      "fromAreaId": "637",
+      "itemId": 1,
+      "toAreaId": "636",
+      "title": "К раскопу",
+      "picture": "",
+      "description": "",
+      "flags": 0,
+      "direction": 4,
+      "confirmQuestion": "",
+      "toId": "636",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 636
+        }
+      }
     }
   ],
   "huntSpawns": [
@@ -2024,10 +2390,30 @@
       "respawnTimeMax": 15,
       "zone": [],
       "route": [
-        { "x": 935, "y": 1260, "waitMin": 2, "waitMax": 8 },
-        { "x": 773, "y": 1275, "waitMin": 2, "waitMax": 8 },
-        { "x": 667, "y": 1147, "waitMin": 2, "waitMax": 8 },
-        { "x": 539, "y": 1100, "waitMin": 2, "waitMax": 8 }
+        {
+          "x": 935,
+          "y": 1260,
+          "waitMin": 2,
+          "waitMax": 8
+        },
+        {
+          "x": 773,
+          "y": 1275,
+          "waitMin": 2,
+          "waitMax": 8
+        },
+        {
+          "x": 667,
+          "y": 1147,
+          "waitMin": 2,
+          "waitMax": 8
+        },
+        {
+          "x": 539,
+          "y": 1100,
+          "waitMin": 2,
+          "waitMax": 8
+        }
       ]
     },
     {
@@ -2042,11 +2428,26 @@
       "respawnTimeMin": 0,
       "respawnTimeMax": 0,
       "zone": [
-        { "x": 887, "y": 498 },
-        { "x": 743, "y": 590 },
-        { "x": 788, "y": 699 },
-        { "x": 1007, "y": 767 },
-        { "x": 1152, "y": 597 }
+        {
+          "x": 887,
+          "y": 498
+        },
+        {
+          "x": 743,
+          "y": 590
+        },
+        {
+          "x": 788,
+          "y": 699
+        },
+        {
+          "x": 1007,
+          "y": 767
+        },
+        {
+          "x": 1152,
+          "y": 597
+        }
       ],
       "route": []
     },
@@ -2062,11 +2463,26 @@
       "respawnTimeMin": 0,
       "respawnTimeMax": 0,
       "zone": [
-        { "x": 930, "y": 888 },
-        { "x": 831, "y": 966 },
-        { "x": 881, "y": 1117 },
-        { "x": 991, "y": 1122 },
-        { "x": 1103, "y": 1029 }
+        {
+          "x": 930,
+          "y": 888
+        },
+        {
+          "x": 831,
+          "y": 966
+        },
+        {
+          "x": 881,
+          "y": 1117
+        },
+        {
+          "x": 991,
+          "y": 1122
+        },
+        {
+          "x": 1103,
+          "y": 1029
+        }
       ],
       "route": []
     },
@@ -2082,12 +2498,30 @@
       "respawnTimeMin": 0,
       "respawnTimeMax": 0,
       "zone": [
-        { "x": 367, "y": 665 },
-        { "x": 253, "y": 792 },
-        { "x": 274, "y": 955 },
-        { "x": 418, "y": 1091 },
-        { "x": 529, "y": 964 },
-        { "x": 436, "y": 769 }
+        {
+          "x": 367,
+          "y": 665
+        },
+        {
+          "x": 253,
+          "y": 792
+        },
+        {
+          "x": 274,
+          "y": 955
+        },
+        {
+          "x": 418,
+          "y": 1091
+        },
+        {
+          "x": 529,
+          "y": 964
+        },
+        {
+          "x": 436,
+          "y": 769
+        }
       ],
       "route": []
     }
@@ -2109,7 +2543,12 @@
             {
               "spawnKey": "ogre",
               "huntBotId": 99,
-              "encounter": [{ "botId": 99, "count": 1 }],
+              "encounter": [
+                {
+                  "botId": 99,
+                  "count": 1
+                }
+              ],
               "isBoss": true,
               "countsForClear": true,
               "huntMask": "bot_1",
@@ -2119,15 +2558,60 @@
               "waitMax": 8,
               "zone": [],
               "route": [
-                { "x": 647, "y": 536, "waitMin": 2, "waitMax": 8 },
-                { "x": 494, "y": 534, "waitMin": 2, "waitMax": 8 },
-                { "x": 554, "y": 666, "waitMin": 2, "waitMax": 8 },
-                { "x": 547, "y": 834, "waitMin": 2, "waitMax": 8 },
-                { "x": 554, "y": 941, "waitMin": 2, "waitMax": 8 },
-                { "x": 688, "y": 922, "waitMin": 2, "waitMax": 8 },
-                { "x": 870, "y": 831, "waitMin": 2, "waitMax": 8 },
-                { "x": 1016, "y": 737, "waitMin": 2, "waitMax": 8 },
-                { "x": 999, "y": 648, "waitMin": 2, "waitMax": 8 }
+                {
+                  "x": 647,
+                  "y": 536,
+                  "waitMin": 2,
+                  "waitMax": 8
+                },
+                {
+                  "x": 494,
+                  "y": 534,
+                  "waitMin": 2,
+                  "waitMax": 8
+                },
+                {
+                  "x": 554,
+                  "y": 666,
+                  "waitMin": 2,
+                  "waitMax": 8
+                },
+                {
+                  "x": 547,
+                  "y": 834,
+                  "waitMin": 2,
+                  "waitMax": 8
+                },
+                {
+                  "x": 554,
+                  "y": 941,
+                  "waitMin": 2,
+                  "waitMax": 8
+                },
+                {
+                  "x": 688,
+                  "y": 922,
+                  "waitMin": 2,
+                  "waitMax": 8
+                },
+                {
+                  "x": 870,
+                  "y": 831,
+                  "waitMin": 2,
+                  "waitMax": 8
+                },
+                {
+                  "x": 1016,
+                  "y": 737,
+                  "waitMin": 2,
+                  "waitMax": 8
+                },
+                {
+                  "x": 999,
+                  "y": 648,
+                  "waitMin": 2,
+                  "waitMax": 8
+                }
               ]
             }
           ]
@@ -2150,7 +2634,12 @@
             {
               "spawnKey": "boss",
               "huntBotId": 354,
-              "encounter": [{ "botId": 354, "count": 1 }],
+              "encounter": [
+                {
+                  "botId": 354,
+                  "count": 1
+                }
+              ],
               "isBoss": true,
               "countsForClear": true,
               "huntMask": "bot_1",
@@ -2159,13 +2648,34 @@
               "waitMin": 2,
               "waitMax": 8,
               "zone": [
-                { "x": 458, "y": 470 },
-                { "x": 326, "y": 463 },
-                { "x": 351, "y": 604 },
-                { "x": 456, "y": 735 },
-                { "x": 624, "y": 835 },
-                { "x": 700, "y": 766 },
-                { "x": 638, "y": 604 }
+                {
+                  "x": 458,
+                  "y": 470
+                },
+                {
+                  "x": 326,
+                  "y": 463
+                },
+                {
+                  "x": 351,
+                  "y": 604
+                },
+                {
+                  "x": 456,
+                  "y": 735
+                },
+                {
+                  "x": 624,
+                  "y": 835
+                },
+                {
+                  "x": 700,
+                  "y": 766
+                },
+                {
+                  "x": 638,
+                  "y": 604
+                }
               ],
               "route": []
             }
@@ -2189,7 +2699,12 @@
             {
               "spawnKey": "boss",
               "huntBotId": 353,
-              "encounter": [{ "botId": 353, "count": 1 }],
+              "encounter": [
+                {
+                  "botId": 353,
+                  "count": 1
+                }
+              ],
               "isBoss": true,
               "countsForClear": true,
               "huntMask": "bot_1",
@@ -2198,13 +2713,34 @@
               "waitMin": 2,
               "waitMax": 8,
               "zone": [
-                { "x": 493, "y": 466 },
-                { "x": 318, "y": 503 },
-                { "x": 268, "y": 581 },
-                { "x": 455, "y": 777 },
-                { "x": 524, "y": 803 },
-                { "x": 603, "y": 708 },
-                { "x": 625, "y": 554 }
+                {
+                  "x": 493,
+                  "y": 466
+                },
+                {
+                  "x": 318,
+                  "y": 503
+                },
+                {
+                  "x": 268,
+                  "y": 581
+                },
+                {
+                  "x": 455,
+                  "y": 777
+                },
+                {
+                  "x": 524,
+                  "y": 803
+                },
+                {
+                  "x": 603,
+                  "y": 708
+                },
+                {
+                  "x": 625,
+                  "y": 554
+                }
               ],
               "route": []
             }
@@ -2228,7 +2764,12 @@
             {
               "spawnKey": "boss",
               "huntBotId": 373,
-              "encounter": [{ "botId": 373, "count": 1 }],
+              "encounter": [
+                {
+                  "botId": 373,
+                  "count": 1
+                }
+              ],
               "isBoss": true,
               "countsForClear": true,
               "huntMask": "bot_1",
@@ -2237,12 +2778,30 @@
               "waitMin": 2,
               "waitMax": 8,
               "zone": [
-                { "x": 325, "y": 550 },
-                { "x": 262, "y": 588 },
-                { "x": 244, "y": 628 },
-                { "x": 391, "y": 764 },
-                { "x": 500, "y": 785 },
-                { "x": 576, "y": 716 }
+                {
+                  "x": 325,
+                  "y": 550
+                },
+                {
+                  "x": 262,
+                  "y": 588
+                },
+                {
+                  "x": 244,
+                  "y": 628
+                },
+                {
+                  "x": 391,
+                  "y": 764
+                },
+                {
+                  "x": 500,
+                  "y": 785
+                },
+                {
+                  "x": 576,
+                  "y": 716
+                }
               ],
               "route": []
             }
@@ -2273,7 +2832,10 @@
       "typeId": -131,
       "price": 1,
       "ord": 6,
-      "pay": { "currency": "gold", "amount": 1 }
+      "pay": {
+        "currency": "gold",
+        "amount": 1
+      }
     },
     {
       "areaId": "504",
@@ -2282,7 +2844,10 @@
       "typeId": -131,
       "price": 1,
       "ord": 8,
-      "pay": { "currency": "gold", "amount": 1 }
+      "pay": {
+        "currency": "gold",
+        "amount": 1
+      }
     },
     {
       "areaId": "552",
@@ -2291,8 +2856,18 @@
       "typeId": 11,
       "price": 300,
       "ord": 0,
-      "pay": { "currency": "gold", "amount": 300 },
-      "requires": { "all": [{ "type": "RANK", "min": 4 }] }
+      "pay": {
+        "currency": "gold",
+        "amount": 300
+      },
+      "requires": {
+        "all": [
+          {
+            "type": "RANK",
+            "min": 4
+          }
+        ]
+      }
     }
   ],
   "reputationTracks": [
@@ -2319,11 +2894,24 @@
   "useScripts": [
     {
       "bonusId": 2827,
-      "require": [{ "artikulId": 2371, "count": 2 }],
+      "require": [
+        {
+          "artikulId": 2371,
+          "count": 2
+        }
+      ],
       "failPlaque": "",
       "effects": [
-        { "type": "consume", "artikulId": 2371, "count": 2 },
-        { "type": "grant", "artikulId": 55, "count": 1 }
+        {
+          "type": "consume",
+          "artikulId": 2371,
+          "count": 2
+        },
+        {
+          "type": "grant",
+          "artikulId": 55,
+          "count": 1
+        }
       ]
     }
   ],
@@ -2772,12 +3360,30 @@
       "honorStatus": 0,
       "evidenceKind": "legacy_extrapolated",
       "managedSkills": [
-        { "id": "STR", "value": 23 },
-        { "id": "RAG", "value": 16 },
-        { "id": "DEX", "value": 16 },
-        { "id": "DEF", "value": 16 },
-        { "id": "VIT", "value": 19 },
-        { "id": "MPMAX", "value": 23 }
+        {
+          "id": "STR",
+          "value": 23
+        },
+        {
+          "id": "RAG",
+          "value": 16
+        },
+        {
+          "id": "DEX",
+          "value": 16
+        },
+        {
+          "id": "DEF",
+          "value": 16
+        },
+        {
+          "id": "VIT",
+          "value": 19
+        },
+        {
+          "id": "MPMAX",
+          "value": 23
+        }
       ]
     },
     {
@@ -2791,12 +3397,30 @@
       "honorStatus": 0,
       "evidenceKind": "legacy_extrapolated",
       "managedSkills": [
-        { "id": "STR", "value": 24 },
-        { "id": "RAG", "value": 17 },
-        { "id": "DEX", "value": 17 },
-        { "id": "DEF", "value": 17 },
-        { "id": "VIT", "value": 20 },
-        { "id": "MPMAX", "value": 24 }
+        {
+          "id": "STR",
+          "value": 24
+        },
+        {
+          "id": "RAG",
+          "value": 17
+        },
+        {
+          "id": "DEX",
+          "value": 17
+        },
+        {
+          "id": "DEF",
+          "value": 17
+        },
+        {
+          "id": "VIT",
+          "value": 20
+        },
+        {
+          "id": "MPMAX",
+          "value": 24
+        }
       ]
     },
     {
@@ -2810,12 +3434,30 @@
       "honorStatus": 0,
       "evidenceKind": "legacy_extrapolated",
       "managedSkills": [
-        { "id": "STR", "value": 26 },
-        { "id": "RAG", "value": 18 },
-        { "id": "DEX", "value": 18 },
-        { "id": "DEF", "value": 18 },
-        { "id": "VIT", "value": 22 },
-        { "id": "MPMAX", "value": 26 }
+        {
+          "id": "STR",
+          "value": 26
+        },
+        {
+          "id": "RAG",
+          "value": 18
+        },
+        {
+          "id": "DEX",
+          "value": 18
+        },
+        {
+          "id": "DEF",
+          "value": 18
+        },
+        {
+          "id": "VIT",
+          "value": 22
+        },
+        {
+          "id": "MPMAX",
+          "value": 26
+        }
       ]
     },
     {
@@ -2829,12 +3471,30 @@
       "honorStatus": 0,
       "evidenceKind": "legacy_extrapolated",
       "managedSkills": [
-        { "id": "STR", "value": 27 },
-        { "id": "RAG", "value": 19 },
-        { "id": "DEX", "value": 19 },
-        { "id": "DEF", "value": 19 },
-        { "id": "VIT", "value": 23 },
-        { "id": "MPMAX", "value": 27 }
+        {
+          "id": "STR",
+          "value": 27
+        },
+        {
+          "id": "RAG",
+          "value": 19
+        },
+        {
+          "id": "DEX",
+          "value": 19
+        },
+        {
+          "id": "DEF",
+          "value": 19
+        },
+        {
+          "id": "VIT",
+          "value": 23
+        },
+        {
+          "id": "MPMAX",
+          "value": 27
+        }
       ]
     },
     {
@@ -2848,12 +3508,30 @@
       "honorStatus": 0,
       "evidenceKind": "legacy_extrapolated",
       "managedSkills": [
-        { "id": "STR", "value": 28 },
-        { "id": "RAG", "value": 20 },
-        { "id": "DEX", "value": 20 },
-        { "id": "DEF", "value": 20 },
-        { "id": "VIT", "value": 24 },
-        { "id": "MPMAX", "value": 28 }
+        {
+          "id": "STR",
+          "value": 28
+        },
+        {
+          "id": "RAG",
+          "value": 20
+        },
+        {
+          "id": "DEX",
+          "value": 20
+        },
+        {
+          "id": "DEF",
+          "value": 20
+        },
+        {
+          "id": "VIT",
+          "value": 24
+        },
+        {
+          "id": "MPMAX",
+          "value": 28
+        }
       ]
     },
     {
@@ -2867,18 +3545,48 @@
       "honorStatus": 0,
       "evidenceKind": "legacy_extrapolated",
       "managedSkills": [
-        { "id": "STR", "value": 30 },
-        { "id": "RAG", "value": 21 },
-        { "id": "DEX", "value": 21 },
-        { "id": "DEF", "value": 21 },
-        { "id": "VIT", "value": 25 },
-        { "id": "MPMAX", "value": 30 }
+        {
+          "id": "STR",
+          "value": 30
+        },
+        {
+          "id": "RAG",
+          "value": 21
+        },
+        {
+          "id": "DEX",
+          "value": 21
+        },
+        {
+          "id": "DEF",
+          "value": 21
+        },
+        {
+          "id": "VIT",
+          "value": 25
+        },
+        {
+          "id": "MPMAX",
+          "value": 30
+        }
       ]
     }
   ],
   "appearances": [
     {
       "kind": 1,
+      "gender": 1,
+      "avatarBig": "avatar_m_set_0_gray.png",
+      "avatarSmall": "avatar_m_set_0_gray_sm.png"
+    },
+    {
+      "kind": 2,
+      "gender": 1,
+      "avatarBig": "avatar_m_set_0_gray.png",
+      "avatarSmall": "avatar_m_set_0_gray_sm.png"
+    },
+    {
+      "kind": 3,
       "gender": 1,
       "avatarBig": "avatar_m_set_0_gray.png",
       "avatarSmall": "avatar_m_set_0_gray_sm.png"
@@ -3045,5 +3753,257 @@
       "status": 100,
       "areas_farm": {}
     }
-  }
+  },
+  "battlegrounds": [
+    {
+      "id": 1,
+      "type": "general",
+      "title": "Шахты",
+      "flags": 2,
+      "available": 0,
+      "queueLevel": "",
+      "error": "Вы не попадаете в заданные уровневые группы!",
+      "playable": 0,
+      "instArtikulId": 0,
+      "levelMin": 0,
+      "levelMax": 0,
+      "returnAreaId": "",
+      "westAreaId": "",
+      "arenaAreaId": "",
+      "eastAreaId": "",
+      "inviteTtlSec": 0,
+      "banSec": 0,
+      "matchDurationSec": 0,
+      "maxScore": 0,
+      "pointsPerKill": 0,
+      "fightBg": "",
+      "fightFlags": "",
+      "mapPicture": "",
+      "statsPicture": "",
+      "description": "",
+      "rules": "",
+      "roomPos": [],
+      "leaderGroups": []
+    },
+    {
+      "id": 2,
+      "type": "general",
+      "title": "Раскоп",
+      "flags": 2,
+      "available": 1,
+      "queueLevel": "[6 - 7]",
+      "error": "",
+      "playable": 1,
+      "instArtikulId": 10,
+      "levelMin": 6,
+      "levelMax": 7,
+      "returnAreaId": "500",
+      "westAreaId": "635",
+      "arenaAreaId": "636",
+      "eastAreaId": "637",
+      "inviteTtlSec": 120,
+      "banSec": 3600,
+      "matchDurationSec": 600,
+      "maxScore": 20,
+      "pointsPerKill": 20,
+      "fightBg": "5_1",
+      "fightFlags": "128",
+      "mapPicture": "Map_Shahta_02.png",
+      "statsPicture": "bg_aridan_shahta.jpg",
+      "description": "Долгие годы никто не заглядывал в эту шахту, кроме, может быть, отчаявшихся рудокопов. Арконы знали о подземном проходе, находящемся неподалеку от Аридановых шахт, но, сколько они не посылали рабов на поиски чего-либо ценного, вести оттуда шли неутешительные: никаких залежей обнаружить там так и не удалось. Бесполезная шахта была засыпана, а все внимание Арконов сконцентрировалось на других раскопках. Спустя некоторое время владычество могучих Арконов подошло к концу, и все, кто мог бы указать проход к забытой шахте, погрязли в нескончаемом конфликте между Лигой и Когортой.\r\nОдолейте захватчиков Подземелья раздора, чтобы гигантский самородок Аридана не попал в руки неприятеля!<br><br>",
+      "rules": "<font size=\"11\"><b><font color=\"#FF0000\">Внимание: поле битвы «Аридановый раскоп» доступно для игроков от 6-7 уровня!</font></b><br>Для того чтобы сразиться на поле битвы «Аридановый раскоп», <b>необходимо встать в очередь</b>.<br><b><font color=\"#FF0000\">Бой ведется один на один до победы на подземной арене (проход в локацию Раскоп)!</font></b><br>После того как подойдет ваша очередь спуститься в «Аридановый раскоп», <b>вам будет отправлено системное сообщение с приглашением на поле битвы</b>. Вы сможете подтвердить свое участие или отказаться от него. В том случае, <b>если вы согласитесь, вы сразу же отправитесь на поле битвы, где будете поджидать других участников сражения</b>. Отказавшись от приглашения, вы не сможете повторно занять очередь в течение одного часа. Если, находясь в другом бою, вы заметите в чате уведомление о грядущей битве, то вам придется в течение 2 минут завершить сражение и подтвердить свое участие. Если вы не сделаете этого, то <b>сможете вновь занять очередь лишь спустя час</b>.<br><br>Максимальная продолжительность поля битвы «Аридановый раскоп» -  <b>10 минут</b>.<br><b>Размер команды – 1 человек</b>.<br><b><font color=\"#FF0000\">Цели и условия сражения на поле битвы «Аридановый раскоп»:</font></b><br>Ваша команда должна первой <b>заработать 20 очков, убивая соперников</b>.<br>Убив противника из вражеской команды, вы получите <b>20 очков</b>.<br>",
+      "roomPos": [
+        {
+          "areaId": "635",
+          "x": 64,
+          "y": 211,
+          "title": "Западный лагерь"
+        },
+        {
+          "areaId": "636",
+          "x": 197,
+          "y": 318,
+          "title": "Раскоп"
+        },
+        {
+          "areaId": "637",
+          "x": 337,
+          "y": 217,
+          "title": "Восточный лагерь"
+        }
+      ],
+      "leaderGroups": [
+        {
+          "id": "1",
+          "minLevel": "8",
+          "maxLevel": "9"
+        },
+        {
+          "id": "2",
+          "minLevel": "10",
+          "maxLevel": "11"
+        },
+        {
+          "id": "3",
+          "minLevel": "12",
+          "maxLevel": "15"
+        },
+        {
+          "id": "4",
+          "minLevel": "16",
+          "maxLevel": "18"
+        },
+        {
+          "id": "5",
+          "minLevel": "19",
+          "maxLevel": "21"
+        },
+        {
+          "id": "6",
+          "minLevel": "22",
+          "maxLevel": "25"
+        },
+        {
+          "id": "7",
+          "minLevel": "26",
+          "maxLevel": "29"
+        },
+        {
+          "id": "8",
+          "minLevel": "30",
+          "maxLevel": "34"
+        },
+        {
+          "id": "9",
+          "minLevel": "35",
+          "maxLevel": "35"
+        },
+        {
+          "id": "11",
+          "minLevel": "36",
+          "maxLevel": "45"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "general",
+      "title": "Пепелище",
+      "flags": 258,
+      "available": 0,
+      "queueLevel": "",
+      "error": "Вы не попадаете в заданные уровневые группы!",
+      "playable": 0,
+      "instArtikulId": 0,
+      "levelMin": 0,
+      "levelMax": 0,
+      "returnAreaId": "",
+      "westAreaId": "",
+      "arenaAreaId": "",
+      "eastAreaId": "",
+      "inviteTtlSec": 0,
+      "banSec": 0,
+      "matchDurationSec": 0,
+      "maxScore": 0,
+      "pointsPerKill": 0,
+      "fightBg": "",
+      "fightFlags": "",
+      "mapPicture": "",
+      "statsPicture": "",
+      "description": "",
+      "rules": "",
+      "roomPos": [],
+      "leaderGroups": []
+    },
+    {
+      "id": 4,
+      "type": "general",
+      "title": "Копи",
+      "flags": 1026,
+      "available": 0,
+      "queueLevel": "",
+      "error": "Эвент еще не начался!",
+      "playable": 0,
+      "instArtikulId": 0,
+      "levelMin": 0,
+      "levelMax": 0,
+      "returnAreaId": "",
+      "westAreaId": "",
+      "arenaAreaId": "",
+      "eastAreaId": "",
+      "inviteTtlSec": 0,
+      "banSec": 0,
+      "matchDurationSec": 0,
+      "maxScore": 0,
+      "pointsPerKill": 0,
+      "fightBg": "",
+      "fightFlags": "",
+      "mapPicture": "",
+      "statsPicture": "",
+      "description": "",
+      "rules": "",
+      "roomPos": [],
+      "leaderGroups": []
+    },
+    {
+      "id": 1,
+      "type": "slaughter",
+      "title": "Бойня",
+      "flags": 4,
+      "available": 0,
+      "queueLevel": "",
+      "error": "Вы не попадаете в заданные уровневые группы!",
+      "playable": 0,
+      "instArtikulId": 0,
+      "levelMin": 0,
+      "levelMax": 0,
+      "returnAreaId": "",
+      "westAreaId": "",
+      "arenaAreaId": "",
+      "eastAreaId": "",
+      "inviteTtlSec": 0,
+      "banSec": 0,
+      "matchDurationSec": 0,
+      "maxScore": 0,
+      "pointsPerKill": 0,
+      "fightBg": "",
+      "fightFlags": "",
+      "mapPicture": "",
+      "statsPicture": "",
+      "description": "",
+      "rules": "",
+      "roomPos": [],
+      "leaderGroups": []
+    },
+    {
+      "id": 1,
+      "type": "fortress",
+      "title": "Крепость",
+      "flags": 0,
+      "available": 0,
+      "queueLevel": "",
+      "error": "Эвент еще не начался!",
+      "playable": 0,
+      "instArtikulId": 0,
+      "levelMin": 0,
+      "levelMax": 0,
+      "returnAreaId": "",
+      "westAreaId": "",
+      "arenaAreaId": "",
+      "eastAreaId": "",
+      "inviteTtlSec": 0,
+      "banSec": 0,
+      "matchDurationSec": 0,
+      "maxScore": 0,
+      "pointsPerKill": 0,
+      "fightBg": "",
+      "fightFlags": "",
+      "mapPicture": "",
+      "statsPicture": "",
+      "description": "",
+      "rules": "",
+      "roomPos": [],
+      "leaderGroups": []
+    }
+  ]
 }

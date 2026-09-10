@@ -136,6 +136,7 @@ function areaOf(spawn: HuntSpawn): Area {
     0,
     1,
     0,
+    "",
     [spawn],
   );
 }

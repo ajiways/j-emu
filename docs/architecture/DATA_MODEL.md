@@ -22,7 +22,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и pre-baseline миграции `drizzle/0000_foundation_init.sql` плюс последующие
-`drizzle/0001`…`0015`. Поля ниже совпадают с runtime.
+`drizzle/0001`…`0016`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -140,6 +140,9 @@ level_min, duration_sec, img_url, has_clear)` PK `(release_id, artikul_id)`.
 - `dungeon_areas` / `dungeon_spawns` / `dungeon_spawn_encounters` /
   `dungeon_spawn_routes` / `dungeon_spawn_zones` — spawn authors route **или**
   zone, не оба. Не jsonb.
+- `battlegrounds(release_id, type, id, …)` PK `(release_id, type, id)`;
+  `battleground_rooms` / `battleground_leader_groups`. Slice: playable
+  Раскоп `general|2` и dump-карты без queue.
 
 Отдельных spell-таблиц нет: fight spell живёт в `artifacts.extra`.
 `common|conf`, empty chrome и HUD defaults читаются из
@@ -158,7 +161,8 @@ read/mutation state, не отдельная таблица.
 - `areas(release_id, id, title, parent_id, map_asset, fight_background, region_map,
 ftime_max, code, context, sound_intro, sound_bg, inst_artikul_id,
 have_trade_channel, have_kind_channel, hide_finished_fights,
-hide_running_fights, no_clan_chat)` PK `(release_id, id)`.
+hide_running_fights, no_clan_chat, bg_id)` PK `(release_id, id)`.
+  `bg_id` — пустая строка = не комната BG; Раскоп rooms `"2"`.
   `parent_id` — пустая строка = нет родителя в slice. `map_asset` — SWF большой карты (`area_conf.swf`). Скалярные поля wire —
   колонки. `client_data` и `hunt_farm` mapper собирает пустыми. `area_conf.items`
   собираются из `world.area_links`.
@@ -205,7 +209,7 @@ finish/read request path. Полный контракт:
 - `drafts(id, content_type, content_key)` UNIQUE `(content_type, content_key)`;
   `content_type` ∈ `artifact|bot|area|area_link|hunt_spawn|store_type|store_lot|
 reputation_track|bonus|use_script|skill|level|appearance|hud_defaults|chrome|
-common_conf|welcome_message|dungeon`.
+common_conf|welcome_message|dungeon|battleground`.
 - `draft_versions(id, draft_id, version, schema_version, document jsonb, created_at)`.
 - `releases(id, version UNIQUE nextval, checksum UNIQUE, schema_version, validator_version, created_at, activated_at)`.
 - `release_entries(release_id, content_type, content_key, draft_version_id, digest)`.
@@ -303,8 +307,12 @@ P2P обмен TRD-01/TRD-02 живёт в `trade` без таблиц, не в 
 Party SOC-02/SOC-03 живёт в `party` (`parties` / `party_members` /
 `party_invites` / `party_bag_items`), не в `social`.
 DNG-01/DNG-02: `instance.copies` / `binds` / `killed_spawns` (строки, не dump
-JSONB `killed_spawns_json`). `heroes.instance_copy_id` nullable без FK.
+JSONB `killed_spawns_json`). `copies.copy_type` `dungeon|bg`.
+`heroes.instance_copy_id` nullable без FK.
 Контракт: [INSTANCE.md](../modules/INSTANCE.md).
+BG-01: `battleground.finished_matches` / `finished_players` (typed, не jsonb);
+queue/invite/ban/live score — RAM. Контракт:
+[BATTLEGROUND.md](../modules/BATTLEGROUND.md).
 
 Перед глобальным изменением границ character/inventory/world/combat или началом
 economy/social/instances нужен отдельный architecture checkpoint: подтвердить
