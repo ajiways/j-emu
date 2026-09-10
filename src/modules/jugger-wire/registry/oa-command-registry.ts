@@ -40,7 +40,11 @@ export class OaCommandRegistry {
     "post|list",
     "post|list_sent",
     "post|send",
+    "post|send_cod",
+    "post|pick",
+    "post|batch_pick",
     "post|delete",
+    "post|retract",
     "post|read",
     "user|bag_order",
   ] as const;

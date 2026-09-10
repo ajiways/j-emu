@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Catalog } from "../../../src/modules/catalog/ports/catalog.ts";
 import type { Letter } from "../../../src/modules/mail/domain/letter.ts";
 import {
   MAIL_FOLDER_INBOX,
@@ -11,16 +12,22 @@ import {
   SYSTEM_MAIL_PEER,
 } from "../../../src/modules/jugger-wire/application/user-macro.ts";
 
+const unusedCatalog = {
+  artifact: async () => {
+    throw new Error("catalog unused for empty attachments");
+  },
+} as unknown as Catalog;
+
 describe("letter list wire", () => {
-  it("uses empty arrays when the folder has no letters", () => {
-    expect(buildLetterListBlock([], MAIL_FOLDER_INBOX, new Map())).toEqual({
+  it("uses empty arrays when the folder has no letters", async () => {
+    expect(await buildLetterListBlock([], MAIL_FOLDER_INBOX, new Map(), unusedCatalog)).toEqual({
       status: 100,
       list: [],
       macros_list: [],
     });
   });
 
-  it("maps id to letter and [[USER]] macros from the current peer", () => {
+  it("maps id to letter and [[USER]] macros from the current peer", async () => {
     const letter = sampleLetter({
       id: 9,
       peerHeroId: 2,
@@ -28,7 +35,12 @@ describe("letter list wire", () => {
       folder: MAIL_FOLDER_OUTBOX,
     });
     const peer = { nick: "Bee", level: 4, kind: 1 };
-    const block = buildLetterListBlock([letter], MAIL_FOLDER_OUTBOX, new Map([[2, peer]]));
+    const block = await buildLetterListBlock(
+      [letter],
+      MAIL_FOLDER_OUTBOX,
+      new Map([[2, peer]]),
+      unusedCatalog,
+    );
     const token = buildUserMacro(peer);
     expect(block.macros_list).toEqual({ [token.key]: token.macro });
     const list = block.list as Record<string, Record<string, unknown>>;
@@ -43,14 +55,14 @@ describe("letter list wire", () => {
     expect(list["9"]).not.toHaveProperty("from_nick");
   });
 
-  it("uses the system postman peer when peer_hero_id is null", () => {
+  it("uses the system postman peer when peer_hero_id is null", async () => {
     const letter = sampleLetter({
       id: 1,
       peerHeroId: null,
       peerNick: WELCOME_LETTER.fromNick,
       folder: MAIL_FOLDER_INBOX,
     });
-    const block = buildLetterListBlock([letter], MAIL_FOLDER_INBOX, new Map());
+    const block = await buildLetterListBlock([letter], MAIL_FOLDER_INBOX, new Map(), unusedCatalog);
     const token = buildUserMacro({ ...SYSTEM_MAIL_PEER, nick: WELCOME_LETTER.fromNick });
     const list = block.list as Record<string, Record<string, unknown>>;
     expect(list["1"]).toMatchObject({ from_nick: token.token });
@@ -75,6 +87,7 @@ function sampleLetter(overrides: Partial<Letter>): Letter {
     moneyType: 0,
     pairId: null,
     system: 1,
+    attachments: [],
     ...overrides,
   };
 }

@@ -43,7 +43,7 @@ import {
 } from "../../../src/modules/content/infrastructure/schema.ts";
 import { accounts, sessions } from "../../../src/modules/identity/infrastructure/schema.ts";
 import { items } from "../../../src/modules/inventory/infrastructure/schema.ts";
-import { letters } from "../../../src/modules/mail/infrastructure/schema.ts";
+import { letters, letterAttachments } from "../../../src/modules/mail/infrastructure/schema.ts";
 import { areaLinks, areas, huntSpawns } from "../../../src/modules/world/infrastructure/schema.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
@@ -116,6 +116,7 @@ describe("Drizzle migrations", () => {
         "identity.accounts",
         "identity.sessions",
         "inventory.items",
+        "mail.letter_attachments",
         "mail.letters",
         "world.area_links",
         "world.areas",
@@ -154,6 +155,7 @@ describe("Drizzle migrations", () => {
       experienceGrants,
       items,
       letters,
+      letterAttachments,
       finishedFights,
       drafts,
       draftVersions,
@@ -161,7 +163,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(35);
+    ]).toHaveLength(36);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -177,6 +179,7 @@ describe("Drizzle migrations", () => {
       "0006_world_hunt_spawn_wander.sql",
       "0007_catalog_store_lot_pay.sql",
       "0008_mail_letters.sql",
+      "0009_mail_letter_attachments.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -191,8 +194,9 @@ describe("Drizzle migrations", () => {
       "0006_world_hunt_spawn_wander",
       "0007_catalog_store_lot_pay",
       "0008_mail_letters",
+      "0009_mail_letter_attachments",
     ]);
-    expect(await appliedCount()).toBe(9);
+    expect(await appliedCount()).toBe(10);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -287,6 +291,26 @@ describe("Drizzle migrations", () => {
       { column_name: "body", is_nullable: "NO" },
       { column_name: "money_come_minor", is_nullable: "NO" },
       { column_name: "system", is_nullable: "NO" },
+    ]);
+    const mailAttach = await database.session().execute<{
+      column_name: string;
+      is_nullable: string;
+    }>(
+      sql`SELECT column_name, is_nullable
+          FROM information_schema.columns
+          WHERE table_schema = 'mail' AND table_name = 'letter_attachments'
+            AND column_name IN ('original_item_id', 'artifact_id', 'ord')
+          ORDER BY column_name`,
+    );
+    expect(
+      [...mailAttach].map((row) => ({
+        column_name: row.column_name,
+        is_nullable: row.is_nullable,
+      })),
+    ).toEqual([
+      { column_name: "artifact_id", is_nullable: "NO" },
+      { column_name: "ord", is_nullable: "NO" },
+      { column_name: "original_item_id", is_nullable: "NO" },
     ]);
   });
 

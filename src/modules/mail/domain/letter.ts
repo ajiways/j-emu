@@ -1,3 +1,4 @@
+import type { LetterAttachment } from "./letter-attachment.ts";
 import type { MailFolder } from "./mail-folder.ts";
 
 export type Letter = Readonly<{
@@ -17,6 +18,7 @@ export type Letter = Readonly<{
   moneyType: 0 | 1;
   pairId: number | null;
   system: 0 | 1;
+  attachments: readonly LetterAttachment[];
 }>;
 
 export type NewLetter = Omit<Letter, "id">;

@@ -1,3 +1,4 @@
+import type { Catalog } from "../../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../../character/application/character-service.ts";
 import type { MailService } from "../../../mail/application/mail-service.ts";
 import { MAIL_FOLDER_OUTBOX } from "../../../mail/domain/mail-folder.ts";
@@ -11,6 +12,7 @@ export class PostListSentCommand implements OaCommand {
   constructor(
     private readonly characters: CharacterService,
     private readonly mail: MailService,
+    private readonly catalog: Catalog,
   ) {}
 
   async execute(accountId: number): Promise<OaEncodedResponse> {
@@ -19,10 +21,11 @@ export class PostListSentCommand implements OaCommand {
     const rows = await this.mail.listOutbox(hero.id);
     return {
       kind: "nested",
-      value: buildLetterListBlock(
+      value: await buildLetterListBlock(
         rows,
         MAIL_FOLDER_OUTBOX,
         await loadMailPeers(rows, this.characters),
+        this.catalog,
       ),
     };
   }

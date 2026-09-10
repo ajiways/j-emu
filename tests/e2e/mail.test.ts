@@ -5,6 +5,7 @@ import { WELCOME_LETTER } from "../../src/modules/mail/domain/welcome-letter.ts"
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { uniqueDevelopmentSlot } from "../support/harness/unique-development-slot.ts";
+import { bagItemByArtikulId } from "../support/harness/wire-payload.ts";
 
 describe("mail inbox and plain send", () => {
   let harness: ApplicationHarness;
@@ -98,9 +99,10 @@ describe("mail inbox and plain send", () => {
     expect(afterDelete.list).toEqual([]);
   });
 
-  it("returns 203 for clan send, missing nick, attachments, gold, and pick", async () => {
+  it("returns 203 for clan send, missing nick, NOGIVE, and missing pick", async () => {
     const client = await AuthenticatedClient.login(application);
-    await client.objectAction({ object: "common", action: "init", sq: 1 });
+    const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
+    const nick = nickFrom(init);
     const clan = await client.objectAction({
       object: "post",
       action: "send",
@@ -115,34 +117,25 @@ describe("mail inbox and plain send", () => {
       sq: 3,
     });
     expect(missing["post|send"]).toEqual({ status: 203, error: "персонаж не найден" });
-    const attached = await client.objectAction({
+    const glove = bagItemByArtikulId(init, 9095);
+    const nogive = await client.objectAction({
       object: "post",
       action: "send",
-      form: { nick: "x", attachment: { "100001": 1 } },
+      form: { nick: nick, attachment: { [String(glove.id)]: 1 } },
       sq: 4,
     });
-    expect(attached["post|send"]).toEqual({
+    expect(nogive["post|send"]).toEqual({
       status: 203,
-      error: "вложения в этом срезе недоступны",
-    });
-    const gold = await client.objectAction({
-      object: "post",
-      action: "send",
-      form: { nick: "x", money: 5 },
-      sq: 5,
-    });
-    expect(gold["post|send"]).toEqual({
-      status: 203,
-      error: "вложенное золото в этом срезе недоступно",
+      error: "непередаваемый предмет нельзя отправить почтой",
     });
     const pick = await client.objectAction({
       object: "post",
       action: "pick",
-      form: { id: 1 },
-      sq: 6,
+      form: { id: 2_000_000_001 },
+      sq: 5,
     });
-    expect(pick["post|pick"]).toEqual({ status: 203, error: "post|pick is not implemented" });
-    const read = await client.objectAction({ object: "post", action: "read", sq: 7 });
+    expect(pick["post|pick"]).toEqual({ status: 203, error: "письмо не найдено" });
+    const read = await client.objectAction({ object: "post", action: "read", sq: 6 });
     expect(read["post|read"]).toEqual({ status: 100 });
   });
 });

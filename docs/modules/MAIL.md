@@ -1,8 +1,9 @@
-# Mail (MAIL-01)
+# Mail (MAIL-02)
 
 ## Статус
 
-Inbox/outbox, welcome, plain send/delete и `user|bag_order` реализованы на
+Inbox/outbox, welcome, send (текст / золото / вложения / НП), pick /
+batch-pick, retract, delete, TTL sweep и `user|bag_order` реализованы на
 raw-AMF. CEF почты не прогонялся — product-status **готово** не ставить.
 Точный product-status: [CAPABILITIES.md](../CAPABILITIES.md).
 
@@ -10,27 +11,64 @@ raw-AMF. CEF почты не прогонялся — product-status **гото�
 
 - `jgr-emu/docs/MAIL.md`;
 - `jgr-emu/src/mail/` (`index.ts`, `letters.ts`, `wire.ts`, `tax.ts`,
-  `unread.ts`);
+  `sweep.ts`, `unread.ts`);
 - `jgr-emu/src/emotions.ts` `buildUserMacro` / `[[USER key]]`;
 - `jgr-emu/src/routes/oa/user.ts` `user|bag_order`.
 
-Не переносить attachments/COD/pick/retract/TTL sweep, system chat
-`macroses`, кланы и catalog `welcome_message` (это bootstrap toast, не
-письмо почтальона).
+Не переносить catalog `welcome_message` (bootstrap toast, не письмо
+почтальона), system chat `macroses` и кланы.
 
 ## Architecture decision
 
 Отдельный `ARC-SOC` не нужен. Mailbox — модуль `mail` (`src/modules/mail`),
-не target `social` и не `economy`. Деньги остаются `heroes.money_minor`
-через character `debitMoney`. Inventory в MAIL-01 не участвует. Composition
-UoW (`src/app/mail-send.ts`) атомарно списывает postage и пишет две строки
-письма. Mail не пишет `heroes`. Character не пишет `mail.letters`.
+не target `social` и не `economy`.
+
+Владение:
+
+- `mail` пишет только `mail.letters` и `mail.letter_attachments`;
+- деньги — `heroes.money_minor` через character `debitMoney` / `creditMoney`;
+- bag — inventory take-by-instance / snapshot grant.
+
+Composition UoW атомарно списывает bag+золото и пишет пару писем (send),
+забирает вложения (pick / batch-pick) и возвращает НП (retract / expiry).
+Mail не пишет `heroes` и `inventory.items`. Inventory не пишет `mail.*`.
+Character не пишет `mail.*`.
 
 Chat piggyback (`Вы отправили письмо…`) не имитировать: chat не перенесён.
 
-Fight lock / ghost на `post|*` dump не ставит — не выдумывать.
+Fight lock / ghost на `post|*` dump не ставит — не выдумывать. `allowGhost:
+true` на postage/debit.
 
-IDs выдаёт PostgreSQL identity с `1`. Wire integer `1..2_147_483_647`.
+IDs писем выдаёт PostgreSQL identity с `1`. Wire integer `1..2_147_483_647`.
+Instance `items.id` после pick **новый** (dump `grantMailArtifact`).
+
+## Вложения: snapshot, не reservation
+
+Dump хранит AMF JSONB `artifacts_json` и уничтожает bag-строку. Target
+`social` «reservation/reference» — план, не runtime.
+
+**Решение MAIL-02:** дочерняя таблица `mail.letter_attachments` — снимок
+`original_item_id`, `artifact_id`, qty, durability, upgrade. JSONB нет.
+Живой `items` row в письме не держим и `location_kind: mail` не добавляем.
+
+Send берёт bag **по `items.id`** (клиентский map id→qty), не по catalog
+`artikul_id` (это ECO-02 barter). Max **5**. Только bag. NOGIVE (`flags &
+32` каталога или bound upgrade) → 203 `непередаваемый предмет нельзя
+отправить почтой`.
+
+Pick восстанавливает снимок через inventory grant: durability/upgrade
+снимка обязательны, молча подставлять каталожный шаблон нельзя. Новые
+instance id — dump-совместимо.
+
+Гонка pick/retract/sweep: `SELECT FOR UPDATE` строки письма в той же UoW.
+Один победитель; проигравший видит уже пустое/удалённое письмо. Rollback
+UoW возвращает bag и золото, dump-стиль «grant back» не нужен.
+
+Просроченное обычное письмо **сжигает** вложения вместе со строкой. НП
+inbox с вложениями → системный возврат отправителю (`ITEM_RETURN`),
+`bypassCapacity`. Sweep: на `list` / `list_sent` / send / pick / delete /
+retract **и** process `DelayScheduler` ~30с (как hunt wander), не
+отдельный worker. Chat не будить.
 
 ## Welcome policy
 
@@ -44,95 +82,96 @@ inbox кладёт системное письмо (`system=1`, `bypassCapacity`
 Пустой inbox после delete welcome → следующее `list` создаёт письмо снова
 (dump `countInbox === 0`). Restart безопасен: строка в PostgreSQL.
 
-Catalog `welcome_message` к почте не относится.
+## Send
 
-## Send (plain)
+Ник case-insensitive. `MIN_MAIL_LEVEL = 1`. Inbox cap **50** (system /
+welcome / оплата и возврат НП обходят).
 
-Только текст. Postage: **1 золотой** (`MAIL_POSTAGE`) + `mailTax(enclosed)`;
-enclosed gold в MAIL-01 запрещён → tax 0. Списание `debitMoney` 100 minor.
-`allowGhost: true` — dump ghost на send не гейтит.
-
+Обычная отправка: postage **1 золотой** + `mailTax(money + sum(price*qty))`.
+Enclosed gold списывается у отправителя и кладётся в `money_come`.
 Формула tax dump-proven: `round(0.5^(log10(v)+2) * v, 2)`; `v<=0` → 0.
+Хранение — minor (2 знака золота), не unrounded float dump-строки.
+
+НП (`post|send_cod`): вложения обязательны, `money` = цена выкупа > 0.
+Postage 1g нет. Отправитель платит `mailTax(itemValue, true)` (×1.5). На
+письме `tax` — **немасштабированная** база `mailTax(itemValue, false)`;
+получатель при pick платит `payment+tax`. `flags|=COD`. TTL обеих копий
+**1 сутки**.
 
 Две строки: inbox получателя и outbox отправителя, даже при self-send.
-`pair_id` обеих = id inbox-строки.
+`pair_id` обеих = id inbox-строки. Снимок вложений копируется на обе
+строки.
 
-Ник получателя case-insensitive (`CharacterService.getByNick`).
-`MIN_MAIL_LEVEL = 1`. Inbox cap **50** (system/welcome обходят).
+## Pick / retract / delete
 
-## Delete
+`post|pick`: только inbox. НП — списать `payment+tax`, выдать вложения,
+отправителю системное inbox «Оплата наложенного платежа» с `money_come`
+(золото не credитить напрямую). `delete=1` удаляет строку, иначе
+`markPicked` (снять COD, поставить READ, обнулить valuables и вложения).
+Переполнение бага → 203 `в рюкзаке нет места`, письмо не трогать.
 
-Только владелец строки (`owner_hero_id`). Письмо с valuables (`money_come` /
-`payment` > 0) — 203 `сначала заберите ценности`. MAIL-01 valuables нет.
+`post|batch_pick`: только не-НП, всё или ничего, всегда с удалением.
 
-## Out of MAIL-01 (MAIL-02)
+`post|retract`: кнопка «Вернуть» на **входящем** НП, не отмена outbox.
 
-`post|send_cod`, `post|pick`, `post|batch_pick`, `post|retract`, вложения,
-золото в письме, `artifacts_json`, TTL sweep/expiry worker.
+`post|delete`: только владелец; valuables (`money_come` / `payment` /
+вложения) → 203 `сначала заберите ценности`.
 
 ## Schema (`mail`)
 
-`mail.letters`:
+`mail.letters` — MAIL-01 плюс те же money/flags. TTL: inbox 10 суток,
+outbox 30, pending COD 1 сутки.
 
-- `id` integer GENERATED ALWAYS AS IDENTITY START 1;
-- `owner_hero_id` FK `character.heroes` ON DELETE RESTRICT;
-- `folder` `inbox|outbox`;
-- `peer_hero_id` nullable FK heroes (null = система);
-- `peer_nick`, `subject`, `body` text not null;
-- `sent_at` / `expires_at` timestamptz (wire `stime`/`rtime` unix-sec);
-- `flags` integer ≥ 0 (COD=1, ALREADY_READ=2, ITEM_RETURN=4; MAIL-01 пишет 0);
-- `money_come_minor`, `payment_minor`, `tax_minor` bigint ≥ 0;
-- `money_type` 0|1 (plain text → 0; gold UI → `"1"`);
-- `pair_id` nullable; `system` 0|1.
-
-TTL хранится (`inbox` 10 суток, `outbox` 30). Sweep — MAIL-02: list не
-удаляет просроченное.
-
-JSONB нет. `artifacts_json` появится в MAIL-02.
+`mail.letter_attachments`: PK `(letter_id, ord)`; FK letter ON DELETE
+CASCADE; нет FK на `inventory.items` (инстанс уже уничтожен) и нет JSONB.
 
 Unix time только в jugger-wire mapper.
 
 ## Public ports
 
-Mail: `listInbox` (ensure welcome), `listOutbox`, `delete`, `hasUnread`,
-`deliverPlayerPair`.
+Mail: `listInbox` / `listOutbox` (sweep + welcome), `delete`, `hasUnread`,
+`deliverPlayerPair`, `lockInbox`, `markPicked`, `deliverSystemInbox`,
+`returnCodInbox`, `sweepExpired`.
 
-Character: `getByNick`, `getById`, `debitMoney`.
+Inventory: `takeFromBagForMail` (instance id), `canFitMailSnapshots`,
+`grantMailSnapshots`.
 
-Composition `MailSend`: одна UoW на postage + две insert. Нехватка золота и
-бизнес-отказы — typed `MailDeniedError` → wire **203**.
+Character: `getByNick`, `getById`, `lockById`, `debitMoney`.
+
+Composition: `MailSend`, `MailClaim`, `MailTtlSweep` на общем
+`DelayScheduler`.
 
 ## Wire
 
-| OA                | Форма                                                                 | Успех                                                                            |
-| ----------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `post\|list`      | —                                                                     | nested `{ status:100, list, macros_list }`                                       |
-| `post\|list_sent` | —                                                                     | то же, outbox, ник-поле `to_nick`                                                |
-| `post\|send`      | `subject`, `text`, `nick`, `money`, `attachment`, `send_clan_members` | flat: `post\|send` `{status:100}` + `user\|bag` + `state`                        |
-| `post\|delete`    | `id`                                                                  | flat: `post\|delete` + обновлённый `post\|list` / `list_sent` + bag + state      |
-| `post\|read`      | —                                                                     | nested `{ status:100 }`                                                          |
-| `user\|bag_order` | —                                                                     | flat: `{status:100}` + `user\|bag` + `state` (compose; dump не переставляет bag) |
+| OA                 | Форма                                                                 | Успех                                                                              |
+| ------------------ | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `post\|list`       | —                                                                     | nested `{ status:100, list, macros_list }`                                         |
+| `post\|list_sent`  | —                                                                     | то же, outbox, ник-поле `to_nick`                                                  |
+| `post\|send`       | `subject`, `text`, `nick`, `money`, `attachment`, `send_clan_members` | flat: `post\|send` `{status:100}` + `user\|bag` + `state`                          |
+| `post\|send_cod`   | как send; `money` = выкуп; вложения обязательны                       | flat: `post\|send_cod` + bag + state                                               |
+| `post\|pick`       | `id`, `delete` `0`/`1`                                                | flat: `post\|pick` + `post\|list` + bag + state; при `delete=1` ещё `post\|delete` |
+| `post\|batch_pick` | `ids[]`                                                               | flat: `post\|batch_pick` + `post\|list` + bag + state                              |
+| `post\|delete`     | `id`                                                                  | flat: `post\|delete` + обновлённый `post\|list` / `list_sent` + bag + state        |
+| `post\|retract`    | `id`                                                                  | flat: `post\|retract` + `post\|list` + bag + state                                 |
+| `post\|read`       | —                                                                     | nested `{ status:100 }`                                                            |
+| `user\|bag_order`  | —                                                                     | flat: `{status:100}` + `user\|bag` + `state` (compose; dump не переставляет bag)   |
 
-Пустые `list` / `macros_list` = **`[]`**. Непустой `list` = объект **id →
-letter**. `artifact_list` MAIL-01 всегда `[]`.
+Пустые `list` / `macros_list` / `artifact_list` = **`[]`**. Непустой `list`
+= объект **id → letter**. Непустой `artifact_list` = объект (bag-шейп,
+ключ — `original_item_id` снимка).
 
 Ник: **`[[USER ${key}]]`**, не `#macros…##`. `macros_list[key]` =
 `buildUserMacro` из **текущего** peer (`nick`/`level`/`kind`). Поля `id`
 нет. `rank` dump-proven **0**, `server_id` **1**. Пустые clan-поля не слать.
 Системное письмо: nick `Почтальон`, level 0, kind 0 — named
-`SYSTEM_MAIL_PEER`, не fallback на missing hero. Если `peer_hero_id` задан,
-герой обязан существовать.
+`SYSTEM_MAIL_PEER`. Если `peer_hero_id` задан, герой обязан существовать.
 
 Dump `post|list` **без** page-параметра: сервер отдаёт весь folder `id desc`.
-Клиент пагинирует объект. Это и есть acceptance «paginated».
 
 `state.new_message` = `1`, если во inbox есть строка без ALREADY_READ.
-`post|read` флаг не ставит (unread у клиента в SharedObject). MAIL-01 не
-пишет READ → любой непустой inbox даёт `new_message:1`. List сам `state` не
-кладёт (dump nested payload).
+`post|read` флаг не ставит.
+
+`money_type` = `"1"` при COD / valuables / tax / вложениях, иначе `"0"`.
 
 Ошибки: **203** + `error`. `send_clan_members` → `кланы не поддерживаются`.
-Вложения / enclosed gold → 203 (срез без pick). Не слать `error` на 100.
-
-Незарегистрированные `post|pick` / `send_cod` / `retract` / `batch_pick` →
-registry `… is not implemented`.
+Не слать `error` на 100.

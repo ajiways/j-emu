@@ -214,13 +214,13 @@ markers и curated chain пока существуют только в legacy co
 ## Mail — частично
 
 Есть raw-AMF: `post|list` кладёт restart-safe welcome от «Почтальона»,
-`post|list_sent`, plain `post|send` (postage 1g, без вложений и золота в
-письме), `post|delete`, no-op `post|read`, `user|bag_order`, `state.new_message`
-из unread inbox, macros `[[USER key]]`. Dual-hero send переживает reconnect/
-restart. CEF почты не прогонялся.
+`post|list_sent`, `post|send` / `send_cod` (postage, золото, вложения),
+`post|pick` / `batch_pick` / `retract` / `delete`, no-op `post|read`,
+`user|bag_order`, `state.new_message` из unread inbox, macros `[[USER key]]`,
+TTL sweep на list и DelayScheduler. Dual-hero send/pick переживает
+reconnect/restart; pick выдаёт новый `items.id`. CEF почты не прогонялся.
 
-Не перенесены attachments, COD, pick/batch-pick, retract, TTL sweep, system
-chat о письме.
+Не перенесены system chat о письме и кланы.
 
 ## После core — не перенесено
 

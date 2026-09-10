@@ -125,11 +125,12 @@ process-local в `jugger-wire`. Durable outbox table не создаётся. Pa
 не владеют Fastify. `4:` — `SOC-02`, `chat|add` — `SOC-01` в
 [ROADMAP.md](ROADMAP.md).
 
-**Решение MAIL-01:** текущих границ достаточно; отдельный `ARC-SOC` не нужен.
-Mailbox — `src/modules/mail` / `mail.letters`. Postage списывает
-`heroes.money_minor` через character port в composition UoW. Chat piggyback
-не имитировать. Target `social` mailbox остаётся планом. Контракт:
-[MAIL.md](../modules/MAIL.md).
+**Решение MAIL-01/MAIL-02:** текущих границ достаточно; отдельный `ARC-SOC`
+не нужен. Mailbox — `src/modules/mail` / `mail.letters` + snapshot
+`letter_attachments` (не JSONB, не live reservation). Postage/pick/COD —
+composition UoW: character money + inventory take-by-instance. TTL sweep на
+общем `DelayScheduler`. Chat piggyback не имитировать. Target `social`
+mailbox остаётся планом. Контракт: [MAIL.md](../modules/MAIL.md).
 
 Отдельный `ARC-RTM` потребуется позже только если доставка diffs должна
 пережить restart процесса или social-модуль заберёт channel policy.

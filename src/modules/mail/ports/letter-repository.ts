@@ -7,6 +7,9 @@ export interface LetterRepository {
   listFolder(ownerHeroId: number, folder: MailFolder): Promise<readonly Letter[]>;
   countInbox(ownerHeroId: number): Promise<number>;
   load(id: number, ownerHeroId: number): Promise<Letter | null>;
+  lock(id: number, ownerHeroId: number): Promise<Letter | null>;
+  lockExpired(now: Date): Promise<readonly Letter[]>;
+  markPicked(letter: Letter): Promise<void>;
   delete(id: number): Promise<void>;
   hasUnreadInbox(ownerHeroId: number): Promise<boolean>;
 }

@@ -24,6 +24,16 @@ import { takeDropQuantity } from "./take-drop-quantity.ts";
 import { requireEquippedItem, requireWearablePaperdoll, type WearHero } from "./wear-paperdoll.ts";
 import { grantToBag } from "./grant-to-bag.ts";
 import { consumeFromBag, countBagByArtifact } from "./consume-from-bag.ts";
+import { takeFromBagForMail } from "./take-from-bag-for-mail.ts";
+import { canFitMailSnapshots } from "./can-fit-mail-snapshots.ts";
+import { grantMailSnapshots } from "./grant-mail-snapshots.ts";
+import type { MailItemSnapshot } from "./mail-item-snapshot.ts";
+import {
+  occupiedEquipmentSlots,
+  pocketPosition,
+  requireDropItem,
+  requireHeroItem,
+} from "./inventory-item-lookup.ts";
 import { refillPocketAfterFight, type PocketRefillCell } from "./refill-pocket-after-fight.ts";
 import {
   applyGearUpgrade,
@@ -243,6 +253,28 @@ export class InventoryService {
     );
   }
 
+  takeFromBagForMail(command: {
+    characterId: number;
+    itemId: number;
+    quantity: number;
+  }): Promise<MailItemSnapshot> {
+    return takeFromBagForMail(this.inventory, this.catalog, command);
+  }
+
+  canFitMailSnapshots(command: {
+    characterId: number;
+    snapshots: readonly MailItemSnapshot[];
+  }): Promise<boolean> {
+    return canFitMailSnapshots(this.inventory, this.catalog, this.bagCapacity, command);
+  }
+
+  grantMailSnapshots(command: {
+    characterId: number;
+    snapshots: readonly MailItemSnapshot[];
+  }): Promise<void> {
+    return grantMailSnapshots(this.inventory, this.catalog, this.bagCapacity, command);
+  }
+
   refillPocketAfterFight(command: {
     characterId: number;
     cells: readonly PocketRefillCell[];
@@ -334,48 +366,4 @@ export class InventoryService {
     }
     return equippedGearSpells(items, definitions);
   }
-}
-
-function requireHeroItem(
-  items: readonly InventoryItem[],
-  heroId: number,
-  itemId: number,
-): InventoryItem {
-  const matches = items.filter((item) => item.id === itemId);
-  if (matches.length > 1) throw new Error(`Multiple items found for ${itemId}`);
-  const item = matches[0];
-  if (!item) throw new Error(`Item ${itemId} for hero ${heroId} is missing`);
-  return item;
-}
-
-function requireDropItem(
-  items: readonly InventoryItem[],
-  heroId: number,
-  itemId: number,
-  intent: "drop" | "sell",
-): InventoryItem {
-  const matches = items.filter((item) => item.id === itemId);
-  if (matches.length > 1) throw new Error(`Multiple items found for ${itemId}`);
-  const item = matches[0];
-  if (!item || item.heroId !== heroId) throw DropDeniedError.forIntent(intent);
-  return item;
-}
-
-function occupiedEquipmentSlots(
-  items: readonly InventoryItem[],
-  exceptItemId: number,
-): Set<number> {
-  const occupied = new Set<number>();
-  for (const item of items) {
-    if (item.id === exceptItemId || item.location.kind !== "equipment") continue;
-    occupied.add(item.location.slot);
-  }
-  return occupied;
-}
-
-function pocketPosition(item: InventoryItem): number {
-  if (item.location.kind !== "pocket") {
-    throw new Error(`Item ${item.id} is not in the pocket`);
-  }
-  return item.location.position;
 }

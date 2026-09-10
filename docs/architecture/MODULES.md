@@ -31,9 +31,9 @@ area presence roster:
   store types/lots, reputation tracks и durability;
 - `combat` — hunt lifecycle, CMB-02…04 reconnect/ghost settlement и finished
   history;
-- `mail` — `mail.letters` inbox/outbox, welcome «Почтальон», plain send/delete
-  и postage 1g; вложения/COD/sweep — MAIL-02. Target `social` mailbox ещё
-  план. Репутация Радвея **5** есть (REP-01, product частично).
+- `mail` — `mail.letters` / `mail.letter_attachments`, welcome «Почтальон»,
+  send/pick/COD/retract и TTL sweep. Target `social` mailbox ещё план.
+  Репутация Радвея **5** есть (REP-01, product частично).
   `quests`, `economy`, `professions`, `instances` в runtime нет.
 
 Во всех разделах ниже **API**, **события** и **шов извлечения** описывают
@@ -152,16 +152,18 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 
 **Шов извлечения:** входные `QuestSignal` создаются адаптерами событий combat/world/inventory. Награда исполняется saga через публичные API character/inventory/economy.
 
-### `mail` — MAIL-01 runtime
+### `mail` — MAIL-02 runtime
 
-**Владеет:** строками `mail.letters` (inbox/outbox copies). Не владеет балансом,
-bag и chat.
+**Владеет:** `mail.letters` (inbox/outbox copies) и снимками
+`mail.letter_attachments`. Не владеет балансом, bag и chat.
 
-**API:** `listInbox`, `listOutbox`, `delete`, `hasUnread`, `deliverPlayerPair`.
-Send postage — composition `MailSend` + character `debitMoney`. Контракт:
+**API:** `listInbox`, `listOutbox`, `delete`, `hasUnread`, `deliverPlayerPair`,
+`lockInbox`, `markPicked`, `deliverSystemInbox`, `returnCodInbox`,
+`sweepExpired`. Send/pick/COD — composition `MailSend` / `MailClaim` +
+character money + inventory instance take/grant. Контракт:
 [MAIL.md](../modules/MAIL.md).
 
-**Шов извлечения:** не цель MAIL-01. Target mailbox в `social` ниже — план.
+**Шов извлечения:** не цель MAIL-02. Target mailbox в `social` ниже — план.
 
 ### `social` — после core
 

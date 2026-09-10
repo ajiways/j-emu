@@ -1,4 +1,5 @@
 export const MAIL_POSTAGE_GOLD = 1;
+export const MAIL_MAX_ATTACH = 5;
 
 export function mailTaxRaw(value: number, cod = false): number {
   if (!Number.isFinite(value) || value <= 0) return 0;

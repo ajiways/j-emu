@@ -1,3 +1,4 @@
+import type { Catalog } from "../../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../../character/application/character-service.ts";
 import type { MailService } from "../../../mail/application/mail-service.ts";
 import { MAIL_FOLDER_OUTBOX } from "../../../mail/domain/mail-folder.ts";
@@ -17,6 +18,7 @@ export class PostDeleteCommand implements OaCommand {
     private readonly bootstrap: BootstrapReadModel,
     private readonly characters: CharacterService,
     private readonly mail: MailService,
+    private readonly catalog: Catalog,
   ) {}
 
   async execute(accountId: number, envelope: ObjectActionEnvelope): Promise<OaEncodedResponse> {
@@ -32,7 +34,12 @@ export class PostDeleteCommand implements OaCommand {
         kind: "flat",
         blocks: postDeleteMutation(
           listKey,
-          buildLetterListBlock(rows, folder, await loadMailPeers(rows, this.characters)),
+          await buildLetterListBlock(
+            rows,
+            folder,
+            await loadMailPeers(rows, this.characters),
+            this.catalog,
+          ),
           await this.bootstrap.bag(accountId),
           await this.bootstrap.state(accountId),
         ),

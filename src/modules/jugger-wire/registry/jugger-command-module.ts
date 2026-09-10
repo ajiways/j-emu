@@ -11,6 +11,7 @@ import type { FightWireMapper } from "../application/fight-wire-mapper.ts";
 import type { StorePurchase } from "../../../app/store-purchase.ts";
 import type { StoreRepair } from "../../../app/store-repair.ts";
 import type { MailSend } from "../../../app/mail-send.ts";
+import type { MailClaim } from "../../../app/mail-claim.ts";
 import type { MailService } from "../../mail/application/mail-service.ts";
 import { AttackBotCommand } from "../commands/oa/attack-bot-command.ts";
 import { BagDropCommand } from "../commands/oa/bag-drop-command.ts";
@@ -34,6 +35,10 @@ import { PostListCommand } from "../commands/oa/post-list-command.ts";
 import { PostListSentCommand } from "../commands/oa/post-list-sent-command.ts";
 import { PostReadCommand } from "../commands/oa/post-read-command.ts";
 import { PostSendCommand } from "../commands/oa/post-send-command.ts";
+import { PostSendCodCommand } from "../commands/oa/post-send-cod-command.ts";
+import { PostPickCommand } from "../commands/oa/post-pick-command.ts";
+import { PostBatchPickCommand } from "../commands/oa/post-batch-pick-command.ts";
+import { PostRetractCommand } from "../commands/oa/post-retract-command.ts";
 import { UseArtifactCommand } from "../commands/oa/use-artifact-command.ts";
 import { UpgradeCommand } from "../commands/oa/upgrade-command.ts";
 import { UserBagCommand } from "../commands/oa/user-bag-command.ts";
@@ -83,6 +88,7 @@ export class JuggerCommandModule {
     storeRepair: StoreRepair,
     mail: MailService,
     mailSend: MailSend,
+    mailClaim: MailClaim,
     sessions: SessionPresence,
     outbox: EsrvOutbox,
     wake: Readonly<{ wake(accountId: number): void }>,
@@ -192,10 +198,14 @@ export class JuggerCommandModule {
       new StoreListCommand(characters, catalog),
       new StoreBuyCommand(bootstrap, characters, storePurchase),
       new StoreRepairCommand(bootstrap, sheet, characters, storeRepair),
-      new PostListCommand(characters, mail),
-      new PostListSentCommand(characters, mail),
+      new PostListCommand(characters, mail, catalog),
+      new PostListSentCommand(characters, mail, catalog),
       new PostSendCommand(bootstrap, characters, mailSend),
-      new PostDeleteCommand(bootstrap, characters, mail),
+      new PostSendCodCommand(bootstrap, characters, mailSend),
+      new PostPickCommand(bootstrap, characters, mail, mailClaim, catalog),
+      new PostBatchPickCommand(bootstrap, characters, mail, mailClaim, catalog),
+      new PostDeleteCommand(bootstrap, characters, mail, catalog),
+      new PostRetractCommand(bootstrap, characters, mail, mailClaim, catalog),
       new PostReadCommand(),
       new UserBagOrderCommand(bootstrap),
     ]);

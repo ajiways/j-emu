@@ -11,6 +11,7 @@ import type { AppConfig } from "../../../src/app/config.ts";
 import type { StorePurchase } from "../../../src/app/store-purchase.ts";
 import type { StoreRepair } from "../../../src/app/store-repair.ts";
 import type { MailSend } from "../../../src/app/mail-send.ts";
+import type { MailClaim } from "../../../src/app/mail-claim.ts";
 import { MailModule } from "../../../src/modules/mail/mail-module.ts";
 import type { MailService } from "../../../src/modules/mail/application/mail-service.ts";
 import type { PlayableAccountRegistration } from "../../../src/app/playable-account-registration.ts";
@@ -240,13 +241,23 @@ describe("module factories", () => {
   });
 
   it("fails fast when required mail dependencies are missing", () => {
-    expect(() => MailModule.create({ database, clock })).toThrow(/Mail module requires a database/);
+    expect(() =>
+      MailModule.create({ database, clock, heroes: { getById: async () => null } }),
+    ).toThrow(/Mail module requires a database/);
     expect(() =>
       MailModule.create({
         database: {} as PostgresDatabase,
         clock: undefined as unknown as Clock,
+        heroes: { getById: async () => null },
       }),
     ).toThrow(/Mail module requires a clock/);
+    expect(() =>
+      MailModule.create({
+        database: {} as PostgresDatabase,
+        clock,
+        heroes: undefined as never,
+      }),
+    ).toThrow(/Mail module requires hero lookup/);
   });
 
   it("fails fast when required jugger-wire dependencies are missing", async () => {
@@ -275,6 +286,7 @@ describe("module factories", () => {
         storeRepair: {} as StoreRepair,
         mail: {} as MailService,
         mailSend: {} as MailSend,
+        mailClaim: {} as MailClaim,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -310,7 +322,11 @@ describe("module factories", () => {
       random: { unit: () => 0 },
     });
     await expect(inventory.close()).resolves.toBeUndefined();
-    const mail = MailModule.create({ database: {} as PostgresDatabase, clock });
+    const mail = MailModule.create({
+      database: {} as PostgresDatabase,
+      clock,
+      heroes: { getById: async () => null },
+    });
     await expect(mail.close()).resolves.toBeUndefined();
   });
 
@@ -374,6 +390,7 @@ describe("module factories", () => {
         storeRepair: {} as StoreRepair,
         mail: {} as MailService,
         mailSend: {} as MailSend,
+        mailClaim: {} as MailClaim,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

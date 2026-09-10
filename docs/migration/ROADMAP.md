@@ -807,12 +807,15 @@
 - **depends_on:** `MAIL-01`, `ECO-02`
 - **Behavior evidence:** legacy `MAIL.md` attachment/COD/TTL flows.
 - **Content set:** TTL и fee policy.
-- **Architecture checkpoint / decision:** pending — item/fund reservations,
-  claim/retract locking и expiry worker ownership.
+- **Architecture checkpoint / decision:** closed — snapshot
+  `mail.letter_attachments` (не JSONB и не live `items` reservation);
+  take-by-`items.id`; pick/retract/sweep `SELECT FOR UPDATE` в composition
+  UoW; TTL sweep на list и общем `DelayScheduler` ~30с, не worker. Chat не
+  имитировать. Контракт: [MAIL.md](../modules/MAIL.md).
 - **Acceptance:** send attachments/gold, COD, pick/batch-pick, retract и
   return-on-expiry имеют одного победителя в гонке и никогда не теряют
   владение.
-- **Status:** `queued`
+- **Status:** `done`
 
 ### AUC-01 — Auction listings and bids
 

@@ -7,10 +7,19 @@ import { PostgresLetterRepository } from "./infrastructure/postgres-letter-repos
 export class MailModule {
   private constructor(readonly service: MailService) {}
 
-  static create(input: { database: PostgresDatabase; clock: Clock }): MailModule {
+  static create(input: {
+    database: PostgresDatabase;
+    clock: Clock;
+    heroes: Readonly<{
+      getById(id: number): Promise<{ id: number; nick: string } | null>;
+    }>;
+  }): MailModule {
     const database = requirePresent(input.database, "Mail module requires a database");
     const clock = requirePresent(input.clock, "Mail module requires a clock");
-    return new MailModule(new MailService(new PostgresLetterRepository(database), clock));
+    const heroes = requirePresent(input.heroes, "Mail module requires hero lookup");
+    return new MailModule(
+      new MailService(new PostgresLetterRepository(database), clock, database, heroes),
+    );
   }
 
   async close(): Promise<void> {}

@@ -32,7 +32,7 @@ export class PostgresInventoryRepository implements InventoryRepository {
         equipmentSlot,
         durability: item.durability,
         durabilityMax: item.durabilityMax,
-        ...upgradeColumns(UNUPGRADED),
+        ...upgradeColumns(item.upgrade === undefined ? UNUPGRADED : item.upgrade),
         expire: item.expire,
         version: 1,
       })

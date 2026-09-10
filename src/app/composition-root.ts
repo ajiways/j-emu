@@ -28,6 +28,8 @@ import { HuntFightSettlement } from "./hunt-fight-settlement.ts";
 import { StorePurchase } from "./store-purchase.ts";
 import { StoreRepair } from "./store-repair.ts";
 import { MailSend } from "./mail-send.ts";
+import { MailClaim } from "./mail-claim.ts";
+import { MailTtlSweep } from "./mail-ttl-sweep.ts";
 import { MailModule } from "../modules/mail/mail-module.ts";
 import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
@@ -107,7 +109,11 @@ export class CompositionRoot {
         ),
       });
       closers.push(characters);
-      const mail = MailModule.create({ database, clock });
+      const mail = MailModule.create({
+        database,
+        clock,
+        heroes: characters.service,
+      });
       closers.push(mail);
       const presence = new PresenceService(
         world.service,
@@ -145,6 +151,22 @@ export class CompositionRoot {
         database,
         presenceFanout,
       );
+      const mailSend = new MailSend(
+        database,
+        characters.service,
+        mail.service,
+        inventory.service,
+        catalog.catalog,
+      );
+      const mailClaim = new MailClaim(
+        database,
+        characters.service,
+        mail.service,
+        inventory.service,
+      );
+      const mailSweep = new MailTtlSweep(mail.service, delay, clock);
+      mailSweep.start();
+      closers.push(mailSweep);
       const wire = await JuggerWireModule.create({
         config,
         identity: identity.service,
@@ -174,7 +196,8 @@ export class CompositionRoot {
         ),
         storeRepair: new StoreRepair(database, characters.service, inventory.service),
         mail: mail.service,
-        mailSend: new MailSend(database, characters.service, mail.service),
+        mailSend,
+        mailClaim,
       });
       closers.push(wire);
       return new Application(

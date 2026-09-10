@@ -255,9 +255,10 @@ Durable sides/turns/effects, active participants и JSONB event log не
 
 ### `quests` / `social` / `economy` / `professions` / `instances`
 
-`social` / `economy` модулей в runtime нет. Mailbox MAIL-01 живёт в `mail`, не
-в `social`. Целевые API — в [MODULES.md](MODULES.md). Схемы появляются вместе
-с первым подтверждённым OA этого модуля.
+`social` / `economy` модулей в runtime нет. Mailbox MAIL-02 живёт в `mail`
+(`letters` + `letter_attachments`), не в `social` и без JSONB снимка dump.
+Целевые API — в [MODULES.md](MODULES.md). Схемы появляются вместе с первым
+подтверждённым OA этого модуля.
 
 Перед глобальным изменением границ character/inventory/world/combat или началом
 economy/social/instances нужен отдельный architecture checkpoint: подтвердить
