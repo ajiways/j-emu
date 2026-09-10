@@ -25,6 +25,7 @@ export class ApplicationHarness {
   private readonly extras: Readonly<{
     lootRandom?: RandomSource;
     combatRandom?: RandomSource;
+    partyRandom?: RandomSource;
     upgradeRandom?: RandomSource;
     combatRules?: Partial<BattleRules>;
     combatBotStrength?: number;
@@ -36,6 +37,7 @@ export class ApplicationHarness {
     extras: Readonly<{
       lootRandom?: RandomSource;
       combatRandom?: RandomSource;
+      partyRandom?: RandomSource;
       upgradeRandom?: RandomSource;
       combatRules?: Partial<BattleRules>;
       combatBotStrength?: number;

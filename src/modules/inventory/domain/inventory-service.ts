@@ -11,6 +11,7 @@ import {
   type DeathDurabilityResult,
 } from "./apply-death-durability.ts";
 import { bagActionsFor, FLAG_DROP, FLAG_SELL } from "./bag-actions.ts";
+import { canFitBag } from "./can-fit-bag.ts";
 import { computeBagLoad, type BagLoad } from "./bag-load.ts";
 import { DropDeniedError } from "./drop-denied-error.ts";
 import { instanceDurability, isBroken } from "./durability.ts";
@@ -233,6 +234,14 @@ export class InventoryService {
     quantity: number;
   }): Promise<void> {
     return grantToBag(this.inventory, this.catalog, this.bagCapacity, command);
+  }
+
+  canFitBag(command: {
+    characterId: number;
+    artifactId: number;
+    quantity: number;
+  }): Promise<boolean> {
+    return canFitBag(this.inventory, this.catalog, this.bagCapacity, command);
   }
 
   async countBagByArtifact(command: { characterId: number; artifactId: number }): Promise<number> {

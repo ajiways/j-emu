@@ -31,6 +31,10 @@ import type {
   FightSettlement,
   HumanLeftSnapshot,
 } from "../modules/combat/ports/fight-settlement.ts";
+import type { FightLootRouting } from "../modules/combat/ports/fight-loot-routing.ts";
+import type { FightPartyLootNotify } from "../modules/combat/ports/fight-party-loot-notify.ts";
+import type { PartyBagDeposit } from "../modules/party/ports/party-bag-deposit.ts";
+import { splitMinorUnits } from "../modules/combat/domain/split-minor-units.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
 
@@ -52,6 +56,9 @@ export class HuntFightSettlement implements FightSettlement {
     private readonly characters: SettlementCharacters,
     private readonly inventory: InventoryService,
     private readonly random: RandomSource,
+    private readonly lootRouting: FightLootRouting,
+    private readonly partyBag: PartyBagDeposit,
+    private readonly partyLoot: FightPartyLootNotify,
   ) {}
 
   persistHumanLeft(snapshot: HumanLeftSnapshot): Promise<void> {
@@ -98,14 +105,39 @@ export class HuntFightSettlement implements FightSettlement {
       );
       if (worldLootAllowed(over)) rolled = rollBotLoot(bot.reward, this.random);
     }
+    const route = await this.lootRouting.routeFor(outcome.humans.map((human) => human.characterId));
+    const topInParty = Boolean(top && route?.memberCharacterIds.has(top.characterId));
+    const partyMoney = topInParty ? moneyMinor : 0;
+    const deferItems = Boolean(
+      route && (route.lootRules === "2" || route.lootRules === "3") && topInParty && rolled.length,
+    );
+    const partyFighters = route
+      ? outcome.humans.filter((human) => route.memberCharacterIds.has(human.characterId))
+      : [];
+    const splitMoney =
+      route?.lootRules === "1" && partyFighters.length > 1 && topInParty && moneyMinor > 0;
+    const moneyShares = splitMoney ? splitMinorUnits(moneyMinor, partyFighters.length) : null;
     const artikulList = await this.artikulList(rolled);
     const lootByAccount = new Map<number, FightLootBlock>();
     await this.unitOfWork.run(async () => {
+      if (deferItems && route) {
+        await this.partyBag.deposit(
+          route.partyId,
+          rolled.map((drop) => ({ artikulId: drop.artikulId, quantity: drop.quantity })),
+        );
+      }
       for (const human of outcome.humans) {
         const exp = experience.get(human.characterId) ?? 0;
         const isTop = top?.characterId === human.characterId;
-        const goldMinor = isTop ? moneyMinor : 0;
-        const drops = isTop ? rolled : [];
+        const splitIndex = partyFighters.findIndex((row) => row.characterId === human.characterId);
+        const goldMinor = moneyShares
+          ? splitIndex >= 0
+            ? (moneyShares[splitIndex] ?? 0)
+            : 0
+          : isTop
+            ? moneyMinor
+            : 0;
+        const drops = isTop && !deferItems ? rolled : [];
         if (!human.leftLive) {
           await persistFightHp(this.characters, human.characterId, human.hp);
           await this.applyDeathIfDefeated(human.characterId, human.hp);
@@ -141,12 +173,22 @@ export class HuntFightSettlement implements FightSettlement {
             experience: exp,
             money: goldWireString(goldMinor),
             items: drops.map((drop) => ({ artikul_id: drop.artikulId, amount: drop.quantity })),
-            artikulList: isTop ? artikulList : [],
+            artikulList: isTop && !deferItems ? artikulList : [],
           }),
         );
       }
     });
     this.finished.set(outcome.fightId, lootByAccount);
+    if (route && (partyMoney > 0 || deferItems)) {
+      await this.partyLoot.notify({
+        partyId: route.partyId,
+        fightId: outcome.fightId,
+        lootRules: route.lootRules,
+        moneyMinor: partyMoney,
+        items: deferItems ? rolled : [],
+        artikulList: deferItems ? artikulList : [],
+      });
+    }
     return lootByAccount;
   }
 

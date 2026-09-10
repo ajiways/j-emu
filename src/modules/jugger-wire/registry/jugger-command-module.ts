@@ -23,6 +23,7 @@ import type { AuctionTenderCancel } from "../../../app/auction-tender-cancel.ts"
 import type { TradeDesk } from "../../../app/trade-desk.ts";
 import type { ChatDesk } from "../../../app/chat-desk.ts";
 import { PartyDesk } from "../../../app/party-desk.ts";
+import type { PartyBagOps } from "../../../app/party-bag-ops.ts";
 import type { PartyNotify } from "../../../app/party-notify.ts";
 import type { AuctionService } from "../../auction/application/auction-service.ts";
 import type { MailService } from "../../mail/application/mail-service.ts";
@@ -70,6 +71,7 @@ import { TradeSessionReadyCommand } from "../commands/oa/trade-session-ready-com
 import { TradeSessionDeclineCommand } from "../commands/oa/trade-session-decline-command.ts";
 import { TradeSessionConfirmCommand } from "../commands/oa/trade-session-confirm-command.ts";
 import { TradeDeclineCommand } from "../commands/oa/trade-decline-command.ts";
+import { FightJoinCommand } from "../commands/oa/fight-join-command.ts";
 import { PartyOaCommand, PARTY_OA_KEYS } from "../commands/oa/party-oa-command.ts";
 import { PostSendCommand } from "../commands/oa/post-send-command.ts";
 import { PostSendCodCommand } from "../commands/oa/post-send-cod-command.ts";
@@ -148,6 +150,7 @@ export class JuggerCommandModule {
     partyJoin: PartyJoinService,
     partySnapshot: PartySnapshot,
     partyNotify: PartyNotify,
+    partyBag: PartyBagOps,
   ) {
     this.fightWire = fightWire;
     const invites = new FriendlyDuelInvites(clock);
@@ -190,9 +193,11 @@ export class JuggerCommandModule {
       join: partyJoin,
       snapshot: partySnapshot,
       notify: partyNotify,
+      bags: partyBag,
       characters,
       sessions,
       bootstrap,
+      unitOfWork,
     });
     this.oa = new OaCommandRegistry([
       new CommonInitCommand(unitOfWork, characters, bootstrap),
@@ -228,6 +233,8 @@ export class JuggerCommandModule {
         fightWire,
         huntFanout,
         chat,
+        party,
+        partyNotify,
       ),
       new PutOnCommand(unitOfWork, bootstrap, characters, inventory, catalog, combat),
       new PutOffCommand(unitOfWork, bootstrap, characters, inventory, catalog, combat),
@@ -337,6 +344,28 @@ export class JuggerCommandModule {
       new TradeSessionDeclineCommand(tradeMutation),
       new TradeSessionConfirmCommand(tradeMutation),
       new TradeDeclineCommand(tradeMutation),
+      new FightJoinCommand(
+        "common|object:FIGHT_JOIN",
+        unitOfWork,
+        bootstrap,
+        characters,
+        inventory,
+        catalog,
+        combat,
+        fightWire,
+        huntFanout,
+      ),
+      new FightJoinCommand(
+        "common|object:FIGHT_HELP",
+        unitOfWork,
+        bootstrap,
+        characters,
+        inventory,
+        catalog,
+        combat,
+        fightWire,
+        huntFanout,
+      ),
       ...PARTY_OA_KEYS.map((key) => new PartyOaCommand(key, partyDesk)),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);

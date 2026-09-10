@@ -249,8 +249,9 @@ password, instance_artikul_id, bot_artikul_id, type, distribute_ready_at,
 created_at timestamptz)`.
 - `party_members(PK party_id+hero_id, hero_id UNIQUE, account_id, joined_at)`.
 - `party_invites(PK party_id+target_hero_id, from_hero_id, created_at)`.
-
-`party_bag_items` нет (SOC-03). Empty `party|bag` wire — chrome.
+- `party_bag_items(id integer GENERATED ALWAYS AS IDENTITY START 1, party_id FK
+parties ON DELETE RESTRICT, artikul_id > 0, cnt >= 1, remove_time unix >= 0)`.
+  `artikul_id` — catalog id, не `items.id`. TTL 3h, purge на access.
 
 ## План (не в runtime)
 
@@ -293,8 +294,8 @@ Durable sides/turns/effects, active participants и JSONB event log не
 Лоты и заказы AUC-01/AUC-02 живут в `auction.listings`, не в `economy`.
 P2P обмен TRD-01/TRD-02 живёт в `trade` без таблиц, не в `economy`.
 Чат SOC-01 живёт в `chat` без таблиц, не в `social`.
-Party SOC-02 живёт в `party` (`parties` / `party_members` / `party_invites`),
-не в `social`. Empty bag wire без `party_bag_items`.
+Party SOC-02/SOC-03 живёт в `party` (`parties` / `party_members` /
+`party_invites` / `party_bag_items`), не в `social`.
 Целевые API — в [MODULES.md](MODULES.md). Схемы появляются вместе с первым
 подтверждённым OA этого модуля.
 

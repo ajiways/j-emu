@@ -27,9 +27,18 @@ export type PartyInviteRow = Readonly<{
   createdAt: Date;
 }>;
 
+export type PartyBagItem = Readonly<{
+  id: number;
+  partyId: number;
+  artikulId: number;
+  cnt: number;
+  removeTime: number;
+}>;
+
 export type PartyMembership = Readonly<{
   party: PartyRecord;
   member: PartyMemberRow;
 }>;
 
 export type NewParty = Omit<PartyRecord, "id">;
+export type NewPartyBagItem = Omit<PartyBagItem, "id">;

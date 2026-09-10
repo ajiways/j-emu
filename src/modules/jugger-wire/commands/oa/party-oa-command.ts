@@ -20,6 +20,8 @@ export const PARTY_OA_KEYS = [
   "party|members",
   "party|settings",
   "party|bag",
+  "party|give",
+  "party|drop",
 ] as const;
 
 export class PartyOaCommand implements OaCommand {

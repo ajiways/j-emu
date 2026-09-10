@@ -16,8 +16,11 @@ import type {
 } from "../../application/fight-wire-mapper.ts";
 import type { HuntAreaFanout } from "../../application/hunt-area-fanout.ts";
 import type { ChatDesk } from "../../../../app/chat-desk.ts";
+import type { PartyNotify } from "../../../../app/party-notify.ts";
+import type { PartyService } from "../../../party/application/party-service.ts";
 import { HuntCombatLoadout } from "../../application/hunt-combat-loadout.ts";
 import { huntBotSpellBookFromCatalog } from "../../application/hunt-bot-spell-book-from-catalog.ts";
+import { huntFightTitle } from "../../../chat/domain/fight-macro.ts";
 import { HuntMapAttack } from "../../application/hunt-map-attack.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
@@ -49,6 +52,8 @@ export class AttackBotCommand implements OaCommand {
     private readonly fightWire: FightWireMapper,
     huntFanout: HuntAreaFanout,
     private readonly chat: ChatDesk,
+    private readonly parties: PartyService,
+    private readonly partyNotify: PartyNotify,
   ) {
     this.huntAttack = new HuntMapAttack(world, this.combat, huntFanout);
   }
@@ -121,6 +126,18 @@ export class AttackBotCommand implements OaCommand {
           heroNick: hero.nick,
           botNick: bot.title,
         });
+        const mem = await this.parties.membership(hero.id);
+        if (mem) {
+          const members = await this.parties.listMembers(mem.party.id);
+          if (members.length >= 2) {
+            await this.partyNotify.chatFightHelp(
+              mem.party.id,
+              hero,
+              fight.fightId,
+              huntFightTitle(hero.nick, bot.title),
+            );
+          }
+        }
       } catch (error) {
         const failure = error instanceof Error ? error : new Error(String(error));
         process.stderr.write(`hunt-start-chat ${fight.fightId}: ${failure.message}\n`);

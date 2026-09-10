@@ -23,6 +23,7 @@ import type { AuctionTenderCancel } from "../../../src/app/auction-tender-cancel
 import type { TradeDesk } from "../../../src/app/trade-desk.ts";
 import type { ChatDesk } from "../../../src/app/chat-desk.ts";
 import type { PartyNotify } from "../../../src/app/party-notify.ts";
+import type { PartyBagOps } from "../../../src/app/party-bag-ops.ts";
 import { AuctionModule } from "../../../src/modules/auction/auction-module.ts";
 import { TradeModule } from "../../../src/modules/trade/trade-module.ts";
 import { PartyModule } from "../../../src/modules/party/party-module.ts";
@@ -344,6 +345,7 @@ describe("module factories", () => {
         partyJoin: {} as PartyJoinService,
         partySnapshot: {} as PartySnapshot,
         partyNotify: {} as PartyNotify,
+        partyBag: {} as PartyBagOps,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -475,6 +477,7 @@ describe("module factories", () => {
         partyJoin: {} as PartyJoinService,
         partySnapshot: {} as PartySnapshot,
         partyNotify: {} as PartyNotify,
+        partyBag: {} as PartyBagOps,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

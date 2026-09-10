@@ -13,6 +13,7 @@ import type { AuctionTenderCancel } from "../../app/auction-tender-cancel.ts";
 import type { TradeDesk } from "../../app/trade-desk.ts";
 import type { ChatDesk } from "../../app/chat-desk.ts";
 import type { PartyNotify } from "../../app/party-notify.ts";
+import type { PartyBagOps } from "../../app/party-bag-ops.ts";
 import type { AuctionService } from "../auction/application/auction-service.ts";
 import type { MailService } from "../mail/application/mail-service.ts";
 import type { PartyJoinService } from "../party/application/party-join-service.ts";
@@ -112,6 +113,7 @@ export class JuggerWireModule {
     partyJoin: PartyJoinService;
     partySnapshot: PartySnapshot;
     partyNotify: PartyNotify;
+    partyBag: PartyBagOps;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -206,6 +208,7 @@ export class JuggerWireModule {
       input.partyNotify,
       "Jugger-wire module requires party notify",
     );
+    const partyBag = requirePresent(input.partyBag, "Jugger-wire module requires party bag ops");
     try {
       const fightWire = new FightWireMapper(
         {
@@ -268,6 +271,7 @@ export class JuggerWireModule {
         partyJoin,
         partySnapshot,
         partyNotify,
+        partyBag,
       );
       const esrvPoll = new EsrvPollAssembler(
         characters,

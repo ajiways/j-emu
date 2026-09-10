@@ -3,6 +3,7 @@ import type { CharacterService } from "../../character/application/character-ser
 import type { Hero } from "../../character/domain/hero.ts";
 import { FLAG_KILL_ALL, partyFlagSet } from "../../party/domain/party-flags.ts";
 import type { PartyRecord } from "../../party/domain/party-record.ts";
+import type { PartyBagService } from "../../party/application/party-bag-service.ts";
 import type { PartyService } from "../../party/application/party-service.ts";
 import {
   emptyBagPayload,
@@ -12,10 +13,12 @@ import {
   searchRow,
   settingsPayload,
 } from "./party-wire.ts";
+import { bagPayload } from "./party-bag-wire.ts";
 
 export class PartySnapshot {
   constructor(
     private readonly parties: PartyService,
+    private readonly bags: PartyBagService,
     private readonly characters: CharacterService,
     private readonly catalog: Catalog,
   ) {}
@@ -26,8 +29,14 @@ export class PartySnapshot {
     return {
       "party|members": await this.members(mem.party),
       "party|settings": settingsPayload(mem.party),
-      "party|bag": emptyBagPayload(),
+      "party|bag": await this.bag(mem.party.id),
     };
+  }
+
+  async bag(partyId: number): Promise<Readonly<Record<string, unknown>>> {
+    const rows = await this.bags.list(partyId);
+    if (rows.length === 0) return emptyBagPayload();
+    return bagPayload(rows, this.catalog);
   }
 
   async members(party: PartyRecord): Promise<Readonly<Record<string, unknown>>> {

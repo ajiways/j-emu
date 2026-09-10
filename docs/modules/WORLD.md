@@ -248,8 +248,8 @@ AREA `action_id` / `quest_bot_artikul` — не этот срез.
 
 Отказ join через ATTACK_BOT — **203** + `error` (`notPossible`), не 204:
 `уже в бою`, `бой не найден`, `бой в другой локации`,
-`вы уже участвовали в этом бою`. 204 — только будущие OA FIGHT_JOIN /
-FIGHT_HELP. Квестовых боёв нет. Ghost/injury — CMB-04 character, не hunt
+`вы уже участвовали в этом бою`. OA `FIGHT_JOIN` / `FIGHT_HELP` — dump **204**
+(SOC-03). Квестовых боёв нет. Ghost/injury — CMB-04 character, не hunt
 join.
 
 «моб уже занят» в live — текст `acquireHuntLock`, но ATTACK_BOT сразу
@@ -280,8 +280,7 @@ fight id (второй human team 1, тот же access key). `hasFight` отл�
 ### Out of scope
 
 Wander/route/respawn — **WLD-03**. Pub1 `.map` polygons; dungeon copies;
-quest/menu attack; OA `FIGHT_JOIN` / `FIGHT_HELP`; loot; hunt cross-swap
-двух 3↔3 пар.
+quest/menu attack; hunt join team 2; hunt cross-swap двух 3↔3 пар.
 Не копировать live `10_000_000 + heroes.id` в `userId`.
 
 ### Acceptance
@@ -394,7 +393,7 @@ COME_IN/`exit` после `setArea`: remove в from, add в to (если from≠
 
 ### Out of scope
 
-party `4:`; OA `FIGHT_JOIN` / `FIGHT_HELP`; ghost/injury change; playerbots; dungeon/BG shards; transactional
+party `4:` сделан SOC-02/03; ghost/injury change; playerbots; dungeon/BG shards; transactional
 outbox; durable cursors.
 
 ### Acceptance

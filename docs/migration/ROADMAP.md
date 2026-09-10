@@ -916,12 +916,17 @@
 - **depends_on:** `SOC-02`, `CMB-08`
 - **Behavior evidence:** legacy `PARTY.md`, `FIGHT_LOOT.md`, `FIGHT_JOIN.md`.
 - **Content set:** loot-rule конфигурация только.
-- **Architecture checkpoint / decision:** pending — party bag TTL, inventory
-  transfer и combat join ports без прямых cross-table writes.
+- **Architecture checkpoint / decision:** отдельный `ARC-SOC` не нужен.
+  ADR-0017–0020 достаточны. `party.party_bag_items` (identity id, artikul_id
+  каталога, cnt, unix `remove_time`, TTL 3h). Inventory transfer только
+  через `grantToBag` / `canFitBag` в composition UoW. Combat не импортирует
+  party: `FightLootRouting` + `PartyBagDeposit`. `FIGHT_JOIN`/`FIGHT_HELP` —
+  hunt team 1, same-area, dump 204. Dungeon lottery / quest personal_only /
+  team 2 — leftover. Контракт: [PARTY.md](../modules/PARTY.md).
 - **Acceptance:** все поддержанные loot rules, party bag give/drop и
   same-area HELP/JOIN settle один раз и дают упорядоченные
   party/personal pushes.
-- **Status:** `next`
+- **Status:** `done`
 
 ## Wave 9 — instance engines
 
@@ -939,7 +944,7 @@
 - **Acceptance:** authored instance definition создаёт копию, bind'ит членов
   party, изолирует area/hunt state, expire'ится и возвращает участников без
   хранения active combat в PostgreSQL.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### DNG-02 — Remaining dungeons as bulk content
 

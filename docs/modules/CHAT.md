@@ -25,7 +25,7 @@ finish. Quest/farm assistant announce не в срезе.
 
 Владение:
 
-- `chat` держит expand (smiles / FIGHT / USER / ARTIFACT / MONEY) и fan-out
+- `chat` держит expand (smiles / FIGHT / USER / ARTIFACT / MONEY / ACTION) и fan-out
   policy;
 - `jugger-wire` владеет OA `chat|add` и esrv `chat|message`;
 - composition `ChatDesk` читает presence/character/catalog/world/combat ports и

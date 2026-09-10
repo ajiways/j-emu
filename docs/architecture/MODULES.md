@@ -214,15 +214,17 @@ post-commit обёртка `ChatFightSettlement`. Контракт:
 
 **Шов извлечения:** не цель SOC-01. Target channels в `social` ниже — план.
 
-### `party` — SOC-02 runtime
+### `party` — SOC-02 / SOC-03 runtime
 
-**Владеет:** persistent party, membership, invites, settings. Не владеет bag
-give/drop (SOC-03) и не пишет `heroes` / combat. Empty `party|bag` wire —
-dump chrome.
+**Владеет:** persistent party, membership, invites, settings, `party_bag_items`.
+Не пишет `heroes` / `inventory.items` / combat. Give/drop — composition UoW:
+party bag row + `InventoryService.grantToBag`.
 
 **API:** `create`, `invite`, `confirmInvite`, `kick`, `leave`, `disband`,
-`changeLeader`, `saveSettings`, `searchList`, `join`. Delivery — composition
-`PartyDesk` + esrv `2:`/`4:`. Контракт: [PARTY.md](../modules/PARTY.md).
+`changeLeader`, `saveSettings`, `searchList`, `join`, `depositBag`, `give`,
+`drop`. Delivery — composition `PartyDesk` / `PartyBagOps` + esrv `2:`/`4:`.
+Loot routing и HELP — composition ports, combat party-таблицы не импортирует.
+Контракт: [PARTY.md](../modules/PARTY.md).
 
 **Шов извлечения:** не цель SOC-02. Target groups в `social` ниже — план.
 

@@ -25,6 +25,9 @@ describe("HuntFightSettlement", () => {
       characters,
       inventory,
       new SequenceRandom([0, 0, 0, 0]),
+      { routeFor: async () => null },
+      { deposit: async () => undefined },
+      { notify: async () => undefined },
     );
     const win = await settlement.persistFinished(outcome("win", 27, 20));
     expect(characters.notes).toEqual([{ characterId: 1, hp: 27 }]);
@@ -62,6 +65,9 @@ describe("HuntFightSettlement", () => {
       lossCharacters,
       lossInventory,
       new SequenceRandom([0, 0, 0, 0]),
+      { routeFor: async () => null },
+      { deposit: async () => undefined },
+      { notify: async () => undefined },
     );
     const lost = await loss.persistFinished(outcome("loss", 0, 20));
     expect(lossCharacters.notes).toEqual([]);
@@ -80,6 +86,9 @@ describe("HuntFightSettlement", () => {
       recordingCharacters(),
       inventory,
       new SequenceRandom([0, 0.2, 0.95, 1]),
+      { routeFor: async () => null },
+      { deposit: async () => undefined },
+      { notify: async () => undefined },
     );
     const win = await settlement.persistFinished(outcome("win", 27, 20));
     expect(inventory.grants).toEqual([{ characterId: 1, artifactId: 77, quantity: 1 }]);
@@ -96,6 +105,9 @@ describe("HuntFightSettlement", () => {
       characters,
       recordingInventory(),
       new SequenceRandom([0, 0, 0, 0]),
+      { routeFor: async () => null },
+      { deposit: async () => undefined },
+      { notify: async () => undefined },
     );
     const result = await settlement.persistFinished({
       mode: "hunt",
@@ -128,6 +140,9 @@ describe("HuntFightSettlement", () => {
       characters,
       inventory,
       new SequenceRandom([0, 0, 0, 0]),
+      { routeFor: async () => null },
+      { deposit: async () => undefined },
+      { notify: async () => undefined },
     );
     const loot = await settlement.persistFinished({
       mode: "friendly-practice",

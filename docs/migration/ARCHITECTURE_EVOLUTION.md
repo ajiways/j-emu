@@ -133,6 +133,13 @@ UoW с `FOR UPDATE`; esrv `4:<partyId>` через optional outbox channel. Comb
 не импортирует party. Empty `party|bag` — wire chrome, bag engine SOC-03.
 Контракт: [PARTY.md](../modules/PARTY.md).
 
+**Решение SOC-03:** текущих границ достаточно; отдельный `ARC-SOC` не нужен.
+`party_bag_items` в схеме `party`; TTL 3h. Inventory transfer — composition
+UoW (`grantToBag` / `canFitBag`). Combat читает `FightLootRouting`, пишет bag
+через `PartyBagDeposit`, party-таблицы не импортирует. `FIGHT_JOIN` /
+`FIGHT_HELP` — hunt team 1, same-area, dump 204. Dungeon lottery / quest
+personal_only / team 2 — leftover. Контракт: [PARTY.md](../modules/PARTY.md).
+
 **Решение MAIL-01/MAIL-02:** текущих границ достаточно; отдельный `ARC-SOC`
 не нужен. Mailbox — `src/modules/mail` / `mail.letters` + snapshot
 `letter_attachments` (не JSONB, не live reservation). Postage/pick/COD —

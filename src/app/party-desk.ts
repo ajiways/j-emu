@@ -5,13 +5,15 @@ import { PartyDeniedError } from "../modules/party/domain/party-denied-error.ts"
 import type { PartyJoinService } from "../modules/party/application/party-join-service.ts";
 import type { PartyService } from "../modules/party/application/party-service.ts";
 import type { BootstrapReadModel } from "../modules/jugger-wire/application/bootstrap-read-model.ts";
+import type { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
 import type { OaEncodedResponse } from "../modules/jugger-wire/commands/oa/oa-command.ts";
 import type { ObjectActionEnvelope } from "../modules/jugger-wire/commands/oa/object-action-envelope.ts";
 import {
   emptyBagPayload,
   emptyMembersPayload,
 } from "../modules/jugger-wire/application/party-wire.ts";
-import type { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
+import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
+import type { PartyBagOps } from "./party-bag-ops.ts";
 import { PartyJoinOps } from "./party-join-ops.ts";
 import type { PartyNotify } from "./party-notify.ts";
 import {
@@ -27,9 +29,11 @@ export type PartyDeskDeps = Readonly<{
   join: PartyJoinService;
   snapshot: PartySnapshot;
   notify: PartyNotify;
+  bags: PartyBagOps;
   characters: Pick<CharacterService, "getByAccountId" | "getByNick" | "getById">;
   sessions: SessionPresence;
   bootstrap: BootstrapReadModel;
+  unitOfWork: UnitOfWork;
 }>;
 
 export class PartyDesk {
@@ -84,7 +88,11 @@ export class PartyDesk {
       case "party|settings":
         return { kind: "nested", value: await this.settingsBlock(accountId) };
       case "party|bag":
-        return { kind: "nested", value: emptyBagPayload() };
+        return { kind: "nested", value: await this.deps.bags.bagBlock(accountId) };
+      case "party|give":
+        return this.deps.bags.give(accountId, fields);
+      case "party|drop":
+        return this.deps.bags.drop(accountId, fields);
       default:
         throw new Error(`Party OA ${key} is not wired`);
     }
@@ -135,7 +143,13 @@ export class PartyDesk {
 
   private async leave(accountId: number): Promise<OaEncodedResponse> {
     const hero = await this.requireHero(accountId);
-    const outcome = await this.deps.parties.leave(hero.id);
+    const mem = await this.deps.parties.membership(hero.id);
+    const outcome = await this.deps.unitOfWork.run(async () => {
+      if (mem && mem.party.leaderHeroId === hero.id) {
+        await this.deps.bags.dumpToLeader(mem.party.id, hero);
+      }
+      return this.deps.parties.leave(hero.id);
+    });
     if (outcome.kind === "disbanded") return this.afterDisband(hero, outcome, "party|leave");
     if (outcome.kind === "left") {
       this.deps.notify.personalEmpty(accountId, await this.deps.bootstrap.state(accountId));
@@ -156,7 +170,12 @@ export class PartyDesk {
 
   private async disband(accountId: number): Promise<OaEncodedResponse> {
     const hero = await this.requireHero(accountId);
-    const outcome = await this.deps.parties.disband(hero.id);
+    const mem = await this.deps.parties.membership(hero.id);
+    if (!mem) return { kind: "flat", blocks: { "party|disband": { status: 100 } } };
+    const outcome = await this.deps.unitOfWork.run(async () => {
+      await this.deps.bags.dumpToLeader(mem.party.id, hero);
+      return this.deps.parties.disband(hero.id);
+    });
     if (!outcome) return { kind: "flat", blocks: { "party|disband": { status: 100 } } };
     return this.afterDisband(hero, outcome, "party|disband");
   }
@@ -187,6 +206,13 @@ export class PartyDesk {
     const hero = await this.requireHero(accountId);
     const mem = await this.deps.parties.membership(hero.id);
     if (!mem) throw new PartyDeniedError("только лидер");
+    if (fields["loot_rules"] != null && String(fields["loot_rules"]) !== mem.party.lootRules) {
+      const bag = await this.deps.snapshot.bag(mem.party.id);
+      const artikuls = bag["artikuls"];
+      if (Array.isArray(artikuls) && artikuls.length > 0) {
+        throw new PartyDeniedError("нельзя сменить правила при непустом групповом рюкзаке");
+      }
+    }
     const party = await this.deps.parties.saveSettings(
       hero.id,
       partySettingsPatch(fields, mem.party),
@@ -222,6 +248,7 @@ export class PartyDesk {
         [oaKey]: { status: 100 },
         "party|members": emptyMembersPayload(),
         "party|bag": emptyBagPayload(),
+        "user|bag": await this.deps.bags.userBag(hero.accountId),
         state: await this.deps.bootstrap.state(hero.accountId),
       },
     };

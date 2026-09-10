@@ -66,6 +66,31 @@ export const partyMembers = partySchema.table(
   ],
 );
 
+export const partyBagItems = partySchema.table(
+  "party_bag_items",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity({
+      startWith: 1,
+      minValue: 1,
+      maxValue: 2_147_483_647,
+      cycle: false,
+    }),
+    partyId: integer("party_id")
+      .notNull()
+      .references(() => parties.id, { onDelete: "restrict" }),
+    artikulId: integer("artikul_id").notNull(),
+    cnt: integer("cnt").notNull(),
+    removeTime: integer("remove_time").notNull(),
+  },
+  (table) => [
+    check("party_bag_items_id_check", sql`${table.id} > 0`),
+    check("party_bag_items_artikul_id_check", sql`${table.artikulId} > 0`),
+    check("party_bag_items_cnt_check", sql`${table.cnt} >= 1`),
+    check("party_bag_items_remove_time_check", sql`${table.removeTime} >= 0`),
+    index("party_bag_items_party_idx").on(table.partyId),
+  ],
+);
+
 export const partyInvites = partySchema.table(
   "party_invites",
   {

@@ -3,16 +3,10 @@ import type { Hero } from "../../character/domain/hero.ts";
 import type { PartyRecord } from "../../party/domain/party-record.ts";
 import { flagsFromBits } from "../../party/domain/party-flags.ts";
 
+export { emptyBagPayload } from "./party-bag-wire.ts";
+
 export function emptyMembersPayload(): Readonly<{ status: 100; members: readonly unknown[] }> {
   return { status: 100, members: [] };
-}
-
-export function emptyBagPayload(): Readonly<{
-  status: 100;
-  artikuls: readonly unknown[];
-  types: readonly unknown[];
-}> {
-  return { status: 100, artikuls: [], types: [] };
 }
 
 export function emptySettingsPayload(): Readonly<{

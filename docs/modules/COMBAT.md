@@ -69,7 +69,7 @@ Inventory layout lock (`PUT_ON`/`PUT_OFF`/`DROP`/`SELL` → `203` в бою) —
 Трата из кармана — fproxy. World USE, COME_IN/`common|exit` и ATTACK — live
 `fightBusy`; WLD-01 применяет то же `FightRules` `203`. Карта ATTACK_BOT:
 ключ — spawn id; занятая живая точка — `joinHunt` team 1. OA `FIGHT_JOIN` /
-`FIGHT_HELP` не входят. Live `10_000_000 + heroes.id` в `userId` не копировать
+`FIGHT_HELP` — SOC-03 (hunt team 1, same-area, dump 204). Live `10_000_000 + heroes.id` в `userId` не копировать
 — participant = `heroes.id`.
 
 SINGLE/MULTI framing, exact `sq`, source IDs и packet order менять нельзя.
@@ -350,7 +350,7 @@ HP/MP/pocket, без лута/EXP/травмы; `fight|conf.is_pvp=1`, `type:"6"
 После 3↔3 melee hits в hunt с waiter: бот уходит waiter-у, актор
 `oppwait`, HP/loadout без сброса. No-rotate — reset hits. bot↔bot и
 cross-swap двух 3↔3 пар — leftover (в playable slice один бот на точку).
-OA `FIGHT_JOIN` / `FIGHT_HELP` вне среза. CEF не прогонялся.
+OA `FIGHT_JOIN` / `FIGHT_HELP` — hunt team 1, same-area (SOC-03). CEF не прогонялся.
 
 ### Architecture decision
 
@@ -360,7 +360,7 @@ ADR-0017–0020 достаточны. Invites как active fight: RAM, restart 
 ### Out of scope (CMB-08 leftover)
 
 Cross-swap двух живых 3↔3 дуэлей; bot↔bot; charging/DoT на shuffle hits;
-practice finished_fights type 6; real PvP assault; OA FIGHT_JOIN/HELP.
+practice finished_fights type 6; real PvP assault; hunt join team 2.
 
 ## CMB-09 — quest-fight mode hook
 

@@ -177,7 +177,7 @@ hunt overlay и map join: первый ATTACK_BOT **50310** ставит `fight_
 точке и в `131:`; второй клиент входит в тот же бой (`fight|conf` с тем же
 `fightId`/`akey`, свой `userId`). Raw-AMF и CEF двумя клиентами.
 
-Не перенесены OA `FIGHT_JOIN` / `FIGHT_HELP`. Wander: 50310 паркуется на
+Не перенесены dungeon `FIGHT_JOIN` team 2 / PvP intervene. Wander: 50310 паркуется на
 home (в dump нет route/zone); 50309 идёт по dump-proven route, 50101–03 —
 по zone.
 
@@ -204,7 +204,7 @@ waiter-handoff без сброса HP. CEF экрана результата, F5
 призрака, видимого урона, плевка Хиссы и дуэли не прогонялся —
 [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 
-Не перенесены: OA `FIGHT_JOIN` / `FIGHT_HELP`.
+Не перенесены: hunt join team 2 / PvP intervene.
 
 ## Quests и NPC 1–8 — не перенесено
 
@@ -255,12 +255,15 @@ membership (SOC-02). CEF чата не прогонялся.
 ## Party — частично
 
 Есть raw-AMF и PostgreSQL: create/invite/confirm/decline/kick/leave/disband,
-change_leader (level ≥), save_settings, search_list/join/`join_confirm`,
-`state.party` из membership, init2 restore members/settings/empty bag, party
-chat и system-строки на `4:<partyId>`. Reconnect/restart читает Postgres.
+change_leader (level ≥), save_settings (bag-lock `loot_rules`),
+search_list/join/`join_confirm`, `party|give`/`drop`, TTL 3h bag,
+outdoor loot rules 1–3 + `fight|grouploot` на `4:`, `FIGHT_JOIN`/`FIGHT_HELP`
+same-area team 1, HELP ACTION в party chat, `state.party` из membership,
+init2 restore members/settings/bag. Reconnect/restart читает Postgres.
 CEF окна группы не прогонялся.
 
-Не перенесены bag give/drop, grouploot, HELP/JOIN, dungeon bind.
+Не перенесены dungeon bind, dungeon lottery rules 1, quest personal_only,
+hunt join team 2.
 
 ## После core — не перенесено
 

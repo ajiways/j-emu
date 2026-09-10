@@ -1,8 +1,13 @@
+import type { Catalog } from "../modules/catalog/ports/catalog.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import type { Clock } from "../shared/kernel/clock.ts";
 import type { Hero } from "../modules/character/domain/hero.ts";
-import { partyChannel } from "../modules/party/domain/party-channel.ts";
 import { lootRulesLabel } from "../modules/party/domain/loot-rules-label.ts";
+import { partyChannel } from "../modules/party/domain/party-channel.ts";
+import { buildArtifactMacro } from "../modules/chat/domain/artifact-macro.ts";
+import { buildFightJoinActionMacro } from "../modules/chat/domain/action-macro.ts";
+import { buildMoneyMacro } from "../modules/chat/domain/money-macro.ts";
+import { goldWireString } from "../modules/combat/domain/fight-money.ts";
 import type { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.ts";
 import { buildChatMessage, type ChatMessageBlock } from "../modules/chat/domain/chat-message.ts";
 import { buildUserMacro } from "../modules/jugger-wire/application/user-macro.ts";
@@ -13,6 +18,7 @@ export type PartyNotifyDeps = Readonly<{
   wake: Readonly<{ wake(accountId: number): void }>;
   chat: ChatDesk;
   clock: Clock;
+  catalog: Catalog;
   memberAccountIds(partyId: number): Promise<readonly number[]>;
 }>;
 
@@ -121,6 +127,119 @@ export class PartyNotify {
       `Лидер группы изменил правила распределения на "${label}".`,
       lng,
     );
+  }
+
+  async chatGive(
+    partyId: number,
+    giver: Hero,
+    receiver: Hero,
+    items: readonly { artikulId: number; amount: number }[],
+  ): Promise<void> {
+    const from = buildUserMacro({ nick: giver.nick, level: giver.level, kind: giver.kind });
+    const to = buildUserMacro({ nick: receiver.nick, level: receiver.level, kind: receiver.kind });
+    const macroses: Record<string, unknown> = { [from.key]: from.macro, [to.key]: to.macro };
+    const parts: string[] = [];
+    for (const item of items) {
+      if (item.amount < 1) continue;
+      const token = await this.artifactToken(item.artikulId);
+      macroses[token.key] = token.macro;
+      parts.push(`${token.token} (${item.amount})`);
+    }
+    if (parts.length < 1) throw new Error("Party give chat requires at least one item");
+    const itemPart = parts.join(", ");
+    await this.partySystem(
+      partyId,
+      `${from.token} передал вещи ${itemPart} игроку ${to.token}`,
+      giver.language,
+      { macroses },
+    );
+    await this.deps.chat.deliverSystem(
+      receiver.accountId,
+      `Вам переданы вещи ${itemPart}`,
+      macroses,
+    );
+  }
+
+  async chatLotteryRoll(partyId: number, hero: Hero, roll: number): Promise<void> {
+    const token = buildUserMacro({ nick: hero.nick, level: hero.level, kind: hero.kind });
+    await this.partySystem(partyId, `${token.token} выбросил <b>${roll}!</b>`, hero.language, {
+      macroses: { [token.key]: token.macro },
+    });
+  }
+
+  async chatLotteryTie(partyId: number, lng: string): Promise<void> {
+    await this.partySystem(partyId, "Ничья! Переброс.", lng);
+  }
+
+  async chatLotteryWin(partyId: number, winner: Hero, artikulId: number): Promise<void> {
+    const user = buildUserMacro({ nick: winner.nick, level: winner.level, kind: winner.kind });
+    const item = await this.artifactToken(artikulId);
+    await this.partySystem(
+      partyId,
+      `${user.token} <b>победил</b> и получает предмет ${item.token}.`,
+      winner.language,
+      { macroses: { [user.key]: user.macro, [item.key]: item.macro } },
+    );
+  }
+
+  async chatGroupMoney(partyId: number, moneyMinor: number, lng: string): Promise<void> {
+    if (moneyMinor < 1) return;
+    const gold = Number(goldWireString(moneyMinor));
+    const money = buildMoneyMacro(gold, "1");
+    await this.partySystem(partyId, `Вашей группой найдено: ${money.token}`, lng, {
+      macroses: { [money.key]: money.macro },
+    });
+  }
+
+  async chatGroupItem(
+    partyId: number,
+    artikulId: number,
+    amount: number,
+    lng: string,
+  ): Promise<void> {
+    const token = await this.artifactToken(artikulId);
+    await this.partySystem(partyId, `Вашей группой получено: ${token.token} ${amount} шт.`, lng, {
+      macroses: { [token.key]: token.macro },
+    });
+  }
+
+  async chatFightHelp(
+    partyId: number,
+    fighter: Hero,
+    fightId: string,
+    fightTitle: string,
+  ): Promise<void> {
+    const user = buildUserMacro({ nick: fighter.nick, level: fighter.level, kind: fighter.kind });
+    const action = buildFightJoinActionMacro(fightId, 1);
+    await this.partySystem(
+      partyId,
+      `Член группы ${user.token} начал бой ${fightTitle}. ${action.token}`,
+      fighter.language,
+      {
+        macroses: { [user.key]: user.macro, [action.key]: action.macro },
+        excludedAccountId: fighter.accountId,
+      },
+    );
+  }
+
+  private async artifactToken(artikulId: number) {
+    const definition = await this.deps.catalog.artifact(artikulId);
+    if (!definition) throw new Error(`Artifact catalog entry ${artikulId} is missing`);
+    return buildArtifactMacro({
+      id: definition.id,
+      title: definition.title,
+      picture: definition.picture,
+      typeId: definition.typeId,
+      kindId: definition.kindId,
+      priceMinor: definition.priceMinor,
+      levelMin: definition.levelMin,
+      levelMax: definition.levelMax,
+      durability: definition.durability,
+      durabilityMax: definition.durabilityMax,
+      flags: definition.flags,
+      slotMask: definition.slotMask,
+      trend: definition.extra.trend,
+    });
   }
 
   private async partySystem(

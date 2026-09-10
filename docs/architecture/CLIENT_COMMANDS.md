@@ -50,7 +50,8 @@ Transport decoder извлекает только общий envelope: `object`,
 
 - обычная команда: `object|action`;
 - мультиплексированная команда вроде `common|object`: после минимальной проверки
-  discriminator используется полный ключ `common|object:ATTACK_BOT`.
+  discriminator используется полный ключ `common|object:ATTACK_BOT` /
+  `FIGHT_JOIN` / `FIGHT_HELP`.
 
 У каждой команды собственные DTO. Например, `common|init` не делит request type с
 `user|bag`, а `ATTACK_BOT` не получает универсальный `form`.
@@ -70,7 +71,8 @@ Response descriptor явно определяет один из варианто
   `session_ready`/`session_decline`/`session_confirm`/`decline`,
   `chat|add`,
   `party|create`/`invite`/`confirm_invite`/`decline_invite`/`kick`/`leave`/
-  `disband`/`change_leader`/`save_settings`/`join`/`confirm_join`/`decline_join`,
+  `disband`/`change_leader`/`save_settings`/`join`/`confirm_join`/`decline_join`/
+  `give`/`drop`,
   `user|bag_order` и других подтверждённых мутаций;
 - protocol error с точным `status` и `error` (store buy dump-proven **2** для
   пустой корзины / не-лавки / неизвестного лота / нехватки золота — не 203;

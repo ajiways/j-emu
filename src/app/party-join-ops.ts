@@ -8,12 +8,11 @@ import type { PartyService } from "../modules/party/application/party-service.ts
 import type { PartyRecord } from "../modules/party/domain/party-record.ts";
 import type { BootstrapReadModel } from "../modules/jugger-wire/application/bootstrap-read-model.ts";
 import type { OaEncodedResponse } from "../modules/jugger-wire/commands/oa/oa-command.ts";
-import { emptyBagPayload } from "../modules/jugger-wire/application/party-wire.ts";
+import type { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
 import {
   inviteWindow,
   joinRequestWindow,
 } from "../modules/jugger-wire/application/party-windows.ts";
-import type { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
 import { buildUserMacro } from "../modules/jugger-wire/application/user-macro.ts";
 import type { PartyNotify } from "./party-notify.ts";
 import { optionalPartyId, partyCreateInput, requiredNick, requiredPartyId } from "./party-form.ts";
@@ -138,7 +137,7 @@ export class PartyJoinOps {
     const outcome = await this.deps.join.confirmJoin(hero.id, applicant.id, applicant.accountId);
     const members = await this.deps.snapshot.members(outcome.party);
     const settings = this.deps.snapshot.settingsOrEmpty(outcome.party);
-    const bag = emptyBagPayload();
+    const bag = await this.deps.snapshot.bag(outcome.party.id);
     await this.deps.notify.pushToParty(outcome.party.id, {
       "party|members": members,
       "party|settings": settings,
@@ -181,7 +180,7 @@ export class PartyJoinOps {
   ): Promise<OaEncodedResponse> {
     const members = await this.deps.snapshot.members(party);
     const settings = this.deps.snapshot.settingsOrEmpty(party);
-    const bag = emptyBagPayload();
+    const bag = await this.deps.snapshot.bag(party.id);
     await this.deps.notify.pushToParty(party.id, {
       "party|members": members,
       "party|settings": settings,

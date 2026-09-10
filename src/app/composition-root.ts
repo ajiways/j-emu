@@ -46,9 +46,13 @@ import { TradeDesk } from "./trade-desk.ts";
 import { ChatDesk } from "./chat-desk.ts";
 import { ChatFightSettlement } from "./chat-fight-settlement.ts";
 import { PartyNotify } from "./party-notify.ts";
+import { PartyBagOps } from "./party-bag-ops.ts";
+import { PartyLootRouting } from "./party-loot-routing.ts";
+import { PartyFightLootNotify } from "./party-fight-loot-notify.ts";
 import { TradeModule } from "../modules/trade/trade-module.ts";
 import { PartyModule } from "../modules/party/party-module.ts";
 import { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
+import { buildUserBag } from "../modules/jugger-wire/application/user-bag-block.ts";
 import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 
@@ -60,6 +64,7 @@ export class CompositionRoot {
     extras: Readonly<{
       lootRandom?: RandomSource;
       combatRandom?: RandomSource;
+      partyRandom?: RandomSource;
       upgradeRandom?: RandomSource;
       wanderRandom?: RandomSource;
       combatRules?: Partial<BattleRules>;
@@ -214,13 +219,36 @@ export class CompositionRoot {
         wake: longPoll,
         party: party.service,
       });
-      const partySnapshot = new PartySnapshot(party.service, characters.service, catalog.catalog);
+      const partySnapshot = new PartySnapshot(
+        party.service,
+        party.bag,
+        characters.service,
+        catalog.catalog,
+      );
       const partyNotify = new PartyNotify({
         outbox,
         wake: longPoll,
         chat: chatDesk,
         clock,
+        catalog: catalog.catalog,
         memberAccountIds: (partyId) => party.service.memberAccountIds(partyId),
+      });
+      const partyBagOps = new PartyBagOps({
+        parties: party.service,
+        bags: party.bag,
+        snapshot: partySnapshot,
+        notify: partyNotify,
+        characters: characters.service,
+        inventory: inventory.service,
+        userBag: async (accountId) => {
+          const hero = await characters.service.getByAccountId(accountId);
+          if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
+          return buildUserBag(hero, inventory.service, catalog.catalog);
+        },
+        unitOfWork: database,
+        clock,
+        random: extras.partyRandom ?? extras.lootRandom ?? new SystemRandomSource(),
+        wait: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
       });
       const presenceFanout = new PresenceFanout(presence, outbox, longPoll);
       const huntFanout = new HuntAreaFanout(presence, longPoll);
@@ -235,6 +263,15 @@ export class CompositionRoot {
             characters.service,
             inventory.service,
             extras.lootRandom ?? new SystemRandomSource(),
+            new PartyLootRouting(party.service),
+            party.bag,
+            new PartyFightLootNotify(
+              party.bag,
+              party.service,
+              characters.service,
+              catalog.catalog,
+              partyNotify,
+            ),
           ),
           chatDesk,
           {
@@ -333,6 +370,7 @@ export class CompositionRoot {
         partyJoin: party.join,
         partySnapshot,
         partyNotify,
+        partyBag: partyBagOps,
       });
       closers.push(wire);
       return new Application(

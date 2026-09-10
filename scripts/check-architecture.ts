@@ -43,7 +43,13 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/app/chat-desk.ts":
     "Player chat add plus area/private/party fan-out and hunt/loot system lines",
   "src/app/party-desk.ts":
-    "Party OA router: create/kick/leave/disband/leader/settings and dump chrome bag",
+    "Party OA router: create/kick/leave/disband/leader/settings, bag-lock, and dump chrome bag",
+  "src/app/party-notify.ts":
+    "Party esrv system lines: membership, give, lottery, group loot, and HELP ACTION",
+  "src/app/party-bag-ops.ts":
+    "Party bag give/drop/dump plus lottery rounds under the party UoW lock",
+  "src/app/hunt-fight-settlement.ts":
+    "Hunt finish UoW: EXP/money/loot plus party money split and deferred bag deposit",
   "src/app/party-join-ops.ts":
     "Party invite/confirm/join windows and dump join_confirm pending path",
   "src/modules/party/application/party-service.ts":
