@@ -3,6 +3,7 @@ import type { Hero } from "../../character/domain/hero.ts";
 import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { WorldService } from "../../world/domain/world-service.ts";
 import type { UnreadMailQuery } from "../../mail/ports/unread-mail.ts";
+import type { PartyMembershipQuery } from "../../party/ports/party-membership-query.ts";
 import { buildHeroState, type HeroStateBlock } from "./hero-state-block.ts";
 import { numericFightId } from "./numeric-fight-id.ts";
 
@@ -13,6 +14,7 @@ export async function bootstrapHeroState(input: {
   world: WorldService;
   clock: Clock;
   unreadMail: UnreadMailQuery;
+  party: PartyMembershipQuery;
 }): Promise<HeroStateBlock> {
   const fightId = numericFightId(await input.combat.activeFightId(input.accountId));
   const area = await input.world.area(input.hero.areaId);
@@ -21,6 +23,7 @@ export async function bootstrapHeroState(input: {
     fightId,
     resurrectZoneTitle: area.title,
     newMessage: unread ? 1 : 0,
+    inParty: await input.party.inParty(input.hero.id),
   });
 }
 

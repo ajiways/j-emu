@@ -13,6 +13,7 @@ export default defineConfig({
     "./src/modules/combat/infrastructure/schema.ts",
     "./src/modules/mail/infrastructure/schema.ts",
     "./src/modules/auction/infrastructure/schema.ts",
+    "./src/modules/party/infrastructure/schema.ts",
   ],
   out: "./drizzle",
 });

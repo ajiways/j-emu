@@ -127,6 +127,12 @@ process-local в `jugger-wire`. Durable outbox table не создаётся. Pa
 без таблиц; fan-out process-local esrv; combat не импортирует chat. Контракт:
 [CHAT.md](../modules/CHAT.md).
 
+**Решение SOC-02:** текущих границ достаточно; отдельный `ARC-SOC` не нужен.
+Party — `src/modules/party` / `party.parties` + members + invites. Membership
+UoW с `FOR UPDATE`; esrv `4:<partyId>` через optional outbox channel. Combat
+не импортирует party. Empty `party|bag` — wire chrome, bag engine SOC-03.
+Контракт: [PARTY.md](../modules/PARTY.md).
+
 **Решение MAIL-01/MAIL-02:** текущих границ достаточно; отдельный `ARC-SOC`
 не нужен. Mailbox — `src/modules/mail` / `mail.letters` + snapshot
 `letter_attachments` (не JSONB, не live reservation). Postage/pick/COD —

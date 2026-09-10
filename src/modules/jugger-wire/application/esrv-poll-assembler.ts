@@ -4,7 +4,7 @@ import type { CombatPort } from "../../combat/ports/combat-port.ts";
 import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { WorldService } from "../../world/domain/world-service.ts";
 import { areaEsrvChannel, personalEsrvChannel } from "./esrv-channel.ts";
-import type { EsrvOutbox } from "./esrv-outbox.ts";
+import type { EsrvOutbox, EsrvOutboxEntry } from "./esrv-outbox.ts";
 import type { FightWireMapper } from "./fight-wire-mapper.ts";
 import { isChatOnlyFragment } from "./esrv-chat-only-fragment.ts";
 import { locationAreaBlocks } from "./location-area-read.ts";
@@ -46,29 +46,57 @@ export class EsrvPollAssembler {
         object: { "common|hunt": location.hunt },
       },
     ];
-    const personal: Record<string, unknown> = {};
-    for (const fragment of this.outbox.take(accountId)) {
-      if (isChatOnlyFragment(fragment)) {
-        frames.push({
-          channel: personalEsrvChannel(accountId),
-          ctime,
-          object: fragment,
-        });
-        continue;
-      }
-      Object.assign(personal, fragment);
+    const personal = personalEsrvChannel(accountId);
+    const pending = new Map<string, Record<string, unknown>>();
+    for (const entry of this.outbox.take(accountId)) {
+      appendOutboxEntry(frames, pending, entry, personal, ctime);
     }
     const loot = await this.combat.takeLoot(accountId);
-    if (loot) personal["fight|loot"] = loot;
+    if (loot) mergeChannel(pending, personal, { "fight|loot": loot });
     const exit = await this.combat.takeExit(accountId);
-    if (exit) personal["fight|exit"] = this.fightWire.exit(exit);
-    if (Object.keys(personal).length > 0) {
-      frames.push({
-        channel: personalEsrvChannel(accountId),
-        ctime,
-        object: personal,
-      });
+    if (exit) mergeChannel(pending, personal, { "fight|exit": this.fightWire.exit(exit) });
+    flushChannel(frames, pending, personal, ctime);
+    for (const channel of pending.keys()) {
+      flushChannel(frames, pending, channel, ctime);
     }
     return frames;
   }
+}
+
+function appendOutboxEntry(
+  frames: EsrvFrame[],
+  pending: Map<string, Record<string, unknown>>,
+  entry: EsrvOutboxEntry,
+  personal: string,
+  ctime: number,
+): void {
+  const channel = entry.channel ?? personal;
+  if (isChatOnlyFragment(entry.fragment)) {
+    flushChannel(frames, pending, channel, ctime);
+    frames.push({ channel, ctime, object: entry.fragment });
+    return;
+  }
+  mergeChannel(pending, channel, entry.fragment);
+}
+
+function mergeChannel(
+  pending: Map<string, Record<string, unknown>>,
+  channel: string,
+  fragment: object,
+): void {
+  const bucket = pending.get(channel) ?? {};
+  Object.assign(bucket, fragment);
+  pending.set(channel, bucket);
+}
+
+function flushChannel(
+  frames: EsrvFrame[],
+  pending: Map<string, Record<string, unknown>>,
+  channel: string,
+  ctime: number,
+): void {
+  const object = pending.get(channel);
+  if (!object || Object.keys(object).length === 0) return;
+  pending.delete(channel);
+  frames.push({ channel, ctime, object });
 }

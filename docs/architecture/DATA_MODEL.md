@@ -22,8 +22,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и pre-baseline миграции `drizzle/0000_foundation_init.sql` плюс последующие
-`drizzle/0001`…`0007` и `drizzle/0008_mail_letters.sql`. Поля ниже совпадают с
-runtime.
+`drizzle/0001`…`0012`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -239,8 +238,19 @@ JSONB снимка dump нет. Unix `rtime` только в jugger-wire.
 
 ### `chat`
 
-Таблиц нет. Сообщения process-local через esrv outbox (SOC-01). Рестарт процесса
-теряет недоставленные кадры.
+Таблиц нет. Сообщения process-local через esrv outbox (SOC-01). Party type
+идёт на `4:<partyId>` (SOC-02). Рестарт процесса теряет недоставленные кадры.
+
+### `party`
+
+- `parties(id integer GENERATED ALWAYS AS IDENTITY START 1, leader_hero_id FK
+heroes ON DELETE RESTRICT, loot_rules 1|2|3, no_chat 0|1, flags, is_search 0|1,
+password, instance_artikul_id, bot_artikul_id, type, distribute_ready_at,
+created_at timestamptz)`.
+- `party_members(PK party_id+hero_id, hero_id UNIQUE, account_id, joined_at)`.
+- `party_invites(PK party_id+target_hero_id, from_hero_id, created_at)`.
+
+`party_bag_items` нет (SOC-03). Empty `party|bag` wire — chrome.
 
 ## План (не в runtime)
 
@@ -283,6 +293,8 @@ Durable sides/turns/effects, active participants и JSONB event log не
 Лоты и заказы AUC-01/AUC-02 живут в `auction.listings`, не в `economy`.
 P2P обмен TRD-01/TRD-02 живёт в `trade` без таблиц, не в `economy`.
 Чат SOC-01 живёт в `chat` без таблиц, не в `social`.
+Party SOC-02 живёт в `party` (`parties` / `party_members` / `party_invites`),
+не в `social`. Empty bag wire без `party_bag_items`.
 Целевые API — в [MODULES.md](MODULES.md). Схемы появляются вместе с первым
 подтверждённым OA этого модуля.
 

@@ -31,6 +31,7 @@ storage / publishers ----^            <- ports
 | `auction`     | catalog price/title query (composition владеет money/bag/mail UoW)                   | ничего                                   |
 | `trade`       | catalog price query (composition владеет money/bag UoW)                              | ничего                                   |
 | `chat`        | character nick, presence roster, catalog smiles/artifacts (composition владеет esrv) | ничего                                   |
+| `party`       | character display query (composition владеет esrv `2:`/`4:`)                         | ничего                                   |
 | `social`      | identity/character display query                                                     | character rename, instances lifecycle    |
 | `economy`     | inventory reservation API, catalog price query                                       | reservation expired                      |
 | `professions` | inventory reservation API, catalog/world query                                       | timer, catalog revision                  |

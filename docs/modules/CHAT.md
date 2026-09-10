@@ -6,7 +6,7 @@ Area/private/system чат реализован на raw-AMF. CEF окна ча�
 product-status **готово** не ставить. Точный product-status:
 [CAPABILITIES.md](../CAPABILITIES.md).
 
-Party `4:` — [SOC-02](../migration/ROADMAP.md). Кланы/альянс не в срезе. One-fight
+Party `4:` — [SOC-02](../migration/ROADMAP.md) / [PARTY.md](PARTY.md). Кланы/альянс не в срезе. One-fight
 TEMPEFFECT expiry chat не в срезе: inventory не purge'ит `flags_ext & 256` на
 finish. Quest/farm assistant announce не в срезе.
 
@@ -43,13 +43,13 @@ Roster area-канала: `listPopulation` (sessions ⨝ `heroes.area_id`), бе
 
 ## Каналы
 
-| type                                       | Кому                                        |
-| ------------------------------------------ | ------------------------------------------- |
-| `main`, `trade`, `kind`, `raid`, `capture` | online той же `area_id`, кроме отправителя  |
-| `private`                                  | `recipient_list` по нику (case-insensitive) |
-| `party`                                    | echo себе (SOC-02)                          |
-| `clan` / `alliance` / `party_search`       | echo себе                                   |
-| `system`                                   | сервер → account                            |
+| type                                       | Кому                                             |
+| ------------------------------------------ | ------------------------------------------------ |
+| `main`, `trade`, `kind`, `raid`, `capture` | online той же `area_id`, кроме отправителя       |
+| `private`                                  | `recipient_list` по нику (case-insensitive)      |
+| `party`                                    | membership на `4:<partyId>` (SOC-02); иначе echo |
+| `clan` / `alliance` / `party_search`       | echo себе                                        |
+| `system`                                   | сервер → account                                 |
 
 Пустой `type` → `main` (dump-optional). `lng` с формы, иначе `hero.language`
 (обязателен). `from_level` на всех player-строках = `hero.level` (kind /

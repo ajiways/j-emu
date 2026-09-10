@@ -10,6 +10,7 @@ export type ChatMessageFields = Readonly<{
   recipient_list?: readonly string[];
   is_self?: boolean;
   macroses?: Readonly<Record<string, unknown>>;
+  excluded_user_id?: string;
 }>;
 
 export type ChatMessageBlock = Readonly<{
@@ -41,5 +42,6 @@ export function buildChatMessage(fields: ChatMessageFields): ChatMessageBlock {
   if (fields.macroses && Object.keys(fields.macroses).length > 0) {
     message.macroses = fields.macroses;
   }
+  if (fields.excluded_user_id) message.excluded_user_id = fields.excluded_user_id;
   return { status: 100, message };
 }

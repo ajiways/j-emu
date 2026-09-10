@@ -70,6 +70,22 @@ export class OaCommandRegistry {
     "trade|session_decline",
     "trade|session_confirm",
     "trade|decline",
+    "party|create",
+    "party|invite",
+    "party|confirm_invite",
+    "party|decline_invite",
+    "party|kick",
+    "party|leave",
+    "party|disband",
+    "party|change_leader",
+    "party|save_settings",
+    "party|search_list",
+    "party|join",
+    "party|confirm_join",
+    "party|decline_join",
+    "party|members",
+    "party|settings",
+    "party|bag",
   ] as const;
 
   private readonly commands: ReadonlyMap<string, OaCommand>;

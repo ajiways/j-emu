@@ -22,6 +22,8 @@ import type { AuctionTenderSell } from "../../../app/auction-tender-sell.ts";
 import type { AuctionTenderCancel } from "../../../app/auction-tender-cancel.ts";
 import type { TradeDesk } from "../../../app/trade-desk.ts";
 import type { ChatDesk } from "../../../app/chat-desk.ts";
+import { PartyDesk } from "../../../app/party-desk.ts";
+import type { PartyNotify } from "../../../app/party-notify.ts";
 import type { AuctionService } from "../../auction/application/auction-service.ts";
 import type { MailService } from "../../mail/application/mail-service.ts";
 import { AttackBotCommand } from "../commands/oa/attack-bot-command.ts";
@@ -68,6 +70,7 @@ import { TradeSessionReadyCommand } from "../commands/oa/trade-session-ready-com
 import { TradeSessionDeclineCommand } from "../commands/oa/trade-session-decline-command.ts";
 import { TradeSessionConfirmCommand } from "../commands/oa/trade-session-confirm-command.ts";
 import { TradeDeclineCommand } from "../commands/oa/trade-decline-command.ts";
+import { PartyOaCommand, PARTY_OA_KEYS } from "../commands/oa/party-oa-command.ts";
 import { PostSendCommand } from "../commands/oa/post-send-command.ts";
 import { PostSendCodCommand } from "../commands/oa/post-send-cod-command.ts";
 import { PostPickCommand } from "../commands/oa/post-pick-command.ts";
@@ -98,6 +101,9 @@ import { AcceptFriendlyDuel } from "../application/accept-friendly-duel.ts";
 import { FriendlyDuelInvites } from "../application/friendly-duel-invites.ts";
 import { ProposeFriendlyDuel } from "../application/propose-friendly-duel.ts";
 import { TradeMutation } from "../application/trade-mutation.ts";
+import type { PartyJoinService } from "../../party/application/party-join-service.ts";
+import type { PartyService } from "../../party/application/party-service.ts";
+import type { PartySnapshot } from "../application/party-snapshot.ts";
 
 export class JuggerCommandModule {
   readonly oa: OaCommandRegistry;
@@ -138,6 +144,10 @@ export class JuggerCommandModule {
     sessions: SessionPresence,
     outbox: EsrvOutbox,
     wake: Readonly<{ wake(accountId: number): void }>,
+    party: PartyService,
+    partyJoin: PartyJoinService,
+    partySnapshot: PartySnapshot,
+    partyNotify: PartyNotify,
   ) {
     this.fightWire = fightWire;
     const invites = new FriendlyDuelInvites(clock);
@@ -175,6 +185,15 @@ export class JuggerCommandModule {
       outbox,
       wake,
     );
+    const partyDesk = new PartyDesk({
+      parties: party,
+      join: partyJoin,
+      snapshot: partySnapshot,
+      notify: partyNotify,
+      characters,
+      sessions,
+      bootstrap,
+    });
     this.oa = new OaCommandRegistry([
       new CommonInitCommand(unitOfWork, characters, bootstrap),
       new CommonInit2Command(unitOfWork, characters, bootstrap),
@@ -318,6 +337,7 @@ export class JuggerCommandModule {
       new TradeSessionDeclineCommand(tradeMutation),
       new TradeSessionConfirmCommand(tradeMutation),
       new TradeDeclineCommand(tradeMutation),
+      ...PARTY_OA_KEYS.map((key) => new PartyOaCommand(key, partyDesk)),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     this.esrv = EsrvCommandRegistry.create(combat, fightWire);

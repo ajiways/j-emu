@@ -10,7 +10,7 @@ export type HeroStateBlock = Readonly<{
   hp_max: number;
   money: string;
   money_gold: string;
-  party: 0;
+  party: 0 | 1;
   clan: 0;
   instance: 0;
   alliance_read: 0;
@@ -28,6 +28,7 @@ export type HeroStateOverlay = Readonly<{
   fightId: number | null;
   resurrectZoneTitle: string;
   newMessage: 0 | 1;
+  inParty: boolean;
 }>;
 
 export function buildHeroState(
@@ -43,7 +44,7 @@ export function buildHeroState(
     hp_max: hero.maxHp,
     money: moneyFromMinorUnits(hero.moneyMinor),
     money_gold: moneyFromMinorUnits(hero.moneyGoldMinor),
-    party: 0,
+    party: overlay.inParty ? 1 : 0,
     clan: 0,
     instance: 0,
     alliance_read: 0,

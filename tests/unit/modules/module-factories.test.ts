@@ -22,11 +22,16 @@ import type { AuctionTenderSell } from "../../../src/app/auction-tender-sell.ts"
 import type { AuctionTenderCancel } from "../../../src/app/auction-tender-cancel.ts";
 import type { TradeDesk } from "../../../src/app/trade-desk.ts";
 import type { ChatDesk } from "../../../src/app/chat-desk.ts";
+import type { PartyNotify } from "../../../src/app/party-notify.ts";
 import { AuctionModule } from "../../../src/modules/auction/auction-module.ts";
 import { TradeModule } from "../../../src/modules/trade/trade-module.ts";
+import { PartyModule } from "../../../src/modules/party/party-module.ts";
 import type { AuctionService } from "../../../src/modules/auction/application/auction-service.ts";
 import { MailModule } from "../../../src/modules/mail/mail-module.ts";
 import type { MailService } from "../../../src/modules/mail/application/mail-service.ts";
+import type { PartyJoinService } from "../../../src/modules/party/application/party-join-service.ts";
+import type { PartyService } from "../../../src/modules/party/application/party-service.ts";
+import type { PartySnapshot } from "../../../src/modules/jugger-wire/application/party-snapshot.ts";
 import type { PlayableAccountRegistration } from "../../../src/app/playable-account-registration.ts";
 import type { PlayableDevelopmentIdentity } from "../../../src/app/playable-development-identity.ts";
 import type { Catalog } from "../../../src/modules/catalog/ports/catalog.ts";
@@ -285,6 +290,18 @@ describe("module factories", () => {
     ).toThrow(/Auction module requires a clock/);
   });
 
+  it("fails fast when required party dependencies are missing", () => {
+    expect(() => PartyModule.create({ database, clock })).toThrow(
+      /Party module requires a database/,
+    );
+    expect(() =>
+      PartyModule.create({
+        database: {} as PostgresDatabase,
+        clock: undefined as unknown as Clock,
+      }),
+    ).toThrow(/Party module requires a clock/);
+  });
+
   it("fails fast when required jugger-wire dependencies are missing", async () => {
     await expect(
       JuggerWireModule.create({
@@ -323,6 +340,10 @@ describe("module factories", () => {
         auctionTenderCancel: {} as AuctionTenderCancel,
         trade: {} as TradeDesk,
         chat: {} as ChatDesk,
+        party: {} as PartyService,
+        partyJoin: {} as PartyJoinService,
+        partySnapshot: {} as PartySnapshot,
+        partyNotify: {} as PartyNotify,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -371,6 +392,11 @@ describe("module factories", () => {
     await expect(auction.close()).resolves.toBeUndefined();
     const trade = TradeModule.create();
     await expect(trade.close()).resolves.toBeUndefined();
+    const party = PartyModule.create({
+      database: {} as PostgresDatabase,
+      clock,
+    });
+    await expect(party.close()).resolves.toBeUndefined();
   });
 
   it("rejects a missing Pub1 directory during jugger-wire startup", async () => {
@@ -445,6 +471,10 @@ describe("module factories", () => {
         auctionTenderCancel: {} as AuctionTenderCancel,
         trade: {} as TradeDesk,
         chat: {} as ChatDesk,
+        party: {} as PartyService,
+        partyJoin: {} as PartyJoinService,
+        partySnapshot: {} as PartySnapshot,
+        partyNotify: {} as PartyNotify,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

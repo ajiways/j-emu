@@ -7,13 +7,13 @@ const maxLines = 400;
 const reviewThreshold = 250;
 const lineJustifications: Readonly<Record<string, string>> = {
   "src/app/composition-root.ts":
-    "Wires identity through mail/auction/trade/chat composition UoW and shared DelayScheduler sweeps",
+    "Wires identity through mail/auction/trade/chat/party composition UoW and shared DelayScheduler sweeps",
   "src/modules/auction/infrastructure/postgres-listing-repository.ts":
     "Auction listing rows plus snapshot columns, search filters, and FOR UPDATE lock/sweep",
   "src/modules/jugger-wire/jugger-wire-module.ts":
-    "HTTP/TCP servers and OA command module factory including mail, auction, trade, and chat ports",
+    "HTTP/TCP servers and OA command module factory including mail, auction, trade, chat, and party ports",
   "src/modules/jugger-wire/registry/jugger-command-module.ts":
-    "Static OA command constructors including mail, auction, trade, and chat ports",
+    "Static OA command constructors including mail, auction, trade, chat, and party ports",
   "src/modules/character/application/character-service.ts":
     "Character application facade: progression, resources, money, reputation, learn-bonus, location, and presence",
   "src/modules/world/domain/hunt-wander.ts":
@@ -39,7 +39,17 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/catalog/infrastructure/postgres-catalog.ts":
     "Active-release catalog reads for artifacts, bots, spell books, skills, store, reputation, bonuses, and use scripts",
   "src/modules/jugger-wire/application/bootstrap-read-model.ts":
-    "Flat OA bootstrap/mutation blocks including drink purge, USE mutation, and CMB-04 init2 fight|conf",
+    "Flat OA bootstrap/mutation blocks including drink purge, USE mutation, CMB-04 init2 fight|conf, and SOC-02 party restore",
+  "src/app/chat-desk.ts":
+    "Player chat add plus area/private/party fan-out and hunt/loot system lines",
+  "src/app/party-desk.ts":
+    "Party OA router: create/kick/leave/disband/leader/settings and dump chrome bag",
+  "src/app/party-join-ops.ts":
+    "Party invite/confirm/join windows and dump join_confirm pending path",
+  "src/modules/party/application/party-service.ts":
+    "Party membership mutations: create/kick/leave/disband/leader/settings with FOR UPDATE",
+  "src/modules/party/application/party-join-service.ts":
+    "Party invite/confirm/join/search-join pending under the same UoW lock",
 };
 const multiExportAllowlist: readonly string[] = [];
 const amfValueAllowPrefix = "src/modules/jugger-wire/amf/";

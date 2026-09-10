@@ -1,10 +1,13 @@
 import { ProtocolError } from "../../application/protocol-error.ts";
 
+const OA_ENVELOPE = new Set(["object", "action", "form", "in", "sq", "sess_key"]);
+
 export type ObjectActionEnvelope = Readonly<{
   object: string;
   action: string;
   form?: Readonly<Record<string, unknown>>;
   input?: Readonly<Record<string, unknown>>;
+  root?: Readonly<Record<string, unknown>>;
   sequence: string | number | boolean | null;
 }>;
 
@@ -29,13 +32,24 @@ export function decodeObjectActionEnvelope(value: unknown): ObjectActionEnvelope
   }
   const form = optionalObject(record["form"], "form");
   const input = optionalObject(record["in"], "in");
+  const root = extraRoot(record);
   return {
     object,
     action,
     sequence,
     ...(form ? { form } : {}),
     ...(input ? { input } : {}),
+    ...(root ? { root } : {}),
   };
+}
+
+function extraRoot(record: Record<string, unknown>): Readonly<Record<string, unknown>> | undefined {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(record)) {
+    if (OA_ENVELOPE.has(key) || value === undefined || value === null) continue;
+    out[key] = value;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 export function oaRegistryKey(envelope: ObjectActionEnvelope): string {

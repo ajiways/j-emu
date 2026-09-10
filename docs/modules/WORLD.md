@@ -339,7 +339,8 @@ Representative dump-proven, не полный `hunt_spawns.json` (DATA-04):
 ### Architecture decision
 
 Отдельный `ARC-RTM` не нужен. ADR-0017 достаточны: durable outbox table не
-создаём «на будущее». Social-модуля нет; party `4:` — SOC-02. `chat|add` —
+создаём «на будущее». Social-модуля нет; party `4:` — [PARTY.md](PARTY.md)
+(SOC-02). `chat|add` —
 [CHAT.md](CHAT.md) (SOC-01).
 
 **Roster (gameplay state)** — PostgreSQL: `identity.sessions` ⨝

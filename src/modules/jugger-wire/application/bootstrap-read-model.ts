@@ -36,7 +36,9 @@ import { upgradeMutation } from "./upgrade-mutation-block.ts";
 import type { GearUpgradeResult } from "../../inventory/domain/apply-gear-upgrade.ts";
 import type { PresenceService } from "../../world/application/presence-service.ts";
 import type { UnreadMailQuery } from "../../mail/ports/unread-mail.ts";
+import type { PartyMembershipQuery } from "../../party/ports/party-membership-query.ts";
 import type { FightWireMapper } from "./fight-wire-mapper.ts";
+import type { PartySnapshot } from "./party-snapshot.ts";
 
 export type { HuntBlock, UserUnitframeBlock, HeroStateBlock };
 
@@ -51,6 +53,8 @@ export class BootstrapReadModel {
     private readonly presence: PresenceService,
     private readonly fightWire: FightWireMapper,
     private readonly unreadMail: UnreadMailQuery,
+    private readonly party: PartyMembershipQuery,
+    private readonly partySnapshot: PartySnapshot,
     private readonly policy: Readonly<{
       bagCapacity: number;
       pocketCapacity: number;
@@ -282,6 +286,7 @@ export class BootstrapReadModel {
     const resume = await this.combat.resumeFight(accountId);
     const location = await locationAreaBlocks(this.world, this.catalog, hero, this.clock);
     const chrome = await this.catalog.chrome();
+    const partyBlocks = await this.partySnapshot.restore(hero.id);
     return {
       "common|init2": { status: 100 },
       state: await this.heroState(hero, accountId),
@@ -314,6 +319,7 @@ export class BootstrapReadModel {
       "common|occurrences_conf": chrome.block("common|occurrences_conf"),
       "common|farm_agregate": chrome.block("common|farm_agregate"),
       ...(resume ? { "fight|conf": this.fightWire.fightConfiguration(resume) } : {}),
+      ...(partyBlocks !== null ? partyBlocks : {}),
     };
   }
 
@@ -325,6 +331,7 @@ export class BootstrapReadModel {
       world: this.world,
       clock: this.clock,
       unreadMail: this.unreadMail,
+      party: this.party,
     });
   }
 

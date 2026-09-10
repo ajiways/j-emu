@@ -13,12 +13,14 @@ describe("buildHeroState", () => {
       fightId: null,
       resurrectZoneTitle: "Горное поселение",
       newMessage: 0,
+      inParty: false,
     });
     expect(idle).not.toHaveProperty("fight_id");
     const fighting = buildHeroState(testHero(), clock, {
       fightId: 9,
       resurrectZoneTitle: "Горное поселение",
       newMessage: 0,
+      inParty: false,
     });
     expect(fighting.fight_id).toBe(9);
   });
@@ -31,6 +33,7 @@ describe("buildHeroState", () => {
       fightId: null,
       resurrectZoneTitle: "Горное поселение",
       newMessage: 0,
+      inParty: false,
     });
     expect(state).toMatchObject({
       ghost: 1,

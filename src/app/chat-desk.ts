@@ -18,6 +18,7 @@ import type { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.
 import type { PresenceService } from "../modules/world/application/presence-service.ts";
 import type { WorldService } from "../modules/world/domain/world-service.ts";
 import type { Clock } from "../shared/kernel/clock.ts";
+import { partyChannel } from "../modules/party/domain/party-channel.ts";
 import { expandPlayerChat } from "./chat-expand.ts";
 import { chatLng, chatRecipients, chatText } from "./chat-form.ts";
 
@@ -30,6 +31,10 @@ export type ChatDeskDeps = Readonly<{
   clock: Clock;
   outbox: EsrvOutbox;
   wake: Readonly<{ wake(accountId: number): void }>;
+  party: Readonly<{
+    membership(heroId: number): Promise<{ party: { id: number } } | null>;
+    memberAccountIds(partyId: number): Promise<readonly number[]>;
+  }>;
 }>;
 
 export type ChatAddResult = Readonly<{ echo: ChatMessageBlock }>;
@@ -127,6 +132,24 @@ export class ChatDesk {
       for (const info of roster.population) {
         if (info.id === accountId) continue;
         this.deliver(info.id, remote);
+      }
+    } else if (type === "party") {
+      const mem = await this.deps.party.membership(hero.id);
+      if (mem) {
+        const remote = this.message({
+          type: "party",
+          msg: expanded.msg,
+          lng,
+          ...sender,
+          from_level: hero.level,
+          ...listed,
+          macroses,
+        });
+        const channel = partyChannel(mem.party.id);
+        const others = (await this.deps.party.memberAccountIds(mem.party.id)).filter(
+          (id) => id !== accountId,
+        );
+        for (const target of others) this.deliver(target, remote, channel);
       }
     }
     return { echo };
@@ -232,8 +255,8 @@ export class ChatDesk {
     return buildChatMessage({ ...fields, ctime: this.deps.clock.unixSeconds() });
   }
 
-  private deliver(accountId: number, block: ChatMessageBlock): void {
-    this.deps.outbox.enqueue(accountId, { "chat|message": block });
+  private deliver(accountId: number, block: ChatMessageBlock, channel?: string): void {
+    this.deps.outbox.enqueue(accountId, { "chat|message": block }, channel);
     this.deps.wake.wake(accountId);
   }
 

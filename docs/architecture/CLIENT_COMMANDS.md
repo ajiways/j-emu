@@ -69,10 +69,13 @@ Response descriptor явно определяет один из варианто
   `trade|request`/`confirm`/`put`/`put_money`/`withdraw`/
   `session_ready`/`session_decline`/`session_confirm`/`decline`,
   `chat|add`,
+  `party|create`/`invite`/`confirm_invite`/`decline_invite`/`kick`/`leave`/
+  `disband`/`change_leader`/`save_settings`/`join`/`confirm_join`/`decline_join`,
   `user|bag_order` и других подтверждённых мутаций;
 - protocol error с точным `status` и `error` (store buy dump-proven **2** для
   пустой корзины / не-лавки / неизвестного лота / нехватки золота — не 203;
-  private chat missing nick — тот же nested **2**).
+  private chat missing nick и party dump `fail()` — тот же nested **2**).
+  Nested poll: `party|members`/`settings`/`bag`/`search_list`.
 
 `sq` зеркалирует transport, а не application handler. Неизвестный registry key
 возвращает `status:203`; ошибка сессии — `status:4`; внутренняя ошибка логируется

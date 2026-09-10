@@ -2,7 +2,7 @@
 
 Документ описывает ownership target. Реализованы `identity`, `character`,
 `inventory`, `catalog`, `world`, `combat`, `content`, `mail`, `auction`,
-`trade`, `chat` и `jugger-wire`, но их полный target API ещё не перенесён. `quests`,
+`trade`, `chat`, `party` и `jugger-wire`, но их полный target API ещё не перенесён. `quests`,
 `social`, `economy`, `professions` и `instances` ниже являются планом, а не
 возможностями runtime.
 Фактический статус находится в [CAPABILITIES.md](../CAPABILITIES.md).
@@ -38,8 +38,11 @@ area presence roster:
   sweep через mail settlement. Target `economy` listings ещё план.
 - `trade` — process-local P2P сессия (инвайт, стол, confirm_key), settle в
   composition UoW. Target `economy` trade ещё план.
-- `chat` — process-local area/private/system fan-out через esrv outbox, без
-  таблиц. Target `social` channels ещё план.
+- `chat` — process-local area/private/system/party fan-out через esrv outbox,
+  без таблиц. Target `social` channels ещё план.
+- `party` — `party.parties` / `party_members` / `party_invites`, membership и
+  settings. Empty `party|bag` chrome без bag table. Target `social` groups ещё
+  план.
 - Репутация Радвея **5** есть (REP-01, product частично).
   `quests`, `economy`, `professions`, `instances` в runtime нет.
 
@@ -210,6 +213,18 @@ post-commit обёртка `ChatFightSettlement`. Контракт:
 [CHAT.md](../modules/CHAT.md).
 
 **Шов извлечения:** не цель SOC-01. Target channels в `social` ниже — план.
+
+### `party` — SOC-02 runtime
+
+**Владеет:** persistent party, membership, invites, settings. Не владеет bag
+give/drop (SOC-03) и не пишет `heroes` / combat. Empty `party|bag` wire —
+dump chrome.
+
+**API:** `create`, `invite`, `confirmInvite`, `kick`, `leave`, `disband`,
+`changeLeader`, `saveSettings`, `searchList`, `join`. Delivery — composition
+`PartyDesk` + esrv `2:`/`4:`. Контракт: [PARTY.md](../modules/PARTY.md).
+
+**Шов извлечения:** не цель SOC-02. Target groups в `social` ниже — план.
 
 ### `social` — после core
 

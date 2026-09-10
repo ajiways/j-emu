@@ -900,12 +900,15 @@
 - **depends_on:** `SOC-01`, `CMB-04`
 - **Behavior evidence:** legacy `PARTY.md`, `FIGHT_JOIN.md`, party runtime.
 - **Content set:** party UI/config документы, если нужны.
-- **Architecture checkpoint / decision:** pending — persistent party
-  ownership, membership locking и `4:` channel.
+- **Architecture checkpoint / decision:** отдельный `ARC-SOC` не нужен.
+  Модуль `party` (`src/modules/party`), таблицы `party.parties` /
+  `party_members` / `party_invites`; bag table — SOC-03. Serial `FOR UPDATE`
+  - unique `hero_id`. Esrv `4:<partyId>` через outbox channel. Combat не
+    импортирует party. Контракт: [PARTY.md](../modules/PARTY.md).
 - **Acceptance:** create/invite/accept/kick/leave/disband, leadership,
   settings и party chat остаются consistent через reconnect и параллельные
   изменения состава.
-- **Status:** `queued`
+- **Status:** `done`
 
 ### SOC-03 — Party bag, grouploot and fight HELP
 
@@ -918,7 +921,7 @@
 - **Acceptance:** все поддержанные loot rules, party bag give/drop и
   same-area HELP/JOIN settle один раз и дают упорядоченные
   party/personal pushes.
-- **Status:** `queued`
+- **Status:** `next`
 
 ## Wave 9 — instance engines
 

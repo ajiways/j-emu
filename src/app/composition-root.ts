@@ -45,7 +45,10 @@ import { AuctionTtlSweep } from "./auction-ttl-sweep.ts";
 import { TradeDesk } from "./trade-desk.ts";
 import { ChatDesk } from "./chat-desk.ts";
 import { ChatFightSettlement } from "./chat-fight-settlement.ts";
+import { PartyNotify } from "./party-notify.ts";
 import { TradeModule } from "../modules/trade/trade-module.ts";
+import { PartyModule } from "../modules/party/party-module.ts";
+import { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
 import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 
@@ -198,6 +201,8 @@ export class CompositionRoot {
       );
       const longPoll = new LongPollCoordinator();
       const outbox = new EsrvOutbox();
+      const party = PartyModule.create({ database, clock });
+      closers.push(party);
       const chatDesk = new ChatDesk({
         characters: characters.service,
         world: world.service,
@@ -207,6 +212,15 @@ export class CompositionRoot {
         clock,
         outbox,
         wake: longPoll,
+        party: party.service,
+      });
+      const partySnapshot = new PartySnapshot(party.service, characters.service, catalog.catalog);
+      const partyNotify = new PartyNotify({
+        outbox,
+        wake: longPoll,
+        chat: chatDesk,
+        clock,
+        memberAccountIds: (partyId) => party.service.memberAccountIds(partyId),
       });
       const presenceFanout = new PresenceFanout(presence, outbox, longPoll);
       const huntFanout = new HuntAreaFanout(presence, longPoll);
@@ -315,6 +329,10 @@ export class CompositionRoot {
         auctionTenderCancel,
         trade: tradeDesk,
         chat: chatDesk,
+        party: party.service,
+        partyJoin: party.join,
+        partySnapshot,
+        partyNotify,
       });
       closers.push(wire);
       return new Application(

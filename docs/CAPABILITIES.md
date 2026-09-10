@@ -158,7 +158,7 @@ CEF отложен до редактора выдачи предметов.
 chat auth — пустое тело; restart очищает очередь и собирает roster из sessions.
 
 - Roster: `identity.sessions` ⨝ `heroes.area_id`; delivery process-local;
-- Long-poll wake per-account. Party `4:` не в срезе. `chat|add` — SOC-01.
+- Long-poll wake per-account. Party `4:<id>` — SOC-02. `chat|add` — SOC-01.
 
 ## World transitions — готово
 
@@ -247,14 +247,24 @@ esrv `common|window` на `2:`; сессия process-local через disconnect
 Есть raw-AMF: `chat|add` area/private/system, dump stub echo + `state`, fan-out
 соседям на `2:` отдельными `chat|message` кадрами. Hunt start/end и loot/money
 system-строки после UoW settlement; сбой enqueue не откатывает награды.
-`trade|confirm` шлёт «согласился торговать». CEF чата не прогонялся.
+`trade|confirm` шлёт «согласился торговать». Party type — на `4:` при
+membership (SOC-02). CEF чата не прогонялся.
 
-Не перенесены party `4:`, кланы, one-fight TEMPEFFECT expiry chat, quest
-announce.
+Не перенесены кланы, one-fight TEMPEFFECT expiry chat, quest announce.
+
+## Party — частично
+
+Есть raw-AMF и PostgreSQL: create/invite/confirm/decline/kick/leave/disband,
+change_leader (level ≥), save_settings, search_list/join/`join_confirm`,
+`state.party` из membership, init2 restore members/settings/empty bag, party
+chat и system-строки на `4:<partyId>`. Reconnect/restart читает Postgres.
+CEF окна группы не прогонялся.
+
+Не перенесены bag give/drop, grouploot, HELP/JOIN, dungeon bind.
 
 ## После core — не перенесено
 
-Party, полный корпус магазинов (DATA-05).
+Полный корпус магазинов (DATA-05).
 
 ## Store — частично
 

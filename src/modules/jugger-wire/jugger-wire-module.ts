@@ -12,8 +12,11 @@ import type { AuctionTenderSell } from "../../app/auction-tender-sell.ts";
 import type { AuctionTenderCancel } from "../../app/auction-tender-cancel.ts";
 import type { TradeDesk } from "../../app/trade-desk.ts";
 import type { ChatDesk } from "../../app/chat-desk.ts";
+import type { PartyNotify } from "../../app/party-notify.ts";
 import type { AuctionService } from "../auction/application/auction-service.ts";
 import type { MailService } from "../mail/application/mail-service.ts";
+import type { PartyJoinService } from "../party/application/party-join-service.ts";
+import type { PartyService } from "../party/application/party-service.ts";
 import type { FastifyInstance } from "fastify";
 import type { AppConfig } from "../../app/config.ts";
 import type { PlayableAccountRegistration } from "../../app/playable-account-registration.ts";
@@ -40,6 +43,7 @@ import type { HuntAreaFanout } from "./application/hunt-area-fanout.ts";
 import { JuggerHttpServer } from "./infrastructure/http/jugger-http-server.ts";
 import { FightTcpServer } from "./infrastructure/tcp/fight-tcp-server.ts";
 import { JuggerCommandModule } from "./registry/jugger-command-module.ts";
+import type { PartySnapshot } from "./application/party-snapshot.ts";
 
 export type JuggerWireBootstrapPolicy = Readonly<{
   bagCapacity: number;
@@ -104,6 +108,10 @@ export class JuggerWireModule {
     auctionTenderCancel: AuctionTenderCancel;
     trade: TradeDesk;
     chat: ChatDesk;
+    party: PartyService;
+    partyJoin: PartyJoinService;
+    partySnapshot: PartySnapshot;
+    partyNotify: PartyNotify;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -188,6 +196,16 @@ export class JuggerWireModule {
     );
     const trade = requirePresent(input.trade, "Jugger-wire module requires trade desk");
     const chat = requirePresent(input.chat, "Jugger-wire module requires chat desk");
+    const party = requirePresent(input.party, "Jugger-wire module requires party");
+    const partyJoin = requirePresent(input.partyJoin, "Jugger-wire module requires party join");
+    const partySnapshot = requirePresent(
+      input.partySnapshot,
+      "Jugger-wire module requires party snapshot",
+    );
+    const partyNotify = requirePresent(
+      input.partyNotify,
+      "Jugger-wire module requires party notify",
+    );
     try {
       const fightWire = new FightWireMapper(
         {
@@ -208,6 +226,8 @@ export class JuggerWireModule {
           presence,
           fightWire,
           mail,
+          party,
+          partySnapshot,
           bootstrapPolicy,
         ),
         new HeroSheetReadModel({
@@ -244,6 +264,10 @@ export class JuggerWireModule {
         identity,
         outbox,
         longPoll,
+        party,
+        partyJoin,
+        partySnapshot,
+        partyNotify,
       );
       const esrvPoll = new EsrvPollAssembler(
         characters,
