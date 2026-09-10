@@ -5,6 +5,9 @@ import { requireHuntBotSpellBook } from "./hunt-bot-spell-book.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 
 export function requireHuntBattleInit(init: HuntBattleInit, rules: BattleRules): void {
+  if (init.purpose !== "hunt" && init.purpose !== "quest") {
+    throw new Error("Hunt battle purpose must be hunt or quest");
+  }
   if (!init.areaId) throw new Error("Battle area is required");
   requireCombatLoadout(init.loadout);
   requireHuntBotSpellBook(init.botSpellBook);

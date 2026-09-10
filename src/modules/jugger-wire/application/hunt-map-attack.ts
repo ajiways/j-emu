@@ -3,7 +3,7 @@ import { HuntJoinDenied } from "../../combat/domain/hunt-join-denied.ts";
 import type { WorldService } from "../../world/domain/world-service.ts";
 import { ProtocolError } from "./protocol-error.ts";
 
-export type HuntMapAttackInput = Omit<HuntStartInput, "fightId"> &
+export type HuntMapAttackInput = Omit<HuntStartInput, "fightId" | "purpose"> &
   Readonly<{
     spawnId: number;
   }>;
@@ -98,6 +98,7 @@ export class HuntMapAttack {
         areaId: input.areaId,
         loadout: input.loadout,
         botSpellBook: input.botSpellBook,
+        purpose: "hunt",
       });
       await this.fanout.wakeArea(input.areaId);
       return fight;

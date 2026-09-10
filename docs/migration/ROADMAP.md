@@ -707,7 +707,7 @@
 - **Architecture checkpoint / decision:** действующие ADR-0017–0020
   достаточны, `ARC-*` нет. Active fight остаётся RAM (ADR-0020). `FightDuel`
   — pairing + счётчики ударов на том же `Battle` (hunt human↔bot и
-  friendly human↔human). bot↔bot — CMB-09, не этот срез. Shuffle 3↔3 —
+  friendly human↔human). bot↔bot — leftover `QST-ENG-02`, не этот срез. Shuffle 3↔3 —
   реорганизация pairing, не новая сущность: `PAIR_HITS_TO_SWITCH = 3`.
   Playable slice — 1 бот; representative path — 2 hunters × 1 bot, waiter
   получает бота, актор `oppwait`, HP/loadout без сброса. Cross-swap двух
@@ -732,13 +732,21 @@
 - **Content set:** один синтетический тестовый quest-fight hook (не
   куратский контент) — доказывает, что combat умеет отдавать `on_win`/
   `on_lose` сигнал произвольному вызывающему модулю.
-- **Architecture checkpoint / decision:** pending — combat отдаёт terminal
-  outcome через тот же `FightTerminalObserver`, что и CMB-03, quest-модуль
-  подписывается, а не наоборот.
+- **Architecture checkpoint / decision:** действующие ADR-0017–0020
+  достаточны, `ARC-*` нет. Active fight остаётся RAM (ADR-0020). CMB-03
+  владеет HP/EXP/loot UoW; quest не пишет `heroes`/`items`. Combat отдаёт
+  terminal outcome тем же `FightTerminalObserver`, что `HuntLockRelease`:
+  notice содержит `purpose`, `winnerTeam`, `outcome`. Вызов квеста —
+  `CombatPort.startHunt` с обязательным `purpose: "hunt" | "quest"` (карта
+  ATTACK_BOT всегда `"hunt"`). Quest-модуль подписывается через fan-out
+  observer в composition, combat quests не импортирует. Join в `purpose:
+"quest"` — `HuntJoinDenied`. Roster allies/enemies, `flags:"8"`, chat_*,
+  bot↔bot, team invert, deny leave — leftover `QST-ENG-02`. Restart mid-fight
+  без `on_win`/`on_lose` (нет RAM). CEF не прогоняется.
 - **Acceptance:** внешний вызывающий модуль может запросить fight с
-  `mode:quest`-подобным флагом и получить `on_win`/`on_lose` без изменения
+  `purpose: "quest"` и получить `on_win`/`on_lose` без изменения
   ownership terminal settlement из CMB-03.
-- **Status:** `next`
+- **Status:** `done`
 
 ### WLD-03 — Hunt wander/respawn as a generic scheduler
 
@@ -751,7 +759,7 @@
   port, не per-spawn `setInterval`.
 - **Acceptance:** произвольный authored spawn с route/zone бродит и
   респаунится по своим authored таймингам, не только статичная точка 50310.
-- **Status:** `queued`
+- **Status:** `next`
 
 ## Wave 7 — economy engines
 

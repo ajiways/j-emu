@@ -115,15 +115,25 @@ export class CombatTerminal {
       this.queueExit(accountId, battle.id, exit);
       this.wakeAccount(accountId);
     }
-    await this.notifyFinished(battle.accountId, battle.id);
+    await this.notifyFinished(battle, kind, winnerTeam);
     for (const accountId of battle.accountIds()) this.byAccount.delete(accountId);
     this.battleByFight.delete(battle.id);
   }
 
-  private async notifyFinished(accountId: number, fightId: string): Promise<void> {
+  private async notifyFinished(
+    battle: Battle,
+    outcome: FinishKind,
+    winnerTeam: 1 | 2,
+  ): Promise<void> {
     const observer = this.terminal();
     if (!observer) return;
-    await observer.afterFinished({ accountId, fightId });
+    await observer.afterFinished({
+      accountId: battle.accountId,
+      fightId: battle.id,
+      winnerTeam,
+      outcome,
+      purpose: battle.purpose,
+    });
   }
 
   private async recordHistory(battle: Battle, winnerTeam: 1 | 2): Promise<void> {

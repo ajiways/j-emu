@@ -7,7 +7,9 @@ re-pair), map `joinHunt`, CMB-02 pocket/glove/rage casts, CMB-03 terminal
 settlement, CMB-04 reconnect/ghost/RESURRECT, CMB-05 STR-урон, CMB-06
 bot spell book, CMB-07 loot и CMB-08 friendly duel + hunt 3↔3 waiter
 handoff (raw-AMF). Cross-swap двух живых пар и CEF дуэли/shuffle не
-прогонялись — product status combat остаётся частично.
+прогонялись — product status combat остаётся частично. CMB-09 отдаёт
+quest `on_win`/`on_lose` через `FightTerminalObserver` (unit); roster/flags
+квестового боя — leftover.
 
 ## Источники поведения
 
@@ -359,6 +361,27 @@ ADR-0017–0020 достаточны. Invites как active fight: RAM, restart 
 
 Cross-swap двух живых 3↔3 дуэлей; bot↔bot; charging/DoT на shuffle hits;
 practice finished_fights type 6; real PvP assault; OA FIGHT_JOIN/HELP.
+
+## CMB-09 — quest-fight mode hook
+
+Срез закрыт (unit). `HuntStartInput.purpose` обязателен: `"hunt"` | `"quest"`.
+Карта ATTACK_BOT всегда `"hunt"`. Terminal notice —
+`{ accountId, fightId, winnerTeam, outcome, purpose }`; тот же
+`FightTerminalObserver`, что `HuntLockRelease`. Quest-модуль подписывается
+fan-out в composition, combat quests не импортирует. `purpose: "quest"`
+запрещает `joinHunt`. CMB-03 UoW (HP/EXP/loot) не меняется. Roster
+allies/enemies, `flags:"8"`, chat_*, bot↔bot, deny leave — leftover
+`QST-ENG-02`. CEF и dialog `START_FIGHT` не прогонялись.
+
+### Architecture decision
+
+ADR-0017–0020 достаточны. `ARC-*` нет. Active fight RAM; restart без
+`on_win`/`on_lose`.
+
+### Out of scope (CMB-09 leftover)
+
+Quest roster и wire `flags:"8"`; AREA waiting → fight; `on_win` scripts;
+bot↔bot pairing; quest deny leave; curated Акрилон.
 
 ## Границы модулей
 

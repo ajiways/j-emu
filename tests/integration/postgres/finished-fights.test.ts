@@ -69,6 +69,7 @@ describe("finished fight history storage", () => {
       areaId: hero.areaId,
       loadout: EMPTY_COMBAT_LOADOUT,
       botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
+      purpose: "hunt",
     });
     expect(start.participantId).toBe(hero.id);
     const fightId = BigInt(start.fightId);

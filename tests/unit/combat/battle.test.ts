@@ -32,6 +32,7 @@ function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
     startedAt: new Date("2026-09-07T12:00:00.000Z"),
     loadout: EMPTY_COMBAT_LOADOUT,
     botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
+    purpose: "hunt",
     ...overrides,
   };
 }

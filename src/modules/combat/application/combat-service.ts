@@ -114,6 +114,9 @@ export class CombatService implements CombatPort {
   async startHunt(input: HuntStartInput): Promise<FightStart> {
     requireWireIdentity(input.accountId, "account id");
     requireWireIdentity(input.heroId, "hero id");
+    if (input.purpose !== "hunt" && input.purpose !== "quest") {
+      throw new Error("Hunt fight purpose must be hunt or quest");
+    }
     if (this.byAccount.has(input.accountId)) throw new Error("Account already has an active fight");
     const fightId = requireFightId(input.fightId);
     if (this.battleByFight.has(fightId)) throw new Error(`Fight ${fightId} is already active`);
@@ -182,6 +185,7 @@ export class CombatService implements CombatPort {
     const battle = this.battleByFight.get(fightId);
     if (!battle || battle.finished) throw new HuntJoinDenied("бой не найден");
     if (battle.kind !== "hunt") throw new HuntJoinDenied("нельзя вмешаться в дуэль");
+    if (battle.purpose === "quest") throw new HuntJoinDenied("нельзя вмешаться в квестовый бой");
     if (battle.areaId !== input.areaId) throw new HuntJoinDenied("бой в другой локации");
     if (battle.hasHuman(input.accountId, input.heroId)) {
       throw new HuntJoinDenied("вы уже участвовали в этом бою");

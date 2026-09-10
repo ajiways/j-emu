@@ -96,6 +96,9 @@ export class Battle {
   get finished(): boolean {
     return this.finishedValue;
   }
+  get purpose(): "hunt" | "quest" | "friendly-duel" {
+    return this.kind === "friendly-duel" ? "friendly-duel" : this.huntInit().purpose;
+  }
 
   huntHistory() {
     const opener = this.opener();

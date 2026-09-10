@@ -50,6 +50,7 @@ export type HuntStartInput = Readonly<{
   areaId: string;
   loadout: CombatLoadout;
   botSpellBook: HuntBotSpellBook;
+  purpose: "hunt" | "quest";
 }>;
 
 export type HuntJoinInput = Readonly<{

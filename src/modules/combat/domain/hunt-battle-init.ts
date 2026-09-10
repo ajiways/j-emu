@@ -28,4 +28,5 @@ export type HuntBattleInit = Readonly<{
   heroStrength: number;
   botStrength: number;
   botSpellBook: HuntBotSpellBook;
+  purpose: "hunt" | "quest";
 }>;

@@ -37,6 +37,7 @@ export function unitHuntStart(
     areaId: "503",
     loadout: EMPTY_COMBAT_LOADOUT,
     botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
+    purpose: "hunt",
     ...overrides,
   };
 }
