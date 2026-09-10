@@ -684,13 +684,18 @@
 - **Behavior evidence:** legacy `FIGHT_LOOT.md` full weighted-table algorithm.
 - **Content set:** переиспользует существующий `bot_loot_entries`; расширение
   до полного корпуса — DATA-03 bulk import, не эта capability.
-- **Architecture checkpoint / decision:** pending — обобщить `roll-bot-loot.ts`
-  до произвольного числа entries/весов, quest/dungeon-conditioned entries как
-  отдельные policy-документы (не создавать сейчас, только не блокировать).
+- **Architecture checkpoint / decision:** complete. `rollBotLoot` — чистая
+  domain-функция от `BotReward` + `RandomSource`; combat/catalog не читают
+  mid-roll. Произвольное число entries/весов уже в алгоритме (guaranteed
+  `drop_weight=0`, weighted pool, NOTHING, bonus `2^(max-n)`). Quest/dungeon
+  conditioned entries — отдельные policy-документы (CMB-09 / DNG), не
+  создавать. ADR-0017–0020 достаточны, `ARC-*` нет. Не объединять с
+  `pickBotSpell`.
 - **Acceptance:** таблица лута работает для произвольного набора entries и
-  весов, включая edge cases (одна entry, все веса равны, `nothing_weight`
-  доминирует).
-- **Status:** `next`
+  весов: одна entry, равные веса, `nothing_weight` доминирует; Gryzl 50310
+  может выдать **77** (raw-AMF). Empty tables 4/24/32 остаются пустыми.
+  CEF не прогонялся — см. [CEF_MANUAL.md](CEF_MANUAL.md).
+- **Status:** `done`
 
 ### CMB-08 — Duels and team shuffle
 
@@ -704,7 +709,7 @@
   3↔3 как реорганизация team-массивов, не новая сущность.
 - **Acceptance:** friendly duel propose/accept работает между двумя героями;
   shuffle 3↔3 перераспределяет живых участников без потери HP/state.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### CMB-09 — Quest-fight mode hook (engine only)
 

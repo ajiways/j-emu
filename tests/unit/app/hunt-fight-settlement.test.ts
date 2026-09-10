@@ -35,6 +35,7 @@ describe("HuntFightSettlement", () => {
     expect(characters.credits).toEqual([{ characterId: 1, minorUnits: minMoneyMinor }]);
     expect(inventory.refills).toHaveLength(1);
     expect(inventory.deaths).toEqual([]);
+    expect(inventory.grants).toEqual([]);
     expect(win.get(10)).toMatchObject({
       status: 100,
       fight_id: 9,
@@ -69,6 +70,22 @@ describe("HuntFightSettlement", () => {
     expect(lossCharacters.credits).toEqual([]);
     expect(lossInventory.deaths).toHaveLength(1);
     expect(lost.get(10)).toMatchObject({ experience: 0, money: "0", loot: [] });
+  });
+
+  it("grants Gryzl 77 when the loot unit draw lands past NOTHING", async () => {
+    const inventory = recordingInventory();
+    const settlement = new HuntFightSettlement(
+      identityUow(),
+      fakeCatalog(),
+      recordingCharacters(),
+      inventory,
+      new SequenceRandom([0, 0.2, 0.95, 1]),
+    );
+    const win = await settlement.persistFinished(outcome("win", 27, 20));
+    expect(inventory.grants).toEqual([{ characterId: 1, artifactId: 77, quantity: 1 }]);
+    expect(win.get(10)).toMatchObject({
+      loot: { "77": { artikul_id: 77, amount: 1 } },
+    });
   });
 
   it("splits EXP by damage and gives loot only to the top damager", async () => {

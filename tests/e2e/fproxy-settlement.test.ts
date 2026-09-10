@@ -102,6 +102,36 @@ describe("fproxy settlement", () => {
   });
 });
 
+describe("fproxy settlement weighted loot", () => {
+  let harness: ApplicationHarness;
+  let application: Application;
+
+  beforeEach(async () => {
+    harness = new ApplicationHarness(undefined, undefined, {
+      lootRandom: new SequenceRandom([0, 0.2, 0.95, 1]),
+    });
+    application = await harness.start();
+  });
+
+  afterEach(async () => {
+    await harness.stop();
+  });
+
+  it("grants meat 77 when the Gryzl roll lands past NOTHING", async () => {
+    const client = await AuthenticatedClient.login(application);
+    const before = await client.objectAction({ object: "common", action: "init", sq: 1 });
+    expect(bagItemByArtikulId(before, 77).cnt).toBe(4);
+    await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms));
+    const esrv = personalEsrvObject(await client.pollEsrv());
+    expect(esrv["fight|loot"]).toMatchObject({
+      status: 100,
+      loot: { "77": { artikul_id: 77, amount: 1 } },
+    });
+    const after = await client.objectAction({ object: "common", action: "init", sq: 20 });
+    expect(bagItemByArtikulId(after, 77).cnt).toBe(5);
+  });
+});
+
 describe("fproxy settlement loss", () => {
   let harness: ApplicationHarness;
   let application: Application;

@@ -265,7 +265,7 @@ Glove ending (не AOE 16) крутит ту же STR-формулу; crit пе�
 
 Content: Грызль **2** STR 10 / 50310; Хисса **4** STR 15 / 50101; дух **32**
 STR 35 / 50102; рыжий грызль **24** STR 45 / 50103. Луты 4/24/32 пустые
-(`nothing_weight=1`) — не CMB-07. CEF урона не прогонялся.
+(`nothing_weight=1`) — DATA-03 bulk, не CMB-07. CEF урона не прогонялся.
 
 ### Architecture decision
 
@@ -307,6 +307,28 @@ Content: Грызль **2** пустая книга / 50310; Хисса **4** sp
 
 DoT ticks (kind 4); charging overlay 397/428/395; MAGSTR/MAGRES;
 virus 631; summon; full `bot_spell_book.json`; heal+AOE dump bot 99.
+
+## CMB-07 — weighted loot table
+
+Срез закрыт (raw-AMF). `rollBotLoot(BotReward, RandomSource)` — generic
+Dwar-lite таблица: guaranteed `drop_weight=0`, затем `loot_drop_cnt` picks
+(+ bonus `2^(max-n)`), пул `drop_weight>0` + NOTHING. Шанс pick ∝ вес /
+сумма. Пустая таблица (Хисса/дух/рыжий) не выдумывает предметы. Quest
+`kind:loot` и dungeon bands — не эта capability. Полный корпус —
+DATA-03.
+
+Gryzl **2**: NOTHING 3460 доминирует 77/93/99; unit past NOTHING даёт
+**77**. CEF нефорсируемого RNG не прогонялся.
+
+### Architecture decision
+
+Отдельный `ARC-*` не нужен. Ролл не читает catalog. Policy-документы
+квеста/данжа не создавать заранее.
+
+### Out of scope (CMB-07 leftover)
+
+Quest loot; dungeon personal/chance; party lottery; honor; полный
+`bot_loot_entries` corpus.
 
 ## Границы модулей
 
