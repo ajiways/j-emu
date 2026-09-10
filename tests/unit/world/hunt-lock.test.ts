@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Area } from "../../../src/modules/world/domain/area.ts";
+import type { WorldService } from "../../../src/modules/world/domain/world-service.ts";
 import { parkedHuntSpawn } from "../../support/parked-hunt-spawn.ts";
 import { worldServiceFor } from "../../support/world-service-for.ts";
 

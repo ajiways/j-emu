@@ -170,11 +170,26 @@ describe("ContentValidator", () => {
           typeId: -131,
           price: 1,
           ord: 99,
+          pay: { currency: "gold", amount: 1 },
         },
       ],
     };
     expect(() => new ContentValidator().validate(bundle)).toThrow(
       /store_lot 504:99 artifact 8 is not in the bundle/,
+    );
+  });
+
+  it("rejects a gold lot whose pay amount does not match price", () => {
+    const lot = playable.storeLots.find((row) => row.lotId === 80);
+    if (!lot) throw new Error("playable bundle is missing lot 80");
+    const bundle: ContentBundle = {
+      ...playable,
+      storeLots: playable.storeLots.map((row) =>
+        row.lotId === 80 ? { ...row, pay: { currency: "gold", amount: 2 } } : row,
+      ),
+    };
+    expect(() => new ContentValidator().validate(bundle)).toThrow(
+      /store_lot 504:80 gold pay must match price/,
     );
   });
 

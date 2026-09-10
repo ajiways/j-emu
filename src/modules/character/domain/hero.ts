@@ -2,7 +2,7 @@ import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { isProgressionManagedSkillId } from "../../content/domain/progression-managed-skills.ts";
 import { FIGHT_INJURY_ARTIKUL_ID } from "./fight-injury-wire.ts";
 import { type HeroCreationPolicy, type HeroRecord, type NewHero } from "./hero-record.ts";
-import { debitMoneyMinor } from "./debit-money-minor.ts";
+import { debitMoneyMinor, debitDiamondMinor } from "./debit-money-minor.ts";
 import { nextMoneyMinor } from "./next-money-minor.ts";
 
 export type { HeroCreationPolicy, HeroRecord, NewHero };
@@ -257,6 +257,10 @@ export class Hero {
 
   debitMoney(minorUnits: number): void {
     this.moneyMinorValue = debitMoneyMinor(this.moneyMinorValue, minorUnits);
+  }
+
+  debitMoneyGold(minorUnits: number): void {
+    this.moneyGoldMinorValue = debitDiamondMinor(this.moneyGoldMinorValue, minorUnits);
   }
 
   private setHp(hp: number): void {

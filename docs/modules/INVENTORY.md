@@ -116,8 +116,10 @@ Naked skills остаются в `hero_skills`. Totals и `hpMax`/`mpMax` счи
 character владеет `money_minor` на hero; catalog поставляет immutable
 `priceMinor` / `flags` / `bagStack` из pinned release. Economy-модуля нет и
 его нельзя изобретать: void-sell кредитует героя через public character port
-в той же Unit of Work. ECO-01 не создаёт economy-модуль; `debitMoney` и
-витрина — [STORE.md](STORE.md). `ARC-ECO` нужен только для ledger/auction.
+в той же Unit of Work. ECO-01/ECO-02 не создают economy-модуль; `debitMoney`,
+`debitMoneyGold` и витрина — [STORE.md](STORE.md). Бартер списывает bag по
+catalog `artikul_id` (`countBagByArtifact` / `consumeFromBag`), не по
+instance `items.id`. `ARC-ECO` нужен только для ledger/auction.
 
 DROP не идемпотентен по `operation_id`: повтор клиента — вторая мутация.
 
@@ -185,7 +187,7 @@ wire = `flags & 8 ? 1 : 0`. Стартовая 9095: `flags: 40`
 Unique paperdoll/bag: `bagStack = 1`, стакать нельзя. `priceMinor` missing ≠ 0.
 
 9095: `priceMinor: 0`, `flags: 40`, `bagStack: 1`. Provenance: live dump
-instance flags/price; unique wearable. Bundle сейчас `playable-slice/v19`.
+instance flags/price; unique wearable. Bundle сейчас `playable-slice/v20`.
 
 Второго stackable/sellable артикула в slice нет. E2E/CEF — throw-away 9095.
 Void-sell без dump-proven priced artifact не выдумывался.
@@ -321,7 +323,7 @@ PUT_OFF: `pocket → bag`, затем merge одинаковых bag-стако�
 
 ### Content
 
-`playable-slice/v19`. Pocket occupancy — partial unique в `0000_foundation_init`.
+`playable-slice/v20`. Pocket occupancy — partial unique в `0000_foundation_init`.
 
 | id  | title                 | picture                  | typeId | kindId | slotMask  | weight | priceMinor | flags | bagStack |
 | --- | --------------------- | ------------------------ | ------ | ------ | --------- | ------ | ---------- | ----- | -------- |
@@ -507,7 +509,7 @@ missing item **203** `нельзя починить`. Недостаточно �
 
 ### Content
 
-`playable-slice/v19`. Все артефакты обязаны иметь оба поля.
+`playable-slice/v20`. Все артефакты обязаны иметь оба поля.
 
 | id                 | occupancy bit | dur   | provenance                                |
 | ------------------ | ------------- | ----- | ----------------------------------------- |
@@ -582,7 +584,7 @@ stat из пула. Types 2 и 3 — одна lineage. Bonus =
 
 ### Content
 
-`playable-slice/v19`. Dump `Pub1/images/locale/ru/amf/artifact_artikul_*.amf`.
+`playable-slice/v20`. Dump `Pub1/images/locale/ru/amf/artifact_artikul_*.amf`.
 `bagStack` 9999 — authored cap для weight-0 type 73. `level_max=-1` → `0`,
 кроме 13224 (`35`).
 

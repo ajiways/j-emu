@@ -171,6 +171,7 @@ describe("Drizzle migrations", () => {
       "0004_content_draft_use_types.sql",
       "0005_catalog_bot_spell_book.sql",
       "0006_world_hunt_spawn_wander.sql",
+      "0007_catalog_store_lot_pay.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -183,8 +184,9 @@ describe("Drizzle migrations", () => {
       "0004_content_draft_use_types",
       "0005_catalog_bot_spell_book",
       "0006_world_hunt_spawn_wander",
+      "0007_catalog_store_lot_pay",
     ]);
-    expect(await appliedCount()).toBe(7);
+    expect(await appliedCount()).toBe(8);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -239,6 +241,27 @@ describe("Drizzle migrations", () => {
           WHERE constraint_schema = 'inventory' AND constraint_name = 'items_location_kind_check'`,
     );
     expect([...tempeffectCheck].map((row) => row.check_clause).join(" ")).toMatch(/tempeffect/);
+    const storeLotPay = await database.session().execute<{
+      column_name: string;
+      is_nullable: string;
+      data_type: string;
+    }>(
+      sql`SELECT column_name, is_nullable, data_type
+          FROM information_schema.columns
+          WHERE table_schema = 'catalog' AND table_name = 'store_lots'
+            AND column_name IN ('pay', 'requires')
+          ORDER BY column_name`,
+    );
+    expect(
+      [...storeLotPay].map((row) => ({
+        column_name: row.column_name,
+        is_nullable: row.is_nullable,
+        data_type: row.data_type,
+      })),
+    ).toEqual([
+      { column_name: "pay", is_nullable: "NO", data_type: "jsonb" },
+      { column_name: "requires", is_nullable: "YES", data_type: "jsonb" },
+    ]);
   });
 
   it("applies database identifier defaults and bounded item sequence", async () => {

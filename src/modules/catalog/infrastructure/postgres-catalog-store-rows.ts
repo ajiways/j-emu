@@ -34,6 +34,8 @@ export async function insertStoreLots(
       typeId: row.typeId,
       price: row.price,
       ord: row.ord,
+      pay: row.pay,
+      requires: row.requires === undefined ? null : row.requires,
     })),
   );
 }

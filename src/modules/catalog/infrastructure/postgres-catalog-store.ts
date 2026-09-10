@@ -1,6 +1,8 @@
 import { and, asc, eq } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import type { StoreLot, StoreType } from "../domain/store-lot.ts";
+import { parseStorePay } from "../domain/store-pay.ts";
+import { parseStoreRequires } from "../domain/store-requires.ts";
 import { storeLots, storeTypes } from "./schema.ts";
 
 export async function loadStoreTypes(
@@ -42,5 +44,7 @@ export async function loadStoreLots(
     typeId: row.typeId,
     price: row.price,
     ord: row.ord,
+    pay: parseStorePay(row.pay),
+    requires: parseStoreRequires(row.requires),
   }));
 }

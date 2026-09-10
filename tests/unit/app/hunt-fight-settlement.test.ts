@@ -233,6 +233,9 @@ function recordingCharacters() {
     async debitMoney() {
       throw new Error("unused");
     },
+    async debitMoneyGold() {
+      throw new Error("unused");
+    },
     async lockById() {
       throw new Error("unused");
     },

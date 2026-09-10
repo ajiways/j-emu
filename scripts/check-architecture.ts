@@ -11,9 +11,9 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/world/domain/hunt-wander.ts":
     "Hunt live motion: route, zone, home park, lock freeze, and respawn hide",
   "src/modules/content/domain/parse-content-bundle.ts":
-    "Zod playable-slice document including store lots, reputation, bonuses, use scripts, bot spell books, and hunt wander fields",
+    "Zod playable-slice document including store lot pay/requires, reputation, bonuses, use scripts, bot spell books, and hunt wander fields",
   "src/modules/content/domain/content-document.ts":
-    "Playable bundle DTO including store, reputation, bonuses, use scripts, artifacts, bot spell books, areas, hunt wander, and bootstrap documents",
+    "Playable bundle DTO including store pay/requires, reputation, bonuses, use scripts, artifacts, bot spell books, areas, hunt wander, and bootstrap documents",
   "src/modules/character/domain/hero.ts":
     "Hero aggregate owns vitals, money, location lock, and CMB-04 ghost/injury clock",
   "src/modules/combat/application/combat-service.ts":
@@ -21,11 +21,11 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/combat/domain/battle.ts":
     "Hunt/friendly Battle owns FightDuel pairing, CMB-08 shuffle/waiter handoff, melee, CMB-06 bot turns, casts, and CMB-04 resume",
   "src/modules/content/application/content-validator.ts":
-    "Single bundle completeness gate including store 504, reputation, set bonuses, USE representatives, fight extra blobs, bot loot, and bot spell books",
+    "Single bundle completeness gate including store 504/552 pay and RANK, reputation, set bonuses, USE representatives, fight extra blobs, bot loot, and bot spell books",
   "src/modules/inventory/domain/inventory-service.ts":
-    "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag, INV-05 repair, INV-06 upgrade, INV-07 set-bonus, and INV-08 USE/drink",
+    "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag, INV-05 repair, INV-06 upgrade, INV-07 set-bonus, INV-08 USE/drink, and ECO-02 barter consume-by-artikul",
   "src/modules/catalog/infrastructure/schema.ts":
-    "Catalog projection tables including bot loot, store, reputation, bonuses, and use_scripts",
+    "Catalog projection tables including bot loot, store pay/requires, reputation, bonuses, and use_scripts",
   "src/modules/catalog/infrastructure/postgres-catalog.ts":
     "Active-release catalog reads for artifacts, bots, spell books, skills, store, reputation, bonuses, and use scripts",
   "src/modules/jugger-wire/application/bootstrap-read-model.ts":

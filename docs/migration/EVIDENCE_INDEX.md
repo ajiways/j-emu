@@ -103,8 +103,9 @@ parity.
 
 ## Зависимости core
 
-- [STORE.md](../../../jgr-emu/docs/STORE.md) — ECO-01: только лавка 504 и
-  лоты 23/24; полный корпус `stores/*.json` остаётся `ECO-02`;
+- [STORE.md](../../../jgr-emu/docs/STORE.md) — ECO-01/ECO-02: лавка 504 лоты
+  23/24 и Арсенал 552 lot 438/621 RANK; полный корпус `stores/*.json` —
+  DATA-05;
 - [REPUTATION.md](../../../jgr-emu/docs/REPUTATION.md) — REP-01: track 5
   Радвея и `user|stats`; полный корпус треков/киллов остаётся DATA-05;
 - [CHAT.md](../../../jgr-emu/docs/CHAT.md) — только обязательные system

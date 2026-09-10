@@ -15,8 +15,9 @@ overlay process-local; active content через release projections; active com
 HTTPS fproxy consume кармана после успеха). CMB-03 landed: composition UoW
 на terminal, catalog `bots` rewards + `bot_loot_entries`, esrv loot-then-exit.
 CMB-04 landed: init2 `fight|conf` overlay на тот же RAM battle и character
-ghost/injury/`RESURRECT`, без таблиц active fight. ECO-01 landed: catalog
-витрина 504 type `-131` lots 23/24, character `debitMoney`, composition
+ghost/injury/`RESURRECT`, без таблиц active fight. ECO-01/ECO-02 landed: catalog
+витрина 504 type `-131` lots 23/24 и 552 type 11 lot 438/621 RANK, jsonb
+`pay`/`requires`, character `debitMoney`/`debitMoneyGold`, composition
 `StorePurchase`. REP-01 landed: catalog track 5, `hero_reputations`, OA
 `user|stats`. INV-05 landed: instance durability columns, death −1 on
 settlement, composition `StoreRepair`. INV-06 landed: instance upgrade
@@ -164,6 +165,12 @@ character `debitMoney` + inventory `grantToBag`. Catalog владеет authored
 `store_types` / `store_lots` (как `bot_loot_entries`), не модуль economy.
 World уже владеет area 504 `code=store`. Dual-write hero↔economy wallet
 запрещён. Контракт: [STORE.md](../modules/STORE.md).
+
+**Решение ECO-02:** тех же границ достаточно. Витрина обобщена jsonb
+`store_lots.pay` / `requires`; diamond — native `money_gold_minor` (1.00 =
+100 minor), без 1:900 на buy; бартер списывает bag по catalog `artikul_id`,
+не instance `items.id`. RANK читает `common_conf` honor tables. Come-in
+LEVEL / `store_entries` не вводились. `src/modules/store-engine` нет.
 
 **Решение INV-05:** текущих границ достаточно; отдельный `ARC-INV` /
 `ARC-ECO` не нужен. Durability — inventory instance columns. Repair gold —

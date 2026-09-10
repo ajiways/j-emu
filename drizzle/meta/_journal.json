@@ -50,6 +50,13 @@
       "when": 1789034818143,
       "tag": "0006_world_hunt_spawn_wander",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789044031341,
+      "tag": "0007_catalog_store_lot_pay",
+      "breakpoints": true
     }
   ]
 }

@@ -48,7 +48,7 @@ Travel lock — `character.heroes.move_ready_at` (`timestamptz`, `NULL` = мож
 ADR-0017…ADR-0020 достаточны: одна UoW на команду, typed static OA, content
 через active release, fail-fast без fixture fallback. Presence `131:` /
 `notifyAreaMove` — **RTM-01**. Hunt locks — **WLD-02**. Store lots / rank
-gates / `store|*` — ECO-01 (raw-AMF; CEF не прогонялся). Dungeon/BG copies и `common|instance_conf` —
+gates / `store|*` — ECO-01/ECO-02 (raw-AMF; CEF не прогонялся). Dungeon/BG copies и `common|instance_conf` —
 не этот срез.
 
 Именованное `FightRules`: активный бой → COME_IN и `common|exit` дают
@@ -59,11 +59,13 @@ gates / `store|*` — ECO-01 (raw-AMF; CEF не прогонялся). Dungeon/B
 
 Dump-proven subset, не весь L1–8 (это DATA-04 corpus):
 
-| Area | Title             | `ftime_max` | `code`  | SWF / fight_bg                         |
-| ---- | ----------------- | ----------- | ------- | -------------------------------------- |
-| 503  | Горное поселение  | 0           | `""`    | `forestvillage.swf` / `2_1` (уже в v8) |
-| 504  | Деревенская лавка | 0           | `store` | `forestvillage.swf` / `2_1`            |
-| 501  | Ущелье разлуки    | 15          | `""`    | `uschelierazluki.swf` / `2_1`          |
+| Area | Title              | `ftime_max` | `code`  | SWF / fight_bg                         |
+| ---- | ------------------ | ----------- | ------- | -------------------------------------- |
+| 503  | Горное поселение   | 0           | `""`    | `forestvillage.swf` / `2_1` (уже в v8) |
+| 504  | Деревенская лавка  | 0           | `store` | `forestvillage.swf` / `2_1`            |
+| 501  | Ущелье разлуки     | 15          | `""`    | `uschelierazluki.swf` / `2_1`          |
+| 495  | Площадь Бранендаля | 0           | `""`    | `branendal_ploshad.swf` / `2_1`        |
+| 552  | Арсенал            | 0           | `store` | `branendal_ploshad.swf` / `2_1`        |
 
 Provenance: `radvei_areas.json` + `AREA_SIDEBAR.md`. Не публиковать 498, 502,
 542, NPC `href`, AREA-attack (Грызл/Хисса), dungeon items.
@@ -81,8 +83,12 @@ Authored **travel links only** (sidebar `(flags & 0x10) == 0`):
 `{ object:"common", action:"action", form:{ code:"COME_IN", area_id:<number> } }`.
 `to_id` — строка dest. `confirm_question` — `""`.
 
-`parent_id`: 504 → `"503"`; 501 и 503 → `""` (dump `498` не в slice, outdoor
-exit не ходит на плазу). Скаляры, которых нет в `radvei_areas` (sounds,
+`parent_id`: 504 → `"503"`; 552 → `"495"`; 501, 503 и 495 → `""` (dump `498`
+не в slice; dump parent **494** площади тоже нет в `radvei_areas.json`
+`areas` keys — это gap, не relocated shop). Walk 503→495/552 нет. ECO-02
+публикует dump-двери 495 item 238 flags 16 → 552 и 552 item 0 exit → 495;
+e2e Арсенала ставит area через `characterLocation.setArea`, не COME_IN из
+деревни. Скаляры, которых нет в `radvei_areas` (sounds,
 `context`, channel flags): пустые строки / `0`. Не копировать village
 ambience 503 на 501/504. `client_data` остаётся `""`. Hunt на 501/504 — пустой
 массив, не подставлять 50310.
@@ -164,8 +170,8 @@ lock жив → **204**
 Перегруз → **204** `Вы не можете перемещаться, т.к. рюкзак перегружен!`.
 Нет ребра from→to или dest не published → **203** `некуда идти` (строже live
 `resolveComeIn`, который доверяет голому `area_id`). Нет `area_id` в form →
-то же. Вход в `code=store` **без** `assertStoreEntry` (ECO-01 закрыт: нет
-requires в 504).
+то же. Вход в `code=store` **без** `assertStoreEntry` (ECO-01/ECO-02: нет
+LEVEL requires в 504/552 JSON).
 
 ### Restart / clock / concurrency
 

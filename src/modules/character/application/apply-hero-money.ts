@@ -24,3 +24,16 @@ export async function debitHeroMoney(
   hero.debitMoney(command.minorUnits);
   await heroes.save(hero);
 }
+
+export async function debitHeroMoneyGold(
+  heroes: HeroRepository,
+  command: DebitMoneyCommand,
+): Promise<void> {
+  const hero = await heroes.lockById(command.characterId);
+  if (!hero) throw new Error(`Hero ${command.characterId} is missing`);
+  if (!command.allowGhost && hero.ghost) {
+    throw new GhostHeroError(command.characterId, "debitMoneyGold");
+  }
+  hero.debitMoneyGold(command.minorUnits);
+  await heroes.save(hero);
+}

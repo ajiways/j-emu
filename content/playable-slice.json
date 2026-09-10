@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v19",
+  "schemaVersion": "playable-slice/v20",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -402,6 +402,30 @@
           "value": 7,
           "flags": 0
         }
+      ],
+      "artifact_actions": {},
+      "extra": {}
+    },
+    {
+      "id": 621,
+      "title": "Амулет громилы",
+      "picture": "amulet_boec_615.png",
+      "typeId": "11",
+      "kindId": 25,
+      "slotMask": 512,
+      "weight": 0,
+      "levelMin": 6,
+      "levelMax": 536870911,
+      "gender": 0,
+      "priceMinor": 30000,
+      "flags": 32,
+      "bagStack": 1,
+      "durability": 15,
+      "durabilityMax": 15,
+      "skills": [
+        { "id": "MPMAX", "value": 5, "flags": 0 },
+        { "id": "STR", "value": 14, "flags": 0 },
+        { "id": "VIT", "value": 12, "flags": 0 }
       ],
       "artifact_actions": {},
       "extra": {}
@@ -1389,6 +1413,44 @@
       "hideFinishedFights": 0,
       "hideRunningFights": 0,
       "noClanChat": 0
+    },
+    {
+      "id": "495",
+      "title": "Площадь Бранендаля",
+      "parentId": "",
+      "map": "branendal_ploshad.swf",
+      "fightBackground": "2_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 0,
+      "code": "",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 0,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0
+    },
+    {
+      "id": "552",
+      "title": "Арсенал",
+      "parentId": "495",
+      "map": "branendal_ploshad.swf",
+      "fightBackground": "2_1",
+      "regionMap": "radvei_map.swf",
+      "ftimeMax": 0,
+      "code": "store",
+      "context": "",
+      "soundIntro": "",
+      "soundBg": "",
+      "instArtikulId": 0,
+      "haveTradeChannel": 0,
+      "haveKindChannel": 0,
+      "hideFinishedFights": 0,
+      "hideRunningFights": 0,
+      "noClanChat": 0
     }
   ],
   "areaLinks": [
@@ -1469,6 +1531,46 @@
         "form": {
           "code": "COME_IN",
           "area_id": 503
+        }
+      }
+    },
+    {
+      "fromAreaId": "495",
+      "itemId": 238,
+      "toAreaId": "552",
+      "title": "",
+      "picture": "",
+      "description": "",
+      "flags": 16,
+      "direction": 0,
+      "confirmQuestion": "",
+      "toId": "552",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 552
+        }
+      }
+    },
+    {
+      "fromAreaId": "552",
+      "itemId": 0,
+      "toAreaId": "495",
+      "title": "Выход",
+      "picture": "",
+      "description": "",
+      "flags": 0,
+      "direction": 0,
+      "confirmQuestion": "",
+      "toId": "495",
+      "href": {
+        "object": "common",
+        "action": "action",
+        "form": {
+          "code": "COME_IN",
+          "area_id": 495
         }
       }
     }
@@ -1575,6 +1677,12 @@
       "typeId": -131,
       "title": "Оружие и доспехи",
       "ord": 11000
+    },
+    {
+      "areaId": "552",
+      "typeId": 11,
+      "title": "Ювелирные изделия",
+      "ord": 0
     }
   ],
   "storeLots": [
@@ -1584,7 +1692,8 @@
       "artikulId": 24,
       "typeId": -131,
       "price": 1,
-      "ord": 6
+      "ord": 6,
+      "pay": { "currency": "gold", "amount": 1 }
     },
     {
       "areaId": "504",
@@ -1592,7 +1701,18 @@
       "artikulId": 23,
       "typeId": -131,
       "price": 1,
-      "ord": 8
+      "ord": 8,
+      "pay": { "currency": "gold", "amount": 1 }
+    },
+    {
+      "areaId": "552",
+      "lotId": 438,
+      "artikulId": 621,
+      "typeId": 11,
+      "price": 300,
+      "ord": 0,
+      "pay": { "currency": "gold", "amount": 300 },
+      "requires": { "all": [{ "type": "RANK", "min": 4 }] }
     }
   ],
   "reputationTracks": [

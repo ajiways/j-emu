@@ -12,4 +12,5 @@ export type DebitMoneyCommand = Readonly<{
 export interface CharacterMoney {
   creditMoney(command: CreditMoneyCommand): Promise<void>;
   debitMoney(command: DebitMoneyCommand): Promise<void>;
+  debitMoneyGold(command: DebitMoneyCommand): Promise<void>;
 }

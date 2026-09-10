@@ -30,7 +30,7 @@ import type {
   CreditMoneyCommand,
   DebitMoneyCommand,
 } from "../ports/character-money.ts";
-import { creditHeroMoney, debitHeroMoney } from "./apply-hero-money.ts";
+import { debitHeroMoney, debitHeroMoneyGold, creditHeroMoney } from "./apply-hero-money.ts";
 import type {
   CharacterResources,
   NoteDefeatCommand,
@@ -137,6 +137,12 @@ export class CharacterService
     });
   }
 
+  async debitMoneyGold(command: DebitMoneyCommand): Promise<void> {
+    await this.unitOfWork.run(async () => {
+      await debitHeroMoneyGold(this.heroes, command);
+    });
+  }
+
   grantReputation(command: GrantReputationCommand): Promise<GrantReputationResult> {
     return this.unitOfWork.run(() =>
       grantHeroReputation(this.heroes, this.heroReputations, this.reputationCatalog, command),
@@ -151,10 +157,12 @@ export class CharacterService
   }
 
   async setArea(command: SetAreaCommand): Promise<void> {
-    const hero = await this.heroes.lockById(command.characterId);
-    if (!hero) throw new Error(`Hero ${command.characterId} is missing`);
-    hero.setArea(command.areaId, command.moveReadyAt);
-    await this.heroes.save(hero);
+    await this.unitOfWork.run(async () => {
+      const hero = await this.heroes.lockById(command.characterId);
+      if (!hero) throw new Error(`Hero ${command.characterId} is missing`);
+      hero.setArea(command.areaId, command.moveReadyAt);
+      await this.heroes.save(hero);
+    });
   }
 
   async getOrCreateForAccount(accountId: number, nick: string): Promise<Hero> {

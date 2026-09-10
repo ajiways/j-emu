@@ -1,4 +1,5 @@
 import { InsufficientMoneyError } from "./insufficient-money-error.ts";
+import { InsufficientDiamondsError } from "./insufficient-diamonds-error.ts";
 
 const MAX_MONEY_MINOR = 2_147_483_647;
 
@@ -11,5 +12,17 @@ export function debitMoneyMinor(current: number, minorUnits: number): number {
   }
   const next = current - minorUnits;
   if (next < 0) throw new InsufficientMoneyError(current, minorUnits);
+  return next;
+}
+
+export function debitDiamondMinor(current: number, minorUnits: number): number {
+  if (!Number.isInteger(current) || current < 0 || current > MAX_MONEY_MINOR) {
+    throw new Error("Hero diamonds are outside the wire integer range");
+  }
+  if (!Number.isInteger(minorUnits) || minorUnits < 1) {
+    throw new Error("Diamond debit must be a positive integer");
+  }
+  const next = current - minorUnits;
+  if (next < 0) throw new InsufficientDiamondsError(current, minorUnits);
   return next;
 }

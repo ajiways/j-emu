@@ -287,6 +287,8 @@ export const storeLots = catalogSchema.table(
     typeId: integer("type_id").notNull(),
     price: integer("price").notNull(),
     ord: integer("ord").notNull(),
+    pay: jsonb("pay").notNull(),
+    requires: jsonb("requires"),
   },
   (table) => [
     primaryKey({ columns: [table.releaseId, table.areaId, table.lotId] }),
@@ -302,6 +304,7 @@ export const storeLots = catalogSchema.table(
     }).onDelete("restrict"),
     check("store_lots_artikul_id_check", sql`${table.artikulId} > 0`),
     check("store_lots_price_check", sql`${table.price} >= 0`),
+    check("store_lots_lot_id_check", sql`${table.lotId} > 0`),
   ],
 );
 

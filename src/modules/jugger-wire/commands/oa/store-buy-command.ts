@@ -1,5 +1,6 @@
 import type { StorePurchase } from "../../../../app/store-purchase.ts";
 import { StoreDeniedError } from "../../../../app/store-denied-error.ts";
+import { StoreGateError } from "../../../../app/store-gate-error.ts";
 import type { CharacterService } from "../../../character/application/character-service.ts";
 import { GhostHeroError } from "../../../character/domain/ghost-hero-error.ts";
 import type { BootstrapReadModel } from "../../application/bootstrap-read-model.ts";
@@ -25,6 +26,9 @@ export class StoreBuyCommand implements OaCommand {
     } catch (error) {
       if (error instanceof StoreDeniedError) {
         return { kind: "nested", value: { status: 2, error: error.message } };
+      }
+      if (error instanceof StoreGateError) {
+        throw new ProtocolError(203, error.message);
       }
       if (error instanceof GhostHeroError) throw new ProtocolError(203, error.message);
       throw error;

@@ -176,6 +176,7 @@ export class CompositionRoot {
         characters.service,
         characters.service,
         characters.service,
+        characters.service,
         async () => {
           await closeAll(closers);
         },

@@ -3,8 +3,26 @@ import { findStoreLot } from "../../../src/modules/catalog/domain/find-store-lot
 import type { StoreLot } from "../../../src/modules/catalog/domain/store-lot.ts";
 
 const lots: readonly StoreLot[] = [
-  { areaId: "504", lotId: 80, artikulId: 23, typeId: -131, price: 1, ord: 8 },
-  { areaId: "504", lotId: 82, artikulId: 24, typeId: -131, price: 1, ord: 6 },
+  {
+    areaId: "504",
+    lotId: 80,
+    artikulId: 23,
+    typeId: -131,
+    price: 1,
+    ord: 8,
+    pay: { currency: "gold", amount: 1 },
+    requires: null,
+  },
+  {
+    areaId: "504",
+    lotId: 82,
+    artikulId: 24,
+    typeId: -131,
+    price: 1,
+    ord: 6,
+    pay: { currency: "gold", amount: 1 },
+    requires: null,
+  },
 ];
 
 describe("findStoreLot", () => {

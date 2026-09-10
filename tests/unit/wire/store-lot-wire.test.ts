@@ -9,6 +9,8 @@ const lot: StoreLot = {
   typeId: -131,
   price: 1,
   ord: 8,
+  pay: { currency: "gold", amount: 1 },
+  requires: null,
 };
 
 describe("storeLotWire", () => {

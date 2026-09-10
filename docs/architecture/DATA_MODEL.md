@@ -123,10 +123,11 @@ source_digest)` PK `(release_id, level, skill_id)`; FK на boundary и
   `common_conf`, `welcome_message`.
 - `store_types(release_id, area_id, type_id, title, ord)` PK
   `(release_id, area_id, type_id)`.
-- `store_lots(release_id, area_id, lot_id, artikul_id, type_id, price, ord)`
-  PK `(release_id, area_id, lot_id)`; FK на `artifacts` и `store_types` той
-  же release. Slice: area 504 type `-131`, lots 80/23 и 82/24. Area
-  проверяет publication, SQL FK на `world.areas` нет.
+- `store_lots(release_id, area_id, lot_id, artikul_id, type_id, price, ord,
+pay jsonb, requires jsonb)` PK `(release_id, area_id, lot_id)`; FK на
+  `artifacts` и `store_types` той же release; `lot_id > 0`; `pay` not null
+  (`gold` / `diamond` / `barter`); `requires` null = нет гейта. Slice: area
+  504 type `-131` lots 80/23 и 82/24; area 552 type 11 lot 438/621 RANK min 4. Area проверяет publication, SQL FK на `world.areas` нет.
 - `reputation_tracks(release_id, object_id, type, title, image, unlock_flag)`
   PK `(release_id, object_id)`; type 2; `object_id > 0 AND <> 36`. Slice:
   только Радвей **5**, empty unlock.
@@ -231,7 +232,7 @@ containers, item_modifiers, container_slots, equipment_slots, item_reservations.
 item_actions, item_stat_modifiers, creature_stats/loot, spell_definitions,
 level_curves — отдельные таблицы поверх текущих `artifacts`/`bots`.
 `level_skill_values` уже в runtime и не является будущей таблицей.
-`store_types` / `store_lots` — runtime ECO-01.
+`store_types` / `store_lots` — runtime ECO-01/ECO-02 (`pay` / `requires`).
 `reputation_tracks` — runtime REP-01 (только object_id 5).
 
 ### `world`

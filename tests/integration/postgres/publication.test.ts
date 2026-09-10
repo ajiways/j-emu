@@ -142,6 +142,22 @@ describe("content publication", () => {
       { lotId: 80, artikulId: 23 },
     ]);
     expect(await catalog.storeLots("503")).toEqual([]);
+    const arsenal = await catalog.storeLots("552");
+    expect(arsenal).toEqual([
+      expect.objectContaining({
+        lotId: 438,
+        artikulId: 621,
+        typeId: 11,
+        price: 300,
+        pay: { currency: "gold", amount: 300 },
+        requires: { all: [{ type: "RANK", min: 4 }] },
+      }),
+    ]);
+    expect(await catalog.artifact(621)).toMatchObject({
+      id: 621,
+      title: "Амулет громилы",
+      slotMask: 512,
+    });
     expect(await catalog.artifact(23)).toMatchObject({
       id: 23,
       title: "Простая магическая перчатка",
@@ -170,7 +186,15 @@ describe("content publication", () => {
       ...playable,
       storeLots: [
         ...playable.storeLots,
-        { areaId: "504", lotId: 99, artikulId: 8, typeId: -131, price: 1, ord: 99 },
+        {
+          areaId: "504",
+          lotId: 99,
+          artikulId: 8,
+          typeId: -131,
+          price: 1,
+          ord: 99,
+          pay: { currency: "gold", amount: 1 },
+        },
       ],
     };
     await expect(publication.publish(invalid)).rejects.toBeInstanceOf(ContentValidationError);

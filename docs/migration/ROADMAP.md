@@ -778,12 +778,14 @@
 - **Content set:** 2–3 representative магазина с разными currency/gate (gold,
   diamond, barter, LEVEL/RANK/REPUTATION requires); массовый импорт всех 23
   файлов — отдельная DATA-05 задача.
-- **Architecture checkpoint / decision:** pending — обобщить store engine до
-  произвольного `store_type`/`currency`/`requires`, не хардкода под тип
-  `-131`.
+- **Architecture checkpoint / decision:** closed — generic `StorePurchase` на
+  `store_lots.pay` / `requires`; gold / diamond / barter; RANK / REPUTATION /
+  LEVEL на лоте. Отдельный `ARC-ECO` и `src/modules/store-engine` не нужны.
+  Бартер списывает bag по catalog `artikul_id`, не по instance `items.id`.
+  Контракт: [STORE.md](../modules/STORE.md).
 - **Acceptance:** магазин с любым authored набором лотов и валют проходит
   list/buy/gate raw-AMF E2E; `store|repair` вкладка — если не покрыта INV-05.
-- **Status:** `next`
+- **Status:** `done`
 
 ### MAIL-01 — Mailbox and plain messages
 

@@ -23,6 +23,7 @@ import { sellPriceMinor } from "./sell-price.ts";
 import { takeDropQuantity } from "./take-drop-quantity.ts";
 import { requireEquippedItem, requireWearablePaperdoll, type WearHero } from "./wear-paperdoll.ts";
 import { grantToBag } from "./grant-to-bag.ts";
+import { consumeFromBag, countBagByArtifact } from "./consume-from-bag.ts";
 import { refillPocketAfterFight, type PocketRefillCell } from "./refill-pocket-after-fight.ts";
 import {
   applyGearUpgrade,
@@ -220,6 +221,26 @@ export class InventoryService {
     quantity: number;
   }): Promise<void> {
     return grantToBag(this.inventory, this.catalog, this.bagCapacity, command);
+  }
+
+  async countBagByArtifact(command: { characterId: number; artifactId: number }): Promise<number> {
+    const items = await this.inventory.lockForHero(command.characterId);
+    return countBagByArtifact(items, command.characterId, command.artifactId);
+  }
+
+  async consumeFromBag(command: {
+    characterId: number;
+    artifactId: number;
+    quantity: number;
+  }): Promise<void> {
+    const items = [...(await this.inventory.lockForHero(command.characterId))];
+    await consumeFromBag(
+      this.inventory,
+      items,
+      command.characterId,
+      command.artifactId,
+      command.quantity,
+    );
   }
 
   refillPocketAfterFight(command: {

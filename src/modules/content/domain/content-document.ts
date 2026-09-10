@@ -8,8 +8,8 @@ import type {
   WelcomeMessageDocument,
 } from "./bootstrap-content.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v19";
-export const CONTENT_VALIDATOR_VERSION = "19";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v20";
+export const CONTENT_VALIDATOR_VERSION = "20";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;
@@ -237,6 +237,16 @@ export type StoreTypeDocument = Readonly<{
   ord: number;
 }>;
 
+type StoreLotPayDocument =
+  | Readonly<{ currency: "gold"; amount: number }>
+  | Readonly<{ currency: "diamond"; amount: number }>
+  | Readonly<{ currency: "barter"; artikulId: number; count: number }>;
+
+type StoreLotRequireDocument =
+  | Readonly<{ type: "RANK"; min: number }>
+  | Readonly<{ type: "REPUTATION"; objectId: number; min: number }>
+  | Readonly<{ type: "LEVEL"; min: number }>;
+
 export type StoreLotDocument = Readonly<{
   areaId: string;
   lotId: number;
@@ -244,6 +254,8 @@ export type StoreLotDocument = Readonly<{
   typeId: number;
   price: number;
   ord: number;
+  pay: StoreLotPayDocument;
+  requires?: Readonly<{ all: readonly StoreLotRequireDocument[] }>;
 }>;
 
 export type ReputationTrackDocument = Readonly<{

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { debitMoneyMinor } from "../../../src/modules/character/domain/debit-money-minor.ts";
+import {
+  debitDiamondMinor,
+  debitMoneyMinor,
+} from "../../../src/modules/character/domain/debit-money-minor.ts";
+import { InsufficientDiamondsError } from "../../../src/modules/character/domain/insufficient-diamonds-error.ts";
 import { InsufficientMoneyError } from "../../../src/modules/character/domain/insufficient-money-error.ts";
 import { testHero } from "../../support/hero-fixtures.ts";
 
@@ -21,5 +25,20 @@ describe("debit money", () => {
   it("rejects a zero or non-positive debit", () => {
     expect(() => debitMoneyMinor(2500, 0)).toThrow(/positive integer/);
     expect(() => debitMoneyMinor(2500, -1)).toThrow(/positive integer/);
+  });
+});
+
+describe("debit diamonds", () => {
+  it("rejects a debit that would go negative without clamping", () => {
+    expect(() => debitDiamondMinor(0, 100)).toThrow(InsufficientDiamondsError);
+    const hero = testHero({ moneyGoldMinor: 50 });
+    expect(() => hero.debitMoneyGold(100)).toThrow(InsufficientDiamondsError);
+    expect(hero.moneyGoldMinor).toBe(50);
+  });
+
+  it("debits a positive diamond amount that fits the balance", () => {
+    const hero = testHero({ moneyGoldMinor: 300 });
+    hero.debitMoneyGold(100);
+    expect(hero.moneyGoldMinor).toBe(200);
   });
 });

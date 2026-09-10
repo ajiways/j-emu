@@ -4,7 +4,7 @@ import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { completeMeleeHunt } from "../support/harness/complete-melee-hunt.ts";
-import { bagItemByArtikulId } from "../support/harness/wire-payload.ts";
+import { bagItemByArtikulId, heroIdFrom } from "../support/harness/wire-payload.ts";
 
 describe("store list and buy", () => {
   let harness: ApplicationHarness;
@@ -96,6 +96,48 @@ describe("store list and buy", () => {
   });
 });
 
+describe("store RANK gate", () => {
+  let harness: ApplicationHarness;
+  let application: Application;
+
+  beforeEach(async () => {
+    harness = new ApplicationHarness();
+    application = await harness.start();
+  });
+
+  afterEach(async () => {
+    await harness.stop();
+  });
+
+  it("lists arsenal lot 621 and denies buy with 203 before charging gold", async () => {
+    const client = await AuthenticatedClient.login(application);
+    const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
+    await application.characterLocation.setArea({
+      characterId: heroIdFrom(init),
+      areaId: "552",
+      moveReadyAt: null,
+    });
+    const listed = await client.objectAction({ object: "store", action: "list", sq: 2 });
+    const block = requireRecord(listed["store|list"], "store|list");
+    expect(block.status).toBe(100);
+    expect(typeIds(block.types)).toEqual([11]);
+    expect(lotArtikuls(block.artikuls)).toEqual([621]);
+    const denied = await client.objectAction({
+      object: "store",
+      action: "buy",
+      form: { basket: { "438": 1 } },
+      sq: 3,
+    });
+    expect(denied["store|buy"]).toEqual({
+      status: 203,
+      error: "Нужно звание «Громила».",
+    });
+    const again = await client.objectAction({ object: "store", action: "list", sq: 4 });
+    const stillListed = requireRecord(again["store|list"], "store|list");
+    expect(lotArtikuls(stillListed.artikuls)).toEqual([621]);
+  });
+});
+
 describe("store buy while ghosted", () => {
   let harness: ApplicationHarness;
   let application: Application;
@@ -125,7 +167,7 @@ describe("store buy while ghosted", () => {
     });
     expect(denied["store|buy"]).toEqual({
       status: 203,
-      error: expect.stringMatching(/cannot debitMoney while ghosted/),
+      error: expect.stringMatching(/cannot storeBuy while ghosted/),
     });
   });
 });

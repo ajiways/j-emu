@@ -161,9 +161,9 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 
 ### `economy` — после core
 
-**Владеет:** кошельками, неизменяемым ledger, торговыми предложениями, ставками и денежными резервами. Authored витрина ECO-01 живёт в `catalog`, balance — на `heroes.money_minor`; этого модуля в runtime нет.
+**Владеет:** кошельками, неизменяемым ledger, торговыми предложениями, ставками и денежными резервами. Authored витрина ECO-01/ECO-02 живёт в `catalog`, balance — на `heroes.money_minor` / `money_gold_minor`; этого модуля в runtime нет.
 
-**API:** `getBalance`, `postTransfer`, `reserveFunds`, `openListing`, `placeBid`, `buyout`, `cancelListing`. Покупка лота ECO-01 — composition, не `buyStoreLot`.
+**API:** `getBalance`, `postTransfer`, `reserveFunds`, `openListing`, `placeBid`, `buyout`, `cancelListing`. Покупка лота ECO-01/ECO-02 — composition, не `buyStoreLot`.
 
 **События:** `economy.ledger-posted.v1`, `economy.listing-opened.v1`, `economy.trade-settled.v1`, `economy.listing-closed.v1`.
 

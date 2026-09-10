@@ -213,18 +213,21 @@ markers и curated chain пока существуют только в legacy co
 
 ## После core — не перенесено
 
-Chat/party, полный store (ECO-02), mail, auction и trade рассматриваются
-после цикла 1–8.
+Chat/party, полный корпус магазинов (DATA-05), mail, auction и trade
+рассматриваются после цикла 1–8.
 
 ## Store — частично
 
 Есть raw-AMF: COME_IN 504, `store|list` вкладка `-131` и лоты 23/24,
-`store|buy` обоих (`25.00` → `23.00`, bag persist reconnect/restart). Отказы
-status 2 и ghost 203 покрыты e2e. `store|repair` instance `{ id }` чинит
-finite item (ghost не блокирует; cost 0 не зовёт `debitMoney`). CEF лавки
-и мастерской не прогонялся.
+`store|buy` обоих (`25.00` → `23.00`, bag persist reconnect/restart). Generic
+pay/gate: gold / diamond / barter по `artikul_id` инстанса, RANK/REPUTATION/LEVEL
+на лоте. Арсенал 552 lot 438 / artikul 621 — list + buy RANK 203 `Нужно
+звание «Громила».`. Отказы status 2, gate 203 и ghost 203 `storeBuy` покрыты
+e2e. `store|repair` instance `{ id }` чинит finite item (ghost не блокирует;
+cost 0 не зовёт `debitMoney`). CEF лавки и мастерской не прогонялся.
 
-Не перенесены остальные лоты 504, diamonds, OPEN_STORE.
+Не перенесены остальные лоты 504, diamond JSON lots, dungeon/barter shops,
+REPUTATION lots, COME_IN LEVEL entry, OPEN_STORE.
 
 ## Reputation — частично
 

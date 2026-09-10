@@ -29,12 +29,12 @@ counts/checksums и completeness gates:
 
 ## Текущий playable slice
 
-Текущая `playable-slice/v19` release — минимальный bundle: 30 artifacts
+Текущая `playable-slice/v20` release — минимальный bundle: 31 artifacts
 (9095 + dump-proven L1 greyset **20/21/26**, glove spells **9098/9100/9099**, pocketables **93** и **99**, food **77**,
-shop wear **23** и **24**, upgrade crystals **553/1310/4603/11408/13224**, recruit set **27/28/30/33/35/106** и mix **43/46**,
+shop wear **23** и **24**, arsenal amulet **621**, upgrade crystals **553/1310/4603/11408/13224**, recruit set **27/28/30/33/35/106** и mix **43/46**,
 USE **640/623/2371/55/584**; без 209 и патронташа), 4 bots (2/4/24/32) с overlay reward scalars; loot entries только у bot 2 (77/93/99),
 bonus **601**, use script **2827**,
-3 areas (503/501/504), authored travel `area_links`, hunt 50310 (home), 50309 (route+respawn) и 50101–50103 (zone), store 504 type `-131` и lots 80/23 и 82/24, reputation track **5**, 15 skills (включая **MAGSTR**), 14 levels с normalized managed skills,
+5 areas (503/501/504/495/552), authored travel `area_links`, hunt 50310 (home), 50309 (route+respawn) и 50101–50103 (zone), store 504 type `-131` lots 80/23 и 82/24, store 552 type 11 lot 438/621 RANK, reputation track **5**, 15 skills (включая **MAGSTR**), 14 levels с normalized managed skills,
 1 appearance и common-conf/chrome/HUD/welcome документы в составе текущего
 bundle. Bots 2/4/24/32 несут `spellBook` (Грызль пустая; Хисса 396, дух 422,
 рыжий 394). Это нельзя называть полным игровым контентом или полным контентом
@@ -234,8 +234,9 @@ source group ведутся только в
 - `world`: `radvei_areas.json`, `hunt_spawns.json` и authored links/routes;
   validator проверяет уникальность area/point/spawn IDs, bot references и
   достижимость ссылок.
-- `catalog`: ECO-01 subset `fixtures/stores/504.json` (type `-131` + lots 23/24) и
-  Pub1 artifacts 23/24; validator проверяет area 504, artifact refs, price и
+- `catalog`: ECO-02 subset `fixtures/stores/504.json` (type `-131` + lots 23/24) и
+  `552.json` (type 11 + RANK lot 438/621) плюс Pub1/common_init artifacts 23/24/621;
+  validator проверяет area 504/552, artifact refs, gold pay=price, RANK lot и
   «type без lots». Полный корпус `stores/*.json` —
   DATA-05 / модуль economy, не этот срез.
 - `economy`: remaining `stores/*.json` (DATA-05); validator проверяет area,
