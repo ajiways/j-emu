@@ -245,9 +245,13 @@ instance module отсутствует.
 **Давление:** dungeon binds/expiry и BG match lifecycle используют похожую
 изоляцию, но разные правила membership, score и history.
 
-**Checkpoint:** перед DNG-01 определить общий instance identity/lifecycle и
-границу dungeon/BG policies. Нельзя объединять dungeon и BG domain только ради
-повторного использования таблиц.
+**Решение DNG-01:** текущих ADR достаточно; отдельный ADR не нужен.
+Модуль `instance` владеет copies, binds, expiry и killed-spawn projection.
+World не хранит копии. Party не хранит copy id как aggregate. Combat не
+импортирует instance; `instance_id` на fight wire — ссылка. Dungeon и BG —
+разные policy на общем copy identity (type discriminator), не общая
+membership-таблица. Кодирование — DNG-01 (ogre cave), не пустой skeleton.
+Контракт: [INSTANCE.md](../modules/INSTANCE.md).
 
 ### `ARC-EDITOR` — operational authoring
 

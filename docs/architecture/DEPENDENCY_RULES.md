@@ -32,10 +32,10 @@ storage / publishers ----^            <- ports
 | `trade`       | catalog price query (composition владеет money/bag UoW)                              | ничего                                   |
 | `chat`        | character nick, presence roster, catalog smiles/artifacts (composition владеет esrv) | ничего                                   |
 | `party`       | character display query (composition владеет esrv `2:`/`4:` и inventory grant/fit)   | ничего                                   |
+| `instance`    | catalog dungeon definition (composition владеет COME_IN/party auto-create и travel)  | ничего                                   |
 | `social`      | identity/character display query                                                     | character rename, instances lifecycle    |
 | `economy`     | inventory reservation API, catalog price query                                       | reservation expired                      |
 | `professions` | inventory reservation API, catalog/world query                                       | timer, catalog revision                  |
-| `instances`   | world admission API, combat start API, social party query                            | combat finished, party changed           |
 | `content`     | validation ports                                                                     | ничего из gameplay runtime               |
 | `catalog`     | ничего                                                                               | publication bundle                       |
 

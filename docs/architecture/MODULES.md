@@ -3,7 +3,7 @@
 Документ описывает ownership target. Реализованы `identity`, `character`,
 `inventory`, `catalog`, `world`, `combat`, `content`, `mail`, `auction`,
 `trade`, `chat`, `party` и `jugger-wire`, но их полный target API ещё не перенесён. `quests`,
-`social`, `economy`, `professions` и `instances` ниже являются планом, а не
+`social`, `economy`, `professions` и `instance` ниже являются планом, а не
 возможностями runtime.
 Фактический статус находится в [CAPABILITIES.md](../CAPABILITIES.md).
 
@@ -40,11 +40,10 @@ area presence roster:
   composition UoW. Target `economy` trade ещё план.
 - `chat` — process-local area/private/system/party fan-out через esrv outbox,
   без таблиц. Target `social` channels ещё план.
-- `party` — `party.parties` / `party_members` / `party_invites`, membership и
-  settings. Empty `party|bag` chrome без bag table. Target `social` groups ещё
-  план.
+- `party` — `party.parties` / `party_members` / `party_invites` /
+  `party_bag_items`. Target `social` groups ещё план.
 - Репутация Радвея **5** есть (REP-01, product частично).
-  `quests`, `economy`, `professions`, `instances` в runtime нет.
+  `quests`, `economy`, `professions`, `instance` в runtime нет.
 
 Во всех разделах ниже **API**, **события** и **шов извлечения** описывают
 целевую границу. Они не доказывают регистрацию команды, наличие таблиц или
@@ -258,15 +257,17 @@ Loot routing и HELP — composition ports, combat party-таблицы не и�
 
 **Шов извлечения:** каталог рецептов и узлов читается через catalog/world ports; ингредиенты и результат проходят атомарную orchestration с inventory.
 
-### `instances` — отложено
+### `instance` — DNG-01 plan
 
-**Владеет:** копиями подземелий/BG, membership, checkpoint, bind, lifecycle и итоговой историей инстанса. Не владеет party и combat.
+**Владеет:** dungeon/BG copy rows, hero binds, expiry, killed-spawn
+projection. Не владеет party, outdoor areas/hunt и active combat.
 
-**API:** `createInstance`, `enterInstance`, `recordEncounterResult`, `leaveInstance`, `expireInstance`, `getInstanceView`.
+**API:** `enter`, `leaveToParent`, `bind`, `expire`, `markSpawnKilled`,
+`copyForHero` — план DNG-01. Delivery `common|instance_conf` — composition /
+jugger-wire. Контракт: [INSTANCE.md](../modules/INSTANCE.md).
 
-**События:** `instances.created.v1`, `instances.member-entered.v1`, `instances.checkpoint-reached.v1`, `instances.completed.v1`, `instances.expired.v1`.
-
-**Шов извлечения:** party ID и combat ID — внешние ссылки; инстанс координирует сценарий через API/events.
+**Шов извлечения:** не цель DNG-01. Target `instances` events ниже не
+копировать в runtime.
 
 ### `content`
 

@@ -287,7 +287,7 @@ Durable sides/turns/effects, active participants и JSONB event log не
 планируются. `arena|finished_fights` OA и `fight_info.php` в текущем срезе
 не отдаются.
 
-### `quests` / `social` / `economy` / `professions` / `instances`
+### `quests` / `social` / `economy` / `professions` / `instance`
 
 `social` / `economy` модулей в runtime нет. Mailbox MAIL-02 живёт в `mail`
 (`letters` + `letter_attachments`), не в `social` и без JSONB снимка dump.
@@ -296,6 +296,8 @@ P2P обмен TRD-01/TRD-02 живёт в `trade` без таблиц, не в 
 Чат SOC-01 живёт в `chat` без таблиц, не в `social`.
 Party SOC-02/SOC-03 живёт в `party` (`parties` / `party_members` /
 `party_invites` / `party_bag_items`), не в `social`.
+DNG-01 план: `instance.copies` / `binds` / `killed_spawns` (строки, не dump
+JSONB `killed_spawns_json`). Контракт: [INSTANCE.md](../modules/INSTANCE.md).
 Целевые API — в [MODULES.md](MODULES.md). Схемы появляются вместе с первым
 подтверждённым OA этого модуля.
 

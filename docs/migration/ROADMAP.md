@@ -939,8 +939,13 @@
   `fixtures/dungeons/*.json`) как generic instance engine proof; остальные —
   массовый импорт после того, как движок доказан, не 7 отдельных capability
   с нуля.
-- **Architecture checkpoint / decision:** pending — instance ownership и
-  expiration; отдельный `ARC-*` до coding.
+- **Architecture checkpoint / decision:** complete — отдельный ADR не нужен
+  (ADR-0016, ADR-0018, ADR-0020). `ARC-INS` закрыт ownership, не coding
+  slice: модуль `instance` (`src/modules/instance`) владеет copies / binds /
+  expiry / killed spawns; world остаётся outdoor areas/hunt; party —
+  membership; combat не импортирует instance. Dungeon и BG делят copy
+  identity и type, не membership/score. Representative: ogre cave artikul
+  `1`. Контракт: [INSTANCE.md](../modules/INSTANCE.md).
 - **Acceptance:** authored instance definition создаёт копию, bind'ит членов
   party, изолирует area/hunt state, expire'ится и возвращает участников без
   хранения active combat в PostgreSQL.
