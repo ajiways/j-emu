@@ -9,9 +9,7 @@ import {
   waitLockError,
   waitLockSeconds,
 } from "../../../src/modules/world/domain/travel-ftime.ts";
-import { HuntSpawnOverlay } from "../../../src/modules/world/domain/hunt-spawn-overlay.ts";
-import { WorldService } from "../../../src/modules/world/domain/world-service.ts";
-import type { WorldRepository } from "../../../src/modules/world/ports/world-repository.ts";
+import { worldServiceFor } from "../../support/world-service-for.ts";
 
 const plaza = new Area(
   "503",
@@ -101,14 +99,7 @@ describe("interior exit", () => {
 
 describe("requireLink", () => {
   it("denies a missing edge", async () => {
-    const world = new WorldService(
-      {
-        findArea: async () => plaza,
-        listLinksFrom: async () => [],
-        findLink: async () => null,
-      } satisfies WorldRepository,
-      new HuntSpawnOverlay(),
-    );
+    const world = worldServiceFor(plaza);
     await expect(world.requireLink("503", "502")).rejects.toBeInstanceOf(MissingLinkError);
     await expect(world.requireLink("503", "502")).rejects.toThrow("некуда идти");
   });

@@ -3,11 +3,10 @@ import { CombatService } from "../../../src/modules/combat/application/combat-se
 import { FinishedFightRecorder } from "../../../src/modules/combat/application/finished-fight-recorder.ts";
 import { HuntMapAttack } from "../../../src/modules/jugger-wire/application/hunt-map-attack.ts";
 import { Area } from "../../../src/modules/world/domain/area.ts";
-import { HuntSpawn } from "../../../src/modules/world/domain/hunt-spawn.ts";
-import { HuntSpawnOverlay } from "../../../src/modules/world/domain/hunt-spawn-overlay.ts";
-import { WorldService } from "../../../src/modules/world/domain/world-service.ts";
-import type { WorldRepository } from "../../../src/modules/world/ports/world-repository.ts";
+import type { WorldService } from "../../../src/modules/world/domain/world-service.ts";
 import { unitHuntStart } from "../../support/hunt-start-input.ts";
+import { parkedHuntSpawn } from "../../support/parked-hunt-spawn.ts";
+import { worldServiceFor } from "../../support/world-service-for.ts";
 import { MonotonicFightIdSource } from "../../support/fakes/monotonic-fight-id-source.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingFinishedFightStore } from "../../support/fakes/recording-finished-fight-store.ts";
@@ -34,7 +33,7 @@ const plaza = new Area(
   0,
   1,
   0,
-  [new HuntSpawn(50310, 2, 883, 1499, "bot_1")],
+  [parkedHuntSpawn(50310, 2, 883, 1499, "bot_1", 10)],
 );
 
 describe("HuntMapAttack", () => {
@@ -84,14 +83,7 @@ function harness(): {
   attack: HuntMapAttack;
 } {
   const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
-  const world = new WorldService(
-    {
-      findArea: async () => plaza,
-      listLinksFrom: async () => [],
-      findLink: async () => null,
-    } satisfies WorldRepository,
-    new HuntSpawnOverlay(),
-  );
+  const world = worldServiceFor(plaza, { clock, delay: new ManualCombatDelay() });
   const combat = new CombatService(
     new MonotonicFightIdSource(1),
     new SequenceRandom([20]),

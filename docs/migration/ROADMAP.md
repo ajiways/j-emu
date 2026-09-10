@@ -755,11 +755,15 @@
 - **Behavior evidence:** legacy `huntWorld.ts`, `huntWander.ts`, `SYNC.md`.
 - **Content set:** 2–3 representative spawn'а с разным route/zone/respawn —
   массовый импорт `hunt_spawns.json` целиком — DATA-04, не эта capability.
-- **Architecture checkpoint / decision:** pending — process-local scheduler
-  port, не per-spawn `setInterval`.
+- **Architecture checkpoint / decision:** действующие ADR-0017–0020
+  достаточны, `ARC-*` нет. Authored route/zone/wait/respawn — колонки
+  `world.hunt_spawns`. Live motion process-local (`HuntWanderRuntime`) на
+  общем `DelayScheduler` (тот же port, что CMB-01), не per-spawn
+  `setInterval`. RNG injected. 50310 остаётся home park без выдуманного
+  маршрута. Catalog speed join'ом, не копируется в spawn document.
 - **Acceptance:** произвольный authored spawn с route/zone бродит и
   респаунится по своим authored таймингам, не только статичная точка 50310.
-- **Status:** `next`
+- **Status:** `done`
 
 ## Wave 7 — economy engines
 
@@ -779,7 +783,7 @@
   `-131`.
 - **Acceptance:** магазин с любым authored набором лотов и валют проходит
   list/buy/gate raw-AMF E2E; `store|repair` вкладка — если не покрыта INV-05.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### MAIL-01 — Mailbox and plain messages
 

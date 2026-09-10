@@ -8,8 +8,8 @@ import type {
   WelcomeMessageDocument,
 } from "./bootstrap-content.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v18";
-export const CONTENT_VALIDATOR_VERSION = "18";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v19";
+export const CONTENT_VALIDATOR_VERSION = "19";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;
@@ -203,6 +203,18 @@ export type AreaLinkDocument = Readonly<{
   href: AreaLinkHrefDocument;
 }>;
 
+type HuntSpawnPointDocument = Readonly<{
+  x: number;
+  y: number;
+}>;
+
+type HuntSpawnRouteStopDocument = Readonly<{
+  x: number;
+  y: number;
+  waitMin: number;
+  waitMax: number;
+}>;
+
 export type HuntSpawnDocument = Readonly<{
   id: number;
   areaId: string;
@@ -210,6 +222,12 @@ export type HuntSpawnDocument = Readonly<{
   x: number;
   y: number;
   huntMask: string;
+  waitMin: number;
+  waitMax: number;
+  respawnTimeMin: number;
+  respawnTimeMax: number;
+  zone: readonly HuntSpawnPointDocument[];
+  route: readonly HuntSpawnRouteStopDocument[];
 }>;
 
 export type StoreTypeDocument = Readonly<{

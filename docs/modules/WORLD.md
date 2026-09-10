@@ -205,15 +205,12 @@ j-emu лишний: один процесс, бой и так RAM.
 Restart процесса: overlay пуст, точки снова authored home, `fight_id=0`;
 `heroes.area_id` не трогать.
 
-Clock injected. Без wander ticker и без RNG в этом срезе.
+Clock injected. Wander/respawn — **WLD-03**.
 
 ### Content
 
-Только уже опубликованный **50310** (artikul 2, mask `bot_1`, home
-883/1499). В `hunt_spawns.json` у 50310 нет `zone`, `route`,
-`respawn_time_min/max`. Не копировать маршрут 50309, не публиковать
-50311–13, не добавлять бота Хисса `4`. Live без zone/route паркует точку
-на home — тот же результат.
+WLD-02 срезал только **50310** (artikul 2, mask `bot_1`, home 883/1499) без
+`zone`/`route`/`respawn`. Текущий slice и wander — **WLD-03**.
 
 Wire `common|hunt.bots[]` только клиентские поля: `id`, `artikul_id`,
 `fight_id`, `hunt_mask`, `position_x/y`, `prev_x/y`. Idle `fight_id=0`
@@ -263,7 +260,7 @@ World:
   owner может обновить fightId;
 - `occupiedFightId(areaId, spawnId)`;
 - `releaseSpawn({ areaId, spawnId })`;
-- `huntSnapshot(areaId)` — wire bots с live overlay (без записи в content).
+- `huntSnapshot(areaId)` — wire bots с live overlay и wander (без записи в content).
 
 Combat: `startHunt` после успешного acquire; `joinHunt` на существующий
 fight id (второй human team 1, тот же access key). `hasFight` отличает
@@ -271,11 +268,12 @@ fight id (второй human team 1, тот же access key). `hasFight` отл�
 `takeExit` / finish / process drop — composition observer.
 
 После acquire/release/join: fan-out 131 hunt через существующий esrv poll
-и `LongPollCoordinator.wake`. Lock freeze: пока busy, xy на authored home.
+и `LongPollCoordinator.wake`. Lock freeze (WLD-03): пока busy, xy на
+текущей интерполяции сегмента, не на authored home.
 
 ### Out of scope
 
-Wander/route ticker; respawn hide; Pub1 `.map` polygons; dungeon copies;
+Wander/route/respawn — **WLD-03**. Pub1 `.map` polygons; dungeon copies;
 quest/menu attack; OA `FIGHT_JOIN` / `FIGHT_HELP`; loot; hunt cross-swap
 двух 3↔3 пар.
 Не копировать live `10_000_000 + heroes.id` в `userId`.
@@ -292,6 +290,43 @@ quest/menu attack; OA `FIGHT_JOIN` / `FIGHT_HELP`; loot; hunt cross-swap
 - CEF: клик Грызла занимает точку; второй клиент на ту же точку входит в
   тот же бой, не стартует второй;
 - нет fake OA; runtime не читает `hunt_spawns.json`.
+
+## Hunt wander — WLD-03
+
+### Architecture decision
+
+Отдельный `ARC-*` не нужен. ADR-0017–0020 достаточны. Authored route/zone/
+wait/respawn живут в `world.hunt_spawns` (immutable release). Live motion —
+тот же process-local overlay, что WLD-02: `HuntWanderRuntime` + общий
+`DelayScheduler` (тот же instance, что CMB-01 melee), не per-spawn
+`setInterval`. RNG injected (`HuntRandom`); `Math.random` нет.
+
+Скрытый respawn (`hiddenUntil`) опускает бота из `common|hunt.bots[]`.
+Lock freeze: текущая интерполяция сегмента. Finish/release →
+`hideForRespawn` по authored `respawn_time_*` (нули = сразу home). Restart
+процесса: motion сбрасывается на authored home, как overlay.
+
+Catalog `bots.hunt_speed` читается join'ом на snapshot; speed 10 → 20 px/s,
+пол `4` px/s — именованная walk policy live Flash.
+
+### Content
+
+Representative dump-proven, не полный `hunt_spawns.json` (DATA-04):
+
+- **50310** home park: пустые `zone`/`route`, respawn 0 — не выдумывать
+  маршрут 50309;
+- **50309** route + respawn 3–15s (Hissa `4` на 503);
+- **50101–50103** zone + wait 2–6s.
+
+Не публиковать 50311–13.
+
+### Acceptance
+
+- unit: home park; route first stop; zone dest ≠ home; lock freeze;
+  hidden omit; route+zone fail-fast;
+- raw-AMF: init 50309 `prev` home → `position` first stop; после walk
+  due оба xy на stop; 50310 остаётся 883/1499;
+- нет per-spawn `setInterval`; runtime не читает `hunt_spawns.json`.
 
 ## Presence и channels — RTM-01
 
@@ -310,11 +345,11 @@ quest/menu attack; OA `FIGHT_JOIN` / `FIGHT_HELP`; loot; hunt cross-swap
 
 **Каналы (live `esrv.ts`):**
 
-| Канал           | RTM-01                                                                   |
-| --------------- | ------------------------------------------------------------------------ |
-| `2:<accountId>` | `chat\|area_population_diff` add/remove другим в той же area             |
-| `131:<areaId>`  | каждый poll: `common\|hunt` snapshot текущей area (authored, без wander) |
-| `4:<partyId>`   | нет                                                                      |
+| Канал           | RTM-01                                                            |
+| --------------- | ----------------------------------------------------------------- |
+| `2:<accountId>` | `chat\|area_population_diff` add/remove другим в той же area      |
+| `131:<areaId>`  | каждый poll: `common\|hunt` snapshot текущей area (WLD-03 wander) |
+| `4:<partyId>`   | нет                                                               |
 
 Population **diff** едет на личный `2:` (live `enqueueEsrv` без `__channel`).
 Полный roster — OA `chat|area_population` `{ status:100, population:[...] }`,
@@ -351,8 +386,7 @@ COME_IN/`exit` после `setArea`: remove в from, add в to (если from≠
 
 ### Out of scope
 
-`chat|add` / area chat fan-out; party `4:`; hunt wander и `fight_id` на spawn
-(WLD-02); ghost/injury change; playerbots; dungeon/BG shards; transactional
+`chat|add` / area chat fan-out; party `4:`; OA `FIGHT_JOIN` / `FIGHT_HELP`; ghost/injury change; playerbots; dungeon/BG shards; transactional
 outbox; durable cursors.
 
 ### Acceptance

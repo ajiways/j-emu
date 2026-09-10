@@ -8,7 +8,7 @@
 internal CHR-01 `grantExperience`, internal CHR-02 `syncResources`/`noteHp` и
 INV-02 bag DROP/`creditMoney`, INV-03 pocket layout 93/99, INV-04 world USE
 77 ADD_HP, WLD-01 area transitions 503↔501/504, RTM-01 presence roster,
-WLD-02 hunt overlay + map `joinHunt`, CMB-01 melee delay port и CMB-02
+WLD-02 hunt overlay + map `joinHunt`, WLD-03 hunt wander on shared `DelayScheduler`, CMB-01 melee delay port и CMB-02
 pocket/glove/rage loadout: persistent state в PostgreSQL; esrv delivery и hunt
 overlay process-local; active content через release projections; active combat
 в RAM (несколько accounts на один fight id, `CombatDelay` не `Clock.schedule`;

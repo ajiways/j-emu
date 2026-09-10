@@ -39,6 +39,7 @@ export class CompositionRoot {
       lootRandom?: RandomSource;
       combatRandom?: RandomSource;
       upgradeRandom?: RandomSource;
+      wanderRandom?: RandomSource;
       combatRules?: Partial<BattleRules>;
       combatBotStrength?: number;
     }> = {},
@@ -62,7 +63,12 @@ export class CompositionRoot {
         random: extras.upgradeRandom ?? new SystemRandomSource(),
       });
       closers.push(inventory);
-      const world = await WorldModule.create({ database });
+      const world = await WorldModule.create({
+        database,
+        clock,
+        delay,
+        random: extras.wanderRandom ?? new SystemRandomSource(),
+      });
       closers.push(world);
       const combat = CombatModule.create({
         database,
@@ -110,6 +116,7 @@ export class CompositionRoot {
       const presenceFanout = new PresenceFanout(presence, outbox, longPoll);
       const huntFanout = new HuntAreaFanout(presence, longPoll);
       combat.bindWake({ wake: (accountId) => longPoll.wake(accountId) });
+      world.service.bindAreaWake(huntFanout);
       combat.bindTerminalObserver(new HuntLockRelease(world.service, huntFanout));
       combat.bindSettlement(
         new HuntFightSettlement(

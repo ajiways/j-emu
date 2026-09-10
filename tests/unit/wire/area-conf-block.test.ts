@@ -4,11 +4,11 @@ import {
   huntBotsForArea,
 } from "../../../src/modules/jugger-wire/application/area-conf-block.ts";
 import { Area } from "../../../src/modules/world/domain/area.ts";
-import { HuntSpawn } from "../../../src/modules/world/domain/hunt-spawn.ts";
 import { playableHuntBot } from "../../support/playable-bot.ts";
+import { parkedHuntSpawn } from "../../support/parked-hunt-spawn.ts";
 
 const huntBot = playableHuntBot();
-const spawn = new HuntSpawn(50310, huntBot.id, 883, 1499, "bot_1");
+const spawn = parkedHuntSpawn(50310, huntBot.id, 883, 1499, "bot_1", huntBot.hunt.speed);
 const area = new Area(
   "503",
   "Горное поселение",

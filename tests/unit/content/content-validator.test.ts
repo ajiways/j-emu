@@ -226,6 +226,26 @@ describe("parseContentBundle", () => {
     expect(() => parseContentBundle({ ...playable, schemaVersion: "v0" })).toThrow();
   });
 
+  it("rejects a hunt spawn zone with fewer than 3 points", () => {
+    const spawn = playable.huntSpawns[0];
+    if (!spawn) throw new Error("playable bundle has no hunt spawns");
+    expect(() =>
+      parseContentBundle({
+        ...playable,
+        huntSpawns: [
+          {
+            ...spawn,
+            zone: [
+              { x: 1, y: 1 },
+              { x: 2, y: 2 },
+            ],
+            route: [],
+          },
+        ],
+      }),
+    ).toThrow(/zone must be empty or have at least 3 points/);
+  });
+
   it("rejects a missing wire asset", () => {
     const artifact = playable.artifacts[0];
     if (!artifact) throw new Error("playable bundle has no artifacts");

@@ -13,6 +13,7 @@ import { withIsolatedTestDatabase } from "../../support/postgres/isolated-test-d
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { ManualCombatDelay } from "../../support/fakes/manual-combat-delay.ts";
 import { SystemClock } from "../../../src/shared/kernel/system-clock.ts";
+import { MinHuntRandom } from "../../support/world-service-for.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
 
@@ -49,9 +50,14 @@ describe("module factory lifecycle", () => {
         await expect(CatalogModule.create({ database: isolated })).rejects.toThrow(
           /published content/,
         );
-        await expect(WorldModule.create({ database: isolated })).rejects.toThrow(
-          /published content/,
-        );
+        await expect(
+          WorldModule.create({
+            database: isolated,
+            clock: new SystemClock(),
+            delay: new ManualCombatDelay(),
+            random: new MinHuntRandom(),
+          }),
+        ).rejects.toThrow(/published content/);
       } finally {
         await isolated.close();
       }

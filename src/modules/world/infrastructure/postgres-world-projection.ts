@@ -66,6 +66,12 @@ export class PostgresWorldProjection implements WorldProjection {
           positionX: spawn.x,
           positionY: spawn.y,
           huntMask: spawn.huntMask,
+          waitMin: spawn.waitMin,
+          waitMax: spawn.waitMax,
+          respawnTimeMin: spawn.respawnTimeMin,
+          respawnTimeMax: spawn.respawnTimeMax,
+          zone: spawn.zone,
+          route: spawn.route,
         })),
       );
     }

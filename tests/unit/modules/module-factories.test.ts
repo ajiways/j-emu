@@ -175,9 +175,38 @@ describe("module factories", () => {
     await expect(CatalogModule.create({ database })).rejects.toThrow(
       /Catalog module requires a database/,
     );
-    await expect(WorldModule.create({ database })).rejects.toThrow(
-      /World module requires a database/,
-    );
+    await expect(
+      WorldModule.create({
+        database,
+        clock,
+        delay: combatDelay,
+        random: { integer: () => 0, unit: () => 0 },
+      }),
+    ).rejects.toThrow(/World module requires a database/);
+    await expect(
+      WorldModule.create({
+        database: {} as PostgresDatabase,
+        clock: undefined as unknown as Clock,
+        delay: combatDelay,
+        random: { integer: () => 0, unit: () => 0 },
+      }),
+    ).rejects.toThrow(/World module requires a clock/);
+    await expect(
+      WorldModule.create({
+        database: {} as PostgresDatabase,
+        clock,
+        delay: undefined as unknown as CombatDelay,
+        random: { integer: () => 0, unit: () => 0 },
+      }),
+    ).rejects.toThrow(/World module requires a delay scheduler/);
+    await expect(
+      WorldModule.create({
+        database: {} as PostgresDatabase,
+        clock,
+        delay: combatDelay,
+        random: undefined as unknown as { integer(): number; unit(): number },
+      }),
+    ).rejects.toThrow(/World module requires a random source/);
   });
 
   it("fails fast when required combat dependencies are missing", () => {

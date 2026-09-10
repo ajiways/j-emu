@@ -1,11 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { Area } from "../../../src/modules/world/domain/area.ts";
-import { HuntSpawn } from "../../../src/modules/world/domain/hunt-spawn.ts";
-import { HuntSpawnOverlay } from "../../../src/modules/world/domain/hunt-spawn-overlay.ts";
-import { WorldService } from "../../../src/modules/world/domain/world-service.ts";
-import type { WorldRepository } from "../../../src/modules/world/ports/world-repository.ts";
+import { parkedHuntSpawn } from "../../support/parked-hunt-spawn.ts";
+import { worldServiceFor } from "../../support/world-service-for.ts";
 
-const spawn = new HuntSpawn(50310, 2, 883, 1499, "bot_1");
+const spawn = parkedHuntSpawn(50310, 2, 883, 1499, "bot_1", 10);
 const plaza = new Area(
   "503",
   "Горное поселение",
@@ -124,12 +122,5 @@ describe("hunt spawn overlay", () => {
 });
 
 function service(area: Area): WorldService {
-  return new WorldService(
-    {
-      findArea: async () => area,
-      listLinksFrom: async () => [],
-      findLink: async () => null,
-    } satisfies WorldRepository,
-    new HuntSpawnOverlay(),
-  );
+  return worldServiceFor(area);
 }

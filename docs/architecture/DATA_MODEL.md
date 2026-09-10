@@ -161,7 +161,8 @@ hide_running_fights, no_clan_chat)` PK `(release_id, id)`.
 - `area_links(release_id, from_area_id, item_id, to_area_id, title, picture,
 description, flags, direction)` PK `(release_id, from_area_id, item_id)`;
   FK from/to `areas` той же release. Не JSONB.
-- `hunt_spawns(release_id, id, area_id, bot_id, position_x, position_y, hunt_mask)`
+- `hunt_spawns(release_id, id, area_id, bot_id, position_x, position_y, hunt_mask,
+wait_min, wait_max, respawn_time_min, respawn_time_max, zone jsonb, route jsonb)`
   PK `(release_id, id)`; FK на `areas` и `catalog.bots` в той же release.
   `id` — authored integer `area × 100 + index` (для Gryzl на 503 — `50310`).
 

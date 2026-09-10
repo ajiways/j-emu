@@ -65,6 +65,16 @@ describe("location area_conf", () => {
     if (!Array.isArray(hunt.bots)) throw new Error("common|hunt.bots must be an array");
     expect(hunt.bots).toEqual([
       {
+        id: 50309,
+        artikul_id: 4,
+        fight_id: 0,
+        hunt_mask: "bot_1",
+        position_x: 935,
+        position_y: 1260,
+        prev_x: 922,
+        prev_y: 1401,
+      },
+      {
         id: 50310,
         artikul_id: 2,
         fight_id: 0,

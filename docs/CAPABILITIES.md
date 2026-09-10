@@ -177,8 +177,9 @@ hunt overlay и map join: первый ATTACK_BOT **50310** ставит `fight_
 точке и в `131:`; второй клиент входит в тот же бой (`fight|conf` с тем же
 `fightId`/`akey`, свой `userId`). Raw-AMF и CEF двумя клиентами.
 
-Не перенесены authored wander/respawn (у 50310 в dump нет — не выдумывать)
-и OA `FIGHT_JOIN` / `FIGHT_HELP`.
+Не перенесены OA `FIGHT_JOIN` / `FIGHT_HELP`. Wander: 50310 паркуется на
+home (в dump нет route/zone); 50309 идёт по dump-proven route, 50101–03 —
+по zone.
 
 ## Combat — частично
 
@@ -193,7 +194,7 @@ object `fight|loot` затем `fight|exit`. Melee damage = `STR/10 ±15%`
 (overlay 0.2–0.44) и ролл лута 77/93/99 (NOTHING доминирует; forced-roll
 отдаёт 77); loss пишет HP 0 + ghost/injury 875;
 `leaveFight` HTTP `{rs:true}` и flee `type:2`. Representative боты 2/4/24/32
-и hunts 50310/50101–50103. F5 mid-hunt: init2 `fight|conf` с тем же
+и hunts 50310/50309/50101–50103. F5 mid-hunt: init2 `fight|conf` с тем же
 `fightId`/`akey`, resume без `oppwait`, `attacknow` с остатком restTime.
 Ghost блокирует regen; OA `RESURRECT` снимает ghost. Duplicate settlement
 no-op. Restart посреди боя без награды. CMB-08: OA

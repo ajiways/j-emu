@@ -1,23 +1,37 @@
-import { parseDecimalId, requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { Area } from "./area.ts";
 import type { AreaLink } from "./area-link.ts";
 import type { HuntBotSnapshot } from "./hunt-bot-snapshot.ts";
 import type { HuntSpawn } from "./hunt-spawn.ts";
+import type { HuntWanderRuntime } from "./hunt-wander-runtime.ts";
 import type {
   HuntSpawnOverlay,
   SpawnAcquireResult,
   SpawnLockCommand,
 } from "./hunt-spawn-overlay.ts";
 import { MissingLinkError } from "./missing-link-error.ts";
+import type { HuntAreaWake } from "../ports/hunt-area-wake.ts";
 import type { WorldRepository } from "../ports/world-repository.ts";
 
-const IDLE_SPAWN_FIGHT_ID = 0;
-
 export class WorldService {
+  private wanderStarted = false;
+
   constructor(
     private readonly world: WorldRepository,
     private readonly overlay: HuntSpawnOverlay,
+    private readonly wander: HuntWanderRuntime,
   ) {}
+
+  bindAreaWake(wake: HuntAreaWake): void {
+    this.wander.bindWake(wake);
+  }
+
+  async startWander(): Promise<void> {
+    if (this.wanderStarted) throw new Error("Hunt wander is already started");
+    this.wanderStarted = true;
+    for (const entry of await this.world.listHuntSpawns()) {
+      this.wander.ensure(entry.areaId, entry.spawn);
+    }
+  }
 
   async area(id: string): Promise<Area> {
     const area = await this.world.findArea(id);
@@ -53,41 +67,37 @@ export class WorldService {
     if (!spawn) {
       throw new Error(`Hunt spawn ${command.spawnId} is not present in area ${command.areaId}`);
     }
-    return this.overlay.acquire({
+    this.wander.ensure(command.areaId, spawn);
+    const result = this.overlay.acquire({
       areaId: command.areaId,
       spawnId: spawn.id,
       fightId: command.fightId,
       ownerAccountId: command.ownerAccountId,
     });
+    if (result.ok) this.wander.freeze(command.areaId, spawn, true);
+    return result;
   }
 
   async releaseSpawn(command: { areaId: string; spawnId: number }): Promise<void> {
+    const spawn = await this.spawn(command.areaId, command.spawnId);
+    if (!spawn) {
+      throw new Error(`Hunt spawn ${command.spawnId} is not present in area ${command.areaId}`);
+    }
     this.overlay.release(command.areaId, command.spawnId);
+    this.wander.respawn(command.areaId, spawn);
   }
 
   releaseSpawnForFight(fightId: string): { areaId: string; spawnId: number } | null {
-    return this.overlay.releaseFight(fightId);
+    const released = this.overlay.releaseFight(fightId);
+    if (!released) return null;
+    this.wander.respawnById(released.areaId, released.spawnId);
+    return released;
   }
 
   async huntSnapshot(areaId: string): Promise<readonly HuntBotSnapshot[]> {
     const area = await this.area(areaId);
-    return area.spawns.map((spawn) => snapshotBot(spawn, this.overlay.fightId(area.id, spawn.id)));
+    return this.wander.snapshot(area.id, area.spawns, (spawnId) =>
+      this.overlay.fightId(area.id, spawnId),
+    );
   }
-}
-
-function snapshotBot(spawn: HuntSpawn, fightId: string | null): HuntBotSnapshot {
-  return {
-    id: spawn.id,
-    artikulId: spawn.botId,
-    fightId: fightId === null ? IDLE_SPAWN_FIGHT_ID : wireFightId(fightId),
-    huntMask: spawn.huntMask,
-    positionX: spawn.x,
-    positionY: spawn.y,
-    prevX: spawn.x,
-    prevY: spawn.y,
-  };
-}
-
-function wireFightId(fightId: string): number {
-  return requireWireIdentity(Number(parseDecimalId(fightId, "hunt fight id")), "hunt fight id");
 }

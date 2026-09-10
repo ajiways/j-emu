@@ -170,6 +170,7 @@ describe("Drizzle migrations", () => {
       "0003_inventory_item_expire_use.sql",
       "0004_content_draft_use_types.sql",
       "0005_catalog_bot_spell_book.sql",
+      "0006_world_hunt_spawn_wander.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -181,8 +182,9 @@ describe("Drizzle migrations", () => {
       "0003_inventory_item_expire_use",
       "0004_content_draft_use_types",
       "0005_catalog_bot_spell_book",
+      "0006_world_hunt_spawn_wander",
     ]);
-    expect(await appliedCount()).toBe(6);
+    expect(await appliedCount()).toBe(7);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );

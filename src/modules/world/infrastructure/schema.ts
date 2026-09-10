@@ -6,6 +6,7 @@ import {
   foreignKey,
   index,
   integer,
+  jsonb,
   pgSchema,
   primaryKey,
   text,
@@ -67,10 +68,27 @@ export const huntSpawns = worldSchema.table(
     positionX: doublePrecision("position_x").notNull(),
     positionY: doublePrecision("position_y").notNull(),
     huntMask: text("hunt_mask").notNull(),
+    waitMin: integer("wait_min").notNull(),
+    waitMax: integer("wait_max").notNull(),
+    respawnTimeMin: integer("respawn_time_min").notNull(),
+    respawnTimeMax: integer("respawn_time_max").notNull(),
+    zone: jsonb("zone").$type<readonly { x: number; y: number }[]>().notNull(),
+    route: jsonb("route")
+      .$type<readonly { x: number; y: number; waitMin: number; waitMax: number }[]>()
+      .notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.releaseId, table.id] }),
     check("hunt_spawns_id_check", sql`${table.id} > 0`),
+    check("hunt_spawns_wait_min_check", sql`${table.waitMin} >= 0`),
+    check("hunt_spawns_wait_max_check", sql`${table.waitMax} >= ${table.waitMin}`),
+    check("hunt_spawns_respawn_time_min_check", sql`${table.respawnTimeMin} >= 0`),
+    check(
+      "hunt_spawns_respawn_time_max_check",
+      sql`${table.respawnTimeMax} >= ${table.respawnTimeMin}`,
+    ),
+    check("hunt_spawns_zone_array_check", sql`jsonb_typeof(${table.zone}) = 'array'`),
+    check("hunt_spawns_route_array_check", sql`jsonb_typeof(${table.route}) = 'array'`),
     foreignKey({
       name: "hunt_spawns_area_fk",
       columns: [table.releaseId, table.areaId],

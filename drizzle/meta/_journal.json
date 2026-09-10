@@ -43,6 +43,13 @@
       "when": 1789025132042,
       "tag": "0005_catalog_bot_spell_book",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789034818143,
+      "tag": "0006_world_hunt_spawn_wander",
+      "breakpoints": true
     }
   ]
 }
