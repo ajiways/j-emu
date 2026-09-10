@@ -44,6 +44,7 @@ import {
 import { accounts, sessions } from "../../../src/modules/identity/infrastructure/schema.ts";
 import { items } from "../../../src/modules/inventory/infrastructure/schema.ts";
 import { letters, letterAttachments } from "../../../src/modules/mail/infrastructure/schema.ts";
+import { listings } from "../../../src/modules/auction/infrastructure/schema.ts";
 import { areaLinks, areas, huntSpawns } from "../../../src/modules/world/infrastructure/schema.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
@@ -64,9 +65,10 @@ describe("Drizzle migrations", () => {
   it("creates only the live module schemas and tables", async () => {
     const schemas = await names(
       sql`SELECT schema_name AS name FROM information_schema.schemata
-          WHERE schema_name IN ('identity','character','catalog','inventory','world','combat','content','mail','quests','social','economy')`,
+          WHERE schema_name IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','quests','social','economy')`,
     );
     expect(schemas.sort()).toEqual([
+      "auction",
       "catalog",
       "character",
       "combat",
@@ -80,11 +82,12 @@ describe("Drizzle migrations", () => {
     const tables = await names(
       sql`SELECT table_schema || '.' || table_name AS name
           FROM information_schema.tables
-          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content','mail')
+          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content','mail','auction')
             AND table_type = 'BASE TABLE'`,
     );
     expect(tables.sort()).toEqual(
       [
+        "auction.listings",
         "catalog.appearance_presets",
         "catalog.artifacts",
         "catalog.bonuses",
@@ -156,6 +159,7 @@ describe("Drizzle migrations", () => {
       items,
       letters,
       letterAttachments,
+      listings,
       finishedFights,
       drafts,
       draftVersions,
@@ -163,7 +167,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(36);
+    ]).toHaveLength(37);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -180,6 +184,7 @@ describe("Drizzle migrations", () => {
       "0007_catalog_store_lot_pay.sql",
       "0008_mail_letters.sql",
       "0009_mail_letter_attachments.sql",
+      "0010_auction_listings.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -195,8 +200,9 @@ describe("Drizzle migrations", () => {
       "0007_catalog_store_lot_pay",
       "0008_mail_letters",
       "0009_mail_letter_attachments",
+      "0010_auction_listings",
     ]);
-    expect(await appliedCount()).toBe(10);
+    expect(await appliedCount()).toBe(11);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );

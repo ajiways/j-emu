@@ -219,6 +219,17 @@ money_come_minor, payment_minor, tax_minor, money_type 0|1, pair_id, system
 
 Unix `stime`/`rtime` только в jugger-wire. JSONB вложений нет (MAIL-02).
 
+### `auction`
+
+- `listings(id integer GENERATED ALWAYS AS IDENTITY START 1, kind lot,
+status open|sold|cancelled|expired, owner_hero_id FK heroes,
+owner_kind, artikul_id, title, kind_id, quality, level_min, amount,
+start_price_minor, buyout_minor, current_bid_minor, bidder_hero_id FK heroes
+NULL, cancel_fee_minor, expires_at timestamptz, created_at timestamptz,
+original_item_id, durability, durability_max, upgrade_*)`.
+
+JSONB снимка dump нет. Tenders — AUC-02. Unix `rtime` только в jugger-wire.
+
 ## План (не в runtime)
 
 Таблицы ниже не созданы и не являются baseline. Их нельзя добавлять «на будущее»
@@ -257,6 +268,7 @@ Durable sides/turns/effects, active participants и JSONB event log не
 
 `social` / `economy` модулей в runtime нет. Mailbox MAIL-02 живёт в `mail`
 (`letters` + `letter_attachments`), не в `social` и без JSONB снимка dump.
+Лоты AUC-01 живут в `auction.listings`, не в `economy`.
 Целевые API — в [MODULES.md](MODULES.md). Схемы появляются вместе с первым
 подтверждённым OA этого модуля.
 

@@ -185,8 +185,14 @@ character `debitMoney` в composition UoW, как ECO-01. Death break —
 inventory port из `HuntFightSettlement`, как pocket refill. Контракт:
 [INVENTORY.md](../modules/INVENTORY.md).
 
-Отдельный `ARC-ECO` потребуется позже только если mail COD / auction / trade
-нельзя провести без ledger, reservations и переноса balance с hero.
+**Решение AUC-01:** тех же границ достаточно. Модуль `auction` владеет
+`auction.listings` со снимком предмета; ставка — колонки лота, не депозит.
+Settlement — mail `deliverSystemInbox` + character `debitMoney` + inventory
+take-by-instance в composition UoW. Dual-write hero↔economy wallet запрещён.
+Контракт: [AUCTION.md](../modules/AUCTION.md).
+
+Отдельный `ARC-ECO` потребуется позже только если trade нельзя провести без
+ledger, reservations и переноса balance с hero.
 
 ### `ARC-QST` — quest definitions, progress и rewards
 

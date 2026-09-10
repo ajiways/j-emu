@@ -12,6 +12,12 @@ import type { StorePurchase } from "../../../app/store-purchase.ts";
 import type { StoreRepair } from "../../../app/store-repair.ts";
 import type { MailSend } from "../../../app/mail-send.ts";
 import type { MailClaim } from "../../../app/mail-claim.ts";
+import type { AuctionBoard } from "../../../app/auction-board.ts";
+import type { AuctionList } from "../../../app/auction-list.ts";
+import type { AuctionBid } from "../../../app/auction-bid.ts";
+import type { AuctionBuyout } from "../../../app/auction-buyout.ts";
+import type { AuctionCancel } from "../../../app/auction-cancel.ts";
+import type { AuctionService } from "../../auction/application/auction-service.ts";
 import type { MailService } from "../../mail/application/mail-service.ts";
 import { AttackBotCommand } from "../commands/oa/attack-bot-command.ts";
 import { BagDropCommand } from "../commands/oa/bag-drop-command.ts";
@@ -34,6 +40,14 @@ import { PostDeleteCommand } from "../commands/oa/post-delete-command.ts";
 import { PostListCommand } from "../commands/oa/post-list-command.ts";
 import { PostListSentCommand } from "../commands/oa/post-list-sent-command.ts";
 import { PostReadCommand } from "../commands/oa/post-read-command.ts";
+import { AuctionLotCommand } from "../commands/oa/auction-lot-command.ts";
+import { AuctionMyLotCommand } from "../commands/oa/auction-my-lot-command.ts";
+import { AuctionMyBidCommand } from "../commands/oa/auction-my-bid-command.ts";
+import { AuctionMinPriceCommand } from "../commands/oa/auction-min-price-command.ts";
+import { AuctionLotAddCommand } from "../commands/oa/auction-lot-add-command.ts";
+import { AuctionBidCommand } from "../commands/oa/auction-bid-command.ts";
+import { AuctionBuyoutCommand } from "../commands/oa/auction-buyout-command.ts";
+import { AuctionCancelCommand } from "../commands/oa/auction-cancel-command.ts";
 import { PostSendCommand } from "../commands/oa/post-send-command.ts";
 import { PostSendCodCommand } from "../commands/oa/post-send-cod-command.ts";
 import { PostPickCommand } from "../commands/oa/post-pick-command.ts";
@@ -89,6 +103,12 @@ export class JuggerCommandModule {
     mail: MailService,
     mailSend: MailSend,
     mailClaim: MailClaim,
+    auction: AuctionService,
+    auctionBoard: AuctionBoard,
+    auctionList: AuctionList,
+    auctionBid: AuctionBid,
+    auctionBuyout: AuctionBuyout,
+    auctionCancel: AuctionCancel,
     sessions: SessionPresence,
     outbox: EsrvOutbox,
     wake: Readonly<{ wake(accountId: number): void }>,
@@ -208,6 +228,28 @@ export class JuggerCommandModule {
       new PostRetractCommand(bootstrap, characters, mail, mailClaim, catalog),
       new PostReadCommand(),
       new UserBagOrderCommand(bootstrap),
+      new AuctionLotCommand(characters, auctionBoard, auction, catalog),
+      new AuctionMyLotCommand(characters, auctionBoard, auction, catalog),
+      new AuctionMyBidCommand(characters, auctionBoard, auction, catalog),
+      new AuctionMinPriceCommand(characters, inventory, catalog, auctionBoard),
+      new AuctionLotAddCommand(bootstrap, characters, auctionList),
+      new AuctionBidCommand(bootstrap, characters, auctionBid),
+      new AuctionBuyoutCommand(
+        bootstrap,
+        characters,
+        auctionBuyout,
+        auctionBoard,
+        auction,
+        catalog,
+      ),
+      new AuctionCancelCommand(
+        bootstrap,
+        characters,
+        auctionCancel,
+        auctionBoard,
+        auction,
+        catalog,
+      ),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);
     this.esrv = EsrvCommandRegistry.create(combat, fightWire);

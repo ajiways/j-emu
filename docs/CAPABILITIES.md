@@ -222,9 +222,18 @@ reconnect/restart; pick выдаёт новый `items.id`. CEF почты не 
 
 Не перенесены system chat о письме и кланы.
 
+## Auction — частично
+
+Есть raw-AMF: `auction|lot` / `my_lot` / `my_bid` / `min_price`,
+`lot_add`, `bid`, `buyout`, `cancel`, TTL sweep на list и DelayScheduler.
+Buyout/bid/expiry гонки — один победитель; settlement через системную почту
+переживает reconnect/restart. CEF аукциона не прогонялся.
+
+Не перенесены заказы (`tender_*`), `addToLot` и playerbots.
+
 ## После core — не перенесено
 
-Chat/party, полный корпус магазинов (DATA-05), auction и trade.
+Chat/party, полный корпус магазинов (DATA-05) и trade.
 
 ## Store — частично
 

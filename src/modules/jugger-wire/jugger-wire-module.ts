@@ -2,6 +2,12 @@ import type { StorePurchase } from "../../app/store-purchase.ts";
 import type { StoreRepair } from "../../app/store-repair.ts";
 import type { MailSend } from "../../app/mail-send.ts";
 import type { MailClaim } from "../../app/mail-claim.ts";
+import type { AuctionBoard } from "../../app/auction-board.ts";
+import type { AuctionList } from "../../app/auction-list.ts";
+import type { AuctionBid } from "../../app/auction-bid.ts";
+import type { AuctionBuyout } from "../../app/auction-buyout.ts";
+import type { AuctionCancel } from "../../app/auction-cancel.ts";
+import type { AuctionService } from "../auction/application/auction-service.ts";
 import type { MailService } from "../mail/application/mail-service.ts";
 import type { FastifyInstance } from "fastify";
 import type { AppConfig } from "../../app/config.ts";
@@ -82,6 +88,12 @@ export class JuggerWireModule {
     mail: MailService;
     mailSend: MailSend;
     mailClaim: MailClaim;
+    auction: AuctionService;
+    auctionBoard: AuctionBoard;
+    auctionList: AuctionList;
+    auctionBid: AuctionBid;
+    auctionBuyout: AuctionBuyout;
+    auctionCancel: AuctionCancel;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -134,6 +146,24 @@ export class JuggerWireModule {
     const mail = requirePresent(input.mail, "Jugger-wire module requires mail");
     const mailSend = requirePresent(input.mailSend, "Jugger-wire module requires mail send");
     const mailClaim = requirePresent(input.mailClaim, "Jugger-wire module requires mail claim");
+    const auction = requirePresent(input.auction, "Jugger-wire module requires auction");
+    const auctionBoard = requirePresent(
+      input.auctionBoard,
+      "Jugger-wire module requires auction board",
+    );
+    const auctionList = requirePresent(
+      input.auctionList,
+      "Jugger-wire module requires auction list",
+    );
+    const auctionBid = requirePresent(input.auctionBid, "Jugger-wire module requires auction bid");
+    const auctionBuyout = requirePresent(
+      input.auctionBuyout,
+      "Jugger-wire module requires auction buyout",
+    );
+    const auctionCancel = requirePresent(
+      input.auctionCancel,
+      "Jugger-wire module requires auction cancel",
+    );
     try {
       const fightWire = new FightWireMapper(
         {
@@ -176,6 +206,12 @@ export class JuggerWireModule {
         mail,
         mailSend,
         mailClaim,
+        auction,
+        auctionBoard,
+        auctionList,
+        auctionBid,
+        auctionBuyout,
+        auctionCancel,
         identity,
         outbox,
         longPoll,

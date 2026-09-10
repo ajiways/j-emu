@@ -6,6 +6,14 @@ const srcRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../s
 const maxLines = 400;
 const reviewThreshold = 250;
 const lineJustifications: Readonly<Record<string, string>> = {
+  "src/app/composition-root.ts":
+    "Wires identity through mail/auction composition UoW and shared DelayScheduler sweeps",
+  "src/modules/auction/infrastructure/postgres-listing-repository.ts":
+    "Auction listing rows plus snapshot columns, search filters, and FOR UPDATE lock/sweep",
+  "src/modules/jugger-wire/jugger-wire-module.ts":
+    "HTTP/TCP servers and OA command module factory including mail and auction ports",
+  "src/modules/jugger-wire/registry/jugger-command-module.ts":
+    "Static OA command constructors including mail and auction ports",
   "src/modules/character/application/character-service.ts":
     "Character application facade: progression, resources, money, reputation, learn-bonus, location, and presence",
   "src/modules/world/domain/hunt-wander.ts":
@@ -23,7 +31,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/content/application/content-validator.ts":
     "Single bundle completeness gate including store 504/552 pay and RANK, reputation, set bonuses, USE representatives, fight extra blobs, bot loot, and bot spell books",
   "src/modules/inventory/domain/inventory-service.ts":
-    "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag, INV-05 repair, INV-06 upgrade, INV-07 set-bonus, INV-08 USE/drink, ECO-02 barter consume-by-artikul, and MAIL-02 instance take/snapshot grant",
+    "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag, INV-05 repair, INV-06 upgrade, INV-07 set-bonus, INV-08 USE/drink, ECO-02 barter consume-by-artikul, MAIL-02 instance take/snapshot grant, and AUC-01 auction take",
   "src/modules/mail/infrastructure/postgres-letter-repository.ts":
     "Mail letter rows plus attachment snapshots, FOR UPDATE pick/sweep, and markPicked",
   "src/modules/catalog/infrastructure/schema.ts":

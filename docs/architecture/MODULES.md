@@ -1,9 +1,10 @@
 # Модули
 
 Документ описывает ownership target. Реализованы `identity`, `character`,
-`inventory`, `catalog`, `world`, `combat`, `content`, `mail` и `jugger-wire`,
-но их полный target API ещё не перенесён. `quests`, `social`, `economy`,
-`professions` и `instances` ниже являются планом, а не возможностями runtime.
+`inventory`, `catalog`, `world`, `combat`, `content`, `mail`, `auction` и
+`jugger-wire`, но их полный target API ещё не перенесён. `quests`, `social`,
+`economy`, `professions` и `instances` ниже являются планом, а не возможностями
+runtime.
 Фактический статус находится в [CAPABILITIES.md](../CAPABILITIES.md).
 
 ## Текущий runtime checkpoint
@@ -33,6 +34,8 @@ area presence roster:
   history;
 - `mail` — `mail.letters` / `mail.letter_attachments`, welcome «Почтальон»,
   send/pick/COD/retract и TTL sweep. Target `social` mailbox ещё план.
+- `auction` — `auction.listings` лоты, bid/buyout/cancel и TTL sweep через
+  mail settlement. Target `economy` listings ещё план. Tenders — AUC-02.
   Репутация Радвея **5** есть (REP-01, product частично).
   `quests`, `economy`, `professions`, `instances` в runtime нет.
 
@@ -165,6 +168,18 @@ character money + inventory instance take/grant. Контракт:
 
 **Шов извлечения:** не цель MAIL-02. Target mailbox в `social` ниже — план.
 
+### `auction` — AUC-01 runtime
+
+**Владеет:** `auction.listings` (лоты и снимок предмета). Не владеет балансом,
+bag и письмами. Tenders — AUC-02.
+
+**API:** `searchLots`, `listMine`, `listMyBids`, `minUnitPriceMinor`, `insert`,
+`lock`, `lockExpired`, `save`. Add/bid/buyout/cancel/expiry — composition +
+character `debitMoney` + inventory take + mail `deliverSystemInbox`. Контракт:
+[AUCTION.md](../modules/AUCTION.md).
+
+**Шов извлечения:** не цель AUC-01. Target listings в `economy` ниже — план.
+
 ### `social` — после core
 
 **Владеет:** друзьями/игнором, группами, приглашениями, каналами и сообщениями, mailbox как социальной доставкой (план; runtime mailbox — `mail`). Вложения письма — reservation/reference, не JSON-копия предмета.
@@ -177,9 +192,9 @@ character money + inventory instance take/grant. Контракт:
 
 ### `economy` — после core
 
-**Владеет:** кошельками, неизменяемым ledger, торговыми предложениями, ставками и денежными резервами. Authored витрина ECO-01/ECO-02 живёт в `catalog`, balance — на `heroes.money_minor` / `money_gold_minor`; этого модуля в runtime нет.
+**Владеет:** кошельками, неизменяемым ledger, торговыми предложениями, ставками и денежными резервами. Authored витрина ECO-01/ECO-02 живёт в `catalog`, balance — на `heroes.money_minor` / `money_gold_minor`; лоты AUC-01 живут в `auction`, не здесь. Этого модуля в runtime нет.
 
-**API:** `getBalance`, `postTransfer`, `reserveFunds`, `openListing`, `placeBid`, `buyout`, `cancelListing`. Покупка лота ECO-01/ECO-02 — composition, не `buyStoreLot`.
+**API:** `getBalance`, `postTransfer`, `reserveFunds`. Покупка лота ECO-01/ECO-02 — composition, не `buyStoreLot`. Аукцион open/bid/buyout/cancel — модуль `auction`.
 
 **События:** `economy.ledger-posted.v1`, `economy.listing-opened.v1`, `economy.trade-settled.v1`, `economy.listing-closed.v1`.
 
@@ -243,7 +258,8 @@ registry `object|action`; registry вызывает небольшой typed han
 
 - **Покупка:** wire → economy; economy резервирует деньги, вызывает inventory grant, затем проводит ledger. Повтор запроса безопасен по operation ID.
 - **Завершение боя:** combat фиксирует результат → подписчики character/quests/instances; отдельный reward orchestrator вызывает economy/inventory. Combat не знает, человек перед ним или автоматический клиент.
-- **Почта/аукцион:** social/economy резервируют item IDs через inventory; владение меняется только командой inventory после settlement.
+- **Почта/аукцион:** runtime MAIL-02 / AUC-01 держат снимок, не reservation;
+  social/economy reservation — план target.
 - **`init/init2`:** jugger-wire запрашивает один bootstrap read model, а не вызывает последовательно все модули и не читает их таблицы.
 
 Последний пункт уже действует для bootstrap read model; остальные появляются

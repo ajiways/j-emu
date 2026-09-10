@@ -28,6 +28,7 @@ storage / publishers ----^            <- ports
 | `combat`      | только собственное storage; snapshots передаются во входной команде | abort/lease commands через inbox         |
 | `quests`      | свои definitions/state                                              | combat/world/inventory/character signals |
 | `mail`        | character nick/id display query (composition владеет money/bag UoW) | ничего                                   |
+| `auction`     | catalog price/title query (composition владеет money/bag/mail UoW)  | ничего                                   |
 | `social`      | identity/character display query                                    | character rename, instances lifecycle    |
 | `economy`     | inventory reservation API, catalog price query                      | reservation expired                      |
 | `professions` | inventory reservation API, catalog/world query                      | timer, catalog revision                  |

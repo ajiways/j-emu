@@ -823,11 +823,15 @@
 - **depends_on:** `MAIL-02`, `ECO-02`
 - **Behavior evidence:** legacy `AUCTION.md` and `src/auction/`.
 - **Content set:** auction configuration и fee policy.
-- **Architecture checkpoint / decision:** pending — listing/order holds, row
-  locking и mail delivery port.
+- **Architecture checkpoint / decision:** closed — модуль `auction` владеет
+  `auction.listings` (снимок колонок, не JSONB и не live reservation);
+  ставка лежит на лоте; settlement — mail `deliverSystemInbox` в composition
+  UoW; `SELECT FOR UPDATE`; sweep на list и общем `DelayScheduler` ~30с.
+  Отдельный `ARC-ECO` / ledger / депозит не нужны. Tenders — AUC-02.
+  Контракт: [AUCTION.md](../modules/AUCTION.md).
 - **Acceptance:** list/page/my-lot/my-bid, add, bid, buyout, cancel и expiry
   races имеют одного победителя и durable mail settlement.
-- **Status:** `queued`
+- **Status:** `done`
 
 ### AUC-02 — Auction tenders
 

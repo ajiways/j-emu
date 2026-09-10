@@ -119,7 +119,8 @@ character владеет `money_minor` на hero; catalog поставляет i
 в той же Unit of Work. ECO-01/ECO-02 не создают economy-модуль; `debitMoney`,
 `debitMoneyGold` и витрина — [STORE.md](STORE.md). Бартер списывает bag по
 catalog `artikul_id` (`countBagByArtifact` / `consumeFromBag`), не по
-instance `items.id`. `ARC-ECO` нужен только для ledger/auction.
+instance `items.id`. Аукцион AUC-01 — модуль `auction` + тот же take-by-instance;
+`ARC-ECO` нужен только для ledger/trade.
 
 DROP не идемпотентен по `operation_id`: повтор клиента — вторая мутация.
 

@@ -31,6 +31,14 @@ import { MailSend } from "./mail-send.ts";
 import { MailClaim } from "./mail-claim.ts";
 import { MailTtlSweep } from "./mail-ttl-sweep.ts";
 import { MailModule } from "../modules/mail/mail-module.ts";
+import { AuctionModule } from "../modules/auction/auction-module.ts";
+import { AuctionExpiry } from "./auction-expiry.ts";
+import { AuctionBoard } from "./auction-board.ts";
+import { AuctionList } from "./auction-list.ts";
+import { AuctionBid } from "./auction-bid.ts";
+import { AuctionBuyout } from "./auction-buyout.ts";
+import { AuctionCancel } from "./auction-cancel.ts";
+import { AuctionTtlSweep } from "./auction-ttl-sweep.ts";
 import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 
@@ -115,6 +123,44 @@ export class CompositionRoot {
         heroes: characters.service,
       });
       closers.push(mail);
+      const auction = AuctionModule.create({ database, clock });
+      closers.push(auction);
+      const auctionExpiry = new AuctionExpiry(
+        database,
+        auction.service,
+        mail.service,
+        characters.service,
+      );
+      const auctionBoard = new AuctionBoard(auctionExpiry, auction.service);
+      const auctionList = new AuctionList(
+        database,
+        auctionExpiry,
+        characters.service,
+        inventory.service,
+        catalog.catalog,
+        auction.service,
+      );
+      const auctionBid = new AuctionBid(
+        database,
+        auctionExpiry,
+        characters.service,
+        mail.service,
+        auction.service,
+      );
+      const auctionBuyout = new AuctionBuyout(
+        database,
+        auctionExpiry,
+        characters.service,
+        mail.service,
+        auction.service,
+      );
+      const auctionCancel = new AuctionCancel(
+        database,
+        auctionExpiry,
+        characters.service,
+        mail.service,
+        auction.service,
+      );
       const presence = new PresenceService(
         world.service,
         identity.service,
@@ -167,6 +213,9 @@ export class CompositionRoot {
       const mailSweep = new MailTtlSweep(mail.service, delay, clock);
       mailSweep.start();
       closers.push(mailSweep);
+      const auctionSweep = new AuctionTtlSweep(auctionExpiry, delay, clock);
+      auctionSweep.start();
+      closers.push(auctionSweep);
       const wire = await JuggerWireModule.create({
         config,
         identity: identity.service,
@@ -198,6 +247,12 @@ export class CompositionRoot {
         mail: mail.service,
         mailSend,
         mailClaim,
+        auction: auction.service,
+        auctionBoard,
+        auctionList,
+        auctionBid,
+        auctionBuyout,
+        auctionCancel,
       });
       closers.push(wire);
       return new Application(

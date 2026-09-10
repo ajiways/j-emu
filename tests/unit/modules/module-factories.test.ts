@@ -12,6 +12,13 @@ import type { StorePurchase } from "../../../src/app/store-purchase.ts";
 import type { StoreRepair } from "../../../src/app/store-repair.ts";
 import type { MailSend } from "../../../src/app/mail-send.ts";
 import type { MailClaim } from "../../../src/app/mail-claim.ts";
+import type { AuctionBoard } from "../../../src/app/auction-board.ts";
+import type { AuctionList } from "../../../src/app/auction-list.ts";
+import type { AuctionBid } from "../../../src/app/auction-bid.ts";
+import type { AuctionBuyout } from "../../../src/app/auction-buyout.ts";
+import type { AuctionCancel } from "../../../src/app/auction-cancel.ts";
+import { AuctionModule } from "../../../src/modules/auction/auction-module.ts";
+import type { AuctionService } from "../../../src/modules/auction/application/auction-service.ts";
 import { MailModule } from "../../../src/modules/mail/mail-module.ts";
 import type { MailService } from "../../../src/modules/mail/application/mail-service.ts";
 import type { PlayableAccountRegistration } from "../../../src/app/playable-account-registration.ts";
@@ -260,6 +267,18 @@ describe("module factories", () => {
     ).toThrow(/Mail module requires hero lookup/);
   });
 
+  it("fails fast when required auction dependencies are missing", () => {
+    expect(() => AuctionModule.create({ database, clock })).toThrow(
+      /Auction module requires a database/,
+    );
+    expect(() =>
+      AuctionModule.create({
+        database: {} as PostgresDatabase,
+        clock: undefined as unknown as Clock,
+      }),
+    ).toThrow(/Auction module requires a clock/);
+  });
+
   it("fails fast when required jugger-wire dependencies are missing", async () => {
     await expect(
       JuggerWireModule.create({
@@ -287,6 +306,12 @@ describe("module factories", () => {
         mail: {} as MailService,
         mailSend: {} as MailSend,
         mailClaim: {} as MailClaim,
+        auction: {} as AuctionService,
+        auctionBoard: {} as AuctionBoard,
+        auctionList: {} as AuctionList,
+        auctionBid: {} as AuctionBid,
+        auctionBuyout: {} as AuctionBuyout,
+        auctionCancel: {} as AuctionCancel,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -328,6 +353,11 @@ describe("module factories", () => {
       heroes: { getById: async () => null },
     });
     await expect(mail.close()).resolves.toBeUndefined();
+    const auction = AuctionModule.create({
+      database: {} as PostgresDatabase,
+      clock,
+    });
+    await expect(auction.close()).resolves.toBeUndefined();
   });
 
   it("rejects a missing Pub1 directory during jugger-wire startup", async () => {
@@ -391,6 +421,12 @@ describe("module factories", () => {
         mail: {} as MailService,
         mailSend: {} as MailSend,
         mailClaim: {} as MailClaim,
+        auction: {} as AuctionService,
+        auctionBoard: {} as AuctionBoard,
+        auctionList: {} as AuctionList,
+        auctionBid: {} as AuctionBid,
+        auctionBuyout: {} as AuctionBuyout,
+        auctionCancel: {} as AuctionCancel,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

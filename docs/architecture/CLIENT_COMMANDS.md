@@ -59,9 +59,11 @@ Response descriptor явно определяет один из варианто
 
 - nested block под исходным `object|action` (`store|list` — `{status,types,artikuls}`;
   `post|list` — `{status,list,macros_list}`;
+  `auction|lot` — `{status,list,total,offs}`;
   `user|stats` — `{status,stats,farm_stats,fish_stats}`);
 - flat набор блоков для `init/init2`, `store|buy`,
   `post|send`/`send_cod`/`pick`/`batch_pick`/`delete`/`retract`,
+  `auction|lot_add`/`bid`/`buyout`/`cancel`,
   `user|bag_order` и других подтверждённых мутаций;
 - protocol error с точным `status` и `error` (store buy dump-proven **2** для
   пустой корзины / не-лавки / неизвестного лота / нехватки золота — не 203).

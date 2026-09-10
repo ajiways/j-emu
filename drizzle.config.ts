@@ -12,6 +12,7 @@ export default defineConfig({
     "./src/modules/inventory/infrastructure/schema.ts",
     "./src/modules/combat/infrastructure/schema.ts",
     "./src/modules/mail/infrastructure/schema.ts",
+    "./src/modules/auction/infrastructure/schema.ts",
   ],
   out: "./drizzle",
 });
