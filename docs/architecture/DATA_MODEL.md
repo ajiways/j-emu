@@ -318,6 +318,8 @@ DNG-01/DNG-02: `instance.copies` / `binds` / `killed_spawns` (строки, не
 JSONB `killed_spawns_json`). `copies.copy_type` `dungeon|bg`.
 `heroes.instance_copy_id` nullable без FK.
 PRF-01: `catalog.professions` pair 2+6; `character.hero_professions`.
+PRF-02 checkpoint: `catalog.assistant_types` / `farm_resources` / `area_farms`;
+`professions.hero_assistants` / `hero_farm_stats` / `farm_stocks`.
 Контракт: [PROFESSIONS.md](../modules/PROFESSIONS.md).
 Контракт: [INSTANCE.md](../modules/INSTANCE.md), книга —
 [BOOK.md](../modules/BOOK.md).

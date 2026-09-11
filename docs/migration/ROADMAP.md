@@ -1038,8 +1038,14 @@
 - **Behavior evidence:** legacy assistant work/repeat/revoke/save/create/upgrade
   flows.
 - **Content set:** representative resource node/chain.
-- **Architecture checkpoint / decision:** pending — durable jobs и bounded
-  expiry processing без request-time fallback.
+- **Architecture checkpoint / decision:** complete — отдельный ADR не нужен
+  (ADR-0017–0020 + существующий DelayScheduler). Модуль `professions` владеет
+  `hero_assistants`, `hero_farm_stats`, `farm_stocks` и sweep. Catalog —
+  `assistant_types`, `farm_resources`, `area_farms` в active release.
+  Character/inventory только через ports. Clock = `Clock` + `DelayScheduler`;
+  finish пишет только sweeper (не `resolveExpired` на OA). RNG — явный
+  `{ unit(): number }` в factory, без `Math.random`. Контракт:
+  [PROFESSIONS.md](../modules/PROFESSIONS.md).
 - **Acceptance:** deploy, finish, claim/repeat/revoke и upgrade переживают
   restart и атомарно дают inventory/mastery/stat изменения.
 - **Status:** `next`

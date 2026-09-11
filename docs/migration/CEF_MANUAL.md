@@ -67,6 +67,8 @@ product-status только вместе с CEF-фактом в `CAPABILITIES.md
 
 - [ ] PRF-01: выдать Старатель 2 + Знаковед 6 → вкладка профессий два
       active слота; на L7 `max_profession_skill` 59; F5/рестарт.
+- [ ] PRF-02: купить Имуро-Юи 3 (10 золота) → work farm 4 в локации 500 →
+      после цикла лут 1720, repeat/revoke; upgrade 3→13; F5/рестарт.
 
 ## World / economy / HUD
 
