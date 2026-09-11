@@ -77,6 +77,8 @@ product-status только вместе с CEF-фактом в `CAPABILITIES.md
 - [ ] QST-ENG-01: USE 584 → доска NPC 271; принять синтетический квест;
       buy/equip 23, сдать; dialog fight vs Грызль; AREA waiting на 503;
       F5/рестарт сохраняет курсор и цели.
+- [ ] QST-ENG-02: AREA waiting на 503 → quest-fight vs Грызль на
+      `action_finish`; loot-цель не переполняется hunt-дропом; F5/рестарт.
 
 ## World / economy / HUD
 

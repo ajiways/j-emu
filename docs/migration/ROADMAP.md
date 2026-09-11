@@ -1103,10 +1103,26 @@
 - **depends_on:** `QST-ENG-01`, `CMB-09`
 - **Behavior evidence:** legacy `QUEST_DIALOG.md`, `QUEST_MAP_MARKERS.md`,
   known-bug list.
-- **Content set:** без нового авторского контента — hook-проверка на
-  синтетических квестах из `QST-ENG-01`.
-- **Architecture checkpoint / decision:** pending — orchestration transaction
-  и post-commit notifications между quest, world, inventory и combat ports.
+- **Content set:** без нового квеста — hook-проверка на трёх ключах
+  `QST-ENG-01`. Coding добавляет `START_FIGHT` `mode:"quest"` на существующий
+  `q_engine_area` (тот же key / area_action 8), не четвёртый квест и не
+  Акрилон.
+- **Architecture checkpoint / decision:** complete — отдельный ADR и
+  `ARC-QST` не нужны. Те же ADR-0017–0020: `QuestDesk` UoW + post-commit
+  CMB-09 `startHunt(purpose:"quest")`. AREA `action_finish` с
+  `START_FIGHT` в onFinish текущей `area_action` **не бампает** цель
+  (`progress_on_win` по умолчанию); waiting сбрасывается; бой стартует после
+  commit, `fight|conf` piggyback на `common|action_finish`. Победа
+  `purpose:"quest"` бампает ту же `area_action` и гоняет оставшийся onFinish
+  (MSG/SET_FLAG); `win_fight` signal цель `area_action` не закрывает.
+  Проигрыш оставляет цель incomplete. Loot-cap — composition
+  `HuntFightSettlement` спрашивает quests-port `needed` по текущей
+  loot/deliver цели, combat quests не импортирует. Markers: честный
+  `finished_quests_id`; `book|quest_targets` только `currentGoal`;
+  `area_conf` offer href только NPC-доска / AREA hotspot, не hunt-бот.
+  Ложь `mergeFinishedQuestsForMapMarkers` и Pub1 `quest_info` не переносятся.
+  Roster `flags:"8"`, bot↔bot, deny leave, ambush `chance`, QL-2 — leftover
+  после этого среза. Контракт: [QUESTS.md](../modules/QUESTS.md).
 - **Acceptance:** AREA waiting запускает нужный quest-fight через CMB-09
   hook; markers и quest-loot limits работают generic, не per-quest кодом.
 - **Status:** `next`

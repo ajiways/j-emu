@@ -49,7 +49,8 @@ area presence roster:
   `battleground.finished_*`, Раскоп `general|2` (rooms 635/636/637, return
   500). POST-04 / HERO-01 leftover.
 - Репутация Радвея **5** есть (REP-01, product частично).
-  `quests` runtime QST-ENG-01: NPC 271, три engine-квеста, USE 584. `economy` модуля нет.
+  `quests` runtime QST-ENG-01/02: NPC 271, три engine-квеста, USE 584,
+  AREA leftover `START_FIGHT`, hunt loot-cap через quests-port. `economy` модуля нет.
   PRF-01: `catalog.professions` и
   `hero_professions` (пара 2+6). PRF-02: модуль `professions` владеет
   `hero_assistants` / `hero_farm_stats` / `farm_stocks` и sweep. PRF-03:
@@ -161,21 +162,23 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 восстанавливается. Формат history берётся из старого эмулятора; решение —
 [ADR-0020](../adr/ADR-0020-ephemeral-combat.md).
 
-### `quests` — QST-ENG-01 runtime
+### `quests` — QST-ENG-01/02 runtime
 
 **Владеет:** authored NPC/quest/dialog/goal/script/flag (`release_id`) и
 player `hero_quests` / `hero_quest_goals` / `hero_facts` / waiting.
 Не владеет bag, деньгами, area travel, active fight.
 
 **API:** `board`, `answer`, `bookTrio`, `cancel`, `recordSignal`,
-`beginAreaAction` / `finishAreaAction`. GRANT/consume/`START_FIGHT`/`MSG` —
-composition `QuestDesk`, не импорт владельцев в domain.
+`beginAreaAction` / `finishAreaAction`, loot `needed(heroId, artikulId)`.
+GRANT/consume/`START_FIGHT`/`MSG` — composition `QuestDesk`; hunt drop-cap —
+`HuntFightSettlement` через тот же `needed`, не импорт владельцев в domain.
 
 **События leftover:** `quests.accepted.v1` и outbox не вводятся, пока нет
 асинхронного consumer.
 
-**Шов извлечения:** `QuestSignal` из store/PUT_ON/`FightTerminalObserver`.
-Контракт: [QUESTS.md](../modules/QUESTS.md).
+**Шов извлечения:** `QuestSignal` из store/PUT_ON/`FightTerminalObserver`;
+AREA leftover `START_FIGHT` после commit, как dialog. Контракт:
+[QUESTS.md](../modules/QUESTS.md).
 
 ### `mail` — MAIL-02 runtime
 

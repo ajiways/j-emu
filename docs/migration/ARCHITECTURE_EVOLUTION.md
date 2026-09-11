@@ -226,18 +226,20 @@ reservation rows или persist сессии через restart.
 
 ### `ARC-QST` — quest definitions, progress и rewards
 
-**Сейчас:** quest runtime/projections отсутствуют; bootstrap отдаёт пустой book.
+**Сейчас:** QST-ENG-01 runtime есть (authored graph + player progress/waiting);
+bootstrap отдаёт книгу с синтетики. QST-ENG-02 не меняет владельцев.
 
 **Давление:** immutable definitions, mutable cursor/goals/waiting, signals от
 inventory/world/combat и multi-module rewards имеют разный lifetime.
 
-**Решение QST-ENG-01:** текущих границ достаточно; отдельный `ARC-QST` не
-нужен. Модуль `quests` владеет authored graph и player progress/waiting.
-Награды — composition UoW через character/inventory/reputation ports.
-Dialog `START_FIGHT` — CMB-09 после commit. JSONB и DelayScheduler не
-вводятся. `ARC-QST` понадобится только если reward нельзя провести без
-прямых cross-table writes. AREA→бой, markers и loot-cap — `QST-ENG-02`.
-Контракт: [QUESTS.md](../modules/QUESTS.md).
+**Решение QST-ENG-01 / QST-ENG-02:** текущих границ достаточно; отдельный
+`ARC-QST` не нужен. Модуль `quests` владеет authored graph и player
+progress/waiting. Награды и loot-cap — composition UoW через
+character/inventory/reputation ports и quests-port `needed` (combat quests
+не импортирует). Dialog и AREA `START_FIGHT` — CMB-09 после commit. JSONB
+и DelayScheduler не вводятся. `ARC-QST` понадобится только если reward
+нельзя провести без прямых cross-table writes. Контракт:
+[QUESTS.md](../modules/QUESTS.md).
 
 ### `ARC-INS` — instances для dungeon и BG
 

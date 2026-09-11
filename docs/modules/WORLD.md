@@ -253,7 +253,8 @@ Wire `common|hunt.bots[]` только клиентские поля: `id`, `art
 
 Карта шлёт `form.bot_id` = **spawn id** (`50310` = `common|hunt.bots[].id`),
 не catalog artikul `2`. Нет спавна → `203`. Не маппить `2`→`50310`. Меню
-AREA `action_id` / `quest_bot_artikul` — не этот срез.
+AREA `action_id` / `quest_bot_artikul` — не этот срез. Quest AREA fight
+(QST-ENG-02) идёт через `QuestDesk` `action_finish`, не через hunt ATTACK_BOT.
 
 Свободная точка: `nextFightId` → `tryAcquireSpawn` → `startHunt`. Занятая
 живая точка (`overlay.fightId` + RAM battle): **тот же** OA ATTACK_BOT

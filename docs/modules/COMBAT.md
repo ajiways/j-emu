@@ -8,8 +8,10 @@ settlement, CMB-04 reconnect/ghost/RESURRECT, CMB-05 STR-урон, CMB-06
 bot spell book, CMB-07 loot и CMB-08 friendly duel + hunt 3↔3 waiter
 handoff (raw-AMF). Cross-swap двух живых пар и CEF дуэли/shuffle не
 прогонялись — product status combat остаётся частично. CMB-09 отдаёт
-quest `on_win`/`on_lose` через `FightTerminalObserver` (unit); roster/flags
-квестового боя — leftover.
+quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA leftover
+`START_FIGHT` и hunt loot-cap — composition (`QuestDesk` /
+`HuntFightSettlement`), не combat domain. Roster/flags квестового боя —
+leftover.
 
 ## Источники поведения
 
@@ -224,7 +226,8 @@ version bump. Combat не читает fixtures.
 
 ### Out of scope (CMB-03 leftover)
 
-Quest loot; party split; dungeon bands; system chat; `Clock.schedule`;
+Quest loot tables в combat (QST-ENG-02 clip — composition `needed`);
+party split; dungeon bands; system chat; `Clock.schedule`;
 OA FIGHT_JOIN/HELP; live `10_000_000+hero.id`.
 
 ## CMB-04 — reconnect, locks, ghost
@@ -336,7 +339,8 @@ Gryzl **2**: NOTHING 3460 доминирует 77/93/99; unit past NOTHING да�
 
 ### Out of scope (CMB-07 leftover)
 
-Quest loot; dungeon personal/chance; party lottery; honor; полный
+Quest loot tables в combat (drop-cap — QST-ENG-02 composition);
+dungeon personal/chance; party lottery; honor; полный
 `bot_loot_entries` corpus.
 
 ## CMB-08 — duels and team shuffle
@@ -370,9 +374,11 @@ BG-01, контракт [BATTLEGROUND.md](BATTLEGROUND.md).
 `{ accountId, fightId, winnerTeam, outcome, purpose }`; тот же
 `FightTerminalObserver`, что `HuntLockRelease`. Quest-модуль подписывается
 fan-out в composition, combat quests не импортирует. `purpose: "quest"`
-запрещает `joinHunt`. CMB-03 UoW (HP/EXP/loot) не меняется. Roster
-allies/enemies, `flags:"8"`, chat_*, bot↔bot, deny leave — leftover
-`QST-ENG-02`. CEF и dialog `START_FIGHT` не прогонялись.
+запрещает `joinHunt`. CMB-03 UoW (HP/EXP/loot) не меняется; QST-ENG-02
+режет hunt grant в composition через quests `needed`, не внутри combat.
+Roster allies/enemies, `flags:"8"`, chat_*, bot↔bot, deny leave — leftover
+после QST-ENG-02. Dialog `START_FIGHT` — QST-ENG-01; AREA leftover
+`START_FIGHT` — QST-ENG-02 (`QuestDesk`, не combat).
 
 ### Architecture decision
 
@@ -381,8 +387,8 @@ ADR-0017–0020 достаточны. `ARC-*` нет. Active fight RAM; restart 
 
 ### Out of scope (CMB-09 leftover)
 
-Quest roster и wire `flags:"8"`; AREA waiting → fight; `on_win` scripts;
-bot↔bot pairing; quest deny leave; curated Акрилон.
+Quest roster и wire `flags:"8"`; `on_win`/`on_lose` scripts сверх terminal
+notice; bot↔bot pairing; quest deny leave; curated Акрилон.
 
 ## Границы модулей
 
