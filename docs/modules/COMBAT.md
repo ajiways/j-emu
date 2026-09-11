@@ -450,7 +450,7 @@ Dump-блоб 20546 без `dmgType`: на wire сейчас `0` (raw-AMF e2e). 
 `attachFightEffect` для отсутствующего поля ставит `1`. Kind-3 STR-бафф
 школу не читает; выравнивание — leftover, не этот срез.
 
-CEF не прогонялся (Wave 12, отложен до content editor).
+CEF не прогонялся (Wave 12, [CEF_MANUAL.md](../migration/CEF_MANUAL.md)).
 
 ## Границы модулей
 

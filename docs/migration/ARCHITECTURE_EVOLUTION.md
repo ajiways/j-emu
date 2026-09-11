@@ -28,6 +28,8 @@ DAY-01 landed: lazy Moscow 06:00 catch-up, `hero_quests.hidden_in_journal`,
 cycle-aware quest EXP `operationId`.
 EDT-01 landed: operator HTTP `/operator/content/*`, candidates /
 validation reports / publication audits, `CONTENT_OPERATOR_TOKEN`.
+EDT-02 landed: GET document/keys from active `release_entries`; six
+extended-type overlays; matching bootstrap `seed()` restores pointer.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение
@@ -286,8 +288,9 @@ copy identity (`copy_type`), не общая membership-таблица и не �
 
 ### `ARC-EDITOR` — operational authoring
 
-**Сейчас:** EDT-01 operator HTTP пишет drafts/candidates и атомарно
-активирует pinned versions. File `seed`/`publish` остаётся bootstrap.
+**Сейчас:** EDT-01/02 operator HTTP пишет drafts/candidates, читает active
+documents/keys и атомарно активирует pinned versions. File `seed`/`publish`
+остаётся bootstrap (matching digest возвращает pointer на bootstrap).
 
 **Давление:** SPA, rollback, named operators, новые ключи вне active
 release, mass import DATA-02…06.
@@ -295,9 +298,12 @@ release, mass import DATA-02…06.
 **Решение EDT-01:** текущих границ достаточно; отдельный `ARC-EDITOR` не
 нужен. Landed: `0024`, `saveDraft`/`buildCandidate`/`validateCandidate`/
 `activateCandidate`, `persistPinnedBundle`. File dual-write, SPA
-`/dev/content`, SQLite, broker и content-service запрещены. Rollback и
-named operators — leftover EDT-02+. Контракт:
-[CONTENT.md](../modules/CONTENT.md).
+`/dev/content`, SQLite, broker и content-service запрещены.
+
+**Решение EDT-02:** текущих границ достаточно; отдельный `ARC-EDITOR` не
+нужен. Landed: GET `readDocument`/`listKeys`, e2e six overlays,
+`postgres-content-editor-read-store`. Новых таблиц и новых ключей нет.
+Rollback/SPA leftover. Контракт: [CONTENT.md](../modules/CONTENT.md).
 
 ## Порядок безопасного refactor
 

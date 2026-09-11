@@ -1440,15 +1440,48 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
 
 - **ID:** `EDT-02`
 - **depends_on:** `EDT-01`, `DNG-02`, `PRF-03`, `BG-01`
-- **Behavior evidence:** соответствующие legacy editor screens и завершённые
-  модульные контракты.
-- **Content set:** stores, dungeons, professions, BG, spell и item-use
-  authoring schemas, уже доказанные runtime.
-- **Architecture checkpoint / decision:** расширяет те же draft/release
-  ports; редактор не создаёт второй источник истины.
-- **Acceptance:** каждый поддержанный extended content type проходит
-  draft→validate→publish→activate без file mutation.
-- **Status:** `next`
+- **Behavior evidence:** legacy `/dev/content` screens (store/dungeon/craft/BG/
+  spell/item-use) — только UX; dual-write **запрещён**. Канон: EDT-01 ports +
+  [CONTENT.md](../modules/CONTENT.md). **Конфликт, не замазывать:** EDT-01 уже
+  парсит все `content_type` и умеет overlay ключа из active, но документ
+  оператор берёт из `playable-slice.json` (e2e NPC 271). Целевой read — active
+  `release_entries` + `draft_versions`, не файл.
+- **Content set:** ключи уже в playable-slice/v30, без новых ключей:
+  `store_lot` `504:80` (артикул 23); `dungeon` `1` (ogre); `craft_recipe`
+  `61`; `battleground` `general|2`; `artifact` `20546`; `use_script` `2827`.
+- **Architecture checkpoint / decision:** complete. ADR-0017–0020 достаточны;
+  новый ADR и `ARC-EDITOR` не нужны. Новых таблиц нет.
+  **Владение.** Те же content ports. GET читает pinned active document, не
+  catalog runtime rows и не файл. saveDraft/candidate/activate без изменения
+  контракта EDT-01 (`hasReleaseEntry` остаётся: новых ключей нет).
+  **HTTP.** Bearer как EDT-01. Query, не path, из-за `:` / `|` в ключах:
+  `GET /operator/content/document?contentType=&contentKey=` →
+  `{ document, version, draftVersionId }`;
+  `GET /operator/content/keys?contentType=` → `{ keys }`. 404 если ключа нет
+  в active. Тело GET нет. `*` Buffer parser не трогать.
+  **Proof.** Один candidate, шесть overlays (GET→saveDraft каждого), один
+  activate. Runtime OA после activate, без чтения slice-файла для document:
+  `store|list` price лота 80; dungeon 1 title на существующем instance/book
+  read path; recipe 61 title на `craft|user_recipes_list` (или том OA, что
+  уже e2e); `arena|list` title Раскопа; 20546 title после insert в bag;
+  USE-скрипт 2827 `failPlaque` на существующем fail path. `playable-slice.json`
+  не менять.
+  **Fail-fast.** Нет contentType/contentKey; неизвестный type; ключ не в
+  active; GET без Bearer 401. `postgres-content-editor-store` 384 строки —
+  extract read, не растить за 400.
+  **Restart.** GET после activate/restart отдаёт новые documents. Concurrent
+  как EDT-01.
+  **CEF.** Flash-редактора нет. Прогон `CEF_MANUAL` Wave 0–12 **не** входит
+  в этот срез. Исключение «Отложенный CEF Wave 5–12» закрыто этим close.
+  Landed: GET `/operator/content/document` и `/keys`; extract
+  `postgres-content-editor-read-store.ts`; raw-AMF
+  `tests/e2e/content-editor-extended.test.ts`; `880daf7`. Matching
+  bootstrap `seed()` возвращает pointer на bootstrap, если editor его
+  сдвинул. Title recipe 61 / artifact 20546 не dump-pin (validator).
+- **Acceptance:** GET document/keys без slice-файла; шесть extended types в
+  одном candidate проходят draft→validate→activate; шесть OA-проверок выше;
+  422 не двигает pointer; restart читает новые documents. Product **частично**.
+- **Status:** `done`
 
 ## Content-fill track — не блокирует ни одну волну выше
 
@@ -1470,9 +1503,11 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
 - **Content set:** q_1 and its complete transitive item/bot/NPC/area/reward refs.
 - **Architecture checkpoint / decision:** not required — uses the `QST-ENG-*`
   contract as-is; a new engine primitive found here returns work to `QST-ENG-*`.
+  **CEF.** Исключение Wave 5–12 закрыто. Сценарий имеет Flash production
+  consumer; CEF — acceptance этой capability, не сдвиг очереди.
 - **Acceptance:** fresh hero completes talk, kill, ritual fight and turn-in;
-  reward/reputation/progress survive restart.
-- **Status:** `queued`
+  reward/reputation/progress survive restart. CEF: тот же сценарий в клиенте.
+- **Status:** `next`
 
 ### CONTENT-STORY-02 — q_4 «Первое задание скорпиона»
 

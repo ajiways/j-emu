@@ -52,7 +52,8 @@ area presence roster:
   `quests` runtime QST-ENG-01/02 / DAY-01: NPC 271, четыре engine-квеста,
   USE 584, lazy 06:00 wipe, `book|quest_delete`. AREA leftover
   `START_FIGHT`, hunt loot-cap через quests-port. `content` file
-  seed/publish и EDT-01 operator HTTP `/operator/content/*`.
+  seed/publish и EDT-01/02 operator HTTP `/operator/content/*` (GET
+  document/keys).
   `economy` модуля нет.
   PRF-01: `catalog.professions` и
   `hero_professions` (пара 2+6). PRF-02: модуль `professions` владеет
@@ -317,7 +318,7 @@ PvP.
 **Шов извлечения:** не цель BG-01. Combat не импортирует battleground;
 composition overlays PvP `type:"1"` / `flags:"128"`.
 
-### `content` — EDT-01 operator editor
+### `content` — EDT-01/02 operator editor
 
 **Владеет:** versioned drafts / `draft_versions`, candidates, validation
 reports, immutable releases, publication audit и active pointer. Не

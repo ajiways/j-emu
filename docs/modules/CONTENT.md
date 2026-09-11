@@ -1,8 +1,9 @@
-# Content editor (EDT-01)
+# Content editor (EDT-01 / EDT-02)
 
-Срез закрыт (HTTP NPC 271 + USE 584). CEF Flash нет. Product **частично**:
+Срез закрыт: HTTP drafts/activate (NPC 271) и GET document/keys + шесть
+extended types. CEF Flash нет. Product **частично**:
 [CAPABILITIES.md](../CAPABILITIES.md). Workflow `done`:
-[ROADMAP.md](../migration/ROADMAP.md) EDT-01.
+[ROADMAP.md](../migration/ROADMAP.md) EDT-01 / EDT-02.
 Пайплайн: [CONTENT_PIPELINE.md](../architecture/CONTENT_PIPELINE.md).
 
 Legacy `/dev/content` и dual-write fixture — только UX evidence, не контракт.
@@ -63,18 +64,21 @@ typed DTO. AMF `*` parser не снимать.
 
 `Authorization: Bearer <CONTENT_OPERATOR_TOKEN>`.
 
-| Method | Path                                        | Success                            |
-| ------ | ------------------------------------------- | ---------------------------------- |
-| POST   | `/operator/content/drafts`                  | `{ draftVersionId, version }`      |
-| POST   | `/operator/content/candidates`              | `{ candidateId }`                  |
-| POST   | `/operator/content/candidates/:id/validate` | `{ ok, reportId }`                 |
-| POST   | `/operator/content/candidates/:id/activate` | `{ releaseId, version }`           |
-| GET    | `/operator/content/status`                  | active release id/version/checksum |
+| Method | Path                                                  | Success                                 |
+| ------ | ----------------------------------------------------- | --------------------------------------- |
+| POST   | `/operator/content/drafts`                            | `{ draftVersionId, version }`           |
+| POST   | `/operator/content/candidates`                        | `{ candidateId }`                       |
+| POST   | `/operator/content/candidates/:id/validate`           | `{ ok, reportId }`                      |
+| POST   | `/operator/content/candidates/:id/activate`           | `{ releaseId, version }`                |
+| GET    | `/operator/content/status`                            | active release id/version/checksum      |
+| GET    | `/operator/content/document?contentType=&contentKey=` | `{ document, version, draftVersionId }` |
+| GET    | `/operator/content/keys?contentType=`                 | `{ keys }`                              |
 
 Ошибки: нет/неверный Bearer → **401**; невалидный JSON / неизвестное поле /
-нет ключа в active → **400**; `expectedVersion` /
-`expectedActiveReleaseId` конфликт → **409**; candidate invalid → **422** +
-report id; нет candidate → **404**; внутренняя → **500**, не пустой 200.
+POST без ключа в active → **400**; GET document без ключа в active →
+**404**; `expectedVersion` / `expectedActiveReleaseId` конфликт → **409**;
+candidate invalid → **422** + report id; нет candidate → **404**;
+внутренняя → **500**, не пустой 200.
 
 ## Schema (EDT-01)
 
@@ -120,13 +124,16 @@ broker, content microservice. `DATA-02…06` mass import. Новые ключи 
 active release. Rollback/export. Named operators. Extended-type proof и
 GET document — EDT-02 ниже.
 
-## EDT-02 — Extended types (contract)
+## EDT-02 — Extended types
 
-Product-status не менять здесь. Очередь:
+Срез закрыт (GET + шесть overlays, raw-AMF). CEF Flash нет. Product
+**частично**: [CAPABILITIES.md](../CAPABILITIES.md). Workflow `done`:
 [ROADMAP.md](../migration/ROADMAP.md) EDT-02.
 
 Новых таблиц, SPA и новых ключей нет. Read идёт из active PostgreSQL, не из
-`playable-slice.json`.
+`playable-slice.json`. Title recipe **61** / artifact **20546** не
+dump-pin в validator (presentation). Matching bootstrap `seed()` возвращает
+`active_release` на bootstrap, если editor pointer уехал.
 
 `readDocument({ contentType, contentKey })` — document + `version` (max
 draft) + `draftVersionId` pinned active entry. Нет в active → 404.
@@ -146,10 +153,10 @@ title; `artifact` `20546` title; `use_script` `2827` failPlaque. Activate
 `arena|list`, bag/catalog title 20546, USE 2827 fail plaque. GET после
 restart совпадает.
 
-`postgres-content-editor-store` у лимита 400 — extract read.
+`postgres-content-editor-read-store` держит read; write-класс < 400.
 
 ### Out of EDT-02
 
 SPA `/dev/content`, dual-write, новые ключи, rollback/export, named
-operators, DATA-02…06 import, прогон CEF_MANUAL Wave 0–12 (закрытие
-исключения — close EDT-02, не coding).
+operators, DATA-02…06 import. Прогон `CEF_MANUAL` Wave 0–12 — отдельный
+проход после закрытия исключения, не capability очереди.

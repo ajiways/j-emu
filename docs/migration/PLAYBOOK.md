@@ -177,28 +177,28 @@ capability`, у которой ещё нет production wire consumer. Для н
 status остаётся `partial`. Первый production consumer наследует обязательные
 raw-AMF и CEF acceptance этого поведения.
 
-### Отложенный CEF до content editor (Wave 5–12)
+### Отложенный CEF до content editor (Wave 5–12) — закрыто
+
+Закрыто close EDT-02: рабочий operator HTTP `/operator/content/*` есть.
+Не применять это исключение к новым capability. Исторически на Wave 5–12
+действовало:
 
 Ручной CEF-прогон без content editor требует патчить БД под каждый сценарий —
-дорого и хрупко. На срез до `EDT-01`/`EDT-02` (Wave 13) действует отдельное,
+дорого и хрупко. На срез до `EDT-01`/`EDT-02` (Wave 13) действовало отдельное,
 явно объявленное исключение — не то же самое, что «нет production consumer»
 из раздела выше:
 
-- любая capability Wave 5–12 может получить workflow `done` / product
+- любая capability Wave 5–12 могла получить workflow `done` / product
   `partial` при зелёных gates §7 и полном raw-AMF E2E **без** CEF, даже если
   у неё есть production wire consumer;
 - каждая такая capability обязана оставить в `docs/migration/CEF_MANUAL.md`
-  свою строку (сценарий, герой/контент, что кликнуть) — это backlog, не
-  тихое умолчание;
-- `CAPABILITIES.md` для такой capability пишет «CEF не прогонялся» явно, как
-  и раньше;
-- это исключение закрывается целиком, не по одной capability, когда
-  `EDT-01`/`EDT-02` дают рабочий content editor. С этого момента раздел
+  свою строку (сценарий, герой/контент, что кликнуть) — backlog остаётся;
+- `CAPABILITIES.md` для такой capability пишет «CEF не прогонялся» явно;
+- исключение закрыто целиком close EDT-02. С этого момента раздел
   «Настоящие развилки» и правило «production consumer уже есть → CEF —
-  следующий шаг той же capability» снова действуют без исключений, и
-  начинается отдельный проход по всему `CEF_MANUAL.md` в порядке волн
-  (Wave 0 → Wave 12), не вперемешку — чтобы баг, найденный в раннем движке,
-  не был замаскирован уже «подтверждённым» поздним слоем сверху;
+  следующий шаг той же capability» снова действуют без исключений.
+  Отдельный проход по `CEF_MANUAL.md` в порядке волн (Wave 0 → Wave 12)
+  не является записью `ROADMAP.md` и не сдвигает `next`;
 - находка на этом проходе, расходящаяся с raw-AMF E2E, переоткрывает именно
   ту capability (снимает `done`/`partial` до факта), а не патчится точечно
   мимо её acceptance.
@@ -287,14 +287,11 @@ Replan изменяет roadmap/checkpoint/ADR до возобновления c
      `ROADMAP.md` нет production wire consumer (исключение §8) → workflow
      `done`, product `partial`, в `CAPABILITIES.md` — явно «нет production
      consumer», не тихое умолчание;
-   - gates зелёные, CEF не прогнан, capability в Wave 5–12 и «Отложенный CEF
-     до content editor» ещё не закрыт → workflow `done`, product `partial`,
-     строка добавлена в `CEF_MANUAL.md`, `CAPABILITIES.md` — «CEF не
-     прогонялся»;
-   - gates зелёные, CEF не прогнан, но ни один из двух исключений выше не
-     применяется (production consumer есть и отложенный-CEF режим закрыт) →
-     capability остаётся открытой, CEF — это следующий шаг **той же**
-     capability, а не сдвиг очереди дальше;
+   - историческое исключение Wave 5–12 («Отложенный CEF до content editor»)
+     закрыто close EDT-02; не применять к новым capability;
+   - gates зелёные, CEF не прогнан, но исключение §8 (нет production
+     consumer) не применяется → capability остаётся открытой, CEF — это
+     следующий шаг **той же** capability, а не сдвиг очереди дальше;
    - любой gate красный или сработал любой пункт «Stop and replan» → цикл
      прерывается, capability не закрывается, `next` не двигается, doc-статус
      не трогается.
@@ -313,9 +310,9 @@ Replan изменяет roadmap/checkpoint/ADR до возобновления c
 Всё из «Stop and replan» выше плюс:
 
 - CEF обязателен для этой capability, но технически недоступен (нет
-  CEF/Flash-стенда в этом запуске), capability не входит в Wave 5–12 или
-  режим «Отложенный CEF до content editor» уже закрыт — capability виснет
-  на этом шаге, не закрывается «по-тихому» через exception §8;
+  CEF/Flash-стенда в этом запуске) — capability виснет на этом шаге, не
+  закрывается «по-тихому» через exception §8. Историческое исключение
+  Wave 5–12 закрыто close EDT-02;
 - generate/migration/content-publication ломается по причине, не описанной в
   существующих docs (пример: `drizzle-kit generate` не умеет сериализовать
   BigInt default) — чинится причина в schema/коде, ручной ALTER/SQL поверх

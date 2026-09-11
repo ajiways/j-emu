@@ -125,8 +125,8 @@ File `seed`/`publish` по-прежнему принимает in-memory bundle.
 `saveDraft` / persisted candidate / validation report / publication audit
 через HTTP `/operator/content/*`, без записи файлов
 ([CONTENT.md](../modules/CONTENT.md)). Manifest export/import и rollback
-остаются планом. EDT-02: operator GET document/keys из active release, не
-из authored файла.
+остаются планом. EDT-02 landed: operator GET document/keys из active
+release, не из authored файла.
 
 ## Целевой publication contract — план
 

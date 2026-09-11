@@ -364,18 +364,22 @@ Postgres. CEF вкладки профессий и гремлинов не пр�
 ## Content editor — частично
 
 Есть HTTP JSON `/operator/content/*` (Bearer `CONTENT_OPERATOR_TOKEN`):
-`saveDraft` / candidate / validate / activate. Representative: смена
-`title` NPC 271, USE 584 `npc|info` после activate; 422 не двигает
-`active_release`; restart читает новую release. Файл
-`playable-slice.json` не пишется. CEF Flash-редактора нет.
+`saveDraft` / candidate / validate / activate, GET `document` / `keys` из
+active release (не из `playable-slice.json`). Representative EDT-01: title
+NPC 271, USE 584 `npc|info`. EDT-02: один candidate, шесть overlays
+(`store_lot` `504:80`, `dungeon` `1`, `craft_recipe` `61`, `battleground`
+`general|2`, `artifact` `20546`, `use_script` `2827`) → OA
+`store|list` / dungeon title / craft list / `arena|list` / bag title 20546 /
+USE 2827 failPlaque; restart GET совпадает; 422 не двигает pointer. CEF
+Flash-редактора нет. Исключение «Отложенный CEF Wave 5–12» закрыто.
 
 Не перенесены SPA `/dev/content`, rollback/export, `operator_roles`,
 DATA-02…06 mass import, новые ключи вне active release.
 
 ## Вне первой волны
 
-Achievements, info pages. Extended editor (EDT-02) и закрытие CEF-исключения
-Wave 5–12.
+Achievements, info pages. Проход `CEF_MANUAL` Wave 0–12 — отдельный
+операторский backlog, не запись очереди.
 
 Clan и встроенные playerbots не переносятся.
 

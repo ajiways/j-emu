@@ -1,16 +1,16 @@
 # Ручная проверка CEF
 
-Список клиентских сценариев, которые агент **не прогонял** в CEF
-(Flash/Pub1 на `s1.jugger.ru`). Отсутствие этих прогонов **не блокирует**
-закрытие capability в этом запуске: workflow `done` ставится после green
-gates и raw-AMF E2E; product status остаётся **частично**, пока строка не
-вычеркнута здесь и не отражена в [CAPABILITIES.md](../CAPABILITIES.md).
+Список клиентских сценариев Wave 0–12, которые агент **не прогонял** в CEF
+(Flash/Pub1 на `s1.jugger.ru`). Это отдельный операторский backlog уже
+закрытых capability: вычёркивание строки поднимает product-status в
+[CAPABILITIES.md](../CAPABILITIES.md), не сдвигает `ROADMAP.md`.
 
-Как пользоваться: новый герой, штатные `npm run db:reset` / `start:https`,
-без ручного patch БД. После EDT-01 контент можно менять HTTP
-`/operator/content/*` (не SQL). Исключение Wave 5–12 не закрыто — нужен
-EDT-02. После успешного клика вычеркни строку и подними product-status
-только вместе с CEF-фактом в `CAPABILITIES.md`.
+Исключение «Отложенный CEF Wave 5–12» **закрыто** (EDT-02). Новые capability
+с production consumer нельзя закрывать без CEF. Проход строк ниже — Wave 0
+→ 12, не вперемешку. Новый герой, штатные `npm run db:reset` / `start:https`,
+без ручного patch БД. Контент менять HTTP `/operator/content/*` (не SQL).
+После успешного клика вычеркни строку и подними product-status только
+вместе с CEF-фактом в `CAPABILITIES.md`.
 
 ## Character / бой
 
