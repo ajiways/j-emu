@@ -5,9 +5,10 @@
 Есть hunt melee loop (raw-AMF L/C/R, delay grant/bot-counter, kill, waiter
 re-pair), map `joinHunt`, CMB-02 pocket/glove/rage casts, CMB-03 terminal
 settlement, CMB-04 reconnect/ghost/RESURRECT, CMB-05 STR-урон, CMB-06
-bot spell book, CMB-07 loot и CMB-08 friendly duel + hunt 3↔3 waiter
-handoff (raw-AMF). Cross-swap двух живых пар и CEF дуэли/shuffle не
-прогонялись — product status combat остаётся частично. CMB-09 отдаёт
+bot spell book, CMB-07 loot, CMB-08 friendly duel + hunt 3↔3 waiter
+handoff и GEAR-01 RAM kind-3 с надетой 20546 (raw-AMF). Cross-swap двух
+живых пар и CEF дуэли/shuffle/gear-spell не прогонялись — product status
+combat остаётся частично. CMB-09 отдаёт
 quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA leftover
 `START_FIGHT` и hunt loot-cap — composition (`QuestDesk` /
 `HuntFightSettlement`), не combat domain. Roster/flags квестового боя —
@@ -389,6 +390,50 @@ ADR-0017–0020 достаточны. `ARC-*` нет. Active fight RAM; restart 
 
 Quest roster и wire `flags:"8"`; `on_win`/`on_lose` scripts сверх terminal
 notice; bot↔bot pairing; quest deny leave; curated Акрилон.
+
+## GEAR-01 — equipped gear spells
+
+Срез: representative **20546** «Изначальная мифическая перчатка тирана VI»
+(kind 44, слот 32). Catalog владеет authored `extra.spell` (`groupId` 936,
+kind 3, `duration` 320, `pcSTR` 10, без `triggers`). Inventory держит
+instance paperdoll и read-only `equippedGearSpells` / `list`; блоб на
+`items` не копируется, fight effect в inventory нет. Combat — RAM registry
+(`remainTurns`, baked STR, `expiresAtMs`); `inventory.items` не пишет.
+Composition `HuntCombatLoadout.snapshot` кладёт `CombatLoadout.gearSpells[]`
+`{ artikulId, title, picture, spell }` на `startHunt` / `joinHunt` /
+friendly-duel start (как CMB-02 pocket/glove и CMB-06 bot book). Combat
+domain не импортирует inventory/catalog repositories и не читает их
+mid-fight.
+
+Snapshot — на **старт боя**, не на PUT_ON и не лениво на удар. PUT_ON вне
+боя только меняет location. В бою layout — FightRules `203` «нельзя во
+время боя». Пустые `extra.spells[]` у 20546 валидны: `glove: null` для
+комбо, gear-spell всё равно в snapshot. Непустые сокеты — прежний CMB-02
+fail-fast.
+
+Attach — тихий RAM в `Battle` create. Первый fproxy bootstrap и reconnect
+в том же процессе: после `persSpells` → `persEff` nested `"1"` (id, kind 3,
+persId, sourceId=heroId, artikulId 20546, title, img=picture, dmgType,
+remainTime, groupId 936) → сразу `effUse` с теми же полями + `flags:0` +
+kind-3 `skills` (`pcSTR` печётся в flat STR). Прока нет. Expire:
+`onActorEndingTurn` кастера (self-buff считает ending action героя),
+`remainTurns` 8 = 320/40; при `≤0` или wall-clock `expiresAtMs` в том же
+melee poll после `cast`, до `{rs,sq}`: `{ et:"effPurge", effectId }`.
+j-emu melee MULTI остаётся CMB-01 `attackwait`+`cast`; `effPurge`
+дописывается после `cast` в том же poll. `timeAdvance` нет. `persEff` при
+expire не пересылается. Standing kind-3 STR участвует в CMB-05 melee,
+пока эффект жив.
+
+Каталожный парсер сохраняет authored `duration` / `forceSelfTargeting` /
+`realStartTime`. Paperdoll `extra.spell` с `triggers` / `onlyPvP` / kind≠3
+в опубликованном срезе — fail-fast публикации. Нет `Clock.schedule`. Нет
+generic effect engine сверх kind-3 без triggers.
+
+Equipped 20546 в PostgreSQL переживает reconnect и process restart.
+RAM-эффект и бой — нет (ADR-0020). Reconnect до restart: bootstrap
+`persEff`+`effUse` с оставшимся `remainTime`.
+
+CEF не прогонялся (Wave 12, отложен до content editor).
 
 ## Границы модулей
 

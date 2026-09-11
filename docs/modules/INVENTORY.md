@@ -637,9 +637,10 @@ Bag bit `CAN_BE_UPGRADED=512`. Карточка: `upgrade_id` / `upgrade_level` 
 нельзя — несколько сетов сразу). Wire: slot `134217728`, `expire:0`,
 `cnt:0`. Picture у **106** в dump пустая — catalog это допускает только для
 kind 139. Портрет — только wire overlay. Combat не читает inventory tables:
-порт `equippedGearSpells` отдаёт `extra.spell` с nonempty effects; attach в
-бою — GEAR-01. Recruit AMF `spell` без `effects` в срез не тащим как боевой
-hook.
+порт `equippedGearSpells` отдаёт `extra.spell` с nonempty effects; combat
+вешает RAM kind-3 на **старт боя** (GEAR-01), не на PUT_ON. Inventory не
+копирует блоб на `items` и не держит fight effect. Recruit AMF `spell` без
+`effects` в срез не тащим как боевой hook.
 
 ### Content
 
@@ -655,6 +656,15 @@ Pub1 AMF. Сет **47** «Рекрута»: **30, 33, 35, 27, 28** + **106**. Mi
 - integration: TEMPEFFECT 106 persist, concurrent PUT_ON one winner;
 - raw-AMF: 4 вещи → avatar overlay; 5 → 106 skills; mix 204; restart;
 - CEF после редактора; product **частично**.
+
+## GEAR-01 — paperdoll extra.spell
+
+Inventory остаётся owner instance и read-only `equippedGearSpells` / `list`.
+PUT_ON 20546 вне боя только меняет location (слот 32); fight packets нет.
+В бою layout — FightRules `203`. Снимок `gearSpells[]` собирает
+`HuntCombatLoadout` на старт боя; combat domain mid-fight inventory не
+читает. Сокеты комбо 20546 в срез не входят: пустые `extra.spells[]` →
+`glove: null`, gear-spell всё равно в snapshot.
 
 ## INV-08 — USE pipeline
 
