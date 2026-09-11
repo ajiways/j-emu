@@ -66,7 +66,8 @@ Read: список type:2 с value > 0 + computed SUM для wire.
 
 OA `user|stats` (live `dispatchUser` stats) — production consumer, не fake OA.
 Nested `{ status:100, stats, farm_stats:[], fish_stats:[] }`. `stats` —
-dump-proven named rows `type_id:"13"`: опыт (1), героизм (2), нули kill/duel/
+dump-proven named rows `type_id:"13"`: опыт (1), героизм (2) = `hero.honor`
+(HERO-01 `grantHonor` пишет `heroes.honor`; этот срез не грантит героизм), нули kill/duel/
 fatality/daily, затем type:2 только если value > 0, всегда **36** type 3
 «Суммарная репутация». Image у type:2 с каталога. Нулевые type:2 не слать.
 

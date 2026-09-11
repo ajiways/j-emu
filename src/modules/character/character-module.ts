@@ -4,11 +4,14 @@ import type { Clock } from "../../shared/kernel/clock.ts";
 import type { CatalogProgression } from "../catalog/ports/catalog-progression.ts";
 import type { ReputationCatalog } from "../catalog/ports/reputation-catalog.ts";
 import type { ProfessionCatalog } from "../catalog/ports/profession-catalog.ts";
+import type { HonorRanks } from "../catalog/ports/honor-ranks.ts";
 import { CharacterService } from "./application/character-service.ts";
+import { HonorGrantService } from "./application/honor-grant-service.ts";
 import type { HeroCreationPolicy } from "./domain/hero.ts";
 import { Hero } from "./domain/hero.ts";
 import type { RegenPolicy } from "./domain/regen-policy.ts";
 import { PostgresExperienceGrantRepository } from "./infrastructure/postgres-experience-grant-repository.ts";
+import { PostgresHonorGrantRepository } from "./infrastructure/postgres-honor-grant-repository.ts";
 import { PostgresHeroBestiary } from "./infrastructure/postgres-hero-bestiary.ts";
 import { PostgresHeroLearnedBonusRepository } from "./infrastructure/postgres-hero-learned-bonus-repository.ts";
 import { PostgresHeroRepository } from "./infrastructure/postgres-hero-repository.ts";
@@ -36,6 +39,7 @@ export class CharacterModule {
     clock: Clock;
     regenPolicy: RegenPolicy;
     activeFight: ActiveFightQuery;
+    honorRanks: HonorRanks;
   }): CharacterModule {
     const database = requirePresent(input.database, "Character module requires a database");
     const creationPolicy = requirePresent(
@@ -67,6 +71,7 @@ export class CharacterModule {
       input.activeFight,
       "Character module requires an active-fight query",
     );
+    const honorRanks = requirePresent(input.honorRanks, "Character module requires honor ranks");
     Hero.assertCreationPolicy(creationPolicy);
     if (!Number.isInteger(regenPolicy.k) || regenPolicy.k < 1) {
       throw new Error("RegenPolicy.k must be a positive integer");
@@ -76,6 +81,13 @@ export class CharacterModule {
     }
     const heroes = new PostgresHeroRepository(database);
     const skills = new PostgresHeroSkillRepository(database);
+    const honorGrants = new HonorGrantService(
+      database,
+      heroes,
+      new PostgresHonorGrantRepository(database),
+      honorRanks,
+      progression,
+    );
     return new CharacterModule(
       new CharacterService(
         database,
@@ -91,6 +103,7 @@ export class CharacterModule {
         professionCatalog,
         equipmentModifiers,
         new PostgresExperienceGrantRepository(database),
+        honorGrants,
         clock,
         regenPolicy,
         activeFight,

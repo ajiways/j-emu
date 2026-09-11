@@ -7,17 +7,17 @@ import { ExperienceGrantConflictError } from "../domain/experience-grant-conflic
 import type { ExperienceGrantCommand } from "../domain/experience-grant-command.ts";
 import type { ExperienceGrantResult } from "../domain/experience-grant-result.ts";
 import { parseExperienceGrantCommand } from "../domain/parse-experience-grant-command.ts";
+import { loadProgressionSnapshot } from "../domain/load-progression-snapshot.ts";
 import { planExperienceTransition } from "../domain/plan-experience-transition.ts";
 import { ProgressionContentError } from "../domain/progression-content-error.ts";
 import { requireHeroSkills } from "../domain/hero-skill.ts";
-import type { CharacterProgression } from "../ports/character-progression.ts";
 import type { EquippedModifiers } from "../ports/equipped-modifiers.ts";
 import type { ExperienceGrantRepository } from "../ports/experience-grant-repository.ts";
 import type { HeroRepository } from "../ports/hero-repository.ts";
 import type { HeroSkillRepository } from "../ports/hero-skill-repository.ts";
 import type { ResourceService } from "./resource-service.ts";
 
-export class ExperienceGrantService implements CharacterProgression {
+export class ExperienceGrantService {
   constructor(
     private readonly unitOfWork: UnitOfWork,
     private readonly heroes: HeroRepository,
@@ -54,7 +54,7 @@ export class ExperienceGrantService implements CharacterProgression {
     }
     const hero = await this.heroes.lockById(command.characterId);
     if (!hero) throw new CharacterNotFoundError(command.characterId);
-    const snapshot = await this.requireSnapshot();
+    const snapshot = await loadProgressionSnapshot(this.progression);
     const expBefore = hero.exp;
     const levelBefore = hero.level;
     const transition = planExperienceTransition({
@@ -92,16 +92,6 @@ export class ExperienceGrantService implements CharacterProgression {
       ...result,
     });
     return result;
-  }
-
-  private async requireSnapshot() {
-    try {
-      return await this.progression.progressionSnapshot();
-    } catch (error) {
-      throw new ProgressionContentError(
-        error instanceof Error ? error.message : "Progression content is invalid",
-      );
-    }
   }
 
   private async requireModifiers(

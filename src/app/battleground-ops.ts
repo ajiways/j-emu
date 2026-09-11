@@ -22,6 +22,7 @@ import type { PostgresDatabase } from "../infrastructure/postgres/database.ts";
 import type { UnreadMailQuery } from "../modules/mail/ports/unread-mail.ts";
 import type { PartyMembershipQuery } from "../modules/party/ports/party-membership-query.ts";
 import type { QuestCatalog } from "../modules/quests/ports/quest-catalog.ts";
+import type { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import { BattlegroundDesk } from "./battleground-desk.ts";
 import { BattlegroundMatchRuntime } from "./battleground-match-runtime.ts";
@@ -49,6 +50,7 @@ export async function createBattlegroundOps(input: {
   unreadMail: UnreadMailQuery;
   party: PartyMembershipQuery;
   quests: QuestCatalog;
+  pvpHonor: PvpFightHonorCache;
 }): Promise<BattlegroundDesk> {
   const definition = await input.battlegrounds.playable();
   const history = new PostgresBattlegroundHistory(input.database);
@@ -83,6 +85,7 @@ export async function createBattlegroundOps(input: {
     party: input.party,
     hunt: input.hunt,
     quests: input.quests,
+    pvpHonor: input.pvpHonor,
   });
   bind.desk = new BattlegroundDesk({
     definition,

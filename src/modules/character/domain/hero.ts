@@ -224,6 +224,13 @@ export class Hero {
     this.hpTimeValue = hpTime;
   }
 
+  applyHonor(honor: number): void {
+    if (!Number.isInteger(honor) || honor < 0) {
+      throw new Error("Hero honor must be a non-negative integer");
+    }
+    this.honorValue = honor;
+  }
+
   applyProgression(exp: number, level: number, maxHp: number, maxMp: number): void {
     if (!Number.isInteger(exp) || exp < 0) {
       throw new Error("Hero EXP must be a non-negative integer");

@@ -23,7 +23,10 @@ import { LongPollCoordinator } from "../modules/jugger-wire/application/long-pol
 import { PresenceFanout } from "../modules/jugger-wire/application/presence-fanout.ts";
 import { HuntAreaFanout } from "../modules/jugger-wire/application/hunt-area-fanout.ts";
 import { HuntLockRelease } from "./hunt-lock-release.ts";
+import { CatalogHonorRanks } from "../modules/catalog/infrastructure/catalog-honor-ranks.ts";
 import { createChatHuntSettlement } from "./create-chat-hunt-settlement.ts";
+import { HEROISM_RULES } from "./heroism-rules.ts";
+import { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 import { StorePurchase } from "./store-purchase.ts";
 import { StoreRepair } from "./store-repair.ts";
 import { MailModule } from "../modules/mail/mail-module.ts";
@@ -117,6 +120,7 @@ export class CompositionRoot {
         progression: catalog.progression,
         reputationCatalog: catalog.catalog,
         professionCatalog: catalog.catalog,
+        honorRanks: new CatalogHonorRanks(catalog.catalog),
         equipmentModifiers: inventory.service,
         clock,
         regenPolicy: policy.regen,
@@ -247,6 +251,7 @@ export class CompositionRoot {
         instanceDesk,
         huntFanout,
       );
+      const pvpHonor = new PvpFightHonorCache();
       combat.bindSettlement(
         createChatHuntSettlement({
           unitOfWork: database,
@@ -260,6 +265,8 @@ export class CompositionRoot {
           chat: chatDesk,
           bestiary: characters.bestiary,
           lootNeeded: quests.service,
+          heroism: HEROISM_RULES,
+          pvpHonor,
         }),
       );
       const { registration, developmentIdentity, mailSend, mailClaim } = createPlayableIdentity({
@@ -355,6 +362,7 @@ export class CompositionRoot {
         craft: professions.craft,
         quests: quests.service,
         questCatalog: quests.catalog,
+        pvpHonor,
       });
       closers.push(wire);
       combat.bindTerminalObserver(

@@ -36,6 +36,7 @@ import type { ProfessionsService } from "../../../src/modules/professions/applic
 import type { CraftService } from "../../../src/modules/professions/application/craft-service.ts";
 import type { QuestService } from "../../../src/modules/quests/application/quest-service.ts";
 import type { QuestCatalog } from "../../../src/modules/quests/ports/quest-catalog.ts";
+import type { PvpFightHonorCache } from "../../../src/app/pvp-fight-honor-cache.ts";
 import { QuestsModule } from "../../../src/modules/quests/quests-module.ts";
 import type { MailService } from "../../../src/modules/mail/application/mail-service.ts";
 import type { PartyJoinService } from "../../../src/modules/party/application/party-join-service.ts";
@@ -49,6 +50,7 @@ import type { BattlegroundCatalog } from "../../../src/modules/battleground/port
 import type { InstanceService } from "../../../src/modules/instance/application/instance-service.ts";
 import type { CatalogProgression } from "../../../src/modules/catalog/ports/catalog-progression.ts";
 import type { ReputationCatalog } from "../../../src/modules/catalog/ports/reputation-catalog.ts";
+import type { HonorRanks } from "../../../src/modules/catalog/ports/honor-ranks.ts";
 import type { ProfessionCatalog } from "../../../src/modules/catalog/ports/profession-catalog.ts";
 import type { ReleaseArtifacts } from "../../../src/modules/catalog/ports/release-artifacts.ts";
 import type { EquippedModifiers } from "../../../src/modules/character/ports/equipped-modifiers.ts";
@@ -78,6 +80,7 @@ import {
 const database = undefined as unknown as PostgresDatabase;
 const progression = {} as CatalogProgression;
 const reputationCatalog = {} as ReputationCatalog & ProfessionCatalog;
+const honorRanks = {} as HonorRanks;
 const equipmentModifiers = {} as EquippedModifiers;
 const releaseArtifacts = {} as ReleaseArtifacts;
 const clock = {} as Clock;
@@ -106,6 +109,7 @@ describe("module factories", () => {
         progression,
         reputationCatalog,
         professionCatalog: reputationCatalog,
+        honorRanks,
         equipmentModifiers,
         clock,
         regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -119,6 +123,7 @@ describe("module factories", () => {
         progression,
         reputationCatalog,
         professionCatalog: reputationCatalog,
+        honorRanks,
         equipmentModifiers,
         clock: undefined as unknown as Clock,
         regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -132,6 +137,7 @@ describe("module factories", () => {
         progression,
         reputationCatalog,
         professionCatalog: undefined as unknown as ProfessionCatalog,
+        honorRanks,
         equipmentModifiers,
         clock,
         regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -145,6 +151,21 @@ describe("module factories", () => {
         progression,
         reputationCatalog,
         professionCatalog: reputationCatalog,
+        honorRanks: undefined as unknown as HonorRanks,
+        equipmentModifiers,
+        clock,
+        regenPolicy: PLAYABLE_REGEN_POLICY,
+        activeFight,
+      }),
+    ).toThrow(/Character module requires honor ranks/);
+    expect(() =>
+      CharacterModule.create({
+        database: {} as PostgresDatabase,
+        creationPolicy: PLAYABLE_HERO_CREATION,
+        progression,
+        reputationCatalog,
+        professionCatalog: reputationCatalog,
+        honorRanks,
         equipmentModifiers,
         clock,
         regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -158,6 +179,7 @@ describe("module factories", () => {
         progression,
         reputationCatalog,
         professionCatalog: reputationCatalog,
+        honorRanks,
         equipmentModifiers,
         clock,
         regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -456,6 +478,7 @@ describe("module factories", () => {
         craft: {} as CraftService,
         quests: {} as QuestService,
         questCatalog: {} as QuestCatalog,
+        pvpHonor: {} as PvpFightHonorCache,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -476,6 +499,7 @@ describe("module factories", () => {
       progression,
       reputationCatalog,
       professionCatalog: reputationCatalog,
+      honorRanks,
       equipmentModifiers,
       clock,
       regenPolicy: PLAYABLE_REGEN_POLICY,
@@ -654,6 +678,7 @@ describe("module factories", () => {
         craft: {} as CraftService,
         quests: {} as QuestService,
         questCatalog: {} as QuestCatalog,
+        pvpHonor: {} as PvpFightHonorCache,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

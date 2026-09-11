@@ -19,6 +19,7 @@ import type { FightWireMapper } from "../modules/jugger-wire/application/fight-w
 import type { DelayScheduler } from "../shared/kernel/delay-scheduler.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import { BattlegroundChrome, type BattlegroundChromeDeps } from "./battleground-chrome.ts";
+import type { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 
 export type BattlegroundMatchRuntimeDeps = BattlegroundChromeDeps &
   Readonly<{
@@ -29,6 +30,7 @@ export type BattlegroundMatchRuntimeDeps = BattlegroundChromeDeps &
     fightWire: FightWireMapper;
     delay: DelayScheduler;
     chat: ChatDesk;
+    pvpHonor: PvpFightHonorCache;
   }>;
 
 export class BattlegroundMatchRuntime {
@@ -154,6 +156,10 @@ export class BattlegroundMatchRuntime {
     const hero = await this.chrome.requireHeroByAccount(notice.accountId);
     const match = this.deps.matches.byHeroId(hero.id);
     if (!match || match.finished) return;
+    for (const share of this.deps.pvpHonor.sharesFor(notice.fightId)) {
+      this.deps.matches.noteFightHonor(match.copyId, share.characterId, share);
+      await this.chrome.pushHonorWindows(share.accountId);
+    }
     if (notice.outcome !== "last-leave") {
       const winnerHeroId =
         notice.winnerTeam === 1 ? hero.id : [...match.players.keys()].find((id) => id !== hero.id);
@@ -161,13 +167,14 @@ export class BattlegroundMatchRuntime {
         throw new Error(`Battleground PvP ${notice.fightId} is missing a winner`);
       }
       this.deps.matches.noteKill(match.copyId, winnerHeroId);
-      await this.chrome.pushMapAndStats(match);
-      if (
-        match.scoreLeague >= match.definition.maxScore ||
-        match.scoreCohort >= match.definition.maxScore
-      ) {
-        await this.requestFinish(match.copyId);
-      }
+    }
+    await this.chrome.pushMapAndStats(match);
+    if (
+      notice.outcome !== "last-leave" &&
+      (match.scoreLeague >= match.definition.maxScore ||
+        match.scoreCohort >= match.definition.maxScore)
+    ) {
+      await this.requestFinish(match.copyId);
     }
     await this.scheduleFinishIfIdle(match.copyId);
   }

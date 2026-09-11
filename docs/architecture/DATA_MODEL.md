@@ -49,6 +49,14 @@ level_before, level_after, content_release_id, progression_digest, created_at)`
   с PK `(hero_id, operation_id)`, FK на `heroes` и `content.releases`;
   `operation_id` 1…128, `amount > 0`. Persisted exactly-once result для
   `grantExperience`, не combat state.
+- `honor_grants(hero_id, operation_id, amount, honor_before, honor_after,
+rank, honor_min, honor_max, honor_status, content_release_id, created_at)`
+  с PK `(hero_id, operation_id)`, FK на `heroes` (`ON DELETE CASCADE`) и
+  `content.releases` (`ON DELETE RESTRICT`); `operation_id` 1…128,
+  `amount > 0`, `honor_after >= honor_before`, `rank >= 0`,
+  `honor_max >= honor_min`, `honor_status IN (0, 1)`. Persisted
+  exactly-once result для `grantHonor` (HERO-01); clamp может оставить
+  `added = 0` при `amount > 0`.
 
 `area_id` — текстовая ссылка на authored area; FK на `world.areas` в этом срезе
 нет. `move_ready_at` — travel lock (NULL = можно COME_IN/`exit`) на том же

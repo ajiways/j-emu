@@ -1,5 +1,7 @@
 import type { PostgresDatabase } from "../../src/infrastructure/postgres/database.ts";
 import type { CatalogProgression } from "../../src/modules/catalog/ports/catalog-progression.ts";
+import type { Catalog } from "../../src/modules/catalog/ports/catalog.ts";
+import { CatalogHonorRanks } from "../../src/modules/catalog/infrastructure/catalog-honor-ranks.ts";
 import type { ReputationCatalog } from "../../src/modules/catalog/ports/reputation-catalog.ts";
 import type { ProfessionCatalog } from "../../src/modules/catalog/ports/profession-catalog.ts";
 import type { HeroCreationPolicy } from "../../src/modules/character/domain/hero.ts";
@@ -18,7 +20,7 @@ export function playableCharacterModuleInput(
   database: PostgresDatabase,
   progression: CatalogProgression,
   equipmentModifiers: EquippedModifiers,
-  reputationCatalog: ReputationCatalog & ProfessionCatalog,
+  reputationCatalog: ReputationCatalog & ProfessionCatalog & Pick<Catalog, "commonConf">,
   extras: {
     clock?: Clock;
     regenPolicy?: RegenPolicy;
@@ -32,6 +34,7 @@ export function playableCharacterModuleInput(
     progression,
     reputationCatalog,
     professionCatalog: reputationCatalog,
+    honorRanks: new CatalogHonorRanks(reputationCatalog),
     equipmentModifiers,
     clock: extras.clock ?? new SystemClock(),
     regenPolicy: extras.regenPolicy ?? PLAYABLE_REGEN_POLICY,

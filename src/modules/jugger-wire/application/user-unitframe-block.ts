@@ -1,5 +1,6 @@
 import type { AppearancePreset } from "../../catalog/domain/appearance-preset.ts";
 import type { HudDefaults } from "../../catalog/domain/hud-defaults.ts";
+import type { HonorProgress } from "../../catalog/domain/honor-progress.ts";
 import type { LevelBoundary } from "../../catalog/domain/level-boundary.ts";
 import type { Hero } from "../../character/domain/hero.ts";
 
@@ -41,6 +42,7 @@ export function buildUserUnitframe(
   level: LevelBoundary,
   appearance: AppearancePreset,
   hud: HudDefaults,
+  honor: HonorProgress,
   inActiveFight = false,
   fightId: number | null = null,
   avatarSmall = appearance.avatarSmall,
@@ -52,7 +54,7 @@ export function buildUserUnitframe(
     status: 100,
     nick: hero.nick,
     level: hero.level,
-    rank: level.honorRank,
+    rank: honor.rank,
     fight_id: fightId ?? hud.fightId,
     gag_time: hud.gagTime,
     hp_time: inActiveFight ? 0 : hero.hpTime,
@@ -66,10 +68,10 @@ export function buildUserUnitframe(
     expMin: level.expMin,
     expMax: level.expMax,
     expStatus: hud.expStatus,
-    honor: hero.honor,
-    honorMin: level.honorMin,
-    honorMax: level.honorMax,
-    honorStatus: level.honorStatus,
+    honor: honor.honor,
+    honorMin: honor.honorMin,
+    honorMax: honor.honorMax,
+    honorStatus: honor.honorStatus,
     revenge: hud.revenge,
     revengeMin: hud.revengeMin,
     revengeMax: hud.revengeMax,

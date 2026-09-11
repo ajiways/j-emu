@@ -3,7 +3,6 @@ import type { ArtifactSkillBonus } from "../../catalog/domain/artifact-skill-bon
 import type { CatalogProgression } from "../../catalog/ports/catalog-progression.ts";
 import type { ReputationCatalog } from "../../catalog/ports/reputation-catalog.ts";
 import type { ProfessionCatalog } from "../../catalog/ports/profession-catalog.ts";
-import type { ProgressionSnapshot } from "../../catalog/domain/progression-snapshot.ts";
 import type { Clock } from "../../../shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../shared/kernel/unit-of-work.ts";
 import type { Hero, HeroCreationPolicy } from "../domain/hero.ts";
@@ -11,8 +10,9 @@ import { truncatedUnixDate } from "../domain/hp-regen.ts";
 import { PersonalDetails } from "../domain/personal-details.ts";
 import { requiredSkillTotal, totalHeroSkills } from "../domain/equipment-skill-totals.ts";
 import { requireHeroSkills, type HeroSkill } from "../domain/hero-skill.ts";
+import { loadProgressionSnapshot } from "../domain/load-progression-snapshot.ts";
 import { planLearnBonus } from "../domain/plan-learn-bonus.ts";
-import { ProgressionContentError } from "../domain/progression-content-error.ts";
+import { requiredManagedL1 } from "../domain/required-managed-l1.ts";
 import type { RegenPolicy } from "../domain/regen-policy.ts";
 import type { ActiveFightQuery } from "../ports/active-fight-query.ts";
 import type { EquippedModifiers } from "../ports/equipped-modifiers.ts";
@@ -21,10 +21,13 @@ import type { HeroLearnedBonusRepository } from "../ports/hero-learned-bonus-rep
 import type { HeroSkillRepository } from "../ports/hero-skill-repository.ts";
 import type { PersonalDetailsRepository } from "../ports/personal-details-repository.ts";
 import { ExperienceGrantService } from "./experience-grant-service.ts";
+import type { HonorGrantService } from "./honor-grant-service.ts";
 import { ResourceService } from "./resource-service.ts";
 import { toPresenceHero } from "./to-presence-hero.ts";
 import type { ExperienceGrantCommand } from "../domain/experience-grant-command.ts";
 import type { ExperienceGrantResult } from "../domain/experience-grant-result.ts";
+import type { HonorGrantCommand } from "../domain/honor-grant-command.ts";
+import type { HonorGrantResult } from "../domain/honor-grant-result.ts";
 import type { CharacterProgression } from "../ports/character-progression.ts";
 import type {
   CharacterMoney,
@@ -74,6 +77,7 @@ export class CharacterService
     CharacterProfessions
 {
   private readonly grants: ExperienceGrantService;
+  private readonly honorGrants: HonorGrantService;
   private readonly resources: ResourceService;
 
   constructor(
@@ -90,6 +94,7 @@ export class CharacterService
     private readonly professionCatalog: ProfessionCatalog,
     private readonly equipment: EquippedModifiers,
     grantStore: ExperienceGrantRepository,
+    honorGrants: HonorGrantService,
     private readonly clock: Clock,
     regenPolicy: RegenPolicy,
     activeFight: ActiveFightQuery,
@@ -113,10 +118,15 @@ export class CharacterService
       this.equipment,
       this.resources,
     );
+    this.honorGrants = honorGrants;
   }
 
   grantExperience(command: ExperienceGrantCommand): Promise<ExperienceGrantResult> {
     return this.grants.grantExperience(command);
+  }
+
+  grantHonor(command: HonorGrantCommand): Promise<HonorGrantResult> {
+    return this.honorGrants.grantHonor(command);
   }
 
   syncResources(command: SyncResourcesCommand): Promise<ResourceSnapshot> {
@@ -211,10 +221,10 @@ export class CharacterService
     return this.unitOfWork.run(async () => {
       const existing = await this.heroes.findByAccountId(accountId);
       if (existing) return existing;
-      const snapshot = await this.requireSnapshot();
+      const snapshot = await loadProgressionSnapshot(this.progression);
       const levelOne = snapshot.requireLevel(1);
-      const vit = requiredManaged(levelOne.managedSkills, "VIT");
-      const mpMax = requiredManaged(levelOne.managedSkills, "MPMAX");
+      const vit = requiredManagedL1(levelOne.managedSkills, "VIT");
+      const mpMax = requiredManagedL1(levelOne.managedSkills, "MPMAX");
       const hero = await this.heroes.create({
         accountId,
         nick,
@@ -302,7 +312,7 @@ export class CharacterService
     if (!Number.isInteger(characterId) || characterId < 1) {
       throw new Error("Character id is required");
     }
-    const snapshot = await this.requireSnapshot();
+    const snapshot = await loadProgressionSnapshot(this.progression);
     const naked = requireHeroSkills(await this.skills.list(characterId));
     const bonuses = await this.equipment.modifiersForHero(characterId, snapshot.contentReleaseId);
     return requiredSkillTotal(totalHeroSkills(naked, bonuses), "STR");
@@ -379,21 +389,4 @@ export class CharacterService
     if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
     return hero;
   }
-
-  private async requireSnapshot(): Promise<ProgressionSnapshot> {
-    try {
-      return await this.progression.progressionSnapshot();
-    } catch (error) {
-      throw new ProgressionContentError(
-        error instanceof Error ? error.message : "Progression content is invalid",
-      );
-    }
-  }
-}
-
-function requiredManaged(skills: readonly { id: string; value: number }[], id: string): number {
-  const skill = skills.find((entry) => entry.id === id);
-  if (!skill) throw new ProgressionContentError(`Progression L1 is missing ${id}`);
-  if (skill.value < 1) throw new ProgressionContentError(`Progression L1 ${id} must be positive`);
-  return skill.value;
 }

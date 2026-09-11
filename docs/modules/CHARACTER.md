@@ -12,9 +12,10 @@ level-up нет до квестов, поэтому character progression ост
 `hp_time` уходит в `user|unitframe`. CMB-03 пишет fight HP/EXP через эти
 порты (raw-AMF). `noteMp` пишет MP без regen clock (INV-08 ADD_MP). CMB-04
 `noteDefeat` ставит ghost/injury; ghost блокирует
-regen. Honor не входит. Equipment-derived VIT/hpMax
-считаются после PUT_ON; без экипа HUD показывает naked L1 (VIT 10). Точный
-статус: [CAPABILITIES.md](../CAPABILITIES.md).
+regen. HERO-01 `grantHonor` пишет `heroes.honor` и ledger `honor_grants`
+(ниже); product-status — только [CAPABILITIES.md](../CAPABILITIES.md).
+Equipment-derived VIT/hpMax считаются после PUT_ON; без экипа HUD показывает
+naked L1 (VIT 10). Точный статус: [CAPABILITIES.md](../CAPABILITIES.md).
 
 ## Источники поведения
 
@@ -397,6 +398,51 @@ CHR-02 implementation закрыт как internal enabling capability: producti
 client не видит отдельного regen OA. Clock regression на
 init/unitframe мапится в `204` через общий Error path, без отдельного
 ProtocolError.
+
+## HERO-01 — PvP honor grant
+
+Internal port `grantHonor` и ledger реализованы. Product-status не
+менять здесь: очередь [ROADMAP.md](../migration/ROADMAP.md) HERO-01,
+статус — [CAPABILITIES.md](../CAPABILITIES.md).
+
+### Architecture decision
+
+Отдельный `ARC-CHAR` не нужен. `heroes.honor` уже на том же aggregate, что
+EXP. Catalog отдаёт `honorProgress` / cap из `rank_info` + `rank_table`.
+Combat отдаёт только RAM snapshot урона/HP/уровня/победителя. Battleground
+копит match RAM. Combat и BG не пишут `heroes.honor`.
+
+Публичная operation на `CharacterProgression`:
+
+- `grantHonor({ characterId, operationId, amount })`;
+- `operationId` — тот же формат, что EXP; PvP ключ
+  `pvp:{fightId}:{characterId}`;
+- `amount` — положительный integer (сырой `raw` боя); нулевой grant не
+  вызывается;
+- clamp итога `honorProgress(current + amount, level)` / `honorCapForLevel`;
+  `honorCapForLevel` экспортируется из catalog;
+- повтор ключа с тем же amount — сохранённый result; другой amount —
+  conflict.
+
+Ledger: `character.honor_grants` PK `(hero_id, operation_id)`, по образцу
+`experience_grants` (amount, honor before/after, rank/window snapshot,
+content release). Hero row lock + текущая UoW. Именованный `HeroismRules`
+(Base 1..35, win 1.4, lose 0.8) инжектится в composition: character только
+клампит переданный amount. Нет `rank_table` — ошибка grant/read. Victim
+level вне 1..35 и `maxHp < 1` — fail-fast формулы в composition, не
+`?? 10` и не `Math.max(1, hp)`.
+
+### Wire (character surfaces)
+
+`user|unitframe.honor` / `honorMin` / `honorMax` / `honorStatus` / `rank` и
+`user|conf.rank` — live `honorProgress(hero.honor, hero.level)`, не static
+`level_boundaries.honor_*`. OA `user|stats` object 2 «Героизм» уже читает
+`hero.honor`. После гранта composition шлёт esrv unitframe+conf.
+
+### Out of slice
+
+Печать справедливости (TEMPEFFECT 8668), `level_penalty`, казнь ×2, короны,
+revenge, hunt/friendly honor, HTML `fight|info`.
 
 ## Acceptance
 

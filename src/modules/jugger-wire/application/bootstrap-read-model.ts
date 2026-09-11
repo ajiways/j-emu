@@ -24,6 +24,7 @@ import { buildUserBag, type UserBagBlock } from "./user-bag-block.ts";
 import { buildUserPocket } from "./user-pocket-block.ts";
 import { buildUserConf } from "./user-conf-block.ts";
 import { emptyUserMagic } from "./user-magic-block.ts";
+import { liveHonorProgress } from "./live-honor-progress.ts";
 import { buildUserSkills, skillsExpireBlock, type UserSkillsBlock } from "./user-skills-block.ts";
 import { userProfessionsWire } from "../../character/domain/profession-wire.ts";
 import { buildUserUnitframe, type UserUnitframeBlock } from "./user-unitframe-block.ts";
@@ -138,6 +139,7 @@ export class BootstrapReadModel {
       level,
       appearance,
       hud,
+      await liveHonorProgress(this.catalog, hero),
       fightId !== null,
       fightId,
       portrait === null ? appearance.avatarSmall : portrait.small,
@@ -190,7 +192,6 @@ export class BootstrapReadModel {
 
   async equipmentMutation(accountId: number): Promise<Readonly<Record<string, unknown>>> {
     const hero = await this.requireHero(accountId);
-    const level = await this.catalog.level(hero.level);
     return {
       "common|action": { status: 100 },
       "user|bag": await buildUserBag(hero, this.inventory, this.catalog),
@@ -203,7 +204,7 @@ export class BootstrapReadModel {
       ),
       "user|skills": await this.skills(accountId),
       "user|unitframe": await this.unitframe(accountId),
-      "user|conf": buildUserConf(hero, level),
+      "user|conf": buildUserConf(hero, await liveHonorProgress(this.catalog, hero)),
       state: await this.heroState(hero, accountId),
     };
   }
@@ -279,7 +280,6 @@ export class BootstrapReadModel {
 
   async init(accountId: number): Promise<Readonly<Record<string, unknown>>> {
     const hero = await this.requireHero(accountId);
-    const level = await this.catalog.level(hero.level);
     const chrome = await this.catalog.chrome();
     const book = bookTrioFromSnapshot(await this.quests.bookSnapshot(hero.id, "started"));
     return {
@@ -294,7 +294,7 @@ export class BootstrapReadModel {
         this.policy.pocketCapacity,
       ),
       "user|magic": emptyUserMagic(),
-      "user|conf": buildUserConf(hero, level),
+      "user|conf": buildUserConf(hero, await liveHonorProgress(this.catalog, hero)),
       "user|personal_details": {
         status: 100,
         info: withHttpsFproxy(await this.characters.personalDetails(accountId)),

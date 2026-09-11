@@ -81,6 +81,8 @@ export function applyDamageToMeleeTarget(
   }
   requireLivingMeleeTarget(target);
   if (target.kind === "human") {
+    const applied = Math.min(target.human.hp, damage);
+    attacker.creditDamageToHumans(applied);
     const killed = target.human.applyDamage(damage);
     const botAfter = context.bot;
     return {

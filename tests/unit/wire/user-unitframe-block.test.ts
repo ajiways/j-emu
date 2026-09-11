@@ -13,10 +13,18 @@ const appearance = new AppearancePreset(
   "avatar_m_set_0_gray_sm.png",
 );
 const hud = new HudDefaults(0, 0, 0, 0, 0, 0, 0, "300", 0, 100, 100, 0, 0);
+const honor = {
+  rank: 0,
+  title: "Простолюдин",
+  honor: 0,
+  honorMin: 0,
+  honorMax: 100,
+  honorStatus: 0,
+};
 
 describe("buildUserUnitframe", () => {
   it("uses live HUD keys with hero hpMax, not maxHp or id", () => {
-    const block = buildUserUnitframe(testHero({ nick: "Ada" }), level, appearance, hud);
+    const block = buildUserUnitframe(testHero({ nick: "Ada" }), level, appearance, hud, honor);
     expect(block).toMatchObject({
       status: 100,
       nick: "Ada",
@@ -28,6 +36,11 @@ describe("buildUserUnitframe", () => {
       exp: 1,
       expMin: 0,
       expMax: 68,
+      rank: 0,
+      honor: 0,
+      honorMin: 0,
+      honorMax: 100,
+      honorStatus: 0,
       revengeMax: "300",
       avatar_small: "avatar_m_set_0_gray_sm.png",
       fight_id: 0,
@@ -42,6 +55,7 @@ describe("buildUserUnitframe", () => {
       level,
       appearance,
       hud,
+      honor,
       true,
       9,
     );
@@ -52,12 +66,20 @@ describe("buildUserUnitframe", () => {
 
   it("fails when in a fight without a numeric fight id", () => {
     expect(() =>
-      buildUserUnitframe(testHero({ nick: "Ada" }), level, appearance, hud, true),
+      buildUserUnitframe(testHero({ nick: "Ada" }), level, appearance, hud, honor, true),
     ).toThrow(/Hero 1 is in a fight without a numeric fight id/);
   });
 
   it("overlays numeric fight_id while in an active fight", () => {
-    const block = buildUserUnitframe(testHero({ nick: "Ada" }), level, appearance, hud, true, 9);
+    const block = buildUserUnitframe(
+      testHero({ nick: "Ada" }),
+      level,
+      appearance,
+      hud,
+      honor,
+      true,
+      9,
+    );
     expect(block.fight_id).toBe(9);
     expect(block.hp_time).toBe(0);
   });

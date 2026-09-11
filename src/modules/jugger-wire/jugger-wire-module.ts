@@ -59,6 +59,7 @@ import type { ProfessionsService } from "../professions/application/professions-
 import type { CraftService } from "../professions/application/craft-service.ts";
 import type { QuestService } from "../quests/application/quest-service.ts";
 import type { QuestCatalog } from "../quests/ports/quest-catalog.ts";
+import type { PvpFightHonorCache } from "../../app/pvp-fight-honor-cache.ts";
 import type { QuestDesk } from "../../app/quest-desk.ts";
 import type { JuggerWireBootstrapPolicy, JuggerWireFightPolicy } from "./jugger-wire-policy.ts";
 
@@ -126,6 +127,7 @@ export class JuggerWireModule {
     craft: CraftService;
     quests: QuestService;
     questCatalog: QuestCatalog;
+    pvpHonor: PvpFightHonorCache;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -245,6 +247,7 @@ export class JuggerWireModule {
     const craft = requirePresent(input.craft, "Jugger-wire requires craft");
     const quests = requirePresent(input.quests, "Jugger-wire requires quests");
     const questCatalog = requirePresent(input.questCatalog, "Jugger-wire requires quest catalog");
+    const pvpHonor = requirePresent(input.pvpHonor, "Jugger-wire module requires PvP honor cache");
     try {
       const fightWire = new FightWireMapper(
         {
@@ -295,6 +298,7 @@ export class JuggerWireModule {
         unreadMail: mail,
         party,
         quests: questCatalog,
+        pvpHonor,
       });
       const book = new BookDesk({ characters, bestiary, instances });
       const commands = new JuggerCommandModule(

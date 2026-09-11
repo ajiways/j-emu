@@ -56,6 +56,7 @@ import {
 } from "../../../src/modules/battleground/infrastructure/schema.ts";
 import {
   experienceGrants,
+  honorGrants,
   heroes,
   heroBotKills,
   heroProfessions,
@@ -194,6 +195,7 @@ describe("Drizzle migrations", () => {
         "character.hero_reputations",
         "character.hero_skills",
         "character.heroes",
+        "character.honor_grants",
         "combat.finished_fights",
         "content.active_release",
         "content.bootstrap_imports",
@@ -281,6 +283,7 @@ describe("Drizzle migrations", () => {
       heroBotKills,
       heroProfessions,
       experienceGrants,
+      honorGrants,
       items,
       letters,
       letterAttachments,
@@ -318,7 +321,7 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(79);
+    ]).toHaveLength(80);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -347,6 +350,7 @@ describe("Drizzle migrations", () => {
       "0019_professions_assistants_and_farms.sql",
       "0020_professions_craft_recipes.sql",
       "0021_quests_engine.sql",
+      "0022_character_honor_grants.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -374,8 +378,9 @@ describe("Drizzle migrations", () => {
       "0019_professions_assistants_and_farms",
       "0020_professions_craft_recipes",
       "0021_quests_engine",
+      "0022_character_honor_grants",
     ]);
-    expect(await appliedCount()).toBe(22);
+    expect(await appliedCount()).toBe(23);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );

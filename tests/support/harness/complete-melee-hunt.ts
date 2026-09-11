@@ -1,3 +1,4 @@
+import type { AmfValue } from "../../../src/modules/jugger-wire/amf/amf3.ts";
 import type { AuthenticatedClient } from "./authenticated-client.ts";
 import { MAP_HUNT_SPAWN_ID } from "./map-hunt-spawn.ts";
 import {
@@ -48,6 +49,7 @@ export async function strikeUntilHuntFinish(
   elapse: (ms: number) => Promise<void>,
   sequenceStart: number,
   joiner?: AuthenticatedClient,
+  collect?: (frames: readonly AmfValue[]) => void,
 ): Promise<void> {
   let striker = opener;
   let finished = false;
@@ -60,14 +62,17 @@ export async function strikeUntilHuntFinish(
     });
     if (castBody.length !== 0) throw new Error("castSpell must return an empty body");
     const melee = await striker.pollFight();
+    collect?.(melee);
     if (framesIncludeFightFinish(melee)) {
       finished = true;
       break;
     }
     await elapse(1400);
     const bot = await striker.pollFight();
+    collect?.(bot);
     const other = joiner && striker === opener ? joiner : opener;
     const otherFrames = joiner ? await other.pollFight() : [];
+    collect?.(otherFrames);
     if (framesIncludeFightFinish(bot) || framesIncludeFightFinish(otherFrames)) {
       finished = true;
       break;
@@ -76,12 +81,12 @@ export async function strikeUntilHuntFinish(
       fightEventTypes(bot).includes("oppwait") || fightEventTypes(otherFrames).includes("oppnew");
     if (joiner && handedOff) {
       await elapse(2500);
-      await other.pollFight();
+      collect?.(await other.pollFight());
       striker = other;
       continue;
     }
     await elapse(1100);
-    await striker.pollFight();
+    collect?.(await striker.pollFight());
   }
   if (!finished) throw new Error("Hunt fight did not finish");
 }

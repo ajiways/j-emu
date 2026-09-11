@@ -40,6 +40,8 @@ const lineJustifications: Readonly<Record<string, string>> = {
     "Process-local hunt/friendly service: start/join/auth/resume/poll, CMB-02 casts, CMB-03 loot/exit take and leave ack",
   "src/modules/combat/domain/battle.ts":
     "Hunt/friendly Battle owns FightDuel pairing, CMB-08 shuffle/waiter handoff, melee, CMB-06 bot turns, casts, CMB-04 resume, and GEAR-01 ending-turn purge clock",
+  "src/modules/combat/domain/hunt-human.ts":
+    "Hunt/PvP human fighter: turn clock, pocket, loadout, applied bot and human damage credits",
   "src/modules/content/application/content-validator.ts":
     "Single bundle completeness gate including store 504/552 pay and RANK, reputation, professions 2/6, assistant 3/13, farm 4 on area 500, craft recipe 61, set bonuses, USE representatives, fight extra blobs, bot loot, bot spell books, dungeon definitions, battlegrounds, NPC 271, and three engine quests",
   "src/modules/inventory/domain/inventory-service.ts":
@@ -69,7 +71,9 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/app/party-bag-ops.ts":
     "Party bag give/drop/dump plus lottery rounds under the party UoW lock",
   "src/app/hunt-fight-settlement.ts":
-    "Hunt finish UoW: EXP/money/loot plus party money split, deferred bag deposit, and bestiary kill credit",
+    "Hunt finish UoW: EXP/money/loot plus party money split, deferred bag deposit, bestiary kill credit, and HERO-01 PvP honor grant",
+  "src/modules/character/infrastructure/schema.ts":
+    "Character tables including heroes, experience_grants, honor_grants, skills, reputations, professions, and bestiary",
   "src/app/party-join-ops.ts":
     "Party invite/confirm/join windows and dump join_confirm pending path",
   "src/app/battleground-match-runtime.ts":

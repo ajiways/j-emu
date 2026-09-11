@@ -9,10 +9,12 @@ import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { FakeClock } from "../support/fake-clock.ts";
 import { ManualCombatDelay } from "../support/fakes/manual-combat-delay.ts";
 import {
+  completeMeleeHunt,
   putOnStarterGloveIfInBag,
   strikeUntilHuntFinish,
 } from "../support/harness/complete-melee-hunt.ts";
-import { fightEventTypes, heroIdFrom } from "../support/harness/wire-payload.ts";
+import { fightEventTypes, heroIdFrom, huntFightIdFrom } from "../support/harness/wire-payload.ts";
+import { HEROISM_RULES, rawHonorFromDamage } from "../../src/app/heroism-rules.ts";
 
 const START_MS = 1_700_000_000_000;
 const LEVEL6_EXP = 1822;
@@ -203,6 +205,166 @@ describe("battleground raskop", () => {
     expect(requireRecord(kickedA.state, "orphan A").area_id).toBe("500");
     expect(requireRecord(kickedB.state, "orphan B").area_id).toBe("500");
   });
+
+  it("grants PvP heroism once from measured fight HP and keeps it across reconnect/restart", async () => {
+    const a = await createIsolatedHero(application);
+    const b = await createIsolatedHero(application);
+    const initA = await a.objectAction({ object: "common", action: "init", sq: 1 });
+    const initB = await b.objectAction({ object: "common", action: "init", sq: 1 });
+    const nickA = nickFrom(initA);
+    const nickB = nickFrom(initB);
+    const heroIdA = heroIdFrom(initA);
+    const heroIdB = heroIdFrom(initB);
+    await grantLevel(application, heroIdA, 6, LEVEL6_EXP);
+    await grantLevel(application, heroIdB, 7, LEVEL7_EXP);
+    await putOnStarterGloveIfInBag(a, 2);
+    await putOnStarterGloveIfInBag(b, 2);
+    await queueAdd(a, 5);
+    await queueAdd(b, 5);
+    await a.pollEsrv();
+    await b.pollEsrv();
+    await queueConfirm(a, 6);
+    await queueConfirm(b, 6);
+    await a.pollEsrv();
+    await b.pollEsrv();
+    await comeIn(a, 636, 7);
+    await comeIn(b, 636, 7);
+
+    const attack = await a.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK", nick: nickB },
+      sq: 9,
+    });
+    const confA = pvpFightConf(attack);
+    expect(await a.fight({ rc: "auth", eid: confA.fightId, sq: 10 })).toHaveLength(0);
+    expect(await b.fight({ rc: "auth", eid: confA.fightId, sq: 10 })).toHaveLength(0);
+    const frames: AmfValue[] = [];
+    frames.push(...(await a.pollFight()));
+    frames.push(...(await b.pollFight()));
+    await strikeUntilHuntFinish(
+      a,
+      (ms) => harness.elapseCombat(ms),
+      11,
+      b,
+      (more) => {
+        frames.push(...more);
+      },
+    );
+
+    const expected = honorFromPvpFrames(frames, heroIdA, heroIdB);
+    expect(expected.a + expected.b).toBeGreaterThan(0);
+
+    const liveA = personalBlocks(await a.pollEsrv());
+    const liveB = personalBlocks(await b.pollEsrv());
+    expect(statsHonorForNick(liveA["arena|bg_stats"], nickA)).toBe(expected.a);
+    expect(statsHonorForNick(liveA["arena|bg_stats"], nickB)).toBe(expected.b);
+    expect(statsHonorForNick(liveB["arena|bg_stats"], nickA)).toBe(expected.a);
+    expect(requireRecord(liveA["user|unitframe"], "live unitframe A")).toMatchObject({
+      honor: expected.a,
+      honorMin: 0,
+      honorMax: 100,
+      honorStatus: 0,
+      rank: 0,
+    });
+    expect(requireRecord(liveB["user|unitframe"], "live unitframe B")).toMatchObject({
+      honor: expected.b,
+      honorMin: 0,
+      honorMax: 100,
+      honorStatus: 0,
+      rank: 0,
+    });
+    expect(requireRecord(liveA["user|conf"], "live conf A").rank).toBe(0);
+    expect(requireRecord(liveB["user|conf"], "live conf B").rank).toBe(0);
+    expect(await heroismStat(a, 20)).toBe(expected.a);
+    expect(await heroismStat(b, 20)).toBe(expected.b);
+
+    if (expected.a >= 1) {
+      await application.characterProgression.grantHonor({
+        characterId: heroIdA,
+        operationId: `pvp:${confA.fightId}:${heroIdA}`,
+        amount: expected.a,
+      });
+    }
+    if (expected.b >= 1) {
+      await application.characterProgression.grantHonor({
+        characterId: heroIdB,
+        operationId: `pvp:${confA.fightId}:${heroIdB}`,
+        amount: expected.b,
+      });
+    }
+    expect(await heroismStat(a, 21)).toBe(expected.a);
+
+    await harness.elapseCombat(2_000);
+    const finishA = personalBlocks(await a.pollEsrv());
+    expect(statsHonorForNick(finishA["arena|bg_finish"], nickA)).toBe(expected.a);
+    expect(statsHonorForNick(finishA["arena|bg_finish"], nickB)).toBe(expected.b);
+
+    const reconnect = new AuthenticatedClient(application, a.cookie);
+    await reconnect.objectAction({ object: "common", action: "init", sq: 29 });
+    expect(await heroismStat(reconnect, 30)).toBe(expected.a);
+    const reInit = await reconnect.objectAction({ object: "common", action: "init2", sq: 31 });
+    expect(requireRecord(reInit["user|unitframe"], "reconnect unitframe")).toMatchObject({
+      honor: expected.a,
+      honorMin: 0,
+      honorMax: 100,
+      rank: 0,
+    });
+
+    application = await harness.restart();
+    const restarted = new AuthenticatedClient(application, a.cookie);
+    const restartedInit = await restarted.objectAction({
+      object: "common",
+      action: "init",
+      sq: 39,
+    });
+    expect(requireRecord(restartedInit["user|conf"], "restart conf").rank).toBe(0);
+    expect(await heroismStat(restarted, 40)).toBe(expected.a);
+    const restored = await restarted.objectAction({ object: "common", action: "init2", sq: 41 });
+    expect(requireRecord(restored["user|unitframe"], "restart unitframe")).toMatchObject({
+      honor: expected.a,
+      honorMin: 0,
+      honorMax: 100,
+      rank: 0,
+    });
+  });
+
+  it("does not move honor on hunt ATTACK_BOT or a finished friendly duel", async () => {
+    const hunter = await createIsolatedHero(application);
+    await hunter.objectAction({ object: "common", action: "init", sq: 1 });
+    await completeMeleeHunt(hunter, (ms) => harness.elapseCombat(ms), 2);
+    expect(await heroismStat(hunter, 10)).toBe(0);
+    const huntFrame = await hunter.objectAction({ object: "common", action: "init2", sq: 11 });
+    expect(requireRecord(huntFrame["user|unitframe"], "hunt unitframe").honor).toBe(0);
+
+    const a = await createIsolatedHero(application);
+    const b = await createIsolatedHero(application);
+    const initA = await a.objectAction({ object: "common", action: "init", sq: 1 });
+    const initB = await b.objectAction({ object: "common", action: "init", sq: 1 });
+    const nickA = nickFrom(initA);
+    const nickB = nickFrom(initB);
+    await a.objectAction({
+      object: "user",
+      action: "friendly_duel_propose",
+      form: { nick: nickB },
+      sq: 2,
+    });
+    await b.pollEsrv();
+    const accept = await b.objectAction({
+      object: "user",
+      action: "friendly_duel_accept",
+      form: { nick: nickA },
+      sq: 3,
+    });
+    const fightId = huntFightIdFrom(accept);
+    expect(await a.fight({ rc: "auth", eid: fightId, sq: 4 })).toHaveLength(0);
+    expect(await b.fight({ rc: "auth", eid: fightId, sq: 4 })).toHaveLength(0);
+    await a.pollFight();
+    await b.pollFight();
+    await strikeUntilHuntFinish(a, (ms) => harness.elapseCombat(ms), 5, b);
+    expect(await heroismStat(a, 20)).toBe(0);
+    expect(await heroismStat(b, 20)).toBe(0);
+  });
 });
 
 async function grantLevel(
@@ -310,4 +472,135 @@ function requireRecord(value: AmfValue | undefined, label: string): Record<strin
     throw new Error(`${label} must be an object`);
   }
   return value;
+}
+
+async function heroismStat(client: AuthenticatedClient, sq: number): Promise<number> {
+  const payload = await client.objectAction({ object: "user", action: "stats", sq });
+  const block = requireRecord(payload["user|stats"], "user|stats");
+  if (!Array.isArray(block.stats)) throw new Error("user|stats.stats must be an array");
+  for (const row of block.stats) {
+    const rec = requireRecord(row, "stat");
+    if (rec.object_id !== "2") continue;
+    if (typeof rec.value !== "number" || !Number.isInteger(rec.value)) {
+      throw new Error("Героизм value must be an integer");
+    }
+    return rec.value;
+  }
+  throw new Error("user|stats Героизм is missing");
+}
+
+function statsHonorForNick(block: AmfValue | undefined, nick: string): number {
+  const stats = requireRecord(requireRecord(block, "arena stats").user_stats, "user_stats");
+  for (const team of Object.values(stats)) {
+    const rows = requireRecord(team, "team stats");
+    for (const row of Object.values(rows)) {
+      const rec = requireRecord(row, "user_stats row");
+      if (rec.original_nick !== nick && rec.nick !== nick) continue;
+      if (rec.honor_bonus !== 0) throw new Error("honor_bonus must stay 0");
+      if (typeof rec.honor !== "number" || !Number.isInteger(rec.honor) || rec.honor < 0) {
+        throw new Error(`user_stats.honor for ${nick} is invalid`);
+      }
+      return rec.honor;
+    }
+  }
+  throw new Error(`user_stats honor for ${nick} is missing`);
+}
+
+function honorFromPvpFrames(
+  frames: readonly AmfValue[],
+  heroIdA: number,
+  heroIdB: number,
+): { a: number; b: number } {
+  const humans = new Map<number, { maxHp: number; level: number; team: 1 | 2; hp: number }>();
+  const dealt = new Map<number, number>([
+    [heroIdA, 0],
+    [heroIdB, 0],
+  ]);
+  let winnerTeam: 1 | 2 | null = null;
+  for (const event of fightItems(frames)) {
+    if (event.et === "persList") {
+      for (const [key, value] of Object.entries(event)) {
+        if (key === "et") continue;
+        if (!value || typeof value !== "object" || Array.isArray(value)) continue;
+        if (value.bot === true) continue;
+        if (typeof value.id !== "number") continue;
+        if (typeof value.maxHp !== "number" || typeof value.level !== "number") continue;
+        if (typeof value.hp !== "number") continue;
+        if (value.team !== 1 && value.team !== 2) continue;
+        if (humans.has(value.id)) continue;
+        humans.set(value.id, {
+          maxHp: value.maxHp,
+          level: value.level,
+          team: value.team,
+          hp: value.hp,
+        });
+      }
+    }
+    if (event.et === "cast") {
+      const nested = event.ev;
+      if (!nested || typeof nested !== "object" || Array.isArray(nested)) continue;
+      for (const inner of Object.values(nested)) {
+        applyCastHpChange(humans, dealt, inner);
+      }
+    }
+    if (event.et === "fightFinish" && (event.winner === 1 || event.winner === 2)) {
+      winnerTeam = event.winner;
+    }
+  }
+  if (humans.size !== 2) throw new Error(`PvP frames must list 2 humans, got ${humans.size}`);
+  if (winnerTeam !== 1 && winnerTeam !== 2) throw new Error("PvP fightFinish winner is missing");
+  const a = humans.get(heroIdA);
+  const b = humans.get(heroIdB);
+  if (!a || !b) throw new Error("PvP frames are missing a measured hero");
+  const dmgA = dealt.get(heroIdA);
+  const dmgB = dealt.get(heroIdB);
+  if (dmgA === undefined || dmgB === undefined) throw new Error("PvP damage tally is missing");
+  return {
+    a: rawHonorFromDamage(
+      { dmgToVictim: dmgA, victimLevel: b.level, victimHpMax: b.maxHp, won: a.team === winnerTeam },
+      HEROISM_RULES,
+    ),
+    b: rawHonorFromDamage(
+      { dmgToVictim: dmgB, victimLevel: a.level, victimHpMax: a.maxHp, won: b.team === winnerTeam },
+      HEROISM_RULES,
+    ),
+  };
+}
+
+function applyCastHpChange(
+  humans: Map<number, { maxHp: number; level: number; team: 1 | 2; hp: number }>,
+  dealt: Map<number, number>,
+  inner: AmfValue,
+): void {
+  if (!inner || typeof inner !== "object" || Array.isArray(inner)) return;
+  if (inner.et !== "hpChange") return;
+  if (typeof inner.hp !== "number" || typeof inner.targetId !== "number") return;
+  if (typeof inner.persId !== "number") return;
+  const target = humans.get(inner.targetId);
+  if (!target) return;
+  if (inner.hp < 0) {
+    const applied = Math.min(-inner.hp, target.hp);
+    target.hp -= applied;
+    const prev = dealt.get(inner.persId);
+    if (prev === undefined) return;
+    dealt.set(inner.persId, prev + applied);
+    return;
+  }
+  if (inner.hp > 0) {
+    target.hp = Math.min(target.maxHp, target.hp + inner.hp);
+  }
+}
+
+function fightItems(frames: readonly AmfValue[]): Record<string, AmfValue>[] {
+  const items: Record<string, AmfValue>[] = [];
+  for (const event of frames) {
+    if (!event || typeof event !== "object" || Array.isArray(event)) continue;
+    const ev = event["ev"];
+    if (!ev || typeof ev !== "object" || Array.isArray(ev)) continue;
+    for (const item of Object.values(ev)) {
+      if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+      items.push(item);
+    }
+  }
+  return items;
 }

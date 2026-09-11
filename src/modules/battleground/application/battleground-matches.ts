@@ -97,6 +97,29 @@ export class BattlegroundMatches {
     return match;
   }
 
+  noteFightHonor(
+    copyId: number,
+    heroId: number,
+    share: Readonly<{ honor: number; dmg: number; rank: string }>,
+  ): void {
+    const match = this.requireLive(copyId);
+    const player = match.players.get(heroId);
+    if (!player) throw new Error(`Battleground hero ${heroId} is not in copy ${copyId}`);
+    if (!Number.isInteger(share.honor) || share.honor < 0) {
+      throw new Error("Battleground fight honor must be a non-negative integer");
+    }
+    if (!Number.isInteger(share.dmg) || share.dmg < 0) {
+      throw new Error("Battleground fight damage must be a non-negative integer");
+    }
+    if (!share.rank) throw new Error("Battleground fight rank is required");
+    match.players.set(heroId, {
+      ...player,
+      honor: player.honor + share.honor,
+      dmg: player.dmg + share.dmg,
+      rank: share.rank,
+    });
+  }
+
   finish(copyId: number, nowUnix: number): LiveBattlegroundMatch {
     const match = this.requireLive(copyId);
     match.finished = true;

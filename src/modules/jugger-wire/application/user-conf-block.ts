@@ -1,5 +1,5 @@
 import type { Hero } from "../../character/domain/hero.ts";
-import type { LevelBoundary } from "../../catalog/domain/level-boundary.ts";
+import type { HonorProgress } from "../../catalog/domain/honor-progress.ts";
 import { moneyNumberFromMinorUnits } from "./money-from-minor-units.ts";
 
 export type UserConfBlock = Readonly<{
@@ -21,14 +21,14 @@ export type UserConfBlock = Readonly<{
   left_diamonds: 0;
 }>;
 
-export function buildUserConf(hero: Hero, level: LevelBoundary): UserConfBlock {
+export function buildUserConf(hero: Hero, honor: HonorProgress): UserConfBlock {
   return {
     status: 100,
     id: hero.id,
     nick: hero.nick,
     level: hero.level,
     kind: hero.kind,
-    rank: level.honorRank,
+    rank: honor.rank,
     money: moneyNumberFromMinorUnits(hero.moneyMinor),
     language: hero.language,
     gender: hero.gender,

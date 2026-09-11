@@ -50,6 +50,7 @@ export class HuntHuman {
   private resumeBootstrapValue = false;
   private hpValue: number;
   private damageToBotValue = 0;
+  private damageToHumansValue = 0;
   private leftLiveValue = false;
 
   constructor(private readonly init: HuntHumanInit) {
@@ -113,6 +114,9 @@ export class HuntHuman {
   get damageToBot(): number {
     return this.damageToBotValue;
   }
+  get damageToHumans(): number {
+    return this.damageToHumansValue;
+  }
   get leftLive(): boolean {
     return this.leftLiveValue;
   }
@@ -175,6 +179,13 @@ export class HuntHuman {
       throw new Error("Hunt human damage to bot must be a non-negative integer");
     }
     this.damageToBotValue += amount;
+  }
+
+  creditDamageToHumans(amount: number): void {
+    if (!Number.isInteger(amount) || amount < 0) {
+      throw new Error("Hunt human damage to humans must be a non-negative integer");
+    }
+    this.damageToHumansValue += amount;
   }
 
   pocketCells(): readonly PocketCellSnapshot[] {

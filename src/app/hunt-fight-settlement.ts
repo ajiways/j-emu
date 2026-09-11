@@ -42,6 +42,9 @@ import { capDropQuantity } from "../modules/quests/domain/quest-loot-needed.ts";
 import type { QuestLootNeeded } from "../modules/quests/ports/quest-loot-needed.ts";
 import type { PartyBagDeposit } from "../modules/party/ports/party-bag-deposit.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
+import type { HeroismRules } from "./heroism-rules.ts";
+import { persistPvpHonor } from "./persist-pvp-honor.ts";
+import type { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 
 type SettlementCharacters = CharacterResources &
   CharacterProgression &
@@ -66,6 +69,8 @@ export class HuntFightSettlement implements FightSettlement {
     private readonly partyLoot: FightPartyLootNotify,
     private readonly bestiary: HeroBestiary,
     private readonly lootNeeded: QuestLootNeeded,
+    private readonly heroism: HeroismRules,
+    private readonly pvpHonor: PvpFightHonorCache,
   ) {}
 
   persistHumanLeft(snapshot: HumanLeftSnapshot): Promise<void> {
@@ -244,16 +249,24 @@ export class HuntFightSettlement implements FightSettlement {
     const cached = this.finished.get(outcome.fightId);
     if (cached) return cached;
     const lootByAccount = new Map<number, FightLootBlock>();
-    await this.unitOfWork.run(async () => {
+    const shares = await this.unitOfWork.run(async () => {
       for (const human of outcome.humans) {
-        await this.characters.noteHp({ characterId: human.characterId, hp: human.hp });
+        if (human.leftLive) continue;
+        await persistFightHp(this.characters, human.characterId, human.hp);
         await this.inventory.refillPocketAfterFight({
           characterId: human.characterId,
           cells: human.pocket,
         });
         await this.applyDeathIfDefeated(human.characterId, human.hp);
       }
+      return persistPvpHonor({
+        outcome,
+        characters: this.characters,
+        catalog: this.catalog,
+        rules: this.heroism,
+      });
     });
+    this.pvpHonor.remember(outcome.fightId, shares);
     this.finished.set(outcome.fightId, lootByAccount);
     return lootByAccount;
   }

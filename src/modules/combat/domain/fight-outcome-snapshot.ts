@@ -9,9 +9,12 @@ export type PocketCellSnapshot = Readonly<{
 export type FightHumanOutcome = Readonly<{
   accountId: number;
   characterId: number;
+  team: 1 | 2;
   level: number;
   hp: number;
+  maxHp: number;
   damageToBot: number;
+  damageToHumans: number;
   leftLive: boolean;
   pocket: readonly PocketCellSnapshot[];
 }>;

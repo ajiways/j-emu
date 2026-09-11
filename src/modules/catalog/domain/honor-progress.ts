@@ -8,6 +8,10 @@ export type HonorRankCatalog = Readonly<{
 export type HonorProgress = Readonly<{
   rank: number;
   title: string;
+  honor: number;
+  honorMin: number;
+  honorMax: number;
+  honorStatus: number;
 }>;
 
 export function honorRankCatalogFromConf(conf: CommonConfBlock): HonorRankCatalog {
@@ -75,23 +79,39 @@ export function honorProgress(
   const honor = Math.min(rawHonor, cap);
   let rank = 0;
   for (let id = 0; id < catalog.honorToReach.length; id += 1) {
-    const need = catalog.honorToReach[id];
-    if (need === undefined) throw new Error(`Honor threshold for rank ${id} is missing`);
+    const need = requireHonorThreshold(catalog, id);
     if (honor < need || minLevelForRank(id) > level) break;
     rank = id;
   }
-  return { rank, title: honorRankTitle(catalog, rank) };
+  const honorMin = requireHonorThreshold(catalog, rank);
+  const next = rank + 1;
+  const nextNeed = catalog.honorToReach[next];
+  const nextOpen = nextNeed !== undefined && minLevelForRank(next) <= level;
+  const honorMax = nextOpen ? nextNeed : honorMin;
+  return {
+    rank,
+    title: honorRankTitle(catalog, rank),
+    honor,
+    honorMin,
+    honorMax,
+    honorStatus: nextOpen ? 0 : 1,
+  };
 }
 
-function honorCapForLevel(catalog: HonorRankCatalog, level: number): number {
+export function honorCapForLevel(catalog: HonorRankCatalog, level: number): number {
+  if (!Number.isInteger(level) || level < 1) throw new Error("Level must be a positive integer");
   const last = catalog.honorToReach[catalog.honorToReach.length - 1];
   if (last === undefined) throw new Error("Honor rank catalog is empty");
   for (let id = 1; id < catalog.honorToReach.length; id += 1) {
     if (minLevelForRank(id) > level) {
-      const cap = catalog.honorToReach[id - 1];
-      if (cap === undefined) throw new Error(`Honor cap for level ${level} is missing`);
-      return cap;
+      return requireHonorThreshold(catalog, id - 1);
     }
   }
   return last;
+}
+
+function requireHonorThreshold(catalog: HonorRankCatalog, rankId: number): number {
+  const need = catalog.honorToReach[rankId];
+  if (need === undefined) throw new Error(`Honor threshold for rank ${rankId} is missing`);
+  return need;
 }

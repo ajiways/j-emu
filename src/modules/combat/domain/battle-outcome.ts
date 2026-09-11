@@ -16,9 +16,12 @@ export function battleOutcomeSnapshot(
   const humans = input.humans.map((human) => ({
     accountId: human.accountId,
     characterId: human.heroId,
+    team: human.team,
     level: human.level,
     hp: human.hp,
+    maxHp: human.maxHp,
     damageToBot: human.damageToBot,
+    damageToHumans: human.damageToHumans,
     leftLive: human.leftLive,
     pocket: human.pocketCells(),
   }));

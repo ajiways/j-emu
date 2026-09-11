@@ -10,6 +10,9 @@ import type { UnitOfWork } from "../../../src/shared/kernel/unit-of-work.ts";
 import { testArtifact } from "../../support/artifact-fixtures.ts";
 import { playableHuntBot } from "../../support/playable-bot.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
+import { HEROISM_RULES } from "../../../src/app/heroism-rules.ts";
+import { PvpFightHonorCache } from "../../../src/app/pvp-fight-honor-cache.ts";
+import { testHero } from "../../support/hero-fixtures.ts";
 
 describe("HuntFightSettlement", () => {
   const bot = playableHuntBot();
@@ -31,6 +34,8 @@ describe("HuntFightSettlement", () => {
       { notify: async () => undefined },
       bestiary,
       unlimitedLoot(),
+      HEROISM_RULES,
+      new PvpFightHonorCache(),
     );
     const win = await settlement.persistFinished(outcome("win", 27, 20));
     expect(characters.notes).toEqual([{ characterId: 1, hp: 27 }]);
@@ -77,6 +82,8 @@ describe("HuntFightSettlement", () => {
       { notify: async () => undefined },
       lossBestiary,
       unlimitedLoot(),
+      HEROISM_RULES,
+      new PvpFightHonorCache(),
     );
     const lost = await loss.persistFinished(outcome("loss", 0, 20));
     expect(lossCharacters.notes).toEqual([]);
@@ -101,6 +108,8 @@ describe("HuntFightSettlement", () => {
       { notify: async () => undefined },
       recordingBestiary(),
       unlimitedLoot(),
+      HEROISM_RULES,
+      new PvpFightHonorCache(),
     );
     const win = await settlement.persistFinished(outcome("win", 27, 20));
     expect(inventory.grants).toEqual([{ characterId: 1, artifactId: 77, quantity: 1 }]);
@@ -126,6 +135,8 @@ describe("HuntFightSettlement", () => {
         needed: async (_heroId, artikulId, owned) =>
           artikulId === 77 ? Math.max(0, 1 - owned) : null,
       },
+      HEROISM_RULES,
+      new PvpFightHonorCache(),
     );
     await settlement.persistFinished(outcome("win", 27, 20));
     expect(inventory.grants).toEqual([]);
@@ -144,6 +155,8 @@ describe("HuntFightSettlement", () => {
       { notify: async () => undefined },
       recordingBestiary(),
       unlimitedLoot(),
+      HEROISM_RULES,
+      new PvpFightHonorCache(),
     );
     const result = await settlement.persistFinished({
       mode: "hunt",
@@ -181,6 +194,8 @@ describe("HuntFightSettlement", () => {
       { notify: async () => undefined },
       recordingBestiary(),
       unlimitedLoot(),
+      HEROISM_RULES,
+      new PvpFightHonorCache(),
     );
     const loot = await settlement.persistFinished({
       mode: "friendly-practice",
@@ -210,6 +225,62 @@ describe("HuntFightSettlement", () => {
     expect(inventory.grants).toEqual([]);
     expect(loot.size).toBe(0);
   });
+
+  it("grants PvP honor once from applied human damage", async () => {
+    const characters = recordingCharacters();
+    const cache = new PvpFightHonorCache();
+    const settlement = new HuntFightSettlement(
+      identityUow(),
+      fakeCatalog(),
+      characters,
+      recordingInventory(),
+      new SequenceRandom([0, 0, 0, 0]),
+      { routeFor: async () => null },
+      { deposit: async () => undefined },
+      { notify: async () => undefined },
+      recordingBestiary(),
+      unlimitedLoot(),
+      HEROISM_RULES,
+      cache,
+    );
+    const snapshot: FightOutcomeSnapshot = {
+      mode: "pvp",
+      fightId: "44",
+      winnerTeam: 1,
+      kind: "win",
+      humans: [
+        {
+          ...human(10, 1, 0, 50),
+          team: 1,
+          level: 7,
+          maxHp: 111,
+          damageToHumans: 350,
+        },
+        {
+          ...human(11, 2, 0, 0),
+          team: 2,
+          level: 6,
+          maxHp: 108,
+          damageToHumans: 222,
+        },
+      ],
+    };
+    const first = await settlement.persistFinished(snapshot);
+    expect(first.size).toBe(0);
+    expect(characters.notes).toEqual([{ characterId: 1, hp: 50 }]);
+    expect(characters.defeats).toEqual([{ characterId: 2, hp: 0 }]);
+    expect(characters.honorGrants).toEqual([
+      { characterId: 1, operationId: "pvp:44:1", amount: 68 },
+      { characterId: 2, operationId: "pvp:44:2", amount: 26 },
+    ]);
+    expect(cache.sharesFor("44")).toEqual([
+      { characterId: 1, accountId: 10, honor: 68, dmg: 350, rank: "0" },
+      { characterId: 2, accountId: 11, honor: 26, dmg: 222, rank: "0" },
+    ]);
+    characters.honorGrants.length = 0;
+    await settlement.persistFinished(snapshot);
+    expect(characters.honorGrants).toEqual([]);
+  });
 });
 
 function outcome(kind: "win" | "loss", hp: number, damageToBot: number): FightOutcomeSnapshot {
@@ -234,9 +305,12 @@ function human(
   return {
     accountId,
     characterId,
+    team: 1,
     level: 1,
     hp,
+    maxHp: 27,
     damageToBot,
+    damageToHumans: 0,
     leftLive: false,
     pocket: [],
   };
@@ -264,6 +338,7 @@ function recordingCharacters() {
     mps: [] as Array<{ characterId: number; mp: number }>,
     defeats: [] as Array<{ characterId: number; hp: 0 }>,
     grants: [] as Array<{ characterId: number; operationId: string; amount: number }>,
+    honorGrants: [] as Array<{ characterId: number; operationId: string; amount: number }>,
     credits: [] as Array<{ characterId: number; minorUnits: number }>,
     async noteHp(command: { characterId: number; hp: number }) {
       this.notes.push(command);
@@ -292,6 +367,19 @@ function recordingCharacters() {
         progressionDigest: "d",
       };
     },
+    async grantHonor(command: { characterId: number; operationId: string; amount: number }) {
+      this.honorGrants.push(command);
+      return {
+        honorBefore: 0,
+        honorAfter: command.amount,
+        added: command.amount,
+        rank: 0,
+        honorMin: 0,
+        honorMax: 100,
+        honorStatus: 0,
+        contentReleaseId: "r",
+      };
+    },
     async creditMoney(command: { characterId: number; minorUnits: number }) {
       this.credits.push(command);
     },
@@ -301,8 +389,8 @@ function recordingCharacters() {
     async debitMoneyGold() {
       throw new Error("unused");
     },
-    async lockById() {
-      throw new Error("unused");
+    async lockById(characterId: number) {
+      return testHero({ id: characterId });
     },
     async applyEquipmentVitals() {
       throw new Error("unused");
@@ -385,9 +473,17 @@ function fakeCatalog(): Catalog {
     chrome: async () => {
       throw new Error("unused");
     },
-    commonConf: async () => {
-      throw new Error("unused");
-    },
+    commonConf: async () =>
+      ({
+        rank_info: [
+          { id: 0, title: "Простолюдин" },
+          { id: 1, title: "Задира" },
+        ],
+        rank_table: [
+          { rank: "0", honor: "0" },
+          { rank: "1", honor: "100" },
+        ],
+      }) as never,
     storeTypes: async () => [],
     storeLots: async () => [],
     reputationTrack: async () => null,

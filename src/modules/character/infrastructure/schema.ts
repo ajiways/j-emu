@@ -129,6 +129,41 @@ export const experienceGrants = characterSchema.table(
   ],
 );
 
+export const honorGrants = characterSchema.table(
+  "honor_grants",
+  {
+    heroId: integer("hero_id")
+      .notNull()
+      .references(() => heroes.id, { onDelete: "cascade" }),
+    operationId: text("operation_id").notNull(),
+    amount: integer("amount").notNull(),
+    honorBefore: integer("honor_before").notNull(),
+    honorAfter: integer("honor_after").notNull(),
+    rank: integer("rank").notNull(),
+    honorMin: integer("honor_min").notNull(),
+    honorMax: integer("honor_max").notNull(),
+    honorStatus: integer("honor_status").notNull(),
+    contentReleaseId: uuid("content_release_id")
+      .notNull()
+      .references(() => releases.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.heroId, table.operationId] }),
+    check(
+      "honor_grants_operation_id_check",
+      sql`char_length(${table.operationId}) BETWEEN 1 AND 128`,
+    ),
+    check("honor_grants_amount_check", sql`${table.amount} > 0`),
+    check("honor_grants_honor_before_check", sql`${table.honorBefore} >= 0`),
+    check("honor_grants_honor_after_check", sql`${table.honorAfter} >= ${table.honorBefore}`),
+    check("honor_grants_rank_check", sql`${table.rank} >= 0`),
+    check("honor_grants_honor_min_check", sql`${table.honorMin} >= 0`),
+    check("honor_grants_honor_max_check", sql`${table.honorMax} >= ${table.honorMin}`),
+    check("honor_grants_honor_status_check", sql`${table.honorStatus} IN (0, 1)`),
+  ],
+);
+
 export const heroSkills = characterSchema.table(
   "hero_skills",
   {

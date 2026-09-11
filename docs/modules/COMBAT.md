@@ -366,7 +366,20 @@ ADR-0017–0020 достаточны. Invites как active fight: RAM, restart 
 
 Cross-swap двух живых 3↔3 дуэлей; bot↔bot; charging/DoT на shuffle hits;
 practice finished_fights type 6; hunt join team 2. Real PvP assault —
-BG-01, контракт [BATTLEGROUND.md](BATTLEGROUND.md).
+BG-01, контракт [BATTLEGROUND.md](BATTLEGROUND.md). HERO-01 читает PvP
+snapshot (ниже), не hunt loot.
+
+## HERO-01 — PvP honor snapshot
+
+Combat не считает героизм и не пишет `heroes.honor`. На terminal PvP
+(`purpose:"pvp"`) snapshot отдаёт 1v1 humans: `level`, `maxHp`,
+applied урон по вражескому человеку (`damageToHumans`: хилы раздувают
+сумму; кредит как jgr-emu `applied`, не `damageToBot`), `winnerTeam`.
+Все human-hits (melee + glove ending) идут через
+`applyDamageToMeleeTarget`. Не ровно 2 humans — throw в composition.
+Hunt/quest/friendly не грантят героизм; `fight|loot.honor` остаётся 0.
+HTML `fight|info.users[].honor` — leftover INFO. Product-status —
+[CAPABILITIES.md](../CAPABILITIES.md).
 
 ## CMB-09 — quest-fight mode hook
 

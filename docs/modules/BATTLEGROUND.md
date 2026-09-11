@@ -23,14 +23,14 @@ No extra ADR. ADR-0016 / ADR-0018 / ADR-0020 cover copy id from **1**, world
 `instance_id=0`, and RAM-only active combat. `ARC-INS` already split dungeon
 binds from BG match policy.
 
-| Owner          | Holds                                                                                         |
-| -------------- | --------------------------------------------------------------------------------------------- |
-| `battleground` | RAM queue/invite/ban/live score; typed `battleground.finished_*` history; Раскоп card catalog |
-| `instance`     | `copy_type='bg'` copy row and unix expiry; no dungeon bind                                    |
-| `world`        | outdoor 500 and BG rooms/links; `area_conf.bg_id` from authored `bgId`                        |
-| `combat`       | RAM PvP battle; no battleground import. Composition overlays `type:"1"` / `flags:"128"`       |
-| `character`    | `kind` 2/3 for the match, restored to 1 on kick; location / copy shard                        |
-| composition    | OA `arena                                                                                     | *`, `ATTACK`, teleport/kick, esrv windows/stats/map/finish, restart orphan eject |
+| Owner          | Holds                                                                                                                     |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `battleground` | RAM queue/invite/ban/live score; typed `battleground.finished_*` history; Раскоп card catalog                             |
+| `instance`     | `copy_type='bg'` copy row and unix expiry; no dungeon bind                                                                |
+| `world`        | outdoor 500 and BG rooms/links; `area_conf.bg_id` from authored `bgId`                                                    |
+| `combat`       | RAM PvP battle; no battleground import. Composition overlays `type:"1"` / `flags:"128"`                                   |
+| `character`    | `kind` 2/3 for the match, restored to 1 on kick; location / copy shard; persist `heroes.honor` via `grantHonor` (HERO-01) |
+| composition    | OA `arena                                                                                                                 | *`, `ATTACK`, teleport/kick, esrv windows/stats/map/finish, restart orphan eject; PvP honor UoW |
 
 ## Wire
 
@@ -43,13 +43,26 @@ kind 3 → 635). `COME_IN` 636. `common|object:ATTACK` `{nick}` starts PvP
 per kill or 600s timeout → esrv `arena|bg_finish` + kick 500.
 
 `arena|bg_running` empty page. `arena|bg_finished` typed history, page size 10. `arena|great_fights` `{fight_ids:[]}`. `arena|leader_rating` dump groups
-and `rating:{}` (HERO-01 leftover).
+and `rating:{}` (leftover).
 
 Restart drops RAM queue/match. A hero still sitting in 635/636/637 without a
 live match is kicked to 500 on `common|init` / `init2`.
 
+## HERO-01 — match honor
+
+Per-fight raw honor считается в composition из combat snapshot и пишется
+character `grantHonor`. Этот модуль копит RAM `player.honor` / `dmg` /
+`rank` (сумма боёв) и пишет те же поля в `battleground.finished_*` на
+`arena|bg_finish`. `honor_bonus` остаётся 0. Live `user_stats.honor` и
+финиш — сумма боёв, не отдельный lump матча. Observer читает кэш
+settlement на `fightId` (оба героя), не пересчитывает формулу. После
+гранта — `pushMapAndStats` плюс esrv `user|unitframe` / `user|conf`.
+
+Печать справедливости (каталог `{level}-{LEVEL_MAX}`, L6→8668, grant на
+start / strip на kick) **не** в этом срезе.
+
 ## Out of slice
 
-Heroism / fairness seal (HERO-01), other BG maps (POST-04), slaughter /
-fortress / companion, `arena|leader_rating` fill, 637 ritual `client_data`
-overlay, PvP damage/exp overlay on stats.
+Fairness seal, other BG maps (POST-04), slaughter / fortress / companion,
+`arena|leader_rating` fill, 637 ritual `client_data` overlay, PvP EXP
+overlay on stats.

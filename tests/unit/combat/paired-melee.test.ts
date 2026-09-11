@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
-import { tryPairedMelee } from "../../../src/modules/combat/domain/paired-melee.ts";
+import {
+  tryPairedMelee,
+  applyDamageToMeleeTarget,
+} from "../../../src/modules/combat/domain/paired-melee.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
@@ -50,6 +53,7 @@ describe("tryPairedMelee", () => {
       },
     });
     expect(attacker.damageToBot).toBe(0);
+    expect(attacker.damageToHumans).toBe(1);
     expect(defender.hp).toBe(26);
   });
 
@@ -70,6 +74,17 @@ describe("tryPairedMelee", () => {
     expect(resolved.result.kind).toBe("resolved");
     if (resolved.result.kind !== "resolved") throw new Error("expected resolved melee");
     expect(resolved.result.events.some((event) => event.type === "finished")).toBe(false);
+    expect(defender.hp).toBe(0);
+  });
+
+  it("credits applied human HP-loss and ignores overkill past current HP", () => {
+    const attacker = fighter(1, 1, 27);
+    const defender = fighter(2, 2, 3);
+    applyDamageToMeleeTarget(attacker, { kind: "human", human: defender }, 10, {
+      humans: [attacker, defender],
+      bot: null,
+    });
+    expect(attacker.damageToHumans).toBe(3);
     expect(defender.hp).toBe(0);
   });
 

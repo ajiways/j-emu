@@ -17,6 +17,7 @@ import { HuntCombatLoadout } from "../modules/jugger-wire/application/hunt-comba
 import { bootstrapHeroState } from "../modules/jugger-wire/application/bootstrap-hero-state.ts";
 import { buildUserConf } from "../modules/jugger-wire/application/user-conf-block.ts";
 import { locationAreaBlocks } from "../modules/jugger-wire/application/location-area-read.ts";
+import { liveHonorProgress } from "../modules/jugger-wire/application/live-honor-progress.ts";
 import type { BootstrapReadModel } from "../modules/jugger-wire/application/bootstrap-read-model.ts";
 import type { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.ts";
 import type { PresenceFanout } from "../modules/jugger-wire/application/presence-fanout.ts";
@@ -106,6 +107,15 @@ export class BattlegroundChrome {
     this.deps.wake.wake(hero.accountId);
   }
 
+  async pushHonorWindows(accountId: number): Promise<void> {
+    const hero = await this.requireHeroByAccount(accountId);
+    this.deps.outbox.enqueue(accountId, {
+      "user|unitframe": await this.deps.bootstrap.unitframe(accountId),
+      "user|conf": buildUserConf(hero, await liveHonorProgress(this.deps.catalog, hero)),
+    });
+    this.deps.wake.wake(accountId);
+  }
+
   async pushMapAndStats(match: LiveBattlegroundMatch): Promise<void> {
     const areasByHero = await this.areasByHero(match.players.keys());
     for (const player of match.players.values()) {
@@ -180,7 +190,6 @@ export class BattlegroundChrome {
       this.deps.hunt,
       this.deps.quests,
     );
-    const level = await this.deps.catalog.level(hero.level);
     return {
       state: await bootstrapHeroState({
         hero,
@@ -198,7 +207,7 @@ export class BattlegroundChrome {
         hero.instanceCopyId,
       ),
       "user|unitframe": await this.deps.bootstrap.unitframe(hero.accountId),
-      "user|conf": buildUserConf(hero, level),
+      "user|conf": buildUserConf(hero, await liveHonorProgress(this.deps.catalog, hero)),
       "user|view": await this.deps.bootstrap.view(hero.accountId),
       "user|skills": await this.deps.bootstrap.skills(hero.accountId),
     };

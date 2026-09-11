@@ -9,6 +9,8 @@ import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
 import { ChatFightSettlement } from "./chat-fight-settlement.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import { HuntFightSettlement } from "./hunt-fight-settlement.ts";
+import type { HeroismRules } from "./heroism-rules.ts";
+import type { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 import { PartyFightLootNotify } from "./party-fight-loot-notify.ts";
 import { PartyLootRouting } from "./party-loot-routing.ts";
 import type { PartyNotify } from "./party-notify.ts";
@@ -26,6 +28,8 @@ export function createChatHuntSettlement(input: {
   chat: ChatDesk;
   bestiary: HeroBestiary;
   lootNeeded: QuestLootNeeded;
+  heroism: HeroismRules;
+  pvpHonor: PvpFightHonorCache;
 }): ChatFightSettlement {
   return new ChatFightSettlement(
     new HuntFightSettlement(
@@ -45,6 +49,8 @@ export function createChatHuntSettlement(input: {
       ),
       input.bestiary,
       input.lootNeeded,
+      input.heroism,
+      input.pvpHonor,
     ),
     input.chat,
     {
