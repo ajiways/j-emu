@@ -39,7 +39,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/combat/application/combat-service.ts":
     "Process-local hunt/friendly service: start/join/auth/resume/poll, CMB-02 casts, CMB-03 loot/exit take and leave ack",
   "src/modules/combat/domain/battle.ts":
-    "Hunt/friendly Battle owns FightDuel pairing, CMB-08 shuffle/waiter handoff, melee, CMB-06 bot turns, casts, and CMB-04 resume",
+    "Hunt/friendly Battle owns FightDuel pairing, CMB-08 shuffle/waiter handoff, melee, CMB-06 bot turns, casts, CMB-04 resume, and GEAR-01 ending-turn purge clock",
   "src/modules/content/application/content-validator.ts":
     "Single bundle completeness gate including store 504/552 pay and RANK, reputation, professions 2/6, assistant 3/13, farm 4 on area 500, craft recipe 61, set bonuses, USE representatives, fight extra blobs, bot loot, bot spell books, dungeon definitions, battlegrounds, NPC 271, and three engine quests",
   "src/modules/inventory/domain/inventory-service.ts":

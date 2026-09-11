@@ -1,4 +1,5 @@
 import type { CombatEvent } from "../../combat/ports/combat-port.ts";
+import { fightPersEffEvent, fightStandingEffectUseEvent } from "./fight-effect-wire.ts";
 import { huntPersSpellsEvent } from "./hunt-fight-pers-spells.ts";
 import { huntHumanPersFields } from "./hunt-fight-pers-wire.ts";
 import { humanOppNewEvent } from "./human-opp-new-event.ts";
@@ -33,8 +34,10 @@ export function friendlyFightBootstrapEvents(
       team: hero.team,
     },
     huntPersSpellsEvent(event.loadout),
-    { et: "persEff", persId: hero.id },
+    fightPersEffEvent(hero.id, event.heroEffects),
+    ...event.heroEffects.map((fx) => fightStandingEffectUseEvent(fx, hero.id)),
     humanOppNewEvent(opponent, event.opponentAppearance),
-    { et: "persEff", persId: opponent.id },
+    fightPersEffEvent(opponent.id, event.opponentEffects),
+    ...event.opponentEffects.map((fx) => fightStandingEffectUseEvent(fx, opponent.id)),
   ];
 }

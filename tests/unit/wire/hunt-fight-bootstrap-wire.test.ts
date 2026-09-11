@@ -39,6 +39,7 @@ describe("huntFightBootstrapEvents", () => {
       rage: 0,
       aggro: 1,
       loadout: EMPTY_COMBAT_LOADOUT,
+      heroEffects: [],
     }).map((event) => event.et);
     expect(types).toEqual(expect.arrayContaining(["fightState", "persList", "oppwait", "oppnew"]));
   });
@@ -56,6 +57,7 @@ describe("huntFightBootstrapEvents", () => {
       rage: 0,
       aggro: 1,
       loadout: EMPTY_COMBAT_LOADOUT,
+      heroEffects: [],
     }).map((event) => event.et);
     expect(types).toContain("oppnew");
     expect(types).not.toContain("oppwait");

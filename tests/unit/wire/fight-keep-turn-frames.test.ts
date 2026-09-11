@@ -135,6 +135,24 @@ describe("FightWireMapper keep-turn frames", () => {
     ]);
     expect(evTypes(melee[0])).toEqual(["attackwait", "cast"]);
     expect(melee[1]).toEqual({ rs: true, sq: 2 });
+
+    const purged = mapper.frames([
+      { type: "turn-wait", timeoutSeconds: 20 },
+      {
+        type: "damage",
+        sourceId: 1,
+        targetId: 1_000_000,
+        animation: "attack_left",
+        hpChange: -1,
+        targetMaxHp: 20,
+        killed: false,
+      },
+      { type: "effect-purge", effectId: 1 },
+      { type: "command-accepted", sequence: 3 },
+    ]);
+    expect(evTypes(purged[0])).toEqual(["attackwait", "cast", "effPurge"]);
+    expect(purged[1]).toEqual({ rs: true, sq: 3 });
+    expect(JSON.stringify(purged)).not.toContain("timeAdvance");
   });
 });
 

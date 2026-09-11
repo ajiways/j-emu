@@ -6,6 +6,9 @@ type CombatSpellEffect = Readonly<{
   dmgType?: number;
   charging?: number;
   targetCount?: number;
+  duration?: number;
+  forceSelfTargeting?: boolean;
+  realStartTime?: boolean;
   skills?: readonly Readonly<{ skillId: string; value: number }>[];
 }>;
 
@@ -17,6 +20,8 @@ export type CombatSpell = Readonly<{
   flags?: string;
   persRestr?: Readonly<Record<string, unknown>>;
   targetRestr?: Readonly<Record<string, unknown>>;
+  triggers?: unknown;
+  onlyPvP?: unknown;
   effects: readonly CombatSpellEffect[];
 }>;
 
@@ -44,12 +49,20 @@ export type CombatGloveLoadout = Readonly<{
   spells: readonly CombatGloveSpell[];
 }>;
 
+export type CombatGearSpell = Readonly<{
+  artikulId: number;
+  title: string;
+  picture: string;
+  spell: CombatSpell;
+}>;
+
 export type CombatLoadout = Readonly<{
   pocket: readonly CombatPocketRow[];
   glove: CombatGloveLoadout | null;
+  gearSpells: readonly CombatGearSpell[];
 }>;
 
-export const EMPTY_COMBAT_LOADOUT: CombatLoadout = { pocket: [], glove: null };
+export const EMPTY_COMBAT_LOADOUT: CombatLoadout = { pocket: [], glove: null, gearSpells: [] };
 
 export function requireCombatLoadout(loadout: CombatLoadout): void {
   const seen = new Set<number>();
@@ -68,6 +81,7 @@ export function requireCombatLoadout(loadout: CombatLoadout): void {
       throw new Error(`Pocket item ${row.itemId} spell effects are required`);
     }
   }
+  requireGearSpells(loadout);
   if (!loadout.glove) return;
   if (loadout.glove.hits.length !== 8) throw new Error("Glove hits must contain 8 L/C/R steps");
   for (const hit of loadout.glove.hits) {
@@ -80,6 +94,31 @@ export function requireCombatLoadout(loadout: CombatLoadout): void {
     }
     if (spell.spell.effects.length < 1) {
       throw new Error(`Glove spell ${spell.artikulId} effects are required`);
+    }
+  }
+}
+
+function requireGearSpells(loadout: CombatLoadout): void {
+  for (const gear of loadout.gearSpells) {
+    requireWireIdentity(gear.artikulId, "gear spell artikul id");
+    if (!gear.title) throw new Error(`Gear spell ${gear.artikulId} title is required`);
+    if (!gear.picture) throw new Error(`Gear spell ${gear.artikulId} picture is required`);
+    if (gear.spell.triggers !== undefined) {
+      throw new Error(`Gear spell ${gear.artikulId} must not have triggers`);
+    }
+    if (gear.spell.onlyPvP !== undefined) {
+      throw new Error(`Gear spell ${gear.artikulId} must not have onlyPvP`);
+    }
+    if (gear.spell.effects.length < 1) {
+      throw new Error(`Gear spell ${gear.artikulId} effects are required`);
+    }
+    for (const effect of gear.spell.effects) {
+      if (effect.kind !== 3) {
+        throw new Error(`Gear spell ${gear.artikulId} kind must be 3`);
+      }
+      if (effect.duration === undefined) {
+        throw new Error(`Gear spell ${gear.artikulId} duration is required`);
+      }
     }
   }
 }

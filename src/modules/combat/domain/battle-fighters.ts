@@ -30,6 +30,7 @@ export function huntOpener(init: HuntBattleInit): HuntHuman {
     team: 1,
     waiting: false,
     strength: init.heroStrength,
+    startedAtMs: init.startedAt.getTime(),
     loadout: init.loadout,
     appearance: null,
   });
@@ -49,6 +50,7 @@ export function huntJoiner(join: HuntJoinHuman): HuntHuman {
     team: 1,
     waiting: true,
     strength: join.strength,
+    startedAtMs: join.startedAtMs,
     loadout: join.loadout,
     appearance: null,
   });
@@ -58,6 +60,7 @@ export function friendlyHuman(
   fighter: FriendlyDuelBattleInit["challenger"],
   team: 1 | 2,
   waiting: boolean,
+  startedAtMs: number,
 ): HuntHuman {
   return new HuntHuman({
     accountId: fighter.accountId,
@@ -72,6 +75,7 @@ export function friendlyHuman(
     team,
     waiting,
     strength: fighter.strength,
+    startedAtMs,
     loadout: fighter.loadout,
     appearance: { avatar: fighter.avatar, body: fighter.body, sk: fighter.sk },
   });

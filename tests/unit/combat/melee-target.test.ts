@@ -21,6 +21,7 @@ function human(heroId: number, team: 1 | 2, waiting = false): HuntHuman {
     team,
     waiting,
     strength: 10,
+    startedAtMs: 0,
     loadout: EMPTY_COMBAT_LOADOUT,
     appearance: null,
   });

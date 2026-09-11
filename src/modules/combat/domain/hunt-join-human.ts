@@ -12,4 +12,5 @@ export type HuntJoinHuman = Readonly<{
   maxMp: number;
   strength: number;
   loadout: CombatLoadout;
+  startedAtMs: number;
 }>;

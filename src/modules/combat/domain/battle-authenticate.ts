@@ -31,6 +31,7 @@ export function huntAuthenticateEvents(
       rage: human.casts.rage,
       aggro: human.casts.aggro,
       loadout: human.casts.loadout,
+      heroEffects: human.effects.snapshot(),
     },
   ];
   if (!human.waiting && human.turnActive) {
@@ -67,6 +68,8 @@ export function friendlyAuthenticateEvents(
       rage: human.casts.rage,
       aggro: human.casts.aggro,
       loadout: human.casts.loadout,
+      heroEffects: human.effects.snapshot(),
+      opponentEffects: opponent.effects.snapshot(),
     },
   ];
   if (human.turnActive) {

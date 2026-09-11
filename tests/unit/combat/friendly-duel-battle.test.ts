@@ -55,7 +55,7 @@ describe("friendly duel Battle", () => {
     expect(opener.some((event) => event.type === "turn-granted")).toBe(true);
     const waiting = battle.authenticate(2, AUTH_NOW);
     expect(waiting.some((event) => event.type === "turn-granted")).toBe(false);
-    const hit = battle.tryPlayerMelee(1, "center");
+    const hit = battle.tryPlayerMelee(1, "center", AUTH_NOW);
     expect(hit).toMatchObject({
       kind: "resolved",
       events: [
@@ -63,9 +63,9 @@ describe("friendly duel Battle", () => {
         { type: "damage", sourceId: 1, targetId: 2, hpChange: -1, killed: false },
       ],
     });
-    expect(battle.tryPlayerMelee(1, "center")).toEqual({ kind: "ignored" });
+    expect(battle.tryPlayerMelee(1, "center", AUTH_NOW)).toEqual({ kind: "ignored" });
     battle.grantTurn(2, AUTH_NOW);
-    expect(battle.tryPlayerMelee(2, "left").kind).toBe("resolved");
+    expect(battle.tryPlayerMelee(2, "left", AUTH_NOW).kind).toBe("resolved");
     expect(battle.pairedOpponent(1)).toEqual({ kind: "human", accountId: 2 });
     expect(() => battle.resolveBotMelee()).toThrow(/no bot to take a turn/);
   });

@@ -1,4 +1,5 @@
 import type { CombatEvent } from "../../combat/ports/combat-port.ts";
+import { fightPersEffEvent, fightStandingEffectUseEvent } from "./fight-effect-wire.ts";
 import { huntPersSpellsEvent } from "./hunt-fight-pers-spells.ts";
 import { huntHumanPersFields, huntPersListEvent } from "./hunt-fight-pers-wire.ts";
 import { huntOppNewEvent } from "./hunt-opp-new-event.ts";
@@ -28,12 +29,13 @@ export function huntFightBootstrapEvents(
       team: hero.team,
     },
     huntPersSpellsEvent(event.loadout),
-    { et: "persEff", persId: hero.id },
+    fightPersEffEvent(hero.id, event.heroEffects),
+    ...event.heroEffects.map((fx) => fightStandingEffectUseEvent(fx, hero.id)),
   ];
   if (!event.resumePaired) events.push({ et: "oppwait" });
   if (waiting) return events;
   events.push(huntOppNewEvent(bot));
-  events.push({ et: "persEff", persId: bot.id });
+  events.push(fightPersEffEvent(bot.id, []));
   return events;
 }
 

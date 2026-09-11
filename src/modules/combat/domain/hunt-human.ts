@@ -2,6 +2,7 @@ import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { CombatLoadout } from "./combat-loadout.ts";
 import { HuntHumanCastState } from "./hunt-human-cast-state.ts";
 import type { PocketCellSnapshot } from "./fight-outcome-snapshot.ts";
+import { HuntHumanFightEffects } from "./hunt-human-fight-effects.ts";
 
 export type HuntHumanAppearance = Readonly<{
   avatar: string;
@@ -34,6 +35,7 @@ type HuntHumanInit = Readonly<{
   team: 1 | 2;
   waiting: boolean;
   strength: number;
+  startedAtMs: number;
   loadout: CombatLoadout;
   appearance: HuntHumanAppearance | null;
 }>;
@@ -41,6 +43,7 @@ type HuntHumanInit = Readonly<{
 export class HuntHuman {
   authed = false;
   readonly casts: HuntHumanCastState;
+  readonly effects: HuntHumanFightEffects;
   private waitingValue: boolean;
   private turnActiveValue = false;
   private turnDeadlineMsValue: number | null = null;
@@ -54,6 +57,12 @@ export class HuntHuman {
     this.waitingValue = init.waiting;
     this.hpValue = init.hp;
     this.casts = new HuntHumanCastState(init.loadout);
+    this.effects = new HuntHumanFightEffects({
+      heroId: init.heroId,
+      strength: init.strength,
+      startedAtMs: init.startedAtMs,
+      gearSpells: init.loadout.gearSpells,
+    });
   }
 
   get accountId(): number {
@@ -85,6 +94,9 @@ export class HuntHuman {
   }
   get strength(): number {
     return this.init.strength;
+  }
+  meleeStrength(): number {
+    return this.init.strength + this.effects.standingStrength();
   }
   get team(): 1 | 2 {
     return this.init.team;

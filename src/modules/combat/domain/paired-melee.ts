@@ -19,6 +19,7 @@ export function tryPairedMelee(
     fightId: string;
     humans: readonly HuntHuman[];
     bot: BotMeleePresence | null;
+    nowMs: number;
   }>,
 ): Readonly<{ result: PlayerMeleeResult; botHp: number | null; finished: boolean }> {
   const botHp = input.bot === null ? null : input.bot.hp;
@@ -27,11 +28,11 @@ export function tryPairedMelee(
   }
   requireLivingMeleeTarget(target);
   attacker.endTurn();
-  let damage = rollMeleeDamage(attacker.strength, input.random, input.rules);
+  let damage = rollMeleeDamage(attacker.meleeStrength(), input.random, input.rules);
   const orb = attacker.casts.takeOrbPcStr();
   if (orb > 0) damage = Math.max(1, Math.round(damage * (1 + orb / 100)));
   if (attacker.casts.takeGloveCrit()) {
-    damage = meleeDamageBounds(attacker.strength, input.rules).max;
+    damage = meleeDamageBounds(attacker.meleeStrength(), input.rules).max;
   }
   const comboCp = attacker.casts.hits.length > 0 ? attacker.casts.advanceCombo(side) : undefined;
   const hit = applyDamageToMeleeTarget(attacker, target, damage, {
@@ -51,6 +52,9 @@ export function tryPairedMelee(
       ...(comboCp !== undefined ? { comboCp } : {}),
     },
   ];
+  for (const effectId of attacker.effects.onActorEndingTurn(input.nowMs)) {
+    events.push({ type: "effect-purge", effectId });
+  }
   if (hit.finished) {
     events.push({ type: "finished", winnerTeam: attacker.team, fightId: input.fightId });
   }

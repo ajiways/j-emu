@@ -29,7 +29,7 @@ export class CombatMeleeLoop {
       return;
     }
     this.scheduler.cancel(battle.id);
-    const resolved = battle.tryPlayerMelee(accountId, side);
+    const resolved = battle.tryPlayerMelee(accountId, side, this.scheduler.now().getTime());
     if (resolved.kind === "ignored") {
       this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
       return;
@@ -160,12 +160,14 @@ function enqueuePlayerMelee(
   const wait = events.find((event) => event.type === "turn-wait");
   const damage = events.find((event) => event.type === "damage");
   const finished = events.find((event) => event.type === "finished");
+  const purges = events.filter((event) => event.type === "effect-purge");
   if (!wait || wait.type !== "turn-wait" || !damage || damage.type !== "damage") {
     throw new Error("Player melee must emit turn-wait then damage");
   }
   enqueue(accountId, [
     wait,
     damage,
+    ...purges,
     { type: "command-accepted", sequence },
     ...(finished ? [finished] : []),
   ]);

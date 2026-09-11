@@ -19,6 +19,7 @@ function fighter(heroId: number, team: 1 | 2, hp: number): HuntHuman {
     team,
     waiting: false,
     strength: 10,
+    startedAtMs: 0,
     loadout: EMPTY_COMBAT_LOADOUT,
     appearance: null,
   });
@@ -38,6 +39,7 @@ describe("tryPairedMelee", () => {
       fightId: "8",
       humans: [attacker, defender],
       bot: null,
+      nowMs: 0,
     });
     expect(resolved).toMatchObject({
       botHp: null,
@@ -62,6 +64,7 @@ describe("tryPairedMelee", () => {
       fightId: "8",
       humans: [attacker, defender],
       bot: { fightId: 1_000_000, hp: 10, maxHp: 10, team: 2 },
+      nowMs: 0,
     });
     expect(resolved.finished).toBe(false);
     expect(resolved.result.kind).toBe("resolved");
@@ -83,6 +86,7 @@ describe("tryPairedMelee", () => {
         fightId: "8",
         humans: [attacker, defender],
         bot: null,
+        nowMs: 0,
       }),
     ).toThrow(/not a living paired opponent/);
     expect(attacker.turnActive).toBe(true);

@@ -1,6 +1,10 @@
 import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
 import type { Catalog } from "../../catalog/ports/catalog.ts";
-import type { CombatGloveLoadout, CombatLoadout } from "../../combat/domain/combat-loadout.ts";
+import type {
+  CombatGearSpell,
+  CombatGloveLoadout,
+  CombatLoadout,
+} from "../../combat/domain/combat-loadout.ts";
 import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import { toCombatSpell } from "./to-combat-spell.ts";
@@ -34,7 +38,33 @@ export class HuntCombatLoadout {
         spell: toCombatSpell(definition.extra.spell),
       });
     }
-    return { pocket, glove: await this.gloveFrom(items) };
+    return {
+      pocket,
+      glove: await this.gloveFrom(items),
+      gearSpells: await this.gearSpellsFrom(items),
+    };
+  }
+
+  private async gearSpellsFrom(items: readonly InventoryItem[]): Promise<CombatGearSpell[]> {
+    const spells: CombatGearSpell[] = [];
+    for (const item of items) {
+      if (item.location.kind !== "equipment") continue;
+      const definition = await this.requireArtifact(item.artifactId);
+      const spell = definition.extra.spell;
+      if (!spell || spell.effects.length < 1) continue;
+      if (!definition.picture) {
+        throw new Error(
+          `Equipped artifact ${item.artifactId} picture is required for gear-spell img`,
+        );
+      }
+      spells.push({
+        artikulId: item.artifactId,
+        title: definition.title,
+        picture: definition.picture,
+        spell: toCombatSpell(spell),
+      });
+    }
+    return spells;
   }
 
   private async gloveFrom(items: readonly InventoryItem[]): Promise<CombatGloveLoadout | null> {
@@ -45,9 +75,7 @@ export class HuntCombatLoadout {
     const glove = equipped[0];
     if (!glove) return null;
     const definition = await this.requireArtifact(glove.artifactId);
-    if (definition.extra.sockets.length < 1) {
-      throw new Error(`Glove artifact ${glove.artifactId} is missing extra.spells`);
-    }
+    if (definition.extra.sockets.length < 1) return null;
     if (!definition.extra.hits) {
       throw new Error(`Glove artifact ${glove.artifactId} is missing extra.hits`);
     }

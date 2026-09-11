@@ -1,4 +1,5 @@
 import type { CombatLoadout } from "./combat-loadout.ts";
+import type { FightEffectSnap } from "./hunt-human-fight-effects.ts";
 import type { HuntHumanSnap } from "./hunt-human.ts";
 
 export type HuntBotSnap = Readonly<{
@@ -27,6 +28,7 @@ export type BattleEvent =
       rage: number;
       aggro: number;
       loadout: CombatLoadout;
+      heroEffects: readonly FightEffectSnap[];
     }>
   | Readonly<{
       type: "roster-updated";
@@ -65,6 +67,8 @@ export type BattleEvent =
       rage: number;
       aggro: number;
       loadout: CombatLoadout;
+      heroEffects: readonly FightEffectSnap[];
+      opponentEffects: readonly FightEffectSnap[];
     }>
   | Readonly<{ type: "finished"; winnerTeam: 1 | 2; fightId: string }>
   | Readonly<{
@@ -73,12 +77,17 @@ export type BattleEvent =
       animation: string;
       kind: number;
       groupId?: number;
-      flags: string;
+      flags: string | number;
       img: string;
       title: string;
       persId: number;
       dmgType?: number;
+      id?: number;
+      sourceId?: number;
+      remainTime?: number;
+      skills?: Readonly<Record<string, number>>;
     }>
+  | Readonly<{ type: "effect-purge"; effectId: number }>
   | Readonly<{
       type: "buff-cast";
       animation: string;

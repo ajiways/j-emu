@@ -180,6 +180,7 @@ export class CombatService implements CombatPort {
       maxMp: input.heroMaxMp,
       loadout: input.loadout,
       strength: input.heroStrength,
+      startedAtMs: this.scheduler.now().getTime(),
     });
     this.byAccount.set(input.accountId, battle);
     for (const accountId of battle.authedAccountIds()) {
@@ -311,7 +312,7 @@ export class CombatService implements CombatPort {
       this.finishKeepTurn(accountId, command.sequence, battle.tryAggro(accountId));
       return;
     }
-    const resolved = battle.tryGlove(accountId, command.spellId, command.sequence);
+    const resolved = battle.tryGlove(accountId, command.spellId, command.sequence, nowMs);
     if (resolved.kind === "ending") {
       await this.melee.endingGlove(accountId, command.sequence, resolved.events);
       return;

@@ -164,6 +164,7 @@ export function resolveGloveFinisher(
     humans: readonly HuntHuman[];
     bot: BotMeleePresence | null;
     duel: FightDuel;
+    nowMs: number;
   }>,
 ): KeepTurnResult | EndingGloveResult {
   if (!human.authed || input.finished) return { kind: "ignored" };
@@ -184,7 +185,7 @@ export function resolveGloveFinisher(
   });
   human.endTurn();
   const cp = human.casts.spendCombo(glove.cost);
-  const damage = endingGloveDamage(glove.spell, human.strength, input.random, input.rules);
+  const damage = endingGloveDamage(glove.spell, human.meleeStrength(), input.random, input.rules);
   const hit = applyDamageToMeleeTarget(human, target, damage, {
     humans: input.humans,
     bot: input.bot,
@@ -202,6 +203,9 @@ export function resolveGloveFinisher(
       comboCp: cp,
     },
   ];
+  for (const effectId of human.effects.onActorEndingTurn(input.nowMs)) {
+    events.push({ type: "effect-purge", effectId });
+  }
   if (hit.finished) {
     events.push({ type: "finished", winnerTeam: human.team, fightId: input.fightId });
   }

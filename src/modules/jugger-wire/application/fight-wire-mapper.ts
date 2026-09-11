@@ -2,6 +2,7 @@ import type { CombatEvent, FightExit, FightStart } from "../../combat/ports/comb
 import { fightCastEvent } from "./fight-cast-wire.ts";
 import {
   fightBuffCastEvent,
+  fightEffectPurgeEvent,
   fightEffectUseEvent,
   fightNativeCountEvent,
   fightPersCpEvent,
@@ -140,8 +141,17 @@ export class FightWireMapper {
           fightCastEvent(damage),
           ...(damage.comboCp !== undefined ? [fightPersCpEvent(damage.comboCp)] : []),
         ];
+        let consumed = 1;
+        while (events[index + 1 + consumed]?.type === "effect-purge") {
+          const purge = events[index + 1 + consumed];
+          if (!purge || purge.type !== "effect-purge") {
+            throw new Error("effect-purge is missing after melee damage");
+          }
+          packets.push(fightEffectPurgeEvent(purge));
+          consumed += 1;
+        }
         frames.push(fightEventMap(packets));
-        index += 1;
+        index += consumed;
         continue;
       }
       if (event.type === "effect-use") {
@@ -187,6 +197,8 @@ export class FightWireMapper {
         ]);
       case "effect-use":
         return fightEventMap([fightEffectUseEvent(event)]);
+      case "effect-purge":
+        return fightEventMap([fightEffectPurgeEvent(event)]);
       case "buff-cast":
         return fightEventMap([fightBuffCastEvent(event)]);
       case "pers-cp":

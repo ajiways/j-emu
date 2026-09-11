@@ -20,6 +20,7 @@ export function applyPairedMelee(
     humans: readonly HuntHuman[];
     bot: BotMeleePresence | null;
     duel: FightDuel;
+    nowMs: number;
   }>,
 ): Readonly<{ result: PlayerMeleeResult; botHp: number | null; finished: boolean }> {
   const botHp = input.bot === null ? null : input.bot.hp;
@@ -42,6 +43,7 @@ export function applyPairedMelee(
       fightId: input.fightId,
       humans: input.humans,
       bot: input.bot,
+      nowMs: input.nowMs,
     },
   );
   if (resolved.result.kind === "resolved") input.duel.addHit(input.attacker.heroId);
@@ -60,6 +62,7 @@ export function applyPairedGloveEnding(
     humans: readonly HuntHuman[];
     bot: BotMeleePresence | null;
     duel: FightDuel;
+    nowMs: number;
   }>,
 ): KeepTurnResult | EndingGloveResult {
   const ending = resolveGloveFinisher(input.human, input.spellId, input.sequence, {
@@ -70,6 +73,7 @@ export function applyPairedGloveEnding(
     humans: input.humans,
     bot: input.bot,
     duel: input.duel,
+    nowMs: input.nowMs,
   });
   if (ending.kind === "ending") input.duel.addHit(input.human.heroId);
   return ending;

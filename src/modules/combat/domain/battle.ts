@@ -69,8 +69,8 @@ export class Battle {
       this.botHpValue = null;
       this.pairedAccountIdValue = init.challenger.accountId;
       this.humans.push(
-        friendlyHuman(init.challenger, 1, false),
-        friendlyHuman(init.acceptor, 2, false),
+        friendlyHuman(init.challenger, 1, false, init.startedAt.getTime()),
+        friendlyHuman(init.acceptor, 2, false, init.startedAt.getTime()),
       );
       this.duel = new FightDuel(
         init.challenger.heroId,
@@ -204,7 +204,8 @@ export class Battle {
     return this.requireHuman(accountId).heroId;
   }
 
-  tryPlayerMelee(accountId: number, side: "left" | "center" | "right"): PlayerMeleeResult {
+  // prettier-ignore
+  tryPlayerMelee(accountId: number, side: "left" | "center" | "right", nowMs: number): PlayerMeleeResult {
     const human = this.requireAuthed(accountId);
     const resolved = applyPairedMelee({
       attacker: human,
@@ -216,6 +217,7 @@ export class Battle {
       humans: this.humans,
       bot: this.botPresence(),
       duel: this.duel,
+      nowMs,
     });
     if (resolved.botHp !== null) this.botHpValue = resolved.botHp;
     if (resolved.finished) this.finishedValue = true;
@@ -239,11 +241,8 @@ export class Battle {
     return tryAggroCast(this.requireAuthed(accountId));
   }
 
-  tryGlove(
-    accountId: number,
-    spellId: number,
-    sequence: string | number,
-  ): KeepTurnResult | EndingGloveResult {
+  // prettier-ignore
+  tryGlove(accountId: number, spellId: number, sequence: string | number, nowMs: number): KeepTurnResult | EndingGloveResult {
     const human = this.requireAuthed(accountId);
     const keep = tryGloveKeepTurn(human, spellId, sequence);
     if (keep.kind !== "ignored") return keep;
@@ -258,6 +257,7 @@ export class Battle {
       humans: this.humans,
       bot: this.botPresence(),
       duel: this.duel,
+      nowMs,
     });
     if (ending.kind === "ending") {
       if (ending.botHp !== null) this.botHpValue = ending.botHp;
@@ -355,18 +355,13 @@ export class Battle {
     return { duel: this.duel, humans: this.humans, pairedAccountId: this.pairedAccountIdValue };
   }
 
+  // prettier-ignore
   private resolveTarget(attacker: HuntHuman): MeleeTarget {
-    return resolveMeleeTarget({
-      attackerHeroId: attacker.heroId,
-      duel: this.duel,
-      humans: this.humans,
-      bot: this.botPresence(),
-    });
+    return resolveMeleeTarget({ attackerHeroId: attacker.heroId, duel: this.duel, humans: this.humans, bot: this.botPresence() });
   }
 
   private botPresence(): BotMeleePresence | null {
-    if (this.botHpValue === null) return null;
-    return huntBotMeleePresence(this.huntInit(), this.botHpValue);
+    return this.botHpValue === null ? null : huntBotMeleePresence(this.huntInit(), this.botHpValue);
   }
 
   private opener(): HuntHuman {

@@ -46,7 +46,7 @@ function createBattle(random: SequenceRandom, overrides: Partial<HuntBattleInit>
 describe("Battle", () => {
   it("fails instead of accepting a strike before authentication", () => {
     const battle = createBattle(new SequenceRandom([8]));
-    expect(() => battle.tryPlayerMelee(1, "center")).toThrow(/not authenticated/);
+    expect(() => battle.tryPlayerMelee(1, "center", AUTH_NOW)).toThrow(/not authenticated/);
   });
 
   it("resolves player melee without a bot hit or turn grant", () => {
@@ -84,10 +84,11 @@ describe("Battle", () => {
         rage: 0,
         aggro: 1,
         loadout: EMPTY_COMBAT_LOADOUT,
+        heroEffects: [],
       },
       { type: "turn-granted", timeoutSeconds: 20 },
     ]);
-    const resolved = battle.tryPlayerMelee(1, "left");
+    const resolved = battle.tryPlayerMelee(1, "left", AUTH_NOW);
     expect(resolved).toMatchObject({
       kind: "resolved",
       events: [
@@ -103,7 +104,7 @@ describe("Battle", () => {
         },
       ],
     });
-    expect(battle.tryPlayerMelee(1, "center")).toEqual({ kind: "ignored" });
+    expect(battle.tryPlayerMelee(1, "center", AUTH_NOW)).toEqual({ kind: "ignored" });
     const bot = battle.resolveBotMelee();
     expect(bot.events[0]).toMatchObject({
       type: "damage",
@@ -140,7 +141,7 @@ describe("Battle", () => {
       },
     });
     battle.authenticate(1, AUTH_NOW);
-    battle.tryPlayerMelee(1, "left");
+    battle.tryPlayerMelee(1, "left", AUTH_NOW);
     const bot = battle.resolveBotMelee();
     expect(bot.events[0]).toMatchObject({
       type: "damage",
@@ -172,6 +173,7 @@ describe("Battle", () => {
       maxMp: 10,
       strength: 80,
       loadout: EMPTY_COMBAT_LOADOUT,
+      startedAtMs: AUTH_NOW,
     });
     expect(roster).toMatchObject({
       type: "roster-updated",
@@ -180,8 +182,8 @@ describe("Battle", () => {
     const bootstrap = battle.authenticate(2, AUTH_NOW);
     expect(bootstrap[0]).toMatchObject({ type: "hunt-bootstrap", waiting: true });
     expect(bootstrap.some((event) => event.type === "turn-granted")).toBe(false);
-    expect(battle.tryPlayerMelee(2, "center")).toEqual({ kind: "ignored" });
-    const hit = battle.tryPlayerMelee(1, "left");
+    expect(battle.tryPlayerMelee(2, "center", AUTH_NOW)).toEqual({ kind: "ignored" });
+    const hit = battle.tryPlayerMelee(1, "left", AUTH_NOW);
     expect(hit).toMatchObject({
       kind: "resolved",
       events: [{ type: "turn-wait" }, { type: "damage", sourceId: 1, targetId: 1_000_000 }],

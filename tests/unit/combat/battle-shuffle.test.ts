@@ -59,10 +59,11 @@ describe("Battle 3↔3 shuffle", () => {
       maxMp: 10,
       strength: 10,
       loadout: EMPTY_COMBAT_LOADOUT,
+      startedAtMs: AUTH_NOW,
     });
     battle.authenticate(2, AUTH_NOW);
     for (let round = 0; round < 3; round += 1) {
-      expect(battle.tryPlayerMelee(1, "center").kind).toBe("resolved");
+      expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");
       const bot = battle.resolveBotMelee();
       expect(bot.killedPlayer).toBe(false);
       if (round < 2) battle.grantTurn(1, AUTH_NOW);
@@ -75,7 +76,7 @@ describe("Battle 3↔3 shuffle", () => {
       waiterAuthed: true,
     });
     expect(battle.pairedAccountId).toBe(2);
-    expect(battle.tryPlayerMelee(1, "center")).toEqual({ kind: "ignored" });
+    expect(battle.tryPlayerMelee(1, "center", AUTH_NOW)).toEqual({ kind: "ignored" });
     const outcome = battle.outcome("win", 1);
     const actor = outcome.humans.find((human) => human.accountId === 1);
     const waiter = outcome.humans.find((human) => human.accountId === 2);
@@ -92,13 +93,13 @@ describe("Battle 3↔3 shuffle", () => {
     );
     battle.authenticate(1, AUTH_NOW);
     for (let round = 0; round < 3; round += 1) {
-      expect(battle.tryPlayerMelee(1, "center").kind).toBe("resolved");
+      expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");
       battle.resolveBotMelee();
       if (round < 2) battle.grantTurn(1, AUTH_NOW);
     }
     expect(battle.tryShuffleAfterHits()).toEqual({ kind: "reset" });
     expect(battle.pairedAccountId).toBe(1);
     battle.grantTurn(1, AUTH_NOW);
-    expect(battle.tryPlayerMelee(1, "center").kind).toBe("resolved");
+    expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");
   });
 });
