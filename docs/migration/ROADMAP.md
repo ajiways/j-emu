@@ -1076,20 +1076,26 @@
 ### QST-ENG-01 — Board, dialog, book and script engine
 
 - **ID:** `QST-ENG-01`
-- **depends_on:** `WLD-01`, `ECO-01`, `REP-01`, `INV-08`
+- **depends_on:** `WLD-01`, `ECO-01`, `REP-01`, `INV-08`, `CMB-09`
 - **Behavior evidence:** legacy `QUESTS.md`, `QUEST_DIALOG.md`,
   `QUEST_BOARD_ICONS.md`, `NPC_CATALOG.md`.
 - **Content set:** 2–3 синтетических тестовых квеста (не куратский Акрилон),
   выбранных так, чтобы проверить каждый тип goal (talk/kill/loot/buy/equip/
   deliver/area_action) и каждый тип script (`START_FIGHT`, `GRANT_*`, `MSG`,
   flags, waiting AREA).
-- **Architecture checkpoint / decision:** pending — persistent progress
-  aggregate, typed dialog cursor, script operation registry и idempotent
-  transition transaction.
+- **Architecture checkpoint / decision:** complete — отдельный ADR и
+  `ARC-QST` не нужны. Модуль `quests` владеет authored NPC/quest/dialog/script
+  (`release_id`) и player `hero_quests` / goals / facts / waiting. Catalog не
+  держит graph. World — только travel `COME_IN`. `QuestDesk` в composition
+  исполняет GRANT/consume/MSG и после commit — CMB-09 `startHunt(purpose:
+"quest")`. `QuestSignal` с store/PUT_ON/`FightTerminalObserver`. JSONB нет.
+  Clock = request-time waiting + `action_finish`, без DelayScheduler. RNG —
+  `{ unit(): number }`. Dialog `START_FIGHT` в этом срезе; AREA→бой, markers
+  и loot-cap — `QST-ENG-02`. Контракт: [QUESTS.md](../modules/QUESTS.md).
 - **Acceptance:** синтетические тестовые квесты проходят raw-AMF E2E и CEF на
   каждый тип goal/script; движок принимает произвольное authored quest
   definition через content pipeline, не хардкод под конкретный quest key.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### QST-ENG-02 — World/combat integration hooks
 

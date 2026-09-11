@@ -2,9 +2,10 @@
 
 Документ описывает ownership target. Реализованы `identity`, `character`,
 `inventory`, `catalog`, `world`, `combat`, `content`, `mail`, `auction`,
-`trade`, `chat`, `party`, `instance`, `battleground` и `jugger-wire`, но их полный target API ещё не перенесён. `quests`,
-`social`, `economy` и `professions` ниже являются планом, а не
-возможностями runtime.
+`trade`, `chat`, `party`, `instance`, `battleground`, `professions` и
+`jugger-wire`, но их полный target API ещё не перенесён. `quests` —
+checkpoint `QST-ENG-01`, не runtime. `social` и `economy` ниже являются
+планом, а не возможностями runtime.
 Фактический статус находится в [CAPABILITIES.md](../CAPABILITIES.md).
 
 ## Текущий runtime checkpoint
@@ -49,7 +50,8 @@ area presence roster:
   `battleground.finished_*`, Раскоп `general|2` (rooms 635/636/637, return
   500). POST-04 / HERO-01 leftover.
 - Репутация Радвея **5** есть (REP-01, product частично).
-  `quests`, `economy` в runtime нет. PRF-01: `catalog.professions` и
+  `quests` в runtime нет (QST-ENG-01 checkpoint). `economy` модуля нет.
+  PRF-01: `catalog.professions` и
   `hero_professions` (пара 2+6). PRF-02: модуль `professions` владеет
   `hero_assistants` / `hero_farm_stats` / `farm_stocks` и sweep. PRF-03:
   `catalog.craft_recipes` / `hero_recipes`, recipe 61.
@@ -160,15 +162,21 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 восстанавливается. Формат history берётся из старого эмулятора; решение —
 [ADR-0020](../adr/ADR-0020-ephemeral-combat.md).
 
-### `quests` — план
+### `quests` — QST-ENG-01 checkpoint (runtime ещё нет)
 
-**Владеет:** опубликованными определениями квестов/диалогов, прогрессом персонажа, целями и квестовыми фактами. Ссылается на catalog/world ID, но не владеет ими.
+**Владеет:** authored NPC/quest/dialog/goal/script/flag (`release_id`) и
+player `hero_quests` / `hero_quest_goals` / `hero_facts` / waiting.
+Не владеет bag, деньгами, area travel, active fight.
 
-**API:** `listAvailableQuests`, `acceptQuest`, `answerDialog`, `recordSignal`, `turnInQuest`, `getQuestJournal`.
+**API:** `board`, `answer`, `bookTrio`, `cancel`, `recordSignal`,
+`beginAreaAction` / `finishAreaAction`. GRANT/consume/`START_FIGHT`/`MSG` —
+composition `QuestDesk`, не импорт владельцев в domain.
 
-**События:** `quests.accepted.v1`, `quests.goal-progressed.v1`, `quests.completed.v1`, `quests.reward-requested.v1`.
+**События leftover:** `quests.accepted.v1` и outbox не вводятся, пока нет
+асинхронного consumer.
 
-**Шов извлечения:** входные `QuestSignal` создаются адаптерами событий combat/world/inventory. Награда исполняется saga через публичные API character/inventory/economy.
+**Шов извлечения:** `QuestSignal` из store/PUT_ON/`FightTerminalObserver`.
+Контракт: [QUESTS.md](../modules/QUESTS.md).
 
 ### `mail` — MAIL-02 runtime
 

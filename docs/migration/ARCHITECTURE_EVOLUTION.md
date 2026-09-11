@@ -231,11 +231,13 @@ reservation rows или persist сессии через restart.
 **Давление:** immutable definitions, mutable cursor/goals/waiting, signals от
 inventory/world/combat и multi-module rewards имеют разный lifetime.
 
-**Checkpoint:** `QST-ENG-01`/`QST-ENG-02` разделяют authored definitions и
-player progress,
-задают typed `QuestSignal`, script registry и idempotency. `ARC-QST` обязателен,
-если reward нельзя провести через одну orchestration transaction/public ports
-без прямых cross-table writes.
+**Решение QST-ENG-01:** текущих границ достаточно; отдельный `ARC-QST` не
+нужен. Модуль `quests` владеет authored graph и player progress/waiting.
+Награды — composition UoW через character/inventory/reputation ports.
+Dialog `START_FIGHT` — CMB-09 после commit. JSONB и DelayScheduler не
+вводятся. `ARC-QST` понадобится только если reward нельзя провести без
+прямых cross-table writes. AREA→бой, markers и loot-cap — `QST-ENG-02`.
+Контракт: [QUESTS.md](../modules/QUESTS.md).
 
 ### `ARC-INS` — instances для dungeon и BG
 

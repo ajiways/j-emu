@@ -26,7 +26,7 @@ storage / publishers ----^            <- ports
 | `inventory`   | catalog item query                                                                   | catalog revision                         |
 | `world`       | catalog creature query                                                               | combat finished, instances lifecycle     |
 | `combat`      | только собственное storage; snapshots передаются во входной команде                  | abort/lease commands через inbox         |
-| `quests`      | свои definitions/state                                                               | combat/world/inventory/character signals |
+| `quests`      | свои definitions/state (composition владеет GRANT/consume/fight/MSG UoW)             | combat/world/inventory/character signals |
 | `mail`        | character nick/id display query (composition владеет money/bag UoW)                  | ничего                                   |
 | `auction`     | catalog price/title query (composition владеет money/bag/mail UoW)                   | ничего                                   |
 | `trade`       | catalog price query (composition владеет money/bag UoW)                              | ничего                                   |
