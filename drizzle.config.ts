@@ -22,6 +22,9 @@ export default defineConfig({
     "./src/modules/party/infrastructure/schema.ts",
     "./src/modules/instance/infrastructure/schema.ts",
     "./src/modules/professions/infrastructure/schema.ts",
+    "./src/modules/quests/infrastructure/schema.ts",
+    "./src/modules/quests/infrastructure/schema-authored.ts",
+    "./src/modules/quests/infrastructure/schema-ops.ts",
   ],
   out: "./drizzle",
 });

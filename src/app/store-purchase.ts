@@ -40,7 +40,7 @@ export class StorePurchase {
     private readonly world: WorldService,
   ) {}
 
-  async buy(command: StorePurchaseCommand): Promise<void> {
+  async buy(command: StorePurchaseCommand): Promise<readonly number[]> {
     const area = await this.world.area(command.areaId);
     if (area.code !== "store") throw new StoreDeniedError("Здесь нельзя торговать");
     if (command.lines.length < 1) throw new StoreDeniedError("пустая корзина");
@@ -78,6 +78,7 @@ export class StorePurchase {
       grants.push({ artifactId: lot.artikulId, quantity: line.count });
     }
     await this.payAndGrant(command.characterId, totals, grants);
+    return grants.map((grant) => grant.artifactId);
   }
 
   private async loadReputationTitles(

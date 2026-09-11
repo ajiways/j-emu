@@ -95,7 +95,7 @@ export function collectUseIssues(bundle: ContentBundle): readonly string[] {
   }
 
   if (scriptById.has(900584) || scriptById.has(584)) {
-    issues.push("584 must stay NPC until QST-ENG; do not publish openDialog overlay");
+    issues.push("584 uses artifact NPC action, not a use script");
   }
 
   for (const bonus of bundle.bonuses) {

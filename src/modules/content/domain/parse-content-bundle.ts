@@ -22,6 +22,8 @@ import { craftRecipesSchema } from "./parse-craft-content.ts";
 import { dungeonsSchema } from "./parse-dungeon-content.ts";
 import { battlegroundsSchema } from "./parse-battleground-content.ts";
 import { bonusDocumentSchema, useScriptDocumentSchema } from "./parse-use-content.ts";
+import { huntSpawnsSchema } from "./parse-hunt-content.ts";
+import { npcsSchema, questsSchema, worldFactsSchema } from "./parse-quest-content.ts";
 
 const flag = z.union([z.literal(0), z.literal(1)]);
 
@@ -301,69 +303,6 @@ const areaLinkSchema = z
   })
   .strict();
 
-const huntPointSchema = z.object({ x: z.number().finite(), y: z.number().finite() }).strict();
-
-const huntRouteStopSchema = z
-  .object({
-    x: z.number().finite(),
-    y: z.number().finite(),
-    waitMin: z.number().int().nonnegative(),
-    waitMax: z.number().int().nonnegative(),
-  })
-  .strict()
-  .refine((stop) => stop.waitMin <= stop.waitMax, {
-    message: "route wait max is below min",
-  });
-
-const huntSpawnSchema = z
-  .object({
-    id: z.number().int().positive().max(2_147_483_647),
-    areaId: z.string().min(1),
-    botId: z.number().int().positive(),
-    x: z.number().finite(),
-    y: z.number().finite(),
-    huntMask: z.string().min(1),
-    waitMin: z.number().int().nonnegative(),
-    waitMax: z.number().int().nonnegative(),
-    respawnTimeMin: z.number().int().nonnegative(),
-    respawnTimeMax: z.number().int().nonnegative(),
-    zone: z.array(huntPointSchema),
-    route: z.array(huntRouteStopSchema),
-  })
-  .strict()
-  .superRefine((spawn, ctx) => {
-    if (spawn.waitMax < spawn.waitMin) {
-      ctx.addIssue({
-        code: "custom",
-        message: `hunt_spawn ${spawn.id} wait max is below min`,
-      });
-    }
-    if (spawn.respawnTimeMax < spawn.respawnTimeMin) {
-      ctx.addIssue({
-        code: "custom",
-        message: `hunt_spawn ${spawn.id} respawn max is below min`,
-      });
-    }
-    if (spawn.zone.length > 0 && spawn.zone.length < 3) {
-      ctx.addIssue({
-        code: "custom",
-        message: `hunt_spawn ${spawn.id} zone must be empty or have at least 3 points`,
-      });
-    }
-    if (spawn.route.length === 1) {
-      ctx.addIssue({
-        code: "custom",
-        message: `hunt_spawn ${spawn.id} route must be empty or have at least 2 stops`,
-      });
-    }
-    if (spawn.zone.length >= 3 && spawn.route.length >= 2) {
-      ctx.addIssue({
-        code: "custom",
-        message: `hunt_spawn ${spawn.id} cannot author both a route and a zone`,
-      });
-    }
-  });
-
 const bundleSchema = z
   .object({
     schemaVersion: z.literal(PLAYABLE_SLICE_SCHEMA_VERSION),
@@ -371,7 +310,7 @@ const bundleSchema = z
     bots: z.array(botSchema),
     areas: z.array(areaSchema),
     areaLinks: z.array(areaLinkSchema),
-    huntSpawns: z.array(huntSpawnSchema),
+    huntSpawns: huntSpawnsSchema,
     dungeons: dungeonsSchema,
     battlegrounds: battlegroundsSchema,
     storeTypes: storeTypesSchema,
@@ -382,6 +321,9 @@ const bundleSchema = z
     farmResources: farmResourcesSchema,
     areaFarms: areaFarmsSchema,
     craftRecipes: craftRecipesSchema,
+    npcs: npcsSchema,
+    quests: questsSchema,
+    worldFacts: worldFactsSchema,
     bonuses: z.array(bonusDocumentSchema),
     useScripts: z.array(useScriptDocumentSchema),
     skills: z.array(skillDocumentSchema).min(1),

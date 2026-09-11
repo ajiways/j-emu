@@ -34,6 +34,9 @@ import { MailModule } from "../../../src/modules/mail/mail-module.ts";
 import { ProfessionsModule } from "../../../src/modules/professions/professions-module.ts";
 import type { ProfessionsService } from "../../../src/modules/professions/application/professions-service.ts";
 import type { CraftService } from "../../../src/modules/professions/application/craft-service.ts";
+import type { QuestService } from "../../../src/modules/quests/application/quest-service.ts";
+import type { QuestCatalog } from "../../../src/modules/quests/ports/quest-catalog.ts";
+import { QuestsModule } from "../../../src/modules/quests/quests-module.ts";
 import type { MailService } from "../../../src/modules/mail/application/mail-service.ts";
 import type { PartyJoinService } from "../../../src/modules/party/application/party-join-service.ts";
 import type { PartyService } from "../../../src/modules/party/application/party-service.ts";
@@ -332,6 +335,18 @@ describe("module factories", () => {
     ).toThrow(/Professions module requires a random source/);
   });
 
+  it("fails fast when required quests dependencies are missing", () => {
+    expect(() => QuestsModule.create({ database, clock })).toThrow(
+      /Quests module requires a database/,
+    );
+    expect(() =>
+      QuestsModule.create({
+        database: {} as PostgresDatabase,
+        clock: undefined as unknown as Clock,
+      }),
+    ).toThrow(/Quests module requires a clock/);
+  });
+
   it("fails fast when required auction dependencies are missing", () => {
     expect(() => AuctionModule.create({ database, clock })).toThrow(
       /Auction module requires a database/,
@@ -439,6 +454,8 @@ describe("module factories", () => {
         delay: combatDelay,
         professions: {} as ProfessionsService,
         craft: {} as CraftService,
+        quests: {} as QuestService,
+        questCatalog: {} as QuestCatalog,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -635,6 +652,8 @@ describe("module factories", () => {
         delay: combatDelay,
         professions: {} as ProfessionsService,
         craft: {} as CraftService,
+        quests: {} as QuestService,
+        questCatalog: {} as QuestCatalog,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

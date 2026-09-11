@@ -1,20 +1,20 @@
 type BookQuestListBlock = Readonly<{
   status: 100;
   filter_type: string;
-  quests: Readonly<Record<string, never>>;
-  finished_quests_id: readonly [];
+  quests: Readonly<Record<string, unknown>>;
+  finished_quests_id: readonly number[];
   macros_list: readonly [];
 }>;
 
 type BookQuestTargetsBlock = Readonly<{
   status: 100;
-  target_list: readonly [];
+  target_list: readonly unknown[];
   macros_list: readonly [];
 }>;
 
 type BookQuestCountersBlock = Readonly<{
   status: 100;
-  counter_list: readonly [];
+  counter_list: readonly unknown[];
 }>;
 
 export type BookTrioBlocks = Readonly<{

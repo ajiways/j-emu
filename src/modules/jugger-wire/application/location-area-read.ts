@@ -9,9 +9,10 @@ import {
   huntBotsForArea,
   type LocationAreaConfBlock,
 } from "./area-conf-block.ts";
-import { areaLinkToConfItem } from "./area-conf-item-wire.ts";
+import { areaActionConfItem, areaLinkToConfItem, npcConfItem } from "./area-conf-item-wire.ts";
 import { buildHuntBlock, type HuntBlock } from "./hunt-block.ts";
 import type { InstanceHuntWorld } from "../../instance/ports/instance-hunt.ts";
+import type { QuestCatalog } from "../../quests/ports/quest-catalog.ts";
 
 export type LocationAreaBlocks = Readonly<{
   areaConf: LocationAreaConfBlock;
@@ -24,6 +25,7 @@ export async function locationAreaBlocks(
   hero: Hero,
   clock: Clock,
   instanceHunt: InstanceHuntWorld,
+  quests: QuestCatalog,
 ): Promise<LocationAreaBlocks> {
   const area = await world.area(hero.areaId);
   const dungeonSpawns =
@@ -35,7 +37,27 @@ export async function locationAreaBlocks(
     if (!definition) throw new Error(`Bot catalog entry ${spawn.botId} is missing`);
     bots.set(definition.id, definition);
   }
-  const items = (await world.linksFrom(area.id)).map(areaLinkToConfItem);
+  const items = [
+    ...(await world.linksFrom(area.id)).map(areaLinkToConfItem),
+    ...(await quests.npcsInArea(area.id)).map((npc) =>
+      npcConfItem({
+        id: npc.itemId,
+        title: npc.title,
+        picture: npc.picture,
+        description: npc.description,
+        npcId: npc.id,
+      }),
+    ),
+    ...(await quests.areaHotspots(area.id)).map((hotspot) =>
+      areaActionConfItem({
+        id: hotspot.objectId,
+        title: hotspot.title,
+        picture: "",
+        description: hotspot.waitingPopup || hotspot.title,
+        actionId: hotspot.actionId,
+      }),
+    ),
+  ];
   const huntSnapshot =
     hero.instanceCopyId === null
       ? await world.huntSnapshot(area.id)

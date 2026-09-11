@@ -4,6 +4,7 @@ export type FightFinishedNotice = Readonly<{
   winnerTeam: 1 | 2;
   outcome: "win" | "loss" | "last-leave";
   purpose: "hunt" | "quest" | "friendly-duel" | "pvp";
+  botId?: number;
 }>;
 
 export interface FightTerminalObserver {

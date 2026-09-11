@@ -7,13 +7,23 @@ const maxLines = 400;
 const reviewThreshold = 250;
 const lineJustifications: Readonly<Record<string, string>> = {
   "src/app/composition-root.ts":
-    "Wires identity through mail/auction/trade/chat/party/instance/battleground/professions composition UoW and shared DelayScheduler sweeps",
+    "Wires identity through mail/auction/trade/chat/party/instance/battleground/professions/quests composition UoW and shared DelayScheduler sweeps",
+  "src/app/quest-desk.ts":
+    "Quest OA router: NPC board/dialog, book cancel, AREA waiting, script effects, and CMB-09 quest fight start",
+  "src/modules/quests/application/quest-service.ts":
+    "Quest application facade: board, dialog cursor, prior-gate signals, AREA waiting, flags, and bag sync",
+  "src/modules/quests/infrastructure/postgres-quest-catalog.ts":
+    "Active-release quest catalog reads for NPCs, authored quests, dialog, scripts, and AREA hotspots",
+  "src/modules/quests/infrastructure/postgres-quest-rows.ts":
+    "Quest projection row mapping for NPCs, goals, dialog steps, and script ops",
+  "src/modules/quests/infrastructure/postgres-hero-quest-repository.ts":
+    "Hero quest progress rows plus goals, facts, waiting, and FOR UPDATE lock",
   "src/modules/auction/infrastructure/postgres-listing-repository.ts":
     "Auction listing rows plus snapshot columns, search filters, and FOR UPDATE lock/sweep",
   "src/modules/jugger-wire/jugger-wire-module.ts":
-    "HTTP/TCP servers and OA command module factory including mail, auction, trade, chat, party, instance, battleground, professions, and craft ports",
+    "HTTP/TCP servers and OA command module factory including mail, auction, trade, chat, party, instance, battleground, professions, craft, and quest ports",
   "src/modules/jugger-wire/registry/jugger-command-module.ts":
-    "Static OA command constructors including mail, auction, trade, chat, party, instance, battleground, live user|professions, assistant|*, and craft|*",
+    "Static OA command constructors including mail, auction, trade, chat, party, instance, battleground, live user|professions, assistant|*, craft|*, and quest|*",
   "src/modules/character/application/character-service.ts":
     "Character application facade: progression, resources, money, reputation, profession licenses, craft XP bump, learn-bonus, location, and presence",
   "src/modules/character/infrastructure/postgres-hero-repository.ts":
@@ -21,9 +31,9 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/world/domain/hunt-wander.ts":
     "Hunt live motion: route, zone, home park, lock freeze, and respawn hide",
   "src/modules/content/domain/parse-content-bundle.ts":
-    "Zod playable-slice document including store lot pay/requires, reputation, professions, assistants, farms, craft recipes, bonuses, use scripts, bot spell books, hunt wander fields, dungeons, and battlegrounds",
-  "src/modules/content/domain/content-document.ts":
-    "Playable bundle DTO including store pay/requires, reputation, professions, assistants, farms, craft recipes, bonuses, use scripts, artifacts, bot spell books, areas, hunt wander, dungeons, battlegrounds, and bootstrap documents",
+    "Zod playable-slice document including store lot pay/requires, reputation, professions, assistants, farms, craft recipes, bonuses, use scripts, bot spell books, hunt wander fields, dungeons, battlegrounds, NPCs, and quests",
+  "src/modules/content/domain/content-playable-entities.ts":
+    "Playable entity DTOs extracted from the bundle document: artifacts, bots, areas, hunt, store, bonuses, and use scripts",
   "src/modules/character/domain/hero.ts":
     "Hero aggregate owns vitals, money, location lock, instance copy presence, and CMB-04 ghost/injury clock",
   "src/modules/combat/application/combat-service.ts":
@@ -31,7 +41,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/combat/domain/battle.ts":
     "Hunt/friendly Battle owns FightDuel pairing, CMB-08 shuffle/waiter handoff, melee, CMB-06 bot turns, casts, and CMB-04 resume",
   "src/modules/content/application/content-validator.ts":
-    "Single bundle completeness gate including store 504/552 pay and RANK, reputation, professions 2/6, assistant 3/13, farm 4 on area 500, craft recipe 61, set bonuses, USE representatives, fight extra blobs, bot loot, bot spell books, dungeon definitions, and battlegrounds",
+    "Single bundle completeness gate including store 504/552 pay and RANK, reputation, professions 2/6, assistant 3/13, farm 4 on area 500, craft recipe 61, set bonuses, USE representatives, fight extra blobs, bot loot, bot spell books, dungeon definitions, battlegrounds, NPC 271, and three engine quests",
   "src/modules/inventory/domain/inventory-service.ts":
     "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag, INV-05 repair, INV-06 upgrade, INV-07 set-bonus, INV-08 USE/drink, ECO-02 barter consume-by-artikul, MAIL-02 instance take/snapshot grant, AUC-01 auction take, and TRD-01 trade take",
   "src/modules/mail/infrastructure/postgres-letter-repository.ts":
@@ -43,7 +53,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/catalog/infrastructure/postgres-catalog-projection.ts":
     "Active-release materialization for artifacts, bots, store, reputation, professions, assistants, farms, craft recipes, dungeon, and battleground catalog rows",
   "src/modules/jugger-wire/application/bootstrap-read-model.ts":
-    "Flat OA bootstrap/mutation blocks including drink purge, USE mutation, CMB-04 init2 fight|conf, SOC-02 party restore, dungeon hunt, live user|professions, and live assistant|farm_info",
+    "Flat OA bootstrap/mutation blocks including drink purge, USE mutation, CMB-04 init2 fight|conf, SOC-02 party restore, dungeon hunt, live user|professions, live assistant|farm_info, and live book trio",
   "src/modules/professions/application/professions-service.ts":
     "PRF-02 assistant OA mutations plus sweeper finishDue loot/mastery/stock under the professions UoW",
   "src/modules/professions/domain/farm-jobs.ts":

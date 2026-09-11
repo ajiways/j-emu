@@ -9,6 +9,7 @@ import { storeBuyMutation } from "../../application/store-buy-mutation.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
 import { parseStoreBasket } from "./parse-store-basket.ts";
+import type { QuestDesk } from "../../../../app/quest-desk.ts";
 
 export class StoreBuyCommand implements OaCommand {
   static readonly key = "store|buy";
@@ -18,6 +19,7 @@ export class StoreBuyCommand implements OaCommand {
     private readonly bootstrap: BootstrapReadModel,
     private readonly characters: CharacterService,
     private readonly purchase: StorePurchase,
+    private readonly quests: QuestDesk,
   ) {}
 
   async execute(accountId: number, envelope: ObjectActionEnvelope): Promise<OaEncodedResponse> {
@@ -38,15 +40,21 @@ export class StoreBuyCommand implements OaCommand {
   private async handle(context: OaCommandContext, envelope: ObjectActionEnvelope): Promise<object> {
     const hero = await this.characters.getByAccountId(context.accountId);
     if (!hero) throw new Error(`Hero for account ${context.accountId} is missing`);
-    await this.purchase.buy({
+    const granted = await this.purchase.buy({
       characterId: hero.id,
       areaId: hero.areaId,
       lines: parseStoreBasket(envelope),
     });
-    return storeBuyMutation(
+    const bought = storeBuyMutation(
       await this.bootstrap.bag(context.accountId),
       await this.bootstrap.state(context.accountId),
     );
+    const books: Record<string, unknown> = {};
+    for (const artikulId of granted) {
+      const book = await this.quests.recordBuy(hero.id, artikulId);
+      if (book) Object.assign(books, book);
+    }
+    return { ...bought, ...books };
   }
 
   private encode(response: object): OaEncodedResponse {

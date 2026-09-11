@@ -8,6 +8,7 @@ import type { EsrvOutbox, EsrvOutboxEntry } from "./esrv-outbox.ts";
 import type { FightWireMapper } from "./fight-wire-mapper.ts";
 import { isChatOnlyFragment } from "./esrv-chat-only-fragment.ts";
 import type { InstanceHuntWorld } from "../../instance/ports/instance-hunt.ts";
+import type { QuestCatalog } from "../../quests/ports/quest-catalog.ts";
 import { locationAreaBlocks } from "./location-area-read.ts";
 
 type EsrvFrame = Readonly<{
@@ -26,6 +27,7 @@ export class EsrvPollAssembler {
     private readonly outbox: EsrvOutbox,
     private readonly clock: Clock,
     private readonly instanceHunt: InstanceHuntWorld,
+    private readonly quests: QuestCatalog,
   ) {}
 
   async hasImmediateWork(accountId: number): Promise<boolean> {
@@ -45,6 +47,7 @@ export class EsrvPollAssembler {
       hero,
       this.clock,
       this.instanceHunt,
+      this.quests,
     );
     const ctime = this.clock.unixSeconds();
     const frames: EsrvFrame[] = [

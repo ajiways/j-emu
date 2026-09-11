@@ -27,6 +27,7 @@ import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
 import type { UnreadMailQuery } from "../modules/mail/ports/unread-mail.ts";
 import type { PartyMembershipQuery } from "../modules/party/ports/party-membership-query.ts";
 import type { InstanceHuntWorld } from "../modules/instance/ports/instance-hunt.ts";
+import type { QuestCatalog } from "../modules/quests/ports/quest-catalog.ts";
 
 export type BattlegroundChromeDeps = Readonly<{
   definition: BattlegroundDefinition;
@@ -45,6 +46,7 @@ export type BattlegroundChromeDeps = Readonly<{
   unreadMail: UnreadMailQuery;
   party: PartyMembershipQuery;
   hunt: InstanceHuntWorld;
+  quests: QuestCatalog;
 }>;
 
 export class BattlegroundChrome {
@@ -176,6 +178,7 @@ export class BattlegroundChrome {
       hero,
       this.deps.clock,
       this.deps.hunt,
+      this.deps.quests,
     );
     const level = await this.deps.catalog.level(hero.level);
     return {

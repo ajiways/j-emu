@@ -31,12 +31,8 @@ export type UseFromBagResult =
       artikulId: number;
       itemId: number;
     }>
-  | Readonly<{
-      kind: "learn_recipe";
-      dispose: number;
-      artikulId: number;
-      itemId: number;
-    }>;
+  | Readonly<{ kind: "learn_recipe"; dispose: number; artikulId: number; itemId: number }>
+  | Readonly<{ kind: "open_npc"; npcId: number }>;
 
 export async function useFromBag(
   inventory: InventoryRepository,
@@ -73,7 +69,12 @@ export async function useFromBag(
     });
     return { kind: "drink", title: action.title };
   }
-  if (action.code === "NPC") throw UseDeniedError.unsupported("NPC");
+  if (action.code === "NPC") {
+    if (!Number.isInteger(action.param1) || action.param1 < 1) {
+      throw new Error("NPC use action requires param1 npc id");
+    }
+    return { kind: "open_npc", npcId: action.param1 };
+  }
   if (action.code === "LEARN_RECIPE") {
     return {
       kind: "learn_recipe",

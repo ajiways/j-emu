@@ -28,6 +28,7 @@ describe("quest fight terminal hook", () => {
         winnerTeam: 1,
         outcome: "win",
         purpose: "quest",
+        botId: 2,
       },
     ]);
   });
@@ -57,6 +58,7 @@ describe("quest fight terminal hook", () => {
         winnerTeam: 2,
         outcome: "loss",
         purpose: "quest",
+        botId: 2,
       },
     ]);
   });
@@ -75,6 +77,7 @@ describe("quest fight terminal hook", () => {
         winnerTeam: 1,
         outcome: "win",
         purpose: "hunt",
+        botId: 2,
       },
     ]);
   });

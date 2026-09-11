@@ -21,6 +21,7 @@ import type { WorldService } from "../modules/world/domain/world-service.ts";
 import type { PresenceService } from "../modules/world/application/presence-service.ts";
 import type { UnreadMailQuery } from "../modules/mail/ports/unread-mail.ts";
 import type { InstanceHuntWorld } from "../modules/instance/ports/instance-hunt.ts";
+import type { QuestCatalog } from "../modules/quests/ports/quest-catalog.ts";
 import type { BattlegroundCatalog } from "../modules/battleground/ports/battleground-catalog.ts";
 import { isBattlegroundRoom } from "../modules/battleground/domain/battleground-definition.ts";
 
@@ -48,6 +49,7 @@ export type InstanceDeskDeps = Readonly<{
   wake: Readonly<{ wake(accountId: number): void }>;
   unreadMail: UnreadMailQuery;
   battlegrounds: BattlegroundCatalog;
+  quests: QuestCatalog;
 }>;
 
 export class InstanceDesk {
@@ -207,6 +209,7 @@ export class InstanceDesk {
       moved.hero,
       this.deps.clock,
       this.deps.hunt,
+      this.deps.quests,
     );
     this.deps.outbox.enqueue(accountId, {
       state: await bootstrapHeroState({

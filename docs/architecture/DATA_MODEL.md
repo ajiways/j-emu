@@ -22,7 +22,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и pre-baseline миграции `drizzle/0000_foundation_init.sql` плюс последующие
-`drizzle/0001`…`0020`. Поля ниже совпадают с runtime.
+`drizzle/0001`…`0021`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -355,9 +355,9 @@ PRF-02: `catalog.assistant_types` / `farm_resources` / `area_farms`;
 PRF-03: `catalog.craft_recipes` (authored id, typed ingredients jsonb);
 `professions.hero_recipes` (identity id from 1, UNIQUE hero+recipe).
 Контракт: [PROFESSIONS.md](../modules/PROFESSIONS.md).
-QST-ENG-01 (план до реализации): schema `quests` — authored NPC/quest/dialog
-(release_id) и player `hero_quests` / `hero_quest_goals` / `hero_facts`;
-waiting колонки, без JSONB. Контракт: [QUESTS.md](../modules/QUESTS.md).
+QST-ENG-01: schema `quests` — authored NPC/quest/dialog/script (`release_id`)
+и player `hero_quests` / `hero_quest_goals` / `hero_facts`; waiting колонки,
+без JSONB. Контракт: [QUESTS.md](../modules/QUESTS.md).
 Контракт: [INSTANCE.md](../modules/INSTANCE.md), книга —
 [BOOK.md](../modules/BOOK.md).
 BG-01: `battleground.finished_matches` / `finished_players` (typed, не jsonb);

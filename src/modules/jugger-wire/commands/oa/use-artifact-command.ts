@@ -5,6 +5,7 @@ import type { InventoryService } from "../../../inventory/domain/inventory-servi
 import { UseDeniedError } from "../../../inventory/domain/use-denied-error.ts";
 import { ProfessionDeniedError } from "../../../professions/domain/profession-denied-error.ts";
 import type { CraftService } from "../../../professions/application/craft-service.ts";
+import type { QuestDesk } from "../../../../app/quest-desk.ts";
 import type { Clock } from "../../../../shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
 import type { BootstrapReadModel } from "../../application/bootstrap-read-model.ts";
@@ -27,6 +28,7 @@ export class UseArtifactCommand implements OaCommand {
     private readonly combat: CombatPort,
     private readonly clock: Clock,
     private readonly craft: CraftService,
+    private readonly quests: QuestDesk,
   ) {}
 
   decode(envelope: ObjectActionEnvelope): UseArtifactRequest {
@@ -106,6 +108,12 @@ export class UseArtifactCommand implements OaCommand {
             msgText: null,
             includeView: false,
           });
+        }
+        if (used.kind === "open_npc") {
+          return {
+            "common|action": { status: 100, action: "USE" },
+            ...(await this.quests.openNpc(context.accountId, used.npcId)),
+          };
         }
         if (used.kind === "learn_recipe") {
           await this.craft.learnFromBook(hero.id, used.artikulId);

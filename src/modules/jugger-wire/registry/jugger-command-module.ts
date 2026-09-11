@@ -29,7 +29,6 @@ import type { AuctionService } from "../../auction/application/auction-service.t
 import type { MailService } from "../../mail/application/mail-service.ts";
 import { AttackBotCommand } from "../commands/oa/attack-bot-command.ts";
 import { BagDropCommand } from "../commands/oa/bag-drop-command.ts";
-import { BookQuestListCommand } from "../commands/oa/book-quest-list-command.ts";
 import { ChatAddCommand } from "../commands/oa/chat-add-command.ts";
 import { ChatConfCommand } from "../commands/oa/chat-conf-command.ts";
 import { CommonConfCommand } from "../commands/oa/common-conf-command.ts";
@@ -49,28 +48,6 @@ import { PostDeleteCommand } from "../commands/oa/post-delete-command.ts";
 import { PostListCommand } from "../commands/oa/post-list-command.ts";
 import { PostListSentCommand } from "../commands/oa/post-list-sent-command.ts";
 import { PostReadCommand } from "../commands/oa/post-read-command.ts";
-import { AuctionLotCommand } from "../commands/oa/auction-lot-command.ts";
-import { AuctionMyLotCommand } from "../commands/oa/auction-my-lot-command.ts";
-import { AuctionMyBidCommand } from "../commands/oa/auction-my-bid-command.ts";
-import { AuctionMinPriceCommand } from "../commands/oa/auction-min-price-command.ts";
-import { AuctionLotAddCommand } from "../commands/oa/auction-lot-add-command.ts";
-import { AuctionBidCommand } from "../commands/oa/auction-bid-command.ts";
-import { AuctionBuyoutCommand } from "../commands/oa/auction-buyout-command.ts";
-import { AuctionCancelCommand } from "../commands/oa/auction-cancel-command.ts";
-import { AuctionTendersCommand } from "../commands/oa/auction-tenders-command.ts";
-import { AuctionMyTendersCommand } from "../commands/oa/auction-my-tenders-command.ts";
-import { AuctionTenderAddCommand } from "../commands/oa/auction-tender-add-command.ts";
-import { AuctionTenderCancelCommand } from "../commands/oa/auction-tender-cancel-command.ts";
-import { AuctionTenderSellCommand } from "../commands/oa/auction-tender-sell-command.ts";
-import { TradeRequestCommand } from "../commands/oa/trade-request-command.ts";
-import { TradeConfirmCommand } from "../commands/oa/trade-confirm-command.ts";
-import { TradePutCommand } from "../commands/oa/trade-put-command.ts";
-import { TradePutMoneyCommand } from "../commands/oa/trade-put-money-command.ts";
-import { TradeWithdrawCommand } from "../commands/oa/trade-withdraw-command.ts";
-import { TradeSessionReadyCommand } from "../commands/oa/trade-session-ready-command.ts";
-import { TradeSessionDeclineCommand } from "../commands/oa/trade-session-decline-command.ts";
-import { TradeSessionConfirmCommand } from "../commands/oa/trade-session-confirm-command.ts";
-import { TradeDeclineCommand } from "../commands/oa/trade-decline-command.ts";
 import { FightJoinCommand } from "../commands/oa/fight-join-command.ts";
 import { PostSendCommand } from "../commands/oa/post-send-command.ts";
 import { PostSendCodCommand } from "../commands/oa/post-send-cod-command.ts";
@@ -114,13 +91,17 @@ import { AttackNickCommand } from "../commands/oa/attack-nick-command.ts";
 import { AssistantDesk } from "../../../app/assistant-desk.ts";
 import { CraftDesk } from "../../../app/craft-desk.ts";
 import { deskOaCommands } from "./desk-oa-commands.ts";
+import { marketOaCommands } from "./market-oa-commands.ts";
 import type { ProfessionsService } from "../../professions/application/professions-service.ts";
 import type { CraftService } from "../../professions/application/craft-service.ts";
+import type { QuestService } from "../../quests/application/quest-service.ts";
+import { QuestDesk } from "../../../app/quest-desk.ts";
 export class JuggerCommandModule {
   readonly oa: OaCommandRegistry;
   readonly fproxy: FproxyCommandRegistry;
   readonly esrv: EsrvCommandRegistry;
   readonly fightWire: FightWireMapper;
+  readonly quests: QuestDesk;
 
   constructor(
     bootstrap: BootstrapReadModel,
@@ -166,8 +147,21 @@ export class JuggerCommandModule {
     book: BookDesk,
     professions: ProfessionsService,
     craft: CraftService,
+    quests: QuestService,
   ) {
     this.fightWire = fightWire;
+    this.quests = new QuestDesk(
+      quests,
+      characters,
+      inventory,
+      catalog,
+      world,
+      combat,
+      chat,
+      unitOfWork,
+      fightWire,
+      bootstrap,
+    );
     const invites = new FriendlyDuelInvites(clock);
     const propose = new ProposeFriendlyDuel(
       characters,
@@ -233,7 +227,6 @@ export class JuggerCommandModule {
       new FriendlyDuelAcceptCommand(accept),
       new ChatConfCommand(bootstrap, sheet),
       new ChatAddCommand(chat, bootstrap),
-      new BookQuestListCommand(bootstrap, sheet),
       new EmptyCollectionOaCommand("companion|list_user_companions", "companions", bootstrap),
       new EmptyCollectionOaCommand("battlepass|list", "list", bootstrap),
       new EmptyCollectionOaCommand("jail|list", "punishments", bootstrap),
@@ -252,7 +245,7 @@ export class JuggerCommandModule {
         partyNotify,
         dungeonHunt,
       ),
-      new PutOnCommand(unitOfWork, bootstrap, characters, inventory, catalog, combat),
+      new PutOnCommand(unitOfWork, bootstrap, characters, inventory, catalog, combat, this.quests),
       new PutOffCommand(unitOfWork, bootstrap, characters, inventory, catalog, combat),
       new BagDropCommand(
         "common|object:DROP",
@@ -272,7 +265,16 @@ export class JuggerCommandModule {
         inventory,
         combat,
       ),
-      new UseArtifactCommand(unitOfWork, bootstrap, characters, inventory, combat, clock, craft),
+      new UseArtifactCommand(
+        unitOfWork,
+        bootstrap,
+        characters,
+        inventory,
+        combat,
+        clock,
+        craft,
+        this.quests,
+      ),
       new UpgradeCommand(unitOfWork, bootstrap, characters, inventory, combat),
       new ComeInCommand(
         unitOfWork,
@@ -298,7 +300,7 @@ export class JuggerCommandModule {
       ),
       new ResurrectCommand(bootstrap, characters, combat, instanceDesk),
       new StoreListCommand(characters, catalog),
-      new StoreBuyCommand(bootstrap, characters, storePurchase),
+      new StoreBuyCommand(bootstrap, characters, storePurchase, this.quests),
       new StoreRepairCommand(bootstrap, sheet, characters, storeRepair),
       new PostListCommand(characters, mail, catalog),
       new PostListSentCommand(characters, mail, catalog),
@@ -310,58 +312,22 @@ export class JuggerCommandModule {
       new PostRetractCommand(bootstrap, characters, mail, mailClaim, catalog),
       new PostReadCommand(),
       new UserBagOrderCommand(bootstrap),
-      new AuctionLotCommand(characters, auctionBoard, auction, catalog),
-      new AuctionMyLotCommand(characters, auctionBoard, auction, catalog),
-      new AuctionMyBidCommand(characters, auctionBoard, auction, catalog),
-      new AuctionMinPriceCommand(characters, inventory, catalog, auctionBoard),
-      new AuctionLotAddCommand(bootstrap, characters, auctionList),
-      new AuctionBidCommand(bootstrap, characters, auctionBid),
-      new AuctionBuyoutCommand(
-        bootstrap,
+      ...marketOaCommands({
         characters,
+        inventory,
+        catalog,
+        bootstrap,
+        auction,
+        auctionBoard,
+        auctionList,
+        auctionBid,
         auctionBuyout,
-        auctionBoard,
-        auction,
-        catalog,
-      ),
-      new AuctionCancelCommand(
-        bootstrap,
-        characters,
         auctionCancel,
-        auctionBoard,
-        auction,
-        catalog,
-      ),
-      new AuctionTendersCommand(characters, inventory, auctionBoard, auction, catalog),
-      new AuctionMyTendersCommand(characters, auctionBoard, auction, catalog),
-      new AuctionTenderAddCommand(bootstrap, characters, auctionTenderAdd),
-      new AuctionTenderCancelCommand(
-        bootstrap,
-        characters,
-        inventory,
-        auctionTenderCancel,
-        auctionBoard,
-        auction,
-        catalog,
-      ),
-      new AuctionTenderSellCommand(
-        bootstrap,
-        characters,
-        inventory,
+        auctionTenderAdd,
         auctionTenderSell,
-        auctionBoard,
-        auction,
-        catalog,
-      ),
-      new TradeRequestCommand(tradeMutation),
-      new TradeConfirmCommand(tradeMutation),
-      new TradePutCommand(tradeMutation),
-      new TradePutMoneyCommand(tradeMutation),
-      new TradeWithdrawCommand(tradeMutation),
-      new TradeSessionReadyCommand(tradeMutation),
-      new TradeSessionDeclineCommand(tradeMutation),
-      new TradeSessionConfirmCommand(tradeMutation),
-      new TradeDeclineCommand(tradeMutation),
+        auctionTenderCancel,
+        trade: tradeMutation,
+      }),
       new FightJoinCommand(
         "common|object:FIGHT_JOIN",
         unitOfWork,
@@ -390,6 +356,7 @@ export class JuggerCommandModule {
         book,
         assistants: new AssistantDesk(professions, characters),
         craft: new CraftDesk(craft, characters, inventory, catalog),
+        quests: this.quests,
       }),
       new AttackNickCommand(battleground),
     ]);

@@ -382,6 +382,21 @@ describe("parseContentBundle", () => {
     ).toThrow();
   });
 
+  it("rejects a bundle without npc 271", () => {
+    expect(() => new ContentValidator().validate({ ...playable, npcs: [] })).toThrow(
+      /npc 271 is required/,
+    );
+  });
+
+  it("rejects a bundle without quest q_engine_board", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        quests: playable.quests.filter((quest) => quest.key !== "q_engine_board"),
+      }),
+    ).toThrow(/quest q_engine_board is required/);
+  });
+
   it("rejects an NPC href in an area_link", () => {
     const link = playable.areaLinks[0];
     if (!link) throw new Error("playable bundle has no area links");

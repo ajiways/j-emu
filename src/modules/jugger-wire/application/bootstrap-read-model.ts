@@ -8,7 +8,6 @@ import type { InventoryService } from "../../inventory/domain/inventory-service.
 import type { WorldService } from "../../world/domain/world-service.ts";
 import type { CombatPort } from "../../combat/ports/combat-port.ts";
 import type { CommonConfBlock } from "../../content/domain/bootstrap-content.ts";
-import { emptyBookTrio } from "./book-quest-blocks.ts";
 import { overlayCaptureAreaId } from "./chrome-area-overlay.ts";
 import { withHttpsFproxy } from "./personal-details-wire.ts";
 import { artifactSkillWireMap } from "./artifact-skill-wire.ts";
@@ -42,6 +41,9 @@ import type { FightWireMapper } from "./fight-wire-mapper.ts";
 import type { PartySnapshot } from "./party-snapshot.ts";
 import type { InstanceHuntWorld } from "../../instance/ports/instance-hunt.ts";
 import type { ProfessionsService } from "../../professions/application/professions-service.ts";
+import type { QuestCatalog } from "../../quests/ports/quest-catalog.ts";
+import type { QuestService } from "../../quests/application/quest-service.ts";
+import { bookTrioFromSnapshot } from "./quest-book-trio.ts";
 
 export type { HuntBlock, UserUnitframeBlock, HeroStateBlock };
 
@@ -60,6 +62,8 @@ export class BootstrapReadModel {
     private readonly partySnapshot: PartySnapshot,
     private readonly instanceHunt: InstanceHuntWorld,
     private readonly professions: ProfessionsService,
+    private readonly quests: QuestService,
+    private readonly questCatalog: QuestCatalog,
     private readonly policy: Readonly<{
       bagCapacity: number;
       pocketCapacity: number;
@@ -100,13 +104,22 @@ export class BootstrapReadModel {
       clock: this.clock,
       state: await this.heroState(hero, accountId),
       instanceHunt: this.instanceHunt,
+      quests: this.questCatalog,
     });
   }
 
   async hunt(accountId: number): Promise<HuntBlock> {
     const hero = await this.requireHero(accountId);
-    return (await locationAreaBlocks(this.world, this.catalog, hero, this.clock, this.instanceHunt))
-      .hunt;
+    return (
+      await locationAreaBlocks(
+        this.world,
+        this.catalog,
+        hero,
+        this.clock,
+        this.instanceHunt,
+        this.questCatalog,
+      )
+    ).hunt;
   }
 
   async unitframe(accountId: number): Promise<UserUnitframeBlock> {
@@ -224,6 +237,7 @@ export class BootstrapReadModel {
       hero,
       this.clock,
       this.instanceHunt,
+      this.questCatalog,
     );
     return {
       "common|action": { status: 100 },
@@ -267,7 +281,7 @@ export class BootstrapReadModel {
     const hero = await this.requireHero(accountId);
     const level = await this.catalog.level(hero.level);
     const chrome = await this.catalog.chrome();
-    const book = emptyBookTrio("started");
+    const book = bookTrioFromSnapshot(await this.quests.bookSnapshot(hero.id, "started"));
     return {
       "common|init": { status: 100 },
       "common|conf": await this.catalog.commonConf(),
@@ -306,6 +320,7 @@ export class BootstrapReadModel {
       hero,
       this.clock,
       this.instanceHunt,
+      this.questCatalog,
     );
     const chrome = await this.catalog.chrome();
     const partyBlocks = await this.partySnapshot.restore(hero.id);

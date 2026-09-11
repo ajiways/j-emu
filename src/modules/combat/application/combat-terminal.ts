@@ -133,6 +133,9 @@ export class CombatTerminal {
       winnerTeam,
       outcome,
       purpose: battle.purpose,
+      ...(battle.purpose === "hunt" || battle.purpose === "quest"
+        ? { botId: battle.huntHistory().botArtikulId }
+        : {}),
     });
   }
 

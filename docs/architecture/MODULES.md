@@ -2,9 +2,8 @@
 
 Документ описывает ownership target. Реализованы `identity`, `character`,
 `inventory`, `catalog`, `world`, `combat`, `content`, `mail`, `auction`,
-`trade`, `chat`, `party`, `instance`, `battleground`, `professions` и
-`jugger-wire`, но их полный target API ещё не перенесён. `quests` —
-checkpoint `QST-ENG-01`, не runtime. `social` и `economy` ниже являются
+`trade`, `chat`, `party`, `instance`, `battleground`, `professions`,
+`quests` и `jugger-wire`, но их полный target API ещё не перенесён. `social` и `economy` ниже являются
 планом, а не возможностями runtime.
 Фактический статус находится в [CAPABILITIES.md](../CAPABILITIES.md).
 
@@ -50,7 +49,7 @@ area presence roster:
   `battleground.finished_*`, Раскоп `general|2` (rooms 635/636/637, return
   500). POST-04 / HERO-01 leftover.
 - Репутация Радвея **5** есть (REP-01, product частично).
-  `quests` в runtime нет (QST-ENG-01 checkpoint). `economy` модуля нет.
+  `quests` runtime QST-ENG-01: NPC 271, три engine-квеста, USE 584. `economy` модуля нет.
   PRF-01: `catalog.professions` и
   `hero_professions` (пара 2+6). PRF-02: модуль `professions` владеет
   `hero_assistants` / `hero_farm_stats` / `farm_stocks` и sweep. PRF-03:
@@ -162,7 +161,7 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 восстанавливается. Формат history берётся из старого эмулятора; решение —
 [ADR-0020](../adr/ADR-0020-ephemeral-combat.md).
 
-### `quests` — QST-ENG-01 checkpoint (runtime ещё нет)
+### `quests` — QST-ENG-01 runtime
 
 **Владеет:** authored NPC/quest/dialog/goal/script/flag (`release_id`) и
 player `hero_quests` / `hero_quest_goals` / `hero_facts` / waiting.

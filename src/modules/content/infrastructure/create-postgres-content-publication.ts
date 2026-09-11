@@ -3,6 +3,7 @@ import { PostgresCatalogProjection } from "../../catalog/infrastructure/postgres
 import { PostgresCatalogCompatibility } from "../../catalog/infrastructure/postgres-catalog-compatibility.ts";
 import { PostgresWorldProjection } from "../../world/infrastructure/postgres-world-projection.ts";
 import { PostgresFarmStockProjection } from "../../professions/infrastructure/postgres-farm-stock-projection.ts";
+import { PostgresQuestProjection } from "../../quests/infrastructure/postgres-quest-projection.ts";
 import { ContentPublicationService } from "../application/content-publication-service.ts";
 import { ContentActivationCompatibility } from "../application/content-activation-compatibility.ts";
 import { ContentValidator } from "../application/content-validator.ts";
@@ -20,5 +21,6 @@ export function createPostgresContentPublication(
     new ContentValidator(),
     new ContentActivationCompatibility(),
     new PostgresFarmStockProjection(database),
+    new PostgresQuestProjection(database),
   );
 }

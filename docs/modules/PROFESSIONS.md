@@ -45,7 +45,7 @@ ProfessionList only draws ids 2 and 6.
 
 ## Content set
 
-`playable-slice/v26`: dump pair Старатель **2** (type 2, gather) and
+`playable-slice/v27`: dump pair Старатель **2** (type 2, gather) and
 Знаковед **6** (type 1, craft). Remaining 1/3/4/5/7–16, fishing/cooking
 tabs, license NPC — DATA POST-02 / leftover. PRF-03 adds recipe **61**
 and artifacts **1861** / **1714**.

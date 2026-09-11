@@ -1095,7 +1095,7 @@
 - **Acceptance:** синтетические тестовые квесты проходят raw-AMF E2E и CEF на
   каждый тип goal/script; движок принимает произвольное authored quest
   definition через content pipeline, не хардкод под конкретный quest key.
-- **Status:** `next`
+- **Status:** `done`
 
 ### QST-ENG-02 — World/combat integration hooks
 
@@ -1109,7 +1109,7 @@
   и post-commit notifications между quest, world, inventory и combat ports.
 - **Acceptance:** AREA waiting запускает нужный quest-fight через CMB-09
   hook; markers и quest-loot limits работают generic, не per-quest кодом.
-- **Status:** `queued`
+- **Status:** `next`
 
 ## Wave 12 — presentation engines
 

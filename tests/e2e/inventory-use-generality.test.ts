@@ -142,23 +142,29 @@ describe("inventory USE generality", () => {
     expect(bagItemByArtikulId(used, 55)).toMatchObject({ artikul_id: 55, cnt: 1 });
   });
 
-  it("returns 203 for NPC head 584", async () => {
+  it("opens NPC 271 from head 584 without consuming it", async () => {
     const client = await AuthenticatedClient.login(application);
     const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
     await insertBagArtifacts(heroIdFrom(init), [
       { artifactId: 584, durability: 0, durabilityMax: 0 },
     ]);
     const bag = await client.objectAction({ object: "common", action: "init", sq: 2 });
-    const denied = await client.objectAction({
+    const opened = await client.objectAction({
       object: "common",
       action: "action",
       form: { object_class: "ARTIFACT", object_id: requireNumber(bagItemByArtikulId(bag, 584).id) },
       sq: 3,
     });
-    expect(denied["common|action"]).toEqual({
-      status: 203,
-      error: "действие «NPC» пока не поддержано",
-    });
+    expect(opened["common|action"]).toEqual({ status: 100, action: "USE" });
+    const info = objectBlock(opened["npc|info"]);
+    const npc = objectBlock(info.npc);
+    expect(npc.id).toBe(271);
+    expect(npc.title).toBe("Голова мертвеца");
+    const board = objectBlock(opened["npc|quests"]);
+    expect(board.status).toBe(100);
+    expect(Array.isArray(board.quests) ? board.quests : []).toHaveLength(3);
+    const again = await client.objectAction({ object: "common", action: "init", sq: 4 });
+    expect(bagItemByArtikulId(again, 584).artikul_id).toBe(584);
   });
 });
 

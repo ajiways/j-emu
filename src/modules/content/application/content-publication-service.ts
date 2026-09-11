@@ -11,6 +11,7 @@ import type { ContentStore } from "../ports/content-store.ts";
 import type { ContentActivationCompatibility } from "./content-activation-compatibility.ts";
 import type { ContentValidator } from "./content-validator.ts";
 import type { FarmStockProjection } from "../../professions/ports/farm-stock-projection.ts";
+import type { QuestProjection } from "../../quests/ports/quest-projection.ts";
 
 export class ContentPublicationService {
   constructor(
@@ -22,6 +23,7 @@ export class ContentPublicationService {
     private readonly validator: ContentValidator,
     private readonly activation: ContentActivationCompatibility,
     private readonly farmStocks: FarmStockProjection,
+    private readonly quests: QuestProjection,
   ) {}
 
   async publish(bundle: ContentBundle): Promise<PublishedRelease> {
@@ -111,6 +113,11 @@ export class ContentPublicationService {
       craftRecipes: validated.craftRecipes,
     });
     await this.farmStocks.materialize(validated.areaFarms);
+    await this.quests.materialize(release.id, {
+      npcs: validated.npcs,
+      quests: validated.quests,
+      worldFacts: validated.worldFacts,
+    });
     await this.store.activate(release.id);
     return release;
   }

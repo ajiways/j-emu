@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v26",
+  "schemaVersion": "playable-slice/v27",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -4223,6 +4223,199 @@
       "createTitle": "Колба с раствором хрусталя",
       "createLevelMin": 7,
       "tableId": 0
+    }
+  ],
+  "worldFacts": [{ "id": "engine_area", "values": [] }],
+  "npcs": [
+    {
+      "id": 271,
+      "infoId": 271,
+      "title": "Голова мертвеца",
+      "picture": "images/data/npcs/NPC_golova_zombi.jpg",
+      "description": "Рот отсеченной головы застыл в немой агонии.",
+      "elsetext": "",
+      "areaId": "503",
+      "itemId": 1
+    }
+  ],
+  "quests": [
+    {
+      "key": "q_engine_board",
+      "bookId": 1,
+      "title": "Разговор с головой",
+      "description": "Выслушай голову и принеси перчатку из лавки.",
+      "awardDescription": "Опыт",
+      "flags": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "npcId": 271,
+      "pointId": 1,
+      "boardOrd": 1,
+      "welcomeOffer": "Голова хочет поговорить.",
+      "welcomeActive": "Сходи в лавку за перчаткой.",
+      "welcomeReady": "Перчатка при тебе — сдавай.",
+      "awardExp": 5,
+      "awardMoneyMinor": 0,
+      "awardItems": [],
+      "goals": [
+        {
+          "id": "talk",
+          "kind": "talk",
+          "title": "Поговорить с головой",
+          "goalOrd": 1,
+          "limit": 1
+        },
+        {
+          "id": "buy",
+          "kind": "buy",
+          "title": "Купить перчатку",
+          "goalOrd": 2,
+          "limit": 1,
+          "artikuls": [{ "role": "buy", "artikulId": 23 }]
+        },
+        {
+          "id": "equip",
+          "kind": "equip",
+          "title": "Надеть перчатку",
+          "goalOrd": 3,
+          "limit": 1,
+          "artikuls": [{ "role": "equip", "artikulId": 23 }]
+        },
+        {
+          "id": "deliver",
+          "kind": "deliver",
+          "title": "Отдать перчатку",
+          "goalOrd": 4,
+          "limit": 1,
+          "artikuls": [{ "role": "deliver", "artikulId": 23 }]
+        }
+      ],
+      "dialogSteps": [
+        { "type": "npc", "text": "Купи перчатку в лавке, надень и вернись." },
+        { "type": "goal", "goal": "talk", "text": "Принять поручение" },
+        { "type": "player", "id": "accept_board", "text": "Хорошо" },
+        { "type": "reward", "answer": "Сдать задание" }
+      ]
+    },
+    {
+      "key": "q_engine_fight",
+      "bookId": 2,
+      "title": "Ритуал Грызля",
+      "description": "Победи Грызля в квестовом бою.",
+      "awardDescription": "Мясо",
+      "flags": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "npcId": 271,
+      "pointId": 2,
+      "boardOrd": 2,
+      "welcomeOffer": "Голова зовёт на ритуал.",
+      "welcomeActive": "Ритуал ещё не закончен.",
+      "welcomeReady": "Грызль повержен.",
+      "awardExp": 8,
+      "awardMoneyMinor": 0,
+      "awardItems": [],
+      "goals": [
+        {
+          "id": "talk_fight",
+          "kind": "talk",
+          "title": "Выслушать ритуал",
+          "goalOrd": 1,
+          "limit": 1
+        },
+        {
+          "id": "kill_gryzl",
+          "kind": "kill",
+          "title": "Победить Грызля",
+          "goalOrd": 2,
+          "limit": 1,
+          "artikuls": [{ "role": "kill", "artikulId": 2 }]
+        },
+        {
+          "id": "win_ritual",
+          "kind": "win_fight",
+          "title": "Выиграть ритуал",
+          "goalOrd": 3,
+          "limit": 1,
+          "onFinish": [{ "type": "GRANT_ARTIKUL", "artikulId": 77, "count": 1 }]
+        },
+        {
+          "id": "loot_meat",
+          "kind": "loot",
+          "title": "Получить мясо",
+          "goalOrd": 4,
+          "limit": 1,
+          "artikuls": [{ "role": "loot", "artikulId": 77 }]
+        }
+      ],
+      "dialogSteps": [
+        { "type": "npc", "text": "Сразись с Грызлем. Это ритуал." },
+        { "type": "goal", "goal": "talk_fight", "text": "Начать ритуал" },
+        {
+          "type": "player",
+          "id": "start_ritual",
+          "text": "В бой",
+          "toFight": 1,
+          "scripts": [
+            {
+              "type": "START_FIGHT",
+              "mode": "quest",
+              "enemies": [{ "artikulId": 2, "count": 1 }],
+              "allies": [],
+              "chatStart": "",
+              "chatWin": "",
+              "chatLose": ""
+            }
+          ]
+        },
+        {
+          "type": "reward",
+          "answer": "Сдать задание"
+        }
+      ]
+    },
+    {
+      "key": "q_engine_area",
+      "bookId": 3,
+      "title": "Камень на площади",
+      "description": "Кликни камень в Горном поселении.",
+      "awardDescription": "Флаг",
+      "flags": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "npcId": 271,
+      "pointId": 3,
+      "boardOrd": 3,
+      "welcomeOffer": "На площади есть камень.",
+      "welcomeActive": "Кликни камень.",
+      "welcomeReady": "Камень осмотрен.",
+      "awardExp": 3,
+      "awardMoneyMinor": 0,
+      "awardItems": [],
+      "goals": [
+        {
+          "id": "look_stone",
+          "kind": "area_action",
+          "title": "Осмотреть камень",
+          "goalOrd": 1,
+          "limit": 1,
+          "actionId": 8,
+          "objectId": 3,
+          "waitingTitle": "Осмотр",
+          "waitingDurationSec": 1,
+          "waitingPopup": "Камень холодный.",
+          "onFinish": [
+            { "type": "MSG", "text": "Камень осмотрен." },
+            { "type": "SET_FLAG", "flag": "engine_area", "value": "1" }
+          ]
+        }
+      ],
+      "dialogSteps": [
+        { "type": "npc", "text": "Осмотри камень на площади." },
+        { "type": "goal", "goal": "look_stone", "text": "Понял" },
+        { "type": "player", "id": "accept_area", "text": "Иду" },
+        { "type": "reward", "answer": "Сдать задание" }
+      ]
     }
   ]
 }

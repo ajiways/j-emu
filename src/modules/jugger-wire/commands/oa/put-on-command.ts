@@ -16,6 +16,7 @@ import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-comman
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
 import { pocketTargetFromEnvelope } from "./pocket-target-from-envelope.ts";
 import { requireNoActiveFight } from "./require-no-active-fight.ts";
+import type { QuestDesk } from "../../../../app/quest-desk.ts";
 
 type PutOnRequest = Readonly<{ itemId: number; pocketTarget?: PocketTarget }>;
 
@@ -30,6 +31,7 @@ export class PutOnCommand implements OaCommand {
     private readonly inventory: InventoryService,
     private readonly catalog: Catalog,
     private readonly combat: CombatPort,
+    private readonly quests: QuestDesk,
   ) {}
 
   decode(envelope: ObjectActionEnvelope): PutOnRequest {
@@ -66,7 +68,9 @@ export class PutOnCommand implements OaCommand {
             await equippedSkillBonuses(this.inventory, this.catalog, hero.id),
           );
         }
-        return this.bootstrap.equipmentMutation(context.accountId);
+        const mutation = await this.bootstrap.equipmentMutation(context.accountId);
+        const book = await this.quests.recordEquip(hero.id, item.artifactId);
+        return book ? { ...mutation, ...book } : mutation;
       });
     } catch (error) {
       if (error instanceof WearDeniedError) throw new ProtocolError(203, error.message);

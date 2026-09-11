@@ -129,6 +129,17 @@ describe("object-action envelope decoder", () => {
     expect(oaResponseKey(envelope)).toBe("common|action");
   });
 
+  it("maps AREA without code to common|object:AREA", () => {
+    const envelope = decodeObjectActionEnvelope({
+      object: "common",
+      action: "action",
+      form: { object_class: "AREA", object_id: 3, action_id: 8 },
+      sq: 12,
+    });
+    expect(oaRegistryKey(envelope)).toBe("common|object:AREA");
+    expect(oaResponseKey(envelope)).toBe("common|action");
+  });
+
   it("does not stringify a missing code as undefined", () => {
     const envelope = decodeObjectActionEnvelope({
       object: "common",

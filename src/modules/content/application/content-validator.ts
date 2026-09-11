@@ -14,6 +14,7 @@ import { collectReputationIssues } from "./collect-reputation-issues.ts";
 import { collectProfessionIssues, overlayProfessionInfo } from "./collect-profession-issues.ts";
 import { collectFarmIssues } from "./collect-farm-issues.ts";
 import { collectCraftIssues } from "./collect-craft-issues.ts";
+import { collectQuestIssues } from "./collect-quest-issues.ts";
 import { collectSetIssues } from "./collect-set-issues.ts";
 import { collectUpgradeIssues } from "./collect-upgrade-issues.ts";
 import { collectUseIssues } from "./collect-use-issues.ts";
@@ -169,6 +170,7 @@ export class ContentValidator {
     issues.push(...collectProfessionIssues(bundle));
     issues.push(...collectFarmIssues(bundle));
     issues.push(...collectCraftIssues(bundle));
+    issues.push(...collectQuestIssues(bundle));
     issues.push(...collectUpgradeIssues(bundle));
     issues.push(...collectSetIssues(bundle));
     issues.push(...collectUseIssues(bundle));
@@ -225,6 +227,9 @@ export class ContentValidator {
       ...bundle.craftRecipes.map((document) =>
         entry("craft_recipe", String(document.id), document),
       ),
+      ...bundle.npcs.map((document) => entry("npc", String(document.id), document)),
+      ...bundle.quests.map((document) => entry("quest", document.key, document)),
+      ...bundle.worldFacts.map((document) => entry("world_fact", document.id, document)),
       ...bundle.bonuses.map((document) => entry("bonus", String(document.id), document)),
       ...bundle.useScripts.map((document) =>
         entry("use_script", String(document.bonusId), document),
@@ -269,6 +274,9 @@ export class ContentValidator {
       farmResources: bundle.farmResources,
       areaFarms: bundle.areaFarms,
       craftRecipes: bundle.craftRecipes,
+      npcs: bundle.npcs,
+      quests: bundle.quests,
+      worldFacts: bundle.worldFacts,
       bonuses: bundle.bonuses,
       useScripts: bundle.useScripts,
       skills: bundle.skills,

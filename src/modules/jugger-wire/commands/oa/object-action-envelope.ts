@@ -58,6 +58,7 @@ export function oaRegistryKey(envelope: ObjectActionEnvelope): string {
     const code = envelope.form["code"];
     if (code === undefined || code === null || code === "") {
       if (envelope.form["object_class"] === "ARTIFACT") return "common|object:USE";
+      if (envelope.form["object_class"] === "AREA") return "common|object:AREA";
       throw new ProtocolError(203, "common|object requires code");
     }
     if (typeof code !== "string" && typeof code !== "number") {

@@ -23,7 +23,7 @@ import { LongPollCoordinator } from "../modules/jugger-wire/application/long-pol
 import { PresenceFanout } from "../modules/jugger-wire/application/presence-fanout.ts";
 import { HuntAreaFanout } from "../modules/jugger-wire/application/hunt-area-fanout.ts";
 import { HuntLockRelease } from "./hunt-lock-release.ts";
-import { HuntFightSettlement } from "./hunt-fight-settlement.ts";
+import { createChatHuntSettlement } from "./create-chat-hunt-settlement.ts";
 import { StorePurchase } from "./store-purchase.ts";
 import { StoreRepair } from "./store-repair.ts";
 import { MailModule } from "../modules/mail/mail-module.ts";
@@ -31,14 +31,12 @@ import { AuctionModule } from "../modules/auction/auction-module.ts";
 import { createAuctionOps } from "./auction-ops.ts";
 import { startTtlSweeps } from "./ttl-sweeps.ts";
 import { ProfessionsModule } from "../modules/professions/professions-module.ts";
+import { QuestsModule } from "../modules/quests/quests-module.ts";
 import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
 import { TradeDesk } from "./trade-desk.ts";
 import { ChatDesk } from "./chat-desk.ts";
-import { ChatFightSettlement } from "./chat-fight-settlement.ts";
 import { PartyNotify } from "./party-notify.ts";
 import { PartyBagOps } from "./party-bag-ops.ts";
-import { PartyLootRouting } from "./party-loot-routing.ts";
-import { PartyFightLootNotify } from "./party-fight-loot-notify.ts";
 import { TradeModule } from "../modules/trade/trade-module.ts";
 import { PartyModule } from "../modules/party/party-module.ts";
 import { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
@@ -138,6 +136,8 @@ export class CompositionRoot {
         random: extras.farmRandom ?? new SystemRandomSource(),
       });
       closers.push(professions);
+      const quests = QuestsModule.create({ database, clock });
+      closers.push(quests);
       const mail = MailModule.create({
         database,
         clock,
@@ -236,6 +236,7 @@ export class CompositionRoot {
         wake: longPoll,
         unreadMail: mail.service,
         battlegrounds: catalog.battlegrounds,
+        quests: quests.catalog,
       });
       combat.bindWake({ wake: (accountId) => longPoll.wake(accountId) });
       world.service.bindAreaWake(huntFanout);
@@ -247,31 +248,18 @@ export class CompositionRoot {
         huntFanout,
       );
       combat.bindSettlement(
-        new ChatFightSettlement(
-          new HuntFightSettlement(
-            database,
-            catalog.catalog,
-            characters.service,
-            inventory.service,
-            extras.lootRandom ?? new SystemRandomSource(),
-            new PartyLootRouting(party.service),
-            party.bag,
-            new PartyFightLootNotify(
-              party.bag,
-              party.service,
-              characters.service,
-              catalog.catalog,
-              partyNotify,
-            ),
-            characters.bestiary,
-          ),
-          chatDesk,
-          {
-            failed(fightId, error) {
-              process.stderr.write(`fight-chat ${fightId}: ${error.message}\n`);
-            },
-          },
-        ),
+        createChatHuntSettlement({
+          unitOfWork: database,
+          catalog: catalog.catalog,
+          characters: characters.service,
+          inventory: inventory.service,
+          lootRandom: extras.lootRandom ?? new SystemRandomSource(),
+          party: party.service,
+          partyBag: party.bag,
+          partyNotify,
+          chat: chatDesk,
+          bestiary: characters.bestiary,
+        }),
       );
       const { registration, developmentIdentity, mailSend, mailClaim } = createPlayableIdentity({
         identity: identity.service,
@@ -364,12 +352,17 @@ export class CompositionRoot {
         delay,
         professions: professions.service,
         craft: professions.craft,
+        quests: quests.service,
+        questCatalog: quests.catalog,
       });
       closers.push(wire);
       combat.bindTerminalObserver(
-        chainFightTerminal(instanceHuntRelease, {
-          afterFinished: (notice) => wire.battleground.afterFightFinished(notice),
-        }),
+        chainFightTerminal(
+          instanceHuntRelease,
+          chainFightTerminal(wire.quests, {
+            afterFinished: (notice) => wire.battleground.afterFightFinished(notice),
+          }),
+        ),
       );
       return new Application(
         wire.http,

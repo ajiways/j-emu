@@ -34,7 +34,6 @@ import type { WorldService } from "../world/domain/world-service.ts";
 import type { PresenceService } from "../world/application/presence-service.ts";
 import { BootstrapReadModel } from "./application/bootstrap-read-model.ts";
 import { HeroSheetReadModel } from "./application/hero-sheet-read-model.ts";
-import type { ChatConfPolicy } from "./application/chat-conf-block.ts";
 import { EsrvPollAssembler } from "./application/esrv-poll-assembler.ts";
 import { FightWireMapper } from "./application/fight-wire-mapper.ts";
 import type { EsrvOutbox } from "./application/esrv-outbox.ts";
@@ -58,26 +57,12 @@ import type { BattlegroundDesk } from "../../app/battleground-desk.ts";
 import { BookDesk } from "../../app/book-desk.ts";
 import type { ProfessionsService } from "../professions/application/professions-service.ts";
 import type { CraftService } from "../professions/application/craft-service.ts";
+import type { QuestService } from "../quests/application/quest-service.ts";
+import type { QuestCatalog } from "../quests/ports/quest-catalog.ts";
+import type { QuestDesk } from "../../app/quest-desk.ts";
+import type { JuggerWireBootstrapPolicy, JuggerWireFightPolicy } from "./jugger-wire-policy.ts";
 
-export type JuggerWireBootstrapPolicy = Readonly<{
-  bagCapacity: number;
-  pocketCapacity: number;
-  chat: ChatConfPolicy;
-  menuLinks: Readonly<Record<string, string>>;
-}>;
-
-export type JuggerWireFightPolicy = Readonly<{
-  heroSkill: number;
-  heroBody: string;
-  autoFight: number;
-  canLeave: 0 | 1;
-  companionEnabled: 0 | 1;
-  isPvp: 0 | 1;
-  instanceId: string;
-  type: string;
-  isSlaughter: boolean;
-  flags: string;
-}>;
+export type { JuggerWireBootstrapPolicy, JuggerWireFightPolicy } from "./jugger-wire-policy.ts";
 
 export class JuggerWireModule {
   private constructor(
@@ -85,6 +70,7 @@ export class JuggerWireModule {
     private readonly longPoll: LongPollCoordinator,
     private readonly fightTcp: FightTcpServer,
     readonly battleground: BattlegroundDesk,
+    readonly quests: QuestDesk,
   ) {}
 
   static async create(input: {
@@ -138,6 +124,8 @@ export class JuggerWireModule {
     delay: DelayScheduler;
     professions: ProfessionsService;
     craft: CraftService;
+    quests: QuestService;
+    questCatalog: QuestCatalog;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -255,6 +243,8 @@ export class JuggerWireModule {
     const delay = requirePresent(input.delay, "Jugger-wire module requires delay");
     const professions = requirePresent(input.professions, "Jugger-wire requires professions");
     const craft = requirePresent(input.craft, "Jugger-wire requires craft");
+    const quests = requirePresent(input.quests, "Jugger-wire requires quests");
+    const questCatalog = requirePresent(input.questCatalog, "Jugger-wire requires quest catalog");
     try {
       const fightWire = new FightWireMapper(
         {
@@ -278,6 +268,8 @@ export class JuggerWireModule {
         partySnapshot,
         instanceHunt,
         professions,
+        quests,
+        questCatalog,
         bootstrapPolicy,
       );
       const battleground = await createBattlegroundOps({
@@ -302,6 +294,7 @@ export class JuggerWireModule {
         chat,
         unreadMail: mail,
         party,
+        quests: questCatalog,
       });
       const book = new BookDesk({ characters, bestiary, instances });
       const commands = new JuggerCommandModule(
@@ -351,6 +344,7 @@ export class JuggerWireModule {
         book,
         professions,
         craft,
+        quests,
       );
       const esrvPoll = new EsrvPollAssembler(
         characters,
@@ -361,6 +355,7 @@ export class JuggerWireModule {
         outbox,
         clock,
         instanceHunt,
+        questCatalog,
       );
       const http = await new JuggerHttpServer({
         config,
@@ -383,7 +378,7 @@ export class JuggerWireModule {
         await http.close();
         throw error;
       }
-      return new JuggerWireModule(http, longPoll, fightTcp, battleground);
+      return new JuggerWireModule(http, longPoll, fightTcp, battleground, commands.quests);
     } catch (error) {
       longPoll.shutdown();
       throw error;

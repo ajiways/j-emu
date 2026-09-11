@@ -1,8 +1,8 @@
 # Quests (QST-ENG-01)
 
-Checkpoint до coding. Runtime board/dialog/progress ещё нет: bootstrap отдаёт
-пустой `bookTrio`, USE 584 остаётся `203`. Product status:
-[CAPABILITIES.md](../CAPABILITIES.md).
+Runtime board/dialog/progress: NPC **271**, три синтетических квеста,
+USE **584** открывает доску без consume. Product status:
+[CAPABILITIES.md](../CAPABILITIES.md) (CEF ещё не вычеркнут).
 
 ## Sources
 
@@ -51,19 +51,20 @@ Click-ref hotspot ≠ catalog `info_id`, кроме self-ref NPC 271
 ([NPC_CATALOG.md](../../../jgr-emu/docs/NPC_CATALOG.md)). Невалидная ссылка
 на area/bot/artikul/NPC/dialog отменяет весь candidate.
 
-## Schema (план реализации)
+## Schema
 
-JSONB у квестов нет. Authored и progress — колонки.
+JSONB у квестов нет. Authored и progress — колонки. Миграция `0021_quests_engine`.
 
-Authored (`release_id`, публикация): `npcs`, `npc_actions`, `npc_quests`,
-`quests`, `quest_requires`, `quest_award_items`, `quest_goals`,
-`quest_goal_artikuls`, `quest_goal_actions`, `quest_dialog_steps`,
+Authored (`release_id`): `npcs`, `npc_quests`, `quests`, `quest_award_items`,
+`quest_goals` (`object_id`), `quest_goal_artikuls`, `quest_dialog_steps`,
 `quest_script_ops`, `quest_script_fight_roster`, `world_facts`.
+`npc_actions` / `quest_requires` в этом срезе нет (level_min на строке квеста;
+пустой `action_list`).
 
-Player (identity с 1 там, где нужен surrogate): `hero_quests` (`status`
-`active|done`, `dialog_step`, `dialog_cursor` text, waiting columns),
-`hero_quest_goals` (`done` 0/1, `value`; нет строки = цель не на ветке;
-сброс — UPSERT `value=0, done=0`, не DELETE), `hero_facts`.
+Player (identity с 1): `hero_quests` (`status` `active|done`, `dialog_step`,
+`dialog_cursor` text, waiting columns), `hero_quest_goals` (`done` 0/1,
+`value`; нет строки = цель не на ветке; сброс — UPSERT `value=0, done=0`,
+не DELETE), `hero_facts`.
 
 Нет `hero_quests` = квест не взят. Visibility доски считается при чтении.
 Waiting — колонки на `hero_quests`, не RAM и не DelayScheduler.

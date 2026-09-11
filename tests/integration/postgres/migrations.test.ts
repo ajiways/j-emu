@@ -89,6 +89,25 @@ import {
   partyMembers,
 } from "../../../src/modules/party/infrastructure/schema.ts";
 import { areaLinks, areas, huntSpawns } from "../../../src/modules/world/infrastructure/schema.ts";
+import {
+  authoredQuests,
+  npcQuests,
+  npcs,
+  questAwardItems,
+  questGoals,
+  worldFacts,
+} from "../../../src/modules/quests/infrastructure/schema-authored.ts";
+import {
+  heroFacts,
+  heroQuestGoals,
+  heroQuests,
+} from "../../../src/modules/quests/infrastructure/schema.ts";
+import {
+  questDialogSteps,
+  questGoalArtikuls,
+  questScriptFightRoster,
+  questScriptOps,
+} from "../../../src/modules/quests/infrastructure/schema-ops.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
@@ -123,13 +142,14 @@ describe("Drizzle migrations", () => {
       "mail",
       "party",
       "professions",
+      "quests",
       "world",
     ]);
 
     const tables = await names(
       sql`SELECT table_schema || '.' || table_name AS name
           FROM information_schema.tables
-          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','battleground','professions')
+          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','battleground','professions','quests')
             AND table_type = 'BASE TABLE'`,
     );
     expect(tables.sort()).toEqual(
@@ -197,6 +217,19 @@ describe("Drizzle migrations", () => {
         "professions.hero_assistants",
         "professions.hero_farm_stats",
         "professions.hero_recipes",
+        "quests.hero_facts",
+        "quests.hero_quest_goals",
+        "quests.hero_quests",
+        "quests.npc_quests",
+        "quests.npcs",
+        "quests.quest_award_items",
+        "quests.quest_dialog_steps",
+        "quests.quest_goal_artikuls",
+        "quests.quest_goals",
+        "quests.quest_script_fight_roster",
+        "quests.quest_script_ops",
+        "quests.quests",
+        "quests.world_facts",
         "world.area_links",
         "world.areas",
         "world.hunt_spawns",
@@ -266,13 +299,26 @@ describe("Drizzle migrations", () => {
       heroFarmStats,
       farmStocks,
       heroRecipes,
+      npcs,
+      worldFacts,
+      authoredQuests,
+      npcQuests,
+      questAwardItems,
+      questGoals,
+      questGoalArtikuls,
+      questDialogSteps,
+      questScriptOps,
+      questScriptFightRoster,
+      heroQuests,
+      heroQuestGoals,
+      heroFacts,
       drafts,
       draftVersions,
       releases,
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(66);
+    ]).toHaveLength(79);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -300,6 +346,7 @@ describe("Drizzle migrations", () => {
       "0018_profession_catalog_and_hero_licenses.sql",
       "0019_professions_assistants_and_farms.sql",
       "0020_professions_craft_recipes.sql",
+      "0021_quests_engine.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -326,8 +373,9 @@ describe("Drizzle migrations", () => {
       "0018_profession_catalog_and_hero_licenses",
       "0019_professions_assistants_and_farms",
       "0020_professions_craft_recipes",
+      "0021_quests_engine",
     ]);
-    expect(await appliedCount()).toBe(21);
+    expect(await appliedCount()).toBe(22);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -382,6 +430,9 @@ describe("Drizzle migrations", () => {
     expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/farm_resource/);
     expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/area_farm/);
     expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/craft_recipe/);
+    expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/npc/);
+    expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/quest/);
+    expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/world_fact/);
     const tempeffectCheck = await database.session().execute<{ check_clause: string }>(
       sql`SELECT check_clause
           FROM information_schema.check_constraints
