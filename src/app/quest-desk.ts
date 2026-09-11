@@ -17,7 +17,8 @@ import { QuestDeniedError } from "../modules/quests/domain/quest-denied-error.ts
 import type { QuestScriptEffect } from "../modules/quests/domain/quest-script-effect.ts";
 import type { QuestSignal } from "../modules/quests/domain/quest-signal.ts";
 import type { ChatDesk } from "./chat-desk.ts";
-import { startQuestFight } from "./quest-fight-start.ts";
+import { piggybackQuestFight } from "./quest-fight-piggyback.ts";
+import { capDropQuantity } from "../modules/quests/domain/quest-loot-needed.ts";
 import {
   answerIdOf,
   npcRefOf,
@@ -97,6 +98,11 @@ export class QuestDesk {
           notice.accountId,
           hero.id,
           await this.quests.recordSignal(hero.id, { kind: "win_fight" }),
+        );
+        await this.applyEffects(
+          notice.accountId,
+          hero.id,
+          await this.quests.completeParkedAreaFight(hero.id),
         );
       }
       await this.syncBagGoals(notice.accountId, hero.id);
@@ -195,17 +201,26 @@ export class QuestDesk {
 
   private async areaFinish(accountId: number): Promise<OaEncodedResponse> {
     const hero = await this.requireHero(accountId);
-    const mutation = await this.unitOfWork.run(async () => {
+    const leftover = await this.unitOfWork.run(async () => {
       await this.characters.lockById(hero.id);
       return this.applyEffects(accountId, hero.id, await this.quests.finishAreaAction(hero.id));
     });
     return flat({
       "common|action_finish": {
         status: 100,
-        ...(mutation.popup ? { msg_text: mutation.popup } : {}),
+        ...(leftover.popup ? { msg_text: leftover.popup } : {}),
       },
       ...(await this.bookTrio(hero.id, "started")),
       state: await this.bootstrap.state(accountId),
+      ...(await piggybackQuestFight(accountId, leftover, {
+        characters: this.characters,
+        catalog: this.catalog,
+        world: this.world,
+        inventory: this.inventory,
+        combat: this.combat,
+        chat: this.chat,
+        fightWire: this.fightWire,
+      })),
     });
   }
 
@@ -230,10 +245,19 @@ export class QuestDesk {
     questKey: string | undefined,
   ): Promise<void> {
     if (effect.type === "GRANT_ARTIKUL") {
+      const have = await this.inventory.countBagByArtifact({
+        characterId: heroId,
+        artifactId: effect.artikulId,
+      });
+      const quantity = capDropQuantity(
+        effect.count,
+        await this.quests.needed(heroId, effect.artikulId, have),
+      );
+      if (quantity < 1) return;
       await this.inventory.grantToBag({
         characterId: heroId,
         artifactId: effect.artikulId,
-        quantity: effect.count,
+        quantity,
       });
       return;
     }
@@ -313,25 +337,16 @@ export class QuestDesk {
         await this.quests.npcInfo(mutation.npcId),
       );
     }
-    const fight = mutation.effects.find((effect) => effect.type === "START_FIGHT");
-    if (fight && fight.type === "START_FIGHT") {
-      const started = await startQuestFight(hero, fight, {
-        catalog: this.catalog,
-        world: this.world,
-        inventory: this.inventory,
-        combat: this.combat,
-        combatStrength: (id) => this.characters.combatStrength(id),
-      });
-      await this.chat.notifyHuntStarted({
-        accountId,
-        fightId: started.fight.fightId,
-        areaId: hero.areaId,
-        heroNick: hero.nick,
-        botNick: started.botTitle,
-      });
-      blocks["fight|conf"] = this.fightWire.fightConfiguration(started.fight, {});
-    }
-    return blocks;
+    const fight = await piggybackQuestFight(accountId, mutation, {
+      characters: this.characters,
+      catalog: this.catalog,
+      world: this.world,
+      inventory: this.inventory,
+      combat: this.combat,
+      chat: this.chat,
+      fightWire: this.fightWire,
+    });
+    return { ...blocks, ...fight };
   }
 
   private async boardBlocks(

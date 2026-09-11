@@ -12,6 +12,7 @@ import { HuntFightSettlement } from "./hunt-fight-settlement.ts";
 import { PartyFightLootNotify } from "./party-fight-loot-notify.ts";
 import { PartyLootRouting } from "./party-loot-routing.ts";
 import type { PartyNotify } from "./party-notify.ts";
+import type { QuestLootNeeded } from "../modules/quests/ports/quest-loot-needed.ts";
 
 export function createChatHuntSettlement(input: {
   unitOfWork: UnitOfWork;
@@ -24,6 +25,7 @@ export function createChatHuntSettlement(input: {
   partyNotify: PartyNotify;
   chat: ChatDesk;
   bestiary: HeroBestiary;
+  lootNeeded: QuestLootNeeded;
 }): ChatFightSettlement {
   return new ChatFightSettlement(
     new HuntFightSettlement(
@@ -42,6 +44,7 @@ export function createChatHuntSettlement(input: {
         input.partyNotify,
       ),
       input.bestiary,
+      input.lootNeeded,
     ),
     input.chat,
     {

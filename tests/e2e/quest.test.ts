@@ -108,7 +108,7 @@ describe("quest engine", () => {
     await finishStartedMeleeHunt(client, fightId, (ms) => harness.elapseCombat(ms), sq + 2);
     const after = await client.objectAction({ object: "common", action: "init", sq: 50 });
     expect(record(after.state, "state").ghost).toBeUndefined();
-    expect(bagItemByArtikulId(after, 77).cnt).toBeGreaterThanOrEqual(5);
+    expect(bagItemByArtikulId(after, 77).cnt).toBeGreaterThanOrEqual(4);
     await turnIn(client, 2, 51);
     const board = await client.objectAction({
       object: "npc",
@@ -121,15 +121,30 @@ describe("quest engine", () => {
     );
   });
 
-  it("waits on AREA 3/8, denies early finish, then sets engine_area", async () => {
+  it("waits on AREA 3/8, starts a quest fight vs Gryzl, then sets engine_area", async () => {
     const client = await AuthenticatedClient.login(application);
     await client.objectAction({ object: "common", action: "init", sq: 1 });
-    await acceptQuest(client, 3, 2);
+    const sq = await putOnStarterGloveIfInBag(client, 2);
+    await acceptQuest(client, 3, sq);
+    const init = await client.objectAction({ object: "common", action: "init2", sq: sq + 2 });
+    const items = areaItems(init);
+    expect(
+      items.some((item) => {
+        const href = record(record(item, "item").href, "href");
+        return href.object === "common" && Number(record(item, "item").id) === 3;
+      }),
+    ).toBe(true);
+    expect(
+      items.some((item) => {
+        const href = record(record(item, "item").href, "href");
+        return href.object === "npc" && href.ref === 2;
+      }),
+    ).toBe(false);
     const waiting = await client.objectAction({
       object: "common",
       action: "action",
       form: { object_class: "AREA", object_id: 3, action_id: 8 },
-      sq: 4,
+      sq: sq + 3,
     });
     expect(waiting["common|action"]).toEqual({ status: 100, action: "8" });
     const wait = record(waiting["common|waiting"], "waiting");
@@ -138,17 +153,21 @@ describe("quest engine", () => {
     const early = await client.objectAction({
       object: "common",
       action: "action_finish",
-      sq: 5,
+      sq: sq + 4,
     });
     expect(early["common|action_finish"]).toEqual({ status: 203, error: "Ещё рано" });
     await harness.advanceClock(1000);
     const finished = await client.objectAction({
       object: "common",
       action: "action_finish",
-      sq: 6,
+      sq: sq + 5,
     });
     expect(record(finished["common|action_finish"], "finish").status).toBe(100);
-    await turnIn(client, 3, 7);
+    const fightId = huntFightIdFrom(finished);
+    await finishStartedMeleeHunt(client, fightId, (ms) => harness.elapseCombat(ms), sq + 6);
+    const after = await client.objectAction({ object: "common", action: "init", sq: 80 });
+    expect(record(after.state, "state").ghost).toBeUndefined();
+    await turnIn(client, 3, 81);
   });
 });
 
@@ -224,4 +243,12 @@ function record(value: AmfValue | undefined, label: string): Record<string, AmfV
 function requireNumber(value: AmfValue | undefined): number {
   if (typeof value !== "number") throw new Error("expected a number");
   return value;
+}
+
+function areaItems(payload: Record<string, AmfValue>): AmfValue[] {
+  const wrapper = record(payload["common|area_conf"], "common|area_conf");
+  const nested = record(wrapper["area_conf"], "area_conf");
+  const items = nested.items;
+  if (!Array.isArray(items)) throw new Error("area_conf.items must be an array");
+  return items;
 }

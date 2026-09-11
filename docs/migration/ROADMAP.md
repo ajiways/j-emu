@@ -1125,7 +1125,7 @@
   после этого среза. Контракт: [QUESTS.md](../modules/QUESTS.md).
 - **Acceptance:** AREA waiting запускает нужный quest-fight через CMB-09
   hook; markers и quest-loot limits работают generic, не per-quest кодом.
-- **Status:** `next`
+- **Status:** `done`
 
 ## Wave 12 — presentation engines
 
@@ -1139,7 +1139,7 @@
   equipment snapshot и effect registry без смены inventory ownership.
 - **Acceptance:** поддержанный equipped spell attaches/procs с точным
   packet order и истекает по authored policy.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### HERO-01 — PvP heroism
 

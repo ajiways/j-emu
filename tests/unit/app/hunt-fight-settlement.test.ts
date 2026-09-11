@@ -30,6 +30,7 @@ describe("HuntFightSettlement", () => {
       { deposit: async () => undefined },
       { notify: async () => undefined },
       bestiary,
+      unlimitedLoot(),
     );
     const win = await settlement.persistFinished(outcome("win", 27, 20));
     expect(characters.notes).toEqual([{ characterId: 1, hp: 27 }]);
@@ -75,6 +76,7 @@ describe("HuntFightSettlement", () => {
       { deposit: async () => undefined },
       { notify: async () => undefined },
       lossBestiary,
+      unlimitedLoot(),
     );
     const lost = await loss.persistFinished(outcome("loss", 0, 20));
     expect(lossCharacters.notes).toEqual([]);
@@ -98,12 +100,35 @@ describe("HuntFightSettlement", () => {
       { deposit: async () => undefined },
       { notify: async () => undefined },
       recordingBestiary(),
+      unlimitedLoot(),
     );
     const win = await settlement.persistFinished(outcome("win", 27, 20));
     expect(inventory.grants).toEqual([{ characterId: 1, artifactId: 77, quantity: 1 }]);
     expect(win.get(10)).toMatchObject({
       loot: { "77": { artikul_id: 77, amount: 1 } },
     });
+  });
+
+  it("clips hunt drops to the current quest loot remainder", async () => {
+    const inventory = recordingInventory();
+    inventory.bag.set(77, 1);
+    const settlement = new HuntFightSettlement(
+      identityUow(),
+      fakeCatalog(),
+      recordingCharacters(),
+      inventory,
+      new SequenceRandom([0, 0.2, 0.95, 1]),
+      { routeFor: async () => null },
+      { deposit: async () => undefined },
+      { notify: async () => undefined },
+      recordingBestiary(),
+      {
+        needed: async (_heroId, artikulId, owned) =>
+          artikulId === 77 ? Math.max(0, 1 - owned) : null,
+      },
+    );
+    await settlement.persistFinished(outcome("win", 27, 20));
+    expect(inventory.grants).toEqual([]);
   });
 
   it("splits EXP by damage and gives loot only to the top damager", async () => {
@@ -118,6 +143,7 @@ describe("HuntFightSettlement", () => {
       { deposit: async () => undefined },
       { notify: async () => undefined },
       recordingBestiary(),
+      unlimitedLoot(),
     );
     const result = await settlement.persistFinished({
       mode: "hunt",
@@ -154,6 +180,7 @@ describe("HuntFightSettlement", () => {
       { deposit: async () => undefined },
       { notify: async () => undefined },
       recordingBestiary(),
+      unlimitedLoot(),
     );
     const loot = await settlement.persistFinished({
       mode: "friendly-practice",
@@ -298,13 +325,21 @@ function snapshot(characterId: number, hp: number) {
   };
 }
 
+function unlimitedLoot() {
+  return { needed: async () => null };
+}
+
 function recordingInventory() {
   const inventory = {
     refills: [] as unknown[],
     grants: [] as unknown[],
     deaths: [] as unknown[],
-    async grantToBag(command: unknown) {
+    bag: new Map<number, number>(),
+    async grantToBag(command: { characterId: number; artifactId: number; quantity: number }) {
       inventory.grants.push(command);
+    },
+    async countBagByArtifact(command: { artifactId: number }) {
+      return inventory.bag.get(command.artifactId) ?? 0;
     },
     async refillPocketAfterFight(command: unknown) {
       inventory.refills.push(command);

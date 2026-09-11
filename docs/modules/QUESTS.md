@@ -49,10 +49,8 @@ public ports. Nested `UnitOfWork.run` переиспользует ту же т�
    `GRANT_ARTIKUL` **77**; loot-goal считает сумку; hunt drop того же artikul
    режется `needed` (QST-ENG-02).
 3. **Area** — `area_action` на объекте 503 (item id ≠ 5 и ≠ 7):
-   `common|waiting` → `action_finish`. Coding вешает `START_FIGHT`
-   `mode:"quest"` vs bot **2** на onFinish этой цели (тот же key, не
-   четвёртый квест). Без `START_FIGHT` путь QST-ENG-01 (`MSG` + `SET_FLAG`)
-   остаётся.
+   `common|waiting` → `action_finish` → leftover `START_FIGHT` `mode:"quest"`
+   vs bot **2**; после победы MSG + `SET_FLAG`.
 
 `book_id` / `point_id` authored с 1, не живые id из `quest_info.amf` и не 1617.
 Click-ref hotspot ≠ catalog `info_id`, кроме self-ref NPC 271

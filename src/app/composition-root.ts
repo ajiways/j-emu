@@ -259,6 +259,7 @@ export class CompositionRoot {
           partyNotify,
           chat: chatDesk,
           bestiary: characters.bestiary,
+          lootNeeded: quests.service,
         }),
       );
       const { registration, developmentIdentity, mailSend, mailClaim } = createPlayableIdentity({

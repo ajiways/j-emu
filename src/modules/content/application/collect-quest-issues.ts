@@ -76,6 +76,9 @@ export function collectQuestIssues(bundle: ContentBundle): readonly string[] {
   if (areaGoal && areaGoal.objectId !== AREA_ITEM_ID) {
     issues.push(`quest ${AREA_KEY} area object id must be ${AREA_ITEM_ID}`);
   }
+  if (areaGoal && !areaGoal.onFinish.some((op) => op.type === "START_FIGHT")) {
+    issues.push(`quest ${AREA_KEY} area_action must start a quest fight`);
+  }
   if (areaGoal && bundle.npcs.some((row) => row.itemId === AREA_ITEM_ID && row.areaId === "503")) {
     issues.push(`area item ${AREA_ITEM_ID} collides with an npc hotspot`);
   }

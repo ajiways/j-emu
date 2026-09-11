@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v27",
+  "schemaVersion": "playable-slice/v28",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -4405,6 +4405,15 @@
           "waitingDurationSec": 1,
           "waitingPopup": "Камень холодный.",
           "onFinish": [
+            {
+              "type": "START_FIGHT",
+              "mode": "quest",
+              "enemies": [{ "artikulId": 2, "count": 1 }],
+              "allies": [],
+              "chatStart": "",
+              "chatWin": "",
+              "chatLose": ""
+            },
             { "type": "MSG", "text": "Камень осмотрен." },
             { "type": "SET_FLAG", "flag": "engine_area", "value": "1" }
           ]

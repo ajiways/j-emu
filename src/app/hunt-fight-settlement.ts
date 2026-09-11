@@ -38,6 +38,8 @@ import { bestiaryCreditHeroIds } from "../modules/character/domain/bestiary-kill
 import type { HeroBestiary } from "../modules/character/ports/hero-bestiary.ts";
 import { splitMinorUnits } from "../modules/combat/domain/split-minor-units.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
+import { capDropQuantity } from "../modules/quests/domain/quest-loot-needed.ts";
+import type { QuestLootNeeded } from "../modules/quests/ports/quest-loot-needed.ts";
 import type { PartyBagDeposit } from "../modules/party/ports/party-bag-deposit.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
 
@@ -63,6 +65,7 @@ export class HuntFightSettlement implements FightSettlement {
     private readonly partyBag: PartyBagDeposit,
     private readonly partyLoot: FightPartyLootNotify,
     private readonly bestiary: HeroBestiary,
+    private readonly lootNeeded: QuestLootNeeded,
   ) {}
 
   persistHumanLeft(snapshot: HumanLeftSnapshot): Promise<void> {
@@ -119,6 +122,9 @@ export class HuntFightSettlement implements FightSettlement {
     const deferItems = Boolean(
       route && (route.lootRules === "2" || route.lootRules === "3") && topInParty && rolled.length,
     );
+    if (win && top && rolled.length > 0 && !deferItems) {
+      rolled = await this.capRolled(top.characterId, rolled);
+    }
     const partyFighters = route
       ? outcome.humans.filter((human) => route.memberCharacterIds.has(human.characterId))
       : [];
@@ -264,6 +270,28 @@ export class HuntFightSettlement implements FightSettlement {
       hero,
       await this.inventory.equippedSkillBonuses(characterId),
     );
+  }
+
+  private async capRolled(
+    characterId: number,
+    rolled: readonly { artikulId: number; quantity: number }[],
+  ): Promise<readonly { artikulId: number; quantity: number }[]> {
+    const owned = new Map<number, number>();
+    const capped: { artikulId: number; quantity: number }[] = [];
+    for (const drop of rolled) {
+      const have =
+        owned.get(drop.artikulId) ??
+        (await this.inventory.countBagByArtifact({
+          characterId,
+          artifactId: drop.artikulId,
+        }));
+      const needed = await this.lootNeeded.needed(characterId, drop.artikulId, have);
+      const quantity = capDropQuantity(drop.quantity, needed);
+      owned.set(drop.artikulId, have + quantity);
+      if (quantity < 1) continue;
+      capped.push({ artikulId: drop.artikulId, quantity });
+    }
+    return capped;
   }
 
   private async artikulList(

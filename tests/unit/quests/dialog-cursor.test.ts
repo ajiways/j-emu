@@ -63,6 +63,6 @@ describe("quest prior-gate bump", () => {
     const goals = area.goals.map((goal) => goalRow(area.key, goal.id, 0, 0));
     const bump = bumpMatchingGoal(area, goals, { kind: "area_action", actionId: 8 });
     expect(bump?.finished).toBe(true);
-    expect(bump?.onFinish.map((effect) => effect.type)).toEqual(["MSG", "SET_FLAG"]);
+    expect(bump?.onFinish.map((effect) => effect.type)).toEqual(["START_FIGHT", "MSG", "SET_FLAG"]);
   });
 });

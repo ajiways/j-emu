@@ -29,7 +29,7 @@ counts/checksums и completeness gates:
 
 ## Текущий playable slice
 
-Текущая `playable-slice/v27` release — минимальный bundle: 36 artifacts
+Текущая `playable-slice/v28` release — минимальный bundle: 36 artifacts
 (9095 + dump-proven L1 greyset **20/21/26**, glove spells **9098/9100/9099**, pocketables **93** и **99**, food **77**,
 shop wear **23** и **24**, arsenal amulet **621**, upgrade crystals **553/1310/4603/11408/13224**, recruit set **27/28/30/33/35/106** и mix **43/46**,
 USE **640/623/2371/55/584**, farm **1720/1721/1722**, craft book **1861** / flask **1714**; без 209 и патронташа), 8 bots (2/4/24/32/99/353/354/373) с overlay reward scalars; loot entries только у bot 2 (77/93/99),

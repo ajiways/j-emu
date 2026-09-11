@@ -14,8 +14,11 @@ import { QuestDeniedError } from "../domain/quest-denied-error.ts";
 import { scriptEffects, type QuestScriptEffect } from "../domain/quest-script-effect.ts";
 import type { QuestSignal } from "../domain/quest-signal.ts";
 import { bumpMatchingGoal } from "../domain/bump-goal.ts";
+import { hasQuestStartFight, startFightEffects } from "../domain/quest-start-fight.ts";
+import { completeParkedAreaFight as completeParked, neededForHero } from "./quest-hero-progress.ts";
 import type { HeroQuestRepository } from "../ports/hero-quest-repository.ts";
 import type { QuestCatalog } from "../ports/quest-catalog.ts";
+import type { QuestLootNeeded } from "../ports/quest-loot-needed.ts";
 
 const MAX_ACTIVE = 6;
 
@@ -41,7 +44,7 @@ export type QuestMutation = Readonly<{
   popup?: string;
 }>;
 
-export class QuestService {
+export class QuestService implements QuestLootNeeded {
   constructor(
     private readonly catalog: QuestCatalog,
     private readonly progress: HeroQuestRepository,
@@ -183,8 +186,31 @@ export class QuestService {
     const actionId = waiting.waiting.actionId;
     const popup = waiting.waiting.popup;
     await this.progress.update(heroId, waiting.questKey, { waiting: null });
+    const quest = await this.requireQuest(waiting.questKey);
+    const goals = await this.progress.goals(heroId, quest.key);
+    const current = currentGoal(quest, goals);
+    if (
+      current?.kind === "area_action" &&
+      current.actionId === actionId &&
+      hasQuestStartFight(current.onFinish)
+    ) {
+      return {
+        effects: startFightEffects(current.onFinish),
+        bookDirty: true,
+        npcId: quest.npcId,
+        popup,
+      };
+    }
     const bumped = await this.recordSignal(heroId, { kind: "area_action", actionId });
     return { ...bumped, popup };
+  }
+
+  async completeParkedAreaFight(heroId: number): Promise<QuestMutation> {
+    return completeParked(this.catalog, this.progress, heroId);
+  }
+
+  async needed(heroId: number, artikulId: number, ownedInBag: number): Promise<number | null> {
+    return neededForHero(this.catalog, this.progress, heroId, artikulId, ownedInBag);
   }
 
   async npcId(npcRef: number): Promise<number> {
