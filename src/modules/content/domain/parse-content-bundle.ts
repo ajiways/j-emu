@@ -70,9 +70,12 @@ const artifactSpellEffectSchema = z
     dmgType: z.number().int().nonnegative().optional(),
     charging: z.number().int().positive().optional(),
     capacity: z.number().int().positive().optional(),
-    order: z.number().int().nonnegative().optional(),
+    order: z.number().int().optional(),
     hidden: z.number().int().nonnegative().optional(),
     targetCount: z.number().int().positive().optional(),
+    duration: z.number().int().nonnegative().optional(),
+    forceSelfTargeting: z.boolean().optional(),
+    realStartTime: z.boolean().optional(),
     skills: z.array(artifactSpellSkillSchema).optional(),
   })
   .strict();
@@ -86,6 +89,8 @@ const artifactSpellSchema = z
     flags: z.union([z.string(), z.number()]).optional(),
     persRestr: z.record(z.string(), z.unknown()).optional(),
     targetRestr: z.record(z.string(), z.unknown()).optional(),
+    triggers: z.unknown().optional(),
+    onlyPvP: z.unknown().optional(),
     effects: z.array(artifactSpellEffectSchema).min(1),
   })
   .strict();

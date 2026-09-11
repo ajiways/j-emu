@@ -24,6 +24,9 @@ type ArtifactSpellEffectDocument = Readonly<{
   order?: number;
   hidden?: number;
   targetCount?: number;
+  duration?: number;
+  forceSelfTargeting?: boolean;
+  realStartTime?: boolean;
   skills?: readonly ArtifactSpellSkillDocument[];
 }>;
 
@@ -35,6 +38,8 @@ type ArtifactSpellDocument = Readonly<{
   flags?: string | number;
   persRestr?: Readonly<Record<string, unknown>>;
   targetRestr?: Readonly<Record<string, unknown>>;
+  triggers?: unknown;
+  onlyPvP?: unknown;
   effects: readonly ArtifactSpellEffectDocument[];
 }>;
 

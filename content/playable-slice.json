@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v28",
+  "schemaVersion": "playable-slice/v29",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -1431,6 +1431,73 @@
       "skills": [],
       "artifact_actions": {},
       "extra": {}
+    },
+    {
+      "id": 20546,
+      "title": "Изначальная мифическая перчатка тирана VI",
+      "picture": "dosp_tir_mif_mag.png",
+      "typeId": "2",
+      "kindId": 44,
+      "slotMask": 32,
+      "weight": 0,
+      "levelMin": 7,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 1000000,
+      "flags": 536870944,
+      "bagStack": 1,
+      "durability": 40,
+      "durabilityMax": 40,
+      "skills": [
+        {
+          "id": "INJ_RESIST",
+          "value": 3,
+          "flags": 0
+        },
+        {
+          "id": "LUCK",
+          "value": 10,
+          "flags": 0
+        },
+        {
+          "id": "RAG",
+          "value": 22,
+          "flags": 0
+        },
+        {
+          "id": "STR",
+          "value": 33,
+          "flags": 0
+        },
+        {
+          "id": "VIT",
+          "value": 26,
+          "flags": 0
+        }
+      ],
+      "artifact_actions": {},
+      "extra": {
+        "spell": {
+          "groupId": 936,
+          "persRestr": {},
+          "targetRestr": {
+            "self": true,
+            "selgroupdeny": {}
+          },
+          "effects": [
+            {
+              "kind": 3,
+              "dmgType": 0,
+              "order": -1,
+              "forceSelfTargeting": true,
+              "hidden": 0,
+              "duration": 320,
+              "realStartTime": true,
+              "skills": [{ "skill_id": "pcSTR", "value": 10 }]
+            }
+          ]
+        }
+      }
     }
   ],
   "bots": [
@@ -3186,6 +3253,24 @@
       "group": "6",
       "order": "0",
       "weight": "990",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "LUCK",
+      "title": "Инициатива",
+      "group": "1",
+      "order": "0",
+      "weight": "700",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "INJ_RESIST",
+      "title": "Антитравматизм",
+      "group": "6",
+      "order": "0",
+      "weight": "550",
       "image": "",
       "valueKind": "number"
     }

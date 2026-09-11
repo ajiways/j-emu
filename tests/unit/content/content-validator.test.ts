@@ -270,6 +270,70 @@ describe("ContentValidator", () => {
       }),
     ).toThrow(/expected one playable battleground/);
   });
+
+  it("rejects paperdoll extra.spell with triggers, onlyPvP, or non-kind-3", () => {
+    const tyrant = playable.artifacts.find((artifact) => artifact.id === 20546);
+    const spell = tyrant?.extra.spell;
+    if (!tyrant || !spell) throw new Error("playable bundle is missing artifact 20546");
+    expect(() =>
+      new ContentValidator().validate(
+        replaceArtifact(tyrant, {
+          ...tyrant,
+          extra: {
+            ...tyrant.extra,
+            spell: { ...spell, effects: spell.effects, triggers: { hit: true } },
+          },
+        }),
+      ),
+    ).toThrow(/must not have triggers/);
+    expect(() =>
+      new ContentValidator().validate(
+        replaceArtifact(tyrant, {
+          ...tyrant,
+          extra: {
+            ...tyrant.extra,
+            spell: { ...spell, effects: spell.effects, onlyPvP: true },
+          },
+        }),
+      ),
+    ).toThrow(/must not have onlyPvP/);
+    const effect = spell.effects[0];
+    if (!effect) throw new Error("20546 extra.spell effects are missing");
+    expect(() =>
+      new ContentValidator().validate(
+        replaceArtifact(tyrant, {
+          ...tyrant,
+          extra: {
+            ...tyrant.extra,
+            spell: { ...spell, effects: [{ ...effect, kind: 9 }] },
+          },
+        }),
+      ),
+    ).toThrow(/kind must be 3/);
+  });
+
+  it("rejects paperdoll extra.spell without authored duration or picture", () => {
+    const tyrant = playable.artifacts.find((artifact) => artifact.id === 20546);
+    const spell = tyrant?.extra.spell;
+    const effect = spell?.effects[0];
+    if (!tyrant || !spell || !effect) throw new Error("playable bundle is missing artifact 20546");
+    const rest = { ...effect };
+    delete (rest as { duration?: number }).duration;
+    expect(() =>
+      new ContentValidator().validate(
+        replaceArtifact(tyrant, {
+          ...tyrant,
+          extra: {
+            ...tyrant.extra,
+            spell: { ...spell, effects: [rest] },
+          },
+        }),
+      ),
+    ).toThrow(/duration is required/);
+    expect(() =>
+      new ContentValidator().validate(replaceArtifact(tyrant, { ...tyrant, picture: "" })),
+    ).toThrow(/picture is required for gear-spell img/);
+  });
 });
 
 describe("parseContentBundle", () => {
@@ -449,6 +513,16 @@ describe("parseContentBundle", () => {
     ).toThrow(/lootEntries artikul ids must be unique/);
   });
 });
+
+function replaceArtifact(
+  artifact: ContentBundle["artifacts"][number],
+  next: ContentBundle["artifacts"][number],
+): ContentBundle {
+  return {
+    ...playable,
+    artifacts: playable.artifacts.map((row) => (row.id === artifact.id ? next : row)),
+  };
+}
 
 function replaceBot(
   bot: ContentBundle["bots"][number],

@@ -99,6 +99,8 @@ function spellFromJson(artifactId: number, value: unknown): ArtifactSpell {
     ...(record.targetRestr && typeof record.targetRestr === "object"
       ? { targetRestr: record.targetRestr as Record<string, unknown> }
       : {}),
+    ...(record.triggers !== undefined ? { triggers: record.triggers } : {}),
+    ...(record.onlyPvP !== undefined ? { onlyPvP: record.onlyPvP } : {}),
     effects: record.effects.map((effect, index) => effectFromJson(artifactId, effect, index)),
   };
 }
@@ -129,6 +131,11 @@ function optionalEffectFields(record: Record<string, unknown>): Partial<Artifact
     ...(typeof record.order === "number" ? { order: record.order } : {}),
     ...(typeof record.hidden === "number" ? { hidden: record.hidden } : {}),
     ...(typeof record.targetCount === "number" ? { targetCount: record.targetCount } : {}),
+    ...(typeof record.duration === "number" ? { duration: record.duration } : {}),
+    ...(typeof record.forceSelfTargeting === "boolean"
+      ? { forceSelfTargeting: record.forceSelfTargeting }
+      : {}),
+    ...(typeof record.realStartTime === "boolean" ? { realStartTime: record.realStartTime } : {}),
     ...(Array.isArray(record.skills)
       ? {
           skills: record.skills.map((skill) => {

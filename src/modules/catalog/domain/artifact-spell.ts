@@ -12,6 +12,9 @@ export type ArtifactSpellEffect = Readonly<{
   order?: number;
   hidden?: number;
   targetCount?: number;
+  duration?: number;
+  forceSelfTargeting?: boolean;
+  realStartTime?: boolean;
   skills?: readonly ArtifactSpellSkill[];
 }>;
 
@@ -23,6 +26,8 @@ export type ArtifactSpell = Readonly<{
   flags?: string;
   persRestr?: Readonly<Record<string, unknown>>;
   targetRestr?: Readonly<Record<string, unknown>>;
+  triggers?: unknown;
+  onlyPvP?: unknown;
   effects: readonly ArtifactSpellEffect[];
 }>;
 
