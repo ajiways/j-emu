@@ -1133,12 +1133,76 @@
 
 - **ID:** `GEAR-01`
 - **depends_on:** `CMB-06`, `INV-07`
-- **Behavior evidence:** legacy `GEAR_SPELL.md` и spell catalogs.
-- **Content set:** один representative gear-spell.
-- **Architecture checkpoint / decision:** pending — расширить combat-ready
-  equipment snapshot и effect registry без смены inventory ownership.
-- **Acceptance:** поддержанный equipped spell attaches/procs с точным
-  packet order и истекает по authored policy.
+- **Behavior evidence:** legacy `GEAR_SPELL.md` (kind-3 без `triggers` =
+  старт боя, не прок; `img` с `artikuls.picture`; live emu **не** аттачит
+  paperdoll `extra.spell` — wire берётся с того же `attachFightEffect` /
+  TEMPEFFECT kind-3: `buildBootstrap` `persEff` затем `effUse`, expire
+  `onActorEndingTurn` → `effPurge`). Не путать с `extra.spells[]`
+  (CMB-02 комбо). Каталог: Pub1 `artifact_artikul_20546.amf`.
+- **Content set:** representative **20546** «Изначальная мифическая
+  перчатка тирана VI» (kind 44, слот 32): `extra.spell` `groupId` **936**,
+  kind-3 `duration` **320** (8 ходов = 320/40), `pcSTR` **10**, без
+  `triggers`. Dump-поля карточки (picture, levelMin, type/kind, skills,
+  flags) — из Pub1 AMF, не выдумывать; блоб сверять с цитатой в
+  `GEAR_SPELL.md`. `extra.spells[]` комбо 20546 — leftover CMB-02 (уже
+  доказано на **9095**); в этот срез сокеты 20546 не тащить и не
+  изобретать. Соседи VI (21201/21500/20848/20939), `triggers` /
+  `onlyPvP` / kind 9 (эмблемы 11777+) — не этот срез. Полный корпус
+  paperdoll-spell — DATA-02, не эта capability.
+- **Architecture checkpoint / decision:** complete. ADR-0017–0020
+  достаточны; новый ADR и `ARC-*` не нужны (нет новой persistent owner,
+  active-fight table или смены wire-dispatch).
+  **Владение.** Catalog — authored `extra.spell` на артикуле. Inventory —
+  instance paperdoll (`PUT_ON`/`PUT_OFF`) и read-only
+  `equippedGearSpells` / `list`; **не** копирует блоб на `items` и **не**
+  держит fight effect. Combat — RAM effect registry (`remainTurns`,
+  baked skills, `expiresAtMs`); **не** пишет `inventory.items`.
+  Composition `HuntCombatLoadout.snapshot` (как pocket/glove CMB-02 и
+  bot book CMB-06) кладёт `CombatLoadout.gearSpells[]`
+  `{ artikulId, title, picture, spell }` на `startHunt` / `joinHunt` /
+  friendly-duel start. Combat domain не импортирует inventory/catalog
+  repositories и не читает их mid-fight.
+  **Когда в snapshot.** На **старт боя**, не на PUT_ON и не лениво на
+  удар: PUT_ON вне боя только меняет location (каталог уже на артикуле);
+  в бою layout — `FightRules` `203` «нельзя во время боя»; блоб без
+  `triggers` вешается в начале боя (`GEAR_SPELL.md`), это не прок.
+  `extra.spells[]` nonempty → прежний CMB-02 fail-fast на сокетах;
+  пустые сокеты у 20546 в этом срезе валидны (`glove: null` для комбо,
+  gear-spell всё равно в snapshot).
+  **Wire order (attach / proc / expire).** Attach — тихий RAM в
+  `Battle` create, не OA PUT_ON. Первый fproxy bootstrap (и reconnect
+  в том же процессе): после `persSpells` → `persEff` с nested `"1"`
+  `{ id, kind:3, persId, sourceId:heroId, artikulId:20546, title,
+img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
+  `effUse` с теми же полями + `flags:0` + kind-3 `skills` (pcSTR
+  печётся в flat STR, как `bakeTimedStatPercents`). Прока **нет**
+  (нет `triggers`; лишний `effUse` на удар запрещён). Expire: ход
+  кастера (`onActorEndingTurn`; self-buff считает ending action героя)
+  декрементит `remainTurns` (8); при `≤0` или wall-clock `expiresAtMs`
+  в том же melee poll **после** `cast`/strike, **до** `timeAdvance` /
+  `attackwait` / `{rs,sq}`: `{ et:"effPurge", effectId }`. `persEff`
+  при expire не пересылается. Melee L/C/R остаётся strike-then-rs.
+  Standing kind-3 STR участвует в CMB-05 melee, пока эффект жив.
+  Каталожный парсер обязан сохранить authored `duration` /
+  `forceSelfTargeting` / `realStartTime`; paperdoll `extra.spell` с
+  `triggers` / `onlyPvP` / kind≠3 в опубликованном срезе — fail-fast
+  публикации, не silent skip. Нет `Clock.schedule`.
+  **Restart / concurrency.** Equipped 20546 в PostgreSQL переживает
+  reconnect и process restart. RAM-эффект и бой — нет (ADR-0020).
+  Reconnect до restart: bootstrap `persEff`+`effUse` с оставшимся
+  `remainTime`. Гонка PUT_ON в бою невозможна (`203`).
+- **Acceptance:** raw-AMF: надетый **20546** на ATTACK_BOT (Грызль 50310)
+  даёт bootstrap `persEff` затем `effUse` (artikul 20546, `groupId` 936,
+  `kind` 3, `img` с dump picture, `remainTime` 320); на ударах нет
+  второго attach/proc; после 8 ending-ходов героя — `effPurge` в том же
+  poll, что strike, до `timeAdvance`/`attackwait`. PUT_ON 20546 вне боя не шлёт fight
+  packets. Reconnect в живом процессе сохраняет remaining effect;
+  restart процесса бой убивает, строка 20546 в paperdoll остаётся.
+  Публикация карточки без dump `duration`/picture или с `triggers` —
+  отказ candidate. CEF не прогоняется в этом срезе: Wave 12 подпадает
+  под «Отложенный CEF до content editor (Wave 5–12)» в
+  [PLAYBOOK.md](PLAYBOOK.md); после gates coding agent оставляет
+  строку в [CEF_MANUAL.md](CEF_MANUAL.md), product **частично**.
 - **Status:** `next`
 
 ### HERO-01 — PvP heroism
