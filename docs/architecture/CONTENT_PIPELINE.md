@@ -120,11 +120,11 @@ DATA-стадии (не runtime-зависимость и не копирова�
 bootstrap поверх другой существующей release. Обычный `publish` отклоняет уже
 существующий checksum.
 
-File `seed`/`publish` по-прежнему принимает in-memory bundle. EDT-01 добавляет
+File `seed`/`publish` по-прежнему принимает in-memory bundle. EDT-01 landed:
 `saveDraft` / persisted candidate / validation report / publication audit
 через HTTP `/operator/content/*`, без записи файлов
 ([CONTENT.md](../modules/CONTENT.md)). Manifest export/import и rollback
-остаются планом после EDT-01.
+остаются планом (EDT-02+).
 
 ## Целевой publication contract — план
 

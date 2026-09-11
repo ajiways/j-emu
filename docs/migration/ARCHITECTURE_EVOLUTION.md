@@ -26,6 +26,8 @@ HERO-01 landed: composition `persistPvpHonor`, character `honor_grants` /
 `grantHonor`, live `honorProgress` on unitframe/conf, BG RAM match sum.
 DAY-01 landed: lazy Moscow 06:00 catch-up, `hero_quests.hidden_in_journal`,
 cycle-aware quest EXP `operationId`.
+EDT-01 landed: operator HTTP `/operator/content/*`, candidates /
+validation reports / publication audits, `CONTENT_OPERATOR_TOKEN`.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение
@@ -284,15 +286,18 @@ copy identity (`copy_type`), не общая membership-таблица и не �
 
 ### `ARC-EDITOR` — operational authoring
 
-**Сейчас:** publication принимает import bundle; editor в `j-emu` отсутствует.
+**Сейчас:** EDT-01 operator HTTP пишет drafts/candidates и атомарно
+активирует pinned versions. File `seed`/`publish` остаётся bootstrap.
 
-**Давление:** concurrent drafts, validation reports, activation permissions и
-rollback становятся пользовательскими операциями.
+**Давление:** SPA, rollback, named operators, новые ключи вне active
+release, mass import DATA-02…06.
 
-**Checkpoint:** EDT-01 использует существующие content application ports.
-Editor не пишет runtime projections и files напрямую. Новый content service,
-broker или object storage допускается только после измеренной необходимости и
-отдельного ADR.
+**Решение EDT-01:** текущих границ достаточно; отдельный `ARC-EDITOR` не
+нужен. Landed: `0024`, `saveDraft`/`buildCandidate`/`validateCandidate`/
+`activateCandidate`, `persistPinnedBundle`. File dual-write, SPA
+`/dev/content`, SQLite, broker и content-service запрещены. Rollback и
+named operators — leftover EDT-02+. Контракт:
+[CONTENT.md](../modules/CONTENT.md).
 
 ## Порядок безопасного refactor
 

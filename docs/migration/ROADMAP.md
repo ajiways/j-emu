@@ -1392,16 +1392,49 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
 
 - **ID:** `EDT-01`
 - **depends_on:** `FND-01`
-- **Behavior evidence:** legacy content UI — только UX evidence;
-  [CONTENT_PIPELINE.md](../architecture/CONTENT_PIPELINE.md) authoritative.
-- **Content set:** DATA-01…DATA-06 authoring schemas.
-- **Architecture checkpoint / decision:** operator auth, optimistic draft
-  versioning, validation report и publish/activate ports; файловый
-  dual-write запрещён.
-- **Acceptance:** правка создаёт новый PostgreSQL draft, неудачная валидация
-  не трогает active release, успешный publish активирует атомарно и
-  переживает restart.
-- **Status:** `next`
+- **Behavior evidence:** legacy `/dev/content` (`jgr-emu/src/routes/devContent.ts`,
+  `content-ui/`, `questEditor.ts`) — только UX; dual-write fixtures **запрещён**.
+  Канон: [CONTENT_PIPELINE.md](../architecture/CONTENT_PIPELINE.md), ADR-0018.
+  Текущий runtime: `ContentPublicationService.seed`/`publish` из in-memory
+  bundle; `persistValidatedBundle` сам вставляет `draft_versions`; отдельных
+  `saveDraft` / candidate / report / audit нет.
+- **Content set:** существующие `content_type`/`content_key` **active**
+  playable-slice/v30. Representative: NPC **271** `title`. Не DATA-02…06
+  mass import и не новые ключи.
+- **Architecture checkpoint / decision:** complete. ADR-0017–0020
+  достаточны; новый ADR и блокирующий `ARC-EDITOR` не нужны.
+  **Владение.** `content` — drafts (append-only versions + `created_by`),
+  persisted candidate, validation report, publication audit, active pointer.
+  Catalog/world/quests/professions — только materialize из валидного bundle.
+  Identity не владеет token. Composition: UoW; file `seed`/`publish` не
+  смешивать с editor-activate.
+  **Auth.** `CONTENT_OPERATOR_TOKEN` обязателен в `loadConfig` (нет default).
+  HTTP `Authorization: Bearer`; timing-safe; 401 без token. Один оператор
+  `created_by="operator"`. Не player session, не OA.
+  **HTTP.** `/operator/content/*` JSON, не AMF. Тело = существующий `*`
+  Buffer parser → `JSON.parse` + DTO; AMF parser не трогать. 400/401/404/409/
+  422/500 — не `status:203`.
+  **Цикл.** `saveDraft` (локальная Zod, optimistic `expectedVersion`) →
+  `buildCandidate` (копия active entries + overlays pinned `draftVersionId`,
+  состав заморожен) → `validateCandidate` (тот же `ContentValidator`,
+  report persist) → `activateCandidate` (lock pointer, compatibility,
+  materialize, `release_entries` на **существующие** version ids, audit).
+  Validate `ok:false` не пишет release и не двигает pointer.
+  **Fail-fast.** Ключ не в active release; overlay version не того ключа;
+  checksum уже есть; нет token; неизвестное JSON-поле. Нет `??` на pointer.
+  `composition-root` 400 строк — extract, не растить.
+  **Restart / concurrency.** Draft/candidate/active переживают process
+  restart. Два activate с тем же `expectedActiveReleaseId` — один winner,
+  второй 409. File `playable-slice.json` не мутировать.
+  Landed: `drizzle/0024_content_editor_candidates.sql`;
+  `CONTENT_OPERATOR_TOKEN`; HTTP `/operator/content/*`; raw-AMF
+  `tests/e2e/content-editor.test.ts`; `7179816`.
+- **Acceptance:** HTTP: сменить title NPC 271, validate+activate; USE 584
+  `npc|info` показывает новый title; невалидный candidate → 422 и прежний
+  active; reconnect/restart читают новую release. Unit/integration на
+  persist draft, report, concurrent activate. CEF Flash редактора нет
+  (не OA). Product **частично**. Контракт: [CONTENT.md](../modules/CONTENT.md).
+- **Status:** `done`
 
 ### EDT-02 — Extended content editor
 
@@ -1415,7 +1448,7 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
   ports; редактор не создаёт второй источник истины.
 - **Acceptance:** каждый поддержанный extended content type проходит
   draft→validate→publish→activate без file mutation.
-- **Status:** `queued`
+- **Status:** `next`
 
 ## Content-fill track — не блокирует ни одну волну выше
 

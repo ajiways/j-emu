@@ -361,9 +361,21 @@ Postgres. CEF вкладки профессий и гремлинов не пр�
 
 Не перенесены ids 1/3/4/5/7–16, смена лицензии, полный корпус рецептов.
 
+## Content editor — частично
+
+Есть HTTP JSON `/operator/content/*` (Bearer `CONTENT_OPERATOR_TOKEN`):
+`saveDraft` / candidate / validate / activate. Representative: смена
+`title` NPC 271, USE 584 `npc|info` после activate; 422 не двигает
+`active_release`; restart читает новую release. Файл
+`playable-slice.json` не пишется. CEF Flash-редактора нет.
+
+Не перенесены SPA `/dev/content`, rollback/export, `operator_roles`,
+DATA-02…06 mass import, новые ключи вне active release.
+
 ## Вне первой волны
 
-Achievements, info pages и content editor.
+Achievements, info pages. Extended editor (EDT-02) и закрытие CEF-исключения
+Wave 5–12.
 
 Clan и встроенные playerbots не переносятся.
 

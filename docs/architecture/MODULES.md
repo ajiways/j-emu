@@ -324,7 +324,7 @@ reports, immutable releases, publication audit и active pointer. Не
 обслуживает gameplay-запросы и не пишет runtime projections напрямую.
 
 **API:** `saveDraft`, `buildCandidate`, `validateCandidate`,
-`activateCandidate`, `getPublicationStatus`. File `seed`/`publish` —
+`activateCandidate`, `status`. File `seed`/`publish` —
 bootstrap bundle, не editor. HTTP `/operator/content/*` в `jugger-wire`.
 Контракт: [CONTENT.md](../modules/CONTENT.md).
 

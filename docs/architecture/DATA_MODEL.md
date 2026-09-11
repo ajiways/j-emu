@@ -240,12 +240,13 @@ store_type|store_lot|reputation_track|profession|assistant_type|farm_resource|
 area_farm|craft_recipe|npc|quest|world_fact|bonus|use_script|skill|level|
 appearance|hud_defaults|chrome|common_conf|welcome_message`.
 - `draft_versions(id, draft_id, version, schema_version, document jsonb,
-created_by, created_at)`. EDT-01 добавляет `created_by` text NOT NULL.
+created_by, created_at)`. `created_by` text NOT NULL (`bootstrap` |
+  `operator`).
 - `releases(id, version UNIQUE nextval, checksum UNIQUE, schema_version, validator_version, created_at, activated_at)`.
 - `release_entries(release_id, content_type, content_key, draft_version_id, digest)`.
 - `active_release(lock_id=1, release_id, activated_at)` — singleton pointer.
 - `bootstrap_imports(digest PK, release_id, source, applied_at)`.
-- EDT-01: `candidates(id, expected_active_release_id, status
+- `candidates(id, expected_active_release_id, status
 open|validated|invalid|activated, created_by, created_at)`;
   `candidate_entries` PK `(candidate_id, content_type, content_key)`;
   `validation_reports(id, candidate_id, validator_version, ok 0|1, issues jsonb

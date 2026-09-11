@@ -7,8 +7,10 @@ gates и raw-AMF E2E; product status остаётся **частично**, по
 вычеркнута здесь и не отражена в [CAPABILITIES.md](../CAPABILITIES.md).
 
 Как пользоваться: новый герой, штатные `npm run db:reset` / `start:https`,
-без ручного patch БД. После успешного клика вычеркни строку и подними
-product-status только вместе с CEF-фактом в `CAPABILITIES.md`.
+без ручного patch БД. После EDT-01 контент можно менять HTTP
+`/operator/content/*` (не SQL). Исключение Wave 5–12 не закрыто — нужен
+EDT-02. После успешного клика вычеркни строку и подними product-status
+только вместе с CEF-фактом в `CAPABILITIES.md`.
 
 ## Character / бой
 

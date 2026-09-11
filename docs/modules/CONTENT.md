@@ -1,7 +1,8 @@
 # Content editor (EDT-01)
 
-Operator draft → candidate → validate → activate. Product-status не менять
-здесь. Очередь: [ROADMAP.md](../migration/ROADMAP.md) EDT-01.
+Срез закрыт (HTTP NPC 271 + USE 584). CEF Flash нет. Product **частично**:
+[CAPABILITIES.md](../CAPABILITIES.md). Workflow `done`:
+[ROADMAP.md](../migration/ROADMAP.md) EDT-01.
 Пайплайн: [CONTENT_PIPELINE.md](../architecture/CONTENT_PIPELINE.md).
 
 Legacy `/dev/content` и dual-write fixture — только UX evidence, не контракт.
@@ -56,8 +57,9 @@ File `seed`/`publish` из bundle остаётся bootstrap-путём и мо�
 ## HTTP
 
 Не AMF и не `status:203`. Encapsulated Fastify plugin
-`/operator/content`. Тело — raw `Buffer` существующего `*` parser, затем
-`JSON.parse` + typed DTO. Не снимать AMF parser.
+`/operator/content`. Startup снимает default JSON/text parsers, чтобы
+`application/json` доходил до `*` Buffer parser; затем `JSON.parse` +
+typed DTO. AMF `*` parser не снимать.
 
 `Authorization: Bearer <CONTENT_OPERATOR_TOKEN>`.
 
@@ -108,7 +110,8 @@ candidate (весь playable-slice набор). Runtime после activate: USE
 persist. Нет `??` на active release id. Два concurrent activate — один
 commit, второй 409.
 
-`composition-root` уже 400 строк: extract wiring, не растить файл.
+`composition-root` держали ≤400: extract `create-jugger-runtime` /
+`start-jugger-servers`.
 
 ## Out of this slice
 
