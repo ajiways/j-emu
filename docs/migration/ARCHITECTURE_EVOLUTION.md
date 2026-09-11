@@ -165,6 +165,11 @@ Combat отдаёт terminal snapshot; composition UoW вызывает characte
 до esrv `fight|loot` затем `fight|exit`. History best-effort не откатывает
 награду. Ghost/injury — CMB-04 character port из той же UoW. Active fight tables запрещены ADR-0020.
 
+**Решение GEAR-01:** текущих границ достаточно; отдельный `ARC-CMB` не
+нужен. Catalog владеет `extra.spell`; inventory — paperdoll instance;
+composition снапшотит `gearSpells[]` на старт боя; combat держит RAM
+kind-3 и не пишет `items`. ADR-0020 без active-fight tables.
+
 Отдельный `ARC-CMB` потребуется позже только если settlement нельзя провести
 без записи combat в чужие таблицы, durable outbox или active-fight rows.
 

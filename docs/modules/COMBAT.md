@@ -25,7 +25,7 @@ leftover.
 - `jgr-emu/docs/FIGHT_TOASTS.md`.
 
 Механики: `FIGHT_TURN_UI`, `FIGHT_RAGE`, `FIGHT_JOIN`, `FIGHT_LOCK`, `POCKET`,
-`GLOVE_MAGIC`, `BOT_SPELLS`.
+`GLOVE_MAGIC`, `BOT_SPELLS`, `GEAR_SPELL`.
 
 `FIGHT_DAMAGE` и `FIGHT_MAGIC` содержат empirical/invented formulas. При
 переносе они получают явную метку `legacy behavior`, не live parity.
@@ -432,6 +432,10 @@ generic effect engine сверх kind-3 без triggers.
 Equipped 20546 в PostgreSQL переживает reconnect и process restart.
 RAM-эффект и бой — нет (ADR-0020). Reconnect до restart: bootstrap
 `persEff`+`effUse` с оставшимся `remainTime`.
+
+Dump-блоб 20546 без `dmgType`: на wire сейчас `0` (raw-AMF e2e). Live
+`attachFightEffect` для отсутствующего поля ставит `1`. Kind-3 STR-бафф
+школу не читает; выравнивание — leftover, не этот срез.
 
 CEF не прогонялся (Wave 12, отложен до content editor).
 

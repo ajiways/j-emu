@@ -1191,19 +1191,22 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
   reconnect и process restart. RAM-эффект и бой — нет (ADR-0020).
   Reconnect до restart: bootstrap `persEff`+`effUse` с оставшимся
   `remainTime`. Гонка PUT_ON в бою невозможна (`203`).
+  Landed: `playable-slice/v29`, raw-AMF
+  `tests/e2e/fproxy-gear-spell.test.ts`. j-emu melee poll без
+  `timeAdvance` (CMB-01 `attackwait`+`cast`); `effPurge` после `cast`,
+  до `{rs,sq}`. Dump-блоб без `dmgType` — на wire `0` (e2e); live
+  `attachFightEffect` подставляет `1`.
 - **Acceptance:** raw-AMF: надетый **20546** на ATTACK_BOT (Грызль 50310)
   даёт bootstrap `persEff` затем `effUse` (artikul 20546, `groupId` 936,
-  `kind` 3, `img` с dump picture, `remainTime` 320); на ударах нет
+  `kind` 3, `img` `dosp_tir_mif_mag.png`, `remainTime` 320); на ударах нет
   второго attach/proc; после 8 ending-ходов героя — `effPurge` в том же
-  poll, что strike, до `timeAdvance`/`attackwait`. PUT_ON 20546 вне боя не шлёт fight
+  poll, что strike, до `{rs,sq}`. PUT_ON 20546 вне боя не шлёт fight
   packets. Reconnect в живом процессе сохраняет remaining effect;
   restart процесса бой убивает, строка 20546 в paperdoll остаётся.
   Публикация карточки без dump `duration`/picture или с `triggers` —
-  отказ candidate. CEF не прогоняется в этом срезе: Wave 12 подпадает
-  под «Отложенный CEF до content editor (Wave 5–12)» в
-  [PLAYBOOK.md](PLAYBOOK.md); после gates coding agent оставляет
-  строку в [CEF_MANUAL.md](CEF_MANUAL.md), product **частично**.
-- **Status:** `next`
+  отказ candidate. CEF не прогонялся — Wave 12, [CEF_MANUAL.md](CEF_MANUAL.md);
+  product **частично**.
+- **Status:** `done`
 
 ### HERO-01 — PvP heroism
 
@@ -1216,7 +1219,7 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
   character progression ownership.
 - **Acceptance:** fixed-seed PvP outcomes дают документированную величину
   один раз и отображаются в BG/fight/player stats wire.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### DAY-01 — Daily quests
 

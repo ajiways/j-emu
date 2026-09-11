@@ -693,10 +693,8 @@ resyncs.
 
 ## Architecture checkpoint — план
 
-INV-08 workflow `done`. CMB-05 закрыт; очередь на развилке, см. ROADMAP.
+INV-08 и GEAR-01 inventory-hook workflow `done`. Очередь — [ROADMAP.md](../migration/ROADMAP.md).
 Containers, reservations не спроектированы.
-[ROADMAP.md](../migration/ROADMAP.md) и
-[PLAYBOOK.md](../migration/PLAYBOOK.md).
 
 ## Acceptance
 
@@ -712,4 +710,6 @@ Containers, reservations не спроектированы.
 - durability/repair **частично**: raw-AMF E2E есть, CEF мастерской нет;
 - upgrade **частично**: raw-AMF E2E есть, CEF диалога заточки отложен;
 - set-bonus **частично**: raw-AMF E2E есть, CEF сетов отложен;
-- USE pipeline **частично**: raw-AMF 640/623/2371/584 есть, CEF выдачи нет.
+- USE pipeline **частично**: raw-AMF 640/623/2371/584 есть, CEF выдачи нет;
+- paperdoll extra.spell **частично**: PUT_ON 20546 без fight packets
+  (raw-AMF); attach в бою — [COMBAT.md](COMBAT.md) GEAR-01, CEF нет.

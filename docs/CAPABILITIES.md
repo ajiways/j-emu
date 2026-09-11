@@ -200,9 +200,12 @@ Ghost блокирует regen; OA `RESURRECT` снимает ghost. Duplicate s
 no-op. Restart посреди боя без награды. CMB-08: OA
 `user|friendly_duel_propose`/`accept` между двумя героями в 503 (esrv
 request, `fight|conf` `is_pvp:1` `type:6`, practice restore); hunt 3↔3
-waiter-handoff без сброса HP. CEF экрана результата, F5 в бою,
-призрака, видимого урона, плевка Хиссы и дуэли не прогонялся —
-[CEF_MANUAL.md](migration/CEF_MANUAL.md).
+waiter-handoff без сброса HP. GEAR-01: надетая **20546** на старт hunt
+вешает kind-3 (`persEff` затем `effUse`, `groupId` 936, 8 ходов), без
+прока; `effPurge` на 8-м ударе; F5 в том же процессе сохраняет remaining;
+restart снимает бой, перчатка остаётся в paperdoll. CEF экрана результата,
+F5 в бою, призрака, видимого урона, плевка Хиссы, дуэли и gear-spell не
+прогонялся — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 
 Не перенесены: hunt join team 2 / PvP intervene.
 
@@ -350,7 +353,7 @@ Postgres. CEF вкладки профессий и гремлинов не пр�
 
 ## Вне первой волны
 
-Achievements, daily quests, heroism, gear spells, info pages и content editor.
+Achievements, daily quests, heroism, info pages и content editor.
 
 Clan и встроенные playerbots не переносятся.
 
