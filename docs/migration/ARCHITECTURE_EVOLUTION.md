@@ -24,6 +24,8 @@ settlement, composition `StoreRepair`. INV-06 landed: instance upgrade
 overlay columns, catalog crystals 553/1310/4603/11408/13224, OA `UPGRADE`.
 HERO-01 landed: composition `persistPvpHonor`, character `honor_grants` /
 `grantHonor`, live `honorProgress` on unitframe/conf, BG RAM match sum.
+DAY-01 landed: lazy Moscow 06:00 catch-up, `hero_quests.hidden_in_journal`,
+cycle-aware quest EXP `operationId`.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение
@@ -253,6 +255,14 @@ character/inventory/reputation ports и quests-port `needed` (combat quests
 не импортирует). Dialog и AREA `START_FIGHT` — CMB-09 после commit. JSONB
 и DelayScheduler не вводятся. `ARC-QST` понадобится только если reward
 нельзя провести без прямых cross-table writes. Контракт:
+[QUESTS.md](../modules/QUESTS.md).
+
+**Решение DAY-01:** текущих границ достаточно; отдельный `ARC-QST` не нужен.
+Daily cycle — lazy `Clock` на quests ports (UTC+3 / 06:00), не
+`DelayScheduler` и не `Clock.schedule`. `hidden_in_journal` на том же
+`hero_quests`. EXP idempotency для repeat-дня — cycle в `operationId`, не
+второй ledger. Landed: `0023`, `playable-slice/v30`, `DailyCycleRules` /
+`catchUpDailyCycle` / `hideFinishedDaily`. Контракт:
 [QUESTS.md](../modules/QUESTS.md).
 
 ### `ARC-INS` — instances для dungeon и BG

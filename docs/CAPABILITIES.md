@@ -212,23 +212,28 @@ F5 в бою, призрака, видимого урона, плевка Хис
 
 ## Quests и NPC — частично
 
-Есть raw-AMF и PostgreSQL: NPC 271 (Голова мертвеца), три синтетических
-квеста (`q_engine_board` / `q_engine_fight` / `q_engine_area`). USE 584
-открывает доску без consume (`npc|info` + `npc|quests`). `npc|answer`
-двигает курсор; dialog `START_FIGHT` `mode:"quest"` vs Грызль (bot 2).
-Цели talk/kill/loot/buy/equip/deliver/area_action; скрипты `GRANT_*` / `MSG` /
-`SET_FLAG` / waiting AREA. `book|quest_list` / `quest_targets` /
-`quest_counters` только `currentGoal`. AREA `common|waiting` →
-`action_finish` с leftover `START_FIGHT` и piggyback `fight|conf`. Hunt
-loot-cap через quests-port `needed`. `area_conf` offer href только
-NPC-доска / AREA hotspot. Cursor, goals, facts, waiting и done переживают
-reconnect/restart. CEF доски NPC 271, buy/equip 23, dialog-боя, AREA
-waiting на 503, quest-fight на `action_finish` и loot-cap не прогонялся —
+Есть raw-AMF и PostgreSQL: NPC 271 (Голова мертвеца), четыре синтетических
+квеста (`q_engine_board` / `q_engine_fight` / `q_engine_area` /
+`q_engine_daily`). USE 584 открывает доску без consume (`npc|info` +
+`npc|quests`). `npc|answer` двигает курсор; dialog `START_FIGHT`
+`mode:"quest"` vs Грызль (bot 2). Цели talk/kill/loot/buy/equip/deliver/
+area_action; скрипты `GRANT_*` / `MSG` / `SET_FLAG` / waiting AREA.
+`book|quest_list` / `quest_targets` / `quest_counters` только
+`currentGoal`. AREA `common|waiting` → `action_finish` с leftover
+`START_FIGHT` и piggyback `fight|conf`. Hunt loot-cap через quests-port
+`needed`. `area_conf` offer href только NPC-доска / AREA hotspot. DAY-01:
+ежедневка `flags:1` один раз за круг до 06:00 MSK, lazy wipe на OA,
+журнал `multitime:1` / countdown, `book|quest_delete` прячет done,
+cycle-aware EXP; reconnect/restart до границы. Cursor, goals, facts,
+waiting, done и hidden переживают reconnect/restart. CEF доски NPC 271,
+buy/equip 23, dialog-боя, AREA waiting на 503, quest-fight на
+`action_finish`, loot-cap и ежедневки не прогонялся —
 [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 
-Не перенесены куратский Акрилон, полный NPC corpus, daily (`DAY-01`),
-`quest_delete`, `OPEN_STORE`, `JUMP_AREA`, ambush `chance`, QL-2, roster
-`flags:"8"` / bot↔bot / deny leave, ложь `mergeFinishedQuestsForMapMarkers`.
+Не перенесены куратский Акрилон, полный NPC corpus, данж `256`/`257`,
+MAIN `33`, live 75/276, `daily_pvp_kills` / stats 49, `OPEN_STORE`,
+`JUMP_AREA`, ambush `chance`, QL-2, roster `flags:"8"` / bot↔bot / deny
+leave, ложь `mergeFinishedQuestsForMapMarkers`.
 
 ## Mail — частично
 
@@ -358,7 +363,7 @@ Postgres. CEF вкладки профессий и гремлинов не пр�
 
 ## Вне первой волны
 
-Achievements, daily quests, info pages и content editor.
+Achievements, info pages и content editor.
 
 Clan и встроенные playerbots не переносятся.
 

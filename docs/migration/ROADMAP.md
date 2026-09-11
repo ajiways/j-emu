@@ -1299,13 +1299,73 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
 
 - **ID:** `DAY-01`
 - **depends_on:** `QST-ENG-02`
-- **Behavior evidence:** legacy `DAILY_QUESTS.md`.
-- **Content set:** representative daily quest definition.
-- **Architecture checkpoint / decision:** pending — timezone, scheduler,
-  idempotency и downtime catch-up до coding.
-- **Acceptance:** offer/finish/cooldown/reset переживают restart и не дают
-  вторую награду внутри одного daily-периода.
-- **Status:** `next`
+- **Behavior evidence:** legacy `DAILY_QUESTS.md`; рабочий journal/cooldown —
+  `jgr-emu/src/quests/dailyCycle.ts` + `book.ts` + `progress.ts`
+  `hideHeroQuestByBookId` + OA `book|quest_delete` (`npcBook.ts`). Live dump
+  `_research/2players_social_2026-08-11` квесты 75/276 (`flags:1`
+  `multitime:1`, не в `finished_quests_id`). **Конфликт, не замазывать:**
+  06:00 wipe в jgr-emu **ещё TODO** (`DAILY_QUESTS.md` «Когда будет»,
+  `dailyCycle.ts` «Game-day wipe is not implemented»). ROADMAP acceptance
+  требует reset/catch-up — этот срез **делает** документированный TODO
+  (lazy Clock, не PHP live). Курацию strangers `type:repeat` и live 75/276
+  не тащить. `mergeFinishedQuestsForMapMarkers` не переносится (QST-ENG-02).
+- **Content set:** четвёртый синтетический квест на NPC **271** в
+  playable-slice (bump обязателен): key `q_engine_daily`, `flags` **1**,
+  уникальные `bookId`/`pointId`/`boardOrd` (следующие свободные после 1–3),
+  talk → `GRANT_AWARDS` (малый EXP, без денег/предметов). Три engine-ключа
+  остаются `flags:0`. Publication fail-fast, если нет ровно одного
+  `flags & 1` или daily без бита 1. Live 75/276 / данж `257` / MAIN `33` —
+  не этот срез.
+- **Architecture checkpoint / decision:** complete. ADR-0017–0020
+  достаточны; новый ADR и `ARC-QST`/`ARC-*` не нужны.
+  **Владение.** Quests — authored `flags`, player `hero_quests` (+
+  `hidden_in_journal`), wipe/hide/journal times. Catalog не владеет NPC.
+  Character — `grantExperience` с cycle-aware `operationId`. Inventory не
+  нужен на representative (нет award items). Combat не участвует.
+  Composition `QuestDesk`: UoW, `GRANT_AWARDS`, OA `book|quest_delete`.
+  **Цикл 06:00 MSK.** Именованный `DailyCycleRules`: `Europe/Moscow` =
+  UTC+3 круглый год, граница 06:00; `Clock.unixSeconds()` (не `Date.now()`,
+  не TZ процесса, не `Clock.schedule`, не `DelayScheduler`).
+  `nextMoscow6am(t)` / `lastMoscow6am(t)` как `dailyCycle.ts` (строго после
+  уже наступивших 06:00 — следующие). Lazy catch-up на каждом quests port
+  (board / book / answer / cancel / delete) в той же UoW: daily
+  (`flags & 1`) **active** с `startedAt < last6am` и **done** с
+  `finishedAt < last6am` — DELETE `hero_quests`+goals (включая незакрытый
+  прогресс — как документированный restart). Одноразовые и `256` без бита 1
+  не трогать. Нет `ftime:0`+`cooldown:86400`. Нет таблицы
+  `server_daily_cycle`.
+  **Accept / награда.** `start`/`accept` не поднимает `done`→`active` в том
+  же круге (`203`). После wipe строки нет — взять снова. `GRANT_AWARDS` EXP
+  ключ для daily: `quest:{heroId}:{key}:exp:{lastMoscow6am(finishedAt)}`;
+  одноразовые ключ без cycle как сейчас. Повтор той же сдачи — прежний
+  conflict/no-op CHR-01; новый круг — новый ключ. Money/items без ledger —
+  в representative 0.
+  **Journal / доска.** Active daily: журнал `status:"started"` `multitime:1`
+  `ftime:0` `cooldown:0`. Done, не hidden: в `book|quest_list` filter
+  `started`/empty как `status:"finished"` `multitime:1` `ftime`=unix сдачи
+  `cooldown`=`nextMoscow6am(ftime)-ftime`; **не** в `finished_quests_id`.
+  `book|quest_delete` `form.quest_id`=bookId: daily done → `hidden_in_journal=1`
+  (строка журнала пропадает, доска всё равно скрыта до wipe); не daily /
+  не done — `100` no-op. Piggyback trio, без `state` (live cancel шлёт
+  state, delete — нет). Доска: `flags:1` × `point_flags` 8/`0` → `start_m` /
+  `pnt_m`; done скрыт (`boardRow` null).
+  **Fail-fast.** Нет `flags` у квеста; daily `done` без `finishedAt`;
+  неизвестный OA; `quest_id` 0 — `203` «нет квеста». Не `?? 0` на flags.
+  **Restart / concurrency.** Progress/hidden переживают reconnect/restart;
+  06:00 во время простоя ловится на следующем OA. Лок hero_quests в UoW.
+  `quest-desk` / OA registry у лимита 400 — сначала extract, потом
+  `book|quest_delete`.
+  Landed: `drizzle/0023_quests_daily_journal.sql`
+  (`hero_quests.hidden_in_journal`); `playable-slice/v30` `q_engine_daily`;
+  raw-AMF `tests/e2e/quest-daily.test.ts`; `ee4b4de`.
+- **Acceptance:** raw-AMF: взять/сдать `q_engine_daily` один раз за круг;
+  журнал countdown до 06:00 MSK; доска скрыта; `finished_quests_id` без
+  этого bookId; `quest_delete` прячет строку; FakeClock за 06:00 → wipe →
+  повторный offer и вторая EXP-награда с новым `operationId`; reconnect/
+  restart сохраняют active/done до границы. Одноразовые engine-квесты без
+  изменений. CEF не прогонялся — Wave 12, [CEF_MANUAL.md](CEF_MANUAL.md);
+  product **частично**.
+- **Status:** `done`
 
 ### ACH-01 — Achievements
 
@@ -1341,7 +1401,7 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
 - **Acceptance:** правка создаёт новый PostgreSQL draft, неудачная валидация
   не трогает active release, успешный publish активирует атомарно и
   переживает restart.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### EDT-02 — Extended content editor
 

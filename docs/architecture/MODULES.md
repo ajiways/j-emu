@@ -49,8 +49,9 @@ area presence roster:
   `battleground.finished_*`, Раскоп `general|2` (rooms 635/636/637, return
   500), HERO-01 match honor sum. POST-04 / fairness seal leftover.
 - Репутация Радвея **5** есть (REP-01, product частично).
-  `quests` runtime QST-ENG-01/02: NPC 271, три engine-квеста, USE 584,
-  AREA leftover `START_FIGHT`, hunt loot-cap через quests-port. `economy` модуля нет.
+  `quests` runtime QST-ENG-01/02 / DAY-01: NPC 271, четыре engine-квеста,
+  USE 584, lazy 06:00 wipe, `book|quest_delete`. AREA leftover
+  `START_FIGHT`, hunt loot-cap через quests-port. `economy` модуля нет.
   PRF-01: `catalog.professions` и
   `hero_professions` (пара 2+6). PRF-02: модуль `professions` владеет
   `hero_assistants` / `hero_farm_stats` / `farm_stocks` и sweep. PRF-03:
@@ -162,16 +163,18 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 восстанавливается. Формат history берётся из старого эмулятора; решение —
 [ADR-0020](../adr/ADR-0020-ephemeral-combat.md).
 
-### `quests` — QST-ENG-01/02 runtime
+### `quests` — QST-ENG-01/02 / DAY-01 runtime
 
 **Владеет:** authored NPC/quest/dialog/goal/script/flag (`release_id`) и
-player `hero_quests` / `hero_quest_goals` / `hero_facts` / waiting.
-Не владеет bag, деньгами, area travel, active fight.
+player `hero_quests` (`hidden_in_journal`) / `hero_quest_goals` /
+`hero_facts` / waiting. Daily cycle — lazy `Clock` на тех же портах, не
+`DelayScheduler`. Не владеет bag, деньгами, area travel, active fight.
 
-**API:** `board`, `answer`, `bookTrio`, `cancel`, `recordSignal`,
-`beginAreaAction` / `finishAreaAction`, loot `needed(heroId, artikulId)`.
-GRANT/consume/`START_FIGHT`/`MSG` — composition `QuestDesk`; hunt drop-cap —
-`HuntFightSettlement` через тот же `needed`, не импорт владельцев в domain.
+**API:** `board`, `answer`, `bookSnapshot`, `cancel`, `hideJournal`,
+`recordSignal`, `beginAreaAction` / `finishAreaAction`, loot
+`needed(heroId, artikulId)`. GRANT/consume/`START_FIGHT`/`MSG` —
+composition `QuestDesk`; hunt drop-cap — `HuntFightSettlement` через тот
+же `needed`, не импорт владельцев в domain.
 
 **События leftover:** `quests.accepted.v1` и outbox не вводятся, пока нет
 асинхронного consumer.

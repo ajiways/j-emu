@@ -119,7 +119,8 @@ ORATORY: `{ unit(): number }`, `unit()*100 < probability`; без `probability` 
 - `book|quest_list` / `quest_targets` / `quest_counters` — trio, не один
   list. Piggyback: init/init2, answer/accept/turn-in, dirty buy/PUT_ON,
   fight finish, wrong `area_action`.
-- `book|quest_cancel` + `state`. `book|quest_delete` — контракт DAY-01 ниже.
+- `book|quest_cancel` + `state`. `book|quest_delete` `form.quest_id`=bookId,
+  без `state` (DAY-01).
 - AREA: `common|action` 100 + `common|waiting` → клиент → `action_finish`
   (`msg_text` плашка, не `npc|answer`). Нет waiting row — `203`. Если
   leftover `START_FIGHT` — piggyback `fight|conf` на тот же ответ
@@ -204,9 +205,10 @@ Cursor, goals, facts, waiting и done переживают reconnect/restart.
 Mid-fight RAM без `on_win`/`on_lose`. Concurrent turn-in — один award.
 CEF: [CEF_MANUAL.md](../migration/CEF_MANUAL.md).
 
-## DAY-01 — Daily quests (contract)
+## DAY-01 — Daily quests
 
-Product-status не менять здесь. Очередь:
+Срез закрыт (raw-AMF `q_engine_daily`). CEF не прогонялся. Product
+**частично**: [CAPABILITIES.md](../CAPABILITIES.md). Workflow `done`:
 [ROADMAP.md](../migration/ROADMAP.md) DAY-01.
 
 `flags & 1` = daily. Журнал `multitime:1`. Сданная ежедневка **не** в
