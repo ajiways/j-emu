@@ -52,6 +52,27 @@ export function parseCandidateId(id: string): string {
   return parsed.data;
 }
 
+const documentQuerySchema = z
+  .object({
+    contentType: contentTypeSchema,
+    contentKey: z.string().min(1),
+  })
+  .strict();
+
+const keysQuerySchema = z
+  .object({
+    contentType: contentTypeSchema,
+  })
+  .strict();
+
+export function parseDocumentQuery(query: unknown) {
+  return parseDto(documentQuerySchema, query);
+}
+
+export function parseKeysQuery(query: unknown) {
+  return parseDto(keysQuerySchema, query);
+}
+
 function parseDto<T>(schema: z.ZodType<T>, value: unknown): T {
   try {
     return schema.parse(value);

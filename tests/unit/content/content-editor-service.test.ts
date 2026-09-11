@@ -65,6 +65,40 @@ describe("ContentEditorService saveDraft", () => {
   });
 });
 
+describe("ContentEditorService readDocument", () => {
+  it("rejects an unknown contentType", async () => {
+    const editor = new ContentEditorService(
+      passthroughUow,
+      unusedPublication,
+      new MemoryEditorStore(),
+      new ContentValidator(),
+      new ContentActivationCompatibility(),
+      unusedCompatibility,
+      new ContentMaterializer(unusedCatalog, unusedWorld, unusedFarms, unusedQuests),
+    );
+    await expect(
+      editor.readDocument({ contentType: "not_a_type", contentKey: "271" }),
+    ).rejects.toMatchObject({ status: 400 });
+  });
+
+  it("returns 404 when the key is not in the active release", async () => {
+    const store = new MemoryEditorStore();
+    store.missingDocument = true;
+    const editor = new ContentEditorService(
+      passthroughUow,
+      unusedPublication,
+      store,
+      new ContentValidator(),
+      new ContentActivationCompatibility(),
+      unusedCompatibility,
+      new ContentMaterializer(unusedCatalog, unusedWorld, unusedFarms, unusedQuests),
+    );
+    await expect(
+      editor.readDocument({ contentType: "npc", contentKey: "999" }),
+    ).rejects.toMatchObject({ status: 404 });
+  });
+});
+
 const passthroughUow: UnitOfWork = {
   run: (work) => work(),
 };
@@ -78,6 +112,7 @@ const unusedQuests = {} as QuestProjection;
 
 class MemoryEditorStore implements ContentEditorStore {
   appended = 0;
+  missingDocument = false;
   private readonly active: PublishedRelease = {
     id: "active-1",
     version: 1,
@@ -94,6 +129,15 @@ class MemoryEditorStore implements ContentEditorStore {
 
   async listReleaseEntries() {
     return [];
+  }
+
+  async readDocument() {
+    if (this.missingDocument) return null;
+    return { document: npc, version: 2, draftVersionId: "pinned-1" };
+  }
+
+  async listKeys() {
+    return ["271"];
   }
 
   async maxDraftVersion(): Promise<number> {

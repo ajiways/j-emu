@@ -39,7 +39,12 @@ export class ContentPublicationService {
     return this.unitOfWork.run(async () => {
       const activeReleaseId = await this.store.lockPublication();
       const bootstrapped = await this.store.findBootstrap(validated.checksum);
-      if (bootstrapped) return bootstrapped;
+      if (bootstrapped) {
+        if (activeReleaseId !== bootstrapped.id) {
+          await this.store.activate(bootstrapped.id);
+        }
+        return bootstrapped;
+      }
       if (await this.store.hasAnyRelease()) {
         throw new Error("Database already has content without a matching bootstrap import");
       }

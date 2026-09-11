@@ -116,15 +116,17 @@ DATA-стадии (не runtime-зависимость и не копирова�
 4. материализует текущие catalog/world projections;
 5. переключает active release pointer.
 
-`seed` идемпотентен только для matching bootstrap checksum и запрещает
-bootstrap поверх другой существующей release. Обычный `publish` отклоняет уже
-существующий checksum.
+`seed` идемпотентен для matching bootstrap checksum: не создаёт новый
+release и возвращает pointer на bootstrap, если editor его сдвинул.
+Запрещает bootstrap поверх другой существующей release. Обычный `publish`
+отклоняет уже существующий checksum.
 
 File `seed`/`publish` по-прежнему принимает in-memory bundle. EDT-01 landed:
 `saveDraft` / persisted candidate / validation report / publication audit
 через HTTP `/operator/content/*`, без записи файлов
 ([CONTENT.md](../modules/CONTENT.md)). Manifest export/import и rollback
-остаются планом (EDT-02+).
+остаются планом. EDT-02: operator GET document/keys из active release, не
+из authored файла.
 
 ## Целевой publication contract — план
 

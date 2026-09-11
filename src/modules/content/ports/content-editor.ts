@@ -36,12 +36,25 @@ export type ActivateCandidateResult = Readonly<{
 
 export type ContentReleaseStatus = PublishedRelease;
 
+export type ReadDocumentQuery = Readonly<{
+  contentType: string;
+  contentKey: string;
+}>;
+
+export type ContentEditorDocument = Readonly<{
+  document: unknown;
+  version: number;
+  draftVersionId: string;
+}>;
+
 export interface ContentEditor {
   saveDraft(command: SaveDraftCommand): Promise<SaveDraftResult>;
   buildCandidate(command: BuildCandidateCommand): Promise<{ candidateId: string }>;
   validateCandidate(candidateId: string): Promise<ValidateCandidateResult>;
   activateCandidate(candidateId: string): Promise<ActivateCandidateResult>;
   status(): Promise<ContentReleaseStatus>;
+  readDocument(query: ReadDocumentQuery): Promise<ContentEditorDocument>;
+  listKeys(contentType: string): Promise<{ keys: readonly string[] }>;
 }
 
 export type ContentEditorDraftVersion = Readonly<{

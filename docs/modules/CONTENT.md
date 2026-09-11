@@ -113,11 +113,43 @@ commit, второй 409.
 `composition-root` держали ≤400: extract `create-jugger-runtime` /
 `start-jugger-servers`.
 
-## Out of this slice
+## Out of this slice (EDT-01)
 
 Визуальный `/dev/content` SPA, dual-write fixtures, SQLite, object storage,
-broker, content microservice. `DATA-02…06` mass import. Новые
-`content_type`/`content_key` вне active release. Rollback/export/import
-bundle. `content.release-activated.v1`. Named operators / `operator_roles`.
-EDT-02 stores/dungeons/professions/BG/item-use UI. Закрытие CEF-исключения
-Wave 5–12 (нужен EDT-02).
+broker, content microservice. `DATA-02…06` mass import. Новые ключи вне
+active release. Rollback/export. Named operators. Extended-type proof и
+GET document — EDT-02 ниже.
+
+## EDT-02 — Extended types (contract)
+
+Product-status не менять здесь. Очередь:
+[ROADMAP.md](../migration/ROADMAP.md) EDT-02.
+
+Новых таблиц, SPA и новых ключей нет. Read идёт из active PostgreSQL, не из
+`playable-slice.json`.
+
+`readDocument({ contentType, contentKey })` — document + `version` (max
+draft) + `draftVersionId` pinned active entry. Нет в active → 404.
+`listKeys(contentType)` — ключи этого type в active, без documents.
+
+HTTP (Bearer, query из-за `:`/`|`):
+
+| Method | Path                                                  | Success                                 |
+| ------ | ----------------------------------------------------- | --------------------------------------- |
+| GET    | `/operator/content/document?contentType=&contentKey=` | `{ document, version, draftVersionId }` |
+| GET    | `/operator/content/keys?contentType=`                 | `{ keys }`                              |
+
+Representative (один candidate, шесть overlays): `store_lot` `504:80` price;
+`dungeon` `1` title; `craft_recipe` `61` title; `battleground` `general|2`
+title; `artifact` `20546` title; `use_script` `2827` failPlaque. Activate
+один раз. OA: `store|list`, instance/book dungeon title, craft recipes list,
+`arena|list`, bag/catalog title 20546, USE 2827 fail plaque. GET после
+restart совпадает.
+
+`postgres-content-editor-store` у лимита 400 — extract read.
+
+### Out of EDT-02
+
+SPA `/dev/content`, dual-write, новые ключи, rollback/export, named
+operators, DATA-02…06 import, прогон CEF_MANUAL Wave 0–12 (закрытие
+исключения — close EDT-02, не coding).

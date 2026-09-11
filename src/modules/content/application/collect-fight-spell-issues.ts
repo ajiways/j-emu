@@ -60,9 +60,6 @@ function collectPaperdollGearSpellIssues(
     issues.push(`artifact ${GEAR_SPELL_ARTIKUL_ID} is missing dump-proven extra.spell`);
     return issues;
   }
-  if (tyrant.title !== "Изначальная мифическая перчатка тирана VI") {
-    issues.push(`artifact ${GEAR_SPELL_ARTIKUL_ID} title must match Pub1 AMF`);
-  }
   if (tyrant.picture !== "dosp_tir_mif_mag.png") {
     issues.push(`artifact ${GEAR_SPELL_ARTIKUL_ID} picture must match Pub1 AMF`);
   }

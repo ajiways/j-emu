@@ -3,7 +3,6 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Application } from "../../src/app/application.ts";
 import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
-import { loadContentBundleFile } from "../../src/modules/content/infrastructure/load-content-bundle-file.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { bagItemByArtikulId } from "../support/harness/wire-payload.ts";
@@ -12,9 +11,6 @@ import { heroIdFrom } from "../support/harness/wire-payload.ts";
 
 const TOKEN = "test-operator-token";
 const slicePath = path.resolve(process.cwd(), "content/playable-slice.json");
-const playable = loadContentBundleFile(slicePath);
-const npc = playable.npcs.find((row) => row.id === 271);
-if (!npc) throw new Error("playable slice is missing NPC 271");
 
 describe("content editor HTTP", () => {
   let harness: ApplicationHarness;
@@ -42,11 +38,22 @@ describe("content editor HTTP", () => {
     const active = jsonRecord(status.json());
     const expectedActiveReleaseId = requireString(active.id);
     const title = "Голова редактора";
+    const current = await operator(
+      application,
+      "GET",
+      "/operator/content/document?contentType=npc&contentKey=271",
+    );
+    expect(current.statusCode, JSON.stringify(current.json())).toBe(200);
+    const pinned = jsonRecord(current.json());
+    if (!Number.isInteger(pinned.version)) throw new Error("document version is missing");
+    if (!pinned.document || typeof pinned.document !== "object" || Array.isArray(pinned.document)) {
+      throw new Error("active NPC 271 document is missing");
+    }
     const draft = await operator(application, "POST", "/operator/content/drafts", {
       contentType: "npc",
       contentKey: "271",
-      document: { ...npc, title },
-      expectedVersion: 1,
+      document: { ...pinned.document, title },
+      expectedVersion: pinned.version,
     });
     expect(draft.statusCode, JSON.stringify(draft.json())).toBe(200);
     const saved = jsonRecord(draft.json());

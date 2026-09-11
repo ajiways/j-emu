@@ -1,17 +1,10 @@
-import { and, desc, eq, max, sql } from "drizzle-orm";
-import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
+import { and, eq, sql } from "drizzle-orm";
 import type { PublishedRelease, ValidatedContentBundle } from "../domain/content-document.ts";
-import { isContentType, type ContentType } from "../domain/parse-content-document.ts";
-import type {
-  ContentEditorCandidate,
-  ContentEditorDraftVersion,
-  ContentEditorReleaseEntry,
-  ContentEditorValidationReport,
-  ValidationReportIssues,
-} from "../ports/content-editor.ts";
+import type { ContentType } from "../domain/parse-content-document.ts";
+import type { ContentEditorCandidate, ValidationReportIssues } from "../ports/content-editor.ts";
 import type { ContentEditorStore, PinnedReleaseEntry } from "../ports/content-editor-store.ts";
+import { PostgresContentEditorReadStore } from "./postgres-content-editor-read-store.ts";
 import {
-  activeRelease,
   candidateEntries,
   candidates,
   draftVersions,
@@ -23,77 +16,10 @@ import {
   validationReports,
 } from "./schema.ts";
 
-export class PostgresContentEditorStore implements ContentEditorStore {
-  constructor(private readonly database: PostgresDatabase) {}
-
-  async requireActiveRelease(): Promise<PublishedRelease> {
-    const rows = await this.database
-      .session()
-      .select({
-        id: releases.id,
-        version: releases.version,
-        checksum: releases.checksum,
-      })
-      .from(activeRelease)
-      .innerJoin(releases, eq(activeRelease.releaseId, releases.id));
-    if (rows.length !== 1) throw new Error("No published content revision");
-    const row = rows[0];
-    if (!row) throw new Error("No published content revision");
-    return row;
-  }
-
-  async hasReleaseEntry(
-    releaseId: string,
-    contentType: ContentType,
-    contentKey: string,
-  ): Promise<boolean> {
-    const rows = await this.database
-      .session()
-      .select({ contentKey: releaseEntries.contentKey })
-      .from(releaseEntries)
-      .where(
-        and(
-          eq(releaseEntries.releaseId, releaseId),
-          eq(releaseEntries.contentType, contentType),
-          eq(releaseEntries.contentKey, contentKey),
-        ),
-      );
-    if (rows.length > 1) {
-      throw new Error(`Multiple release entries for ${contentType}:${contentKey}`);
-    }
-    return rows.length === 1;
-  }
-
-  async listReleaseEntries(releaseId: string): Promise<readonly ContentEditorReleaseEntry[]> {
-    const rows = await this.database
-      .session()
-      .select({
-        contentType: releaseEntries.contentType,
-        contentKey: releaseEntries.contentKey,
-        draftVersionId: releaseEntries.draftVersionId,
-      })
-      .from(releaseEntries)
-      .where(eq(releaseEntries.releaseId, releaseId));
-    return rows.map(requireTypedEntry);
-  }
-
-  async maxDraftVersion(contentType: ContentType, contentKey: string): Promise<number> {
-    const rows = await this.database
-      .session()
-      .select({ value: max(draftVersions.version) })
-      .from(draftVersions)
-      .innerJoin(drafts, eq(draftVersions.draftId, drafts.id))
-      .where(and(eq(drafts.contentType, contentType), eq(drafts.contentKey, contentKey)));
-    if (rows.length !== 1) {
-      throw new Error(`Draft version lookup failed for ${contentType}:${contentKey}`);
-    }
-    const value = rows[0]?.value;
-    if (value === null || value === undefined) {
-      throw new Error(`No draft versions for ${contentType}:${contentKey}`);
-    }
-    return value;
-  }
-
+export class PostgresContentEditorStore
+  extends PostgresContentEditorReadStore
+  implements ContentEditorStore
+{
   async appendDraftVersion(input: {
     contentType: ContentType;
     contentKey: string;
@@ -129,23 +55,6 @@ export class PostgresContentEditorStore implements ContentEditorStore {
     return inserted[0];
   }
 
-  async findDraftVersion(id: string): Promise<ContentEditorDraftVersion | null> {
-    const rows = await this.database
-      .session()
-      .select({
-        id: draftVersions.id,
-        contentType: drafts.contentType,
-        contentKey: drafts.contentKey,
-        document: draftVersions.document,
-      })
-      .from(draftVersions)
-      .innerJoin(drafts, eq(draftVersions.draftId, drafts.id))
-      .where(eq(draftVersions.id, id));
-    if (rows.length > 1) throw new Error(`Multiple draft versions found for ${id}`);
-    const row = rows[0];
-    return row ? requireTypedVersion(row) : null;
-  }
-
   async insertCandidate(input: {
     expectedActiveReleaseId: string;
     createdBy: string;
@@ -174,51 +83,6 @@ export class PostgresContentEditorStore implements ContentEditorStore {
       })),
     );
     return candidateId;
-  }
-
-  async findCandidate(candidateId: string): Promise<ContentEditorCandidate | null> {
-    const rows = await this.database
-      .session()
-      .select({
-        id: candidates.id,
-        expectedActiveReleaseId: candidates.expectedActiveReleaseId,
-        status: candidates.status,
-      })
-      .from(candidates)
-      .where(eq(candidates.id, candidateId));
-    if (rows.length > 1) throw new Error(`Multiple candidates found for ${candidateId}`);
-    const row = rows[0];
-    if (!row) return null;
-    return { ...row, status: requireCandidateStatus(row.status) };
-  }
-
-  async listCandidateEntries(candidateId: string): Promise<readonly PinnedReleaseEntry[]> {
-    const rows = await this.database
-      .session()
-      .select({
-        contentType: candidateEntries.contentType,
-        contentKey: candidateEntries.contentKey,
-        draftVersionId: candidateEntries.draftVersionId,
-      })
-      .from(candidateEntries)
-      .where(eq(candidateEntries.candidateId, candidateId));
-    return rows.map(requireTypedEntry);
-  }
-
-  async listCandidateDocuments(candidateId: string): Promise<readonly ContentEditorDraftVersion[]> {
-    const rows = await this.database
-      .session()
-      .select({
-        id: draftVersions.id,
-        contentType: drafts.contentType,
-        contentKey: drafts.contentKey,
-        document: draftVersions.document,
-      })
-      .from(candidateEntries)
-      .innerJoin(draftVersions, eq(candidateEntries.draftVersionId, draftVersions.id))
-      .innerJoin(drafts, eq(draftVersions.draftId, drafts.id))
-      .where(eq(candidateEntries.candidateId, candidateId));
-    return rows.map(requireTypedVersion);
   }
 
   async setCandidateStatus(
@@ -256,20 +120,6 @@ export class PostgresContentEditorStore implements ContentEditorStore {
     if (inserted.length !== 1 || !id)
       throw new Error("Validation report insert did not return an id");
     return id;
-  }
-
-  async latestValidationReport(candidateId: string): Promise<ContentEditorValidationReport | null> {
-    const rows = await this.database
-      .session()
-      .select({ id: validationReports.id, ok: validationReports.ok })
-      .from(validationReports)
-      .where(eq(validationReports.candidateId, candidateId))
-      .orderBy(desc(validationReports.createdAt))
-      .limit(1);
-    const row = rows[0];
-    if (!row) return null;
-    if (row.ok !== 0 && row.ok !== 1) throw new Error(`Validation report ${row.id} has invalid ok`);
-    return { id: row.id, ok: row.ok === 1 };
   }
 
   async persistPinnedBundle(
@@ -336,48 +186,4 @@ export class PostgresContentEditorStore implements ContentEditorStore {
         createdAt: sql`now()`,
       });
   }
-}
-
-function requireTypedEntry(row: {
-  contentType: string;
-  contentKey: string;
-  draftVersionId: string;
-}): ContentEditorReleaseEntry {
-  if (!isContentType(row.contentType)) {
-    throw new Error(`Unknown content type ${row.contentType}`);
-  }
-  return {
-    contentType: row.contentType,
-    contentKey: row.contentKey,
-    draftVersionId: row.draftVersionId,
-  };
-}
-
-function requireTypedVersion(row: {
-  id: string;
-  contentType: string;
-  contentKey: string;
-  document: unknown;
-}): ContentEditorDraftVersion {
-  if (!isContentType(row.contentType)) {
-    throw new Error(`Unknown content type ${row.contentType}`);
-  }
-  return {
-    id: row.id,
-    contentType: row.contentType,
-    contentKey: row.contentKey,
-    document: row.document,
-  };
-}
-
-function requireCandidateStatus(status: string): ContentEditorCandidate["status"] {
-  if (
-    status === "open" ||
-    status === "validated" ||
-    status === "invalid" ||
-    status === "activated"
-  ) {
-    return status;
-  }
-  throw new Error(`Unknown candidate status ${status}`);
 }

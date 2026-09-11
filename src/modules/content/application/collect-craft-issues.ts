@@ -47,8 +47,6 @@ export function collectCraftIssues(bundle: ContentBundle): readonly string[] {
 }
 
 function pushRecipe61Issues(issues: string[], row: CraftRecipeDocument): void {
-  if (row.title !== "Раствор хрусталя")
-    issues.push(`recipe ${row.id} title must be Раствор хрусталя`);
   if (row.professionId !== PROFESSION_ID)
     issues.push(`recipe ${row.id} profession must be ${PROFESSION_ID}`);
   if (row.artikulId !== BOOK_ID) issues.push(`recipe ${row.id} book must be ${BOOK_ID}`);

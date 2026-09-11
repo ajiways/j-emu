@@ -2,6 +2,7 @@ import type { PublishedRelease, ValidatedContentBundle } from "../domain/content
 import type { ContentType } from "../domain/parse-content-document.ts";
 import type {
   ContentEditorCandidate,
+  ContentEditorDocument,
   ContentEditorDraftVersion,
   ContentEditorReleaseEntry,
   ContentEditorValidationReport,
@@ -22,6 +23,8 @@ export interface ContentEditorStore {
     contentKey: string,
   ): Promise<boolean>;
   listReleaseEntries(releaseId: string): Promise<readonly ContentEditorReleaseEntry[]>;
+  readDocument(contentType: ContentType, contentKey: string): Promise<ContentEditorDocument | null>;
+  listKeys(contentType: ContentType): Promise<readonly string[]>;
   maxDraftVersion(contentType: ContentType, contentKey: string): Promise<number>;
   appendDraftVersion(input: {
     contentType: ContentType;

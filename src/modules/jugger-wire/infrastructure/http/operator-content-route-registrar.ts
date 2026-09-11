@@ -5,6 +5,8 @@ import type { ContentEditor } from "../../../content/ports/content-editor.ts";
 import {
   parseBuildCandidateBody,
   parseCandidateId,
+  parseDocumentQuery,
+  parseKeysQuery,
   parseSaveDraftBody,
 } from "./operator-content-body.ts";
 
@@ -48,6 +50,18 @@ export class OperatorContentRouteRegistrar {
         });
         scope.get("/status", async (request, reply) => {
           return send(reply, request, async () => this.editor.status());
+        });
+        scope.get("/document", async (request, reply) => {
+          return send(reply, request, async () => {
+            const query = parseDocumentQuery(request.query);
+            return this.editor.readDocument(query);
+          });
+        });
+        scope.get("/keys", async (request, reply) => {
+          return send(reply, request, async () => {
+            const query = parseKeysQuery(request.query);
+            return this.editor.listKeys(query.contentType);
+          });
         });
       },
       { prefix: "/operator/content" },

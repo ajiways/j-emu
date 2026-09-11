@@ -31,9 +31,9 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/world/domain/hunt-wander.ts":
     "Hunt live motion: route, zone, home park, lock freeze, and respawn hide",
   "src/modules/content/application/content-editor-service.ts":
-    "Editor ports: saveDraft, buildCandidate, validateCandidate, activateCandidate, and status",
-  "src/modules/content/infrastructure/postgres-content-editor-store.ts":
-    "Editor persistence for drafts, candidates, validation reports, audits, and pinned releases",
+    "Editor ports: saveDraft, buildCandidate, validateCandidate, activateCandidate, status, readDocument, and listKeys",
+  "src/modules/content/infrastructure/postgres-content-editor-read-store.ts":
+    "Editor reads of active release entries, pinned documents, draft versions, candidates, and keys",
   "src/app/create-jugger-runtime.ts":
     "Extracted jugger-wire composition including trade desk, store ports, and content editor",
   "src/modules/content/domain/content-playable-entities.ts":

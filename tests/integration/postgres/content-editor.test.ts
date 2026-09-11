@@ -57,6 +57,44 @@ describe("content editor", () => {
     });
   });
 
+  it("reads the pinned active document and lists keys without creating a draft", async () => {
+    const editor = createPostgresContentEditor(database);
+    const document = await editor.readDocument({ contentType: "npc", contentKey: "271" });
+    expect(document.version).toBeGreaterThanOrEqual(1);
+    expect(document.draftVersionId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+    );
+    expect(document.document).toMatchObject({ id: 271 });
+    const keys = await editor.listKeys("store_lot");
+    expect(keys.keys).toEqual(expect.arrayContaining(["504:80"]));
+    await expect(
+      editor.readDocument({ contentType: "npc", contentKey: "999" }),
+    ).rejects.toMatchObject({ status: 404 });
+  });
+
+  it("reactivates the bootstrap release when seed matches the file checksum", async () => {
+    const editor = createPostgresContentEditor(database);
+    const publication = createPostgresContentPublication(database);
+    const bootstrap = await publication.seed(playable, playablePath);
+    const saved = await saveNpcTitle(
+      editor,
+      "Временный editor title",
+      await currentVersion(database, "npc", "271"),
+    );
+    const built = await editor.buildCandidate({
+      expectedActiveReleaseId: (await editor.status()).id,
+      overlays: [{ contentType: "npc", contentKey: "271", draftVersionId: saved.draftVersionId }],
+    });
+    expect((await editor.validateCandidate(built.candidateId)).ok).toBe(true);
+    const activated = await editor.activateCandidate(built.candidateId);
+    expect(activated.releaseId).not.toBe(bootstrap.id);
+    const restored = await publication.seed(playable, playablePath);
+    expect(restored.id).toBe(bootstrap.id);
+    expect(await editor.status()).toMatchObject({ id: bootstrap.id });
+    const document = await editor.readDocument({ contentType: "npc", contentKey: "271" });
+    expect(document.document).toMatchObject({ id: 271, title: npc.title });
+  });
+
   it("does not move the active pointer when validation fails", async () => {
     const editor = createPostgresContentEditor(database);
     const before = await editor.status();

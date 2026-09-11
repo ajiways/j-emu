@@ -17,7 +17,9 @@ import type {
   BuildCandidateCommand,
   CandidateOverlay,
   ContentEditor,
+  ContentEditorDocument,
   ContentReleaseStatus,
+  ReadDocumentQuery,
   SaveDraftCommand,
   SaveDraftResult,
   ValidateCandidateResult,
@@ -174,6 +176,24 @@ export class ContentEditorService implements ContentEditor {
 
   async status(): Promise<ContentReleaseStatus> {
     return this.store.requireActiveRelease();
+  }
+
+  async readDocument(query: ReadDocumentQuery): Promise<ContentEditorDocument> {
+    const contentType = requireContentType(query.contentType);
+    if (!query.contentKey) throw new ContentEditorError(400, "contentKey is required");
+    const row = await this.store.readDocument(contentType, query.contentKey);
+    if (!row) {
+      throw new ContentEditorError(
+        404,
+        `content ${contentType}:${query.contentKey} is not in the active release`,
+      );
+    }
+    return row;
+  }
+
+  async listKeys(contentTypeValue: string): Promise<{ keys: readonly string[] }> {
+    const contentType = requireContentType(contentTypeValue);
+    return { keys: await this.store.listKeys(contentType) };
   }
 
   private async requireCandidate(candidateId: string) {
