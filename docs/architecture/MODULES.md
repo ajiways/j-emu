@@ -51,8 +51,8 @@ area presence roster:
 - Репутация Радвея **5** есть (REP-01, product частично).
   `quests`, `economy` в runtime нет. PRF-01: `catalog.professions` и
   `hero_professions` (пара 2+6). PRF-02: модуль `professions` владеет
-  `hero_assistants` / `hero_farm_stats` / `farm_stocks` и sweep. Craft —
-  leftover.
+  `hero_assistants` / `hero_farm_stats` / `farm_stocks` и sweep. PRF-03:
+  checkpoint — `catalog.craft_recipes` / `hero_recipes`, recipe 61.
 
 Во всех разделах ниже **API**, **события** и **шов извлечения** описывают
 целевую границу. Они не доказывают регистрацию команды, наличие таблиц или
@@ -256,20 +256,24 @@ Loot routing и HELP — composition ports, combat party-таблицы не и�
 
 **Шов извлечения:** settlement — saga с inventory reservations и идемпотентными ключами. Аналитика рынка строит проекцию событий, не расширяет transactional schema.
 
-### `professions` — PRF-01 licenses; PRF-02 jobs
+### `professions` — PRF-01 licenses; PRF-02 jobs; PRF-03 craft
 
 **Владеет (PRF-01):** нет runtime jobs. Catalog владеет `catalog.professions`;
 character владеет `hero_professions` и `learnProfession`.
 
 **Владеет (PRF-02):** `hero_assistants`, `hero_farm_stats`, `farm_stocks`,
 DelayScheduler finish. Catalog: `assistant_types`, `farm_resources`,
-`area_farms`. Контракт: [PROFESSIONS.md](../modules/PROFESSIONS.md).
+`area_farms`.
 
-**API leftover:** `craft`.
+**Владеет (PRF-03):** `hero_recipes`. Catalog: `craft_recipes`. Character
+bump craft XP через port. USE `LEARN_RECIPE` — composition seam.
+Контракт: [PROFESSIONS.md](../modules/PROFESSIONS.md).
+
+**API leftover:** `craft|cook_list`.
 
 **События leftover:** `professions.mastery-changed.v1`, `professions.gathering-finished.v1`, `professions.craft-finished.v1`.
 
-**Шов извлечения:** каталог рецептов и узлов читается через catalog/world ports; ингредиенты и результат проходят атомарную orchestration с inventory.
+**Шов извлечения:** каталог рецептов читается через catalog ports; ингредиенты и результат проходят атомарную orchestration с inventory.
 
 ### `instance` — DNG-01 / DNG-02
 

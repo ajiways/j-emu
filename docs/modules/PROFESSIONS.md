@@ -1,10 +1,12 @@
-# Professions (PRF-01 / PRF-02)
+# Professions (PRF-01 / PRF-02 / PRF-03)
 
 Runtime PRF-01: authored profession pair and hero licenses. Catalog owns
 definitions. Character owns `hero_professions` and `learnProfession`.
 
 Runtime PRF-02: gathering assistants, farm jobs, DelayScheduler finish.
-Recipes / craft remain PRF-03 leftover.
+
+Runtime PRF-03: dump recipe **61**, USE `LEARN_RECIPE`, `craft|*` cooldown
+and favorites. Higher craft bands remain leftover.
 
 Product status: [CAPABILITIES.md](../CAPABILITIES.md).
 
@@ -12,21 +14,22 @@ Product status: [CAPABILITIES.md](../CAPABILITIES.md).
 
 - `jgr-emu/docs/PROTOCOL.md` (Professions), `FIXTURES.md`, `QUESTS.md`;
 - `jgr-emu/src/professions/catalog.ts`, `formulas.ts`, `assistant.ts`,
-  `farm.ts`, `sweep.ts`;
+  `farm.ts`, `sweep.ts`, `craft.ts`;
 - dump `common-conf.json` `profession_info` ids **2** / **6**; farm **4** /
-  assistant **3** from Pub1 AMF + `area_farms.json` area **500**.
+  assistant **3** from Pub1 AMF + `area_farms.json` area **500**; recipe
+  **61** from Pub1 `recipes.amf` + books **1861** / output **1714**.
 
 ## Ownership
 
 No extra ADR. Quest `GRANT_PROFESSION` is QST.
 
-| Owner         | Holds                                                                           |
-| ------------- | ------------------------------------------------------------------------------- |
-| `catalog`     | `catalog.professions`; PRF-02 `assistant_types`, `farm_resources`, `area_farms` |
-| `character`   | `character.hero_professions`; money debit for create/upgrade                    |
-| `professions` | PRF-02 `hero_assistants`, `hero_farm_stats`, `farm_stocks`; sweep               |
-| `inventory`   | PRF-02 loot grant / upgrade consume by artikul                                  |
-| composition   | OA `user\|professions`; `assistant                                              | *`; DelayScheduler farm sweep |
+| Owner         | Holds                                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| `catalog`     | `catalog.professions`; PRF-02 `assistant_types`, `farm_resources`, `area_farms`; PRF-03 `craft_recipes` |
+| `character`   | `character.hero_professions`; money debit; PRF-03 craft XP bump via port                                |
+| `professions` | PRF-02 jobs/sweep; PRF-03 `hero_recipes`                                                                |
+| `inventory`   | loot grant / consume-by-artikul; USE returns `learn_recipe`, does not call professions                  |
+| composition   | OA `user\|professions`; `assistant                                                                      | *`; `craft | *`; USE `LEARN_RECIPE` seam; farm sweep |
 
 A grant writes value **1** and does not insert a starter gremlin. Already
 licensed id is idempotent (`learned: false`). Unknown / unpublished id is
@@ -44,7 +47,8 @@ ProfessionList only draws ids 2 and 6.
 
 `playable-slice/v25`: dump pair Старатель **2** (type 2, gather) and
 Знаковед **6** (type 1, craft). Remaining 1/3/4/5/7–16, fishing/cooking
-tabs, license NPC — DATA POST-02 / leftover.
+tabs, license NPC — DATA POST-02 / leftover. PRF-03 adds recipe **61**
+and artifacts **1861** / **1714**.
 
 ## Schema
 
@@ -58,6 +62,12 @@ PRF-02 tables: `catalog.assistant_types`, `farm_resources`,
 `area_farms`; `professions.hero_assistants` (identity id), `hero_farm_stats`,
 `farm_stocks`. Runtime writes explicit FREE sentinels; no request-path
 SQL DEFAULT as business value.
+
+PRF-03: `catalog.craft_recipes` authored id (slice **61**); ingredients JSON
+is typed `{artikul_id, amount}` only — unknown type fails publication.
+`professions.hero_recipes(id identity START 1, hero_id, recipe_id, ftime,
+flags)` UNIQUE `(hero_id, recipe_id)`. Wire `artikul_id` = recipe id, not
+the book. XP bands are dump-proven domain constants, not a catalog table.
 
 SQL DEFAULT only for migrate; runtime writes explicit value 1. No row = not
 licensed. Progress is not `hero_skills` / `PR_*`.
@@ -120,12 +130,43 @@ root (`envelope.root`), merged with `form`. FREE sentinels `farm_id=0`,
 id; ghost on mutating OA. No request-time finish if sweeper has not written
 `cycle_result` (`Ещё не готово`).
 
+## PRF-03 — craft
+
+Dump cycle: recipe **61** «Раствор хрусталя» (profession **6**,
+`skill_value` 0, `max_skill_value` 60, `duration` **35**), book **1861**
+(`LEARN_RECIPE`, dispose 1), ingredient **1720**×1, output **1714**×10.
+Learn and craft require hero level ≥7 (`max_profession_skill` 59) and
+license 6. Remaining bands (66/71/…) are DATA POST-02.
+
+**Clock:** request-time consume+grant. Cooldown is `hero_recipes.ftime`
+checked on the next `craft_items` (`Рецепт ещё готовится`). No
+DelayScheduler job. Tests advance `MutableClock`.
+
+**RNG:** same factory `{ unit(): number }` as gathering. `rollCraftXp`
+uses dump bands (delta 8/18/28/38/48/60 → 90/50/25/15/5/3%). Cap is
+`min(recipe.max_skill_value, levelCap)`. Gathering professions 1–3 never
+bump the hero row.
+
+**Wire:** `craft|user_recipes_list` nested studied rows
+`{ id, user_id, artikul_id, ftime, flags, rand_seed:0 }`; `flags` bit0 =
+favorite. `recipe_id` on AMF root. `craft_items` / favorite OA are flat:
+payload + `craft|user_recipes_list` + `user|bag`; `user|professions` only
+when value changed. `craft|cook_list` stays empty leftover.
+
+**USE:** `useFromBag` returns `kind: "learn_recipe"`; composition calls
+`professions.learnFromBook` then `consumeBagCharge`. Piggyback
+`craft|user_recipes_list`. Inventory does not import professions.
+
+**Fail-fast:** missing recipe/book/license/ingredient/output; unpublished
+id; ghost; already learned; skill/cap gate (`Недостаточное мастерство`);
+`recipe_id` absent (no `|| 0`).
+
 ## Out of scope
 
-Recipes / craft / favorites (PRF-03). `GRANT_PROFESSION` quest op.
-Ids 1/3/4/5/7–16. Profession swap NPC. Climate rotation. Full Pub1
-assistant/farm corpus (DATA POST-02). Fish stats. `common|farm_agregate`
-live overlay.
+`GRANT_PROFESSION` quest op. Ids 1/3/4/5/7–16. Profession swap NPC.
+Climate rotation. Full Pub1 assistant/farm/recipe corpus (DATA POST-02).
+Fish stats. `common|farm_agregate` live overlay. Craft mastery chat line.
+`craft|cook_list`.
 
 ## Acceptance
 
@@ -142,3 +183,9 @@ PRF-02:
 
 - create 3 for 10 gold; work farm 4 in area 500; sweeper finish; repeat loot
   1720; revoke; upgrade 3→13; persist restart; no OA lazy resolve.
+
+PRF-03:
+
+- L7 + license 6; USE book 1861 learns 61 and consumes the book; craft 61
+  consumes 1720 and grants 1714×10; cooldown 35s blocks retry; favorite
+  bit0; XP bump persists restart; second USE of 1861 fails already-learned.

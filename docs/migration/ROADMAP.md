@@ -1057,8 +1057,12 @@
 - **Behavior evidence:** legacy craft recipes, cooldown и favorites.
 - **Content set:** representative рецепт на каждый уровень мастерства;
   полный корпус рецептов — bulk-import задача.
-- **Architecture checkpoint / decision:** pending — ingredient consume,
-  result grant и cooldown transaction.
+- **Architecture checkpoint / decision:** complete — отдельный ADR не нужен.
+  Catalog владеет `craft_recipes`; professions — `hero_recipes`; character
+  bump XP только через port; inventory USE возвращает `learn_recipe`.
+  Clock = request-time grant + `ftime` cooldown, без DelayScheduler. RNG —
+  тот же `{ unit(): number }`. XP-bands — dump constants в domain.
+  Контракт: [PROFESSIONS.md](../modules/PROFESSIONS.md).
 - **Acceptance:** craft и favorites дают один output/XP результат после
   authored cooldown и остаются consistent после retry/restart.
 - **Status:** `next`

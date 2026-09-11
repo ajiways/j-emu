@@ -69,6 +69,8 @@ product-status только вместе с CEF-фактом в `CAPABILITIES.md
       active слота; на L7 `max_profession_skill` 59; F5/рестарт.
 - [ ] PRF-02: купить Имуро-Юи 3 (10 золота) → work farm 4 в локации 500 →
       после цикла лут 1720, repeat/revoke; upgrade 3→13; F5/рестарт.
+- [ ] PRF-03: L7 + Знаковед 6; USE книги 1861 → рецепт 61; craft 1×1720 →
+      10×1714; КД 35с; избранное; F5/рестарт.
 
 ## World / economy / HUD
 

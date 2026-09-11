@@ -343,6 +343,7 @@ JSONB `killed_spawns_json`). `copies.copy_type` `dungeon|bg`.
 PRF-01: `catalog.professions` pair 2+6; `character.hero_professions`.
 PRF-02: `catalog.assistant_types` / `farm_resources` / `area_farms`;
 `professions.hero_assistants` / `hero_farm_stats` / `farm_stocks`.
+PRF-03 (план до реализации): `catalog.craft_recipes`; `professions.hero_recipes`.
 Контракт: [PROFESSIONS.md](../modules/PROFESSIONS.md).
 Контракт: [INSTANCE.md](../modules/INSTANCE.md), книга —
 [BOOK.md](../modules/BOOK.md).
