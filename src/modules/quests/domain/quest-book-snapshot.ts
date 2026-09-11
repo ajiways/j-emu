@@ -1,4 +1,10 @@
 import type { QuestDocument, QuestGoalDocument } from "../../content/domain/content-quest.ts";
+import {
+  DAILY_CYCLE_RULES,
+  journalTimes,
+  shouldListFinishedDaily,
+  shouldListInFinishedIds,
+} from "./daily-cycle-rules.ts";
 import type { HeroQuest, HeroQuestGoal } from "./hero-quest.ts";
 import { currentGoal } from "./prior-gate.ts";
 
@@ -7,6 +13,11 @@ type QuestBookRow = Readonly<{
   title: string;
   description: string;
   flags: number;
+  status: "started" | "finished";
+  cooldown: number;
+  multitime: 0 | 1;
+  ftime: number;
+  stime: number;
 }>;
 
 type QuestBookTarget = Readonly<{
@@ -32,32 +43,58 @@ export function questBookSnapshot(
   goalsByKey: ReadonlyMap<string, readonly HeroQuestGoal[]>,
 ): QuestBookSnapshot {
   if (!filterType) throw new Error("book|quest_list filter_type is required");
+  const startedFilter = filterType === "started";
   const byKey = new Map(progress.map((row) => [row.questKey, row]));
   const active: QuestBookRow[] = [];
   const finished: QuestBookRow[] = [];
+  const finishedIds: number[] = [];
   const targets: QuestBookTarget[] = [];
   for (const quest of quests) {
     const row = byKey.get(quest.key);
     if (!row) continue;
-    const book = {
+    const times = journalTimes(
+      {
+        flags: quest.flags,
+        status: row.status,
+        startedAt: row.startedAt,
+        finishedAt: row.finishedAt,
+      },
+      DAILY_CYCLE_RULES,
+    );
+    const book: QuestBookRow = {
       bookId: quest.bookId,
       title: quest.title,
       description: quest.description,
       flags: quest.flags,
+      status: row.status === "done" ? "finished" : "started",
+      cooldown: times.cooldown,
+      multitime: times.multitime,
+      ftime: times.ftime,
+      stime: times.stime,
     };
     if (row.status === "done") {
-      finished.push(book);
+      if (shouldListInFinishedIds(quest.flags, row.status)) {
+        finished.push(book);
+        finishedIds.push(quest.bookId);
+      }
+      if (startedFilter && shouldListFinishedDaily(quest.flags, row.status, row.hiddenInJournal)) {
+        active.push(book);
+      }
       continue;
     }
+    if (!startedFilter) continue;
     active.push(book);
-    const goals = goalsByKey.get(quest.key) ?? [];
+    const goals = goalsByKey.get(quest.key);
+    if (!goals) throw new Error(`Hero quest ${quest.key} goals are missing`);
     const goal = currentGoal(quest, goals);
     if (!goal) continue;
+    const progressGoal = goals.find((item) => item.goalId === goal.id);
+    if (!progressGoal) throw new Error(`Hero quest ${quest.key} goal ${goal.id} is missing`);
     targets.push({
       bookId: quest.bookId,
       title: goal.title,
       kind: goal.kind,
-      value: goals.find((item) => item.goalId === goal.id)?.value ?? 0,
+      value: progressGoal.value,
       limit: goal.limit,
     });
   }
@@ -65,7 +102,7 @@ export function questBookSnapshot(
     filterType,
     active,
     finished,
-    finishedIds: finished.map((row) => row.bookId).sort((left, right) => left - right),
+    finishedIds: [...finishedIds].sort((left, right) => left - right),
     targets,
   };
 }

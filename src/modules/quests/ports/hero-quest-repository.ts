@@ -7,6 +7,7 @@ export type NewHeroQuest = Readonly<{
   dialogStep: number;
   dialogCursor: string;
   startedAt: Date;
+  hiddenInJournal: 0 | 1;
 }>;
 
 export type HeroQuestPatch = Readonly<{
@@ -15,6 +16,7 @@ export type HeroQuestPatch = Readonly<{
   dialogCursor?: string;
   waiting?: HeroQuestWaiting | null;
   finishedAt?: Date | null;
+  hiddenInJournal?: 0 | 1;
 }>;
 
 export type HeroQuestGoalPatch = Readonly<{
@@ -30,6 +32,7 @@ export interface HeroQuestRepository {
   insert(row: NewHeroQuest): Promise<HeroQuest>;
   update(heroId: number, questKey: string, patch: HeroQuestPatch): Promise<void>;
   delete(heroId: number, questKey: string): Promise<void>;
+  hideInJournal(heroId: number, questKey: string): Promise<void>;
   goals(heroId: number, questKey: string): Promise<readonly HeroQuestGoal[]>;
   upsertGoals(heroId: number, questKey: string, rows: readonly HeroQuestGoalPatch[]): Promise<void>;
   saveGoal(row: HeroQuestGoal): Promise<void>;

@@ -36,12 +36,14 @@ export const heroQuests = questsProgressSchema.table(
     waitingStartedAt: timestamp("waiting_started_at", { withTimezone: true, mode: "date" }),
     startedAt: timestamp("started_at", { withTimezone: true, mode: "date" }).notNull(),
     finishedAt: timestamp("finished_at", { withTimezone: true, mode: "date" }),
+    hiddenInJournal: integer("hidden_in_journal").notNull().default(0),
   },
   (table) => [
     uniqueIndex("hero_quests_hero_quest_uidx").on(table.heroId, table.questKey),
     check("hero_quests_hero_id_check", sql`${table.heroId} > 0`),
     check("hero_quests_book_id_check", sql`${table.bookId} > 0`),
     check("hero_quests_status_check", sql`${table.status} in ('active','done')`),
+    check("hero_quests_hidden_in_journal_check", sql`${table.hiddenInJournal} in (0, 1)`),
     check("hero_quests_dialog_step_check", sql`${table.dialogStep} >= 0`),
     check(
       "hero_quests_waiting_action_id_check",

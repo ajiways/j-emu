@@ -8,6 +8,7 @@ export const QUEST_OA_KEYS = [
   "npc|answer",
   "book|quest_list",
   "book|quest_cancel",
+  "book|quest_delete",
   "common|object:AREA",
   "common|action_finish",
 ] as const;

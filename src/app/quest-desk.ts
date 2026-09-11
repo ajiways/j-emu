@@ -12,13 +12,14 @@ import type { BookTrioBlocks } from "../modules/jugger-wire/application/book-que
 import { ProtocolError } from "../modules/jugger-wire/application/protocol-error.ts";
 import type { OaEncodedResponse } from "../modules/jugger-wire/commands/oa/oa-command.ts";
 import type { ObjectActionEnvelope } from "../modules/jugger-wire/commands/oa/object-action-envelope.ts";
-import type { QuestMutation, QuestService } from "../modules/quests/application/quest-service.ts";
+import type { QuestService } from "../modules/quests/application/quest-service.ts";
+import type { QuestMutation } from "../modules/quests/application/quest-mutation.ts";
 import { QuestDeniedError } from "../modules/quests/domain/quest-denied-error.ts";
 import type { QuestScriptEffect } from "../modules/quests/domain/quest-script-effect.ts";
 import type { QuestSignal } from "../modules/quests/domain/quest-signal.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import { piggybackQuestFight } from "./quest-fight-piggyback.ts";
-import { capDropQuantity } from "../modules/quests/domain/quest-loot-needed.ts";
+import { applyQuestScriptEffect } from "./quest-script-apply.ts";
 import {
   answerIdOf,
   npcRefOf,
@@ -54,6 +55,7 @@ export class QuestDesk {
       if (key === "npc|answer") return await this.npcAnswer(accountId, envelope);
       if (key === "book|quest_list") return await this.bookList(accountId, envelope);
       if (key === "book|quest_cancel") return await this.cancel(accountId, envelope);
+      if (key === "book|quest_delete") return await this.hideJournal(accountId, envelope);
       if (key === "common|object:AREA") return await this.areaBegin(accountId, envelope);
       if (key === "common|action_finish") return await this.areaFinish(accountId);
       throw new Error(`Quest OA ${key} is not registered`);
@@ -141,10 +143,14 @@ export class QuestDesk {
   ): Promise<OaEncodedResponse> {
     const hero = await this.requireHero(accountId);
     const raw = envelope.form?.["filter_type"];
-    const filterType = raw === undefined ? "started" : String(raw);
+    const filterType = raw === undefined || raw === "" ? "started" : String(raw);
     if (!filterType) throw new Error("book|quest_list filter_type must be a non-empty string");
+    const trio = await this.unitOfWork.run(async () => {
+      await this.characters.lockById(hero.id);
+      return this.bookTrio(hero.id, filterType);
+    });
     return flat({
-      ...(await this.bookTrio(hero.id, filterType)),
+      ...trio,
       state: await this.bootstrap.state(accountId),
     });
   }
@@ -166,6 +172,22 @@ export class QuestDesk {
       "book|quest_cancel": { status: 100 },
       ...(await this.bookTrio(hero.id, "started")),
       state: await this.bootstrap.state(accountId),
+    });
+  }
+
+  private async hideJournal(
+    accountId: number,
+    envelope: ObjectActionEnvelope,
+  ): Promise<OaEncodedResponse> {
+    const hero = await this.requireHero(accountId);
+    const fields = { ...(envelope.form ?? {}), ...(envelope.root ?? {}) };
+    await this.unitOfWork.run(async () => {
+      await this.characters.lockById(hero.id);
+      await this.quests.hideJournal(hero.id, questDeleteId(fields["quest_id"]));
+    });
+    return flat({
+      "book|quest_delete": { status: 100 },
+      ...(await this.bookTrio(hero.id, "started")),
     });
   }
 
@@ -232,93 +254,10 @@ export class QuestDesk {
     const leftover: QuestScriptEffect[] = [];
     for (const effect of mutation.effects) {
       if (effect.type === "START_FIGHT") leftover.push(effect);
-      else await this.runEffect(accountId, heroId, effect, mutation.questKey);
+      else await applyQuestScriptEffect(this.scriptDeps(), accountId, heroId, effect, mutation);
     }
     await this.syncBagGoals(accountId, heroId);
     return { ...mutation, effects: leftover };
-  }
-
-  private async runEffect(
-    accountId: number,
-    heroId: number,
-    effect: QuestScriptEffect,
-    questKey: string | undefined,
-  ): Promise<void> {
-    if (effect.type === "GRANT_ARTIKUL") {
-      const have = await this.inventory.countBagByArtifact({
-        characterId: heroId,
-        artifactId: effect.artikulId,
-      });
-      const quantity = capDropQuantity(
-        effect.count,
-        await this.quests.needed(heroId, effect.artikulId, have),
-      );
-      if (quantity < 1) return;
-      await this.inventory.grantToBag({
-        characterId: heroId,
-        artifactId: effect.artikulId,
-        quantity,
-      });
-      return;
-    }
-    if (effect.type === "REMOVE_ARTIKUL") {
-      const have = await this.inventory.countBagByArtifact({
-        characterId: heroId,
-        artifactId: effect.artikulId,
-      });
-      if (have < 1) return;
-      await this.inventory.consumeFromBag({
-        characterId: heroId,
-        artifactId: effect.artikulId,
-        quantity: Math.min(have, effect.count),
-      });
-      return;
-    }
-    if (effect.type === "GRANT_PROFESSION") {
-      await this.characters.learnProfession({
-        characterId: heroId,
-        professionId: effect.professionId,
-      });
-      return;
-    }
-    if (effect.type === "MSG") {
-      await this.chat.deliverSystem(accountId, effect.text);
-      return;
-    }
-    if (effect.type === "SET_FLAG") {
-      await this.quests.setFlag(heroId, effect.flag, effect.value);
-      return;
-    }
-    if (effect.type === "CLEAR_FLAG") {
-      await this.quests.clearFlag(heroId, effect.flag);
-      return;
-    }
-    if (effect.type === "GRANT_AWARDS") {
-      if (!questKey) throw new Error("GRANT_AWARDS requires a quest key");
-      const quest = await this.quests.authoredQuest(questKey);
-      if (quest.awardExp > 0) {
-        await this.characters.grantExperience({
-          characterId: heroId,
-          operationId: `quest:${heroId}:${quest.key}:exp`,
-          amount: quest.awardExp,
-        });
-      }
-      if (quest.awardMoneyMinor > 0) {
-        await this.characters.creditMoney({
-          characterId: heroId,
-          minorUnits: quest.awardMoneyMinor,
-        });
-      }
-      for (const item of quest.awardItems) {
-        await this.inventory.grantToBag({
-          characterId: heroId,
-          artifactId: item.artikulId,
-          quantity: item.count,
-        });
-      }
-      return;
-    }
-    throw new Error(`Quest script ${effect.type} is not executable in this slice`);
   }
 
   private async answerBlocks(
@@ -391,4 +330,20 @@ export class QuestDesk {
     if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
     return hero;
   }
+
+  private scriptDeps() {
+    return {
+      quests: this.quests,
+      characters: this.characters,
+      inventory: this.inventory,
+      chat: this.chat,
+    };
+  }
+}
+
+function questDeleteId(raw: unknown): number {
+  if (raw === undefined || raw === null) throw new QuestDeniedError("нет квеста");
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 0) throw new QuestDeniedError("нет квеста");
+  return value;
 }

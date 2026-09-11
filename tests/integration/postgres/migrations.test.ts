@@ -351,6 +351,7 @@ describe("Drizzle migrations", () => {
       "0020_professions_craft_recipes.sql",
       "0021_quests_engine.sql",
       "0022_character_honor_grants.sql",
+      "0023_quests_daily_journal.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -379,8 +380,9 @@ describe("Drizzle migrations", () => {
       "0020_professions_craft_recipes",
       "0021_quests_engine",
       "0022_character_honor_grants",
+      "0023_quests_daily_journal",
     ]);
-    expect(await appliedCount()).toBe(23);
+    expect(await appliedCount()).toBe(24);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );

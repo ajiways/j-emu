@@ -224,7 +224,7 @@ function toQuest(
     title: row.title,
     description: row.description,
     awardDescription: row.awardDescription,
-    flags: row.flags,
+    flags: requireFlags(row.flags),
     levelMin: row.levelMin,
     levelMax: row.levelMax,
     npcId: row.npcId,
@@ -389,5 +389,10 @@ function requireInt(value: number | null): number {
   if (value === null || !Number.isInteger(value) || value < 1) {
     throw new Error("Quest script numeric field is required");
   }
+  return value;
+}
+
+function requireFlags(value: number): number {
+  if (!Number.isInteger(value) || value < 0) throw new Error("Quest flags is required");
   return value;
 }

@@ -88,6 +88,9 @@ product-status только вместе с CEF-фактом в `CAPABILITIES.md
       F5/рестарт сохраняет курсор и цели.
 - [ ] QST-ENG-02: AREA waiting на 503 → quest-fight vs Грызль на
       `action_finish`; loot-цель не переполняется hunt-дропом; F5/рестарт.
+- [ ] DAY-01: USE 584 / NPC 271, взять и сдать ежедневку (flags 1), журнал с
+      countdown до 06:00, quest_delete прячет строку; F5 сохраняет done;
+      повторно взять нельзя до 06:00 MSK.
 
 ## World / economy / HUD
 

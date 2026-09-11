@@ -461,6 +461,29 @@ describe("parseContentBundle", () => {
     ).toThrow(/quest q_engine_board is required/);
   });
 
+  it("rejects a bundle without quest q_engine_daily", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        quests: playable.quests.filter((quest) => quest.key !== "q_engine_daily"),
+      }),
+    ).toThrow(/quest q_engine_daily is required/);
+  });
+
+  it("rejects a bundle without exactly one daily quest", () => {
+    const extra = playable.quests.find((quest) => quest.key === "q_engine_daily");
+    if (!extra) throw new Error("q_engine_daily is required in playable");
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        quests: [
+          ...playable.quests,
+          { ...extra, key: "q_engine_daily_extra", bookId: 5, pointId: 5, boardOrd: 5 },
+        ],
+      }),
+    ).toThrow(/exactly one quest with flags & 1/);
+  });
+
   it("rejects an NPC href in an area_link", () => {
     const link = playable.areaLinks[0];
     if (!link) throw new Error("playable bundle has no area links");

@@ -5,7 +5,17 @@ export function bookTrioFromSnapshot(snapshot: QuestBookSnapshot): BookTrioBlock
   const rows = snapshot.filterType === "finished" ? snapshot.finished : snapshot.active;
   const quests: Record<
     string,
-    Readonly<{ id: number; title: string; description: string; flags: number }>
+    Readonly<{
+      id: number;
+      title: string;
+      description: string;
+      flags: number;
+      status: "started" | "finished";
+      cooldown: number;
+      multitime: 0 | 1;
+      ftime: number;
+      stime: number;
+    }>
   > = {};
   for (const row of rows) {
     quests[String(row.bookId)] = {
@@ -13,6 +23,11 @@ export function bookTrioFromSnapshot(snapshot: QuestBookSnapshot): BookTrioBlock
       title: row.title,
       description: row.description,
       flags: row.flags,
+      status: row.status,
+      cooldown: row.cooldown,
+      multitime: row.multitime,
+      ftime: row.ftime,
+      stime: row.stime,
     };
   }
   return {

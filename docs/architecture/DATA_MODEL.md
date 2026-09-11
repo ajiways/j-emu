@@ -363,9 +363,10 @@ PRF-02: `catalog.assistant_types` / `farm_resources` / `area_farms`;
 PRF-03: `catalog.craft_recipes` (authored id, typed ingredients jsonb);
 `professions.hero_recipes` (identity id from 1, UNIQUE hero+recipe).
 Контракт: [PROFESSIONS.md](../modules/PROFESSIONS.md).
-QST-ENG-01/02: schema `quests` — authored NPC/quest/dialog/script
+QST-ENG-01/02 / DAY-01: schema `quests` — authored NPC/quest/dialog/script
 (`release_id`) и player `hero_quests` / `hero_quest_goals` / `hero_facts`;
-waiting колонки, без JSONB. Loot-cap и AREA `progress_on_win` не добавляют
+waiting колонки и `hero_quests.hidden_in_journal` integer 0/1, без JSONB.
+Loot-cap и AREA `progress_on_win` не добавляют
 таблиц: cap считается из текущей loot/deliver цели; бой паркует bump, пока
 onFinish несёт `START_FIGHT`. Контракт: [QUESTS.md](../modules/QUESTS.md).
 Контракт: [INSTANCE.md](../modules/INSTANCE.md), книга —

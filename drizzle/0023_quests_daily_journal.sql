@@ -1,0 +1,2 @@
+ALTER TABLE "quests"."hero_quests" ADD COLUMN "hidden_in_journal" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE "quests"."hero_quests" ADD CONSTRAINT "hero_quests_hidden_in_journal_check" CHECK ("quests"."hero_quests"."hidden_in_journal" in (0, 1));

@@ -19,6 +19,7 @@ export type HeroQuest = Readonly<{
   waiting: HeroQuestWaiting | null;
   startedAt: Date;
   finishedAt: Date | null;
+  hiddenInJournal: 0 | 1;
 }>;
 
 export type HeroQuestGoal = Readonly<{

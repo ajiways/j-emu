@@ -5,7 +5,7 @@ import { effectsWithoutStartFight, hasQuestStartFight } from "../domain/quest-st
 import type { QuestScriptEffect } from "../domain/quest-script-effect.ts";
 import type { HeroQuestRepository } from "../ports/hero-quest-repository.ts";
 import type { QuestCatalog } from "../ports/quest-catalog.ts";
-import type { QuestMutation } from "./quest-service.ts";
+import type { QuestMutation } from "./quest-mutation.ts";
 
 export async function completeParkedAreaFight(
   catalog: QuestCatalog,

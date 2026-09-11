@@ -1,7 +1,8 @@
 # Quests (QST-ENG-01 / QST-ENG-02)
 
-Runtime board/dialog/progress: NPC **271**, три синтетических квеста,
-USE **584** открывает доску без consume. QST-ENG-02 вешает AREA leftover
+Runtime board/dialog/progress: NPC **271**, четыре синтетических квеста
+(включая `q_engine_daily` с `flags:1`), USE **584** открывает доску без
+consume. QST-ENG-02 вешает AREA leftover
 `START_FIGHT`, generic hunt loot-cap и честные book/area_conf маркеры.
 Product status: [CAPABILITIES.md](../CAPABILITIES.md) (CEF ещё не вычеркнут).
 
@@ -26,7 +27,7 @@ Known bugs сверх QL-1/QM-1/QM-2 в `TEMP_QUEST_ITEM_AND_MARKER_BUGS.md` н�
 
 | Owner       | Holds                                                                                                                                                 |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `quests`    | authored NPC/quest/dialog/goal/script/flag (`release_id`) и player `hero_quests` / goals / facts / waiting                                            |
+| `quests`    | authored NPC/quest/dialog/goal/script/flag (`release_id`) и player `hero_quests` (включая `hidden_in_journal`) / goals / facts / waiting              |
 | `catalog`   | artifacts, bots, store lots, reputation tracks; не NPC и не quest graph                                                                               |
 | `world`     | areas и travel `area_links` (только `COME_IN`)                                                                                                        |
 | `character` | EXP/money/reputation/`setArea`/`learnProfession`                                                                                                      |
@@ -68,7 +69,7 @@ Authored (`release_id`): `npcs`, `npc_quests`, `quests`, `quest_award_items`,
 пустой `action_list`).
 
 Player (identity с 1): `hero_quests` (`status` `active|done`, `dialog_step`,
-`dialog_cursor` text, waiting columns), `hero_quest_goals` (`done` 0/1,
+`dialog_cursor` text, waiting columns, `hidden_in_journal` 0/1), `hero_quest_goals` (`done` 0/1,
 `value`; нет строки = цель не на ветке; сброс — UPSERT `value=0, done=0`,
 не DELETE), `hero_facts`.
 
@@ -78,8 +79,8 @@ Waiting — колонки на `hero_quests`, не RAM и не DelayScheduler.
 ## Ports
 
 `board(npcRef)`, `answer({ npcRef, pointId, answerId })`, `bookTrio(filterType)`,
-`cancel(bookId)`, `recordSignal(QuestSignal)`, `beginAreaAction` /
-`finishAreaAction`, `needed(heroId, artikulId)`.
+`cancel(bookId)`, `hideJournal(bookId)`, `recordSignal(QuestSignal)`,
+`beginAreaAction` / `finishAreaAction`, `needed(heroId, artikulId)`.
 
 `QuestSignal`: `talk` / `kill` / `loot` / `buy` / `equip` / `deliver` /
 `area_action` / `win_fight`. Composition шлёт buy после `StorePurchase`,
@@ -118,7 +119,7 @@ ORATORY: `{ unit(): number }`, `unit()*100 < probability`; без `probability` 
 - `book|quest_list` / `quest_targets` / `quest_counters` — trio, не один
   list. Piggyback: init/init2, answer/accept/turn-in, dirty buy/PUT_ON,
   fight finish, wrong `area_action`.
-- `book|quest_cancel` + `state`. `quest_delete` — DAY-01.
+- `book|quest_cancel` + `state`. `book|quest_delete` — контракт DAY-01 ниже.
 - AREA: `common|action` 100 + `common|waiting` → клиент → `action_finish`
   (`msg_text` плашка, не `npc|answer`). Нет waiting row — `203`. Если
   leftover `START_FIGHT` — piggyback `fight|conf` на тот же ответ
@@ -203,12 +204,46 @@ Cursor, goals, facts, waiting и done переживают reconnect/restart.
 Mid-fight RAM без `on_win`/`on_lose`. Concurrent turn-in — один award.
 CEF: [CEF_MANUAL.md](../migration/CEF_MANUAL.md).
 
+## DAY-01 — Daily quests (contract)
+
+Product-status не менять здесь. Очередь:
+[ROADMAP.md](../migration/ROADMAP.md) DAY-01.
+
+`flags & 1` = daily. Журнал `multitime:1`. Сданная ежедневка **не** в
+`finished_quests_id`. Скрыть строку — OA `book|quest_delete`
+`form.quest_id` = `bookId`, колонка `hero_quests.hidden_in_journal`, не
+`quest_cancel`.
+
+Cooldown: `ftime` = unix `finished_at`; `cooldown` =
+`nextMoscow6am(ftime) - ftime`. Active: `ftime:0` `cooldown:0`. Запрещена
+пара `ftime:0` + `cooldown:86400`. Часовой пояс — именованный
+`DailyCycleRules` UTC+3 / 06:00, `Clock.unixSeconds()`.
+
+Wipe 06:00 — lazy в quests UoW на board/book/answer/cancel/delete: DELETE
+daily `hero_quests`+goals, если `startedAt` (active) или `finishedAt`
+(done) `< lastMoscow6am(now)`. Включая незакрытый прогресс. `DelayScheduler`
+и `Clock.schedule` не используются. Catch-up после downtime — следующий OA.
+
+`accept` не поднимает `done`→`active`. `GRANT_AWARDS` EXP для daily:
+`quest:{heroId}:{key}:exp:{lastMoscow6am(finishedAt)}`.
+
+Content: `q_engine_daily` на NPC 271, `flags:1`, talk → `GRANT_AWARDS`.
+Slice bump. Validator: ровно один `flags & 1`.
+
+Иконки доски: `flags:1` × pf 8/`0` = `start_m` / `pnt_m`
+([QUEST_BOARD_ICONS.md](../../../jgr-emu/docs/QUEST_BOARD_ICONS.md)).
+
+### Out of this slice
+
+Данж `256`/`257`, MAIN `33`, live 75/276, `daily_pvp_kills` / stats object
+49, `mergeFinishedQuestsForMapMarkers`, esrv push ровно в 06:00 без OA.
+
 ## Leftover
 
 DATA-06 / `CONTENT-STORY-*`: Акрилон, полный NPC corpus, live `book_id` для
 честного клиентского «!».
 Макросы `[[ARTIFACT]]` сверх dump-проверенного award_message — leftover.
-Туториал, daily, `OPEN_STORE`, ambush `chance` без `mode:"quest"`,
+Туториал, `OPEN_STORE`, ambush `chance` без `mode:"quest"`,
 `progress_on_win:false`, QL-2, roster `flags:"8"` / bot↔bot / deny leave,
 `JUMP_AREA`, `on_win`/`on_lose` скрипты сверх существующего win_fight GRANT.
 

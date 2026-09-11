@@ -9,6 +9,7 @@ const NPC_ID = 271;
 const BOARD_KEY = "q_engine_board";
 const FIGHT_KEY = "q_engine_fight";
 const AREA_KEY = "q_engine_area";
+const DAILY_KEY = "q_engine_daily";
 const AREA_ACTION_ID = 8;
 const AREA_ITEM_ID = 3;
 const NPC_ITEM_ID = 1;
@@ -65,6 +66,8 @@ export function collectQuestIssues(bundle: ContentBundle): readonly string[] {
   if (!keys.has(BOARD_KEY)) issues.push(`quest ${BOARD_KEY} is required`);
   if (!keys.has(FIGHT_KEY)) issues.push(`quest ${FIGHT_KEY} is required`);
   if (!keys.has(AREA_KEY)) issues.push(`quest ${AREA_KEY} is required`);
+  if (!keys.has(DAILY_KEY)) issues.push(`quest ${DAILY_KEY} is required`);
+  pushDailyFlagIssues(issues, bundle.quests);
   for (const kind of REQUIRED_KINDS) {
     if (!kinds.has(kind)) issues.push(`slice quests must include a ${kind} goal`);
   }
@@ -94,6 +97,30 @@ export function collectQuestIssues(bundle: ContentBundle): readonly string[] {
     issues.push("artifact 584 must open NPC 271");
   }
   return issues;
+}
+
+function pushDailyFlagIssues(issues: string[], quests: readonly QuestDocument[]): void {
+  const dailies: string[] = [];
+  for (const quest of quests) {
+    if (!Number.isInteger(quest.flags) || quest.flags < 0) {
+      issues.push(`quest ${quest.key} flags is required`);
+      continue;
+    }
+    if ((quest.flags & 1) === 1) dailies.push(quest.key);
+  }
+  if (dailies.length !== 1) {
+    issues.push("slice must contain exactly one quest with flags & 1");
+  }
+  const daily = quests.find((quest) => quest.key === DAILY_KEY);
+  if (daily && (!Number.isInteger(daily.flags) || (daily.flags & 1) !== 1)) {
+    issues.push(`quest ${DAILY_KEY} must have flags & 1`);
+  }
+  for (const key of [BOARD_KEY, FIGHT_KEY, AREA_KEY]) {
+    const quest = quests.find((row) => row.key === key);
+    if (quest && Number.isInteger(quest.flags) && (quest.flags & 1) === 1) {
+      issues.push(`quest ${key} must not be daily`);
+    }
+  }
 }
 
 function pushQuestRefIssues(issues: string[], bundle: ContentBundle, quest: QuestDocument): void {

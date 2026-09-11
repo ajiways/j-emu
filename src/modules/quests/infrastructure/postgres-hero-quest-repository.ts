@@ -48,6 +48,7 @@ export class PostgresHeroQuestRepository implements HeroQuestRepository {
         dialogStep: row.dialogStep,
         dialogCursor: row.dialogCursor,
         startedAt: row.startedAt,
+        hiddenInJournal: row.hiddenInJournal,
       })
       .returning();
     const created = inserted[0];
@@ -67,6 +68,7 @@ export class PostgresHeroQuestRepository implements HeroQuestRepository {
         ...(patch.dialogStep !== undefined ? { dialogStep: patch.dialogStep } : {}),
         ...(patch.dialogCursor !== undefined ? { dialogCursor: patch.dialogCursor } : {}),
         ...(patch.finishedAt !== undefined ? { finishedAt: patch.finishedAt } : {}),
+        ...(patch.hiddenInJournal !== undefined ? { hiddenInJournal: patch.hiddenInJournal } : {}),
         ...waiting,
       })
       .where(and(eq(heroQuests.heroId, heroId), eq(heroQuests.questKey, questKey)))
@@ -90,6 +92,20 @@ export class PostgresHeroQuestRepository implements HeroQuestRepository {
       .returning({ id: heroQuests.id });
     if (result.length !== 1) {
       throw new Error(`Hero quest ${questKey} delete must touch one row`);
+    }
+  }
+
+  async hideInJournal(heroId: number, questKey: string): Promise<void> {
+    requireHeroId(heroId);
+    requireKey(questKey);
+    const result = await this.database
+      .session()
+      .update(heroQuests)
+      .set({ hiddenInJournal: 1 })
+      .where(and(eq(heroQuests.heroId, heroId), eq(heroQuests.questKey, questKey)))
+      .returning({ id: heroQuests.id });
+    if (result.length !== 1) {
+      throw new Error(`Hero quest ${questKey} hide must touch one row`);
     }
   }
 
@@ -235,6 +251,7 @@ function toHeroQuest(row: typeof heroQuests.$inferSelect): HeroQuest {
     waiting,
     startedAt: row.startedAt,
     finishedAt: row.finishedAt,
+    hiddenInJournal: requireHidden(row.hiddenInJournal),
   };
 }
 
@@ -272,4 +289,10 @@ function requireDuration(value: number | null): number {
 function requireDate(value: Date | null, label: string): Date {
   if (!value) throw new Error(`${label} is required`);
   return value;
+}
+
+function requireHidden(value: number): 0 | 1 {
+  if (value === 0) return 0;
+  if (value === 1) return 1;
+  throw new Error("hidden_in_journal must be 0 or 1");
 }

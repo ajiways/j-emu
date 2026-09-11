@@ -4,7 +4,7 @@ import type { CombatPort } from "../modules/combat/ports/combat-port.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
 import type { WorldService } from "../modules/world/domain/world-service.ts";
 import type { FightWireMapper } from "../modules/jugger-wire/application/fight-wire-mapper.ts";
-import type { QuestMutation } from "../modules/quests/application/quest-service.ts";
+import type { QuestMutation } from "../modules/quests/application/quest-mutation.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import { startQuestFight } from "./quest-fight-start.ts";
 

@@ -16,33 +16,14 @@ import type { QuestSignal } from "../domain/quest-signal.ts";
 import { bumpMatchingGoal } from "../domain/bump-goal.ts";
 import { hasQuestStartFight, startFightEffects } from "../domain/quest-start-fight.ts";
 import { completeParkedAreaFight as completeParked, neededForHero } from "./quest-hero-progress.ts";
+import { catchUpDailyCycle, hideFinishedDaily } from "./quest-daily-wipe.ts";
+import type { QuestAnswerInput, QuestMutation } from "./quest-mutation.ts";
+import { isDailyQuest, questExperienceGrant } from "../domain/daily-cycle-rules.ts";
 import type { HeroQuestRepository } from "../ports/hero-quest-repository.ts";
 import type { QuestCatalog } from "../ports/quest-catalog.ts";
 import type { QuestLootNeeded } from "../ports/quest-loot-needed.ts";
 
 const MAX_ACTIVE = 6;
-
-export type QuestAnswerInput = Readonly<{
-  npcRef: number;
-  pointId: number;
-  answerId: number;
-}>;
-
-export type QuestMutation = Readonly<{
-  effects: readonly QuestScriptEffect[];
-  bookDirty: boolean;
-  npcId: number;
-  questKey?: string;
-  dialog?: DialogView;
-  pointId?: number;
-  waiting?: Readonly<{
-    title: string;
-    start: number;
-    finish: number;
-    popup: string;
-  }>;
-  popup?: string;
-}>;
 
 export class QuestService implements QuestLootNeeded {
   constructor(
@@ -52,6 +33,7 @@ export class QuestService implements QuestLootNeeded {
   ) {}
 
   async board(heroId: number, npcRef: number): Promise<QuestMutation> {
+    await this.catchUp(heroId);
     const npc = await this.requireNpc(npcRef);
     return { effects: [], bookDirty: true, npcId: npc.id };
   }
@@ -74,6 +56,7 @@ export class QuestService implements QuestLootNeeded {
   }
 
   async bookSnapshot(heroId: number, filterType: string): Promise<QuestBookSnapshot> {
+    await this.catchUp(heroId);
     const quests = await this.catalog.allQuests();
     const progress = await this.progress.lockHeroQuests(heroId);
     const goalsByKey = new Map<string, readonly HeroQuestGoal[]>();
@@ -84,6 +67,7 @@ export class QuestService implements QuestLootNeeded {
   }
 
   async cancel(heroId: number, bookId: number): Promise<QuestMutation> {
+    await this.catchUp(heroId);
     if (!Number.isInteger(bookId) || bookId < 1) {
       throw new QuestDeniedError("Нет такого задания");
     }
@@ -96,10 +80,20 @@ export class QuestService implements QuestLootNeeded {
     return { effects: [], bookDirty: true, npcId: quest.npcId };
   }
 
+  async hideJournal(heroId: number, bookId: number): Promise<QuestMutation> {
+    await this.catchUp(heroId);
+    await hideFinishedDaily(this.catalog, this.progress, heroId, bookId);
+    return { effects: [], bookDirty: true, npcId: 0 };
+  }
+
   async answer(heroId: number, input: QuestAnswerInput, heroLevel: number): Promise<QuestMutation> {
+    await this.catchUp(heroId);
     const npc = await this.requireNpc(input.npcRef);
     const quest = await this.questByPoint(npc.id, input.pointId);
     const progress = await this.progress.find(heroId, quest.key);
+    if (progress?.status === "done" && isDailyQuest(quest.flags) && input.answerId !== 0) {
+      throw new QuestDeniedError("Задание уже выполнено");
+    }
     const goals = progress ? await this.progress.goals(heroId, quest.key) : [];
     const view = dialogView(quest, progress?.dialogStep ?? 0, goalsComplete(quest, goals));
     if (input.answerId === 0) {
@@ -273,11 +267,23 @@ export class QuestService implements QuestLootNeeded {
       ...(reward && reward.type === "reward" ? scriptEffects(reward.scripts) : []),
       { type: "GRANT_AWARDS" },
     ];
-    await this.progress.update(heroId, quest.key, {
-      status: "done",
-      finishedAt: this.clock.now(),
-    });
-    return { effects, bookDirty: true, npcId: quest.npcId, questKey: quest.key };
+    const finishedAt = this.clock.now();
+    await this.progress.update(heroId, quest.key, { status: "done", finishedAt });
+    const experienceGrant = questExperienceGrant(
+      heroId,
+      quest.key,
+      quest.flags,
+      quest.awardExp,
+      finishedAt,
+    );
+    return {
+      effects,
+      bookDirty: true,
+      npcId: quest.npcId,
+      questKey: quest.key,
+      finishedAt,
+      ...(experienceGrant ? { experienceGrant } : {}),
+    };
   }
 
   private async accept(
@@ -292,6 +298,9 @@ export class QuestService implements QuestLootNeeded {
       throw new QuestDeniedError("Слишком высокий уровень");
     }
     const existing = await this.progress.find(heroId, quest.key);
+    if (existing?.status === "done" && isDailyQuest(quest.flags)) {
+      throw new QuestDeniedError("Задание уже выполнено");
+    }
     if (existing) return existing;
     const active = (await this.progress.lockHeroQuests(heroId)).filter(
       (row) => row.status === "active",
@@ -304,6 +313,7 @@ export class QuestService implements QuestLootNeeded {
       dialogStep: 0,
       dialogCursor: "0",
       startedAt: this.clock.now(),
+      hiddenInJournal: 0,
     });
     await this.progress.upsertGoals(
       heroId,
@@ -370,6 +380,10 @@ export class QuestService implements QuestLootNeeded {
     const quest = await this.catalog.quest(key);
     if (!quest) throw new Error(`Quest ${key} is missing from the catalog`);
     return quest;
+  }
+
+  private async catchUp(heroId: number): Promise<void> {
+    await catchUpDailyCycle(this.catalog, this.progress, this.clock, heroId);
   }
 }
 

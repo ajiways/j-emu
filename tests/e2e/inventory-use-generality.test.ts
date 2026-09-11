@@ -162,7 +162,15 @@ describe("inventory USE generality", () => {
     expect(npc.title).toBe("Голова мертвеца");
     const board = objectBlock(opened["npc|quests"]);
     expect(board.status).toBe(100);
-    expect(Array.isArray(board.quests) ? board.quests : []).toHaveLength(3);
+    const rows = Array.isArray(board.quests) ? board.quests : [];
+    expect(rows.map((row) => objectBlock(row).key)).toEqual(
+      expect.arrayContaining([
+        "q_engine_board",
+        "q_engine_fight",
+        "q_engine_area",
+        "q_engine_daily",
+      ]),
+    );
     const again = await client.objectAction({ object: "common", action: "init", sq: 4 });
     expect(bagItemByArtikulId(again, 584).artikul_id).toBe(584);
   });

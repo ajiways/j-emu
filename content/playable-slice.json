@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v29",
+  "schemaVersion": "playable-slice/v30",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -4508,6 +4508,40 @@
         { "type": "npc", "text": "Осмотри камень на площади." },
         { "type": "goal", "goal": "look_stone", "text": "Понял" },
         { "type": "player", "id": "accept_area", "text": "Иду" },
+        { "type": "reward", "answer": "Сдать задание" }
+      ]
+    },
+    {
+      "key": "q_engine_daily",
+      "bookId": 4,
+      "title": "Ежедневный разговор",
+      "description": "Выслушай голову сегодня и вернись за наградой.",
+      "awardDescription": "Опыт",
+      "flags": 1,
+      "levelMin": 1,
+      "levelMax": 0,
+      "npcId": 271,
+      "pointId": 4,
+      "boardOrd": 4,
+      "welcomeOffer": "Голова ждёт ежедневный разговор.",
+      "welcomeActive": "Поговори с головой.",
+      "welcomeReady": "Разговор окончен — сдавай.",
+      "awardExp": 4,
+      "awardMoneyMinor": 0,
+      "awardItems": [],
+      "goals": [
+        {
+          "id": "talk_daily",
+          "kind": "talk",
+          "title": "Поговорить с головой",
+          "goalOrd": 1,
+          "limit": 1
+        }
+      ],
+      "dialogSteps": [
+        { "type": "npc", "text": "Заходи каждый день после шести утра." },
+        { "type": "goal", "goal": "talk_daily", "text": "Принять поручение" },
+        { "type": "player", "id": "accept_daily", "text": "Хорошо" },
         { "type": "reward", "answer": "Сдать задание" }
       ]
     }

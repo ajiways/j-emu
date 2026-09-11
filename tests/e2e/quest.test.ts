@@ -46,7 +46,14 @@ describe("quest engine", () => {
     });
     const board = record(opened["npc|quests"], "npc|quests");
     expect(board.status).toBe(100);
-    expect(questKeys(board.quests)).toEqual(["q_engine_board", "q_engine_fight", "q_engine_area"]);
+    expect(questKeys(board.quests)).toEqual(
+      expect.arrayContaining([
+        "q_engine_board",
+        "q_engine_fight",
+        "q_engine_area",
+        "q_engine_daily",
+      ]),
+    );
 
     const unknown = await client.objectAction({
       object: "npc",
@@ -93,10 +100,11 @@ describe("quest engine", () => {
       ref: 271,
       sq: 21,
     });
-    expect(questKeys(record(again["npc|quests"], "restart board").quests)).toEqual([
-      "q_engine_fight",
-      "q_engine_area",
-    ]);
+    const keys = questKeys(record(again["npc|quests"], "restart board").quests);
+    expect(keys).toEqual(
+      expect.arrayContaining(["q_engine_fight", "q_engine_area", "q_engine_daily"]),
+    );
+    expect(keys).not.toContain("q_engine_board");
   });
 
   it("starts a quest fight vs Gryzl, grants meat 77, and turns in", async () => {
