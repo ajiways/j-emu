@@ -24,6 +24,7 @@ import type {
   AssistantTypeDocument,
   FarmResourceDocument,
 } from "../../content/domain/content-farm.ts";
+import type { CraftRecipeDocument } from "../../content/domain/content-craft.ts";
 
 export type CatalogMaterialization = Readonly<{
   artifacts: readonly ArtifactDocument[];
@@ -66,6 +67,10 @@ export type CatalogFarmMaterialization = Readonly<{
   areaFarms: readonly AreaFarmDocument[];
 }>;
 
+export type CatalogCraftMaterialization = Readonly<{
+  craftRecipes: readonly CraftRecipeDocument[];
+}>;
+
 export interface CatalogProjection {
   materialize(releaseId: string, documents: CatalogMaterialization): Promise<void>;
   materializeStore(releaseId: string, documents: CatalogStoreMaterialization): Promise<void>;
@@ -83,4 +88,5 @@ export interface CatalogProjection {
     documents: CatalogProfessionMaterialization,
   ): Promise<void>;
   materializeFarms(releaseId: string, documents: CatalogFarmMaterialization): Promise<void>;
+  materializeCrafts(releaseId: string, documents: CatalogCraftMaterialization): Promise<void>;
 }

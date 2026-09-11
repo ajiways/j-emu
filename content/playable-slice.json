@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v25",
+  "schemaVersion": "playable-slice/v26",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -1374,6 +1374,56 @@
       "levelMax": 0,
       "gender": 0,
       "priceMinor": 25,
+      "flags": 0,
+      "bagStack": 9999,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [],
+      "artifact_actions": {},
+      "extra": {}
+    },
+    {
+      "id": 1861,
+      "title": "Рецепт: Раствор хрусталя",
+      "picture": "recept_znak_grey.png",
+      "typeId": "95",
+      "kindId": 122,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 7,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 1000,
+      "flags": 8,
+      "bagStack": 1,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [],
+      "artifact_actions": {
+        "718": {
+          "code": "LEARN_RECIPE",
+          "param1": 0,
+          "param2": 0,
+          "dispose": 1,
+          "title": "Изучить рецепт",
+          "bonusId": 0,
+          "description": "Вы уверены, что хотите изучить этот рецепт?"
+        }
+      },
+      "extra": {}
+    },
+    {
+      "id": 1714,
+      "title": "Колба с раствором хрусталя",
+      "picture": "res_reag_rastvorhrustalya.png",
+      "typeId": "94",
+      "kindId": 110,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 7,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 8,
       "flags": 0,
       "bagStack": 9999,
       "durability": 0,
@@ -4152,6 +4202,27 @@
       "cntMax": 1600,
       "cntCurrent": 1396,
       "cntCooldown": 1800
+    }
+  ],
+  "craftRecipes": [
+    {
+      "id": 61,
+      "title": "Раствор хрусталя",
+      "description": "",
+      "artikulId": 1861,
+      "type": 1,
+      "professionId": 6,
+      "skillValue": 0,
+      "maxSkillValue": 60,
+      "ingredients": [{ "artikulId": 1720, "amount": 1 }],
+      "duration": 35,
+      "createArtikulId": 1714,
+      "createArtikulNum": 10,
+      "createQuality": 0,
+      "createTypeId": 94,
+      "createTitle": "Колба с раствором хрусталя",
+      "createLevelMin": 7,
+      "tableId": 0
     }
   ]
 }

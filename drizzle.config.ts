@@ -11,6 +11,7 @@ export default defineConfig({
     "./src/modules/catalog/infrastructure/schema-battlegrounds.ts",
     "./src/modules/catalog/infrastructure/schema-professions.ts",
     "./src/modules/catalog/infrastructure/schema-farms.ts",
+    "./src/modules/catalog/infrastructure/schema-crafts.ts",
     "./src/modules/world/infrastructure/schema.ts",
     "./src/modules/battleground/infrastructure/schema.ts",
     "./src/modules/character/infrastructure/schema.ts",

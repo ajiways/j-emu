@@ -52,7 +52,7 @@ area presence roster:
   `quests`, `economy` в runtime нет. PRF-01: `catalog.professions` и
   `hero_professions` (пара 2+6). PRF-02: модуль `professions` владеет
   `hero_assistants` / `hero_farm_stats` / `farm_stocks` и sweep. PRF-03:
-  checkpoint — `catalog.craft_recipes` / `hero_recipes`, recipe 61.
+  `catalog.craft_recipes` / `hero_recipes`, recipe 61.
 
 Во всех разделах ниже **API**, **события** и **шов извлечения** описывают
 целевую границу. Они не доказывают регистрацию команды, наличие таблиц или

@@ -141,6 +141,13 @@
       "when": 1789091378273,
       "tag": "0019_professions_assistants_and_farms",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1789098933390,
+      "tag": "0020_professions_craft_recipes",
+      "breakpoints": true
     }
   ]
 }

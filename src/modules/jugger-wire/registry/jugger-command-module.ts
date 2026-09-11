@@ -112,9 +112,10 @@ import type { BattlegroundDesk } from "../../../app/battleground-desk.ts";
 import type { BookDesk } from "../../../app/book-desk.ts";
 import { AttackNickCommand } from "../commands/oa/attack-nick-command.ts";
 import { AssistantDesk } from "../../../app/assistant-desk.ts";
+import { CraftDesk } from "../../../app/craft-desk.ts";
 import { deskOaCommands } from "./desk-oa-commands.ts";
 import type { ProfessionsService } from "../../professions/application/professions-service.ts";
-
+import type { CraftService } from "../../professions/application/craft-service.ts";
 export class JuggerCommandModule {
   readonly oa: OaCommandRegistry;
   readonly fproxy: FproxyCommandRegistry;
@@ -164,6 +165,7 @@ export class JuggerCommandModule {
     battleground: BattlegroundDesk,
     book: BookDesk,
     professions: ProfessionsService,
+    craft: CraftService,
   ) {
     this.fightWire = fightWire;
     const invites = new FriendlyDuelInvites(clock);
@@ -233,7 +235,6 @@ export class JuggerCommandModule {
       new ChatAddCommand(chat, bootstrap),
       new BookQuestListCommand(bootstrap, sheet),
       new EmptyCollectionOaCommand("companion|list_user_companions", "companions", bootstrap),
-      new EmptyCollectionOaCommand("craft|user_recipes_list", "recipes", bootstrap),
       new EmptyCollectionOaCommand("battlepass|list", "list", bootstrap),
       new EmptyCollectionOaCommand("jail|list", "punishments", bootstrap),
       new AttackBotCommand(
@@ -271,7 +272,7 @@ export class JuggerCommandModule {
         inventory,
         combat,
       ),
-      new UseArtifactCommand(unitOfWork, bootstrap, characters, inventory, combat, clock),
+      new UseArtifactCommand(unitOfWork, bootstrap, characters, inventory, combat, clock, craft),
       new UpgradeCommand(unitOfWork, bootstrap, characters, inventory, combat),
       new ComeInCommand(
         unitOfWork,
@@ -388,6 +389,7 @@ export class JuggerCommandModule {
         battleground,
         book,
         assistants: new AssistantDesk(professions, characters),
+        craft: new CraftDesk(craft, characters, inventory, catalog),
       }),
       new AttackNickCommand(battleground),
     ]);

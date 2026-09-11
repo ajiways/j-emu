@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import type {
   HeroProfessionRepository,
@@ -34,5 +34,26 @@ export class PostgresHeroProfessionRepository implements HeroProfessionRepositor
       throw new Error("Profession value must be a positive integer");
     }
     await this.database.session().insert(heroProfessions).values({ heroId, professionId, value });
+  }
+
+  async updateValue(heroId: number, professionId: number, value: number): Promise<void> {
+    if (!Number.isInteger(heroId) || heroId < 1) throw new Error("Hero id is required");
+    if (!Number.isInteger(professionId) || professionId < 1) {
+      throw new Error("Profession id is required");
+    }
+    if (!Number.isInteger(value) || value < 1) {
+      throw new Error("Profession value must be a positive integer");
+    }
+    const updated = await this.database
+      .session()
+      .update(heroProfessions)
+      .set({ value })
+      .where(
+        and(eq(heroProfessions.heroId, heroId), eq(heroProfessions.professionId, professionId)),
+      )
+      .returning({ professionId: heroProfessions.professionId });
+    if (updated.length !== 1) {
+      throw new Error(`Profession ${professionId} for hero ${heroId} was not updated`);
+    }
   }
 }

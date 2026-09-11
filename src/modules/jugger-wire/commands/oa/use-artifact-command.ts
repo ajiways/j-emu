@@ -3,6 +3,8 @@ import { LearnBonusDeniedError } from "../../../character/domain/learn-bonus-den
 import type { CombatPort } from "../../../combat/ports/combat-port.ts";
 import type { InventoryService } from "../../../inventory/domain/inventory-service.ts";
 import { UseDeniedError } from "../../../inventory/domain/use-denied-error.ts";
+import { ProfessionDeniedError } from "../../../professions/domain/profession-denied-error.ts";
+import type { CraftService } from "../../../professions/application/craft-service.ts";
 import type { Clock } from "../../../../shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
 import type { BootstrapReadModel } from "../../application/bootstrap-read-model.ts";
@@ -24,6 +26,7 @@ export class UseArtifactCommand implements OaCommand {
     private readonly inventory: InventoryService,
     private readonly combat: CombatPort,
     private readonly clock: Clock,
+    private readonly craft: CraftService,
   ) {}
 
   decode(envelope: ObjectActionEnvelope): UseArtifactRequest {
@@ -104,6 +107,23 @@ export class UseArtifactCommand implements OaCommand {
             includeView: false,
           });
         }
+        if (used.kind === "learn_recipe") {
+          await this.craft.learnFromBook(hero.id, used.artikulId);
+          if (used.dispose === 1) {
+            await this.inventory.consumeBagCharge({
+              characterId: hero.id,
+              itemId: used.itemId,
+            });
+          }
+          const mutation = await this.bootstrap.useMutation(context.accountId, {
+            msgText: null,
+            includeView: false,
+          });
+          return {
+            ...mutation,
+            "craft|user_recipes_list": await this.craft.recipesList(hero.id),
+          };
+        }
         await this.characters.learnArtifactBonus({
           characterId: hero.id,
           bonus: used.bonus,
@@ -141,5 +161,6 @@ export class UseArtifactCommand implements OaCommand {
 function mapUseError(error: unknown): never {
   if (error instanceof UseDeniedError) throw new ProtocolError(203, error.message);
   if (error instanceof LearnBonusDeniedError) throw new ProtocolError(203, error.message);
+  if (error instanceof ProfessionDeniedError) throw new ProtocolError(203, error.message);
   throw error;
 }

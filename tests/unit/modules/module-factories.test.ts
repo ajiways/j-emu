@@ -33,6 +33,7 @@ import type { AuctionService } from "../../../src/modules/auction/application/au
 import { MailModule } from "../../../src/modules/mail/mail-module.ts";
 import { ProfessionsModule } from "../../../src/modules/professions/professions-module.ts";
 import type { ProfessionsService } from "../../../src/modules/professions/application/professions-service.ts";
+import type { CraftService } from "../../../src/modules/professions/application/craft-service.ts";
 import type { MailService } from "../../../src/modules/mail/application/mail-service.ts";
 import type { PartyJoinService } from "../../../src/modules/party/application/party-join-service.ts";
 import type { PartyService } from "../../../src/modules/party/application/party-service.ts";
@@ -437,6 +438,7 @@ describe("module factories", () => {
         database: {} as PostgresDatabase,
         delay: combatDelay,
         professions: {} as ProfessionsService,
+        craft: {} as CraftService,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -632,6 +634,7 @@ describe("module factories", () => {
         database: {} as PostgresDatabase,
         delay: combatDelay,
         professions: {} as ProfessionsService,
+        craft: {} as CraftService,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

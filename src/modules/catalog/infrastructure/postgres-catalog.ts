@@ -9,9 +9,11 @@ import type { UseScript } from "../domain/use-script.ts";
 import type { StoreLot, StoreType } from "../domain/store-lot.ts";
 import type { ReputationTrack } from "../domain/reputation-track.ts";
 import type { ProfessionDefinition } from "../domain/profession-definition.ts";
+import type { CraftRecipeDefinition } from "../domain/craft-recipe-definition.ts";
 import type { Catalog } from "../ports/catalog.ts";
 import { loadReputationTrack, loadReputationTracks } from "./postgres-catalog-reputation.ts";
 import { loadProfession, loadProfessions } from "./postgres-catalog-profession.ts";
+import { loadCraftRecipe, loadCraftRecipeByBook } from "./postgres-catalog-craft.ts";
 import {
   loadAssistantType,
   loadAssistantTypes,
@@ -260,6 +262,14 @@ export class PostgresCatalog implements Catalog {
 
   async areaFarms(areaId: string): Promise<readonly AreaFarmDefinition[]> {
     return loadAreaFarms(this.database, await this.revision.requireId(), areaId);
+  }
+
+  async craftRecipe(id: number): Promise<CraftRecipeDefinition | null> {
+    return loadCraftRecipe(this.database, await this.revision.requireId(), id);
+  }
+
+  async craftRecipeByBook(artikulId: number): Promise<CraftRecipeDefinition | null> {
+    return loadCraftRecipeByBook(this.database, await this.revision.requireId(), artikulId);
   }
 
   private async requireGameWide(

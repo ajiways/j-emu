@@ -11,19 +11,19 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/auction/infrastructure/postgres-listing-repository.ts":
     "Auction listing rows plus snapshot columns, search filters, and FOR UPDATE lock/sweep",
   "src/modules/jugger-wire/jugger-wire-module.ts":
-    "HTTP/TCP servers and OA command module factory including mail, auction, trade, chat, party, instance, battleground, and professions ports",
+    "HTTP/TCP servers and OA command module factory including mail, auction, trade, chat, party, instance, battleground, professions, and craft ports",
   "src/modules/jugger-wire/registry/jugger-command-module.ts":
-    "Static OA command constructors including mail, auction, trade, chat, party, instance, battleground, live user|professions, and assistant|*",
+    "Static OA command constructors including mail, auction, trade, chat, party, instance, battleground, live user|professions, assistant|*, and craft|*",
   "src/modules/character/application/character-service.ts":
-    "Character application facade: progression, resources, money, reputation, profession licenses, learn-bonus, location, and presence",
+    "Character application facade: progression, resources, money, reputation, profession licenses, craft XP bump, learn-bonus, location, and presence",
   "src/modules/character/infrastructure/postgres-hero-repository.ts":
     "Hero rows including location lock, instance copy shard, and CMB-04 ghost/injury clock",
   "src/modules/world/domain/hunt-wander.ts":
     "Hunt live motion: route, zone, home park, lock freeze, and respawn hide",
   "src/modules/content/domain/parse-content-bundle.ts":
-    "Zod playable-slice document including store lot pay/requires, reputation, professions, assistants, farms, bonuses, use scripts, bot spell books, hunt wander fields, dungeons, and battlegrounds",
+    "Zod playable-slice document including store lot pay/requires, reputation, professions, assistants, farms, craft recipes, bonuses, use scripts, bot spell books, hunt wander fields, dungeons, and battlegrounds",
   "src/modules/content/domain/content-document.ts":
-    "Playable bundle DTO including store pay/requires, reputation, professions, assistants, farms, bonuses, use scripts, artifacts, bot spell books, areas, hunt wander, dungeons, battlegrounds, and bootstrap documents",
+    "Playable bundle DTO including store pay/requires, reputation, professions, assistants, farms, craft recipes, bonuses, use scripts, artifacts, bot spell books, areas, hunt wander, dungeons, battlegrounds, and bootstrap documents",
   "src/modules/character/domain/hero.ts":
     "Hero aggregate owns vitals, money, location lock, instance copy presence, and CMB-04 ghost/injury clock",
   "src/modules/combat/application/combat-service.ts":
@@ -31,7 +31,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/combat/domain/battle.ts":
     "Hunt/friendly Battle owns FightDuel pairing, CMB-08 shuffle/waiter handoff, melee, CMB-06 bot turns, casts, and CMB-04 resume",
   "src/modules/content/application/content-validator.ts":
-    "Single bundle completeness gate including store 504/552 pay and RANK, reputation, professions 2/6, assistant 3/13, farm 4 on area 500, set bonuses, USE representatives, fight extra blobs, bot loot, bot spell books, dungeon definitions, and battlegrounds",
+    "Single bundle completeness gate including store 504/552 pay and RANK, reputation, professions 2/6, assistant 3/13, farm 4 on area 500, craft recipe 61, set bonuses, USE representatives, fight extra blobs, bot loot, bot spell books, dungeon definitions, and battlegrounds",
   "src/modules/inventory/domain/inventory-service.ts":
     "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag, INV-05 repair, INV-06 upgrade, INV-07 set-bonus, INV-08 USE/drink, ECO-02 barter consume-by-artikul, MAIL-02 instance take/snapshot grant, AUC-01 auction take, and TRD-01 trade take",
   "src/modules/mail/infrastructure/postgres-letter-repository.ts":
@@ -39,9 +39,9 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/catalog/infrastructure/schema.ts":
     "Catalog projection tables including bot loot, store pay/requires, reputation, bonuses, and use_scripts",
   "src/modules/catalog/infrastructure/postgres-catalog.ts":
-    "Active-release catalog reads for artifacts, bots, spell books, skills, store, reputation, professions, assistants, farms, bonuses, and use scripts",
+    "Active-release catalog reads for artifacts, bots, spell books, skills, store, reputation, professions, assistants, farms, craft recipes, bonuses, and use scripts",
   "src/modules/catalog/infrastructure/postgres-catalog-projection.ts":
-    "Active-release materialization for artifacts, bots, store, reputation, professions, assistants, farms, dungeon, and battleground catalog rows",
+    "Active-release materialization for artifacts, bots, store, reputation, professions, assistants, farms, craft recipes, dungeon, and battleground catalog rows",
   "src/modules/jugger-wire/application/bootstrap-read-model.ts":
     "Flat OA bootstrap/mutation blocks including drink purge, USE mutation, CMB-04 init2 fight|conf, SOC-02 party restore, dungeon hunt, live user|professions, and live assistant|farm_info",
   "src/modules/professions/application/professions-service.ts":

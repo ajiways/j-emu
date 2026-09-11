@@ -7,6 +7,7 @@ import {
   pgSchema,
   primaryKey,
   text,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { heroes } from "../../character/infrastructure/schema.ts";
 
@@ -97,5 +98,30 @@ export const farmStocks = professionsSchema.table(
     check("farm_stocks_cnt_current_check", sql`${table.cntCurrent} >= 0`),
     check("farm_stocks_last_respawn_time_check", sql`${table.lastRespawnTime} >= 0`),
     check("farm_stocks_next_respawn_time_check", sql`${table.nextRespawnTime} >= 0`),
+  ],
+);
+
+export const heroRecipes = professionsSchema.table(
+  "hero_recipes",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity({
+      startWith: 1,
+      minValue: 1,
+      maxValue: 2_147_483_647,
+      cycle: false,
+    }),
+    heroId: integer("hero_id")
+      .notNull()
+      .references(() => heroes.id, { onDelete: "restrict" }),
+    recipeId: integer("recipe_id").notNull(),
+    ftime: integer("ftime").notNull(),
+    flags: integer("flags").notNull(),
+  },
+  (table) => [
+    uniqueIndex("hero_recipes_hero_recipe_uidx").on(table.heroId, table.recipeId),
+    check("hero_recipes_hero_id_check", sql`${table.heroId} > 0`),
+    check("hero_recipes_recipe_id_check", sql`${table.recipeId} > 0`),
+    check("hero_recipes_ftime_check", sql`${table.ftime} >= 0`),
+    check("hero_recipes_flags_check", sql`${table.flags} >= 0`),
   ],
 );

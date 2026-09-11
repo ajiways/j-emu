@@ -12,8 +12,9 @@ import type { StoreLot, StoreType } from "../domain/store-lot.ts";
 import type { ReputationCatalog } from "./reputation-catalog.ts";
 import type { ProfessionCatalog } from "./profession-catalog.ts";
 import type { FarmCatalog } from "./farm-catalog.ts";
+import type { CraftCatalog } from "./craft-catalog.ts";
 
-export interface Catalog extends ReputationCatalog, ProfessionCatalog, FarmCatalog {
+export interface Catalog extends ReputationCatalog, ProfessionCatalog, FarmCatalog, CraftCatalog {
   artifact(id: number): Promise<ArtifactDefinition | null>;
   bonus(id: number): Promise<ArtifactBonus | null>;
   useScript(bonusId: number): Promise<UseScript | null>;

@@ -22,7 +22,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и pre-baseline миграции `drizzle/0000_foundation_init.sql` плюс последующие
-`drizzle/0001`…`0019`. Поля ниже совпадают с runtime.
+`drizzle/0001`…`0020`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -143,6 +143,11 @@ stamina_drain)` PK `(release_id, id)`; slice **4** → artifact **1720**.
 - `area_farms(release_id, area_id, hunt_spot_id, farm_id, tactics,
 assistant_max, cnt_max, cnt_cooldown)` PK `(release_id, area_id, hunt_spot_id)`;
   slice area **500** hunt_spot **15**.
+- `craft_recipes(release_id, id, title, description, artikul_id, type,
+profession_id, skill_value, max_skill_value, ingredients jsonb, duration,
+create_artikul_id, create_artikul_num, create_quality, create_type_id,
+create_title, create_level_min, table_id)` PK `(release_id, id)`; UNIQUE
+  `(release_id, artikul_id)`; type 1; slice **61** book **1861** output **1714**.
 - `bonuses(release_id, id, kind, skill_id, delta, need_value, artikul_id, title, chat_msg)`
   PK `(release_id, id)`; kind `'skill'`; FK на `skill_definitions` и
   `artifacts`. Slice: **601** AGRILKA_MOBOV.
@@ -289,6 +294,9 @@ cycle_result, loot_granted)`. FREE sentinels `farm_id=0`, `ftime=0`,
 - `farm_stocks(area_id, hunt_spot_id, farm_id, cnt_current, last_respawn_time,
 next_respawn_time)` PK `(area_id, hunt_spot_id)`. Publish `ON CONFLICT DO
 NOTHING`.
+- `hero_recipes(id integer GENERATED ALWAYS AS IDENTITY START 1, hero_id FK
+heroes RESTRICT, recipe_id > 0, ftime >= 0, flags >= 0)` UNIQUE
+  `(hero_id, recipe_id)`. Wire `artikul_id` = recipe id.
 
 ## План (не в runtime)
 
@@ -317,6 +325,7 @@ level_curves — отдельные таблицы поверх текущих `
 `reputation_tracks` — runtime REP-01 (только object_id 5).
 `professions` — runtime PRF-01 (ids 2 and 6).
 `assistant_types` / `farm_resources` / `area_farms` — runtime PRF-02.
+`craft_recipes` — runtime PRF-03 (id 61).
 
 ### `world`
 
@@ -343,7 +352,8 @@ JSONB `killed_spawns_json`). `copies.copy_type` `dungeon|bg`.
 PRF-01: `catalog.professions` pair 2+6; `character.hero_professions`.
 PRF-02: `catalog.assistant_types` / `farm_resources` / `area_farms`;
 `professions.hero_assistants` / `hero_farm_stats` / `farm_stocks`.
-PRF-03 (план до реализации): `catalog.craft_recipes`; `professions.hero_recipes`.
+PRF-03: `catalog.craft_recipes` (authored id, typed ingredients jsonb);
+`professions.hero_recipes` (identity id from 1, UNIQUE hero+recipe).
 Контракт: [PROFESSIONS.md](../modules/PROFESSIONS.md).
 Контракт: [INSTANCE.md](../modules/INSTANCE.md), книга —
 [BOOK.md](../modules/BOOK.md).
@@ -373,7 +383,9 @@ JSONB запрещён по умолчанию. В текущем срезе о�
    запрещён: read → merge → write целого объекта;
 4. `catalog.artifacts.skills` — validated immutable bonuses конкретной release;
 5. `catalog.game_wide_documents.document` — validated immutable
-   `hud_defaults`/`chrome`/`common_conf`/`welcome_message` конкретной release.
+   `hud_defaults`/`chrome`/`common_conf`/`welcome_message` конкретной release;
+6. `catalog.craft_recipes.ingredients` — validated `{ artikulId, amount }[]`
+   конкретной release; unknown shape fails publication.
 
 Для каждого JSONB обязательны владелец, версия, validation до записи, лимит
 размера и запрет частичных business-update через `jsonb_set`. Если ключ

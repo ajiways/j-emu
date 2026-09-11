@@ -107,6 +107,9 @@ export class ContentPublicationService {
       farmResources: validated.farmResources,
       areaFarms: validated.areaFarms,
     });
+    await this.catalog.materializeCrafts(release.id, {
+      craftRecipes: validated.craftRecipes,
+    });
     await this.farmStocks.materialize(validated.areaFarms);
     await this.store.activate(release.id);
     return release;

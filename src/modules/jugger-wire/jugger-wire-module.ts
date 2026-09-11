@@ -57,6 +57,7 @@ import { createBattlegroundOps } from "../../app/battleground-ops.ts";
 import type { BattlegroundDesk } from "../../app/battleground-desk.ts";
 import { BookDesk } from "../../app/book-desk.ts";
 import type { ProfessionsService } from "../professions/application/professions-service.ts";
+import type { CraftService } from "../professions/application/craft-service.ts";
 
 export type JuggerWireBootstrapPolicy = Readonly<{
   bagCapacity: number;
@@ -136,6 +137,7 @@ export class JuggerWireModule {
     database: PostgresDatabase;
     delay: DelayScheduler;
     professions: ProfessionsService;
+    craft: CraftService;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -251,10 +253,8 @@ export class JuggerWireModule {
     const bestiary = requirePresent(input.bestiary, "Jugger-wire module requires bestiary");
     const database = requirePresent(input.database, "Jugger-wire module requires database");
     const delay = requirePresent(input.delay, "Jugger-wire module requires delay");
-    const professions = requirePresent(
-      input.professions,
-      "Jugger-wire module requires professions",
-    );
+    const professions = requirePresent(input.professions, "Jugger-wire requires professions");
+    const craft = requirePresent(input.craft, "Jugger-wire requires craft");
     try {
       const fightWire = new FightWireMapper(
         {
@@ -350,6 +350,7 @@ export class JuggerWireModule {
         battleground,
         book,
         professions,
+        craft,
       );
       const esrvPoll = new EsrvPollAssembler(
         characters,

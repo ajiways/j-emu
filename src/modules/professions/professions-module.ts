@@ -7,16 +7,19 @@ import type { CharacterService } from "../character/application/character-servic
 import type { InventoryService } from "../inventory/domain/inventory-service.ts";
 import type { WorldService } from "../world/domain/world-service.ts";
 import { ProfessionsService } from "./application/professions-service.ts";
+import { CraftService } from "./application/craft-service.ts";
 import type { FarmRng } from "./domain/farm-formulas.ts";
 import { PostgresFarmStockProjection } from "./infrastructure/postgres-farm-stock-projection.ts";
 import { PostgresFarmStockRepository } from "./infrastructure/postgres-farm-stock-repository.ts";
 import { PostgresHeroAssistantRepository } from "./infrastructure/postgres-hero-assistant-repository.ts";
 import { PostgresHeroFarmStatRepository } from "./infrastructure/postgres-hero-farm-stat-repository.ts";
+import { PostgresHeroRecipeRepository } from "./infrastructure/postgres-hero-recipe-repository.ts";
 import type { FarmStockProjection } from "./ports/farm-stock-projection.ts";
 
 export class ProfessionsModule {
   private constructor(
     readonly service: ProfessionsService,
+    readonly craft: CraftService,
     readonly farmStocks: FarmStockProjection,
   ) {}
 
@@ -45,6 +48,15 @@ export class ProfessionsModule {
         characters,
         inventory,
         world,
+        clock,
+        database,
+        random,
+      ),
+      new CraftService(
+        new PostgresHeroRecipeRepository(database),
+        catalog,
+        characters,
+        inventory,
         clock,
         database,
         random,

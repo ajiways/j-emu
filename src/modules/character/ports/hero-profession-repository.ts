@@ -6,4 +6,5 @@ export type HeroProfessionValue = Readonly<{
 export interface HeroProfessionRepository {
   listByHeroId(heroId: number): Promise<readonly HeroProfessionValue[]>;
   insertLicense(heroId: number, professionId: number, value: number): Promise<void>;
+  updateValue(heroId: number, professionId: number, value: number): Promise<void>;
 }

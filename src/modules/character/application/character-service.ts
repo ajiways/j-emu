@@ -54,7 +54,9 @@ import type { HeroReputationRepository } from "../ports/hero-reputation-reposito
 import type { HeroProfessionRepository } from "../ports/hero-profession-repository.ts";
 import { grantHeroReputation } from "./grant-hero-reputation.ts";
 import { grantHeroProfession } from "./grant-hero-profession.ts";
+import { bumpHeroCraftSkill } from "./bump-hero-profession.ts";
 import type {
+  BumpCraftSkillCommand,
   CharacterProfessions,
   LearnProfessionCommand,
   LearnProfessionResult,
@@ -179,6 +181,12 @@ export class CharacterService
       throw new Error("Character id is required");
     }
     return this.heroProfessions.listByHeroId(characterId);
+  }
+
+  bumpCraftSkill(command: BumpCraftSkillCommand): Promise<number> {
+    return this.unitOfWork.run(() =>
+      bumpHeroCraftSkill(this.heroes, this.heroProfessions, this.professionCatalog, command),
+    );
   }
 
   async setArea(command: SetAreaCommand): Promise<void> {

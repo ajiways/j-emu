@@ -91,6 +91,11 @@ function fakeLicenses(initial: readonly HeroProfessionValue[] = []): HeroProfess
     insertLicense: async (_heroId, professionId, value) => {
       rows.push({ professionId, value });
     },
+    updateValue: async (_heroId, professionId, value) => {
+      const index = rows.findIndex((row) => row.professionId === professionId);
+      if (index < 0) throw new Error(`Profession ${professionId} license is missing`);
+      rows[index] = { professionId, value };
+    },
   };
 }
 

@@ -30,6 +30,12 @@ export type UseFromBagResult =
       dispose: number;
       artikulId: number;
       itemId: number;
+    }>
+  | Readonly<{
+      kind: "learn_recipe";
+      dispose: number;
+      artikulId: number;
+      itemId: number;
     }>;
 
 export async function useFromBag(
@@ -68,6 +74,14 @@ export async function useFromBag(
     return { kind: "drink", title: action.title };
   }
   if (action.code === "NPC") throw UseDeniedError.unsupported("NPC");
+  if (action.code === "LEARN_RECIPE") {
+    return {
+      kind: "learn_recipe",
+      dispose: action.dispose,
+      artikulId: item.artifactId,
+      itemId: item.id,
+    };
+  }
   if (action.code !== "") throw UseDeniedError.unsupported(action.code);
   if (action.bonusId < 1) throw new UseDeniedError("у предмета нет бонуса");
   const script = await catalog.useScript(action.bonusId);

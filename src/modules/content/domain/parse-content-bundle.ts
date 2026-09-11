@@ -18,6 +18,7 @@ import {
   assistantTypesSchema,
   farmResourcesSchema,
 } from "./parse-farm-content.ts";
+import { craftRecipesSchema } from "./parse-craft-content.ts";
 import { dungeonsSchema } from "./parse-dungeon-content.ts";
 import { battlegroundsSchema } from "./parse-battleground-content.ts";
 import { bonusDocumentSchema, useScriptDocumentSchema } from "./parse-use-content.ts";
@@ -380,6 +381,7 @@ const bundleSchema = z
     assistantTypes: assistantTypesSchema,
     farmResources: farmResourcesSchema,
     areaFarms: areaFarmsSchema,
+    craftRecipes: craftRecipesSchema,
     bonuses: z.array(bonusDocumentSchema),
     useScripts: z.array(useScriptDocumentSchema),
     skills: z.array(skillDocumentSchema).min(1),

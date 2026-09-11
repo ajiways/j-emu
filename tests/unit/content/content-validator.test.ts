@@ -253,6 +253,15 @@ describe("ContentValidator", () => {
     ).toThrow(/assistant type 3 is required/);
   });
 
+  it("rejects a bundle without craft recipe 61", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        craftRecipes: [],
+      }),
+    ).toThrow(/craft recipe 61 is required/);
+  });
+
   it("rejects a bundle without exactly one playable battleground", () => {
     expect(() =>
       new ContentValidator().validate({

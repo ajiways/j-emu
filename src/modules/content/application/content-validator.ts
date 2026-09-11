@@ -13,6 +13,7 @@ import { collectStoreIssues } from "./collect-store-issues.ts";
 import { collectReputationIssues } from "./collect-reputation-issues.ts";
 import { collectProfessionIssues, overlayProfessionInfo } from "./collect-profession-issues.ts";
 import { collectFarmIssues } from "./collect-farm-issues.ts";
+import { collectCraftIssues } from "./collect-craft-issues.ts";
 import { collectSetIssues } from "./collect-set-issues.ts";
 import { collectUpgradeIssues } from "./collect-upgrade-issues.ts";
 import { collectUseIssues } from "./collect-use-issues.ts";
@@ -167,6 +168,7 @@ export class ContentValidator {
     issues.push(...collectReputationIssues(bundle));
     issues.push(...collectProfessionIssues(bundle));
     issues.push(...collectFarmIssues(bundle));
+    issues.push(...collectCraftIssues(bundle));
     issues.push(...collectUpgradeIssues(bundle));
     issues.push(...collectSetIssues(bundle));
     issues.push(...collectUseIssues(bundle));
@@ -220,6 +222,9 @@ export class ContentValidator {
       ...bundle.areaFarms.map((document) =>
         entry("area_farm", `${document.areaId}:${document.huntSpotId}`, document),
       ),
+      ...bundle.craftRecipes.map((document) =>
+        entry("craft_recipe", String(document.id), document),
+      ),
       ...bundle.bonuses.map((document) => entry("bonus", String(document.id), document)),
       ...bundle.useScripts.map((document) =>
         entry("use_script", String(document.bonusId), document),
@@ -263,6 +268,7 @@ export class ContentValidator {
       assistantTypes: bundle.assistantTypes,
       farmResources: bundle.farmResources,
       areaFarms: bundle.areaFarms,
+      craftRecipes: bundle.craftRecipes,
       bonuses: bundle.bonuses,
       useScripts: bundle.useScripts,
       skills: bundle.skills,

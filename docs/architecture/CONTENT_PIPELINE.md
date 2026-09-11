@@ -29,11 +29,11 @@ counts/checksums и completeness gates:
 
 ## Текущий playable slice
 
-Текущая `playable-slice/v25` release — минимальный bundle: 34 artifacts
+Текущая `playable-slice/v26` release — минимальный bundle: 36 artifacts
 (9095 + dump-proven L1 greyset **20/21/26**, glove spells **9098/9100/9099**, pocketables **93** и **99**, food **77**,
 shop wear **23** и **24**, arsenal amulet **621**, upgrade crystals **553/1310/4603/11408/13224**, recruit set **27/28/30/33/35/106** и mix **43/46**,
-USE **640/623/2371/55/584**, farm **1720/1721/1722**; без 209 и патронташа), 8 bots (2/4/24/32/99/353/354/373) с overlay reward scalars; loot entries только у bot 2 (77/93/99),
-bonus **601**, use script **2827**, assistant types **3/13**, farm resource **4** on area **500**,
+USE **640/623/2371/55/584**, farm **1720/1721/1722**, craft book **1861** / flask **1714**; без 209 и патронташа), 8 bots (2/4/24/32/99/353/354/373) с overlay reward scalars; loot entries только у bot 2 (77/93/99),
+bonus **601**, use script **2827**, assistant types **3/13**, farm resource **4** on area **500**, craft recipe **61**,
 12 areas (503/501/504/495/552/542/541/654/651/653/499/673) plus BG return 500 and rooms 635/636/637, authored travel `area_links` including dungeon doors 501↔542, 541↔654, 651↔653, 499↔673 and Раскоп 635↔636↔637, hunt 50310 (home), 50309 (route+respawn) и 50101–50103 (zone), dungeons 1/11/12/14 (bots 99/354/353/373), battlegrounds Раскоп `general|2` plus dump cards, store 504 type `-131` lots 80/23 и 82/24, store 552 type 11 lot 438/621 RANK, reputation track **5**, 15 skills (включая **MAGSTR**), 14 levels с normalized managed skills,
 3 appearance presets (kind 1/2/3 gender 1) и common-conf/chrome/HUD/welcome документы в составе текущего
 bundle. Bots 2/4/24/32 несут `spellBook` (Грызль пустая; Хисса 396, дух 422,

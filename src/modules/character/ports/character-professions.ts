@@ -14,7 +14,13 @@ export type HeroProfessionLicense = Readonly<{
   value: number;
 }>;
 
+export type BumpCraftSkillCommand = Readonly<{
+  characterId: number;
+  professionId: number;
+}>;
+
 export interface CharacterProfessions {
   learnProfession(command: LearnProfessionCommand): Promise<LearnProfessionResult>;
   professionLicenses(characterId: number): Promise<readonly HeroProfessionLicense[]>;
+  bumpCraftSkill(command: BumpCraftSkillCommand): Promise<number>;
 }

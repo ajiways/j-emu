@@ -15,15 +15,12 @@ import type {
   AssistantTypeDocument,
   FarmResourceDocument,
 } from "./content-farm.ts";
+import type { CraftRecipeDocument } from "./content-craft.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v25";
-export const CONTENT_VALIDATOR_VERSION = "25";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v26";
+export const CONTENT_VALIDATOR_VERSION = "26";
 
-type ArtifactSkillDocument = Readonly<{
-  id: string;
-  value: number;
-  flags: number;
-}>;
+type ArtifactSkillDocument = Readonly<{ id: string; value: number; flags: number }>;
 
 type ArtifactActionDocument = Readonly<{
   code: string;
@@ -315,6 +312,7 @@ type PlayableSliceDocuments = {
   assistantTypes: readonly AssistantTypeDocument[];
   farmResources: readonly FarmResourceDocument[];
   areaFarms: readonly AreaFarmDocument[];
+  craftRecipes: readonly CraftRecipeDocument[];
   bonuses: readonly BonusDocument[];
   useScripts: readonly UseScriptDocument[];
   skills: readonly SkillDocument[];
@@ -344,6 +342,7 @@ export type ContentEntry = Readonly<{
     | "assistant_type"
     | "farm_resource"
     | "area_farm"
+    | "craft_recipe"
     | "bonus"
     | "use_script"
     | "skill"
@@ -370,6 +369,7 @@ export type ContentEntry = Readonly<{
     | AssistantTypeDocument
     | FarmResourceDocument
     | AreaFarmDocument
+    | CraftRecipeDocument
     | BonusDocument
     | UseScriptDocument
     | SkillDocument

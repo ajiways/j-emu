@@ -327,10 +327,11 @@ kill/duel/fatality/daily, type:2 только при value > 0, всегда SUM
 `learnProfession` value 1, `user|professions` 16 слотов и кап с 7 ур. (59),
 `common|conf.profession_info` только эти id; ассистент **3** (create 10
 золота), farm **4** на area **500**, sweeper finish, loot **1720**,
-repeat/revoke, upgrade **3→13**. Reconnect/restart читает Postgres. CEF
-вкладки профессий и гремлинов не прогонялся; квестового GRANT нет.
+repeat/revoke, upgrade **3→13**; рецепт **61**, USE книги **1861**,
+craft **1720→1714×10**, cooldown 35с, избранное. Reconnect/restart читает
+Postgres. CEF вкладки профессий и гремлинов не прогонялся; квестового GRANT нет.
 
-Не перенесены рецепты/крафт, ids 1/3/4/5/7–16, смена лицензии.
+Не перенесены ids 1/3/4/5/7–16, смена лицензии, полный корпус рецептов.
 
 ## Вне первой волны
 

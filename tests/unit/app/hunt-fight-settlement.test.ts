@@ -363,6 +363,8 @@ function fakeCatalog(): Catalog {
     assistantTypes: async () => [],
     farmResource: async () => null,
     areaFarms: async () => [],
+    craftRecipe: async () => null,
+    craftRecipeByBook: async () => null,
     bonus: async () => null,
     useScript: async () => null,
   };

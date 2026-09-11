@@ -363,6 +363,7 @@ export class CompositionRoot {
         database,
         delay,
         professions: professions.service,
+        craft: professions.craft,
       });
       closers.push(wire);
       combat.bindTerminalObserver(

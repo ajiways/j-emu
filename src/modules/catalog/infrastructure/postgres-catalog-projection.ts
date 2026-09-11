@@ -16,6 +16,7 @@ import type {
   CatalogMaterialization,
   CatalogProfessionMaterialization,
   CatalogFarmMaterialization,
+  CatalogCraftMaterialization,
   CatalogProjection,
   CatalogReputationMaterialization,
   CatalogStoreMaterialization,
@@ -32,6 +33,7 @@ import {
   insertFarmResources,
   insertAreaFarms,
 } from "./postgres-catalog-farm-rows.ts";
+import { insertCraftRecipes } from "./postgres-catalog-craft-rows.ts";
 import {
   appearancePresets,
   artifacts,
@@ -106,6 +108,13 @@ export class PostgresCatalogProjection implements CatalogProjection {
     await insertAssistantTypes(session, releaseId, documents.assistantTypes);
     await insertFarmResources(session, releaseId, documents.farmResources);
     await insertAreaFarms(session, releaseId, documents.areaFarms);
+  }
+
+  async materializeCrafts(
+    releaseId: string,
+    documents: CatalogCraftMaterialization,
+  ): Promise<void> {
+    await insertCraftRecipes(this.database.session(), releaseId, documents.craftRecipes);
   }
 }
 

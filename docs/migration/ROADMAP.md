@@ -1065,7 +1065,7 @@
   Контракт: [PROFESSIONS.md](../modules/PROFESSIONS.md).
 - **Acceptance:** craft и favorites дают один output/XP результат после
   authored cooldown и остаются consistent после retry/restart.
-- **Status:** `next`
+- **Status:** `done`
 
 ## Wave 11 — quest engine (не куратский контент)
 
