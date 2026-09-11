@@ -3,6 +3,7 @@ import type { PlayableAccountRegistration } from "../../../../app/playable-accou
 import type { PlayableDevelopmentIdentity } from "../../../../app/playable-development-identity.ts";
 import type { CharacterService } from "../../../character/application/character-service.ts";
 import type { CombatPort } from "../../../combat/ports/combat-port.ts";
+import type { ContentEditor } from "../../../content/ports/content-editor.ts";
 import type { IdentityService } from "../../../identity/application/identity-service.ts";
 import type { InventoryService } from "../../../inventory/domain/inventory-service.ts";
 import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
@@ -24,4 +25,5 @@ export type JuggerHttpDependencies = Readonly<{
   esrvPoll: EsrvPollAssembler;
   presence: PresenceFanout;
   unitOfWork: UnitOfWork;
+  contentEditor: ContentEditor;
 }>;

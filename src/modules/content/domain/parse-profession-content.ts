@@ -3,7 +3,7 @@ import { PROFESSION_ID_MAX, PROFESSION_ID_MIN } from "../../catalog/domain/profe
 
 const overrideSchema = z.number().int().nullable();
 
-const professionDocumentSchema = z
+export const professionDocumentSchema = z
   .object({
     id: z.number().int().min(PROFESSION_ID_MIN).max(PROFESSION_ID_MAX),
     title: z.string().min(1),

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { SUM_REPUTATION_OBJECT_ID } from "../../catalog/domain/reputation-ids.ts";
 
-const reputationTrackSchema = z
+export const reputationTrackDocumentSchema = z
   .object({
     objectId: z
       .number()
@@ -17,4 +17,4 @@ const reputationTrackSchema = z
   })
   .strict();
 
-export const reputationTracksSchema = z.array(reputationTrackSchema);
+export const reputationTracksSchema = z.array(reputationTrackDocumentSchema);

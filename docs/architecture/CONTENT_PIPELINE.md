@@ -120,10 +120,11 @@ DATA-стадии (не runtime-зависимость и не копирова�
 bootstrap поверх другой существующей release. Обычный `publish` отклоняет уже
 существующий checksum.
 
-Отдельных editor-команд `saveDraft`, persisted candidate, validation report,
-publication audit record, manifest import/export и rollback command сейчас нет.
-Они относятся к целевому контракту ниже и реализуются только соответствующими
-DATA/EDT capabilities.
+File `seed`/`publish` по-прежнему принимает in-memory bundle. EDT-01 добавляет
+`saveDraft` / persisted candidate / validation report / publication audit
+через HTTP `/operator/content/*`, без записи файлов
+([CONTENT.md](../modules/CONTENT.md)). Manifest export/import и rollback
+остаются планом после EDT-01.
 
 ## Целевой publication contract — план
 
@@ -306,5 +307,5 @@ Import release:
 
 Для текущего масштаба одна PostgreSQL transaction, блокировка active pointer и
 ограничения существующих release/draft tables дают необходимую атомарность без
-распределённой инфраструктуры. Publication audit record появится только вместе
-с целевым publication contract.
+распределённой инфраструктуры. EDT-01 добавляет publication audit на activate
+candidate; export/rollback — не этот срез.

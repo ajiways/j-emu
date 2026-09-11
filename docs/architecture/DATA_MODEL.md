@@ -235,16 +235,26 @@ finish/read request path. Полный контракт:
 ### `content`
 
 - `drafts(id, content_type, content_key)` UNIQUE `(content_type, content_key)`;
-  `content_type` ∈ `artifact|bot|area|area_link|hunt_spawn|store_type|store_lot|
-reputation_track|profession|assistant_type|farm_resource|area_farm|bonus|use_script|skill|level|appearance|hud_defaults|chrome|
-common_conf|welcome_message|dungeon|battleground`.
-- `draft_versions(id, draft_id, version, schema_version, document jsonb, created_at)`.
+  `content_type` ∈ `artifact|bot|area|area_link|hunt_spawn|dungeon|battleground|
+store_type|store_lot|reputation_track|profession|assistant_type|farm_resource|
+area_farm|craft_recipe|npc|quest|world_fact|bonus|use_script|skill|level|
+appearance|hud_defaults|chrome|common_conf|welcome_message`.
+- `draft_versions(id, draft_id, version, schema_version, document jsonb,
+created_by, created_at)`. EDT-01 добавляет `created_by` text NOT NULL.
 - `releases(id, version UNIQUE nextval, checksum UNIQUE, schema_version, validator_version, created_at, activated_at)`.
 - `release_entries(release_id, content_type, content_key, draft_version_id, digest)`.
 - `active_release(lock_id=1, release_id, activated_at)` — singleton pointer.
 - `bootstrap_imports(digest PK, release_id, source, applied_at)`.
+- EDT-01: `candidates(id, expected_active_release_id, status
+open|validated|invalid|activated, created_by, created_at)`;
+  `candidate_entries` PK `(candidate_id, content_type, content_key)`;
+  `validation_reports(id, candidate_id, validator_version, ok 0|1, issues jsonb
+schema 1, created_at)`;
+  `publication_audits(id, release_id, candidate_id, created_by, created_at)`.
+  `operator_roles` нет; секрет — env `CONTENT_OPERATOR_TOKEN`.
 
-Публикация — [CONTENT_PIPELINE.md](CONTENT_PIPELINE.md).
+Публикация — [CONTENT_PIPELINE.md](CONTENT_PIPELINE.md). Контракт editor —
+[CONTENT.md](../modules/CONTENT.md).
 
 ### `mail`
 
@@ -388,6 +398,8 @@ semantics для выбранного vertical slice. Процесс и gates з
 JSONB запрещён по умолчанию. В текущем срезе он есть только в:
 
 1. `content.draft_versions.document` — immutable authoring document;
+   `content.validation_reports.issues` — EDT-01 array `{ path, message }`,
+   schema `1`, лимит 1 MiB, без `jsonb_set`;
 2. `combat.finished_fights.teams` — immutable validated snapshot старого
    `finished_fights.teams` wire DTO для history/info;
 3. `character.hero_personal_details.info` — sparse client prefs (`Chat.*`,

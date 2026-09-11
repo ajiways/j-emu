@@ -73,6 +73,10 @@ import {
   drafts,
   releaseEntries,
   releases,
+  candidateEntries,
+  candidates,
+  publicationAudits,
+  validationReports,
 } from "../../../src/modules/content/infrastructure/schema.ts";
 import { accounts, sessions } from "../../../src/modules/identity/infrastructure/schema.ts";
 import { items } from "../../../src/modules/inventory/infrastructure/schema.ts";
@@ -199,10 +203,14 @@ describe("Drizzle migrations", () => {
         "combat.finished_fights",
         "content.active_release",
         "content.bootstrap_imports",
+        "content.candidate_entries",
+        "content.candidates",
         "content.draft_versions",
         "content.drafts",
+        "content.publication_audits",
         "content.release_entries",
         "content.releases",
+        "content.validation_reports",
         "identity.accounts",
         "identity.sessions",
         "instance.binds",
@@ -321,7 +329,11 @@ describe("Drizzle migrations", () => {
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(80);
+      candidates,
+      candidateEntries,
+      validationReports,
+      publicationAudits,
+    ]).toHaveLength(84);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -352,6 +364,7 @@ describe("Drizzle migrations", () => {
       "0021_quests_engine.sql",
       "0022_character_honor_grants.sql",
       "0023_quests_daily_journal.sql",
+      "0024_content_editor_candidates.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -381,8 +394,9 @@ describe("Drizzle migrations", () => {
       "0021_quests_engine",
       "0022_character_honor_grants",
       "0023_quests_daily_journal",
+      "0024_content_editor_candidates",
     ]);
-    expect(await appliedCount()).toBe(24);
+    expect(await appliedCount()).toBe(25);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );

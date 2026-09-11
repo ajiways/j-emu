@@ -4,10 +4,22 @@ import { PostgresCatalogCompatibility } from "../../catalog/infrastructure/postg
 import { PostgresWorldProjection } from "../../world/infrastructure/postgres-world-projection.ts";
 import { PostgresFarmStockProjection } from "../../professions/infrastructure/postgres-farm-stock-projection.ts";
 import { PostgresQuestProjection } from "../../quests/infrastructure/postgres-quest-projection.ts";
+import { ContentEditorService } from "../application/content-editor-service.ts";
 import { ContentPublicationService } from "../application/content-publication-service.ts";
 import { ContentActivationCompatibility } from "../application/content-activation-compatibility.ts";
+import { ContentMaterializer } from "../application/content-materializer.ts";
 import { ContentValidator } from "../application/content-validator.ts";
+import { PostgresContentEditorStore } from "./postgres-content-editor-store.ts";
 import { PostgresContentStore } from "./postgres-content-store.ts";
+
+function createContentMaterializer(database: PostgresDatabase): ContentMaterializer {
+  return new ContentMaterializer(
+    new PostgresCatalogProjection(database),
+    new PostgresWorldProjection(database),
+    new PostgresFarmStockProjection(database),
+    new PostgresQuestProjection(database),
+  );
+}
 
 export function createPostgresContentPublication(
   database: PostgresDatabase,
@@ -15,12 +27,21 @@ export function createPostgresContentPublication(
   return new ContentPublicationService(
     database,
     new PostgresContentStore(database),
-    new PostgresCatalogProjection(database),
     new PostgresCatalogCompatibility(database),
-    new PostgresWorldProjection(database),
     new ContentValidator(),
     new ContentActivationCompatibility(),
-    new PostgresFarmStockProjection(database),
-    new PostgresQuestProjection(database),
+    createContentMaterializer(database),
+  );
+}
+
+export function createPostgresContentEditor(database: PostgresDatabase): ContentEditorService {
+  return new ContentEditorService(
+    database,
+    new PostgresContentStore(database),
+    new PostgresContentEditorStore(database),
+    new ContentValidator(),
+    new ContentActivationCompatibility(),
+    new PostgresCatalogCompatibility(database),
+    createContentMaterializer(database),
   );
 }

@@ -15,6 +15,7 @@ const schema = z.object({
   FIGHT_PROXY_HOST: z.string().min(1),
   FIGHT_PROXY_PATH: z.string().min(1),
   FIGHT_PROXY_PORT: z.coerce.number().int().positive(),
+  CONTENT_OPERATOR_TOKEN: z.string().min(1),
 });
 
 export type AppConfig = {
@@ -31,6 +32,7 @@ export type AppConfig = {
   fightProxyHost: string;
   fightProxyPath: string;
   fightProxyPort: number;
+  contentOperatorToken: string;
 };
 
 export function loadConfig(
@@ -52,5 +54,6 @@ export function loadConfig(
     fightProxyHost: value.FIGHT_PROXY_HOST,
     fightProxyPath: value.FIGHT_PROXY_PATH,
     fightProxyPort: value.FIGHT_PROXY_PORT,
+    contentOperatorToken: value.CONTENT_OPERATOR_TOKEN,
   };
 }

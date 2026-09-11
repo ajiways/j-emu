@@ -125,7 +125,7 @@ const dialogStepSchema = z.discriminatedUnion("type", [
     .strict(),
 ]);
 
-const npcSchema = z
+export const npcDocumentSchema = z
   .object({
     id: z.number().int().positive(),
     infoId: z.number().int().positive(),
@@ -138,7 +138,7 @@ const npcSchema = z
   })
   .strict();
 
-const questSchema = z
+export const questDocumentSchema = z
   .object({
     key: z.string().min(1),
     bookId: z.number().int().positive(),
@@ -171,13 +171,13 @@ const questSchema = z
   })
   .strict();
 
-const worldFactSchema = z
+export const worldFactDocumentSchema = z
   .object({
     id: z.string().min(1),
     values: z.array(z.string()),
   })
   .strict();
 
-export const npcsSchema = z.array(npcSchema);
-export const questsSchema = z.array(questSchema);
-export const worldFactsSchema = z.array(worldFactSchema);
+export const npcsSchema = z.array(npcDocumentSchema);
+export const questsSchema = z.array(questDocumentSchema);
+export const worldFactsSchema = z.array(worldFactDocumentSchema);

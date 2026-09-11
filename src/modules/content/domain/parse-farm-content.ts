@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { PROFESSION_ID_MAX, PROFESSION_ID_MIN } from "../../catalog/domain/profession-ids.ts";
 
-const assistantTypeDocumentSchema = z
+export const assistantTypeDocumentSchema = z
   .object({
     id: z.number().int().positive(),
     title: z.string().min(1),
@@ -19,7 +19,7 @@ const assistantTypeDocumentSchema = z
   })
   .strict();
 
-const farmResourceDocumentSchema = z
+export const farmResourceDocumentSchema = z
   .object({
     id: z.number().int().positive(),
     title: z.string().min(1),
@@ -36,7 +36,7 @@ const farmResourceDocumentSchema = z
   })
   .strict();
 
-const areaFarmDocumentSchema = z
+export const areaFarmDocumentSchema = z
   .object({
     areaId: z.string().min(1),
     huntSpotId: z.number().int().positive(),

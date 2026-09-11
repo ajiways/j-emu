@@ -8,7 +8,7 @@ const ingredientSchema = z
   })
   .strict();
 
-const craftRecipeDocumentSchema = z
+export const craftRecipeDocumentSchema = z
   .object({
     id: z.number().int().positive(),
     title: z.string().min(1),

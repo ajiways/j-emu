@@ -30,8 +30,12 @@ const lineJustifications: Readonly<Record<string, string>> = {
     "Hero rows including location lock, instance copy shard, and CMB-04 ghost/injury clock",
   "src/modules/world/domain/hunt-wander.ts":
     "Hunt live motion: route, zone, home park, lock freeze, and respawn hide",
-  "src/modules/content/domain/parse-content-bundle.ts":
-    "Zod playable-slice document including store lot pay/requires, reputation, professions, assistants, farms, craft recipes, bonuses, use scripts, bot spell books, hunt wander fields, dungeons, battlegrounds, NPCs, and quests",
+  "src/modules/content/application/content-editor-service.ts":
+    "Editor ports: saveDraft, buildCandidate, validateCandidate, activateCandidate, and status",
+  "src/modules/content/infrastructure/postgres-content-editor-store.ts":
+    "Editor persistence for drafts, candidates, validation reports, audits, and pinned releases",
+  "src/app/create-jugger-runtime.ts":
+    "Extracted jugger-wire composition including trade desk, store ports, and content editor",
   "src/modules/content/domain/content-playable-entities.ts":
     "Playable entity DTOs extracted from the bundle document: artifacts, bots, areas, hunt, store, bonuses, and use scripts",
   "src/modules/character/domain/hero.ts":

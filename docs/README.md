@@ -24,6 +24,7 @@
 - [World/hunt](modules/WORLD.md)
 - [Combat](modules/COMBAT.md)
 - [Quests/NPC](modules/QUESTS.md)
+- [Content editor](modules/CONTENT.md)
 
 `jgr-emu` — поведенческий baseline цикла 1–8. Его код не является зависимостью
 или архитектурным шаблоном. Повторный research нужен только при конфликте,

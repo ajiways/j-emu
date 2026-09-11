@@ -34,14 +34,12 @@ import type { WorldService } from "../world/domain/world-service.ts";
 import type { PresenceService } from "../world/application/presence-service.ts";
 import { BootstrapReadModel } from "./application/bootstrap-read-model.ts";
 import { HeroSheetReadModel } from "./application/hero-sheet-read-model.ts";
-import { EsrvPollAssembler } from "./application/esrv-poll-assembler.ts";
 import { FightWireMapper } from "./application/fight-wire-mapper.ts";
 import type { EsrvOutbox } from "./application/esrv-outbox.ts";
 import type { LongPollCoordinator } from "./application/long-poll-coordinator.ts";
 import type { PresenceFanout } from "./application/presence-fanout.ts";
 import type { HuntAreaFanout } from "./application/hunt-area-fanout.ts";
-import { JuggerHttpServer } from "./infrastructure/http/jugger-http-server.ts";
-import { FightTcpServer } from "./infrastructure/tcp/fight-tcp-server.ts";
+import type { FightTcpServer } from "./infrastructure/tcp/fight-tcp-server.ts";
 import { JuggerCommandModule } from "./registry/jugger-command-module.ts";
 import type { PartySnapshot } from "./application/party-snapshot.ts";
 import type { InstanceDesk } from "../../app/instance-desk.ts";
@@ -62,6 +60,8 @@ import type { QuestCatalog } from "../quests/ports/quest-catalog.ts";
 import type { PvpFightHonorCache } from "../../app/pvp-fight-honor-cache.ts";
 import type { QuestDesk } from "../../app/quest-desk.ts";
 import type { JuggerWireBootstrapPolicy, JuggerWireFightPolicy } from "./jugger-wire-policy.ts";
+import type { ContentEditor } from "../content/ports/content-editor.ts";
+import { startJuggerServers } from "./infrastructure/start-jugger-servers.ts";
 
 export type { JuggerWireBootstrapPolicy, JuggerWireFightPolicy } from "./jugger-wire-policy.ts";
 
@@ -128,6 +128,7 @@ export class JuggerWireModule {
     quests: QuestService;
     questCatalog: QuestCatalog;
     pvpHonor: PvpFightHonorCache;
+    contentEditor: ContentEditor;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -248,6 +249,10 @@ export class JuggerWireModule {
     const quests = requirePresent(input.quests, "Jugger-wire requires quests");
     const questCatalog = requirePresent(input.questCatalog, "Jugger-wire requires quest catalog");
     const pvpHonor = requirePresent(input.pvpHonor, "Jugger-wire module requires PvP honor cache");
+    const contentEditor = requirePresent(
+      input.contentEditor,
+      "Jugger-wire requires content editor",
+    );
     try {
       const fightWire = new FightWireMapper(
         {
@@ -350,18 +355,7 @@ export class JuggerWireModule {
         craft,
         quests,
       );
-      const esrvPoll = new EsrvPollAssembler(
-        characters,
-        world,
-        catalog,
-        combat,
-        fightWire,
-        outbox,
-        clock,
-        instanceHunt,
-        questCatalog,
-      );
-      const http = await new JuggerHttpServer({
+      const { http, fightTcp } = await startJuggerServers({
         config,
         identity,
         registration,
@@ -371,17 +365,18 @@ export class JuggerWireModule {
         commands,
         combat,
         longPoll,
-        esrvPoll,
         presence: presenceFanout,
         unitOfWork,
-      }).build();
-      const fightTcp = new FightTcpServer(combat, commands.fproxy, fightWire, longPoll, http.log);
-      try {
-        await fightTcp.listen(config.host, config.fightProxyPort);
-      } catch (error) {
-        await http.close();
-        throw error;
-      }
+        contentEditor,
+        catalog,
+        world,
+        clock,
+        outbox,
+        instanceHunt,
+        questCatalog,
+        fproxy: commands.fproxy,
+        fightWire,
+      });
       return new JuggerWireModule(http, longPoll, fightTcp, battleground, commands.quests);
     } catch (error) {
       longPoll.shutdown();

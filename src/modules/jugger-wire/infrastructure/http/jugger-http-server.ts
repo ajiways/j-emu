@@ -5,6 +5,8 @@ import { EsrvRouteRegistrar } from "./esrv-route-registrar.ts";
 import { FproxyRouteRegistrar } from "./fproxy-route-registrar.ts";
 import type { JuggerHttpDependencies } from "./jugger-http-dependencies.ts";
 import { ObjectActionRouteRegistrar } from "./object-action-route-registrar.ts";
+import { OperatorAuthPolicy } from "../../../content/application/operator-auth-policy.ts";
+import { OperatorContentRouteRegistrar } from "./operator-content-route-registrar.ts";
 import { StaticAssetRegistrar } from "./static-asset-registrar.ts";
 import { TlsCredentials } from "./tls-credentials.ts";
 
@@ -22,12 +24,19 @@ export class JuggerHttpServer {
     await app.register(fastifyCookie);
     // Flash URLRequest POST defaults to application/x-www-form-urlencoded and
     // may omit Content-Type. AMF routes must read a raw Buffer regardless.
+    // Fastify's default JSON/text parsers would steal application/json from
+    // the catch-all, so operator /operator/content would see an object.
+    app.removeContentTypeParser(["application/json", "text/plain"]);
     app.addContentTypeParser("*", { parseAs: "buffer" }, (_request, body, done) =>
       done(null, body),
     );
     try {
       await new AuthRouteRegistrar(this.dependencies).register(app);
       await new ObjectActionRouteRegistrar(this.dependencies).register(app);
+      await new OperatorContentRouteRegistrar(
+        this.dependencies.contentEditor,
+        new OperatorAuthPolicy(this.dependencies.config.contentOperatorToken),
+      ).register(app);
       await new EsrvRouteRegistrar(this.dependencies).register(app);
       await new FproxyRouteRegistrar(this.dependencies).register(app);
       await new StaticAssetRegistrar(config.pub1Dir).register(app);

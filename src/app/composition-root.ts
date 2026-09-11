@@ -7,7 +7,6 @@ import type { BattleRules } from "../modules/combat/domain/battle-rules.ts";
 import { SystemCombatDelay } from "../modules/combat/infrastructure/system-combat-delay.ts";
 import { IdentityModule } from "../modules/identity/identity-module.ts";
 import { InventoryModule } from "../modules/inventory/inventory-module.ts";
-import { JuggerWireModule } from "../modules/jugger-wire/jugger-wire-module.ts";
 import { WorldModule } from "../modules/world/world-module.ts";
 import { PostgresHeroRepository } from "../modules/character/infrastructure/postgres-hero-repository.ts";
 import type { Clock } from "../shared/kernel/clock.ts";
@@ -16,6 +15,7 @@ import { AccountKeyedActiveFightQuery } from "./account-keyed-active-fight-query
 import { Application } from "./application.ts";
 import type { AppConfig } from "./config.ts";
 import { createPlayableIdentity } from "./create-playable-identity.ts";
+import { createJuggerRuntime } from "./create-jugger-runtime.ts";
 import { loadGamePolicy } from "./game-policy.ts";
 import { PresenceService } from "../modules/world/application/presence-service.ts";
 import { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.ts";
@@ -27,8 +27,6 @@ import { CatalogHonorRanks } from "../modules/catalog/infrastructure/catalog-hon
 import { createChatHuntSettlement } from "./create-chat-hunt-settlement.ts";
 import { HEROISM_RULES } from "./heroism-rules.ts";
 import { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
-import { StorePurchase } from "./store-purchase.ts";
-import { StoreRepair } from "./store-repair.ts";
 import { MailModule } from "../modules/mail/mail-module.ts";
 import { AuctionModule } from "../modules/auction/auction-module.ts";
 import { createAuctionOps } from "./auction-ops.ts";
@@ -36,11 +34,9 @@ import { startTtlSweeps } from "./ttl-sweeps.ts";
 import { ProfessionsModule } from "../modules/professions/professions-module.ts";
 import { QuestsModule } from "../modules/quests/quests-module.ts";
 import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
-import { TradeDesk } from "./trade-desk.ts";
 import { ChatDesk } from "./chat-desk.ts";
 import { PartyNotify } from "./party-notify.ts";
 import { PartyBagOps } from "./party-bag-ops.ts";
-import { TradeModule } from "../modules/trade/trade-module.ts";
 import { PartyModule } from "../modules/party/party-module.ts";
 import { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
 import { buildUserBag } from "../modules/jugger-wire/application/user-bag-block.ts";
@@ -50,6 +46,7 @@ import { InstanceHuntLockRelease } from "./instance-hunt-lock-release.ts";
 import { chainFightTerminal } from "./battleground-ops.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 import type { FarmRng } from "../modules/professions/domain/farm-formulas.ts";
+import { createPostgresContentEditor } from "../modules/content/infrastructure/create-postgres-content-publication.ts";
 
 export class CompositionRoot {
   async build(
@@ -293,17 +290,8 @@ export class CompositionRoot {
       })) {
         closers.push(sweep);
       }
-      const trade = TradeModule.create();
-      closers.push(trade);
-      const tradeDesk = new TradeDesk({
-        sessions: trade.sessions,
-        unitOfWork: database,
-        characters: characters.service,
-        inventory: inventory.service,
-        catalog: catalog.catalog,
-        presence: identity.service,
-      });
-      const wire = await JuggerWireModule.create({
+      const contentEditor = createPostgresContentEditor(database);
+      const { wire, trade } = await createJuggerRuntime({
         config,
         identity: identity.service,
         registration,
@@ -317,20 +305,12 @@ export class CompositionRoot {
         bootstrap: policy.bootstrap,
         fightWire: policy.fightWire,
         meleeSourceIds: policy.combat.meleeSourceIds,
-        unitOfWork: database,
+        database,
         presence,
         presenceFanout,
         huntFanout,
         outbox,
         longPoll,
-        storePurchase: new StorePurchase(
-          database,
-          characters.service,
-          inventory.service,
-          catalog.catalog,
-          world.service,
-        ),
-        storeRepair: new StoreRepair(database, characters.service, inventory.service),
         mail: mail.service,
         mailSend,
         mailClaim,
@@ -343,7 +323,6 @@ export class CompositionRoot {
         auctionTenderAdd: auctionOps.tenderAdd,
         auctionTenderSell: auctionOps.tenderSell,
         auctionTenderCancel: auctionOps.tenderCancel,
-        trade: tradeDesk,
         chat: chatDesk,
         party: party.service,
         partyJoin: party.join,
@@ -356,14 +335,15 @@ export class CompositionRoot {
         battlegrounds: catalog.battlegrounds,
         instances: instance.service,
         bestiary: characters.bestiary,
-        database,
         delay,
         professions: professions.service,
         craft: professions.craft,
         quests: quests.service,
         questCatalog: quests.catalog,
         pvpHonor,
+        contentEditor,
       });
+      closers.push(trade);
       closers.push(wire);
       combat.bindTerminalObserver(
         chainFightTerminal(

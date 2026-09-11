@@ -51,7 +51,9 @@ area presence roster:
 - Репутация Радвея **5** есть (REP-01, product частично).
   `quests` runtime QST-ENG-01/02 / DAY-01: NPC 271, четыре engine-квеста,
   USE 584, lazy 06:00 wipe, `book|quest_delete`. AREA leftover
-  `START_FIGHT`, hunt loot-cap через quests-port. `economy` модуля нет.
+  `START_FIGHT`, hunt loot-cap через quests-port. `content` file
+  seed/publish и EDT-01 operator HTTP `/operator/content/*`.
+  `economy` модуля нет.
   PRF-01: `catalog.professions` и
   `hero_professions` (пара 2+6). PRF-02: модуль `professions` владеет
   `hero_assistants` / `hero_farm_stats` / `farm_stocks` и sweep. PRF-03:
@@ -315,21 +317,22 @@ PvP.
 **Шов извлечения:** не цель BG-01. Combat не импортирует battleground;
 composition overlays PvP `type:"1"` / `flags:"128"`.
 
-### `content`
+### `content` — EDT-01 operator editor
 
-**Владеет:** versioned drafts, validation reports, immutable release bundles,
-publication audit и active release pointer. Не обслуживает gameplay-запросы.
+**Владеет:** versioned drafts / `draft_versions`, candidates, validation
+reports, immutable releases, publication audit и active pointer. Не
+обслуживает gameplay-запросы и не пишет runtime projections напрямую.
 
 **API:** `saveDraft`, `buildCandidate`, `validateCandidate`,
-`materializeRelease`, `activateRelease`, `getPublicationStatus`.
+`activateCandidate`, `getPublicationStatus`. File `seed`/`publish` —
+bootstrap bundle, не editor. HTTP `/operator/content/*` в `jugger-wire`.
+Контракт: [CONTENT.md](../modules/CONTENT.md).
 
-**События:** `content.release-activated.v1` сообщает уже завершившийся факт для
-cache invalidation/observability. Оно не запускает отложенный частичный импорт.
+**События leftover:** `content.release-activated.v1` не вводится, пока нет
+consumer.
 
-**Шов извлечения:** editor позднее использует те же application ports. На первом
-этапе pipeline остаётся внутри монолита и одного PostgreSQL; отдельный
-content-service не вводится. Materialization versioned runtime rows является
-частью publish flow, а не файловым dual-write.
+**Шов извлечения:** тот же монолит и PostgreSQL; editor не files, не SQLite,
+не отдельный content-service. Materialize — часть activate, не dual-write.
 
 ### `jugger-wire`
 

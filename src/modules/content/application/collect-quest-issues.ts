@@ -46,7 +46,6 @@ export function collectQuestIssues(bundle: ContentBundle): readonly string[] {
     if (npc.infoId !== NPC_ID) issues.push(`npc ${NPC_ID} infoId must be ${NPC_ID}`);
     if (npc.areaId !== "503") issues.push(`npc ${NPC_ID} must stand in area 503`);
     if (npc.itemId !== NPC_ITEM_ID) issues.push(`npc ${NPC_ID} itemId must be ${NPC_ITEM_ID}`);
-    if (npc.title !== "Голова мертвеца") issues.push(`npc ${NPC_ID} title is wrong`);
   }
   const keys = new Set<string>();
   const bookIds = new Set<number>();

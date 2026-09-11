@@ -14,7 +14,7 @@ const huntRouteStopSchema = z
     message: "route wait max is below min",
   });
 
-const huntSpawnSchema = z
+export const huntSpawnDocumentSchema = z
   .object({
     id: z.number().int().positive().max(2_147_483_647),
     areaId: z.string().min(1),
@@ -63,4 +63,4 @@ const huntSpawnSchema = z
     }
   });
 
-export const huntSpawnsSchema = z.array(huntSpawnSchema);
+export const huntSpawnsSchema = z.array(huntSpawnDocumentSchema);

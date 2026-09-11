@@ -37,6 +37,7 @@ import type { CraftService } from "../../../src/modules/professions/application/
 import type { QuestService } from "../../../src/modules/quests/application/quest-service.ts";
 import type { QuestCatalog } from "../../../src/modules/quests/ports/quest-catalog.ts";
 import type { PvpFightHonorCache } from "../../../src/app/pvp-fight-honor-cache.ts";
+import type { ContentEditor } from "../../../src/modules/content/ports/content-editor.ts";
 import { QuestsModule } from "../../../src/modules/quests/quests-module.ts";
 import type { MailService } from "../../../src/modules/mail/application/mail-service.ts";
 import type { PartyJoinService } from "../../../src/modules/party/application/party-join-service.ts";
@@ -479,6 +480,7 @@ describe("module factories", () => {
         quests: {} as QuestService,
         questCatalog: {} as QuestCatalog,
         pvpHonor: {} as PvpFightHonorCache,
+        contentEditor: {} as ContentEditor,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -562,6 +564,7 @@ describe("module factories", () => {
           fightProxyHost: "s1.jugger.ru",
           fightProxyPath: "https://s1.jugger.ru/fproxy//;",
           fightProxyPort: 33120,
+          contentOperatorToken: "test-operator-token",
         },
         identity: {} as IdentityService,
         registration: {} as PlayableAccountRegistration,
@@ -679,6 +682,7 @@ describe("module factories", () => {
         quests: {} as QuestService,
         questCatalog: {} as QuestCatalog,
         pvpHonor: {} as PvpFightHonorCache,
+        contentEditor: {} as ContentEditor,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

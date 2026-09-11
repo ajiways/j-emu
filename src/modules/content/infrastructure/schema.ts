@@ -45,11 +45,13 @@ export const draftVersions = contentSchema.table(
     version: integer("version").notNull(),
     schemaVersion: text("schema_version").notNull(),
     document: jsonb("document").notNull(),
+    createdBy: text("created_by").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull(),
   },
   (table) => [
     unique("draft_versions_draft_id_version_unique").on(table.draftId, table.version),
     check("draft_versions_version_check", sql`${table.version} > 0`),
+    check("draft_versions_created_by_check", sql`${table.createdBy} <> ''`),
     check(
       "draft_versions_document_size_check",
       sql`octet_length(${table.document}::text) <= 1048576`,
@@ -104,3 +106,81 @@ export const bootstrapImports = contentSchema.table("bootstrap_imports", {
   source: text("source").notNull(),
   appliedAt: timestamp("applied_at", { withTimezone: true, mode: "date" }).notNull(),
 });
+
+export const candidates = contentSchema.table(
+  "candidates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    expectedActiveReleaseId: uuid("expected_active_release_id")
+      .notNull()
+      .references(() => releases.id, { onDelete: "restrict" }),
+    status: text("status").notNull(),
+    createdBy: text("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull(),
+  },
+  (table) => [
+    check(
+      "candidates_status_check",
+      sql`${table.status} IN ('open', 'validated', 'invalid', 'activated')`,
+    ),
+    check("candidates_created_by_check", sql`${table.createdBy} <> ''`),
+  ],
+);
+
+export const candidateEntries = contentSchema.table(
+  "candidate_entries",
+  {
+    candidateId: uuid("candidate_id")
+      .notNull()
+      .references(() => candidates.id, { onDelete: "restrict" }),
+    contentType: text("content_type").notNull(),
+    contentKey: text("content_key").notNull(),
+    draftVersionId: uuid("draft_version_id")
+      .notNull()
+      .references(() => draftVersions.id, { onDelete: "restrict" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.candidateId, table.contentType, table.contentKey] }),
+    check(
+      "candidate_entries_content_type_check",
+      sql`${table.contentType} IN ('artifact', 'bot', 'area', 'area_link', 'hunt_spawn', 'dungeon', 'battleground', 'store_type', 'store_lot', 'reputation_track', 'profession', 'assistant_type', 'farm_resource', 'area_farm', 'craft_recipe', 'npc', 'quest', 'world_fact', 'bonus', 'use_script', 'skill', 'level', 'appearance', 'hud_defaults', 'chrome', 'common_conf', 'welcome_message')`,
+    ),
+  ],
+);
+
+export const validationReports = contentSchema.table(
+  "validation_reports",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    candidateId: uuid("candidate_id")
+      .notNull()
+      .references(() => candidates.id, { onDelete: "restrict" }),
+    validatorVersion: text("validator_version").notNull(),
+    ok: smallint("ok").notNull(),
+    issues: jsonb("issues").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull(),
+  },
+  (table) => [
+    check("validation_reports_ok_check", sql`${table.ok} IN (0, 1)`),
+    check(
+      "validation_reports_issues_size_check",
+      sql`octet_length(${table.issues}::text) <= 1048576`,
+    ),
+  ],
+);
+
+export const publicationAudits = contentSchema.table(
+  "publication_audits",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    releaseId: uuid("release_id")
+      .notNull()
+      .references(() => releases.id, { onDelete: "restrict" }),
+    candidateId: uuid("candidate_id")
+      .notNull()
+      .references(() => candidates.id, { onDelete: "restrict" }),
+    createdBy: text("created_by").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull(),
+  },
+  (table) => [check("publication_audits_created_by_check", sql`${table.createdBy} <> ''`)],
+);

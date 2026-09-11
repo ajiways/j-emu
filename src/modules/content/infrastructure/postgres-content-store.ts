@@ -77,7 +77,8 @@ export class PostgresContentStore implements ContentStore {
         .select({ value: max(draftVersions.version) })
         .from(draftVersions)
         .where(eq(draftVersions.draftId, draftId));
-      const nextVersion = (versionRows[0]?.value ?? 0) + 1;
+      const current = versionRows[0]?.value;
+      const nextVersion = current === null || current === undefined ? 1 : current + 1;
       const versionInsert = await session
         .insert(draftVersions)
         .values({
@@ -85,6 +86,7 @@ export class PostgresContentStore implements ContentStore {
           version: nextVersion,
           schemaVersion: bundle.schemaVersion,
           document: entry.document,
+          createdBy: "bootstrap",
           createdAt: sql`now()`,
         })
         .returning({ id: draftVersions.id });

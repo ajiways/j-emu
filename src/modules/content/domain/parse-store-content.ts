@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const storeTypeSchema = z
+export const storeTypeDocumentSchema = z
   .object({
     areaId: z.string().min(1),
     typeId: z.number().int(),
@@ -53,7 +53,7 @@ const levelRequireSchema = z
   })
   .strict();
 
-const storeLotSchema = z
+export const storeLotDocumentSchema = z
   .object({
     areaId: z.string().min(1),
     lotId: z.number().int().positive(),
@@ -77,5 +77,5 @@ const storeLotSchema = z
   })
   .strict();
 
-export const storeTypesSchema = z.array(storeTypeSchema);
-export const storeLotsSchema = z.array(storeLotSchema);
+export const storeTypesSchema = z.array(storeTypeDocumentSchema);
+export const storeLotsSchema = z.array(storeLotDocumentSchema);

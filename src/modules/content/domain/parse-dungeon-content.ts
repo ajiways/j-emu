@@ -74,7 +74,7 @@ const dungeonAreaSchema = z
     }
   });
 
-const dungeonDocumentSchema = z
+export const dungeonDocumentSchema = z
   .object({
     artikulId: z.number().int().positive(),
     title: z.string().min(1),

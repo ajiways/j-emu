@@ -15,6 +15,7 @@ const complete = {
   FIGHT_PROXY_HOST: "s1.jugger.ru",
   FIGHT_PROXY_PATH: "https://s1.jugger.ru/fproxy//;",
   FIGHT_PROXY_PORT: "33120",
+  CONTENT_OPERATOR_TOKEN: "test-operator-token",
 };
 
 describe("loadConfig", () => {
@@ -24,5 +25,11 @@ describe("loadConfig", () => {
 
   it("does not invent a database URL", () => {
     expect(() => loadConfig({ ...complete, DATABASE_URL: undefined })).toThrow(/DATABASE_URL/);
+  });
+
+  it("does not invent an operator token", () => {
+    expect(() => loadConfig({ ...complete, CONTENT_OPERATOR_TOKEN: undefined })).toThrow(
+      /CONTENT_OPERATOR_TOKEN/,
+    );
   });
 });
