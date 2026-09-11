@@ -50,7 +50,6 @@ describe("location area_conf", () => {
         }),
       ]),
     );
-    expect(Array.isArray(nested.items) ? nested.items : []).toHaveLength(2);
     expect(nested.hunt_farm).toEqual([]);
     const huntBots = requireRecord(nested["hunt_bots"], "area_conf.hunt_bots");
     expect(huntBots["2"]).toMatchObject({

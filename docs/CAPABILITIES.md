@@ -206,10 +206,25 @@ waiter-handoff без сброса HP. CEF экрана результата, F5
 
 Не перенесены: hunt join team 2 / PvP intervene.
 
-## Quests и NPC 1–8 — не перенесено
+## Quests и NPC — частично
 
-Board, dialogs, book, goals, scripts, AREA waiting, quest fights, rewards,
-markers и curated chain пока существуют только в legacy corpus.
+Есть raw-AMF и PostgreSQL: NPC 271 (Голова мертвеца), три синтетических
+квеста (`q_engine_board` / `q_engine_fight` / `q_engine_area`). USE 584
+открывает доску без consume (`npc|info` + `npc|quests`). `npc|answer`
+двигает курсор; dialog `START_FIGHT` `mode:"quest"` vs Грызль (bot 2).
+Цели talk/kill/loot/buy/equip/deliver/area_action; скрипты `GRANT_*` / `MSG` /
+`SET_FLAG` / waiting AREA. `book|quest_list` / `quest_targets` /
+`quest_counters` только `currentGoal`. AREA `common|waiting` →
+`action_finish` с leftover `START_FIGHT` и piggyback `fight|conf`. Hunt
+loot-cap через quests-port `needed`. `area_conf` offer href только
+NPC-доска / AREA hotspot. Cursor, goals, facts, waiting и done переживают
+reconnect/restart. CEF доски NPC 271, buy/equip 23, dialog-боя, AREA
+waiting на 503, quest-fight на `action_finish` и loot-cap не прогонялся —
+[CEF_MANUAL.md](migration/CEF_MANUAL.md).
+
+Не перенесены куратский Акрилон, полный NPC corpus, daily (`DAY-01`),
+`quest_delete`, `OPEN_STORE`, `JUMP_AREA`, ambush `chance`, QL-2, roster
+`flags:"8"` / bot↔bot / deny leave, ложь `mergeFinishedQuestsForMapMarkers`.
 
 ## Mail — частично
 

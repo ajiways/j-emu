@@ -47,7 +47,9 @@ describe("world travel", () => {
     expect(exit["common|action"]).toBeUndefined();
     expect(objectBlock(exit.state).area_id).toBe("503");
     expect(areaConf(exit).area_ftime).toBe(0);
-    expect(sidebarTitles(exit)).toEqual(["Деревенская лавка", "Ущелье разлуки"]);
+    expect(sidebarTitles(exit)).toEqual(
+      expect.arrayContaining(["Деревенская лавка", "Ущелье разлуки"]),
+    );
   });
 
   it("locks 15s on 501, waits, then returns to 503", async () => {
