@@ -12,6 +12,15 @@ import type { ProfessionDefinition } from "../domain/profession-definition.ts";
 import type { Catalog } from "../ports/catalog.ts";
 import { loadReputationTrack, loadReputationTracks } from "./postgres-catalog-reputation.ts";
 import { loadProfession, loadProfessions } from "./postgres-catalog-profession.ts";
+import {
+  loadAssistantType,
+  loadAssistantTypes,
+  loadFarmResource,
+  loadAreaFarms,
+} from "./postgres-catalog-farm.ts";
+import type { AssistantTypeDefinition } from "../domain/assistant-type-definition.ts";
+import type { AreaFarmDefinition } from "../domain/area-farm-definition.ts";
+import type { FarmResourceDefinition } from "../domain/farm-resource-definition.ts";
 import { loadStoreLots, loadStoreTypes } from "./postgres-catalog-store.ts";
 import { artifactDefinitionFromRow } from "./artifact-definition-from-row.ts";
 import { loadBonus, loadUseScript } from "./postgres-catalog-use.ts";
@@ -235,6 +244,22 @@ export class PostgresCatalog implements Catalog {
 
   async professions(): Promise<readonly ProfessionDefinition[]> {
     return loadProfessions(this.database, await this.revision.requireId());
+  }
+
+  async assistantType(id: number): Promise<AssistantTypeDefinition | null> {
+    return loadAssistantType(this.database, await this.revision.requireId(), id);
+  }
+
+  async assistantTypes(): Promise<readonly AssistantTypeDefinition[]> {
+    return loadAssistantTypes(this.database, await this.revision.requireId());
+  }
+
+  async farmResource(id: number): Promise<FarmResourceDefinition | null> {
+    return loadFarmResource(this.database, await this.revision.requireId(), id);
+  }
+
+  async areaFarms(areaId: string): Promise<readonly AreaFarmDefinition[]> {
+    return loadAreaFarms(this.database, await this.revision.requireId(), areaId);
   }
 
   private async requireGameWide(

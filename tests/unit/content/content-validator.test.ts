@@ -244,6 +244,15 @@ describe("ContentValidator", () => {
     ).toThrow(/profession 2 is required/);
   });
 
+  it("rejects a bundle without assistant 3", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        assistantTypes: playable.assistantTypes.filter((row) => row.id !== 3),
+      }),
+    ).toThrow(/assistant type 3 is required/);
+  });
+
   it("rejects a bundle without exactly one playable battleground", () => {
     expect(() =>
       new ContentValidator().validate({

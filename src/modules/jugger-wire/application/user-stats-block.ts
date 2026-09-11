@@ -24,6 +24,7 @@ export async function buildUserStatsBlock(
   hero: Readonly<{ exp: number; honor: number }>,
   reputations: readonly HeroReputationRow[],
   catalog: ReputationCatalog,
+  farmStats: readonly unknown[],
 ): Promise<UserStatsBlock> {
   const tracks = await catalog.reputationTracks();
   const byId = new Map(tracks.map((track) => [track.objectId, track]));
@@ -59,7 +60,7 @@ export async function buildUserStatsBlock(
       namedStat("Суммарная репутация", total, 36, 3, ""),
       namedStat("Убито врагов за день", 0, 49, 1, ""),
     ],
-    farm_stats: [],
+    farm_stats: farmStats,
     fish_stats: [],
   };
 }

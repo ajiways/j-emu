@@ -31,6 +31,8 @@ import { PartyModule } from "../../../src/modules/party/party-module.ts";
 import { InstanceModule } from "../../../src/modules/instance/instance-module.ts";
 import type { AuctionService } from "../../../src/modules/auction/application/auction-service.ts";
 import { MailModule } from "../../../src/modules/mail/mail-module.ts";
+import { ProfessionsModule } from "../../../src/modules/professions/professions-module.ts";
+import type { ProfessionsService } from "../../../src/modules/professions/application/professions-service.ts";
 import type { MailService } from "../../../src/modules/mail/application/mail-service.ts";
 import type { PartyJoinService } from "../../../src/modules/party/application/party-join-service.ts";
 import type { PartyService } from "../../../src/modules/party/application/party-service.ts";
@@ -304,6 +306,31 @@ describe("module factories", () => {
     ).toThrow(/Mail module requires hero lookup/);
   });
 
+  it("fails fast when required professions dependencies are missing", () => {
+    expect(() =>
+      ProfessionsModule.create({
+        database,
+        catalog: {} as Catalog,
+        characters: {} as CharacterService,
+        inventory: {} as InventoryService,
+        world: {} as WorldService,
+        clock,
+        random: { unit: () => 0 },
+      }),
+    ).toThrow(/Professions module requires a database/);
+    expect(() =>
+      ProfessionsModule.create({
+        database: {} as PostgresDatabase,
+        catalog: {} as Catalog,
+        characters: {} as CharacterService,
+        inventory: {} as InventoryService,
+        world: {} as WorldService,
+        clock,
+        random: undefined as never,
+      }),
+    ).toThrow(/Professions module requires a random source/);
+  });
+
   it("fails fast when required auction dependencies are missing", () => {
     expect(() => AuctionModule.create({ database, clock })).toThrow(
       /Auction module requires a database/,
@@ -409,6 +436,7 @@ describe("module factories", () => {
         },
         database: {} as PostgresDatabase,
         delay: combatDelay,
+        professions: {} as ProfessionsService,
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -603,6 +631,7 @@ describe("module factories", () => {
         },
         database: {} as PostgresDatabase,
         delay: combatDelay,
+        professions: {} as ProfessionsService,
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

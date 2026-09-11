@@ -10,9 +10,14 @@ import type {
 import type { DungeonDocument } from "./content-dungeon.ts";
 import type { BattlegroundDocument } from "./content-battleground.ts";
 import type { ProfessionDocument } from "./content-profession.ts";
+import type {
+  AreaFarmDocument,
+  AssistantTypeDocument,
+  FarmResourceDocument,
+} from "./content-farm.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v24";
-export const CONTENT_VALIDATOR_VERSION = "24";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v25";
+export const CONTENT_VALIDATOR_VERSION = "25";
 
 type ArtifactSkillDocument = Readonly<{
   id: string;
@@ -307,6 +312,9 @@ type PlayableSliceDocuments = {
   storeLots: readonly StoreLotDocument[];
   reputationTracks: readonly ReputationTrackDocument[];
   professions: readonly ProfessionDocument[];
+  assistantTypes: readonly AssistantTypeDocument[];
+  farmResources: readonly FarmResourceDocument[];
+  areaFarms: readonly AreaFarmDocument[];
   bonuses: readonly BonusDocument[];
   useScripts: readonly UseScriptDocument[];
   skills: readonly SkillDocument[];
@@ -333,6 +341,9 @@ export type ContentEntry = Readonly<{
     | "store_lot"
     | "reputation_track"
     | "profession"
+    | "assistant_type"
+    | "farm_resource"
+    | "area_farm"
     | "bonus"
     | "use_script"
     | "skill"
@@ -356,6 +367,9 @@ export type ContentEntry = Readonly<{
     | StoreLotDocument
     | ReputationTrackDocument
     | ProfessionDocument
+    | AssistantTypeDocument
+    | FarmResourceDocument
+    | AreaFarmDocument
     | BonusDocument
     | UseScriptDocument
     | SkillDocument

@@ -2,6 +2,7 @@ import type { PostgresDatabase } from "../../../infrastructure/postgres/database
 import { PostgresCatalogProjection } from "../../catalog/infrastructure/postgres-catalog-projection.ts";
 import { PostgresCatalogCompatibility } from "../../catalog/infrastructure/postgres-catalog-compatibility.ts";
 import { PostgresWorldProjection } from "../../world/infrastructure/postgres-world-projection.ts";
+import { PostgresFarmStockProjection } from "../../professions/infrastructure/postgres-farm-stock-projection.ts";
 import { ContentPublicationService } from "../application/content-publication-service.ts";
 import { ContentActivationCompatibility } from "../application/content-activation-compatibility.ts";
 import { ContentValidator } from "../application/content-validator.ts";
@@ -18,5 +19,6 @@ export function createPostgresContentPublication(
     new PostgresWorldProjection(database),
     new ContentValidator(),
     new ContentActivationCompatibility(),
+    new PostgresFarmStockProjection(database),
   );
 }

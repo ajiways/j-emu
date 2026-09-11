@@ -101,6 +101,14 @@ export class OaCommandRegistry {
     "party|drop",
     "common|object:FIGHT_JOIN",
     "common|object:FIGHT_HELP",
+    "assistant|info",
+    "assistant|farm_info",
+    "assistant|work",
+    "assistant|repeat",
+    "assistant|revoke",
+    "assistant|save",
+    "assistant|create",
+    "assistant|upgrade",
   ] as const;
 
   private readonly commands: ReadonlyMap<string, OaCommand>;

@@ -39,6 +39,16 @@ import {
 } from "../../../src/modules/catalog/infrastructure/schema-battlegrounds.ts";
 import { professions } from "../../../src/modules/catalog/infrastructure/schema-professions.ts";
 import {
+  areaFarms,
+  assistantTypes,
+  farmResources,
+} from "../../../src/modules/catalog/infrastructure/schema-farms.ts";
+import {
+  farmStocks,
+  heroAssistants,
+  heroFarmStats,
+} from "../../../src/modules/professions/infrastructure/schema.ts";
+import {
   finishedMatches,
   finishedPlayers,
 } from "../../../src/modules/battleground/infrastructure/schema.ts";
@@ -96,7 +106,7 @@ describe("Drizzle migrations", () => {
   it("creates only the live module schemas and tables", async () => {
     const schemas = await names(
       sql`SELECT schema_name AS name FROM information_schema.schemata
-          WHERE schema_name IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','battleground','quests','social','economy')`,
+          WHERE schema_name IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','battleground','professions','quests','social','economy')`,
     );
     expect(schemas.sort()).toEqual([
       "auction",
@@ -110,13 +120,14 @@ describe("Drizzle migrations", () => {
       "inventory",
       "mail",
       "party",
+      "professions",
       "world",
     ]);
 
     const tables = await names(
       sql`SELECT table_schema || '.' || table_name AS name
           FROM information_schema.tables
-          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','battleground')
+          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','battleground','professions')
             AND table_type = 'BASE TABLE'`,
     );
     expect(tables.sort()).toEqual(
@@ -125,7 +136,9 @@ describe("Drizzle migrations", () => {
         "battleground.finished_matches",
         "battleground.finished_players",
         "catalog.appearance_presets",
+        "catalog.area_farms",
         "catalog.artifacts",
+        "catalog.assistant_types",
         "catalog.bonuses",
         "catalog.bot_loot_entries",
         "catalog.bot_spell_book_spells",
@@ -137,6 +150,7 @@ describe("Drizzle migrations", () => {
         "catalog.dungeon_spawn_zones",
         "catalog.dungeon_spawns",
         "catalog.dungeons",
+        "catalog.farm_resources",
         "catalog.battlegrounds",
         "catalog.battleground_rooms",
         "catalog.battleground_leader_groups",
@@ -176,6 +190,9 @@ describe("Drizzle migrations", () => {
         "party.party_bag_items",
         "party.party_invites",
         "party.party_members",
+        "professions.farm_stocks",
+        "professions.hero_assistants",
+        "professions.hero_farm_stats",
         "world.area_links",
         "world.areas",
         "world.hunt_spawns",
@@ -210,6 +227,9 @@ describe("Drizzle migrations", () => {
       storeLots,
       reputationTracks,
       professions,
+      assistantTypes,
+      farmResources,
+      areaFarms,
       bonuses,
       useScripts,
       areas,
@@ -237,13 +257,16 @@ describe("Drizzle migrations", () => {
       finishedMatches,
       finishedPlayers,
       finishedFights,
+      heroAssistants,
+      heroFarmStats,
+      farmStocks,
       drafts,
       draftVersions,
       releases,
       releaseEntries,
       activeRelease,
       bootstrapImports,
-    ]).toHaveLength(58);
+    ]).toHaveLength(64);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -269,6 +292,7 @@ describe("Drizzle migrations", () => {
       "0016_battleground_history_and_copy_type.sql",
       "0017_character_hero_bot_kills.sql",
       "0018_profession_catalog_and_hero_licenses.sql",
+      "0019_professions_assistants_and_farms.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -293,8 +317,9 @@ describe("Drizzle migrations", () => {
       "0016_battleground_history_and_copy_type",
       "0017_character_hero_bot_kills",
       "0018_profession_catalog_and_hero_licenses",
+      "0019_professions_assistants_and_farms",
     ]);
-    expect(await appliedCount()).toBe(19);
+    expect(await appliedCount()).toBe(20);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -345,6 +370,9 @@ describe("Drizzle migrations", () => {
     expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/use_script/);
     expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/dungeon/);
     expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/profession/);
+    expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/assistant_type/);
+    expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/farm_resource/);
+    expect([...draftTypes].map((row) => row.check_clause).join(" ")).toMatch(/area_farm/);
     const tempeffectCheck = await database.session().execute<{ check_clause: string }>(
       sql`SELECT check_clause
           FROM information_schema.check_constraints

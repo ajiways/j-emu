@@ -359,6 +359,10 @@ function fakeCatalog(): Catalog {
     reputationTracks: async () => [],
     profession: async () => null,
     professions: async () => [],
+    assistantType: async () => null,
+    assistantTypes: async () => [],
+    farmResource: async () => null,
+    areaFarms: async () => [],
     bonus: async () => null,
     useScript: async () => null,
   };

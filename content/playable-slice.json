@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v24",
+  "schemaVersion": "playable-slice/v25",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -1320,6 +1320,66 @@
           "title": "Разговор"
         }
       },
+      "extra": {}
+    },
+    {
+      "id": 1720,
+      "title": "Хрусталь",
+      "picture": "res_starat_hrustal1.png",
+      "typeId": "96",
+      "kindId": 36,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 7,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 80,
+      "flags": 0,
+      "bagStack": 9999,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [],
+      "artifact_actions": {},
+      "extra": {}
+    },
+    {
+      "id": 1721,
+      "title": "Гранат",
+      "picture": "res_starat_granat1.png",
+      "typeId": "96",
+      "kindId": 36,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 9,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 25,
+      "flags": 0,
+      "bagStack": 9999,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [],
+      "artifact_actions": {},
+      "extra": {}
+    },
+    {
+      "id": 1722,
+      "title": "Халцедон",
+      "picture": "res_starat_halcedon1.png",
+      "typeId": "96",
+      "kindId": 36,
+      "slotMask": 0,
+      "weight": 0,
+      "levelMin": 11,
+      "levelMax": 0,
+      "gender": 0,
+      "priceMinor": 25,
+      "flags": 0,
+      "bagStack": 9999,
+      "durability": 0,
+      "durabilityMax": 0,
+      "skills": [],
+      "artifact_actions": {},
       "extra": {}
     }
   ],
@@ -4032,6 +4092,66 @@
       "rules": "",
       "roomPos": [],
       "leaderGroups": []
+    }
+  ],
+  "assistantTypes": [
+    {
+      "id": 3,
+      "title": "Имуро-Юи",
+      "description": "",
+      "profession": 2,
+      "level": 1,
+      "quality": 0,
+      "nextArtikulId": 13,
+      "skillSum": 4,
+      "price": 10,
+      "priceType": 1,
+      "picture": "gremlin_star_grey_1.png",
+      "restrictionsXml": "",
+      "voodooEnergy": 0
+    },
+    {
+      "id": 13,
+      "title": "Имуро-Юи",
+      "description": "",
+      "profession": 2,
+      "level": 2,
+      "quality": 0,
+      "nextArtikulId": 0,
+      "skillSum": 6,
+      "price": 10,
+      "priceType": 1,
+      "picture": "gremlin_star_green_1.png",
+      "restrictionsXml": "<requirement type=\"artifact\" id=\"1720\" value=\"180\"/><requirement type=\"artifact\" id=\"1721\" value=\"170\"/><requirement type=\"artifact\" id=\"1722\" value=\"170\"/>",
+      "voodooEnergy": 0
+    }
+  ],
+  "farmResources": [
+    {
+      "id": 4,
+      "title": "Хрусталь",
+      "typeId": 2,
+      "picture": "res_starat_hrustal1.png",
+      "swf": "",
+      "quality": 0,
+      "profession": 2,
+      "artifactArtikulId": 1720,
+      "masteryValue": 0,
+      "masteryMax": 60,
+      "farmTime": 60,
+      "staminaDrain": 4
+    }
+  ],
+  "areaFarms": [
+    {
+      "areaId": "500",
+      "huntSpotId": 15,
+      "farmId": 4,
+      "tactics": 0,
+      "assistantMax": 37,
+      "cntMax": 1600,
+      "cntCurrent": 1396,
+      "cntCooldown": 1800
     }
   ]
 }

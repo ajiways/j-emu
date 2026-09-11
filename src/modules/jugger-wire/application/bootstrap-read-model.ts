@@ -9,7 +9,7 @@ import type { WorldService } from "../../world/domain/world-service.ts";
 import type { CombatPort } from "../../combat/ports/combat-port.ts";
 import type { CommonConfBlock } from "../../content/domain/bootstrap-content.ts";
 import { emptyBookTrio } from "./book-quest-blocks.ts";
-import { overlayCaptureAreaId, overlayChromeAreaId } from "./chrome-area-overlay.ts";
+import { overlayCaptureAreaId } from "./chrome-area-overlay.ts";
 import { withHttpsFproxy } from "./personal-details-wire.ts";
 import { artifactSkillWireMap } from "./artifact-skill-wire.ts";
 import { artifactInstanceOverlay } from "./artifact-instance-overlay.ts";
@@ -41,6 +41,7 @@ import type { PartyMembershipQuery } from "../../party/ports/party-membership-qu
 import type { FightWireMapper } from "./fight-wire-mapper.ts";
 import type { PartySnapshot } from "./party-snapshot.ts";
 import type { InstanceHuntWorld } from "../../instance/ports/instance-hunt.ts";
+import type { ProfessionsService } from "../../professions/application/professions-service.ts";
 
 export type { HuntBlock, UserUnitframeBlock, HeroStateBlock };
 
@@ -58,6 +59,7 @@ export class BootstrapReadModel {
     private readonly party: PartyMembershipQuery,
     private readonly partySnapshot: PartySnapshot,
     private readonly instanceHunt: InstanceHuntWorld,
+    private readonly professions: ProfessionsService,
     private readonly policy: Readonly<{
       bagCapacity: number;
       pocketCapacity: number;
@@ -319,11 +321,7 @@ export class BootstrapReadModel {
       "arena|great_fights": chrome.block("arena|great_fights"),
       "user|skills": skillsExpireBlock(),
       "user|time_to_next_achievement": chrome.block("user|time_to_next_achievement"),
-      "assistant|farm_info": overlayChromeAreaId(
-        chrome.block("assistant|farm_info"),
-        hero.areaId,
-        "assistant|farm_info",
-      ),
+      "assistant|farm_info": await this.professions.farmInfo(hero.areaId),
       "common|area_conf": location.areaConf,
       "common|hunt": location.hunt,
       "bank|info": chrome.block("bank|info"),

@@ -50,8 +50,9 @@ area presence roster:
   500). POST-04 / HERO-01 leftover.
 - Репутация Радвея **5** есть (REP-01, product частично).
   `quests`, `economy` в runtime нет. PRF-01: `catalog.professions` и
-  `hero_professions` (пара 2+6). PRF-02 checkpoint: модуль `professions`
-  владеет jobs/assistants/sweep; coding next. Craft — leftover.
+  `hero_professions` (пара 2+6). PRF-02: модуль `professions` владеет
+  `hero_assistants` / `hero_farm_stats` / `farm_stocks` и sweep. Craft —
+  leftover.
 
 Во всех разделах ниже **API**, **события** и **шов извлечения** описывают
 целевую границу. Они не доказывают регистрацию команды, наличие таблиц или
@@ -255,15 +256,14 @@ Loot routing и HELP — composition ports, combat party-таблицы не и�
 
 **Шов извлечения:** settlement — saga с inventory reservations и идемпотентными ключами. Аналитика рынка строит проекцию событий, не расширяет transactional schema.
 
-### `professions` — PRF-01 licenses; PRF-02 jobs checkpoint
+### `professions` — PRF-01 licenses; PRF-02 jobs
 
 **Владеет (PRF-01):** нет runtime jobs. Catalog владеет `catalog.professions`;
 character владеет `hero_professions` и `learnProfession`.
 
-**Владеет (PRF-02, coding next):** `hero_assistants`, `hero_farm_stats`,
-`farm_stocks`, DelayScheduler finish. Catalog: `assistant_types`,
-`farm_resources`, `area_farms`. Контракт:
-[PROFESSIONS.md](../modules/PROFESSIONS.md).
+**Владеет (PRF-02):** `hero_assistants`, `hero_farm_stats`, `farm_stocks`,
+DelayScheduler finish. Catalog: `assistant_types`, `farm_resources`,
+`area_farms`. Контракт: [PROFESSIONS.md](../modules/PROFESSIONS.md).
 
 **API leftover:** `craft`.
 

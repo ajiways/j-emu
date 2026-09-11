@@ -12,6 +12,7 @@ import { ContentValidationError } from "./content-validation-error.ts";
 import { collectStoreIssues } from "./collect-store-issues.ts";
 import { collectReputationIssues } from "./collect-reputation-issues.ts";
 import { collectProfessionIssues, overlayProfessionInfo } from "./collect-profession-issues.ts";
+import { collectFarmIssues } from "./collect-farm-issues.ts";
 import { collectSetIssues } from "./collect-set-issues.ts";
 import { collectUpgradeIssues } from "./collect-upgrade-issues.ts";
 import { collectUseIssues } from "./collect-use-issues.ts";
@@ -165,6 +166,7 @@ export class ContentValidator {
     issues.push(...collectStoreIssues(bundle));
     issues.push(...collectReputationIssues(bundle));
     issues.push(...collectProfessionIssues(bundle));
+    issues.push(...collectFarmIssues(bundle));
     issues.push(...collectUpgradeIssues(bundle));
     issues.push(...collectSetIssues(bundle));
     issues.push(...collectUseIssues(bundle));
@@ -209,6 +211,15 @@ export class ContentValidator {
         entry("reputation_track", String(document.objectId), document),
       ),
       ...bundle.professions.map((document) => entry("profession", String(document.id), document)),
+      ...bundle.assistantTypes.map((document) =>
+        entry("assistant_type", String(document.id), document),
+      ),
+      ...bundle.farmResources.map((document) =>
+        entry("farm_resource", String(document.id), document),
+      ),
+      ...bundle.areaFarms.map((document) =>
+        entry("area_farm", `${document.areaId}:${document.huntSpotId}`, document),
+      ),
       ...bundle.bonuses.map((document) => entry("bonus", String(document.id), document)),
       ...bundle.useScripts.map((document) =>
         entry("use_script", String(document.bonusId), document),
@@ -249,6 +260,9 @@ export class ContentValidator {
       storeLots: bundle.storeLots,
       reputationTracks: bundle.reputationTracks,
       professions: bundle.professions,
+      assistantTypes: bundle.assistantTypes,
+      farmResources: bundle.farmResources,
+      areaFarms: bundle.areaFarms,
       bonuses: bundle.bonuses,
       useScripts: bundle.useScripts,
       skills: bundle.skills,

@@ -10,6 +10,7 @@ export default defineConfig({
     "./src/modules/catalog/infrastructure/schema-dungeons.ts",
     "./src/modules/catalog/infrastructure/schema-battlegrounds.ts",
     "./src/modules/catalog/infrastructure/schema-professions.ts",
+    "./src/modules/catalog/infrastructure/schema-farms.ts",
     "./src/modules/world/infrastructure/schema.ts",
     "./src/modules/battleground/infrastructure/schema.ts",
     "./src/modules/character/infrastructure/schema.ts",
@@ -19,6 +20,7 @@ export default defineConfig({
     "./src/modules/auction/infrastructure/schema.ts",
     "./src/modules/party/infrastructure/schema.ts",
     "./src/modules/instance/infrastructure/schema.ts",
+    "./src/modules/professions/infrastructure/schema.ts",
   ],
   out: "./drizzle",
 });

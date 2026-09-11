@@ -56,6 +56,7 @@ import type { DelayScheduler } from "../../shared/kernel/delay-scheduler.ts";
 import { createBattlegroundOps } from "../../app/battleground-ops.ts";
 import type { BattlegroundDesk } from "../../app/battleground-desk.ts";
 import { BookDesk } from "../../app/book-desk.ts";
+import type { ProfessionsService } from "../professions/application/professions-service.ts";
 
 export type JuggerWireBootstrapPolicy = Readonly<{
   bagCapacity: number;
@@ -134,6 +135,7 @@ export class JuggerWireModule {
     bestiary: HeroBestiary;
     database: PostgresDatabase;
     delay: DelayScheduler;
+    professions: ProfessionsService;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -249,6 +251,10 @@ export class JuggerWireModule {
     const bestiary = requirePresent(input.bestiary, "Jugger-wire module requires bestiary");
     const database = requirePresent(input.database, "Jugger-wire module requires database");
     const delay = requirePresent(input.delay, "Jugger-wire module requires delay");
+    const professions = requirePresent(
+      input.professions,
+      "Jugger-wire module requires professions",
+    );
     try {
       const fightWire = new FightWireMapper(
         {
@@ -271,6 +277,7 @@ export class JuggerWireModule {
         party,
         partySnapshot,
         instanceHunt,
+        professions,
         bootstrapPolicy,
       );
       const battleground = await createBattlegroundOps({
@@ -342,6 +349,7 @@ export class JuggerWireModule {
         dungeonHunt,
         battleground,
         book,
+        professions,
       );
       const esrvPoll = new EsrvPollAssembler(
         characters,

@@ -22,7 +22,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и pre-baseline миграции `drizzle/0000_foundation_init.sql` плюс последующие
-`drizzle/0001`…`0016`. Поля ниже совпадают с runtime.
+`drizzle/0001`…`0019`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -62,7 +62,8 @@ naked skills — отдельными строками `hero_skills`. `hp_time` 
 старых строк, runtime пишет явные значения. Репутация Радвея **5** — runtime
 REP-01 (`hero_reputations` + derived SUM 36 на чтении). BOOK-01:
 `hero_bot_kills(hero_id, bot_id, win_cnt)` PK, `win_cnt > 0`, bot_id = catalog
-artikul; инкремент в hunt finish UoW.
+artikul; инкремент в hunt finish UoW. PRF-01:
+`hero_professions(hero_id, profession_id, value)` PK, `value >= 1`.
 
 ### `inventory`
 
@@ -133,6 +134,15 @@ pay jsonb, requires jsonb)` PK `(release_id, area_id, lot_id)`; FK на
 - `professions(release_id, id, title, type, skill_id, picture, position,
 skill_step_override, skill_minlvl_override, description, info_url,
 user_stat_id)` PK `(release_id, id)`; type 1 or 2; id 1…16; slice ids 2 and 6.
+- `assistant_types(release_id, id, title, description, profession, level,
+quality, next_artikul_id, skill_sum, price, price_type, picture,
+restrictions_xml, voodoo_energy)` PK `(release_id, id)`; slice **3** and **13**.
+- `farm_resources(release_id, id, title, type_id, picture, swf, quality,
+profession, artifact_artikul_id, mastery_value, mastery_max, farm_time,
+stamina_drain)` PK `(release_id, id)`; slice **4** → artifact **1720**.
+- `area_farms(release_id, area_id, hunt_spot_id, farm_id, tactics,
+assistant_max, cnt_max, cnt_cooldown)` PK `(release_id, area_id, hunt_spot_id)`;
+  slice area **500** hunt_spot **15**.
 - `bonuses(release_id, id, kind, skill_id, delta, need_value, artikul_id, title, chat_msg)`
   PK `(release_id, id)`; kind `'skill'`; FK на `skill_definitions` и
   `artifacts`. Slice: **601** AGRILKA_MOBOV.
@@ -213,7 +223,7 @@ finish/read request path. Полный контракт:
 
 - `drafts(id, content_type, content_key)` UNIQUE `(content_type, content_key)`;
   `content_type` ∈ `artifact|bot|area|area_link|hunt_spawn|store_type|store_lot|
-reputation_track|bonus|use_script|skill|level|appearance|hud_defaults|chrome|
+reputation_track|profession|assistant_type|farm_resource|area_farm|bonus|use_script|skill|level|appearance|hud_defaults|chrome|
 common_conf|welcome_message|dungeon|battleground`.
 - `draft_versions(id, draft_id, version, schema_version, document jsonb, created_at)`.
 - `releases(id, version UNIQUE nextval, checksum UNIQUE, schema_version, validator_version, created_at, activated_at)`.
@@ -268,6 +278,18 @@ created_at timestamptz)`.
 parties ON DELETE RESTRICT, artikul_id > 0, cnt >= 1, remove_time unix >= 0)`.
   `artikul_id` — catalog id, не `items.id`. TTL 3h, purge на access.
 
+### `professions`
+
+- `hero_assistants(id integer GENERATED ALWAYS AS IDENTITY START 1, hero_id FK
+heroes RESTRICT, artikul_id, nick, skills, tactics, farm_id, area_id, ftime,
+stime, attack_at, stamina, stamina_reset_time, mastery_value, result_*, flags,
+cycle_result, loot_granted)`. FREE sentinels `farm_id=0`, `ftime=0`,
+  `area_id="0"`.
+- `hero_farm_stats(hero_id, farm_id, value)` PK; `value > 0`.
+- `farm_stocks(area_id, hunt_spot_id, farm_id, cnt_current, last_respawn_time,
+next_respawn_time)` PK `(area_id, hunt_spot_id)`. Publish `ON CONFLICT DO
+NOTHING`.
+
 ## План (не в runtime)
 
 Таблицы ниже не созданы и не являются baseline. Их нельзя добавлять «на будущее»
@@ -294,6 +316,7 @@ level_curves — отдельные таблицы поверх текущих `
 `store_types` / `store_lots` — runtime ECO-01/ECO-02 (`pay` / `requires`).
 `reputation_tracks` — runtime REP-01 (только object_id 5).
 `professions` — runtime PRF-01 (ids 2 and 6).
+`assistant_types` / `farm_resources` / `area_farms` — runtime PRF-02.
 
 ### `world`
 
@@ -318,7 +341,7 @@ DNG-01/DNG-02: `instance.copies` / `binds` / `killed_spawns` (строки, не
 JSONB `killed_spawns_json`). `copies.copy_type` `dungeon|bg`.
 `heroes.instance_copy_id` nullable без FK.
 PRF-01: `catalog.professions` pair 2+6; `character.hero_professions`.
-PRF-02 checkpoint: `catalog.assistant_types` / `farm_resources` / `area_farms`;
+PRF-02: `catalog.assistant_types` / `farm_resources` / `area_farms`;
 `professions.hero_assistants` / `hero_farm_stats` / `farm_stocks`.
 Контракт: [PROFESSIONS.md](../modules/PROFESSIONS.md).
 Контракт: [INSTANCE.md](../modules/INSTANCE.md), книга —

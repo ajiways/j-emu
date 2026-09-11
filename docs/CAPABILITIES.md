@@ -325,11 +325,12 @@ kill/duel/fatality/daily, type:2 только при value > 0, всегда SUM
 
 Есть raw-AMF и PostgreSQL: каталог Старатель **2** + Знаковед **6**,
 `learnProfession` value 1, `user|professions` 16 слотов и кап с 7 ур. (59),
-`common|conf.profession_info` только эти id. Reconnect/restart читает
-Postgres. CEF вкладки профессий не прогонялся; квестового GRANT нет.
+`common|conf.profession_info` только эти id; ассистент **3** (create 10
+золота), farm **4** на area **500**, sweeper finish, loot **1720**,
+repeat/revoke, upgrade **3→13**. Reconnect/restart читает Postgres. CEF
+вкладки профессий и гремлинов не прогонялся; квестового GRANT нет.
 
-Не перенесены ассистенты/ферма, рецепты/крафт, ids 1/3/4/5/7–16, смена
-лицензии.
+Не перенесены рецепты/крафт, ids 1/3/4/5/7–16, смена лицензии.
 
 ## Вне первой волны
 

@@ -72,7 +72,6 @@ import { TradeSessionDeclineCommand } from "../commands/oa/trade-session-decline
 import { TradeSessionConfirmCommand } from "../commands/oa/trade-session-confirm-command.ts";
 import { TradeDeclineCommand } from "../commands/oa/trade-decline-command.ts";
 import { FightJoinCommand } from "../commands/oa/fight-join-command.ts";
-import { PartyOaCommand, PARTY_OA_KEYS } from "../commands/oa/party-oa-command.ts";
 import { PostSendCommand } from "../commands/oa/post-send-command.ts";
 import { PostSendCodCommand } from "../commands/oa/post-send-cod-command.ts";
 import { PostPickCommand } from "../commands/oa/post-pick-command.ts";
@@ -111,9 +110,10 @@ import type { InstanceDesk } from "../../../app/instance-desk.ts";
 import type { DungeonHuntWorld } from "../../instance/application/dungeon-hunt-world.ts";
 import type { BattlegroundDesk } from "../../../app/battleground-desk.ts";
 import type { BookDesk } from "../../../app/book-desk.ts";
-import { ArenaOaCommand, ARENA_OA_KEYS } from "../commands/oa/arena-oa-command.ts";
-import { BookOaCommand, BOOK_OA_KEYS } from "../commands/oa/book-oa-command.ts";
 import { AttackNickCommand } from "../commands/oa/attack-nick-command.ts";
+import { AssistantDesk } from "../../../app/assistant-desk.ts";
+import { deskOaCommands } from "./desk-oa-commands.ts";
+import type { ProfessionsService } from "../../professions/application/professions-service.ts";
 
 export class JuggerCommandModule {
   readonly oa: OaCommandRegistry;
@@ -163,6 +163,7 @@ export class JuggerCommandModule {
     dungeonHunt: DungeonHuntWorld,
     battleground: BattlegroundDesk,
     book: BookDesk,
+    professions: ProfessionsService,
   ) {
     this.fightWire = fightWire;
     const invites = new FriendlyDuelInvites(clock);
@@ -220,7 +221,7 @@ export class JuggerCommandModule {
       new UserPersonalDetailsCommand(bootstrap),
       new UserSavePersonalDetailsCommand(characters, bootstrap),
       new UserSkillsCommand(bootstrap),
-      new UserStatsCommand(characters, catalog),
+      new UserStatsCommand(characters, catalog, professions),
       new UserProfessionsCommand(characters),
       new UserUnitframeCommand(unitOfWork, characters, bootstrap),
       new UserViewCommand(bootstrap),
@@ -382,9 +383,12 @@ export class JuggerCommandModule {
         fightWire,
         huntFanout,
       ),
-      ...PARTY_OA_KEYS.map((key) => new PartyOaCommand(key, partyDesk)),
-      ...ARENA_OA_KEYS.map((key) => new ArenaOaCommand(key, battleground)),
-      ...BOOK_OA_KEYS.map((key) => new BookOaCommand(key, book)),
+      ...deskOaCommands({
+        party: partyDesk,
+        battleground,
+        book,
+        assistants: new AssistantDesk(professions, characters),
+      }),
       new AttackNickCommand(battleground),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);

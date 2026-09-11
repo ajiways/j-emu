@@ -15,9 +15,8 @@ import { SystemClock } from "../shared/kernel/system-clock.ts";
 import { AccountKeyedActiveFightQuery } from "./account-keyed-active-fight-query.ts";
 import { Application } from "./application.ts";
 import type { AppConfig } from "./config.ts";
+import { createPlayableIdentity } from "./create-playable-identity.ts";
 import { loadGamePolicy } from "./game-policy.ts";
-import { PlayableAccountRegistration } from "./playable-account-registration.ts";
-import { PlayableDevelopmentIdentity } from "./playable-development-identity.ts";
 import { PresenceService } from "../modules/world/application/presence-service.ts";
 import { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.ts";
 import { LongPollCoordinator } from "../modules/jugger-wire/application/long-poll-coordinator.ts";
@@ -27,13 +26,11 @@ import { HuntLockRelease } from "./hunt-lock-release.ts";
 import { HuntFightSettlement } from "./hunt-fight-settlement.ts";
 import { StorePurchase } from "./store-purchase.ts";
 import { StoreRepair } from "./store-repair.ts";
-import { MailSend } from "./mail-send.ts";
-import { MailClaim } from "./mail-claim.ts";
-import { MailTtlSweep } from "./mail-ttl-sweep.ts";
 import { MailModule } from "../modules/mail/mail-module.ts";
 import { AuctionModule } from "../modules/auction/auction-module.ts";
-import { AuctionTtlSweep } from "./auction-ttl-sweep.ts";
 import { createAuctionOps } from "./auction-ops.ts";
+import { startTtlSweeps } from "./ttl-sweeps.ts";
+import { ProfessionsModule } from "../modules/professions/professions-module.ts";
 import { SystemRandomSource } from "../modules/combat/domain/system-random-source.ts";
 import { TradeDesk } from "./trade-desk.ts";
 import { ChatDesk } from "./chat-desk.ts";
@@ -48,10 +45,10 @@ import { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot
 import { buildUserBag } from "../modules/jugger-wire/application/user-bag-block.ts";
 import { InstanceModule } from "../modules/instance/instance-module.ts";
 import { InstanceDesk } from "./instance-desk.ts";
-import { InstanceTtlSweep } from "./instance-ttl-sweep.ts";
 import { InstanceHuntLockRelease } from "./instance-hunt-lock-release.ts";
 import { chainFightTerminal } from "./battleground-ops.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
+import type { FarmRng } from "../modules/professions/domain/farm-formulas.ts";
 
 export class CompositionRoot {
   async build(
@@ -64,6 +61,7 @@ export class CompositionRoot {
       partyRandom?: RandomSource;
       upgradeRandom?: RandomSource;
       wanderRandom?: RandomSource;
+      farmRandom?: FarmRng;
       combatRules?: Partial<BattleRules>;
       combatBotStrength?: number;
     }> = {},
@@ -130,6 +128,16 @@ export class CompositionRoot {
         ),
       });
       closers.push(characters);
+      const professions = ProfessionsModule.create({
+        database,
+        catalog: catalog.catalog,
+        characters: characters.service,
+        inventory: inventory.service,
+        world: world.service,
+        clock,
+        random: extras.farmRandom ?? new SystemRandomSource(),
+      });
+      closers.push(professions);
       const mail = MailModule.create({
         database,
         clock,
@@ -265,42 +273,30 @@ export class CompositionRoot {
           },
         ),
       );
-      const registration = new PlayableAccountRegistration(
-        identity.service,
-        characters.service,
-        inventory.service,
+      const { registration, developmentIdentity, mailSend, mailClaim } = createPlayableIdentity({
+        identity: identity.service,
+        characters: characters.service,
+        inventory: inventory.service,
         database,
         presenceFanout,
-      );
-      const developmentIdentity = new PlayableDevelopmentIdentity(
-        identity.service,
-        characters.service,
-        inventory.service,
-        database,
-        presenceFanout,
-      );
-      const mailSend = new MailSend(
-        database,
-        characters.service,
-        mail.service,
-        inventory.service,
-        catalog.catalog,
-      );
-      const mailClaim = new MailClaim(
-        database,
-        characters.service,
-        mail.service,
-        inventory.service,
-      );
-      const mailSweep = new MailTtlSweep(mail.service, delay, clock);
-      mailSweep.start();
-      closers.push(mailSweep);
-      const instanceSweep = new InstanceTtlSweep(instanceDesk, delay, clock);
-      instanceSweep.start();
-      closers.push(instanceSweep);
-      const auctionSweep = new AuctionTtlSweep(auctionOps.expiry, delay, clock);
-      auctionSweep.start();
-      closers.push(auctionSweep);
+        mail: mail.service,
+        catalog: catalog.catalog,
+      });
+      for (const sweep of startTtlSweeps({
+        mail: mail.service,
+        instanceDesk,
+        auctionExpiry: auctionOps.expiry,
+        professions: professions.service,
+        delay,
+        clock,
+        outbox,
+        wake: longPoll,
+        characters: characters.service,
+        inventory: inventory.service,
+        catalog: catalog.catalog,
+      })) {
+        closers.push(sweep);
+      }
       const trade = TradeModule.create();
       closers.push(trade);
       const tradeDesk = new TradeDesk({
@@ -366,6 +362,7 @@ export class CompositionRoot {
         bestiary: characters.bestiary,
         database,
         delay,
+        professions: professions.service,
       });
       closers.push(wire);
       combat.bindTerminalObserver(
@@ -380,6 +377,7 @@ export class CompositionRoot {
         characters.service,
         characters.service,
         characters.service,
+        inventory.service,
         async () => {
           await closeAll(closers);
         },

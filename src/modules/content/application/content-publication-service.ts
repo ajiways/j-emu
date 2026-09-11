@@ -10,6 +10,7 @@ import type {
 import type { ContentStore } from "../ports/content-store.ts";
 import type { ContentActivationCompatibility } from "./content-activation-compatibility.ts";
 import type { ContentValidator } from "./content-validator.ts";
+import type { FarmStockProjection } from "../../professions/ports/farm-stock-projection.ts";
 
 export class ContentPublicationService {
   constructor(
@@ -20,6 +21,7 @@ export class ContentPublicationService {
     private readonly world: WorldProjection,
     private readonly validator: ContentValidator,
     private readonly activation: ContentActivationCompatibility,
+    private readonly farmStocks: FarmStockProjection,
   ) {}
 
   async publish(bundle: ContentBundle): Promise<PublishedRelease> {
@@ -100,6 +102,12 @@ export class ContentPublicationService {
     await this.catalog.materializeProfessions(release.id, {
       professions: validated.professions,
     });
+    await this.catalog.materializeFarms(release.id, {
+      assistantTypes: validated.assistantTypes,
+      farmResources: validated.farmResources,
+      areaFarms: validated.areaFarms,
+    });
+    await this.farmStocks.materialize(validated.areaFarms);
     await this.store.activate(release.id);
     return release;
   }

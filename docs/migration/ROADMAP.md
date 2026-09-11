@@ -1048,7 +1048,7 @@
   [PROFESSIONS.md](../modules/PROFESSIONS.md).
 - **Acceptance:** deploy, finish, claim/repeat/revoke и upgrade переживают
   restart и атомарно дают inventory/mastery/stat изменения.
-- **Status:** `next`
+- **Status:** `done`
 
 ### PRF-03 — Crafting
 
@@ -1061,7 +1061,7 @@
   result grant и cooldown transaction.
 - **Acceptance:** craft и favorites дают один output/XP результат после
   authored cooldown и остаются consistent после retry/restart.
-- **Status:** `queued`
+- **Status:** `next`
 
 ## Wave 11 — quest engine (не куратский контент)
 

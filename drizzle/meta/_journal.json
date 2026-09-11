@@ -134,6 +134,13 @@
       "when": 1789082292402,
       "tag": "0018_profession_catalog_and_hero_licenses",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1789091378273,
+      "tag": "0019_professions_assistants_and_farms",
+      "breakpoints": true
     }
   ]
 }

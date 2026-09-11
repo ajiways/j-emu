@@ -14,7 +14,7 @@ const RADVEY: ReputationTrack = {
 
 describe("buildUserStatsBlock", () => {
   it("omits zero type:2 rows and always includes SUM 36", async () => {
-    const block = await buildUserStatsBlock({ exp: 1, honor: 0 }, [], fakeCatalog([RADVEY]));
+    const block = await buildUserStatsBlock({ exp: 1, honor: 0 }, [], fakeCatalog([RADVEY]), []);
     expect(block.status).toBe(100);
     expect(block.farm_stats).toEqual([]);
     expect(block.fish_stats).toEqual([]);
@@ -33,6 +33,7 @@ describe("buildUserStatsBlock", () => {
       { exp: 1, honor: 0 },
       [{ objectId: 5, value: 10 }],
       fakeCatalog([RADVEY]),
+      [],
     );
     expect(block.stats.map((row) => row.object_id)).toEqual([
       "1",
@@ -56,7 +57,7 @@ describe("buildUserStatsBlock", () => {
 
   it("returns 204 when a positive row has no published track", async () => {
     await expect(
-      buildUserStatsBlock({ exp: 1, honor: 0 }, [{ objectId: 5, value: 10 }], fakeCatalog([])),
+      buildUserStatsBlock({ exp: 1, honor: 0 }, [{ objectId: 5, value: 10 }], fakeCatalog([]), []),
     ).rejects.toBeInstanceOf(ProtocolError);
   });
 });

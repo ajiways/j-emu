@@ -3,8 +3,8 @@
 Runtime PRF-01: authored profession pair and hero licenses. Catalog owns
 definitions. Character owns `hero_professions` and `learnProfession`.
 
-Runtime PRF-02 (checkpoint; coding next): gathering assistants, farm jobs,
-DelayScheduler finish. Recipes / craft remain PRF-03 leftover.
+Runtime PRF-02: gathering assistants, farm jobs, DelayScheduler finish.
+Recipes / craft remain PRF-03 leftover.
 
 Product status: [CAPABILITIES.md](../CAPABILITIES.md).
 
@@ -42,7 +42,7 @@ ProfessionList only draws ids 2 and 6.
 
 ## Content set
 
-`playable-slice/v24`: dump pair Старатель **2** (type 2, gather) and
+`playable-slice/v25`: dump pair Старатель **2** (type 2, gather) and
 Знаковед **6** (type 1, craft). Remaining 1/3/4/5/7–16, fishing/cooking
 tabs, license NPC — DATA POST-02 / leftover.
 
@@ -54,7 +54,7 @@ info_url, user_stat_id)` PK `(release_id, id)`; type 1 or 2; id 1…16;
 - `character.hero_professions(hero_id, profession_id, value)` PK, FK
   heroes restrict; `value >= 1`; `profession_id` 1…16.
 
-PRF-02 tables (coding next): `catalog.assistant_types`, `farm_resources`,
+PRF-02 tables: `catalog.assistant_types`, `farm_resources`,
 `area_farms`; `professions.hero_assistants` (identity id), `hero_farm_stats`,
 `farm_stocks`. Runtime writes explicit FREE sentinels; no request-path
 SQL DEFAULT as business value.
@@ -138,7 +138,7 @@ PRF-01:
 - CEF вкладка профессий не обязательна без квеста Элии: workflow `done`,
   product **частично**.
 
-PRF-02 (plan until coding e2e is green):
+PRF-02:
 
 - create 3 for 10 gold; work farm 4 in area 500; sweeper finish; repeat loot
   1720; revoke; upgrade 3→13; persist restart; no OA lazy resolve.

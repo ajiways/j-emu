@@ -15,6 +15,7 @@ import type {
   CatalogDungeonMaterialization,
   CatalogMaterialization,
   CatalogProfessionMaterialization,
+  CatalogFarmMaterialization,
   CatalogProjection,
   CatalogReputationMaterialization,
   CatalogStoreMaterialization,
@@ -26,6 +27,11 @@ import { insertBotSpellBooks } from "./postgres-catalog-bot-spell-rows.ts";
 import { insertDungeons } from "./postgres-catalog-dungeon-rows.ts";
 import { insertBattlegrounds } from "./postgres-catalog-battleground-rows.ts";
 import { insertProfessions } from "./postgres-catalog-profession-rows.ts";
+import {
+  insertAssistantTypes,
+  insertFarmResources,
+  insertAreaFarms,
+} from "./postgres-catalog-farm-rows.ts";
 import {
   appearancePresets,
   artifacts,
@@ -93,6 +99,13 @@ export class PostgresCatalogProjection implements CatalogProjection {
     documents: CatalogProfessionMaterialization,
   ): Promise<void> {
     await insertProfessions(this.database.session(), releaseId, documents.professions);
+  }
+
+  async materializeFarms(releaseId: string, documents: CatalogFarmMaterialization): Promise<void> {
+    const session = this.database.session();
+    await insertAssistantTypes(session, releaseId, documents.assistantTypes);
+    await insertFarmResources(session, releaseId, documents.farmResources);
+    await insertAreaFarms(session, releaseId, documents.areaFarms);
   }
 }
 

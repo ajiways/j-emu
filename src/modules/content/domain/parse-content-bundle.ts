@@ -13,6 +13,11 @@ import {
 import { storeLotsSchema, storeTypesSchema } from "./parse-store-content.ts";
 import { reputationTracksSchema } from "./parse-reputation-content.ts";
 import { professionsSchema } from "./parse-profession-content.ts";
+import {
+  areaFarmsSchema,
+  assistantTypesSchema,
+  farmResourcesSchema,
+} from "./parse-farm-content.ts";
 import { dungeonsSchema } from "./parse-dungeon-content.ts";
 import { battlegroundsSchema } from "./parse-battleground-content.ts";
 import { bonusDocumentSchema, useScriptDocumentSchema } from "./parse-use-content.ts";
@@ -295,12 +300,7 @@ const areaLinkSchema = z
   })
   .strict();
 
-const huntPointSchema = z
-  .object({
-    x: z.number().finite(),
-    y: z.number().finite(),
-  })
-  .strict();
+const huntPointSchema = z.object({ x: z.number().finite(), y: z.number().finite() }).strict();
 
 const huntRouteStopSchema = z
   .object({
@@ -377,6 +377,9 @@ const bundleSchema = z
     storeLots: storeLotsSchema,
     reputationTracks: reputationTracksSchema,
     professions: professionsSchema,
+    assistantTypes: assistantTypesSchema,
+    farmResources: farmResourcesSchema,
+    areaFarms: areaFarmsSchema,
     bonuses: z.array(bonusDocumentSchema),
     useScripts: z.array(useScriptDocumentSchema),
     skills: z.array(skillDocumentSchema).min(1),

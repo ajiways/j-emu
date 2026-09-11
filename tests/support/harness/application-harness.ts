@@ -13,6 +13,7 @@ import { FakeClock } from "../fake-clock.ts";
 import { ManualCombatDelay } from "../fakes/manual-combat-delay.ts";
 import { MutableClock } from "../fakes/mutable-clock.ts";
 import type { RandomSource } from "../../../src/modules/combat/domain/random-source.ts";
+import type { FarmRng } from "../../../src/modules/professions/domain/farm-formulas.ts";
 import type { BattleRules } from "../../../src/modules/combat/domain/battle-rules.ts";
 
 const testDatabaseUrl = requireTestDatabaseUrl();
@@ -29,6 +30,7 @@ export class ApplicationHarness {
     upgradeRandom?: RandomSource;
     combatRules?: Partial<BattleRules>;
     combatBotStrength?: number;
+    farmRandom?: FarmRng;
   }>;
 
   constructor(
@@ -41,6 +43,7 @@ export class ApplicationHarness {
       upgradeRandom?: RandomSource;
       combatRules?: Partial<BattleRules>;
       combatBotStrength?: number;
+      farmRandom?: FarmRng;
     }> = {},
   ) {
     this.clock = clock ?? new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
