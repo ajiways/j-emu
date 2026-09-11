@@ -22,6 +22,8 @@ ghost/injury/`RESURRECT`, без таблиц active fight. ECO-01/ECO-02 landed
 `user|stats`. INV-05 landed: instance durability columns, death −1 on
 settlement, composition `StoreRepair`. INV-06 landed: instance upgrade
 overlay columns, catalog crystals 553/1310/4603/11408/13224, OA `UPGRADE`.
+HERO-01 landed: composition `persistPvpHonor`, character `honor_grants` /
+`grantHonor`, live `honorProgress` on unitframe/conf, BG RAM match sum.
 Фактическая схема описана в [DATA_MODEL.md](../architecture/DATA_MODEL.md).
 
 ## Как принимается изменение
@@ -85,6 +87,13 @@ hero aggregate с `regen_at` и injected `Clock`. Combat отдаёт тольк
 Catalog владеет authored track; character — `hero_reputations` и
 `grantReputation`. SUM 36 считается на чтении. Контракт:
 [REPUTATION.md](../modules/REPUTATION.md).
+
+**Решение HERO-01:** текущих границ достаточно; отдельный `ARC-CHAR` не нужен.
+`heroes.honor` уже на character aggregate. Catalog — `rank_table` /
+`honorProgress`; combat — RAM human-applied damage snapshot; battleground —
+match RAM sum + history; composition UoW вызывает `grantHonor`. Combat/BG
+не пишут `heroes`. Контракт: [CHARACTER.md](../modules/CHARACTER.md),
+[BATTLEGROUND.md](../modules/BATTLEGROUND.md).
 
 Отдельный `ARC-CHAR` потребуется позже только если death/settlement/reputation
 невозможно добавить без второго authoritative maxima, cross-module write из

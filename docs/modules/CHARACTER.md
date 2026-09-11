@@ -401,9 +401,9 @@ ProtocolError.
 
 ## HERO-01 — PvP honor grant
 
-Internal port `grantHonor` и ledger реализованы. Product-status не
-менять здесь: очередь [ROADMAP.md](../migration/ROADMAP.md) HERO-01,
-статус — [CAPABILITIES.md](../CAPABILITIES.md).
+Срез закрыт (raw-AMF Раскоп). CEF не прогонялся. Product **частично**:
+[CAPABILITIES.md](../CAPABILITIES.md). Workflow `done`:
+[ROADMAP.md](../migration/ROADMAP.md) HERO-01.
 
 ### Architecture decision
 

@@ -990,7 +990,7 @@
   live score и typed history; `instance` — только bg-copy row; `combat` не
   импортирует battleground (composition overlay PvP `type:"1"`). Контент:
   одна карта Раскоп (`general|2`, rooms 635/636/637, return 500) в
-  `playable-slice/v23`. POST-04 / HERO-01 leftover. Контракт:
+  `playable-slice/v23`. POST-04 / fairness seal leftover. Контракт:
   [BATTLEGROUND.md](../modules/BATTLEGROUND.md).
 - **Acceptance:** два героя queue/confirm, входят в изолированный матч,
   бьются до score/timeout, получают упорядоченные finish-пакеты и
@@ -1212,14 +1212,88 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
 
 - **ID:** `HERO-01`
 - **depends_on:** `BG-01`, `CHR-01`
-- **Behavior evidence:** legacy `HEROISM.md`; empirical formula остаётся
-  `legacy behavior`.
-- **Content set:** heroism bands/modifiers и presentation.
-- **Architecture checkpoint / decision:** pending — PvP settlement и
-  character progression ownership.
-- **Acceptance:** fixed-seed PvP outcomes дают документированную величину
-  один раз и отображаются в BG/fight/player stats wire.
-- **Status:** `next`
+- **Behavior evidence:** legacy `HEROISM.md` (изобретённый / best-fit слой,
+  не PHP live); рабочий baseline — `jgr-emu/src/bg/honor.ts`
+  `rawHonorFromDamage` + `src/honorRank.ts` `addHonor` +
+  `src/bg/match.ts` `applyBgFightOutcome`. Dump-проверенные пары Раскопа
+  (`_research/giga_dump_2026-08-11`, L6 `hpMax` 108 vs L7 `hpMax` 111,
+  `honor_bonus:0`): winner 350→**68**, loser 222→**26**; winner 215→**42**.
+  **Конфликт, не замазывать:** `HEROISM.md` `level_penalty` и «в героизм
+  только урон по людям» **не** в `honor.ts` / `applyBgFightOutcome`
+  (`dealtDamage` без фильтра фантома). Срез идёт за **кодом** `honor.ts`
+  (штрафа нет). Раскоп BG-01 — 1v1 без бота/фантома, поэтому
+  human-applied damage = весь PvP урон по сопернику; отдельный strip
+  фантома не изобретать. Казнь ×2, короны `HONORMOD`, геммы, сферы,
+  revenge, `heal_honor`, шахты `5×Base`, печать справедливости — не этот
+  срез.
+- **Content set:** новый артикул / slice bump **не** нужен. Звания и кап —
+  уже опубликованные `common_conf.rank_info` / `rank_table` (STORE RANK /
+  `honorProgress`). Ставка `Base(1..35)` — именованный `HeroismRules`
+  (таблица как в `honor.ts` / `HEROISM.md`, win **1.4** / lose **0.8**),
+  не новая catalog-таблица и не `?? 10`. `level_boundaries.honor_*` —
+  leftover chrome; live HUD берёт окно из `honorProgress`. Representative
+  сценарий — Раскоп L6–L7 (очередь BG-01). Dump hpMax 108/111 не
+  форсить фикстурой: e2e считает `round(Base×dmg/hpMax×mult)` от
+  измеренного fight `maxHp`.
+- **Architecture checkpoint / decision:** complete. ADR-0017–0020
+  достаточны; новый ADR и `ARC-*` не нужны (`ARC-CHAR` уже отклонён на
+  CHR-01/REP-01: `heroes.honor` тот же aggregate).
+  **Владение.** Catalog — `rank_info`/`rank_table` и `honorProgress` /
+  cap (`honorCapForLevel` экспортирован). Combat — RAM 1v1 snapshot:
+  `level`, `maxHp`, applied урон по вражеским людям (хилы раздувают
+  сумму; кредит как jgr-emu `applied`, не overkill сверх текущего HP
+  тика; бот/`damageToBot` не входит), `winnerTeam`. Combat **не** считает
+  героизм и **не** пишет `heroes` / BG RAM. Character — persist
+  `heroes.honor`, порт `grantHonor` (рядом с `grantExperience` на
+  `CharacterProgression`), ledger `honor_grants` PK
+  `(hero_id, operation_id)`, clamp через `honorProgress`. Battleground —
+  RAM `player.honor` / `dmg` / `rank` (сумма боёв матча) и history
+  columns. Composition `HuntFightSettlement.persistPvp` в той же UoW, что
+  HP: чистая `rawHonorFromDamage` → `grantHonor`;
+  `BattlegroundMatchRuntime.afterFightFinished` читает кэш этого боя
+  (оба героя) и копит RAM stats, затем `pushMapAndStats`. Не считать
+  формулу второй раз в observer.
+  **Когда начислять.** На **финиш PvP-боя** (`purpose:"pvp"`, Раскоп
+  `type:"1"`), не на `arena|bg_finish` lump и не на PUT_ON. `mult` — от
+  **команды этого боя** (`human.team === winnerTeam`), не от счёта матча
+  (в 1v1 совпадает). `last-leave` всё равно persist HP+honor с урона.
+  Hunt / friendly-practice / quest — **не** грантят (CMB-03
+  `fight|loot.honor:0`, CMB-08 restore без награды). Сырой `raw==0` — не
+  вызывать grant (как EXP запрещает 0). `raw>0` при капе звания —
+  grant с amount=`raw`, persist clamped (added может быть 0).
+  **Ключ.** `pvp:{fightId}:{characterId}`. Повтор — сохранённый result;
+  тот же ключ, другой amount — conflict. `settledFights` + unique PK.
+  **Wire.** Per-fight honor → live `arena|*` `user_stats.honor` и финиш
+  `arena|bg_finish.user_stats.honor` (сумма боёв; `honor_bonus:0`).
+  Накопительный `user|unitframe.honor` + окно `honorMin`/`honorMax` /
+  `honorStatus` / `rank` из `honorProgress(hero.honor, hero.level)`, не
+  из static `level_boundaries`. `user|conf.rank` — тот же live rank
+  (до среза `level.honorRank` был 0 на L1–8). OA `user|stats` object 2
+  «Героизм» уже читает `hero.honor`. После гранта esrv `user|unitframe` +
+  `user|conf` (как `applyBgFightOutcome`). `fight|loot.honor` остаётся
+  **0** (CMB-03 leftover; live героизм боя — `fight|info`, INFO не в
+  срезе). `arena|leader_rating` `rating:{}` — leftover.
+  **Fail-fast.** PvP snapshot не ровно 2 humans; victim level вне 1..35;
+  `maxHp < 1`; нет строки `rank_table`. Запрещены legacy `Math.max(1,hp)`
+  и `BASE[lv] ?? 10`.
+  **Restart / concurrency.** `heroes.honor` и `honor_grants` переживают
+  reconnect/restart. RAM матч и незакрытый бой — нет (BG-01 / ADR-0020).
+  Финиш боя, commit, затем смерть процесса: honor на герое есть, live
+  match stats теряются вместе с матчем. Два concurrent persist — PK.
+  Landed: `drizzle/0022_character_honor_grants.sql` (без slice bump);
+  raw-AMF `tests/e2e/battleground-raskop.test.ts`; unit dump-пары 68/26/42;
+  composition `persistPvpHonor` + `PvpFightHonorCache`; live
+  `honorProgress` на unitframe/conf.
+- **Acceptance:** raw-AMF Раскоп L6 vs L7, fixed-seed: per-fight honor =
+  `round(Base(victimLevel)×dmgToHuman/victimHpMax×(1.4|0.8))` один раз на
+  `(fightId, characterId)`; live stats и `arena|bg_finish` показывают
+  сумму боёв; unitframe/conf/stats — накопительный honor и live rank
+  window; hunt и friendly-duel не двигают honor; restart после commit
+  сохраняет `heroes.honor`. Unit-проверка dump-пар 68/26 и 42 на
+  зафиксированных hpMax 108/111. Печать / penalty / казнь / короны не
+  входят. CEF не прогонялся — Wave 12, [CEF_MANUAL.md](CEF_MANUAL.md);
+  product **частично**.
+- **Status:** `done`
 
 ### DAY-01 — Daily quests
 
@@ -1231,7 +1305,7 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
   idempotency и downtime catch-up до coding.
 - **Acceptance:** offer/finish/cooldown/reset переживают restart и не дают
   вторую награду внутри одного daily-периода.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### ACH-01 — Achievements
 

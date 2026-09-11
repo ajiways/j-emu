@@ -16,8 +16,8 @@ area presence roster:
 - `character` хранит hero scalars, personal details, naked `hero_skills`,
   `hero_reputations` (Радвей 5), `hp_time`, `regen_at`, `ghost` / `injury_time`
   / `injury_artikul_id`, `hero_bot_kills` (BOOK-01), `hero_professions` (PRF-01); internal ports `grantExperience`, `syncResources`,
-  `noteHp`, `noteDefeat`, `resurrect`, `creditMoney`, `debitMoney` и
-  `grantReputation` пишут этот state; `move_ready_at` и `setArea` на том же
+  `noteHp`, `noteDefeat`, `resurrect`, `creditMoney`, `debitMoney`,
+  `grantReputation` и `grantHonor` пишут этот state; `move_ready_at` и `setArea` на том же
   aggregate;
 - `inventory` хранит bag/pocket/equipment instances, durability и выполняет
   `PUT_ON`/`PUT_OFF` (paperdoll и пояс), `drop`, `useFromBag`, `bagLoad`,
@@ -47,7 +47,7 @@ area presence roster:
   `book|instances` read model. Clear/loot bands — leftover.
 - `battleground` — RAM queue/invite/ban/live score, typed
   `battleground.finished_*`, Раскоп `general|2` (rooms 635/636/637, return
-  500). POST-04 / HERO-01 leftover.
+  500), HERO-01 match honor sum. POST-04 / fairness seal leftover.
 - Репутация Радвея **5** есть (REP-01, product частично).
   `quests` runtime QST-ENG-01/02: NPC 271, три engine-квеста, USE 584,
   AREA leftover `START_FIGHT`, hunt loot-cap через quests-port. `economy` модуля нет.

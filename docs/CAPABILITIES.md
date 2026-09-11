@@ -52,17 +52,18 @@
 
 ## Character — частично
 
-Есть persisted naked HP/MP/EXP, skills и appearance, достаточные для HUD после
+Есть persisted naked HP/MP/EXP/honor, skills и appearance, достаточные для HUD после
 bootstrap. Internal `grantExperience` атомарно применяет DATA-01 L1–L14 curve,
 переживает reconnect/restart и не имеет production OA/CEF consumer. Internal
 `syncResources` / `noteHp` применяют lazy HP regen с `regen_at` и `hp_time`
-без ticker и без CEF gate; `mp_time` остаётся HUD `0`.
+без ticker и без CEF gate; `mp_time` остаётся HUD `0`. Internal `grantHonor`
+(HERO-01) пишет `heroes.honor` с Раскопа: raw-AMF, reconnect/restart; CEF не
+прогонялся.
 
 Не перенесено:
 
 - CEF confirmation of CMB-03 result screen / HP-EXP-bag after exit;
 - CEF ghost/injury/RESURRECT (raw-AMF CMB-04 есть);
-- honor progression;
 - клиентский EXP grant через квест.
 
 Equipment-derived `user|skills` / `hpMax` считаются из naked skills + надетых
@@ -307,11 +308,15 @@ wipe.
 `ATTACK` PvP `is_pvp:1` `type:"1"` `flags:"128"` до 20 очков, ordered
 `arena|bg_finish`, typed `battleground.finished_*`, kick в 500. Restart
 роняет RAM queue/match и выкидывает orphan из комнат на `common|init`.
-Deny очереди status **2**. CEF Раскопа не прогонялся.
+Deny очереди status **2**. HERO-01: финиш PvP-боя Раскопа начисляет сырой
+героизм один раз (`round(Base×dmg/hpMax×1.4|0.8)`), live/finish
+`user_stats.honor` — сумма боёв, unitframe/conf/stats — накопительный
+`honorProgress`; hunt и friendly duel не двигают honor. CEF Раскопа и
+героизма не прогонялся — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 
-Не перенесены heroism/fairness seal (HERO-01), остальные BG-карты (POST-04),
+Не перенесены fairness seal (8668), остальные BG-карты (POST-04),
 slaughter/fortress/companion, заполнение `arena|leader_rating`, overlay
-урона/EXP на stats.
+EXP на stats, `level_penalty` / казнь / короны.
 
 ## После core — не перенесено
 
@@ -353,7 +358,7 @@ Postgres. CEF вкладки профессий и гремлинов не пр�
 
 ## Вне первой волны
 
-Achievements, daily quests, heroism, info pages и content editor.
+Achievements, daily quests, info pages и content editor.
 
 Clan и встроенные playerbots не переносятся.
 
