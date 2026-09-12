@@ -283,6 +283,14 @@ Landed raw-AMF: deny leave — CombatPort/fproxy; ambush `START_FIGHT` без
 bag mutation. `progress_on_win:false` и `OPEN_STORE` не этот срез.
 Контракт: [QUESTS.md](../modules/QUESTS.md).
 
+**Решение QST-ENG-05:** текущих границ достаточно; `ARC-QST` / `ARC-ECO`
+не нужны. `OPEN_STORE` — leftover script: composition зовёт те же ворота,
+что `ComeInCommand` (`requireLink`, overload, lock, fight, `setArea`,
+presence), затем `npc|answer` `jump:"area"`. Не piggyback `store|list`.
+`JUMP_AREA` по-прежнему без смены area. jgr `comeInArea` без graph —
+не копировать: канон j-emu ComeIn. Контракт: [QUESTS.md](../modules/QUESTS.md),
+[STORE.md](../modules/STORE.md).
+
 **Решение CMB-11:** текущих границ достаточно; `ARC-CMB` не нужен.
 Landed: `joinHunt.team` = `1|2`; HELP = team цели; copy gate = RAM
 `instanceCopyId` (`null` мир) со `startHunt`, сравнение на join.

@@ -171,7 +171,9 @@ Live RANK/REPUTATION (и LEVEL на лоте) — **status 203** + `error` из 
 
 Ghost buy: **203** + `error` (не status 2). Fight: не блокировать.
 
-OPEN_STORE, NPC board, dual-badge — out of scope.
+OPEN_STORE — QST-ENG-05 (контракт [QUESTS.md](QUESTS.md)): dialog leftover
+op, штатный ComeIn в `code=store` area + `jump:"area"`. Не piggyback
+`store|list`. NPC board `code=store` и dual-badge — out of scope.
 
 ## INV-05 — `store|repair`
 
@@ -201,8 +203,9 @@ Hero + items lock в одной UoW. Process restart не откатывает �
 DATA-05 полный `stores/*.json`; DATA-02 catalog; dungeon shops 829/724/741
 (unpublished artifacts вроде 5988 и `lot_id: 0`); REPUTATION-лоты 971/576
 (unpublished 15030/1995); diamond JSON lots (dump уже 1:900→gold);
-COME_IN `assertStoreEntry` / `store_entries`; 587 CAPACITY; quest signals;
-economy ledger. Пустые вкладки `159`/`10`/`21` без лотов. SQL FK
+COME_IN `assertStoreEntry` / `store_entries`; 587 CAPACITY; quest signals
+кроме QST-ENG-05 `OPEN_STORE`; economy ledger. NPC board store-строка;
+dual-badge. Пустые вкладки `159`/`10`/`21` без лотов. SQL FK
 `store_types` → `world.areas` нет: area проверяет publication. Ghost `203`
 несёт `GhostHeroError` message (английский `cannot storeBuy while ghosted`);
 dump-proven русский toast на buy-призрак не найден. Concurrent buy e2e нет —

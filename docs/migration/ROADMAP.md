@@ -1688,11 +1688,49 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
 - **ID:** `QST-ENG-05`
 - **depends_on:** `QST-ENG-04`, `ECO-01`
 - **Behavior evidence:** leftover `OPEN_STORE` + `jump:"area"` в лавку
-  (не телепорт `JUMP_AREA`). [STORE.md](../modules/STORE.md).
-- **Content set:** синтетика, area **504**, без куратского квеста.
-- **Architecture checkpoint / decision:** до coding — architecture pass.
-- **Acceptance:** script открывает лавку 504; area героя штатный COME_IN, не
-  `setArea` fallback.
+  (не телепорт `JUMP_AREA`). [STORE.md](../../../jgr-emu/docs/STORE.md)
+  диалог: `{ type:"OPEN_STORE", area_id:"504" }` → `comeInArea` → закрыть
+  NPC `jump:"area"`. `jgr-emu/src/quests/scripts.ts` ставит
+  `openStoreAreaId` **и** `jumpArea`; `dialog.ts` зовёт `comeInArea`, на
+  player-step отдаёт `withBagBookState` (`npc|answer` + bag/view/unitframe/
+  book/`state`). **Не** piggyback `store|list` / `common|action` COME_IN.
+  **Конфликт.** jgr `comeInArea` не проверяет `area_links`; j-emu
+  `ComeInCommand` требует link. Канон этого среза — штатный ComeIn
+  (overload / lock / fight / `requireLink` / `setArea` / `prepareTravel` /
+  presence). 503→504 link уже в slice. `JUMP_AREA` по-прежнему только
+  wire, без смены area.
+- **Content set:** синтетика, не `q_5`, не Акрилон. File seed
+  `playable-slice/v34`. `q_engine_store` на NPC **271**, `bookId` **8**,
+  `pointId` **9**, `boardOrd` **8**. Talk `objectId` **271**, затем player
+  step `OPEN_STORE` `areaId` **504**. Новых хотспотов нет (item **5** —
+  дверь лавки, не занимать NPC). Восемь engine-квестов.
+- **Architecture checkpoint / decision:** ADR-0017–0020 достаточны; `ARC-*`
+  не нужен. `OPEN_STORE` — leftover script, как `JUMP_AREA`/`START_FIGHT`:
+  quests domain не ходит в world tables. Composition `QuestDesk` в той же
+  UoW, что `npc|answer`: те же ворота, что `ComeInCommand` (bag overload
+  **204**, travel lock **204**, бой **203**, `requireLink` **203**
+  «некуда идти»), `CharacterService.setArea` + `InstanceDesk.prepareTravel`,
+  после commit — `PresenceFanout.afterMove`. Area обязана существовать и
+  `code=store`; нет поля / не store / неизвестный id — fail-fast публикации
+  и runtime **204**, не fallback 504. `assertStoreEntry` / COME_IN LEVEL —
+  не этот срез (504 без entry requires). Quests не импортирует store
+  catalog; store не импортирует quests. Миграция `quests_open_store`:
+  CHECK `OPEN_STORE` + колонка `area_id` (integer, nullable); не класть
+  area в `artikul_id`. Wire: `npc|answer` `{status:100, jump:"area",
+macros_list:[]}` + book trio + `user|bag` + `user|view` + `user|unitframe`
+  - `state` (как jgr `withBagBookState`). Клиент сам шлёт `store|list`.
+    **Fail-fast.** Пустой `areaId`; area не `store`; нет link; неизвестный op
+    по-прежнему 204. `JUMP_AREA` без `OPEN_STORE` area не меняет.
+    **Restart.** `heroes.area_id` PostgreSQL; mid-dialog RAM нет.
+    **CEF.** Production consumer. Product **частично** до CEF.
+    Контракт: [QUESTS.md](../modules/QUESTS.md), [STORE.md](../modules/STORE.md),
+    [WORLD.md](../modules/WORLD.md).
+    Лимит 400: `quest-desk` 367, `composition-root` 382, `jugger-wire-module`
+    397, `combat-service`/`battle` 400 — extract, не растить.
+- **Acceptance:** raw-AMF: player `OPEN_STORE` на `q_engine_store` →
+  `{jump:"area"}`, `area_id` **504**, `store|list` type `-131` лоты 23/24;
+  `JUMP_AREA` без OPEN_STORE area не меняет; fight/overload/unlinked —
+  текущие ComeIn deny; reconnect в 504. Quest join/leave не этот срез.
 - **Status:** `next`
 
 ### DNG-03 — Instance leftovers

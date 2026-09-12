@@ -114,6 +114,7 @@ answer после сдвига курсора не выдаёт награду.
 | `SET_FLAG`/`CLEAR`            | `hero_facts`                          | да                                                                      |
 | `BUMP_GOAL` / `COMPLETE_GOAL` | quests                                | да                                                                      |
 | `JUMP_AREA`                   | jugger-wire `npc\|answer`             | leftover `{ jump:"area", macros_list:[] }`, не `setArea`                |
+| `OPEN_STORE`                  | composition ComeIn + `npc\|answer`    | QST-ENG-05: смена area штатным ComeIn, затем тот же `jump:"area"`       |
 
 ORATORY: `{ unit(): number }`, `unit()*100 < probability`; без `probability` —
 успех. Синтетика без броска. Формула от стата — leftover.
@@ -197,6 +198,58 @@ Inventory quests не импортирует.
 
 `progress_on_win:false`; `on_lose` reset цели; `OPEN_STORE` (QST-ENG-05);
 `consume_at`; chance на `mode:"quest"`; Акрилон.
+
+## QST-ENG-05 — OPEN_STORE
+
+Контракт для coding. Очередь: [ROADMAP.md](../migration/ROADMAP.md)
+QST-ENG-05 (`next`). Product не менять.
+
+### Отличие от JUMP_AREA
+
+`JUMP_AREA` — только закрыть NPC (`jump:"area"`), `heroes.area_id` не
+трогать. `OPEN_STORE` — leftover op `{ type:"OPEN_STORE", areaId }`
+(integer > 0): в той же UoW, что `npc|answer`, штатный ComeIn в эту
+area, потом тот же jump. jgr `comeInArea` без `area_links`; здесь
+`requireLink`, как `ComeInCommand`. 503→504 уже есть.
+
+Не `CharacterService.setArea` в обход overload / lock / fight / link /
+`prepareTravel`. После commit — presence `afterMove`. `assertStoreEntry`
+не звать (504 без entry requires).
+
+### Wire
+
+`npc|answer` `{ status:100, jump:"area", macros_list:[] }` + book trio +
+`user|bag` + `user|view` + `user|unitframe` + `state` (jgr
+`withBagBookState` на player-step). **Нет** `store|list` и **нет**
+`common|action` COME_IN на этом ответе. Клиент сам `store|list` в 504.
+
+Deny те же, что ComeIn: бой **203**, overload/lock **204**, нет link
+**203** «некуда идти». Area нет / не `code=store` — **204**, не маскировать
+под jump.
+
+### Content / schema
+
+`playable-slice/v34`, `q_engine_store`, NPC 271, `bookId` **8**,
+`pointId` **9**, `boardOrd` **8**, talk 271, player step `OPEN_STORE`
+`areaId` **504**. Не `q_5`. Хотспот не ставить. Восемь engine-квестов.
+
+Миграция `quests_open_store`: CHECK type + `area_id` integer nullable.
+Публикация: area существует, `code=store`; пустой `areaId` — ошибка
+candidate. Runtime неизвестный op — 204.
+
+Хуки этого среза: dialog player step и reward (как jgr). onAccept /
+AREA `goal_on_finish` — leftover. NPC `action_list` `code=store` и
+dual-badge — [STORE.md](STORE.md), не здесь.
+
+### Out of this slice
+
+COME_IN LEVEL entry; `assertStoreEntry`; OPEN_STORE в 552; NPC board
+store-строка; `q_5` buy/equip; `store|list` piggyback.
+
+### Fail-fast / restart / CEF
+
+Нет fallback на 504. `JUMP_AREA` не открывает лавку. Area переживает
+reconnect. CEF-PASS не ставить.
 
 ## Loot-cap (QL-1)
 
@@ -377,6 +430,6 @@ CEF-PASS не ставить.
 Контракт q_1 там. Канон ритуала: enemies **85**×1 + **83**×7, не
 fixture-only 83×7. 503 item **1** занят `q_engine_ambush`.
 
-Ручные файлы у лимита 400 строк (`composition-root`, `jugger-command-module`,
-`parse-content-bundle`, `content-document`) перед регистрацией команд
+Ручные файлы у лимита 400 строк (`quest-desk` 367, `composition-root` 382,
+`jugger-wire-module` 397, `combat-service`/`battle` 400) перед OPEN_STORE
 извлекаются, а не растут.

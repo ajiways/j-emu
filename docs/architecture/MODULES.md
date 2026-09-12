@@ -53,7 +53,8 @@ area presence roster:
   семь engine-квестов, USE 584, lazy 06:00 wipe, `book|quest_delete`,
   quest roster, JUMP_AREA wire, `award.rep`, REMOVE equipped, hunt
   loot-cap через quests-port. Deny leave / ambush / QL-2 landed raw-AMF
-  (`QST-ENG-04`). Следующий движок — `QST-ENG-05` (`OPEN_STORE`).
+  (`QST-ENG-04`). Следующий движок — `QST-ENG-05` (`OPEN_STORE`: ComeIn +
+  `jump:"area"`, не телепорт `JUMP_AREA`).
   Акрилон (`CONTENT-STORY-*`) не брать, пока leftover-движки не закрыты.
   `content` file
   seed/publish и EDT-01/02 operator HTTP `/operator/content/*` (GET
@@ -188,6 +189,8 @@ leftover — composition `QuestDesk`; hunt drop-cap — `HuntFightSettlement`
 через тот же `needed`, не импорт владельцев в domain. Multi-board
 `npc_quests`, talk-npc, `JUMP_AREA` wire, `GRANT_AWARDS.rep` — QST-ENG-03.
 Deny leave / ambush / QL-2 — QST-ENG-04 (`syncOwned` после bag mutation).
+`OPEN_STORE` — QST-ENG-05: leftover op, composition штатный ComeIn, не
+импорт store/world tables в quests domain.
 
 **События leftover:** `quests.accepted.v1` и outbox не вводятся, пока нет
 асинхронного consumer.

@@ -198,7 +198,8 @@ lock жив → **204**
 Нет ребра from→to или dest не published → **203** `некуда идти` (строже live
 `resolveComeIn`, который доверяет голому `area_id`). Нет `area_id` в form →
 то же. Вход в `code=store` **без** `assertStoreEntry` (ECO-01/ECO-02: нет
-LEVEL requires в 504/552 JSON).
+LEVEL requires в 504/552 JSON). QST-ENG-05 `OPEN_STORE` из диалога — тот
+же ComeIn (link/overload/lock/fight/`setArea`), не отдельный телепорт.
 
 ### Restart / clock / concurrency
 
