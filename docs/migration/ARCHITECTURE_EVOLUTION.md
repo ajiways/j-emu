@@ -261,6 +261,15 @@ character/inventory/reputation ports и quests-port `needed` (combat quests
 нельзя провести без прямых cross-table writes. Контракт:
 [QUESTS.md](../modules/QUESTS.md).
 
+**Давление CONTENT-STORY-01:** q_1 требует JUMP_AREA, secondary board,
+talk-npc, GRANT_AWARDS.rep, REMOVE equipped и quest roster — этого нет в
+QST-ENG-02. Replan: `CMB-10` затем `QST-ENG-03`, не хардкод Акрилона.
+
+**Решение CMB-10 / QST-ENG-03:** текущих границ достаточно; `ARC-QST` /
+`ARC-CMB` не нужны. Roster — тот же RAM `FightDuel` (ADR-0020);
+`grantReputation` уже есть; `npc_quests` уже multi-NPC PK. Контракт:
+[COMBAT.md](../modules/COMBAT.md), [QUESTS.md](../modules/QUESTS.md).
+
 **Решение DAY-01:** текущих границ достаточно; отдельный `ARC-QST` не нужен.
 Daily cycle — lazy `Clock` на quests ports (UTC+3 / 06:00), не
 `DelayScheduler` и не `Clock.schedule`. `hidden_in_journal` на том же

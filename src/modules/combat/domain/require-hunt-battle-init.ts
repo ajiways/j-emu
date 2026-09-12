@@ -67,4 +67,9 @@ export function requireHuntBattleInit(init: HuntBattleInit, rules: BattleRules):
   if (rules.turnGrantDelayMs < rules.meleeBotCounterMs) {
     throw new Error("Turn grant delay must be at least the melee bot-counter delay");
   }
+  if (typeof init.chatWin !== "string") throw new Error("Quest fight chatWin is required");
+  if (typeof init.chatLose !== "string") throw new Error("Quest fight chatLose is required");
+  if (init.purpose === "hunt" && (init.extraEnemies.length > 0 || init.allies.length > 0)) {
+    throw new Error("Hunt fights cannot include a quest roster");
+  }
 }

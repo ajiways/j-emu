@@ -52,6 +52,7 @@ describe("quest engine", () => {
         "q_engine_fight",
         "q_engine_area",
         "q_engine_daily",
+        "q_engine_roster",
       ]),
     );
 
@@ -102,7 +103,12 @@ describe("quest engine", () => {
     });
     const keys = questKeys(record(again["npc|quests"], "restart board").quests);
     expect(keys).toEqual(
-      expect.arrayContaining(["q_engine_fight", "q_engine_area", "q_engine_daily"]),
+      expect.arrayContaining([
+        "q_engine_fight",
+        "q_engine_area",
+        "q_engine_daily",
+        "q_engine_roster",
+      ]),
     );
     expect(keys).not.toContain("q_engine_board");
   });

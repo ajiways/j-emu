@@ -35,7 +35,7 @@ describe("resolveMeleeTarget", () => {
       attackerHeroId: 1,
       duel: new FightDuel(1, 1_000_000, 1),
       humans: [opener, waiter],
-      bot: { fightId: 1_000_000, hp: 20, maxHp: 20, team: 2 },
+      bots: [{ fightId: 1_000_000, hp: 20, maxHp: 20, team: 2 }],
     });
     expect(target).toEqual({ kind: "bot", id: 1_000_000, team: 2, hp: 20, maxHp: 20 });
   });
@@ -47,7 +47,7 @@ describe("resolveMeleeTarget", () => {
       attackerHeroId: 1,
       duel: new FightDuel(1, 2, 1),
       humans: [challenger, acceptor],
-      bot: null,
+      bots: [],
     });
     expect(target).toEqual({ kind: "human", human: acceptor });
   });
@@ -58,9 +58,9 @@ describe("resolveMeleeTarget", () => {
         attackerHeroId: 1,
         duel: new FightDuel(1, 99, 1),
         humans: [human(1, 1)],
-        bot: { fightId: 1_000_000, hp: 20, maxHp: 20, team: 2 },
+        bots: [{ fightId: 1_000_000, hp: 20, maxHp: 20, team: 2 }],
       }),
-    ).toThrow(/neither a human nor the hunt bot/);
+    ).toThrow(/neither a human nor a fight bot/);
   });
 });
 
@@ -69,23 +69,35 @@ describe("enemySideCleared", () => {
     const dead = human(2, 2);
     dead.applyDamage(27);
     expect(
-      enemySideCleared(2, [human(1, 1), dead], {
-        fightId: 1_000_000,
-        hp: 10,
-        maxHp: 10,
-        team: 2,
-      }),
+      enemySideCleared(
+        2,
+        [human(1, 1), dead],
+        [
+          {
+            fightId: 1_000_000,
+            hp: 10,
+            maxHp: 10,
+            team: 2,
+          },
+        ],
+      ),
     ).toBe(false);
   });
 
   it("clears hunt team 2 after the bot dies", () => {
     expect(
-      enemySideCleared(2, [human(1, 1)], {
-        fightId: 1_000_000,
-        hp: 0,
-        maxHp: 20,
-        team: 2,
-      }),
+      enemySideCleared(
+        2,
+        [human(1, 1)],
+        [
+          {
+            fightId: 1_000_000,
+            hp: 0,
+            maxHp: 20,
+            team: 2,
+          },
+        ],
+      ),
     ).toBe(true);
   });
 });

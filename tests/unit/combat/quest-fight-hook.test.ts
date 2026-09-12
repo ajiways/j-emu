@@ -25,10 +25,12 @@ describe("quest fight terminal hook", () => {
       {
         accountId: 1,
         fightId: start.fightId,
-        winnerTeam: 1,
+        winnerTeam: 2,
         outcome: "win",
         purpose: "quest",
         botId: 2,
+        chatWin: "",
+        chatLose: "",
       },
     ]);
   });
@@ -55,10 +57,12 @@ describe("quest fight terminal hook", () => {
       {
         accountId: 1,
         fightId: start.fightId,
-        winnerTeam: 2,
+        winnerTeam: 1,
         outcome: "loss",
         purpose: "quest",
         botId: 2,
+        chatWin: "",
+        chatLose: "",
       },
     ]);
   });

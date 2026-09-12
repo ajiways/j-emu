@@ -39,7 +39,7 @@ export class CombatMeleeLoop {
       await this.settleFinished(battle, resolved.events, accountId);
       return;
     }
-    this.followUpAfterStrike(battle, accountId);
+    await this.followUpAfterStrike(battle, accountId);
   }
 
   keepTurn(accountId: number, sequence: string | number, events: readonly CombatEvent[]): void {
@@ -62,7 +62,7 @@ export class CombatMeleeLoop {
       await this.settleFinished(battle, events, accountId);
       return;
     }
-    this.followUpAfterStrike(battle, accountId);
+    await this.followUpAfterStrike(battle, accountId);
   }
 
   grantAfterPair(battle: Battle, accountId: number): void {
@@ -71,7 +71,13 @@ export class CombatMeleeLoop {
     );
   }
 
-  private followUpAfterStrike(battle: Battle, accountId: number): void {
+  private async followUpAfterStrike(battle: Battle, accountId: number): Promise<void> {
+    const extra = battle.tickRosterDuels();
+    if (extra.length > 0) this.enqueue(accountId, extra);
+    if (battle.finished) {
+      await this.settleFinished(battle, extra, accountId);
+      return;
+    }
     const opponent = battle.pairedOpponent(accountId);
     if (opponent.kind === "bot") {
       this.scheduleBotAndGrant(battle);
@@ -99,6 +105,12 @@ export class CombatMeleeLoop {
     this.enqueue(target, result.events);
     this.wakeAccount(target);
     if (!result.killedPlayer) {
+      const extra = battle.tickRosterDuels();
+      if (extra.length > 0) this.enqueue(target, extra);
+      if (battle.finished) {
+        await this.settleFinished(battle, extra, target);
+        return;
+      }
       await this.applyShuffle(battle);
       return;
     }
@@ -160,14 +172,16 @@ function enqueuePlayerMelee(
   const wait = events.find((event) => event.type === "turn-wait");
   const damage = events.find((event) => event.type === "damage");
   const finished = events.find((event) => event.type === "finished");
-  const purges = events.filter((event) => event.type === "effect-purge");
+  const extras = events.filter(
+    (event) => event.type === "effect-purge" || event.type === "opponent-new",
+  );
   if (!wait || wait.type !== "turn-wait" || !damage || damage.type !== "damage") {
     throw new Error("Player melee must emit turn-wait then damage");
   }
   enqueue(accountId, [
     wait,
     damage,
-    ...purges,
+    ...extras,
     { type: "command-accepted", sequence },
     ...(finished ? [finished] : []),
   ]);

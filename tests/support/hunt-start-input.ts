@@ -38,6 +38,10 @@ export function unitHuntStart(
     loadout: EMPTY_COMBAT_LOADOUT,
     botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
     purpose: "hunt",
+    extraEnemies: [],
+    allies: [],
+    chatWin: "",
+    chatLose: "",
     ...overrides,
   };
 }

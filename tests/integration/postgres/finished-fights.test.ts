@@ -70,6 +70,10 @@ describe("finished fight history storage", () => {
       loadout: EMPTY_COMBAT_LOADOUT,
       botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
       purpose: "hunt",
+      extraEnemies: [],
+      allies: [],
+      chatWin: "",
+      chatLose: "",
     });
     expect(start.participantId).toBe(hero.id);
     const fightId = BigInt(start.fightId);

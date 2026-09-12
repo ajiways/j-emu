@@ -51,6 +51,22 @@ export type HuntStartInput = Readonly<{
   loadout: CombatLoadout;
   botSpellBook: HuntBotSpellBook;
   purpose: "hunt" | "quest";
+  extraEnemies: readonly HuntRosterBotInput[];
+  allies: readonly HuntRosterBotInput[];
+  chatWin: string;
+  chatLose: string;
+}>;
+
+export type HuntRosterBotInput = Readonly<{
+  artikulId: number;
+  nick: string;
+  level: number;
+  hp: number;
+  strength: number;
+  avatar: string;
+  sk: string;
+  body: string;
+  spellBook: HuntBotSpellBook;
 }>;
 
 export type HuntJoinInput = Readonly<{

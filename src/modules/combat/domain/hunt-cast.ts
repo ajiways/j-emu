@@ -17,7 +17,7 @@ export type KeepTurnResult =
 export type EndingGloveResult = Readonly<{
   kind: "ending";
   events: readonly BattleEvent[];
-  botHp: number | null;
+  hitBot: BotMeleePresence | null;
   finished: boolean;
 }>;
 
@@ -162,7 +162,7 @@ export function resolveGloveFinisher(
     random: RandomSource;
     fightId: string;
     humans: readonly HuntHuman[];
-    bot: BotMeleePresence | null;
+    bots: readonly BotMeleePresence[];
     duel: FightDuel;
     nowMs: number;
   }>,
@@ -181,14 +181,14 @@ export function resolveGloveFinisher(
     attackerHeroId: human.heroId,
     duel: input.duel,
     humans: input.humans,
-    bot: input.bot,
+    bots: input.bots,
   });
   human.endTurn();
   const cp = human.casts.spendCombo(glove.cost);
   const damage = endingGloveDamage(glove.spell, human.meleeStrength(), input.random, input.rules);
   const hit = applyDamageToMeleeTarget(human, target, damage, {
     humans: input.humans,
-    bot: input.bot,
+    bots: input.bots,
   });
   const events: BattleEvent[] = [
     { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },
@@ -209,7 +209,7 @@ export function resolveGloveFinisher(
   if (hit.finished) {
     events.push({ type: "finished", winnerTeam: human.team, fightId: input.fightId });
   }
-  return { kind: "ending", events, botHp: hit.botHp, finished: hit.finished };
+  return { kind: "ending", events, hitBot: hit.hitBot, finished: hit.finished };
 }
 
 function isEndingGlove(spell: CombatSpell): boolean {

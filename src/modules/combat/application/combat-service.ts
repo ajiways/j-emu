@@ -13,7 +13,7 @@ import type { FinishedFightRecorder } from "./finished-fight-recorder.ts";
 import type { HistoryWriteObserver } from "./history-write-observer.ts";
 import { CombatMeleeLoop } from "./combat-melee-loop.ts";
 import { CombatTerminal } from "./combat-terminal.ts";
-import { huntBattleInitFromStart } from "./hunt-battle-init-from-start.ts";
+import { createHuntBattle } from "./create-hunt-battle.ts";
 import { friendlyDuelInitFromStart } from "./friendly-duel-init-from-start.ts";
 import { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 import type {
@@ -121,18 +121,12 @@ export class CombatService implements CombatPort {
     const fightId = requireFightId(input.fightId);
     if (this.battleByFight.has(fightId)) throw new Error(`Fight ${fightId} is already active`);
     const accessKey = randomBytes(16).toString("hex");
-    const botStrength =
-      this.testBotStrength === undefined ? input.botStrength : this.testBotStrength;
-    if (!Number.isInteger(botStrength) || botStrength < 1) {
-      throw new Error("Hunt bot strength must be positive");
-    }
-    const battle = new Battle(
-      huntBattleInitFromStart(
-        { ...input, fightId, botStrength },
-        accessKey,
-        this.botFightIds.allocate(input.heroId),
-        this.scheduler.now(),
-      ),
+    const battle = createHuntBattle(
+      { ...input, fightId },
+      accessKey,
+      this.botFightIds,
+      this.scheduler.now(),
+      this.testBotStrength,
       this.rules,
       this.random,
     );

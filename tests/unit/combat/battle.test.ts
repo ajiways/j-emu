@@ -33,6 +33,10 @@ function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
     loadout: EMPTY_COMBAT_LOADOUT,
     botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
     purpose: "hunt",
+    extraEnemies: [],
+    allies: [],
+    chatWin: "",
+    chatLose: "",
     ...overrides,
   };
 }
@@ -79,6 +83,20 @@ describe("Battle", () => {
           body: "",
           team: 2,
         },
+        rosterBots: [
+          {
+            id: 1_000_000,
+            nick: "Грызль",
+            level: 1,
+            hp: 20,
+            maxHp: 20,
+            artikulId: 2,
+            avatar: "avatar_gryzl1_sm.jpg",
+            sk: "11",
+            body: "",
+            team: 2,
+          },
+        ],
         cp: 0,
         cpHits: [],
         rage: 0,

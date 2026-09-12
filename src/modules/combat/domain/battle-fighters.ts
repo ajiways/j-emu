@@ -1,6 +1,7 @@
 import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { HuntJoinHuman } from "./hunt-join-human.ts";
+import { huntFightOpenerTeam } from "./hunt-fight-teams.ts";
 import { HuntHuman } from "./hunt-human.ts";
 import type { PracticeRestore } from "./fight-outcome-snapshot.ts";
 
@@ -27,7 +28,7 @@ export function huntOpener(init: HuntBattleInit): HuntHuman {
     maxHp: init.playerMaxHp,
     mp: init.heroMp,
     maxMp: init.heroMaxMp,
-    team: 1,
+    team: huntFightOpenerTeam(init.purpose),
     waiting: false,
     strength: init.heroStrength,
     startedAtMs: init.startedAt.getTime(),

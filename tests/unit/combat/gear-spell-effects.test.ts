@@ -122,7 +122,7 @@ describe("gear-spell melee STR", () => {
       random: new SequenceRandom([7]),
       fightId: "8",
       humans: [attacker, defender],
-      bot: null,
+      bots: [],
       nowMs: 0,
     });
     expect(resolved.result).toMatchObject({

@@ -740,12 +740,48 @@
   `CombatPort.startHunt` с обязательным `purpose: "hunt" | "quest"` (карта
   ATTACK_BOT всегда `"hunt"`). Quest-модуль подписывается через fan-out
   observer в composition, combat quests не импортирует. Join в `purpose:
-"quest"` — `HuntJoinDenied`. Roster allies/enemies, `flags:"8"`, chat_*,
-  bot↔bot, team invert, deny leave — leftover `QST-ENG-02`. Restart mid-fight
+"quest"` — `HuntJoinDenied`. Roster allies/enemies, `flags:"8"`, chat_*, bot↔bot —
+  `CMB-10`. Deny leave leftover. Restart mid-fight
   без `on_win`/`on_lose` (нет RAM). CEF не прогоняется.
 - **Acceptance:** внешний вызывающий модуль может запросить fight с
   `purpose: "quest"` и получить `on_win`/`on_lose` без изменения
   ownership terminal settlement из CMB-03.
+- **Status:** `done`
+
+### CMB-10 — Quest fight roster
+
+- **ID:** `CMB-10`
+- **depends_on:** `CMB-09`
+- **Behavior evidence:** [QUEST_DIALOG.md](../../../jgr-emu/docs/QUEST_DIALOG.md)
+  `mode:"quest"`: solo human, `fight|conf.flags:"8"`, без join, `skipQuestKills`,
+  teams герой+allies = **2** / enemies = **1**, `chat_start`/`chat_win`/`chat_lose`
+  как MSG; bot↔bot = тот же `FightDuel` + bot AI
+  ([FIGHT_MODEL.md](../../../jgr-emu/docs/FIGHT_MODEL.md)). Не засада `chance`.
+- **Content set:** синтетика, не Акрилон. Расширить `START_FIGHT` уже
+  существующего `q_engine_fight` **нельзя** (сломает 1v1 e2e). Новый ключ
+  `q_engine_roster` на NPC **271**: enemies bot **2**×1 + bot **32**×1,
+  ally bot **4**×1 (все уже в slice). Ботов 83/84/85/88/89/90 не тащить.
+- **Architecture checkpoint / decision:** complete. ADR-0017–0020 достаточны;
+  отдельный ADR и `ARC-CMB` не нужны. Active fight RAM. `startQuestFight`
+  сейчас берёт только `enemies[0]` и игнорирует `count`/`allies` — это баг
+  относительно authored roster, не новый owner.
+  **Владение.** Combat — ephemeral bot IDs, pairing, `purpose:"quest"`.
+  Catalog — bot rows. `QuestDesk` после commit вызывает `startHunt` с полным
+  roster; `chat_*` — `ChatDesk.deliverSystem` (не combat). Join по-прежнему
+  `HuntJoinDenied`.
+  **Wire.** `fight|conf.flags:"8"`; piggyback как CMB-09/QST-ENG. Roster
+  (больше одного бота) ставит `skipQuestKills` — kill-signal не идёт, чтобы
+  не бампить чужой `q_engine_fight` на kill. 1v1 quest-fight по-прежнему
+  бампает kill. `win_fight` бампает. Deny leave — leftover.
+  **Fail-fast.** Пустой enemies; нет bot в catalog; неизвестный script type.
+  Нет fallback на Грызля **2**, если roster другой.
+  **Restart.** Mid-fight RAM без `on_win`/`on_lose`.
+  **CEF.** Production consumer (`fight|conf`). Не прогонялся —
+  [CEF_MANUAL.md](CEF_MANUAL.md). Контракт: [COMBAT.md](../modules/COMBAT.md).
+- **Acceptance:** raw-AMF: dialog START_FIGHT поднимает бой 1 human + 1 ally
+  bot vs 2 enemy bots, flags 8, chat_start; победа → `win_fight`, kill-цели
+  Gryzl не бампаются; проигрыш не закрывает `win_fight`; restart в бою рвёт
+  RAM. Product **частично** до CEF.
 - **Status:** `done`
 
 ### WLD-03 — Hunt wander/respawn as a generic scheduler
@@ -1121,11 +1157,48 @@
   `finished_quests_id`; `book|quest_targets` только `currentGoal`;
   `area_conf` offer href только NPC-доска / AREA hotspot, не hunt-бот.
   Ложь `mergeFinishedQuestsForMapMarkers` и Pub1 `quest_info` не переносятся.
-  Roster `flags:"8"`, bot↔bot, deny leave, ambush `chance`, QL-2 — leftover
-  после этого среза. Контракт: [QUESTS.md](../modules/QUESTS.md).
+  Roster allies/enemies, `flags:"8"`, chat_*, bot↔bot — `CMB-10`. Deny leave,
+  ambush `chance`, QL-2 — leftover. Контракт: [QUESTS.md](../modules/QUESTS.md).
 - **Acceptance:** AREA waiting запускает нужный quest-fight через CMB-09
   hook; markers и quest-loot limits работают generic, не per-quest кодом.
 - **Status:** `done`
+
+### QST-ENG-03 — Multi-board, JUMP_AREA, awards.rep
+
+- **ID:** `QST-ENG-03`
+- **depends_on:** `QST-ENG-02`
+- **Behavior evidence:** [QUEST_DIALOG.md](../../../jgr-emu/docs/QUEST_DIALOG.md)
+  `JUMP_AREA` → `npc|answer` `{ jump:"area", macros_list:[] }` (не `setArea`);
+  [QUEST_BOARD_ICONS.md](../../../jgr-emu/docs/QUEST_BOARD_ICONS.md) MAIN
+  `flags:32`; secondary `active_only`; talk `waiting_dialog` только у своего
+  NPC; [REPUTATION.md](../modules/REPUTATION.md) `GRANT_AWARDS` → track **5**;
+  REMOVE_ARTIKUL снимает и надетый экземпляр.
+- **Content set:** синтетика, не Акрилон. Второй NPC на 503 **не** item **1**
+  (его занимает engine 271; live item 1 = плита 2024 — развести в этом срезе:
+  271 снять с 503/1, голова остаётся USE **584**). Новый ключ `q_engine_multi`
+  на 271 + вторичная доска нового NPC; `flags:32`; JUMP_AREA на accept;
+  awardExp + awardRep track 5; win_fight `onFinish` REMOVE_ARTIKUL надетой
+  **23** + MSG. Live `book_id` 90002 не этот срез.
+- **Architecture checkpoint / decision:** complete. ADR-0017–0020 достаточны;
+  `ARC-QST` не нужен. `npc_quests` уже PK `(release, npc, quest)` — не хватает
+  authored `boards[]` и `active_only`. Talk-signal сейчас бампает любой talk
+  без NPC. `JUMP_AREA` нет в `scriptOpSchema` (unknown type → publication
+  fail). `GRANT_AWARDS` не вызывает `grantReputation`. `REMOVE_ARTIKUL`
+  только bag.
+  **Владение.** quests — boards/flags/talk-npc; character — `grantReputation`;
+  inventory — consume bag **или** paperdoll через тот же public port;
+  jugger-wire — `jump:"area"`. Composition UoW. File seed новых ключей (editor
+  `hasReleaseEntry` новых ключей не открывает).
+  **Fail-fast.** Два NPC на одном `(areaId, itemId)`; неизвестный script;
+  awardRep на track не из catalog; JUMP_AREA не телепортирует «на всякий
+  случай» в 503.
+  **CEF.** Production consumer (доска MAIN + `jump`). Исключение закрыто.
+  Контракт: [QUESTS.md](../modules/QUESTS.md).
+- **Acceptance:** raw-AMF: вторичная доска видна только с active квестом;
+  talk бампается лишь с целевого NPC; JUMP_AREA даёт `jump:"area"` без смены
+  area; MAIN `flags:32` иконка; turn-in пишет репу **5**; REMOVE снимает
+  надетый **23**. Restart cursor/rep/bag. Product **частично** до CEF.
+- **Status:** `next`
 
 ## Wave 12 — presentation engines
 
@@ -1498,16 +1571,37 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
 ### CONTENT-STORY-01 — q_1 «Рождение скорпиона»
 
 - **ID:** `CONTENT-STORY-01`
-- **depends_on:** `QST-ENG-02`
-- **Behavior evidence:** curated `q_1`, related NPC/dialog/fight evidence.
-- **Content set:** q_1 and its complete transitive item/bot/NPC/area/reward refs.
-- **Architecture checkpoint / decision:** not required — uses the `QST-ENG-*`
-  contract as-is; a new engine primitive found here returns work to `QST-ENG-*`.
-  **CEF.** Исключение Wave 5–12 закрыто. Сценарий имеет Flash production
-  consumer; CEF — acceptance этой capability, не сдвиг очереди.
-- **Acceptance:** fresh hero completes talk, kill, ritual fight and turn-in;
-  reward/reputation/progress survive restart. CEF: тот же сценарий в клиенте.
-- **Status:** `next`
+- **depends_on:** `QST-ENG-03`, `CMB-10`
+- **Behavior evidence:** curated
+  `jgr-emu/fixtures/quests_curated/q_1.json` +
+  [QUEST_CURATOR_PROMPT.md](../../../jgr-emu/docs/QUEST_CURATOR_PROMPT.md) §14 +
+  [QUEST_DIALOG.md](../../../jgr-emu/docs/QUEST_DIALOG.md) roster.
+  **Конфликт, не замазывать:** fixture `START_FIGHT` enemies только **83**×7;
+  QUEST_DIALOG / QUESTS.md — **85**×1 + **83**×7. Канон ритуала — docs/dump
+  (85+83×7, allies 84/88/89/90). Kill: fixture limit **2** vs QUESTS.md
+  «kill×1»; куратор уже пометил единственное vs двойное — в slice писать
+  limit 2 и заметку, не подставлять 1 молча.
+- **Content set:** адаптировать граф в j-emu quest document (не копировать
+  nodes/edges). Ключ `q_1`, `bookId` **90002**, `flags` **32**, NPC **1617**
+  (`infoId` **250**, area 503 item **11**), плита **2024** (503 item **1**,
+  `active_only`), point **920011**/**920012**. Goals: talk 2024 → talk 1617 →
+  kill bot **2** limit 2 → win_fight. JUMP_AREA на accept talk/kill.
+  Ritual roster как QUEST_DIALOG. `onFinish` win_fight: REMOVE **9095** + MSG.
+  Award: exp **25**, rep **5**/10/cap 0, artikul **478**×1. Боты
+  **83/84/85/88/89/90** из `bots_overlay.json`; **478** из Pub1/artikuls.
+  Publication: новые ключи через file `seed`/`playable-slice` (editor overlay
+  новых ключей leftover). Не DATA-06 mass import.
+- **Architecture checkpoint / decision:** complete — текущих ADR достаточно
+  **после** QST-ENG-03 и CMB-10; `ARC-*` не нужен. На `QST-ENG-02` одном
+  capability **не** встаёт: JUMP_AREA, boards[], talk-npc, awards.rep,
+  REMOVE equipped, `startQuestFight` roster. Новый primitive снова →
+  QST-ENG/CMB, не хардкод `q_1`.
+  **CEF.** Flash production consumer; исключение закрыто.
+- **Acceptance:** fresh hero: доска 1617 → плита 2024 → return → hunt kill×2
+  Грызль **2** → ритуал 85+83×7 с союзниками → turn-in (exp/репа/478);
+  9095 снята после победы; progress/награды после restart. Slice-файл не
+  dual-write. CEF тот же сценарий.
+- **Status:** `queued`
 
 ### CONTENT-STORY-02 — q_4 «Первое задание скорпиона»
 

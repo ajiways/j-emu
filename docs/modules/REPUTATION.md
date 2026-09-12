@@ -13,8 +13,9 @@
 - `jgr-emu/src/reputation.ts`, `src/heroLifetime.ts` (`buildNamedUserStats`),
   `src/routes/oa/user.ts` (`user|stats`);
 - authored `jgr-emu/fixtures/reputation_tracks.json`;
-- curated `quests_curated/q_1.json` `award.rep` object_id **5** amount **10**;
-  `GRANT_REP` object_id **5** на q_4…q_9 / q_10+ (consumer — QST, не этот срез).
+- curated `quests_curated/q_1.json` `award.rep` object_id **5** amount **10**
+  (consumer — `QST-ENG-03` / `CONTENT-STORY-01`);
+  `GRANT_REP` object_id **5** на q_4…q_9 / q_10+ (позже CONTENT-STORY).
 
 Не переносить полный каталог 22 треков, орфаны 6/35, fame 125, kill overlay,
 чат «Получено: N репутации», SET_FLAG unlock, clan SUM.

@@ -83,12 +83,16 @@ export class QuestDesk {
   }
 
   async afterFinished(notice: FightFinishedNotice): Promise<void> {
+    if (notice.purpose === "quest" && (notice.outcome === "win" || notice.outcome === "loss")) {
+      const msg = notice.outcome === "win" ? notice.chatWin : notice.chatLose;
+      if (msg) await this.chat.deliverSystem(notice.accountId, msg);
+    }
     if (notice.outcome !== "win") return;
     const hero = await this.characters.getByAccountId(notice.accountId);
     if (!hero) throw new Error(`Hero for account ${notice.accountId} is missing`);
     await this.unitOfWork.run(async () => {
       await this.characters.lockById(hero.id);
-      if (notice.botId) {
+      if (notice.botId && notice.skipQuestKills !== true) {
         await this.applyEffects(
           notice.accountId,
           hero.id,

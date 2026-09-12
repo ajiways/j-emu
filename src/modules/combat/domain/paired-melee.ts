@@ -18,13 +18,16 @@ export function tryPairedMelee(
     random: RandomSource;
     fightId: string;
     humans: readonly HuntHuman[];
-    bot: BotMeleePresence | null;
+    bots: readonly BotMeleePresence[];
     nowMs: number;
   }>,
-): Readonly<{ result: PlayerMeleeResult; botHp: number | null; finished: boolean }> {
-  const botHp = input.bot === null ? null : input.bot.hp;
+): Readonly<{
+  result: PlayerMeleeResult;
+  hitBot: BotMeleePresence | null;
+  finished: boolean;
+}> {
   if (attacker.waiting || !attacker.turnActive || input.finished) {
-    return { result: { kind: "ignored" }, botHp, finished: input.finished };
+    return { result: { kind: "ignored" }, hitBot: null, finished: input.finished };
   }
   requireLivingMeleeTarget(target);
   attacker.endTurn();
@@ -37,7 +40,7 @@ export function tryPairedMelee(
   const comboCp = attacker.casts.hits.length > 0 ? attacker.casts.advanceCombo(side) : undefined;
   const hit = applyDamageToMeleeTarget(attacker, target, damage, {
     humans: input.humans,
-    bot: input.bot,
+    bots: input.bots,
   });
   const events: BattleEvent[] = [
     { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },
@@ -58,7 +61,7 @@ export function tryPairedMelee(
   if (hit.finished) {
     events.push({ type: "finished", winnerTeam: attacker.team, fightId: input.fightId });
   }
-  return { result: { kind: "resolved", events }, botHp: hit.botHp, finished: hit.finished };
+  return { result: { kind: "resolved", events }, hitBot: hit.hitBot, finished: hit.finished };
 }
 
 export function applyDamageToMeleeTarget(
@@ -67,11 +70,11 @@ export function applyDamageToMeleeTarget(
   damage: number,
   context: Readonly<{
     humans: readonly HuntHuman[];
-    bot: BotMeleePresence | null;
+    bots: readonly BotMeleePresence[];
   }>,
 ): Readonly<{
   killed: boolean;
-  botHp: number | null;
+  hitBot: BotMeleePresence | null;
   finished: boolean;
   targetId: number;
   targetMaxHp: number;
@@ -84,28 +87,31 @@ export function applyDamageToMeleeTarget(
     const applied = Math.min(target.human.hp, damage);
     attacker.creditDamageToHumans(applied);
     const killed = target.human.applyDamage(damage);
-    const botAfter = context.bot;
     return {
       killed,
-      botHp: botAfter === null ? null : botAfter.hp,
-      finished: killed && enemySideCleared(target.human.team, context.humans, botAfter),
+      hitBot: null,
+      finished: killed && enemySideCleared(target.human.team, context.humans, context.bots),
       targetId: target.human.heroId,
       targetMaxHp: target.human.maxHp,
     };
   }
   const applied = Math.min(target.hp, damage);
   attacker.creditDamageToBot(applied);
-  const botAfter: BotMeleePresence = {
+  const hitBot: BotMeleePresence = {
     fightId: target.id,
     hp: target.hp - applied,
     maxHp: target.maxHp,
     team: target.team,
   };
-  const killed = botAfter.hp === 0;
+  const botsAfter = context.bots.map((bot) => (bot.fightId === target.id ? hitBot : bot));
+  if (!context.bots.some((bot) => bot.fightId === target.id)) {
+    throw new Error(`Melee bot ${target.id} is missing from the roster`);
+  }
+  const killed = hitBot.hp === 0;
   return {
     killed,
-    botHp: botAfter.hp,
-    finished: killed && enemySideCleared(target.team, context.humans, botAfter),
+    hitBot,
+    finished: killed && enemySideCleared(target.team, context.humans, botsAfter),
     targetId: target.id,
     targetMaxHp: target.maxHp,
   };

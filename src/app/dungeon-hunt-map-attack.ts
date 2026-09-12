@@ -106,6 +106,10 @@ export class DungeonHuntMapAttack {
         areaId: input.areaId,
         loadout: input.loadout,
         botSpellBook: input.botSpellBook,
+        extraEnemies: [],
+        allies: [],
+        chatWin: "",
+        chatLose: "",
         purpose: "hunt",
       });
       await this.fanout.wakeArea(input.areaId, input.copyId);

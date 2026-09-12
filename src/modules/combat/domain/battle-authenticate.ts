@@ -1,4 +1,4 @@
-import type { BattleEvent } from "./battle-event.ts";
+import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import { huntBotSnap } from "./hunt-bot-snap.ts";
 import type { HuntHuman } from "./hunt-human.ts";
@@ -9,6 +9,7 @@ export function huntAuthenticateEvents(
     allies: readonly HuntHuman[];
     init: HuntBattleInit;
     botHp: number;
+    rosterBots: readonly HuntBotSnap[];
     resume: boolean;
     timeoutSeconds: number;
     nowMs: number;
@@ -26,6 +27,7 @@ export function huntAuthenticateEvents(
         .filter((entry) => entry.accountId !== human.accountId)
         .map((entry) => entry.snapshot()),
       bot: huntBotSnap(input.init, input.botHp),
+      rosterBots: input.rosterBots,
       cp: human.casts.cp,
       cpHits: human.casts.hits,
       rage: human.casts.rage,

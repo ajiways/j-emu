@@ -1,5 +1,6 @@
 import type { CombatLoadout } from "./combat-loadout.ts";
 import type { HuntBotSpellBook } from "./hunt-bot-spell-book.ts";
+import type { HuntRosterBotSeed } from "./hunt-roster-bot.ts";
 
 export type HuntBattleInit = Readonly<{
   fightId: string;
@@ -29,4 +30,8 @@ export type HuntBattleInit = Readonly<{
   botStrength: number;
   botSpellBook: HuntBotSpellBook;
   purpose: "hunt" | "quest";
+  extraEnemies: readonly HuntRosterBotSeed[];
+  allies: readonly HuntRosterBotSeed[];
+  chatWin: string;
+  chatLose: string;
 }>;

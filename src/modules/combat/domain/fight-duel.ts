@@ -1,6 +1,6 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 
-/** One live pairing inside a Battle: human↔bot or human↔human. */
+/** One live pairing inside a Battle: human↔bot, human↔human, or bot↔bot. */
 export class FightDuel {
   private hitsAValue = 0;
   private hitsBValue = 0;

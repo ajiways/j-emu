@@ -5,6 +5,9 @@ export type FightFinishedNotice = Readonly<{
   outcome: "win" | "loss" | "last-leave";
   purpose: "hunt" | "quest" | "friendly-duel" | "pvp";
   botId?: number;
+  chatWin?: string;
+  chatLose?: string;
+  skipQuestKills?: true;
 }>;
 
 export interface FightTerminalObserver {

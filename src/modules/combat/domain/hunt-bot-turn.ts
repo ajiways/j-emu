@@ -27,6 +27,7 @@ export function resolveBotTurn(
     book: HuntBotSpellBook;
     casts: Map<number, number>;
     living: readonly HuntHuman[];
+    winnerTeam: 1 | 2;
   }>,
 ): BotMeleeResult & Readonly<{ botHp: number }> {
   const card = pickBotSpell(
@@ -68,6 +69,7 @@ function applyKind1(
     fightId: string;
     hasWaiter: boolean;
     living: readonly HuntHuman[];
+    winnerTeam: 1 | 2;
   }>,
 ): BotMeleeResult {
   const targets = kind1Targets(human, spell, state.living);
@@ -96,7 +98,7 @@ function applyKind1(
     if (killed && target.accountId === human.accountId) killedPlayer = true;
   }
   if (killedPlayer && !state.hasWaiter) {
-    events.push({ type: "finished", winnerTeam: 2, fightId: state.fightId });
+    events.push({ type: "finished", winnerTeam: state.winnerTeam, fightId: state.fightId });
   }
   return { events, killedPlayer };
 }

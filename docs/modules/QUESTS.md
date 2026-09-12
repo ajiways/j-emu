@@ -1,7 +1,7 @@
 # Quests (QST-ENG-01 / QST-ENG-02)
 
-Runtime board/dialog/progress: NPC **271**, четыре синтетических квеста
-(включая `q_engine_daily` с `flags:1`), USE **584** открывает доску без
+Runtime board/dialog/progress: NPC **271**, пять синтетических квестов
+(включая `q_engine_daily` с `flags:1` и `q_engine_roster`), USE **584** открывает доску без
 consume. QST-ENG-02 вешает AREA leftover
 `START_FIGHT`, generic hunt loot-cap и честные book/area_conf маркеры.
 Product status: [CAPABILITIES.md](../CAPABILITIES.md) (CEF ещё не вычеркнут).
@@ -18,7 +18,8 @@ Product status: [CAPABILITIES.md](../CAPABILITIES.md) (CEF ещё не выче�
 
 Known bugs сверх QL-1/QM-1/QM-2 в `TEMP_QUEST_ITEM_AND_MARKER_BUGS.md` не
 переносятся.
-Куратский Акрилон (`q_1`…, NPC 1617/250) — `CONTENT-STORY-*`, не этот срез.
+Куратский Акрилон (`q_1`…, NPC 1617/250) — `CONTENT-STORY-*` после
+`QST-ENG-03` и `CMB-10`, не этот срез.
 
 ## Ownership
 
@@ -42,7 +43,7 @@ public ports. Nested `UnitOfWork.run` переиспользует ту же т�
 
 ## Content set
 
-Три синтетических квеста в playable-slice (не DATA-06 corpus):
+Пять синтетических квестов в playable-slice (не DATA-06 corpus):
 
 1. **Board** — NPC **271** (Голова мертвеца): talk → buy **23** → equip **23**
    → deliver. Вход: USE **584** (`openDialog`) и/или hotspot 503.
@@ -52,6 +53,9 @@ public ports. Nested `UnitOfWork.run` переиспользует ту же т�
 3. **Area** — `area_action` на объекте 503 (item id ≠ 5 и ≠ 7):
    `common|waiting` → `action_finish` → leftover `START_FIGHT` `mode:"quest"`
    vs bot **2**; после победы MSG + `SET_FLAG`.
+4. **Daily** — `q_engine_daily`, `flags:1`, talk → turn-in раз за круг.
+5. **Roster** — `q_engine_roster`: talk → `win_fight`; START_FIGHT enemies
+   **2**+**32**, ally **4**, `flags:"8"`, `chat_*`. CMB-10.
 
 `book_id` / `point_id` authored с 1, не живые id из `quest_info.amf` и не 1617.
 Click-ref hotspot ≠ catalog `info_id`, кроме self-ref NPC 271
@@ -105,7 +109,7 @@ answer после сдвига курсора не выдаёт награду.
 | `MSG`                         | `ChatDesk.deliverSystem` после commit | да                                                                      |
 | `SET_FLAG`/`CLEAR`            | `hero_facts`                          | да                                                                      |
 | `BUMP_GOAL` / `COMPLETE_GOAL` | quests                                | да                                                                      |
-| `JUMP_AREA`                   | —                                     | leftover                                                                |
+| `JUMP_AREA`                   | jugger-wire `npc\|answer`             | leftover → QST-ENG-03 `{ jump:"area" }`, не `setArea`                   |
 
 ORATORY: `{ unit(): number }`, `unit()*100 < probability`; без `probability` —
 успех. Синтетика без броска. Формула от стата — leftover.
@@ -242,12 +246,32 @@ Slice bump. Validator: ровно один `flags & 1`.
 
 ## Leftover
 
-DATA-06 / `CONTENT-STORY-*`: Акрилон, полный NPC corpus, live `book_id` для
-честного клиентского «!».
+DATA-06 / `CONTENT-STORY-*`: Акрилон после QST-ENG-03, полный NPC
+corpus, live `book_id` для честного клиентского «!».
 Макросы `[[ARTIFACT]]` сверх dump-проверенного award_message — leftover.
 Туториал, `OPEN_STORE`, ambush `chance` без `mode:"quest"`,
-`progress_on_win:false`, QL-2, roster `flags:"8"` / bot↔bot / deny leave,
-`JUMP_AREA`, `on_win`/`on_lose` скрипты сверх существующего win_fight GRANT.
+`progress_on_win:false`, QL-2, deny leave,
+`on_lose` reset всей цели сверх текущего incomplete.
+
+## QST-ENG-03 — Multi-board / JUMP_AREA / awards.rep (contract)
+
+Очередь: [ROADMAP.md](../migration/ROADMAP.md) QST-ENG-03 (`next`).
+Product-status не менять здесь.
+
+`boards[]` → несколько `npc_quests` (`active_only` на вторичной). Talk
+signal бампает цель только если `npcRef` совпадает с `objectId` цели.
+`JUMP_AREA` в script registry: wire `{ jump:"area", macros_list:[] }`, area
+героя не менять. `flags:32` MAIN иконки. `GRANT_AWARDS` зовёт
+`grantReputation` (track из документа; cap 0 = без капа). `REMOVE_ARTIKUL`
+снимает bag или paperdoll. NPC 271 убрать с 503/item 1 (USE 584 без
+хотспота плиты).
+
+Синтетика `q_engine_multi`, не `q_1`.
+
+## CONTENT-STORY-01 (blocked)
+
+Не начинать, пока `QST-ENG-03` не `done`. Контракт q_1 — в
+ROADMAP. Канон ритуала: enemies **85**×1 + **83**×7, не fixture-only 83×7.
 
 Ручные файлы у лимита 400 строк (`composition-root`, `jugger-command-module`,
 `parse-content-bundle`, `content-document`) перед регистрацией команд

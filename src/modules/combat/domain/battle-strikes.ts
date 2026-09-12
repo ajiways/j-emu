@@ -1,5 +1,6 @@
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
+import { huntFightEnemyTeam } from "./hunt-fight-teams.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { resolveBotTurn } from "./hunt-bot-turn.ts";
 import { type BotMeleeResult } from "./hunt-melee.ts";
@@ -18,14 +19,17 @@ export function applyPairedMelee(
     random: RandomSource;
     fightId: string;
     humans: readonly HuntHuman[];
-    bot: BotMeleePresence | null;
+    bots: readonly BotMeleePresence[];
     duel: FightDuel;
     nowMs: number;
   }>,
-): Readonly<{ result: PlayerMeleeResult; botHp: number | null; finished: boolean }> {
-  const botHp = input.bot === null ? null : input.bot.hp;
+): Readonly<{
+  result: PlayerMeleeResult;
+  hitBot: BotMeleePresence | null;
+  finished: boolean;
+}> {
   if (input.attacker.waiting || !input.attacker.turnActive || input.finished) {
-    return { result: { kind: "ignored" }, botHp, finished: input.finished };
+    return { result: { kind: "ignored" }, hitBot: null, finished: input.finished };
   }
   const resolved = tryPairedMelee(
     input.attacker,
@@ -33,7 +37,7 @@ export function applyPairedMelee(
       attackerHeroId: input.attacker.heroId,
       duel: input.duel,
       humans: input.humans,
-      bot: input.bot,
+      bots: input.bots,
     }),
     input.side,
     {
@@ -42,7 +46,7 @@ export function applyPairedMelee(
       random: input.random,
       fightId: input.fightId,
       humans: input.humans,
-      bot: input.bot,
+      bots: input.bots,
       nowMs: input.nowMs,
     },
   );
@@ -60,7 +64,7 @@ export function applyPairedGloveEnding(
     random: RandomSource;
     fightId: string;
     humans: readonly HuntHuman[];
-    bot: BotMeleePresence | null;
+    bots: readonly BotMeleePresence[];
     duel: FightDuel;
     nowMs: number;
   }>,
@@ -71,7 +75,7 @@ export function applyPairedGloveEnding(
     random: input.random,
     fightId: input.fightId,
     humans: input.humans,
-    bot: input.bot,
+    bots: input.bots,
     duel: input.duel,
     nowMs: input.nowMs,
   });
@@ -105,6 +109,7 @@ export function applyBotTurn(
     book: input.hunt.botSpellBook,
     casts: input.casts,
     living: input.living,
+    winnerTeam: huntFightEnemyTeam(input.hunt.purpose),
   });
   input.duel.addHit(input.hunt.botFightId);
   return result;

@@ -131,6 +131,10 @@ export class AttackBotCommand implements OaCommand {
       areaId: area.id,
       loadout,
       botSpellBook: huntBotSpellBookFromCatalog(bot.spellBook),
+      extraEnemies: [],
+      allies: [],
+      chatWin: "",
+      chatLose: "",
     };
     const fight =
       hero.instanceCopyId === null

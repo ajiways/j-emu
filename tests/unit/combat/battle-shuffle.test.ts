@@ -35,6 +35,10 @@ function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
     loadout: EMPTY_COMBAT_LOADOUT,
     botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
     purpose: "hunt",
+    extraEnemies: [],
+    allies: [],
+    chatWin: "",
+    chatLose: "",
     ...overrides,
   };
 }

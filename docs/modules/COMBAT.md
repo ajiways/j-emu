@@ -11,8 +11,8 @@ handoff и GEAR-01 RAM kind-3 с надетой 20546 (raw-AMF). Cross-swap дв
 combat остаётся частично. CMB-09 отдаёт
 quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA leftover
 `START_FIGHT` и hunt loot-cap — composition (`QuestDesk` /
-`HuntFightSettlement`), не combat domain. Roster/flags квестового боя —
-leftover.
+`HuntFightSettlement`), не combat domain. Roster/flags квестового боя
+landed raw-AMF (`CMB-10`); CEF leftover.
 
 ## Источники поведения
 
@@ -390,9 +390,8 @@ HTML `fight|info.users[].honor` — leftover INFO. Product-status —
 fan-out в composition, combat quests не импортирует. `purpose: "quest"`
 запрещает `joinHunt`. CMB-03 UoW (HP/EXP/loot) не меняется; QST-ENG-02
 режет hunt grant в composition через quests `needed`, не внутри combat.
-Roster allies/enemies, `flags:"8"`, chat_*, bot↔bot, deny leave — leftover
-после QST-ENG-02. Dialog `START_FIGHT` — QST-ENG-01; AREA leftover
-`START_FIGHT` — QST-ENG-02 (`QuestDesk`, не combat).
+Dialog `START_FIGHT` — QST-ENG-01; AREA leftover
+`START_FIGHT` — QST-ENG-02 (`QuestDesk`, не combat). Roster — `CMB-10`.
 
 ### Architecture decision
 
@@ -401,8 +400,23 @@ ADR-0017–0020 достаточны. `ARC-*` нет. Active fight RAM; restart 
 
 ### Out of scope (CMB-09 leftover)
 
-Quest roster и wire `flags:"8"`; `on_win`/`on_lose` scripts сверх terminal
-notice; bot↔bot pairing; quest deny leave; curated Акрилон.
+`on_win`/`on_lose` scripts сверх terminal notice; quest deny leave; curated
+Акрилон.
+
+## CMB-10 — Quest fight roster
+
+Landed raw-AMF. Product-status не менять здесь. Очередь:
+[ROADMAP.md](../migration/ROADMAP.md) CMB-10 (`done`).
+
+`startQuestFight` поднимает весь authored `enemies[]`/`allies[]` (`count`
+копий). `purpose:"quest"`: `fight|conf.flags:"8"`, `win_fight` после победы.
+Ростер (больше одного бота) ставит `skipQuestKills` — kill-signal не идёт,
+чтобы не бампить чужие `kill`. 1v1 quest-fight по-прежнему бампает kill
+(`q_engine_fight`). Ally/enemy боты — ephemeral IDs, тот же `FightDuel`,
+bot↔bot. `chat_*` — ChatDesk после start / terminal. Синтетика
+`q_engine_roster` (bots 2+32 vs ally 4). Акрилон 83–90 не этот срез. Deny
+leave leftover. CEF leftover
+([CEF_MANUAL.md](../migration/CEF_MANUAL.md)).
 
 ## GEAR-01 — equipped gear spells
 

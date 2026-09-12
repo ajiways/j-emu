@@ -12,7 +12,7 @@ export function huntFightBootstrapEvents(
   const { hero, bot, allies, waiting } = event;
   const events: Readonly<Record<string, unknown>>[] = [
     { bg: 1, et: "fightState", pvp: false, startTime: 0 },
-    huntPersListEvent([hero, ...allies], bot),
+    huntPersListEvent([hero, ...allies], event.rosterBots),
     {
       companions: [],
       cp: event.cp,
@@ -43,7 +43,7 @@ export function huntFightRosterEvents(
   event: Extract<CombatEvent, { type: "roster-updated" }>,
 ): readonly Readonly<Record<string, unknown>>[] {
   return [
-    huntPersListEvent(event.humans, event.bot),
+    huntPersListEvent(event.humans, [event.bot]),
     { ...huntHumanPersFields(event.joined), et: "persChangeInfo" },
   ];
 }

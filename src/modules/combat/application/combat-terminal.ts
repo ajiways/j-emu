@@ -38,7 +38,8 @@ export class CombatTerminal {
     if (!finished || finished.type !== "finished") {
       throw new Error("Finished battle did not produce a finished event");
     }
-    await this.closeFight(battle, finished.winnerTeam === 1 ? "win" : "loss", finished.winnerTeam, {
+    const outcome = finished.winnerTeam === battle.openerTeam() ? "win" : "loss";
+    await this.closeFight(battle, outcome, finished.winnerTeam, {
       strikerAccountId,
       finished,
     });
@@ -133,6 +134,8 @@ export class CombatTerminal {
       winnerTeam,
       outcome,
       purpose: battle.purpose,
+      ...(battle.purpose === "quest" ? battle.questChat() : {}),
+      ...(battle.skipQuestKills() ? { skipQuestKills: true } : {}),
       ...(battle.purpose === "hunt" || battle.purpose === "quest"
         ? { botId: battle.huntHistory().botArtikulId }
         : {}),

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v30",
+  "schemaVersion": "playable-slice/v31",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -4542,6 +4542,66 @@
         { "type": "npc", "text": "Заходи каждый день после шести утра." },
         { "type": "goal", "goal": "talk_daily", "text": "Принять поручение" },
         { "type": "player", "id": "accept_daily", "text": "Хорошо" },
+        { "type": "reward", "answer": "Сдать задание" }
+      ]
+    },
+    {
+      "key": "q_engine_roster",
+      "bookId": 5,
+      "title": "Ростер ритуала",
+      "description": "Победи двух врагов с союзником в квестовом бою.",
+      "awardDescription": "Опыт",
+      "flags": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "npcId": 271,
+      "pointId": 5,
+      "boardOrd": 5,
+      "welcomeOffer": "Голова зовёт на ростер.",
+      "welcomeActive": "Ростер ещё не закончен.",
+      "welcomeReady": "Ростер выигран.",
+      "awardExp": 6,
+      "awardMoneyMinor": 0,
+      "awardItems": [],
+      "goals": [
+        {
+          "id": "talk_roster",
+          "kind": "talk",
+          "title": "Выслушать ростер",
+          "goalOrd": 1,
+          "limit": 1
+        },
+        {
+          "id": "win_roster",
+          "kind": "win_fight",
+          "title": "Выиграть ростер",
+          "goalOrd": 2,
+          "limit": 1
+        }
+      ],
+      "dialogSteps": [
+        { "type": "npc", "text": "Возьми Хиссу против Грызля и духа." },
+        { "type": "goal", "goal": "talk_roster", "text": "Начать ростер" },
+        {
+          "type": "player",
+          "id": "start_roster",
+          "text": "В бой",
+          "toFight": 1,
+          "scripts": [
+            {
+              "type": "START_FIGHT",
+              "mode": "quest",
+              "enemies": [
+                { "artikulId": 2, "count": 1 },
+                { "artikulId": 32, "count": 1 }
+              ],
+              "allies": [{ "artikulId": 4, "count": 1 }],
+              "chatStart": "Ритуал ростера начался.",
+              "chatWin": "Ритуал ростера выигран.",
+              "chatLose": "Ритуал ростера проигран."
+            }
+          ]
+        },
         { "type": "reward", "answer": "Сдать задание" }
       ]
     }

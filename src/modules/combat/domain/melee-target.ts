@@ -1,5 +1,4 @@
 import type { FightDuel } from "./fight-duel.ts";
-import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 
 export type BotMeleePresence = Readonly<{
@@ -19,49 +18,38 @@ export type MeleeTarget =
       maxHp: number;
     }>;
 
-export function huntBotMeleePresence(hunt: HuntBattleInit, hp: number): BotMeleePresence {
-  if (!Number.isInteger(hp) || hp < 0) {
-    throw new Error("Hunt bot HP must be a non-negative integer");
-  }
-  return {
-    fightId: hunt.botFightId,
-    hp,
-    maxHp: hunt.botMaxHp,
-    team: 2,
-  };
-}
-
 export function resolveMeleeTarget(
   input: Readonly<{
     attackerHeroId: number;
     duel: FightDuel;
     humans: readonly HuntHuman[];
-    bot: BotMeleePresence | null;
+    bots: readonly BotMeleePresence[];
   }>,
 ): MeleeTarget {
   const otherId = input.duel.otherId(input.attackerHeroId);
   const human = input.humans.find((entry) => entry.heroId === otherId);
   if (human) return { kind: "human", human };
-  if (input.bot !== null && otherId === input.bot.fightId) {
+  const bot = input.bots.find((entry) => entry.fightId === otherId);
+  if (bot) {
     return {
       kind: "bot",
-      id: input.bot.fightId,
-      team: input.bot.team,
-      hp: input.bot.hp,
-      maxHp: input.bot.maxHp,
+      id: bot.fightId,
+      team: bot.team,
+      hp: bot.hp,
+      maxHp: bot.maxHp,
     };
   }
-  throw new Error(`Duel opponent ${otherId} is neither a human nor the hunt bot`);
+  throw new Error(`Duel opponent ${otherId} is neither a human nor a fight bot`);
 }
 
 export function enemySideCleared(
   team: 1 | 2,
   humans: readonly HuntHuman[],
-  bot: BotMeleePresence | null,
+  bots: readonly BotMeleePresence[],
 ): boolean {
   const livingHuman = humans.some(
     (human) => human.team === team && !human.leftLive && human.hp > 0,
   );
   if (livingHuman) return false;
-  return bot === null || bot.team !== team || bot.hp === 0;
+  return !bots.some((bot) => bot.team === team && bot.hp > 0);
 }

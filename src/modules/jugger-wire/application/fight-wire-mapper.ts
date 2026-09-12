@@ -76,7 +76,7 @@ export class FightWireMapper {
 
   fightConfiguration(
     start: FightStart,
-    overlay: Readonly<{ canLeave?: 0 | 1; instanceId?: string }> = {},
+    overlay: Readonly<{ canLeave?: 0 | 1; instanceId?: string; flags?: string }> = {},
   ): FightConfigurationBlock {
     return this.configuration(start, this.policy.isPvp, this.policy.type, overlay);
   }

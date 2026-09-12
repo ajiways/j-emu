@@ -470,6 +470,15 @@ describe("parseContentBundle", () => {
     ).toThrow(/quest q_engine_daily is required/);
   });
 
+  it("rejects a bundle without quest q_engine_roster", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        quests: playable.quests.filter((quest) => quest.key !== "q_engine_roster"),
+      }),
+    ).toThrow(/quest q_engine_roster is required/);
+  });
+
   it("rejects a bundle without exactly one daily quest", () => {
     const extra = playable.quests.find((quest) => quest.key === "q_engine_daily");
     if (!extra) throw new Error("q_engine_daily is required in playable");
@@ -478,7 +487,7 @@ describe("parseContentBundle", () => {
         ...playable,
         quests: [
           ...playable.quests,
-          { ...extra, key: "q_engine_daily_extra", bookId: 5, pointId: 5, boardOrd: 5 },
+          { ...extra, key: "q_engine_daily_extra", bookId: 6, pointId: 6, boardOrd: 6 },
         ],
       }),
     ).toThrow(/exactly one quest with flags & 1/);

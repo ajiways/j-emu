@@ -12,7 +12,7 @@ export type HuntBotSnap = Readonly<{
   avatar: string;
   sk: string;
   body: string;
-  team: 2;
+  team: 1 | 2;
 }>;
 
 export type BattleEvent =
@@ -23,6 +23,7 @@ export type BattleEvent =
       hero: HuntHumanSnap;
       allies: readonly HuntHumanSnap[];
       bot: HuntBotSnap;
+      rosterBots: readonly HuntBotSnap[];
       cp: number;
       cpHits: readonly number[];
       rage: number;

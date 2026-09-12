@@ -41,11 +41,11 @@ describe("tryPairedMelee", () => {
       random: new SequenceRandom([1]),
       fightId: "8",
       humans: [attacker, defender],
-      bot: null,
+      bots: [],
       nowMs: 0,
     });
     expect(resolved).toMatchObject({
-      botHp: null,
+      hitBot: null,
       finished: false,
       result: {
         kind: "resolved",
@@ -67,7 +67,7 @@ describe("tryPairedMelee", () => {
       random: new SequenceRandom([1]),
       fightId: "8",
       humans: [attacker, defender],
-      bot: { fightId: 1_000_000, hp: 10, maxHp: 10, team: 2 },
+      bots: [{ fightId: 1_000_000, hp: 10, maxHp: 10, team: 2 }],
       nowMs: 0,
     });
     expect(resolved.finished).toBe(false);
@@ -82,7 +82,7 @@ describe("tryPairedMelee", () => {
     const defender = fighter(2, 2, 3);
     applyDamageToMeleeTarget(attacker, { kind: "human", human: defender }, 10, {
       humans: [attacker, defender],
-      bot: null,
+      bots: [],
     });
     expect(attacker.damageToHumans).toBe(3);
     expect(defender.hp).toBe(0);
@@ -100,7 +100,7 @@ describe("tryPairedMelee", () => {
         random: new SequenceRandom([1]),
         fightId: "8",
         humans: [attacker, defender],
-        bot: null,
+        bots: [],
         nowMs: 0,
       }),
     ).toThrow(/not a living paired opponent/);

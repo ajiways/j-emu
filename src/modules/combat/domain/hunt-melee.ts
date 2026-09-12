@@ -18,6 +18,7 @@ export function resolveBotMelee(
     botStrength: number;
     fightId: string;
     hasWaiter: boolean;
+    winnerTeam: 1 | 2;
   }>,
 ): BotMeleeResult {
   if (human.waiting || human.hp === 0) {
@@ -39,7 +40,7 @@ export function resolveBotMelee(
     },
   ];
   if (killedPlayer && !input.hasWaiter) {
-    events.push({ type: "finished", winnerTeam: 2, fightId: input.fightId });
+    events.push({ type: "finished", winnerTeam: input.winnerTeam, fightId: input.fightId });
   }
   return { events, killedPlayer };
 }

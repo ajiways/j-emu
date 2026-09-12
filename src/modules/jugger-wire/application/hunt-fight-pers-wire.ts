@@ -3,13 +3,15 @@ import type { HuntHumanSnap } from "../../combat/domain/hunt-human.ts";
 
 export function huntPersListEvent(
   humans: readonly HuntHumanSnap[],
-  bot: HuntBotSnap,
+  bots: readonly HuntBotSnap[],
 ): Readonly<Record<string, unknown>> {
   const event: Record<string, unknown> = { et: "persList" };
   for (const human of humans) {
     event[String(human.id)] = huntHumanPersFields(human);
   }
-  event[String(bot.id)] = huntBotPersFields(bot);
+  for (const bot of bots) {
+    event[String(bot.id)] = huntBotPersFields(bot);
+  }
   return event;
 }
 

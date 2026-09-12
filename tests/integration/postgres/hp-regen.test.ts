@@ -183,6 +183,10 @@ describe("HP regeneration persistence", () => {
       loadout: EMPTY_COMBAT_LOADOUT,
       botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
       purpose: "hunt",
+      extraEnemies: [],
+      allies: [],
+      chatWin: "",
+      chatLose: "",
     });
     clock.advanceSeconds(5);
     const synced = await characters.service.syncResources({ characterId: hero.id });
@@ -217,6 +221,10 @@ describe("HP regeneration persistence", () => {
       loadout: EMPTY_COMBAT_LOADOUT,
       botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
       purpose: "hunt",
+      extraEnemies: [],
+      allies: [],
+      chatWin: "",
+      chatLose: "",
     });
     const locked = await characters.service.lockByAccountId(hero.accountId);
     await characters.service.applyEquipmentVitals(locked, []);

@@ -32,12 +32,8 @@ export async function piggybackQuestFight(
     combat: deps.combat,
     combatStrength: (id) => deps.characters.combatStrength(id),
   });
-  await deps.chat.notifyHuntStarted({
-    accountId,
-    fightId: started.fight.fightId,
-    areaId: hero.areaId,
-    heroNick: hero.nick,
-    botNick: started.botTitle,
-  });
-  return { "fight|conf": deps.fightWire.fightConfiguration(started.fight, {}) };
+  if (fight.chatStart.length > 0) {
+    await deps.chat.deliverSystem(accountId, fight.chatStart);
+  }
+  return { "fight|conf": deps.fightWire.fightConfiguration(started, { flags: "8" }) };
 }

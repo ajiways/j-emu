@@ -204,17 +204,20 @@ request, `fight|conf` `is_pvp:1` `type:6`, practice restore); hunt 3↔3
 waiter-handoff без сброса HP. GEAR-01: надетая **20546** на старт hunt
 вешает kind-3 (`persEff` затем `effUse`, `groupId` 936, 8 ходов), без
 прока; `effPurge` на 8-м ударе; F5 в том же процессе сохраняет remaining;
-restart снимает бой, перчатка остаётся в paperdoll. CEF экрана результата,
-F5 в бою, призрака, видимого урона, плевка Хиссы, дуэли и gear-spell не
-прогонялся — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
+restart снимает бой, перчатка остаётся в paperdoll. CMB-10: dialog
+`q_engine_roster` поднимает quest-бой flags `"8"` (герой+Хисса vs Грызль и
+дух), `chat_*`, `win_fight` без bump kill на `q_engine_fight`; проигрыш
+оставляет book 5 started; mid-fight restart рвёт RAM. CEF экрана результата,
+F5 в бою, призрака, видимого урона, плевка Хиссы, дуэли, gear-spell и
+quest roster flags 8 не прогонялся — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 
 Не перенесены: hunt join team 2 / PvP intervene.
 
 ## Quests и NPC — частично
 
-Есть raw-AMF и PostgreSQL: NPC 271 (Голова мертвеца), четыре синтетических
-квеста (`q_engine_board` / `q_engine_fight` / `q_engine_area` /
-`q_engine_daily`). USE 584 открывает доску без consume (`npc|info` +
+Есть raw-AMF и PostgreSQL: NPC 271 (Голова мертвеца), пять синтетических
+квестов (`q_engine_board` / `q_engine_fight` / `q_engine_area` /
+`q_engine_daily` / `q_engine_roster`). USE 584 открывает доску без consume (`npc|info` +
 `npc|quests`). `npc|answer` двигает курсор; dialog `START_FIGHT`
 `mode:"quest"` vs Грызль (bot 2). Цели talk/kill/loot/buy/equip/deliver/
 area_action; скрипты `GRANT_*` / `MSG` / `SET_FLAG` / waiting AREA.
@@ -227,13 +230,13 @@ area_action; скрипты `GRANT_*` / `MSG` / `SET_FLAG` / waiting AREA.
 cycle-aware EXP; reconnect/restart до границы. Cursor, goals, facts,
 waiting, done и hidden переживают reconnect/restart. CEF доски NPC 271,
 buy/equip 23, dialog-боя, AREA waiting на 503, quest-fight на
-`action_finish`, loot-cap и ежедневки не прогонялся —
+`action_finish`, loot-cap, ежедневки и roster flags 8 не прогонялся —
 [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 
 Не перенесены куратский Акрилон, полный NPC corpus, данж `256`/`257`,
 MAIN `33`, live 75/276, `daily_pvp_kills` / stats 49, `OPEN_STORE`,
-`JUMP_AREA`, ambush `chance`, QL-2, roster `flags:"8"` / bot↔bot / deny
-leave, ложь `mergeFinishedQuestsForMapMarkers`.
+`JUMP_AREA`, ambush `chance`, QL-2, deny leave, ложь
+`mergeFinishedQuestsForMapMarkers`.
 
 ## Mail — частично
 

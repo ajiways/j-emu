@@ -51,7 +51,8 @@ area presence roster:
 - Репутация Радвея **5** есть (REP-01, product частично).
   `quests` runtime QST-ENG-01/02 / DAY-01: NPC 271, четыре engine-квеста,
   USE 584, lazy 06:00 wipe, `book|quest_delete`. AREA leftover
-  `START_FIGHT`, hunt loot-cap через quests-port. `content` file
+  `START_FIGHT`, hunt loot-cap через quests-port. Акрилон — после CMB-10 /
+  QST-ENG-03. `content` file
   seed/publish и EDT-01/02 operator HTTP `/operator/content/*` (GET
   document/keys).
   `economy` модуля нет.

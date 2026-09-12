@@ -29,14 +29,15 @@ counts/checksums и completeness gates:
 
 ## Текущий playable slice
 
-Текущая `playable-slice/v30` release — минимальный bundle: 37 artifacts
+Текущая `playable-slice/v31` release — минимальный bundle: 37 artifacts
 (9095 + dump-proven L1 greyset **20/21/26**, glove spells **9098/9100/9099**, paperdoll gear-spell **20546**, pocketables **93** и **99**, food **77**,
 shop wear **23** и **24**, arsenal amulet **621**, upgrade crystals **553/1310/4603/11408/13224**, recruit set **27/28/30/33/35/106** и mix **43/46**,
 USE **640/623/2371/55/584**, farm **1720/1721/1722**, craft book **1861** / flask **1714**; без 209 и патронташа), 8 bots (2/4/24/32/99/353/354/373) с overlay reward scalars; loot entries только у bot 2 (77/93/99),
 bonus **601**, use script **2827**, assistant types **3/13**, farm resource **4** on area **500**, craft recipe **61**,
 12 areas (503/501/504/495/552/542/541/654/651/653/499/673) plus BG return 500 and rooms 635/636/637, authored travel `area_links` including dungeon doors 501↔542, 541↔654, 651↔653, 499↔673 and Раскоп 635↔636↔637, hunt 50310 (home), 50309 (route+respawn) и 50101–50103 (zone), dungeons 1/11/12/14 (bots 99/354/353/373), battlegrounds Раскоп `general|2` plus dump cards, store 504 type `-131` lots 80/23 и 82/24, store 552 type 11 lot 438/621 RANK, reputation track **5**, 17 skills (включая **MAGSTR**, **LUCK**, **INJ_RESIST**), 14 levels с normalized managed skills,
-3 appearance presets (kind 1/2/3 gender 1), NPC **271** with four engine quests
-(`q_engine_board` / `q_engine_fight` / `q_engine_area` / `q_engine_daily`)
+3 appearance presets (kind 1/2/3 gender 1), NPC **271** with five engine quests
+(`q_engine_board` / `q_engine_fight` / `q_engine_area` / `q_engine_daily` /
+`q_engine_roster`)
 and world fact `engine_area`, и common-conf/chrome/HUD/welcome документы в составе текущего
 bundle. Bots 2/4/24/32 несут `spellBook` (Грызль пустая; Хисса 396, дух 422,
 рыжий 394); огр 99 и боссы 353/354/373 — пустая книга. Это нельзя называть полным игровым контентом или полным контентом
