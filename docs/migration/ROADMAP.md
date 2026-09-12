@@ -1003,9 +1003,9 @@
   generic: N данжей в одном bundle без per-dungeon кода. Spawn document
   получает `zone` (XOR с `route`, как outdoor hunt) в
   `catalog.dungeon_spawn_zones`, не jsonb и не отдельный mapper на данж.
-  `has_clear: true` (2/4/6/7), `loot.bands`, coins, shops — leftover:
-  `instanceConf` fail-fast на progress bar, а bots/areas/loot artifacts нет в
-  ACTIVE-MIN. Контракт: [INSTANCE.md](../modules/INSTANCE.md).
+  `has_clear: true` 4/6/7, `loot.bands`, shops — leftover DNG-03 / POST-03.
+  DNG-03 забирает яму `2` (clear bar/coins) и огр `personal_guaranteed`.
+  Контракт: [INSTANCE.md](../modules/INSTANCE.md).
 - **Acceptance:** каждый опубликованный `has_clear: false` данж проходит
   enter/bind/hunt/exit/rejoin/expiry без runtime JSON reads и без кода на
   дополнительный данж.
@@ -1740,12 +1740,71 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
 - **ID:** `DNG-03`
 - **depends_on:** `DNG-02`, `CMB-11`
 - **Behavior evidence:** leftover DNG-02: clear bar / coins,
-  `personal_guaranteed` / `loot.bands`, abort fight on expiry. Не mass
-  `has_clear:true` corpus (это контент).
-- **Content set:** representative один `has_clear` path или существующая
-  копия 542 — решить на architecture pass.
-- **Architecture checkpoint / decision:** до coding — architecture pass.
-- **Acceptance:** expiry/abort и clear-bar wire без JSON runtime.
+  `personal_guaranteed`. [DUNGEON.md](../../../jgr-emu/docs/DUNGEON.md)
+  § Clear progress; `jgr-emu/src/dungeon/clear.ts` `pushInstanceConf`;
+  `loot.ts` `collectDungeonLoot`. Огр dump: `has_clear: false`,
+  `instance_conf` без `progress_*`, `loot.personal_guaranteed` **2371**.
+  Яма dump `giga-run-npcs-dungeons.chlz`: artikul **2**,
+  `progress_finish_value=7`, вход 510 `flags:256` → 544.
+  `poganaya_yama.json`: 6 trash `544_*` (108+109×4) + boss `boss`
+  (106+107×5), `clear.coin_artikul_id` **5986** max 26 min 1.
+  **Конфликт.** jgr kick: «TODO: abort fight» — в бою только
+  `pendingKick`, kick после `finish`. Dump abort нет. Этот срез **не**
+  abort; `pending_kick` уже landed. `loot.bands` огра — leftover, не
+  авторить. Формула монет jgr **invented** (`round(coin_max×progress/finish)`);
+  канон среза — тот же, не выдумывать другую.
+- **Content set:** не mass POST-03. File seed `playable-slice/v35`.
+  1. **Поганая яма** artikul **2**, area **544**, parent **510** (isolated:
+     dump parent 510→508 не импортировать; `parent_id` пустой, как 541).
+     Дверь 510 item **14** → 544 `flags:256`; выход 544 item **3** → 510
+     `flags:2048`. Spawn list dump-faithful (7). `hasClear: true`,
+     `progressFinishValue: 7`, `clear` 5986/1/26, `loot.personal_guaranteed`
+     `[]`, `loot.boss_bot_id` **106**. Боты **106/107/108/109** из
+     `bestiary_bots.json` (level/VIT/STR/LUCK/exp/money/hunt); `spellBook`
+     пустая как 353/354/373. **Конфликт:** bestiary 106 `effect_ids` — не
+     этот срез. Artifact **5986** «Монета Поганой ямы» из Pub1/dump; нет
+     строки — candidate fail, не skip coins. Shop **830**, hunts/NPC 510 —
+     leftover. 2) Огр artikul **1**: `loot.personal_guaranteed: [2371]`
+     (2371 уже в slice). `hasClear` false, bands не писать.
+- **Architecture checkpoint / decision:** ADR-0016/0018/0020 достаточны;
+  `ARC-INS` не нужен; abort≠pending_kick ADR не создавать. Catalog владеет
+  definition (`hasClear`, finish, coins, personal ids). Instance владеет
+  killed keys и считает bar (чистые функции, как jgr `clear.ts`). Combat
+  не импортирует instance: spawn для grant — peek `DungeonHuntWorld`
+  fight→copy/spawn **до** `releaseFight`. Inventory грантит coins/2371
+  `personal_only` каждому team-1 в том же UoW, что `HuntFightSettlement`
+  (не только top damager). World loot/EXP — CMB-07 как сейчас.
+  `markSpawnKilled` остаётся в `InstanceHuntLockRelease` (idempotent).
+  esrv `instance_conf` на enter / floor travel / progress tick (team-1
+  боя). Миграция `catalog_dungeon_clear`: nullable finish + coin trio
+  (все три или все null) + `loot_boss_bot_id`; таблица
+  `dungeon_personal_guaranteed`. Не jsonb bands.
+  **Fail-fast.** `hasClear` без clearable spawn / finish 0; coin/personal
+  artikul нет в catalog; `hasClear: false` с `progress_*` в document;
+  `instanceConf(hasClear)` без finish/value; missing dungeon 204.
+  Level < `levelMin` — текущий 204. Abort mid-fight не делать.
+  **Clock/RNG/ID.** Bar/coins детерминированы (killed keys + формула);
+  bands RNG не этот срез. Copy/item id — PostgreSQL. Sweep TTL — тот же
+  `DelayScheduler` 15s.
+  **Restart.** `killed_spawns` PostgreSQL; `instance_conf` на COME_IN
+  пересобирается из keys. Mid-fight RAM; `pending_kick` после finish.
+  **CEF.** Production consumer. Product **частично** до CEF. Яма L11 —
+  e2e выдаёт EXP, не занижает `levelMin`.
+  Контракт: [INSTANCE.md](../modules/INSTANCE.md),
+  [COMBAT.md](../modules/COMBAT.md).
+  Лимит 400: extract clear-progress (instance domain) и dungeon personal
+  grant (app composition) из `hunt-fight-settlement` (337) /
+  `instance-desk` (240); `composition-root` (379) / `jugger-wire-module`
+  (392) / `combat-service` (371) / `battle` (368) не растить ради spawn
+  key на snapshot.
+- **Acceptance:** raw-AMF: L11+ 510→544 `instance_conf`
+  `{artikul_id:"2", progress_finish_value:"7", progress_value:0, status:100}`;
+  огр 542 по-прежнему без `progress_*`; win одного `544_*` → esrv
+  `progress_value:1`, spawn в `killed_spawns`, reconnect; win boss ямы →
+  bag 5986 count = формула от текущего progress, `personal_only`, в
+  `fight|loot` этого team-1; win огра → 2371×1 каждому team-1; TTL в бою
+  не abort (pending_kick после finish). Level<11 — 204. Shop 830 / bands
+  / abort / данжи 4/6/7 — не этот срез.
 - **Status:** `next`
 
 ### TRD-02 — Persist trade session

@@ -230,7 +230,7 @@ version bump. Combat не читает fixtures.
 ### Out of scope (CMB-03 leftover)
 
 Quest loot tables в combat (QST-ENG-02 clip — composition `needed`);
-party split; dungeon bands; system chat; `Clock.schedule`;
+party split; dungeon bands leftover (personal/coins — DNG-03); system chat; `Clock.schedule`;
 OA FIGHT_JOIN/HELP (CMB-11); live `10_000_000+hero.id`.
 
 ## CMB-04 — reconnect, locks, ghost
@@ -329,8 +329,8 @@ virus 631; summon; full `bot_spell_book.json`; heal+AOE dump bot 99.
 Dwar-lite таблица: guaranteed `drop_weight=0`, затем `loot_drop_cnt` picks
 (+ bonus `2^(max-n)`), пул `drop_weight>0` + NOTHING. Шанс pick ∝ вес /
 сумма. Пустая таблица (Хисса/дух/рыжий) не выдумывает предметы. Quest
-`kind:loot` и dungeon bands — не эта capability. Полный корпус —
-DATA-03.
+`kind:loot` — не эта capability. Dungeon personal/coins — DNG-03
+(composition). `loot.bands` leftover. Полный корпус — DATA-03.
 
 Gryzl **2**: NOTHING 3460 доминирует 77/93/99; unit past NOTHING даёт
 **77**. CEF нефорсируемого RNG не прогонялся.
@@ -343,8 +343,8 @@ Gryzl **2**: NOTHING 3460 доминирует 77/93/99; unit past NOTHING да�
 ### Out of scope (CMB-07 leftover)
 
 Quest loot tables в combat (drop-cap — QST-ENG-02 composition);
-dungeon personal/chance; party lottery; honor; полный
-`bot_loot_entries` corpus.
+dungeon `loot.bands` leftover; personal/coins — DNG-03 composition, не
+combat import; party lottery; honor; полный `bot_loot_entries` corpus.
 
 ## CMB-08 — duels and team shuffle
 

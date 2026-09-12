@@ -291,6 +291,13 @@ presence), затем `npc|answer` `jump:"area"`. Не piggyback `store|list`.
 не копировать: канон j-emu ComeIn. `playable-slice/v34`. Контракт: [QUESTS.md](../modules/QUESTS.md),
 [STORE.md](../modules/STORE.md).
 
+**Решение DNG-03:** текущих границ достаточно; `ARC-INS` / новый ADR не
+нужны. Checkpoint (ещё не landed): generic `has_clear` bar + coins на
+представителе яма artikul **2**/544; огр **2371** `personal_guaranteed`;
+`loot.bands` leftover. Abort mid-fight не переносить: jgr TODO, dump нет,
+`pending_kick` после finish уже совпадает. Combat instance не импортирует;
+grant — composition UoW. Контракт: [INSTANCE.md](../modules/INSTANCE.md).
+
 **Решение CMB-11:** текущих границ достаточно; `ARC-CMB` не нужен.
 Landed: `joinHunt.team` = `1|2`; HELP = team цели; copy gate = RAM
 `instanceCopyId` (`null` мир) со `startHunt`, сравнение на join.

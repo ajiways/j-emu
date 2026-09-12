@@ -44,7 +44,8 @@ area presence roster:
   `party_bag_items`. Target `social` groups ещё план.
 - `instance` — `instance.copies` / `binds` / `killed_spawns`, dungeon hunt
   RAM overlay, COME_IN ogre/kopi/tomb/usadba, `copy_type` `dungeon|bg`,
-  `book|instances` read model. Clear/loot bands — leftover.
+  `book|instances` read model. DNG-03 (`next`): `has_clear` bar / coins /
+  `personal_guaranteed`; `loot.bands` leftover.
 - `battleground` — RAM queue/invite/ban/live score, typed
   `battleground.finished_*`, Раскоп `general|2` (rooms 635/636/637, return
   500), HERO-01 match honor sum. POST-04 / fairness seal leftover.
@@ -54,7 +55,8 @@ area presence roster:
   quest roster, JUMP_AREA wire, `award.rep`, REMOVE equipped, hunt
   loot-cap через quests-port. Deny leave / ambush / QL-2 landed raw-AMF
   (`QST-ENG-04`). `OPEN_STORE` landed raw-AMF (`QST-ENG-05`: ComeIn +
-  `jump:"area"`, не телепорт `JUMP_AREA`). Следующий движок — `DNG-03`.
+  `jump:"area"`, не телепорт `JUMP_AREA`). Следующий движок — `DNG-03`
+  (freeze: яма 2 clear bar/coins, огр 2371; abort/bands не этот срез).
   Акрилон (`CONTENT-STORY-*`) не брать, пока leftover-движки не закрыты.
   `content` file
   seed/publish и EDT-01/02 operator HTTP `/operator/content/*` (GET

@@ -164,7 +164,9 @@ create_title, create_level_min, table_id)` PK `(release_id, id)`; UNIQUE
   bonus row).
 - `dungeons(release_id, artikul_id, title, start_area_id, parent_area_id,
 level_min, duration_sec, img_url, has_clear)` PK `(release_id, artikul_id)`.
-  Slice: `has_clear=0` artikul 1/11/12/14.
+  Slice: `has_clear=0` artikul 1/11/12/14. План DNG-03: nullable
+  `progress_finish_value`, coin trio, `loot_boss_bot_id`; таблица
+  `dungeon_personal_guaranteed`; яма artikul **2**.
 - `dungeon_areas` / `dungeon_spawns` / `dungeon_spawn_encounters` /
   `dungeon_spawn_routes` / `dungeon_spawn_zones` — spawn authors route **или**
   zone, не оба. Не jsonb.
