@@ -84,11 +84,11 @@ export const questScriptOps = questsOpsSchema.table(
     check("quest_script_ops_op_ord_check", sql`${table.opOrd} >= 0`),
     check(
       "quest_script_ops_hook_check",
-      sql`${table.hook} in ('dialog','goal_on_finish','reward')`,
+      sql`${table.hook} in ('dialog','goal_on_finish','reward','on_accept')`,
     ),
     check(
       "quest_script_ops_type_check",
-      sql`${table.type} in ('START_FIGHT','GRANT_ARTIKUL','GRANT_PROFESSION','REMOVE_ARTIKUL','MSG','SET_FLAG','CLEAR_FLAG','BUMP_GOAL','COMPLETE_GOAL','GRANT_AWARDS')`,
+      sql`${table.type} in ('START_FIGHT','GRANT_ARTIKUL','GRANT_PROFESSION','REMOVE_ARTIKUL','MSG','SET_FLAG','CLEAR_FLAG','BUMP_GOAL','COMPLETE_GOAL','GRANT_AWARDS','JUMP_AREA')`,
     ),
   ],
 );

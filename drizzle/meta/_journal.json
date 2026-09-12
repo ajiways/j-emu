@@ -176,6 +176,13 @@
       "when": 1789137774839,
       "tag": "0024_content_editor_candidates",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1789225841303,
+      "tag": "0025_quests_multi_board",
+      "breakpoints": true
     }
   ]
 }

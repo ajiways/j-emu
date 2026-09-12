@@ -1,5 +1,14 @@
 import { sql } from "drizzle-orm";
-import { check, integer, pgSchema, primaryKey, text, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  check,
+  integer,
+  pgSchema,
+  primaryKey,
+  text,
+  uniqueIndex,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { releases } from "../../content/infrastructure/schema.ts";
 
 export const questsSchema = pgSchema("quests");
@@ -62,6 +71,9 @@ export const authoredQuests = questsSchema.table(
     welcomeReady: text("welcome_ready").notNull(),
     awardExp: integer("award_exp").notNull(),
     awardMoneyMinor: integer("award_money_minor").notNull(),
+    awardRepObjectId: integer("award_rep_object_id"),
+    awardRepAmount: integer("award_rep_amount"),
+    awardRepCap: integer("award_rep_cap"),
   },
   (table) => [
     primaryKey({ columns: [table.releaseId, table.key] }),
@@ -76,6 +88,17 @@ export const authoredQuests = questsSchema.table(
     check("quests_board_ord_check", sql`${table.boardOrd} > 0`),
     check("quests_award_exp_check", sql`${table.awardExp} >= 0`),
     check("quests_award_money_minor_check", sql`${table.awardMoneyMinor} >= 0`),
+    check(
+      "quests_award_rep_check",
+      sql`(
+        (${table.awardRepObjectId} IS NULL AND ${table.awardRepAmount} IS NULL AND ${table.awardRepCap} IS NULL)
+        OR (
+          ${table.awardRepObjectId} > 0
+          AND ${table.awardRepAmount} > 0
+          AND ${table.awardRepCap} >= 0
+        )
+      )`,
+    ),
   ],
 );
 
@@ -89,9 +112,12 @@ export const npcQuests = questsSchema.table(
     questKey: text("quest_key").notNull(),
     boardOrd: integer("board_ord").notNull(),
     pointId: integer("point_id").notNull(),
+    activeOnly: boolean("active_only").notNull(),
+    welcomeMessage: text("welcome_message").notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.releaseId, table.npcId, table.questKey] }),
+    uniqueIndex("npc_quests_release_point_uidx").on(table.releaseId, table.pointId),
     check("npc_quests_npc_id_check", sql`${table.npcId} > 0`),
     check("npc_quests_board_ord_check", sql`${table.boardOrd} > 0`),
     check("npc_quests_point_id_check", sql`${table.pointId} > 0`),

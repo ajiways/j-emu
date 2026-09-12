@@ -365,6 +365,7 @@ describe("Drizzle migrations", () => {
       "0022_character_honor_grants.sql",
       "0023_quests_daily_journal.sql",
       "0024_content_editor_candidates.sql",
+      "0025_quests_multi_board.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -395,8 +396,9 @@ describe("Drizzle migrations", () => {
       "0022_character_honor_grants",
       "0023_quests_daily_journal",
       "0024_content_editor_candidates",
+      "0025_quests_multi_board",
     ]);
-    expect(await appliedCount()).toBe(25);
+    expect(await appliedCount()).toBe(26);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -709,6 +711,61 @@ describe("Drizzle migrations", () => {
         udt_name: "timestamptz",
       },
     ]);
+    const npcQuestColumns = await database.session().execute<{
+      column_name: string;
+      is_nullable: string;
+      data_type: string;
+    }>(
+      sql`SELECT column_name, is_nullable, data_type
+          FROM information_schema.columns
+          WHERE table_schema = 'quests' AND table_name = 'npc_quests'
+            AND column_name IN ('active_only', 'welcome_message')
+          ORDER BY column_name`,
+    );
+    expect(
+      [...npcQuestColumns].map((row) => ({
+        column_name: row.column_name,
+        is_nullable: row.is_nullable,
+        data_type: row.data_type,
+      })),
+    ).toEqual([
+      { column_name: "active_only", is_nullable: "NO", data_type: "boolean" },
+      { column_name: "welcome_message", is_nullable: "NO", data_type: "text" },
+    ]);
+    const awardRepColumns = await database.session().execute<{
+      column_name: string;
+      is_nullable: string;
+    }>(
+      sql`SELECT column_name, is_nullable
+          FROM information_schema.columns
+          WHERE table_schema = 'quests' AND table_name = 'quests'
+            AND column_name IN ('award_rep_object_id', 'award_rep_amount', 'award_rep_cap')
+          ORDER BY column_name`,
+    );
+    expect(
+      [...awardRepColumns].map((row) => ({
+        column_name: row.column_name,
+        is_nullable: row.is_nullable,
+      })),
+    ).toEqual([
+      { column_name: "award_rep_amount", is_nullable: "YES" },
+      { column_name: "award_rep_cap", is_nullable: "YES" },
+      { column_name: "award_rep_object_id", is_nullable: "YES" },
+    ]);
+    const scriptTypeCheck = await database.session().execute<{ check_clause: string }>(
+      sql`SELECT check_clause
+          FROM information_schema.check_constraints
+          WHERE constraint_schema = 'quests'
+            AND constraint_name = 'quest_script_ops_type_check'`,
+    );
+    expect([...scriptTypeCheck].map((row) => row.check_clause).join(" ")).toMatch(/JUMP_AREA/);
+    const hookCheck = await database.session().execute<{ check_clause: string }>(
+      sql`SELECT check_clause
+          FROM information_schema.check_constraints
+          WHERE constraint_schema = 'quests'
+            AND constraint_name = 'quest_script_ops_hook_check'`,
+    );
+    expect([...hookCheck].map((row) => row.check_clause).join(" ")).toMatch(/on_accept/);
   });
 
   it("treats a second migrate as a no-op", async () => {
