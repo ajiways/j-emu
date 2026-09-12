@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import path from "node:path";
 import { loadContentBundleFile } from "../../../src/modules/content/infrastructure/load-content-bundle-file.ts";
-import { dialogView, parkedFightStep } from "../../../src/modules/quests/domain/dialog-cursor.ts";
+import {
+  dialogView,
+  dialogViewForProgress,
+  parkedFightStep,
+} from "../../../src/modules/quests/domain/dialog-cursor.ts";
 import { bumpMatchingGoal } from "../../../src/modules/quests/domain/bump-goal.ts";
 import { currentGoal, goalsComplete } from "../../../src/modules/quests/domain/prior-gate.ts";
 import type { HeroQuestGoal } from "../../../src/modules/quests/domain/hero-quest.ts";
@@ -48,7 +52,7 @@ describe("quest prior-gate bump", () => {
     const board = quest("q_engine_board");
     const goals = board.goals.map((goal) => goalRow(board.key, goal.id, 0, 0));
     expect(currentGoal(board, goals)?.id).toBe("talk");
-    const talk = bumpMatchingGoal(board, goals, { kind: "talk" });
+    const talk = bumpMatchingGoal(board, goals, { kind: "talk", npcId: 271 });
     expect(talk?.goal.done).toBe(1);
     expect(bumpMatchingGoal(board, goals, { kind: "buy", artikulId: 23 })).toBeNull();
   });
@@ -56,6 +60,20 @@ describe("quest prior-gate bump", () => {
   it("treats empty goals as complete", () => {
     const empty = { ...quest("q_engine_board"), goals: [] };
     expect(goalsComplete(empty, [])).toBe(true);
+  });
+
+  it("parks the multi fight button while talk 272 is current", () => {
+    const multi = quest("q_engine_multi");
+    const goals = multi.goals.map((goal) => goalRow(multi.key, goal.id, 0, 0));
+    const view = dialogViewForProgress(multi, 3, goals);
+    expect(view.mode).toBe("stub");
+  });
+
+  it("does not bump talk on the wrong NPC", () => {
+    const multi = quest("q_engine_multi");
+    const goals = multi.goals.map((goal) => goalRow(multi.key, goal.id, 0, 0));
+    expect(bumpMatchingGoal(multi, goals, { kind: "talk", npcId: 271 })).toBeNull();
+    expect(bumpMatchingGoal(multi, goals, { kind: "talk", npcId: 272 })?.goal.done).toBe(1);
   });
 
   it("matches area_action by action id", () => {

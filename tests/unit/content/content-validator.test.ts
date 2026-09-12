@@ -479,6 +479,64 @@ describe("parseContentBundle", () => {
     ).toThrow(/quest q_engine_roster is required/);
   });
 
+  it("rejects a bundle without quest q_engine_multi", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        quests: playable.quests.filter((quest) => quest.key !== "q_engine_multi"),
+      }),
+    ).toThrow(/quest q_engine_multi is required/);
+  });
+
+  it("rejects npc 271 on item 1", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        npcs: playable.npcs.map((npc) => (npc.id === 271 ? { ...npc, itemId: 1 } : npc)),
+      }),
+    ).toThrow(/npc 271 itemId must be 4/);
+  });
+
+  it("rejects a bundle without npc 272", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        npcs: playable.npcs.filter((npc) => npc.id !== 272),
+      }),
+    ).toThrow(/npc 272 is required/);
+  });
+
+  it("rejects talk without objectId", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        quests: playable.quests.map((quest) =>
+          quest.key === "q_engine_board"
+            ? {
+                ...quest,
+                goals: quest.goals.map((goal) =>
+                  goal.kind === "talk" ? { ...goal, objectId: 0 } : goal,
+                ),
+              }
+            : quest,
+        ),
+      }),
+    ).toThrow(/talk .* objectId is required/);
+  });
+
+  it("rejects awardRep on SUM track 36", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        quests: playable.quests.map((quest) =>
+          quest.key === "q_engine_multi"
+            ? { ...quest, awardRep: { objectId: 36, amount: 10, cap: 0 } }
+            : quest,
+        ),
+      }),
+    ).toThrow(/awardRep must not grant track 36/);
+  });
+
   it("rejects a bundle without exactly one daily quest", () => {
     const extra = playable.quests.find((quest) => quest.key === "q_engine_daily");
     if (!extra) throw new Error("q_engine_daily is required in playable");
@@ -487,7 +545,7 @@ describe("parseContentBundle", () => {
         ...playable,
         quests: [
           ...playable.quests,
-          { ...extra, key: "q_engine_daily_extra", bookId: 6, pointId: 6, boardOrd: 6 },
+          { ...extra, key: "q_engine_daily_extra", bookId: 8, pointId: 8, boardOrd: 8 },
         ],
       }),
     ).toThrow(/exactly one quest with flags & 1/);
