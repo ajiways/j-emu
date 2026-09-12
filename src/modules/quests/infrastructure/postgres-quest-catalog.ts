@@ -2,17 +2,13 @@ import { and, eq } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import type {
   NpcDocument,
-  QuestAwardItemDocument,
-  QuestDialogStepDocument,
   QuestDocument,
-  QuestGoalArtikulDocument,
-  QuestGoalDocument,
-  QuestScriptOpDocument,
   WorldFactDocument,
 } from "../../content/domain/content-quest.ts";
 import type { ActiveContentRevision } from "../../content/ports/active-content-revision.ts";
 import type { AreaActionHotspot, QuestCatalog } from "../ports/quest-catalog.ts";
 import { decodeWorldFactValues } from "../domain/world-fact-values.ts";
+import { toNpc, toQuest } from "./postgres-quest-decode.ts";
 import {
   authoredQuests,
   npcQuests,
@@ -27,6 +23,8 @@ import {
   questScriptFightRoster,
   questScriptOps,
 } from "./schema-ops.ts";
+
+type AuthoredQuestRow = typeof authoredQuests.$inferSelect;
 
 export class PostgresQuestCatalog implements QuestCatalog {
   constructor(
@@ -177,222 +175,17 @@ export class PostgresQuestCatalog implements QuestCatalog {
       .select()
       .from(questScriptFightRoster)
       .where(eq(questScriptFightRoster.releaseId, releaseId));
+    const links = await this.database
+      .session()
+      .select()
+      .from(npcQuests)
+      .where(eq(npcQuests.releaseId, releaseId));
     return rows
-      .map((row) => toQuest(row, awards, goals, artikuls, steps, ops, roster))
+      .map((row) => toQuest(row, awards, goals, artikuls, steps, ops, roster, links))
       .sort((left, right) => left.boardOrd - right.boardOrd);
   }
 }
 
-type AuthoredQuestRow = typeof authoredQuests.$inferSelect;
-
-function toNpc(row: typeof npcs.$inferSelect): NpcDocument {
-  return {
-    id: row.id,
-    infoId: row.infoId,
-    title: row.title,
-    picture: row.picture,
-    description: row.description,
-    elsetext: row.elsetext,
-    areaId: row.areaId,
-    itemId: row.itemId,
-  };
-}
-
-function toQuest(
-  row: AuthoredQuestRow,
-  awards: readonly (typeof questAwardItems.$inferSelect)[],
-  goals: readonly (typeof questGoals.$inferSelect)[],
-  artikuls: readonly (typeof questGoalArtikuls.$inferSelect)[],
-  steps: readonly (typeof questDialogSteps.$inferSelect)[],
-  ops: readonly (typeof questScriptOps.$inferSelect)[],
-  roster: readonly (typeof questScriptFightRoster.$inferSelect)[],
-): QuestDocument {
-  const awardItems: QuestAwardItemDocument[] = awards
-    .filter((item) => item.questKey === row.key)
-    .map((item) => ({ artikulId: item.artikulId, count: item.count }));
-  const questGoalsRows = goals
-    .filter((goal) => goal.questKey === row.key)
-    .sort((left, right) => left.goalOrd - right.goalOrd)
-    .map((goal) => toGoal(goal, artikuls, ops, roster));
-  const dialogSteps = steps
-    .filter((step) => step.questKey === row.key)
-    .sort((left, right) => left.stepOrd - right.stepOrd)
-    .map((step) => toStep(step, ops, roster));
-  return {
-    key: row.key,
-    bookId: row.bookId,
-    title: row.title,
-    description: row.description,
-    awardDescription: row.awardDescription,
-    flags: requireFlags(row.flags),
-    levelMin: row.levelMin,
-    levelMax: row.levelMax,
-    npcId: row.npcId,
-    pointId: row.pointId,
-    boardOrd: row.boardOrd,
-    welcomeOffer: row.welcomeOffer,
-    welcomeActive: row.welcomeActive,
-    welcomeReady: row.welcomeReady,
-    awardExp: row.awardExp,
-    awardMoneyMinor: row.awardMoneyMinor,
-    awardItems,
-    goals: questGoalsRows,
-    dialogSteps,
-  };
-}
-
-function toGoal(
-  row: typeof questGoals.$inferSelect,
-  artikuls: readonly (typeof questGoalArtikuls.$inferSelect)[],
-  ops: readonly (typeof questScriptOps.$inferSelect)[],
-  roster: readonly (typeof questScriptFightRoster.$inferSelect)[],
-): QuestGoalDocument {
-  const goalArtikuls: QuestGoalArtikulDocument[] = artikuls
-    .filter((item) => item.questKey === row.questKey && item.goalId === row.goalId)
-    .map((item) => ({
-      role: item.role as QuestGoalArtikulDocument["role"],
-      artikulId: item.artikulId,
-    }));
-  return {
-    id: row.goalId,
-    kind: row.kind as QuestGoalDocument["kind"],
-    title: row.title,
-    goalOrd: row.goalOrd,
-    limit: row.limitValue,
-    artikuls: goalArtikuls,
-    actionId: row.actionId,
-    objectId: row.objectId,
-    waitingTitle: row.waitingTitle,
-    waitingDurationSec: row.waitingDurationSec,
-    waitingPopup: row.waitingPopup,
-    onFinish: opsFor(ops, roster, row.questKey, "goal_on_finish", row.goalId),
-  };
-}
-
-function toStep(
-  row: typeof questDialogSteps.$inferSelect,
-  ops: readonly (typeof questScriptOps.$inferSelect)[],
-  roster: readonly (typeof questScriptFightRoster.$inferSelect)[],
-): QuestDialogStepDocument {
-  if (row.type === "goal") {
-    return { type: "goal", text: row.text, goal: row.goalId, id: row.stepId };
-  }
-  if (row.type === "player") {
-    return {
-      type: "player",
-      text: row.text,
-      id: row.stepId,
-      next: row.nextKey,
-      toFight: row.toFight === 1 ? 1 : 0,
-      scripts: opsFor(ops, roster, row.questKey, "dialog", String(row.stepOrd)),
-    };
-  }
-  if (row.type === "reward") {
-    return {
-      type: "reward",
-      text: row.text,
-      answer: row.answer,
-      id: row.stepId,
-      scripts: opsFor(ops, roster, row.questKey, "reward", String(row.stepOrd)),
-    };
-  }
-  if (row.type !== "npc" && row.type !== "note" && row.type !== "stage") {
-    throw new Error(`Quest dialog step type ${row.type} is unknown`);
-  }
-  return { type: row.type, text: row.text, id: row.stepId };
-}
-
-function opsFor(
-  ops: readonly (typeof questScriptOps.$inferSelect)[],
-  roster: readonly (typeof questScriptFightRoster.$inferSelect)[],
-  questKey: string,
-  hook: "dialog" | "goal_on_finish" | "reward",
-  ownerKey: string,
-): readonly QuestScriptOpDocument[] {
-  return ops
-    .filter((op) => op.questKey === questKey && op.hook === hook && op.ownerKey === ownerKey)
-    .sort((left, right) => left.opOrd - right.opOrd)
-    .map((op) => decodeOp(op, roster));
-}
-
-function decodeOp(
-  row: typeof questScriptOps.$inferSelect,
-  roster: readonly (typeof questScriptFightRoster.$inferSelect)[],
-): QuestScriptOpDocument {
-  if (row.type === "START_FIGHT") {
-    const entries = roster.filter(
-      (item) =>
-        item.questKey === row.questKey && item.hook === row.hook && item.ownerKey === row.ownerKey,
-    );
-    return {
-      type: "START_FIGHT",
-      mode: "quest",
-      enemies: entries
-        .filter((item) => item.side === "enemy")
-        .sort((left, right) => left.ord - right.ord)
-        .map((item) => ({ artikulId: item.artikulId, count: item.count })),
-      allies: entries
-        .filter((item) => item.side === "ally")
-        .sort((left, right) => left.ord - right.ord)
-        .map((item) => ({ artikulId: item.artikulId, count: item.count })),
-      chatStart: row.chatStart ?? "",
-      chatWin: row.chatWin ?? "",
-      chatLose: row.chatLose ?? "",
-    };
-  }
-  if (row.type === "GRANT_ARTIKUL") {
-    return {
-      type: "GRANT_ARTIKUL",
-      artikulId: requireInt(row.artikulId),
-      count: requireInt(row.count),
-    };
-  }
-  if (row.type === "REMOVE_ARTIKUL") {
-    return {
-      type: "REMOVE_ARTIKUL",
-      artikulId: requireInt(row.artikulId),
-      count: requireInt(row.count),
-    };
-  }
-  if (row.type === "GRANT_PROFESSION") {
-    return { type: "GRANT_PROFESSION", professionId: requireInt(row.professionId) };
-  }
-  if (row.type === "MSG") {
-    if (!row.text) throw new Error("MSG script text is required");
-    return { type: "MSG", text: row.text };
-  }
-  if (row.type === "SET_FLAG") {
-    if (!row.flag || row.value === null) throw new Error("SET_FLAG requires flag and value");
-    return { type: "SET_FLAG", flag: row.flag, value: row.value };
-  }
-  if (row.type === "CLEAR_FLAG") {
-    if (!row.flag) throw new Error("CLEAR_FLAG requires flag");
-    return { type: "CLEAR_FLAG", flag: row.flag };
-  }
-  if (row.type === "BUMP_GOAL") {
-    if (!row.goalId) throw new Error("BUMP_GOAL requires goal");
-    return { type: "BUMP_GOAL", goal: row.goalId };
-  }
-  if (row.type === "COMPLETE_GOAL") {
-    if (!row.goalId) throw new Error("COMPLETE_GOAL requires goal");
-    return { type: "COMPLETE_GOAL", goal: row.goalId };
-  }
-  if (row.type === "GRANT_AWARDS") return { type: "GRANT_AWARDS" };
-  throw new Error(`Quest script type ${row.type} is unknown`);
-}
-
 function requirePositive(value: number, label: string): void {
   if (!Number.isInteger(value) || value < 1) throw new Error(`${label} is required`);
-}
-
-function requireInt(value: number | null): number {
-  if (value === null || !Number.isInteger(value) || value < 1) {
-    throw new Error("Quest script numeric field is required");
-  }
-  return value;
-}
-
-function requireFlags(value: number): number {
-  if (!Number.isInteger(value) || value < 0) throw new Error("Quest flags is required");
-  return value;
 }

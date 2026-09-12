@@ -1,5 +1,5 @@
 export type QuestSignal =
-  | Readonly<{ kind: "talk" }>
+  | Readonly<{ kind: "talk"; npcId: number }>
   | Readonly<{ kind: "kill"; artikulId: number }>
   | Readonly<{ kind: "loot"; artikulId: number; count: number }>
   | Readonly<{ kind: "buy"; artikulId: number }>

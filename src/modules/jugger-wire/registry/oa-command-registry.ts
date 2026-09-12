@@ -49,6 +49,7 @@ export class OaCommandRegistry {
     "user|stats",
     "user|unitframe",
     "user|view",
+    "fight|finish",
     "store|list",
     "store|buy",
     "store|repair",

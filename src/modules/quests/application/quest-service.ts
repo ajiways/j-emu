@@ -3,11 +3,12 @@ import type { QuestDocument } from "../../content/domain/content-quest.ts";
 import { boardRow, npcInfoBlock, npcQuestsBlock } from "../domain/board-wire.ts";
 import {
   advanceAfterPlayer,
-  dialogView,
+  dialogViewForProgress,
   parkedFightStep,
   type DialogView,
 } from "../domain/dialog-cursor.ts";
 import type { HeroQuest, HeroQuestGoal } from "../domain/hero-quest.ts";
+import { isDailyQuest, questExperienceGrant } from "../domain/daily-cycle-rules.ts";
 import { currentGoal, goalsComplete } from "../domain/prior-gate.ts";
 import { questBookSnapshot, type QuestBookSnapshot } from "../domain/quest-book-snapshot.ts";
 import { QuestDeniedError } from "../domain/quest-denied-error.ts";
@@ -18,7 +19,8 @@ import { hasQuestStartFight, startFightEffects } from "../domain/quest-start-fig
 import { completeParkedAreaFight as completeParked, neededForHero } from "./quest-hero-progress.ts";
 import { catchUpDailyCycle, hideFinishedDaily } from "./quest-daily-wipe.ts";
 import type { QuestAnswerInput, QuestMutation } from "./quest-mutation.ts";
-import { isDailyQuest, questExperienceGrant } from "../domain/daily-cycle-rules.ts";
+import { boardLinkForNpc } from "../domain/npc-board-link.ts";
+import { questByPoint, requireNpc, requirePositive } from "./quest-lookup.ts";
 import type { HeroQuestRepository } from "../ports/hero-quest-repository.ts";
 import type { QuestCatalog } from "../ports/quest-catalog.ts";
 import type { QuestLootNeeded } from "../ports/quest-loot-needed.ts";
@@ -34,25 +36,27 @@ export class QuestService implements QuestLootNeeded {
 
   async board(heroId: number, npcRef: number): Promise<QuestMutation> {
     await this.catchUp(heroId);
-    const npc = await this.requireNpc(npcRef);
+    const npc = await requireNpc(this.catalog, npcRef);
     return { effects: [], bookDirty: true, npcId: npc.id };
   }
 
   async boardRows(heroId: number, npcRef: number): Promise<ReturnType<typeof npcQuestsBlock>> {
-    const npc = await this.requireNpc(npcRef);
+    const npc = await requireNpc(this.catalog, npcRef);
     const quests = await this.catalog.questsForNpc(npc.id);
     const rows = [];
     for (const quest of quests) {
+      const link = boardLinkForNpc(quest, npc.id);
+      if (!link) continue;
       const progress = await this.progress.find(heroId, quest.key);
       const goals = progress ? await this.progress.goals(heroId, quest.key) : [];
-      const row = boardRow(quest, progress, goals);
+      const row = boardRow(quest, progress, goals, link);
       if (row) rows.push(row);
     }
     return npcQuestsBlock(npc, rows);
   }
 
   async npcInfo(npcRef: number) {
-    return npcInfoBlock(await this.requireNpc(npcRef));
+    return npcInfoBlock(await requireNpc(this.catalog, npcRef));
   }
 
   async bookSnapshot(heroId: number, filterType: string): Promise<QuestBookSnapshot> {
@@ -88,24 +92,25 @@ export class QuestService implements QuestLootNeeded {
 
   async answer(heroId: number, input: QuestAnswerInput, heroLevel: number): Promise<QuestMutation> {
     await this.catchUp(heroId);
-    const npc = await this.requireNpc(input.npcRef);
-    const quest = await this.questByPoint(npc.id, input.pointId);
+    const npc = await requireNpc(this.catalog, input.npcRef);
+    const quest = await questByPoint(this.catalog, npc.id, input.pointId);
     const progress = await this.progress.find(heroId, quest.key);
     if (progress?.status === "done" && isDailyQuest(quest.flags) && input.answerId !== 0) {
       throw new QuestDeniedError("Задание уже выполнено");
     }
     const goals = progress ? await this.progress.goals(heroId, quest.key) : [];
-    const view = dialogView(quest, progress?.dialogStep ?? 0, goalsComplete(quest, goals));
+    const view = dialogViewForProgress(quest, progress?.dialogStep ?? 0, goals);
     if (input.answerId === 0) {
-      return { effects: [], bookDirty: true, npcId: npc.id, dialog: view, pointId: quest.pointId };
+      return { effects: [], bookDirty: true, npcId: npc.id, dialog: view, pointId: input.pointId };
     }
     const picked = view.answers.find((answer) => answer.id === input.answerId);
     if (!picked) throw new QuestDeniedError("Нет такого ответа");
     if (view.mode === "stub") {
-      return { effects: [], bookDirty: false, npcId: npc.id };
+      const talk = await this.recordSignal(heroId, { kind: "talk", npcId: npc.id });
+      return { ...talk, npcId: npc.id };
     }
     if (view.mode === "reward") return this.turnIn(heroId, quest, progress, goals);
-    return this.advanceDialog(heroId, quest, progress, view, picked.stepOrd, heroLevel);
+    return this.advanceDialog(heroId, quest, progress, view, picked.stepOrd, heroLevel, npc.id);
   }
 
   async recordSignal(heroId: number, signal: QuestSignal): Promise<QuestMutation> {
@@ -208,7 +213,7 @@ export class QuestService implements QuestLootNeeded {
   }
 
   async npcId(npcRef: number): Promise<number> {
-    return (await this.requireNpc(npcRef)).id;
+    return (await requireNpc(this.catalog, npcRef)).id;
   }
 
   private async advanceDialog(
@@ -218,12 +223,16 @@ export class QuestService implements QuestLootNeeded {
     view: DialogView,
     stepOrd: number,
     heroLevel: number,
+    npcId: number,
   ): Promise<QuestMutation> {
-    if (!progress) await this.accept(heroId, quest, heroLevel);
     const effects: QuestScriptEffect[] = [];
+    if (!progress) {
+      await this.accept(heroId, quest, heroLevel);
+      effects.push(...scriptEffects(quest.scripts.onAccept));
+    }
     const playerOrd = view.mode === "goal" ? stepOrd + 1 : stepOrd;
     if (view.mode === "goal") {
-      const talk = await this.recordSignal(heroId, { kind: "talk" });
+      const talk = await this.recordSignal(heroId, { kind: "talk", npcId });
       effects.push(...talk.effects);
       const player = quest.dialogSteps[playerOrd];
       if (player?.type === "player") effects.push(...scriptEffects(player.scripts));
@@ -242,7 +251,7 @@ export class QuestService implements QuestLootNeeded {
       dialogStep: next,
       dialogCursor: String(next),
     });
-    const dialog = dialogView(quest, next, goalsComplete(quest, latestGoals));
+    const dialog = dialogViewForProgress(quest, next, latestGoals);
     return {
       effects,
       bookDirty: true,
@@ -328,21 +337,6 @@ export class QuestService implements QuestLootNeeded {
     return inserted;
   }
 
-  private async questByPoint(npcId: number, pointId: number): Promise<QuestDocument> {
-    requirePositive(pointId, "point id");
-    const quests = await this.catalog.questsForNpc(npcId);
-    const quest = quests.find((row) => row.pointId === pointId);
-    if (!quest) throw new QuestDeniedError("Нет такого задания");
-    return quest;
-  }
-
-  private async requireNpc(npcRef: number) {
-    requirePositive(npcRef, "NPC ref");
-    const npc = await this.catalog.npc(npcRef);
-    if (!npc) throw new QuestDeniedError("Нет такого NPC");
-    return npc;
-  }
-
   async setFlag(heroId: number, flag: string, value: string): Promise<void> {
     if (!flag) throw new Error("Quest flag is required");
     const fact = await this.catalog.worldFact(flag);
@@ -385,8 +379,4 @@ export class QuestService implements QuestLootNeeded {
   private async catchUp(heroId: number): Promise<void> {
     await catchUpDailyCycle(this.catalog, this.progress, this.clock, heroId);
   }
-}
-
-function requirePositive(value: number, label: string): void {
-  if (!Number.isInteger(value) || value < 1) throw new Error(`${label} is required`);
 }

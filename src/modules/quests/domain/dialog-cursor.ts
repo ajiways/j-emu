@@ -1,4 +1,6 @@
 import type { QuestDocument, QuestDialogStepDocument } from "../../content/domain/content-quest.ts";
+import type { HeroQuestGoal } from "./hero-quest.ts";
+import { currentGoal, goalsComplete } from "./prior-gate.ts";
 
 type DialogAnswer = Readonly<{
   id: number;
@@ -81,6 +83,23 @@ export function dialogView(
     };
   }
   return stubView(start.index, start.message || quest.welcomeActive);
+}
+
+export function dialogViewForProgress(
+  quest: QuestDocument,
+  dialogStep: number,
+  goals: readonly HeroQuestGoal[],
+): DialogView {
+  const view = dialogView(quest, dialogStep, goalsComplete(quest, goals));
+  const current = currentGoal(quest, goals);
+  if (
+    view.mode === "player" &&
+    view.answers.some((answer) => answer.toFight === 1) &&
+    current?.kind === "talk"
+  ) {
+    return stubView(view.stepOrd, quest.welcomeActive);
+  }
+  return view;
 }
 
 export function advanceAfterPlayer(

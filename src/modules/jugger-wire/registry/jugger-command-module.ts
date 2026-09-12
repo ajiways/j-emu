@@ -68,6 +68,7 @@ import { UserSkillsCommand } from "../commands/oa/user-skills-command.ts";
 import { UserStatsCommand } from "../commands/oa/user-stats-command.ts";
 import { UserProfessionsCommand } from "../commands/oa/user-professions-command.ts";
 import { UserUnitframeCommand } from "../commands/oa/user-unitframe-command.ts";
+import { FightFinishCommand } from "../commands/oa/fight-finish-command.ts";
 import { UserViewCommand } from "../commands/oa/user-view-command.ts";
 import { EsrvCommandRegistry } from "./esrv-command-registry.ts";
 import { FproxyCommandRegistry } from "./fproxy-command-registry.ts";
@@ -221,6 +222,7 @@ export class JuggerCommandModule {
       new UserProfessionsCommand(characters),
       new UserUnitframeCommand(unitOfWork, characters, bootstrap),
       new UserViewCommand(bootstrap),
+      new FightFinishCommand(bootstrap),
       new UserMagicCommand(bootstrap, sheet),
       new UserFlashMessageCommand(bootstrap),
       new FriendlyDuelProposeCommand(propose),

@@ -1,6 +1,11 @@
-import type { NpcDocument, QuestDocument } from "../../content/domain/content-quest.ts";
+import type {
+  NpcDocument,
+  QuestBoardLinkDocument,
+  QuestDocument,
+} from "../../content/domain/content-quest.ts";
 import type { HeroQuest, HeroQuestGoal } from "./hero-quest.ts";
 import { currentGoal, goalsComplete } from "./prior-gate.ts";
+import { primaryBoardLink } from "./npc-board-link.ts";
 
 const OFFER_POINT_FLAGS = 8;
 const PROGRESS_POINT_FLAGS = 0;
@@ -46,9 +51,15 @@ export function boardRow(
   quest: QuestDocument,
   progress: HeroQuest | null,
   goals: readonly HeroQuestGoal[],
+  link: QuestBoardLinkDocument = primaryBoardLink(quest),
 ): BoardRow | null {
   if (progress?.status === "done") return null;
-  const welcome = boardWelcome(quest, progress, goals);
+  if (link.activeOnly) {
+    if (progress?.status !== "active") return null;
+    const current = currentGoal(quest, goals);
+    if (!current || current.objectId !== link.npcId) return null;
+  }
+  const welcome = boardWelcome(quest, progress, goals, link);
   return {
     title: quest.title,
     award_money: 0,
@@ -58,7 +69,7 @@ export function boardRow(
     level_min: quest.levelMin,
     level_max: quest.levelMax,
     flags: quest.flags,
-    point_id: quest.pointId,
+    point_id: link.pointId,
     point_flags: progress ? PROGRESS_POINT_FLAGS : OFFER_POINT_FLAGS,
     welcome_message: welcome,
     key: quest.key,
@@ -88,7 +99,9 @@ function boardWelcome(
   quest: QuestDocument,
   progress: HeroQuest | null,
   goals: readonly HeroQuestGoal[],
+  link: QuestBoardLinkDocument,
 ): string {
+  if (link.npcId !== quest.npcId || link.pointId !== quest.pointId) return link.welcomeMessage;
   if (!progress) return quest.welcomeOffer;
   if (goalsComplete(quest, goals)) return quest.welcomeReady;
   const current = currentGoal(quest, goals);

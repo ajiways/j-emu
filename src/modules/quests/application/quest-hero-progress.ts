@@ -1,7 +1,8 @@
 import { bumpMatchingGoal } from "../domain/bump-goal.ts";
 import { currentGoal } from "../domain/prior-gate.ts";
 import { neededLoot } from "../domain/quest-loot-needed.ts";
-import { effectsWithoutStartFight, hasQuestStartFight } from "../domain/quest-start-fight.ts";
+import { hasQuestStartFight } from "../domain/quest-start-fight.ts";
+import { effectsWithoutLeftover } from "../domain/quest-script-leftover.ts";
 import type { QuestScriptEffect } from "../domain/quest-script-effect.ts";
 import type { HeroQuestRepository } from "../ports/hero-quest-repository.ts";
 import type { QuestCatalog } from "../ports/quest-catalog.ts";
@@ -29,7 +30,7 @@ export async function completeParkedAreaFight(
     });
     if (!bumped) continue;
     await progress.saveGoal(bumped.goal);
-    effects.push(...effectsWithoutStartFight(bumped.onFinish));
+    effects.push(...effectsWithoutLeftover(bumped.onFinish));
     bookDirty = true;
     npcId = quest.npcId;
   }

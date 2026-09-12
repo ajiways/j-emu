@@ -51,6 +51,7 @@ const scriptOpSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("BUMP_GOAL"), goal: z.string().min(1) }).strict(),
   z.object({ type: z.literal("COMPLETE_GOAL"), goal: z.string().min(1) }).strict(),
   z.object({ type: z.literal("GRANT_AWARDS") }).strict(),
+  z.object({ type: z.literal("JUMP_AREA") }).strict(),
 ]);
 
 const goalKindSchema = z.enum([
@@ -166,6 +167,33 @@ export const questDocumentSchema = z
           .strict(),
       )
       .default([]),
+    awardRep: z
+      .object({
+        objectId: z.number().int().positive(),
+        amount: z.number().int().positive(),
+        cap: z.number().int().nonnegative(),
+      })
+      .strict()
+      .optional(),
+    boards: z
+      .array(
+        z
+          .object({
+            npcId: z.number().int().positive(),
+            boardOrd: z.number().int().positive(),
+            pointId: z.number().int().positive(),
+            activeOnly: z.boolean(),
+            welcomeMessage: z.string().min(1),
+          })
+          .strict(),
+      )
+      .default([]),
+    scripts: z
+      .object({
+        onAccept: z.array(scriptOpSchema).default([]),
+      })
+      .strict()
+      .default({ onAccept: [] }),
     goals: z.array(goalSchema),
     dialogSteps: z.array(dialogStepSchema).min(1),
   })

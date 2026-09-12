@@ -10,7 +10,8 @@ export type QuestScriptEffect =
   | Extract<QuestScriptOpDocument, { type: "CLEAR_FLAG" }>
   | Extract<QuestScriptOpDocument, { type: "BUMP_GOAL" }>
   | Extract<QuestScriptOpDocument, { type: "COMPLETE_GOAL" }>
-  | Extract<QuestScriptOpDocument, { type: "GRANT_AWARDS" }>;
+  | Extract<QuestScriptOpDocument, { type: "GRANT_AWARDS" }>
+  | Extract<QuestScriptOpDocument, { type: "JUMP_AREA" }>;
 
 export function scriptEffects(ops: readonly QuestScriptOpDocument[]): readonly QuestScriptEffect[] {
   return ops.map((op) => op);

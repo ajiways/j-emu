@@ -18,6 +18,14 @@ export function countBagByArtifact(
   return total;
 }
 
+export async function consumeFromBagForHero(
+  inventory: InventoryRepository,
+  command: Readonly<{ characterId: number; artifactId: number; quantity: number }>,
+): Promise<void> {
+  const items = [...(await inventory.lockForHero(command.characterId))];
+  await consumeFromBag(inventory, items, command.characterId, command.artifactId, command.quantity);
+}
+
 export async function consumeFromBag(
   inventory: InventoryRepository,
   items: InventoryItem[],

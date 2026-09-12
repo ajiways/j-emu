@@ -19,7 +19,8 @@ export type QuestScriptOpDocument =
   | Readonly<{ type: "CLEAR_FLAG"; flag: string }>
   | Readonly<{ type: "BUMP_GOAL"; goal: string }>
   | Readonly<{ type: "COMPLETE_GOAL"; goal: string }>
-  | Readonly<{ type: "GRANT_AWARDS" }>;
+  | Readonly<{ type: "GRANT_AWARDS" }>
+  | Readonly<{ type: "JUMP_AREA" }>;
 
 export type QuestDialogStepDocument =
   | Readonly<{ type: "npc" | "note" | "stage"; text: string; id: string }>
@@ -62,6 +63,24 @@ export type QuestGoalDocument = Readonly<{
 
 export type QuestAwardItemDocument = Readonly<{ artikulId: number; count: number }>;
 
+export type QuestAwardRepDocument = Readonly<{
+  objectId: number;
+  amount: number;
+  cap: number;
+}>;
+
+export type QuestBoardLinkDocument = Readonly<{
+  npcId: number;
+  boardOrd: number;
+  pointId: number;
+  activeOnly: boolean;
+  welcomeMessage: string;
+}>;
+
+type QuestScriptsDocument = Readonly<{
+  onAccept: readonly QuestScriptOpDocument[];
+}>;
+
 export type NpcDocument = Readonly<{
   id: number;
   infoId: number;
@@ -96,6 +115,9 @@ export type QuestDocument = Readonly<{
   awardExp: number;
   awardMoneyMinor: number;
   awardItems: readonly QuestAwardItemDocument[];
+  awardRep?: QuestAwardRepDocument;
+  boards: readonly QuestBoardLinkDocument[];
+  scripts: QuestScriptsDocument;
   goals: readonly QuestGoalDocument[];
   dialogSteps: readonly QuestDialogStepDocument[];
 }>;

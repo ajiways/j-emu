@@ -1,4 +1,5 @@
 import type { CharacterService } from "../modules/character/application/character-service.ts";
+import type { CombatPort } from "../modules/combat/ports/combat-port.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
 import type { QuestMutation } from "../modules/quests/application/quest-mutation.ts";
 import type { QuestService } from "../modules/quests/application/quest-service.ts";
@@ -11,6 +12,7 @@ export async function applyQuestScriptEffect(
     quests: QuestService;
     characters: CharacterService;
     inventory: InventoryService;
+    combat: CombatPort;
     chat: ChatDesk;
   }>,
   accountId: number,
@@ -36,15 +38,11 @@ export async function applyQuestScriptEffect(
     return;
   }
   if (effect.type === "REMOVE_ARTIKUL") {
-    const have = await deps.inventory.countBagByArtifact({
+    await deps.inventory.consumeByArtikul({
       characterId: heroId,
       artifactId: effect.artikulId,
-    });
-    if (have < 1) return;
-    await deps.inventory.consumeFromBag({
-      characterId: heroId,
-      artifactId: effect.artikulId,
-      quantity: Math.min(have, effect.count),
+      quantity: effect.count,
+      allowPaperdoll: (await deps.combat.activeFightId(accountId)) === null,
     });
     return;
   }
@@ -93,6 +91,14 @@ export async function applyQuestScriptEffect(
         characterId: heroId,
         artifactId: item.artikulId,
         quantity: item.count,
+      });
+    }
+    if (quest.awardRep) {
+      await deps.characters.grantReputation({
+        characterId: heroId,
+        objectId: quest.awardRep.objectId,
+        amount: quest.awardRep.amount,
+        cap: quest.awardRep.cap,
       });
     }
     return;

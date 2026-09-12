@@ -37,7 +37,8 @@ function nextGoalValue(row: HeroQuestGoal, goal: QuestGoalDocument, signal: Ques
 
 function matches(goal: QuestGoalDocument, signal: QuestSignal): boolean {
   if (goal.kind !== signal.kind) return false;
-  if (signal.kind === "talk" || signal.kind === "win_fight") return true;
+  if (signal.kind === "talk") return goal.objectId === signal.npcId;
+  if (signal.kind === "win_fight") return true;
   if (signal.kind === "area_action") return goal.actionId === signal.actionId;
   return goal.artikuls.some((artikul) => artikul.artikulId === signal.artikulId);
 }

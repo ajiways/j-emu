@@ -70,16 +70,32 @@ export async function insertQuestDocuments(
       welcomeReady: quest.welcomeReady,
       awardExp: quest.awardExp,
       awardMoneyMinor: quest.awardMoneyMinor,
+      awardRepObjectId: quest.awardRep?.objectId ?? null,
+      awardRepAmount: quest.awardRep?.amount ?? null,
+      awardRepCap: quest.awardRep?.cap ?? null,
     })),
   );
   await session.insert(npcQuests).values(
-    quests.map((quest) => ({
-      releaseId,
-      npcId: quest.npcId,
-      questKey: quest.key,
-      boardOrd: quest.boardOrd,
-      pointId: quest.pointId,
-    })),
+    quests.flatMap((quest) => [
+      {
+        releaseId,
+        npcId: quest.npcId,
+        questKey: quest.key,
+        boardOrd: quest.boardOrd,
+        pointId: quest.pointId,
+        activeOnly: false,
+        welcomeMessage: quest.welcomeOffer,
+      },
+      ...quest.boards.map((board) => ({
+        releaseId,
+        npcId: board.npcId,
+        questKey: quest.key,
+        boardOrd: board.boardOrd,
+        pointId: board.pointId,
+        activeOnly: board.activeOnly,
+        welcomeMessage: board.welcomeMessage,
+      })),
+    ]),
   );
   const awards = quests.flatMap((quest) =>
     quest.awardItems.map((item) => ({
@@ -92,6 +108,19 @@ export async function insertQuestDocuments(
   if (awards.length > 0) await session.insert(questAwardItems).values(awards);
   await insertGoals(session, releaseId, quests);
   await insertDialog(session, releaseId, quests);
+  await insertOps(
+    session,
+    releaseId,
+    quests.flatMap((quest) =>
+      quest.scripts.onAccept.map((op, opOrd) => ({
+        questKey: quest.key,
+        hook: "on_accept" as const,
+        ownerKey: "on_accept",
+        opOrd,
+        op,
+      })),
+    ),
+  );
 }
 
 async function insertGoals(
@@ -198,7 +227,7 @@ async function insertOps(
   releaseId: string,
   rows: readonly Readonly<{
     questKey: string;
-    hook: "dialog" | "goal_on_finish" | "reward";
+    hook: "dialog" | "goal_on_finish" | "reward" | "on_accept";
     ownerKey: string;
     opOrd: number;
     op: QuestScriptOpDocument;
@@ -238,7 +267,7 @@ function opColumns(
   releaseId: string,
   row: Readonly<{
     questKey: string;
-    hook: "dialog" | "goal_on_finish" | "reward";
+    hook: "dialog" | "goal_on_finish" | "reward" | "on_accept";
     ownerKey: string;
     opOrd: number;
     op: QuestScriptOpDocument;

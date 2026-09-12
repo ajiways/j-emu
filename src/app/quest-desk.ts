@@ -15,7 +15,11 @@ import type { ObjectActionEnvelope } from "../modules/jugger-wire/commands/oa/ob
 import type { QuestService } from "../modules/quests/application/quest-service.ts";
 import type { QuestMutation } from "../modules/quests/application/quest-mutation.ts";
 import { QuestDeniedError } from "../modules/quests/domain/quest-denied-error.ts";
-import type { QuestScriptEffect } from "../modules/quests/domain/quest-script-effect.ts";
+import {
+  leftoverJumpArea,
+  leftoverQuestEffects,
+  effectsWithoutLeftover,
+} from "../modules/quests/domain/quest-script-leftover.ts";
 import type { QuestSignal } from "../modules/quests/domain/quest-signal.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import { piggybackQuestFight } from "./quest-fight-piggyback.ts";
@@ -24,6 +28,7 @@ import {
   answerIdOf,
   npcRefOf,
   questDialogPayload,
+  jumpAreaAnswer,
   questFlat as flat,
   requireQuestInt as requireInt,
 } from "./quest-oa-codec.ts";
@@ -255,13 +260,11 @@ export class QuestDesk {
     heroId: number,
     mutation: QuestMutation,
   ): Promise<QuestMutation> {
-    const leftover: QuestScriptEffect[] = [];
-    for (const effect of mutation.effects) {
-      if (effect.type === "START_FIGHT") leftover.push(effect);
-      else await applyQuestScriptEffect(this.scriptDeps(), accountId, heroId, effect, mutation);
+    for (const effect of effectsWithoutLeftover(mutation.effects)) {
+      await applyQuestScriptEffect(this.scriptDeps(), accountId, heroId, effect, mutation);
     }
     await this.syncBagGoals(accountId, heroId);
-    return { ...mutation, effects: leftover };
+    return { ...mutation, effects: leftoverQuestEffects(mutation.effects) };
   }
 
   private async answerBlocks(
@@ -273,7 +276,9 @@ export class QuestDesk {
       "npc|answer": { status: 100 },
       ...(await this.boardBlocks(accountId, hero.id, mutation.npcId)),
     };
-    if (mutation.dialog && mutation.pointId) {
+    if (leftoverJumpArea(mutation.effects)) {
+      blocks["npc|answer"] = jumpAreaAnswer();
+    } else if (mutation.dialog && mutation.pointId) {
       blocks["npc|answer"] = questDialogPayload(
         mutation.pointId,
         mutation.dialog,
@@ -340,6 +345,7 @@ export class QuestDesk {
       quests: this.quests,
       characters: this.characters,
       inventory: this.inventory,
+      combat: this.combat,
       chat: this.chat,
     };
   }

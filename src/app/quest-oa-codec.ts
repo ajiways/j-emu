@@ -5,6 +5,14 @@ import type { DialogView } from "../modules/quests/domain/dialog-cursor.ts";
 import { QuestDeniedError } from "../modules/quests/domain/quest-denied-error.ts";
 import type { QuestService } from "../modules/quests/application/quest-service.ts";
 
+export function jumpAreaAnswer(): Readonly<{
+  status: 100;
+  jump: "area";
+  macros_list: readonly [];
+}> {
+  return { status: 100, jump: "area", macros_list: [] };
+}
+
 export function questDialogPayload(
   pointId: number,
   view: DialogView,

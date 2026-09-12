@@ -14,12 +14,6 @@ export function hasQuestStartFight(ops: readonly QuestScriptOpDocument[]): boole
   return questStartFightOps(ops).length > 0;
 }
 
-export function effectsWithoutStartFight(
-  effects: readonly QuestScriptEffect[],
-): readonly QuestScriptEffect[] {
-  return effects.filter((effect) => effect.type !== "START_FIGHT");
-}
-
 export function startFightEffects(
   ops: readonly QuestScriptOpDocument[],
 ): readonly QuestScriptEffect[] {

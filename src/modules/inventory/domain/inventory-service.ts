@@ -24,7 +24,8 @@ import { sellPriceMinor } from "./sell-price.ts";
 import { takeDropQuantity } from "./take-drop-quantity.ts";
 import { requireEquippedItem, requireWearablePaperdoll, type WearHero } from "./wear-paperdoll.ts";
 import { grantToBag } from "./grant-to-bag.ts";
-import { consumeFromBag, countBagByArtifact } from "./consume-from-bag.ts";
+import { consumeByArtikul, type ConsumeByArtikulCommand } from "./consume-by-artikul.ts";
+import { consumeFromBagForHero, countBagByArtifact } from "./consume-from-bag.ts";
 import { takeFromBagForMail } from "./take-from-bag-for-mail.ts";
 import { takeFromBagForAuction } from "./take-from-bag-for-auction.ts";
 import { takeFromBagForTrade } from "./take-from-bag-for-trade.ts";
@@ -249,19 +250,16 @@ export class InventoryService {
     return countBagByArtifact(items, command.characterId, command.artifactId);
   }
 
-  async consumeFromBag(command: {
+  consumeFromBag(command: {
     characterId: number;
     artifactId: number;
     quantity: number;
   }): Promise<void> {
-    const items = [...(await this.inventory.lockForHero(command.characterId))];
-    await consumeFromBag(
-      this.inventory,
-      items,
-      command.characterId,
-      command.artifactId,
-      command.quantity,
-    );
+    return consumeFromBagForHero(this.inventory, command);
+  }
+
+  consumeByArtikul(command: ConsumeByArtikulCommand): Promise<void> {
+    return consumeByArtikul(this.inventory, this.catalog, command);
   }
 
   takeFromBagForMail(command: {
