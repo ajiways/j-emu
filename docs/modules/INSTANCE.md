@@ -61,7 +61,10 @@ new copy.
 the copy id (world `0`).
 
 Exit to parent: presence copy `0`, bind remains. Reconnect/restart reads
-Postgres. `fight|conf.instance_id` is the copy id string; `can_leave:0`.
+Postgres. `fight|conf.instance_id` is the copy id string; `can_leave:0`. OA
+`FIGHT_JOIN` / `FIGHT_HELP` в копии — CMB-11: тот же RAM `instanceCopyId`,
+что у opener; чужая копия = dump 204 «другой локации». Карта ATTACK_BOT
+в копии остаётся team 1.
 
 Death/RESURRECT in a copy → start area of the same live copy (ogre is already
 542). Outdoor temple 503 is not applied inside the dungeon.
@@ -69,6 +72,6 @@ Death/RESURRECT in a copy → start area of the same live copy (ogre is already
 ## Out of slice
 
 Clear bar / coins, `loot.bands` / `personal_guaranteed`, bind warning on
-invite, dungeon shops, hunt join team 2, abort fight on
-expiry, `has_clear: true` fixtures (2/4/6/7), POST-03 mass importer, daily
-06:00 MSK wipe.
+invite, dungeon shops, abort fight on expiry, `has_clear: true` fixtures
+(2/4/6/7), POST-03 mass importer, daily 06:00 MSK wipe. Hunt join team 2
+в копии — CMB-11, не leftover этого модуля.

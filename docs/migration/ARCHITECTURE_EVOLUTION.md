@@ -278,6 +278,15 @@ leftover-механика: `CMB-11` (join team 2), затем QST-ENG-04 (deny l
 ambush / QL-2), OPEN_STORE, instance leftovers, persist trade. CEF и
 DATA-mass — не эта очередь.
 
+**Решение CMB-11:** текущих границ достаточно; `ARC-CMB` не нужен.
+`joinHunt.team` = `1|2`; HELP = team цели; copy gate = RAM
+`instanceCopyId` (`null` мир) со `startHunt`, сравнение на join.
+Combat не импортирует instance/party. Один `FightDuel`: team-2 не берёт
+бота; после смерти бота ретаргет team-1↔team-2. N×N две дуэли сразу —
+leftover, не этот срез. Hunt EXP/лут только opener-team. Team 2 не врать
+как «неактивный бой». ADR-0017–0020. Контракт: [COMBAT.md](../modules/COMBAT.md),
+[PARTY.md](../modules/PARTY.md), [INSTANCE.md](../modules/INSTANCE.md).
+
 **Решение DAY-01:** текущих границ достаточно; отдельный `ARC-QST` не нужен.
 Daily cycle — lazy `Clock` на quests ports (UTC+3 / 06:00), не
 `DelayScheduler` и не `Clock.schedule`. `hidden_in_journal` на том же

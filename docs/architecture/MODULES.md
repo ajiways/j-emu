@@ -151,7 +151,9 @@ state и outbound packets. В PostgreSQL владеет только завер�
 персонажа/инвентарь напрямую.
 
 **API:** `startHunt`, `joinHunt`, `hasFight`, `execute`, `activeFightId`,
-`resumeFight`, `accountForFight`, `takePocketConsume`, `takeExit`, `takeLoot`. Injected `CombatDelay`
+`resumeFight`, `accountForFight`, `takePocketConsume`, `takeExit`, `takeLoot`.
+CMB-11: `joinHunt.team` `1|2`; `startHunt`/`joinHunt` несут `instanceCopyId`
+(`null` = мир) — RAM на `Battle`, не FK в combat schema. Injected `CombatDelay`
 (dueAt + cancel по fight id) и `CombatWake` для fproxy. Loadout snapshot
 собирает `jugger-wire` из inventory/catalog ports; CMB-03 settlement —
 composition UoW, не запись combat в `heroes`/`items`. CMB-04 reconnect —

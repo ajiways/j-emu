@@ -3,12 +3,13 @@
 ## Статус
 
 Есть hunt melee loop (raw-AMF L/C/R, delay grant/bot-counter, kill, waiter
-re-pair), map `joinHunt`, CMB-02 pocket/glove/rage casts, CMB-03 terminal
+re-pair), map `joinHunt` team 1, CMB-02 pocket/glove/rage casts, CMB-03 terminal
 settlement, CMB-04 reconnect/ghost/RESURRECT, CMB-05 STR-урон, CMB-06
 bot spell book, CMB-07 loot, CMB-08 friendly duel + hunt 3↔3 waiter
 handoff и GEAR-01 RAM kind-3 с надетой 20546 (raw-AMF). Cross-swap двух
 живых пар и CEF дуэли/shuffle/gear-spell не прогонялись — product status
-combat остаётся частично. CMB-09 отдаёт
+combat остаётся частично. CMB-11 (OA join team 2 / HELP / copy gate) —
+контракт заморожен, код не landed. CMB-09 отдаёт
 quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA leftover
 `START_FIGHT` и hunt loot-cap — composition (`QuestDesk` /
 `HuntFightSettlement`), не combat domain. Roster/flags квестового боя
@@ -72,7 +73,8 @@ Inventory layout lock (`PUT_ON`/`PUT_OFF`/`DROP`/`SELL` → `203` в бою) —
 Трата из кармана — fproxy. World USE, COME_IN/`common|exit` и ATTACK — live
 `fightBusy`; WLD-01 применяет то же `FightRules` `203`. Карта ATTACK_BOT:
 ключ — spawn id; занятая живая точка — `joinHunt` team 1. OA `FIGHT_JOIN` /
-`FIGHT_HELP` — SOC-03 (hunt team 1, same-area, dump 204). Live `10_000_000 + heroes.id` в `userId` не копировать
+`FIGHT_HELP` — CMB-11 (hunt team 1\|2, same-area **и** same-copy, dump 204).
+Live `10_000_000 + heroes.id` в `userId` не копировать
 — participant = `heroes.id`.
 
 SINGLE/MULTI framing, exact `sq`, source IDs и packet order менять нельзя.
@@ -229,7 +231,7 @@ version bump. Combat не читает fixtures.
 
 Quest loot tables в combat (QST-ENG-02 clip — composition `needed`);
 party split; dungeon bands; system chat; `Clock.schedule`;
-OA FIGHT_JOIN/HELP; live `10_000_000+hero.id`.
+OA FIGHT_JOIN/HELP (CMB-11); live `10_000_000+hero.id`.
 
 ## CMB-04 — reconnect, locks, ghost
 
@@ -261,7 +263,7 @@ layout/travel/USE/ATTACK уже есть; CMB-04 их не расширяет н
 
 ### Out of scope (CMB-04 leftover)
 
-OA FIGHT_JOIN/HELP; persist боя; `arena|finished_fights`; dungeon/BG
+OA FIGHT_JOIN/HELP (CMB-11); persist боя; `arena|finished_fights`; dungeon/BG
 resurrect dest; artifact 875; `Clock.schedule`.
 
 ## CMB-05 — generic melee damage
@@ -355,7 +357,7 @@ HP/MP/pocket, без лута/EXP/травмы; `fight|conf.is_pvp=1`, `type:"6"
 После 3↔3 melee hits в hunt с waiter: бот уходит waiter-у, актор
 `oppwait`, HP/loadout без сброса. No-rotate — reset hits. bot↔bot и
 cross-swap двух 3↔3 пар — leftover (в playable slice один бот на точку).
-OA `FIGHT_JOIN` / `FIGHT_HELP` — hunt team 1, same-area (SOC-03). CEF не прогонялся.
+OA `FIGHT_JOIN` / `FIGHT_HELP` — CMB-11. CEF не прогонялся.
 
 ### Architecture decision
 
@@ -365,9 +367,80 @@ ADR-0017–0020 достаточны. Invites как active fight: RAM, restart 
 ### Out of scope (CMB-08 leftover)
 
 Cross-swap двух живых 3↔3 дуэлей; bot↔bot; charging/DoT на shuffle hits;
-practice finished_fights type 6; hunt join team 2. Real PvP assault —
+practice finished_fights type 6. Hunt join team 2 — CMB-11. Real PvP assault —
 BG-01, контракт [BATTLEGROUND.md](BATTLEGROUND.md). HERO-01 читает PvP
 snapshot (ниже), не hunt loot.
+
+## CMB-11 — hunt join team 2 / intervene
+
+Контракт для coding. Product-status не менять здесь. Очередь:
+[ROADMAP.md](../migration/ROADMAP.md) CMB-11 (`next`).
+
+OA `FIGHT_JOIN` `{fight, team:1|2}` и `FIGHT_HELP` `{nick}` входят в **тот
+же** RAM `fightId`, что и opener. Успех — тот же flat, что `ATTACK_BOT`
+(`common|action` 100, `fight|conf`, `common|hunt`, `user|unitframe`,
+`state`). Остальным authed в бою — roster/pers. Карта `ATTACK_BOT` на
+занятый spawn (outdoor и dungeon copy) по-прежнему `joinHunt` team **1**.
+Party chat ACTION «ПОМОЧЬ» остаётся team **1** (opener охоты).
+`purpose:"quest"`, friendly/pvp `kind` — `HuntJoinDenied`, как сейчас.
+
+### Copy и area
+
+`Battle` держит `areaId` и `instanceCopyId` (`null` = мир) со `startHunt`.
+`joinHunt` сравнивает оба с joiner. Чужой area **или** чужая копия →
+`HuntJoinDenied` «бой в другой локации» → dump 204 «Нельзя вмешаться в бой,
+находящийся в другой локации!» (jgr `joinFight` тот же текст на copy
+mismatch). Combat не импортирует instance/party tables: composition
+передаёт `Hero.instanceCopyId`. `DungeonHuntMapAttack.startHunt` обязан
+проставить copy; outdoor `HuntMapAttack` — `null`.
+
+Сейчас join смотрит только `areaId`: две копии 542 с одним area ложно
+проходят. Это дыра CMB-11, не «уже работает».
+
+### Team и pairing
+
+`HuntJoinInput.team` = `1|2`. `huntJoiner` берёт team из join, не хардкод
+`1`. `FightJoinCommand` не подменяет team 2 статусом «неактивный бой».
+HELP ставит joiner на team цели из того же `Battle` (не хардкод `1`).
+
+jgr — N×N `tryPairQueues`; j-emu — один `FightDuel` на hunt `Battle`.
+Срез CMB-11 не вводит вторую одновременную дуэль:
+
+- team **1** joiner: waiter CMB-08, может взять бота;
+- team **2** joiner: waiting, **не** в пуле `livingWaiter` бота;
+- пока бот жив, team-2 ждёт; смерть бота при живом team-2 **не** finish —
+  тот же `FightDuel` ретаргет живой team-1 ↔ team-2;
+- finish — `enemySideCleared` по людям **и** ботам стороны (сейчас
+  `HuntRoster.enemySideCleared` смотрит только ботов;
+  `melee-target.enemySideCleared` уже считает людей).
+
+Одновременные human↔bot и human↔human — leftover (jgr N×N).
+
+### Settlement
+
+`FightHumanOutcome.team` уже есть. Hunt EXP/money/loot — только opener-team
+при `winnerTeam === openerTeam` (jgr `rewardForHuman` при `team === 1` и
+`wonByHero`). Team-2: HP/pocket/ghost как любой участник, без hunt EXP и
+без party-loot routing этого боя. `winnerTeam === 2` — hunt loss для team-1,
+не «победа intervenor-а» с лутом моба.
+
+### Fail-fast / restart / CEF
+
+Dump 204: другая локация/копия; цель не в бою; stale/missing fight.
+Уже в бою → 203 «нельзя во время боя». Quest/duel join — текущие тексты
+через `asHelpFightError` (не dump-таблица FIGHT_JOIN.md). Team 2 — валидный
+вход, не «неактивный бой».
+
+Restart процесса уничтожает RAM бой (ADR-0020): JOIN/HELP после restart —
+stale 204, без resurrect. Reconnect до restart — тот же `fightId`/`akey`.
+
+Production consumer. Product **частично** до CEF. Строка в
+[CEF_MANUAL.md](../migration/CEF_MANUAL.md) — на close coding.
+
+### Out of scope (CMB-11 leftover)
+
+Вторая одновременная дуэль / полный N×N; BG/pvp `FIGHT_JOIN`; quest-fight
+join; `ATTACK` challenge; CEF.
 
 ## HERO-01 — PvP honor snapshot
 

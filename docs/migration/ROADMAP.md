@@ -1605,28 +1605,41 @@ CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
 
 - **ID:** `CMB-11`
 - **depends_on:** `SOC-03`, `CMB-08`, `DNG-01`
-- **Behavior evidence:** [FIGHT_JOIN.md](../../../jgr-emu/docs/FIGHT_JOIN.md)
-  `team` 1\|2; HELP ставит joiner на team цели; карта `ATTACK_BOT` при
-  занятом спавне — `joinHunt` team **1** (уже CMB-08/SOC-03). Сейчас team
-  **2** врёт 204 «неактивный бой» ([PARTY.md](../modules/PARTY.md)).
-  Dungeon/party leftover: join team 2, PvP intervene в копии.
+- **Behavior evidence:** [FIGHT_JOIN.md](../../../jgr-emu/docs/FIGHT_JOIN.md);
+  `jgr-emu/src/fight/lifecycle.ts` `joinFight` / `joinFightByNick` (area **и**
+  `instanceCopyId`; HELP = team цели; team 2 enqueue без немедленного
+  `tryPairQueues`); `jgr-emu/src/routes/oa/helpers.ts` `helpFightError`
+  (dump 204). Live j-emu: `FightJoinCommand` режет team 2 как «бой не
+  найден»; `huntJoiner` хардкодит `team: 1`; `Battle` хранит только
+  `areaId` — две копии 542 с одним area проходят current join.
 - **Content set:** без новых квестов. Hunt **50310** + копия огра **542**;
   два героя same-area / same-copy. Quest `purpose:"quest"` по-прежнему
   `HuntJoinDenied` (CMB-09).
-- **Architecture checkpoint / decision:** complete. ADR-0017–0020
-  достаточны; `ARC-*` не нужен. Active fight RAM. `joinHunt` уже team 1;
-  расширить team 2 и dungeon copy (тот же `instance_id`). Combat не
-  импортирует party/instance tables: composition + уже существующие ports.
-  **Fail-fast.** Чужой area/copy; quest-fight join; stale fight — dump 204
-  из FIGHT_JOIN.md, не подмена team 2 под «неактивный бой».
-  **Restart.** Mid-fight RAM; join после restart процесса не восстанавливает
-  бой (ADR-0020).
-  **CEF.** Production consumer. Product **частично** до CEF.
+- **Architecture checkpoint / decision:** ADR-0017–0020 достаточны; `ARC-*`
+  не нужен. Active fight RAM. Combat не импортирует party/instance tables:
+  composition передаёт `Hero.instanceCopyId` (`null` = мир) на
+  `startHunt`/`joinHunt`. `joinHunt.team` = `1|2`; HELP читает team цели
+  из того же RAM `Battle`. Карта `ATTACK_BOT` / dungeon occupied spawn
+  остаётся team **1**. Party chat ACTION «ПОМОЧЬ» остаётся team **1**
+  (opener охоты). Один `FightDuel` на `Battle` (не jgr N×N): team-2 joiner
+  не берёт бота у team-1 waiter; после смерти бота при живом team-2 бой
+  не заканчивается — тот же duel ретаргет team-1↔team-2. Одновременные
+  две дуэли — leftover. Hunt EXP/лут только opener-team при победе этой
+  стороны (jgr `rewardForHuman` team 1 + `wonByHero`).
+  **Fail-fast.** Чужой area/copy → dump 204 «другой локации»; stale →
+  «неактивный бой»; quest/duel join — текущие deny. Team 2 **не** маскировать
+  под «неактивный бой».
+  **Restart.** Mid-fight RAM; join после restart процесса — stale 204
+  (ADR-0020).
+  **CEF.** Production consumer. Product **частично** до CEF; строка
+  CEF_MANUAL — на close coding, не здесь.
   Контракт: [COMBAT.md](../modules/COMBAT.md), [PARTY.md](../modules/PARTY.md),
   [INSTANCE.md](../modules/INSTANCE.md).
 - **Acceptance:** raw-AMF: JOIN `{team:2}` и HELP на цель team 2 входят в
   тот же `fightId`; карта ATTACK_BOT на занятый 50310 по-прежнему team 1;
-  dungeon copy — только своя копия; quest-fight join 203/deny как сейчас.
+  две копии 542 изолируют JOIN; quest-fight join deny как сейчас; после
+  смерти бота живой team-2 продолжает vs team-1; settlement без hunt EXP
+  team-2; restart → 204 stale.
 - **Status:** `next`
 
 ### QST-ENG-04 — Quest-fight leftovers

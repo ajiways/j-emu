@@ -8,7 +8,7 @@ CEF окна группы не прогонялся — product-status **гот�
 product-status: [CAPABILITIES.md](../CAPABILITIES.md).
 
 Dungeon auto-create / bind warning / teleport on kick, dungeon lottery rules 1,
-quest `personal_only` loot, hunt join team 2 — не в срезе.
+quest `personal_only` loot — не в срезе. Hunt join team 2 — CMB-11.
 
 ## Источники поведения
 
@@ -88,20 +88,23 @@ Dump `fail()` — nested **2** `{status:2, error}` под ключом кома�
 
 `common|action` `FIGHT_JOIN` `{fight, team}` и `FIGHT_HELP` `{nick}` — как
 `ATTACK_BOT` flat: `common|action` 100, `fight|conf`, `common|hunt`,
-`user|unitframe`, `state`. Hunt join только **team 1** (CMB-08 `joinHunt`).
-Team 2 → 204 «Нельзя вмешаться в неактивный бой!».
+`user|unitframe`, `state`. Hunt join **team 1|2** (CMB-11). HELP ставит
+joiner на **ту же team**, что у цели в RAM бою. Карта `ATTACK_BOT` на
+занятый spawn — по-прежнему team **1**. Чужой area **или** чужая instance
+copy → тот же dump 204 «другой локации». Team 2 **не** маскировать под
+«неактивный бой».
 
 Уже в бою → **203** `нельзя во время боя`. Остальные dump `helpFightError`:
 
 | Case                | Status | Text                                                    |
 | ------------------- | ------ | ------------------------------------------------------- |
-| Other area          | 204    | «Нельзя вмешаться в бой, находящийся в другой локации!» |
+| Other area / copy   | 204    | «Нельзя вмешаться в бой, находящийся в другой локации!» |
 | Target not fighting | 204    | «Данный игрок сейчас не участвует в боях!»              |
 | Stale / missing     | 204    | «Нельзя вмешаться в неактивный бой!»                    |
 
-Карта `ATTACK_BOT` на занятый spawn по-прежнему `joinHunt` (CMB-08). Party HELP
-announce: при старте боя, если в группе ≥2, system на `4:` с ACTION
-`ПОМОЧЬ` → `FIGHT_JOIN` `{fight, team:1}`, `excluded_user_id` стартера.
+Party HELP announce: при старте боя, если в группе ≥2, system на `4:` с ACTION
+`ПОМОЧЬ` → `FIGHT_JOIN` `{fight, team:1}`, `excluded_user_id` стартера
+(opener охоты всегда team 1). Это не FIGHT_HELP по нику.
 
 ## Loot rules (outdoor hunt)
 
@@ -158,5 +161,5 @@ lottery/group loot/HELP — dump `party/chat.ts`.
 ## Вне среза
 
 Dungeon bind warning (`__force_bind_invite`), search-join bind, teleport on
-kick, dungeon rules-1 lottery, quest personal_only, hunt join team 2 / PvP
-intervene.
+kick, dungeon rules-1 lottery, quest personal_only. Одновременные две дуэли
+после intervene — leftover CMB-11.
