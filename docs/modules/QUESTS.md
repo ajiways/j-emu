@@ -103,13 +103,13 @@ answer после сдвига курсора не выдаёт награду.
 | ----------------------------- | ------------------------------------- | ----------------------------------------------------------------------- |
 | `START_FIGHT`                 | composition после commit              | dialog `npc\|answer` и AREA `action_finish` + `fight\|conf`             |
 | `GRANT_ARTIKUL`               | inventory                             | да; clip через `needed`, если текущая loot/deliver цель на этот artikul |
-| `GRANT_AWARDS`                | character/inventory/reputation        | turn-in                                                                 |
+| `GRANT_AWARDS`                | character/inventory/reputation        | turn-in; `awardRep` → `grantReputation`                                 |
 | `GRANT_PROFESSION`            | `learnProfession`                     | да                                                                      |
-| `REMOVE_ARTIKUL`              | inventory; нет предмета — skip        | deliver consume                                                         |
+| `REMOVE_ARTIKUL`              | inventory `consumeByArtikul`          | bag, иначе paperdoll; нет экземпляра — skip                             |
 | `MSG`                         | `ChatDesk.deliverSystem` после commit | да                                                                      |
 | `SET_FLAG`/`CLEAR`            | `hero_facts`                          | да                                                                      |
 | `BUMP_GOAL` / `COMPLETE_GOAL` | quests                                | да                                                                      |
-| `JUMP_AREA`                   | jugger-wire `npc\|answer`             | leftover → QST-ENG-03 `{ jump:"area" }`, не `setArea`                   |
+| `JUMP_AREA`                   | jugger-wire `npc\|answer`             | leftover `{ jump:"area", macros_list:[] }`, не `setArea`                |
 
 ORATORY: `{ unit(): number }`, `unit()*100 < probability`; без `probability` —
 успех. Синтетика без броска. Формула от стата — leftover.
@@ -253,25 +253,90 @@ corpus, live `book_id` для честного клиентского «!».
 `progress_on_win:false`, QL-2, deny leave,
 `on_lose` reset всей цели сверх текущего incomplete.
 
-## QST-ENG-03 — Multi-board / JUMP_AREA / awards.rep (contract)
+## QST-ENG-03 — Multi-board / JUMP_AREA / awards.rep
 
-Очередь: [ROADMAP.md](../migration/ROADMAP.md) QST-ENG-03 (`next`).
-Product-status не менять здесь.
+Workflow `done`. Product **частично** до CEF:
+[CAPABILITIES.md](../CAPABILITIES.md), [CEF_MANUAL.md](../migration/CEF_MANUAL.md).
 
-`boards[]` → несколько `npc_quests` (`active_only` на вторичной). Talk
-signal бампает цель только если `npcRef` совпадает с `objectId` цели.
-`JUMP_AREA` в script registry: wire `{ jump:"area", macros_list:[] }`, area
-героя не менять. `flags:32` MAIN иконки. `GRANT_AWARDS` зовёт
-`grantReputation` (track из документа; cap 0 = без капа). `REMOVE_ARTIKUL`
-снимает bag или paperdoll. NPC 271 убрать с 503/item 1 (USE 584 без
-хотспота плиты).
+### Content
 
-Синтетика `q_engine_multi`, не `q_1`.
+`playable-slice/v32`, file seed. Не `q_1`, не book 90002, не NPC 1617/2024.
 
-## CONTENT-STORY-01 (blocked)
+| Сущность         | Значение                                                                                                                         |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| NPC 271          | 503 / `itemId` **4**; USE **584** без изменения                                                                                  |
+| NPC 272          | `id`/`infoId` **272**, 503 / `itemId` **8**; dump-proven picture                                                                 |
+| 503 item **1**   | свободен                                                                                                                         |
+| `q_engine_multi` | `bookId` **6**, `flags` **32**, `awardExp` **6**                                                                                 |
+| `awardRep`       | `{ objectId:5, amount:10, cap:0 }`                                                                                               |
+| boards           | 271 `pointId` **6** `boardOrd` **6** `active_only:false`; 272 `pointId` **7** `boardOrd` **1** `active_only:true` + свой welcome |
+| `onAccept`       | `JUMP_AREA` + `GRANT_ARTIKUL` 23×1                                                                                               |
+| goals            | `talk` `objectId` **272**; `win_fight` bot **2**×1, `onFinish` `REMOVE_ARTIKUL` 23 + MSG                                         |
 
-Не начинать, пока `QST-ENG-03` не `done`. Контракт q_1 — в
-ROADMAP. Канон ритуала: enemies **85**×1 + **83**×7, не fixture-only 83×7.
+Talk-цели `q_engine_board` / `q_engine_daily` / `q_engine_fight` /
+`q_engine_roster` — `objectId` **271**. Хоты 271/272 не занимают items 1, 3,
+5, 7.
+
+### Schema / lookup
+
+Authored JSON (camelCase, как `onFinish` / `dialogSteps`):
+
+- optional `scripts.onAccept: QuestScriptOp[]` — один раз при insert accept;
+- optional `awardRep: { objectId, amount, cap }` — нет поля = нет гранта репы;
+- optional `boards: [{ npcId, boardOrd, pointId, activeOnly, welcomeMessage }]`
+  — **дополнительные** NPC-link. Primary остаётся `npcId` / `pointId` /
+  `boardOrd` / `welcome*` на квесте.
+
+`npc_quests`: колонки `active_only` (boolean, not null) и
+`welcome_message` (text, not null). PK `(release, npc, quest)` уже есть.
+`point_id` уникален в релизе среди `quests.point_id` **и** board-link.
+`npc\|quests` / `npc\|answer` резолвят квест по `(npcId, pointId)` link, не
+только по `quests.point_id`. `JUMP_AREA` — валидный script op. `awardRep`
+на неизвестный track — ошибка публикации.
+
+Один линейный курсор на квест (не вторая state-machine). Secondary
+`active_only` — та же сцена, другая доска.
+
+### Правила
+
+- Доска 272 не показывается без active `q_engine_multi` и когда
+  `currentGoal.objectId !== 272`. 271 в mid видна (`flags:32`, pf `0`).
+- Offer 271: `flags:32` pf `8` (`main_start`). Secondary visible: `32`+`0`
+  (`main_pnt`). Борд `award_rep` остаётся `""` (live).
+- `QuestSignal` talk несёт `npcId`. Match: `kind===talk` и
+  `goal.objectId === npcId`. Talk `objectId` 0 — ошибка публикации.
+- Accept с leftover `JUMP_AREA`: `npc\|answer`
+  `{ status:100, jump:"area", macros_list:[] }` **вместо** dialog payload.
+  `heroes.area` / `setArea` не вызывать. После `fight\|finish` `JUMP_AREA`
+  локацию не меняет и `npc\|answer` не шлёт.
+- `GRANT_AWARDS` как сейчас выдаёт exp/money/items из документа, плюс
+  `grantReputation({ objectId, amount, cap })` из `awardRep`. Cap 0 = без
+  капа источника. Чат репы — leftover SOC-01. Отдельный `GRANT_REP` op не
+  добавлять.
+- `REMOVE_ARTIKUL`: public `consumeByArtikul` — bag, иначе paperdoll
+  (в т.ч. `cnt=0`); нет экземпляра — skip. `allowPaperdoll` только когда
+  active fight уже снят с RAM (`afterFinished` после `byAccount.delete`).
+  `fight\|finish` отдаёт `user\|view.artifacts`. Чата «Изъято» нет.
+
+### Fail-fast / restart / CEF
+
+Публикация падает: неизвестный script; два NPC на одном `(areaId,itemId)`;
+hotspot vs travel; talk без NPC; `awardRep` на неизвестный / SUM 36 track;
+271 или 272 на item 1. Runtime 204 на неизвестный op. JUMP не fallback-телепорт.
+
+Персистятся cursor, goals, `hero_reputations`, bag/paperdoll. Jump — только
+wire этого ответа.
+
+CEF leftover: USE 584 → MAIN доска 271 → accept → клиент закрывает NPC
+(`jump`). Хотспот 272 в `forestvillage.swf` не доказан — e2e `ref=272`.
+CEF-PASS не ставить.
+
+## CONTENT-STORY-01
+
+Очередь: [ROADMAP.md](../migration/ROADMAP.md) (`queued`). Не стартовать,
+пока leftover-движки (CMB-11 / QST-ENG-04 / OPEN_STORE / …) не `done`.
+Контракт q_1 там. Канон ритуала: enemies **85**×1 + **83**×7, не
+fixture-only 83×7. 503 item **1** свободен после QST-ENG-03.
 
 Ручные файлы у лимита 400 строк (`composition-root`, `jugger-command-module`,
 `parse-content-bundle`, `content-document`) перед регистрацией команд

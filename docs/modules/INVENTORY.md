@@ -657,6 +657,16 @@ Pub1 AMF. Сет **47** «Рекрута»: **30, 33, 35, 27, 28** + **106**. Mi
 - raw-AMF: 4 вещи → avatar overlay; 5 → 106 skills; mix 204; restart;
 - CEF после редактора; product **частично**.
 
+## QST-ENG-03 — REMOVE by artikul (bag or paperdoll)
+
+Landed. Канон: [QUESTS.md](QUESTS.md). Inventory остаётся owner
+экземпляров. Public `consumeByArtikul({ allowPaperdoll })`: сначала bag,
+иначе paperdoll (включая `cnt=0`); нет экземпляра — skip, не 203 и не чат
+«Изъято». Quests/`items` напрямую не пишут. `allowPaperdoll` ложь, пока
+есть active fight; `afterFinished` идёт после снятия боя с RAM, поэтому
+quest-win REMOVE снимает надетый слот. `fight|finish` отдаёт
+`user|view.artifacts`.
+
 ## GEAR-01 — paperdoll extra.spell
 
 Inventory остаётся owner instance и read-only `equippedGearSpells` / `list`.

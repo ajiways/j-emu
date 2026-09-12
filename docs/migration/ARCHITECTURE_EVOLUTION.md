@@ -266,9 +266,17 @@ talk-npc, GRANT_AWARDS.rep, REMOVE equipped и quest roster — этого не�
 QST-ENG-02. Replan: `CMB-10` затем `QST-ENG-03`, не хардкод Акрилона.
 
 **Решение CMB-10 / QST-ENG-03:** текущих границ достаточно; `ARC-QST` /
-`ARC-CMB` не нужны. Roster — тот же RAM `FightDuel` (ADR-0020);
-`grantReputation` уже есть; `npc_quests` уже multi-NPC PK. Контракт:
+`ARC-CMB` / новый inventory-порт-модуль не нужны. Roster — тот же RAM
+`FightDuel` (ADR-0020). QST-ENG-03 landed: `npc_quests.active_only` +
+per-board welcome; talk signal несёт `npcId`; `JUMP_AREA` — wire leftover
+на `npc|answer`, не `setArea`; `GRANT_AWARDS` зовёт `grantReputation`;
+REMOVE — public `consumeByArtikul`. Контракт:
 [COMBAT.md](../modules/COMBAT.md), [QUESTS.md](../modules/QUESTS.md).
+
+**Replan после QST-ENG-03:** сюжет `CONTENT-STORY-*` не `next`. Сначала
+leftover-механика: `CMB-11` (join team 2), затем QST-ENG-04 (deny leave /
+ambush / QL-2), OPEN_STORE, instance leftovers, persist trade. CEF и
+DATA-mass — не эта очередь.
 
 **Решение DAY-01:** текущих границ достаточно; отдельный `ARC-QST` не нужен.
 Daily cycle — lazy `Clock` на quests ports (UTC+3 / 06:00), не

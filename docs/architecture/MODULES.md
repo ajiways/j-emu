@@ -49,10 +49,12 @@ area presence roster:
   `battleground.finished_*`, Раскоп `general|2` (rooms 635/636/637, return
   500), HERO-01 match honor sum. POST-04 / fairness seal leftover.
 - Репутация Радвея **5** есть (REP-01, product частично).
-  `quests` runtime QST-ENG-01/02 / DAY-01: NPC 271, четыре engine-квеста,
-  USE 584, lazy 06:00 wipe, `book|quest_delete`. AREA leftover
-  `START_FIGHT`, hunt loot-cap через quests-port. Акрилон — после CMB-10 /
-  QST-ENG-03. `content` file
+  `quests` runtime QST-ENG-01/02 / DAY-01 / CMB-10 / QST-ENG-03: NPC 271/272,
+  шесть engine-квестов, USE 584, lazy 06:00 wipe, `book|quest_delete`,
+  quest roster, JUMP_AREA leftover, `award.rep`, REMOVE equipped, hunt
+  loot-cap через quests-port. Следующий движок — `CMB-11` (join team 2).
+  Акрилон (`CONTENT-STORY-*`) не брать, пока leftover-движки не закрыты.
+  `content` file
   seed/publish и EDT-01/02 operator HTTP `/operator/content/*` (GET
   document/keys).
   `economy` модуля нет.
@@ -167,7 +169,7 @@ application; OA `arena|finished_fights` и `fight_info.php` в текущем с
 восстанавливается. Формат history берётся из старого эмулятора; решение —
 [ADR-0020](../adr/ADR-0020-ephemeral-combat.md).
 
-### `quests` — QST-ENG-01/02 / DAY-01 runtime
+### `quests` — QST-ENG-01/02 / DAY-01 / QST-ENG-03 runtime
 
 **Владеет:** authored NPC/quest/dialog/goal/script/flag (`release_id`) и
 player `hero_quests` (`hidden_in_journal`) / `hero_quest_goals` /
@@ -176,9 +178,10 @@ player `hero_quests` (`hidden_in_journal`) / `hero_quest_goals` /
 
 **API:** `board`, `answer`, `bookSnapshot`, `cancel`, `hideJournal`,
 `recordSignal`, `beginAreaAction` / `finishAreaAction`, loot
-`needed(heroId, artikulId)`. GRANT/consume/`START_FIGHT`/`MSG` —
-composition `QuestDesk`; hunt drop-cap — `HuntFightSettlement` через тот
-же `needed`, не импорт владельцев в domain.
+`needed(heroId, artikulId)`. GRANT/consume/`START_FIGHT`/`MSG`/`JUMP_AREA`
+leftover — composition `QuestDesk`; hunt drop-cap — `HuntFightSettlement`
+через тот же `needed`, не импорт владельцев в domain. Multi-board
+`npc_quests`, talk-npc, `JUMP_AREA` wire, `GRANT_AWARDS.rep` — QST-ENG-03.
 
 **События leftover:** `quests.accepted.v1` и outbox не вводятся, пока нет
 асинхронного consumer.

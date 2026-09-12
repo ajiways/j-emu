@@ -1168,37 +1168,70 @@
 - **ID:** `QST-ENG-03`
 - **depends_on:** `QST-ENG-02`
 - **Behavior evidence:** [QUEST_DIALOG.md](../../../jgr-emu/docs/QUEST_DIALOG.md)
-  `JUMP_AREA` → `npc|answer` `{ jump:"area", macros_list:[] }` (не `setArea`);
-  [QUEST_BOARD_ICONS.md](../../../jgr-emu/docs/QUEST_BOARD_ICONS.md) MAIN
-  `flags:32`; secondary `active_only`; talk `waiting_dialog` только у своего
-  NPC; [REPUTATION.md](../modules/REPUTATION.md) `GRANT_AWARDS` → track **5**;
-  REMOVE_ARTIKUL снимает и надетый экземпляр.
-- **Content set:** синтетика, не Акрилон. Второй NPC на 503 **не** item **1**
-  (его занимает engine 271; live item 1 = плита 2024 — развести в этом срезе:
-  271 снять с 503/1, голова остаётся USE **584**). Новый ключ `q_engine_multi`
-  на 271 + вторичная доска нового NPC; `flags:32`; JUMP_AREA на accept;
-  awardExp + awardRep track 5; win_fight `onFinish` REMOVE_ARTIKUL надетой
-  **23** + MSG. Live `book_id` 90002 не этот срез.
-- **Architecture checkpoint / decision:** complete. ADR-0017–0020 достаточны;
-  `ARC-QST` не нужен. `npc_quests` уже PK `(release, npc, quest)` — не хватает
-  authored `boards[]` и `active_only`. Talk-signal сейчас бампает любой talk
-  без NPC. `JUMP_AREA` нет в `scriptOpSchema` (unknown type → publication
-  fail). `GRANT_AWARDS` не вызывает `grantReputation`. `REMOVE_ARTIKUL`
-  только bag.
-  **Владение.** quests — boards/flags/talk-npc; character — `grantReputation`;
-  inventory — consume bag **или** paperdoll через тот же public port;
-  jugger-wire — `jump:"area"`. Composition UoW. File seed новых ключей (editor
+  `JUMP_AREA` → leftover `npc|answer`
+  `{ status:100, jump:"area", macros_list:[] }` (не `setArea`; после боя
+  локацию тоже не меняет). [QUEST_BOARD_ICONS.md](../../../jgr-emu/docs/QUEST_BOARD_ICONS.md)
+  MAIN `flags:32` × pf `8`/`0` = `main_start` / `main_pnt`. Secondary
+  `active_only`: скрыта до accept и когда текущая цель не этого NPC.
+  Talk bump только если `npcRef` = `goal.objectId`.
+  [REPUTATION.md](../modules/REPUTATION.md) `award.rep`
+  `{object_id:5, amount:10, cap:0}` внутри `GRANT_AWARDS`; live борд
+  `award_rep` всегда `""`. REMOVE_ARTIKUL удаляет экземпляр, в т.ч.
+  paperdoll `cnt=0`, без чата «Изъято».
+  **Конфликт.** `jgr-emu/docs/QUESTS.md` ещё пишет, что `JUMP_AREA` не
+  исполняется / accept jump захардкожен. Канон для j-emu — QUEST_DIALOG +
+  `jgr-emu/src/quests/dialog.ts` / `scripts.ts` (`jumpArea=true`, без
+  `setArea`). `GRANT_REP` как отдельный op — не этот срез (CONTENT-STORY).
+- **Content set:** синтетика, не Акрилон / не `q_1` / не live `book_id`
+  90002 / не NPC 1617/2024. File seed `playable-slice/v32` (editor
   `hasReleaseEntry` новых ключей не открывает).
-  **Fail-fast.** Два NPC на одном `(areaId, itemId)`; неизвестный script;
-  awardRep на track не из catalog; JUMP_AREA не телепортирует «на всякий
-  случай» в 503.
-  **CEF.** Production consumer (доска MAIN + `jump`). Исключение закрыто.
-  Контракт: [QUESTS.md](../modules/QUESTS.md).
-- **Acceptance:** raw-AMF: вторичная доска видна только с active квестом;
-  talk бампается лишь с целевого NPC; JUMP_AREA даёт `jump:"area"` без смены
-  area; MAIN `flags:32` иконка; turn-in пишет репу **5**; REMOVE снимает
-  надетый **23**. Restart cursor/rep/bag. Product **частично** до CEF.
-- **Status:** `next`
+  NPC **271** остаётся в 503, `itemId` **4** (снять с item **1**; USE **584**
+  без изменения). Item **1** на 503 свободен (live плита 2024 позже).
+  Запрещены 271/272 на items **1** (плита), **3** (AREA камень), **5**
+  (лавка), **7** (ущелье).
+  NPC **272** (`id`/`infoId` 272) в 503 `itemId` **8**; title/picture —
+  dump-proven Pub1 `images/data/npcs/…`, не копировать плиту 2024.
+  `q_engine_multi`: `bookId` **6**, `flags` **32**, `awardExp` **6**,
+  `awardRep` `{ objectId:5, amount:10, cap:0 }`. Boards: 271 `pointId` **6**
+  `boardOrd` **6** `active_only:false`; 272 `pointId` **7** `boardOrd` **1**
+  `active_only:true` + свой `welcome_message`. `scripts.onAccept`:
+  `JUMP_AREA` + `GRANT_ARTIKUL` **23**×1. Goals: `talk` `objectId` **272**;
+  `win_fight` 1v1 bot **2**, `onFinish` `REMOVE_ARTIKUL` **23** + MSG.
+  Существующие talk-цели `q_engine_board` / `q_engine_daily` получают
+  `objectId` **271** (иначе новый talk-gate их сломает).
+- **Architecture checkpoint / decision:** complete. ADR-0017–0020
+  достаточны; `ARC-QST` / новый inventory-модуль не нужны. `npc_quests` уже
+  PK `(release, npc, quest)` — добавить `active_only` и per-board
+  `welcome_message`; lookup `npc|answer` / `npc|quests` по
+  `(npcId, pointId)` строки `npc_quests`, не только `quests.point_id`.
+  `JUMP_AREA` в `scriptOpSchema` + leftover как `START_FIGHT` (не исполнять
+  в `applyQuestScriptEffect`). `GRANT_AWARDS` зовёт существующий
+  `grantReputation`. `REMOVE_ARTIKUL` — тот же public inventory consume по
+  `artikul_id`, bag или paperdoll.
+  **Владение.** quests — boards/flags/talk-npc/onAccept; character —
+  `grantReputation`; inventory — consume bag **или** paperdoll; jugger-wire
+  — `jump:"area"` на `npc|answer` (вместо dialog payload). Composition UoW
+  (hero lock, как сейчас `QuestDesk.npcAnswer` / turn-in / fight finish).
+  Clock/RNG/новые runtime ID не вводятся. Jump не персистится.
+  **Fail-fast.** Два NPC на одном `(areaId, itemId)`; NPC hotspot vs travel
+  link; talk `kind` без `objectId>0`; `awardRep.objectId` не из catalog /
+  грант на 36; неизвестный script type; `JUMP_AREA` не делает `setArea` и
+  не телепортирует в 503 «на всякий случай». Нет предмета на REMOVE — skip,
+  не 203.
+  **CEF.** Production consumer (MAIN доска 271 через USE 584 + `jump` на
+  accept). Кликовый хотспот 272 в SWF не доказан — secondary только raw-AMF
+  `ref=272` до CONTENT-STORY. Исключение Wave 5–12 закрыто; CEF-PASS не
+  выдумывать. Контракт: [QUESTS.md](../modules/QUESTS.md).
+- **Acceptance:** raw-AMF: 272 доска пуста до accept и когда цель не talk
+  272; talk на 271 при цели 272 не бампает; accept → `jump:"area"` и area
+  остаётся 503; `flags:32` pf 8/0; turn-in пишет track **5** +10 (cap 0);
+  победа снимает надетый **23**, `fight|finish` отдаёт `user|view.artifacts`.
+  Restart: cursor/rep/bag/paperdoll; jump не повторяется. Product
+  **частично** до CEF.
+  Landed: `0025_quests_multi_board`; `playable-slice/v32`; `5293ece`
+  `d4d093e` `9bdebe6` `23374a7`. CEF leftover в
+  [CEF_MANUAL.md](CEF_MANUAL.md).
+- **Status:** `done`
 
 ## Wave 12 — presentation engines
 
@@ -1556,13 +1589,103 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
   422 не двигает pointer; restart читает новые documents. Product **частично**.
 - **Status:** `done`
 
-## Content-fill track — не блокирует ни одну волну выше
+## Leftover engines — механика, не сюжет
 
-Куратский авторский контент (Акрилон и далее) — дешёвый и легко
-пересоздаваемый актив, не цель переноса (см. `SOURCE_BOUNDARY.md` §
-«Цель переноса: движки, не конкретный контент»). Эти пункты берутся в любом
-порядке, любым агентом, в любой момент после соответствующего движка (Wave
-4–13 ниже) — они никогда не входят в `depends_on` capability из этих волн.
+Волны 0–13 закрыты. Осталась **неперенесённая механика**, которую capability
+оставили leftover. Это не CEF-backlog, не DATA-02…06 mass import и не
+куратские квесты. Порядок: stateful combat → quest-fight rules → store
+script → instance leftovers → trade persist.
+
+`CONTENT-STORY-*` не брать, пока этот блок не `done` (явный приоритет:
+функционал до конца, сюжет не переносить).
+
+CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
+
+### CMB-11 — Join team 2 / intervene
+
+- **ID:** `CMB-11`
+- **depends_on:** `SOC-03`, `CMB-08`, `DNG-01`
+- **Behavior evidence:** [FIGHT_JOIN.md](../../../jgr-emu/docs/FIGHT_JOIN.md)
+  `team` 1\|2; HELP ставит joiner на team цели; карта `ATTACK_BOT` при
+  занятом спавне — `joinHunt` team **1** (уже CMB-08/SOC-03). Сейчас team
+  **2** врёт 204 «неактивный бой» ([PARTY.md](../modules/PARTY.md)).
+  Dungeon/party leftover: join team 2, PvP intervene в копии.
+- **Content set:** без новых квестов. Hunt **50310** + копия огра **542**;
+  два героя same-area / same-copy. Quest `purpose:"quest"` по-прежнему
+  `HuntJoinDenied` (CMB-09).
+- **Architecture checkpoint / decision:** complete. ADR-0017–0020
+  достаточны; `ARC-*` не нужен. Active fight RAM. `joinHunt` уже team 1;
+  расширить team 2 и dungeon copy (тот же `instance_id`). Combat не
+  импортирует party/instance tables: composition + уже существующие ports.
+  **Fail-fast.** Чужой area/copy; quest-fight join; stale fight — dump 204
+  из FIGHT_JOIN.md, не подмена team 2 под «неактивный бой».
+  **Restart.** Mid-fight RAM; join после restart процесса не восстанавливает
+  бой (ADR-0020).
+  **CEF.** Production consumer. Product **частично** до CEF.
+  Контракт: [COMBAT.md](../modules/COMBAT.md), [PARTY.md](../modules/PARTY.md),
+  [INSTANCE.md](../modules/INSTANCE.md).
+- **Acceptance:** raw-AMF: JOIN `{team:2}` и HELP на цель team 2 входят в
+  тот же `fightId`; карта ATTACK_BOT на занятый 50310 по-прежнему team 1;
+  dungeon copy — только своя копия; quest-fight join 203/deny как сейчас.
+- **Status:** `next`
+
+### QST-ENG-04 — Quest-fight leftovers
+
+- **ID:** `QST-ENG-04`
+- **depends_on:** `CMB-11`, `CMB-10`, `QST-ENG-03`
+- **Behavior evidence:** leftover CMB-09/10 / QST-ENG-02: deny leave,
+  ambush `chance` без `mode:"quest"`, QL-2 (DROP откатывает loot/deliver
+  done). Не Акрилон.
+- **Content set:** синтетика на NPC 271, без `q_1`.
+- **Architecture checkpoint / decision:** до coding — отдельный architecture
+  pass. `ARC-*` не предполагается.
+- **Acceptance:** deny leave / ambush / QL-2 на raw-AMF; quest join по-прежнему
+  запрещён.
+- **Status:** `queued`
+
+### QST-ENG-05 — OPEN_STORE
+
+- **ID:** `QST-ENG-05`
+- **depends_on:** `QST-ENG-04`, `ECO-01`
+- **Behavior evidence:** leftover `OPEN_STORE` + `jump:"area"` в лавку
+  (не телепорт `JUMP_AREA`). [STORE.md](../modules/STORE.md).
+- **Content set:** синтетика, area **504**, без куратского квеста.
+- **Architecture checkpoint / decision:** до coding — architecture pass.
+- **Acceptance:** script открывает лавку 504; area героя штатный COME_IN, не
+  `setArea` fallback.
+- **Status:** `queued`
+
+### DNG-03 — Instance leftovers
+
+- **ID:** `DNG-03`
+- **depends_on:** `DNG-02`, `CMB-11`
+- **Behavior evidence:** leftover DNG-02: clear bar / coins,
+  `personal_guaranteed` / `loot.bands`, abort fight on expiry. Не mass
+  `has_clear:true` corpus (это контент).
+- **Content set:** representative один `has_clear` path или существующая
+  копия 542 — решить на architecture pass.
+- **Architecture checkpoint / decision:** до coding — architecture pass.
+- **Acceptance:** expiry/abort и clear-bar wire без JSON runtime.
+- **Status:** `queued`
+
+### TRD-02 — Persist trade session
+
+- **ID:** `TRD-02`
+- **depends_on:** `TRD-01`
+- **Behavior evidence:** leftover CAPABILITIES: сессия обмена не переживает
+  restart процесса.
+- **Content set:** нет.
+- **Architecture checkpoint / decision:** до coding — architecture pass
+  (RAM vs persist; ADR-0020 может потребовать уточнения).
+- **Acceptance:** restart посреди сессии не теряет put/confirm либо
+  документированно рвёт обоих с dump-error, не молчаливый success.
+- **Status:** `queued`
+
+## Content-fill track — сюжет, не брать сейчас
+
+Куратский авторский контент (Акрилон и далее) — не цель переноса (см.
+`SOURCE_BOUNDARY.md`). **Не стартовать**, пока leftover-движки выше не
+`done`. Эти пункты никогда не входят в `depends_on` capability волн 0–13.
 
 `CHT-01`/`QST-01…04`/`IUS-01` из прежней версии этого документа заменены на
 `QST-ENG-01`/`QST-ENG-02` (Wave 11, движок квестов) и на system-notification
@@ -1601,6 +1724,9 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
   Грызль **2** → ритуал 85+83×7 с союзниками → turn-in (exp/репа/478);
   9095 снята после победы; progress/награды после restart. Slice-файл не
   dual-write. CEF тот же сценарий.
+  **После QST-ENG-03:** 503 item **1** свободен (271 стоит на item **4**,
+  синтетика 272 на **8**). Плита 2024 может занять item 1 без коллизии с
+  головой.
 - **Status:** `queued`
 
 ### CONTENT-STORY-02 — q_4 «Первое задание скорпиона»

@@ -80,10 +80,12 @@ parity.
 
 ## Quest engine (не куратский контент)
 
-Источники ниже — для `QST-ENG-01`/`QST-ENG-02` (Wave 11), т.е. для generic
-движка, доказанного синтетическими тестовыми квестами. Куратский Акрилон и
-далее — низкий приоритет, `CONTENT-STORY-*` в content-fill track, отдельно от
-этих источников.
+Источники ниже — для `QST-ENG-01`/`QST-ENG-02`/`QST-ENG-03` (Wave 11), т.е.
+для generic движка, доказанного синтетическими тестовыми квестами.
+Куратский Акрилон и далее — низкий приоритет, `CONTENT-STORY-*` в
+content-fill track, отдельно от этих источников. `QST-ENG-03` дополнительно:
+`award.rep` / борд `award_rep:""` в [REPUTATION.md](../../../jgr-emu/docs/REPUTATION.md);
+JUMP leftover в `jgr-emu/src/quests/dialog.ts` и `scripts.ts`.
 
 - [QUESTS.md](../../../jgr-emu/docs/QUESTS.md);
 - [QUEST_DIALOG.md](../../../jgr-emu/docs/QUEST_DIALOG.md);

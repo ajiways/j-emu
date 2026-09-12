@@ -14,8 +14,9 @@
   `src/routes/oa/user.ts` (`user|stats`);
 - authored `jgr-emu/fixtures/reputation_tracks.json`;
 - curated `quests_curated/q_1.json` `award.rep` object_id **5** amount **10**
-  (consumer — `QST-ENG-03` / `CONTENT-STORY-01`);
-  `GRANT_REP` object_id **5** на q_4…q_9 / q_10+ (позже CONTENT-STORY).
+  cap **0**. Engine-consumer landed: `q_engine_multi` `GRANT_AWARDS` (не
+  `q_1`). `GRANT_REP` op и q_4…q_9 / q_10+ — CONTENT-STORY. Live борд шлёт
+  `award_rep:""`; репа не AMF-поле строки доски.
 
 Не переносить полный каталог 22 треков, орфаны 6/35, fame 125, kill overlay,
 чат «Получено: N репутации», SET_FLAG unlock, clan SUM.
@@ -91,5 +92,5 @@ tracks 7/11/12/…; fame 125; farm_stats professions; user_info HTML.
 - integration: persist reconnect/restart; concurrent grant one winner;
 - raw-AMF: `user|stats` без гранта — нет type:2, SUM 36 = 0; после
   `grantReputation(5,10)` — type:2 5 value 10 и SUM 36 = 10;
-- CEF экран репутации не обязателен, пока нет квеста: workflow `done` с
-  product **частично** (internal+OA read, нет quest consumer).
+- CEF экран репутации не обязателен для REP-01. Квестовый consumer —
+  `q_engine_multi` turn-in (product **частично** до CEF QST-ENG-03).

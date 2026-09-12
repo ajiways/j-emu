@@ -215,27 +215,32 @@ quest roster flags 8 не прогонялся — [CEF_MANUAL.md](migration/CEF
 
 ## Quests и NPC — частично
 
-Есть raw-AMF и PostgreSQL: NPC 271 (Голова мертвеца), пять синтетических
-квестов (`q_engine_board` / `q_engine_fight` / `q_engine_area` /
-`q_engine_daily` / `q_engine_roster`). USE 584 открывает доску без consume (`npc|info` +
-`npc|quests`). `npc|answer` двигает курсор; dialog `START_FIGHT`
-`mode:"quest"` vs Грызль (bot 2). Цели talk/kill/loot/buy/equip/deliver/
-area_action; скрипты `GRANT_*` / `MSG` / `SET_FLAG` / waiting AREA.
-`book|quest_list` / `quest_targets` / `quest_counters` только
-`currentGoal`. AREA `common|waiting` → `action_finish` с leftover
-`START_FIGHT` и piggyback `fight|conf`. Hunt loot-cap через quests-port
-`needed`. `area_conf` offer href только NPC-доска / AREA hotspot. DAY-01:
-ежедневка `flags:1` один раз за круг до 06:00 MSK, lazy wipe на OA,
-журнал `multitime:1` / countdown, `book|quest_delete` прячет done,
-cycle-aware EXP; reconnect/restart до границы. Cursor, goals, facts,
-waiting, done и hidden переживают reconnect/restart. CEF доски NPC 271,
-buy/equip 23, dialog-боя, AREA waiting на 503, quest-fight на
-`action_finish`, loot-cap, ежедневки и roster flags 8 не прогонялся —
+Есть raw-AMF и PostgreSQL: NPC 271 (Голова мертвеца, 503 item **4**) и
+NPC 272 (вторичная доска, item **8**); шесть синтетических квестов
+(`q_engine_board` / `q_engine_fight` / `q_engine_area` /
+`q_engine_daily` / `q_engine_roster` / `q_engine_multi`). USE 584 открывает
+доску 271 без consume (`npc|info` + `npc|quests`). `npc|answer` двигает
+курсор; dialog `START_FIGHT` `mode:"quest"` vs Грызль (bot 2). Цели
+talk/kill/loot/buy/equip/deliver/area_action/win_fight; скрипты `GRANT_*` /
+`REMOVE_ARTIKUL` (bag или paperdoll) / `MSG` / `SET_FLAG` / `JUMP_AREA` /
+waiting AREA. `q_engine_multi`: MAIN `flags:32`, secondary `active_only` на
+272, talk только с целевого NPC, accept `{ jump:"area", macros_list:[] }`
+без смены area, turn-in `awardRep` track **5** +10. `book|quest_list` /
+`quest_targets` / `quest_counters` только `currentGoal`. AREA
+`common|waiting` → `action_finish` с leftover `START_FIGHT` и piggyback
+`fight|conf`. Hunt loot-cap через quests-port `needed`. `area_conf` offer
+href только NPC-доска / AREA hotspot. DAY-01: ежедневка `flags:1` один раз
+за круг до 06:00 MSK, lazy wipe на OA, журнал `multitime:1` / countdown,
+`book|quest_delete` прячет done, cycle-aware EXP; reconnect/restart до
+границы. Cursor, goals, facts, waiting, done, hidden, репа и bag/paperdoll
+переживают reconnect/restart. CEF доски NPC 271, buy/equip 23, dialog-боя,
+AREA waiting на 503, quest-fight на `action_finish`, loot-cap, ежедневки,
+roster flags 8 и QST-ENG-03 (MAIN + jump + репа) не прогонялся —
 [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 
 Не перенесены куратский Акрилон, полный NPC corpus, данж `256`/`257`,
 MAIN `33`, live 75/276, `daily_pvp_kills` / stats 49, `OPEN_STORE`,
-`JUMP_AREA`, ambush `chance`, QL-2, deny leave, ложь
+ambush `chance`, QL-2, deny leave, ложь
 `mergeFinishedQuestsForMapMarkers`.
 
 ## Mail — частично
@@ -348,7 +353,9 @@ REPUTATION lots, COME_IN LEVEL entry, OPEN_STORE.
 Есть raw-AMF и PostgreSQL: OA `user|stats` named rows (опыт/героизм, нули
 kill/duel/fatality/daily, type:2 только при value > 0, всегда SUM 36 type 3),
 `grantReputation` track **5** persist reconnect/restart. Catalog публикует
-только Радвей **5**. CEF экран репутации не прогонялся; квестового consumer нет.
+только Радвей **5**. Квестовый consumer — `q_engine_multi` turn-in
+(`GRANT_AWARDS` → track 5 +10). CEF экрана репутации и сдачи
+`q_engine_multi` не прогонялся — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 
 Не перенесены tracks 7/11/…, kill overlay, SET_FLAG, chat notify, GRANT_REP.
 

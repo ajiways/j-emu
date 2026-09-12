@@ -96,6 +96,10 @@
 - [ ] DAY-01: USE 584 / NPC 271, взять и сдать ежедневку (flags 1), журнал с
       countdown до 06:00, quest_delete прячет строку; F5 сохраняет done;
       повторно взять нельзя до 06:00 MSK.
+- [ ] QST-ENG-03: USE 584 → MAIN `flags:32` на 271; принять `q_engine_multi`
+      → клиент закрывает NPC (`jump`), локация 503; надеть 23; победить
+      fight; перчатка снята; сдать → репа Радвея 5 = 10. Secondary 272 —
+      raw-AMF `ref=272`, клик по SWF не обязателен.
 
 ## World / economy / HUD
 
@@ -111,7 +115,8 @@
 
 - [ ] `grantExperience` — только через бой/будущий квест.
 - [ ] `noteHp` / lazy regen — HUD `hp_time`; отдельной кнопки нет.
-- [ ] `grantReputation` — нет квестового consumer.
+- [ ] `grantReputation` — consumer QST-ENG-03 turn-in; отдельной OA-кнопки
+      нет (CEF — строка QST-ENG-03).
 
 ## Как дополнять
 
