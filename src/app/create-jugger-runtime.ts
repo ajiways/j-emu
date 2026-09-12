@@ -3,6 +3,7 @@ import type { BattlegroundCatalog } from "../modules/battleground/ports/battlegr
 import type { CharacterService } from "../modules/character/application/character-service.ts";
 import type { HeroBestiary } from "../modules/character/ports/hero-bestiary.ts";
 import type { CombatPort } from "../modules/combat/ports/combat-port.ts";
+import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 import type { ContentEditor } from "../modules/content/ports/content-editor.ts";
 import type { IdentityService } from "../modules/identity/application/identity-service.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
@@ -106,6 +107,7 @@ export async function createJuggerRuntime(input: {
   questCatalog: QuestCatalog;
   pvpHonor: PvpFightHonorCache;
   contentEditor: ContentEditor;
+  ambushRandom: RandomSource;
 }): Promise<{ wire: JuggerWireModule; trade: { close(): Promise<void> } }> {
   const trade = TradeModule.create();
   try {
@@ -177,6 +179,7 @@ export async function createJuggerRuntime(input: {
       questCatalog: input.questCatalog,
       pvpHonor: input.pvpHonor,
       contentEditor: input.contentEditor,
+      ambushRandom: input.ambushRandom,
     });
     return { wire, trade };
   } catch (error) {

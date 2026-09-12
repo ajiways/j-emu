@@ -6,6 +6,7 @@ import { Battle } from "../domain/battle.ts";
 import type { BattleRules } from "../domain/battle-rules.ts";
 import { EphemeralBotFightIds } from "../domain/ephemeral-bot-fight-ids.ts";
 import { HuntJoinDenied } from "../domain/hunt-join-denied.ts";
+import { FIGHT_LEAVE_DENIED, fightLeaveDenied } from "../domain/fight-leave-denied.ts";
 import type { RandomSource } from "../domain/random-source.ts";
 import type { CombatDelay } from "../ports/combat-delay.ts";
 import type { CombatWake } from "../ports/combat-wake.ts";
@@ -215,6 +216,12 @@ export class CombatService implements CombatPort {
       return [];
     }
     if (command.kind === "leave") {
+      const battle = this.byAccount.get(accountId);
+      if (battle && !battle.finished && fightLeaveDenied(battle.purpose, battle.instanceCopyId)) {
+        return [
+          { type: "command-denied" as const, sequence: command.sequence, err: FIGHT_LEAVE_DENIED },
+        ];
+      }
       await this.finish.leaveFight(accountId);
       return [{ type: "command-accepted" as const, sequence: command.sequence }];
     }

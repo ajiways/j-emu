@@ -223,9 +223,10 @@ vs team-1 без hunt EXP; restart → 204 stale. CEF join/intervene не
 ## Quests и NPC — частично
 
 Есть raw-AMF и PostgreSQL: NPC 271 (Голова мертвеца, 503 item **4**) и
-NPC 272 (вторичная доска, item **8**); шесть синтетических квестов
+NPC 272 (вторичная доска, item **8**); семь синтетических квестов
 (`q_engine_board` / `q_engine_fight` / `q_engine_area` /
-`q_engine_daily` / `q_engine_roster` / `q_engine_multi`). USE 584 открывает
+`q_engine_daily` / `q_engine_roster` / `q_engine_multi` /
+`q_engine_ambush`). USE 584 открывает
 доску 271 без consume (`npc|info` + `npc|quests`). `npc|answer` двигает
 курсор; dialog `START_FIGHT` `mode:"quest"` vs Грызль (bot 2). Цели
 talk/kill/loot/buy/equip/deliver/area_action/win_fight; скрипты `GRANT_*` /
@@ -239,15 +240,19 @@ waiting AREA. `q_engine_multi`: MAIN `flags:32`, secondary `active_only` на
 href только NPC-доска / AREA hotspot. DAY-01: ежедневка `flags:1` один раз
 за круг до 06:00 MSK, lazy wipe на OA, журнал `multitime:1` / countdown,
 `book|quest_delete` прячет done, cycle-aware EXP; reconnect/restart до
-границы. Cursor, goals, facts, waiting, done, hidden, репа и bag/paperdoll
-переживают reconnect/restart. CEF доски NPC 271, buy/equip 23, dialog-боя,
+границы. QST-ENG-04: `leaveFight` в quest/copy — `{rs:false,
+err:"нельзя выйти из боя"}`, бой жив; outdoor hunt 50310 — flee; AREA
+ambush без `mode:"quest"` стартует hunt-бой и бампает клик сразу; chance
+miss без `fight|conf`; DROP 77 при loot 1/1 → `done=0`. Cursor, goals,
+facts, waiting, done, hidden, репа и bag/paperdoll переживают
+reconnect/restart. CEF доски NPC 271, buy/equip 23, dialog-боя,
 AREA waiting на 503, quest-fight на `action_finish`, loot-cap, ежедневки,
-roster flags 8 и QST-ENG-03 (MAIN + jump + репа) не прогонялся —
+roster flags 8, QST-ENG-03 (MAIN + jump + репа) и QST-ENG-04 (deny leave /
+ambush / QL-2) не прогонялся —
 [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 
 Не перенесены куратский Акрилон, полный NPC corpus, данж `256`/`257`,
-MAIN `33`, live 75/276, `daily_pvp_kills` / stats 49, `OPEN_STORE`,
-ambush `chance`, QL-2, deny leave, ложь
+MAIN `33`, live 75/276, `daily_pvp_kills` / stats 49, `OPEN_STORE`, ложь
 `mergeFinishedQuestsForMapMarkers`.
 
 ## Mail — частично

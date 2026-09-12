@@ -62,6 +62,7 @@ export class CompositionRoot {
       farmRandom?: FarmRng;
       combatRules?: Partial<BattleRules>;
       combatBotStrength?: number;
+      ambushRandom?: RandomSource;
     }> = {},
   ): Promise<Application> {
     const policy = loadGamePolicy(config.gamePolicyFile);
@@ -342,6 +343,7 @@ export class CompositionRoot {
         questCatalog: quests.catalog,
         pvpHonor,
         contentEditor,
+        ambushRandom: extras.ambushRandom ?? new SystemRandomSource(),
       });
       closers.push(trade);
       closers.push(wire);

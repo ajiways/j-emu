@@ -7,18 +7,29 @@ const rosterEntrySchema = z
   })
   .strict();
 
-const scriptOpSchema = z.discriminatedUnion("type", [
-  z
-    .object({
-      type: z.literal("START_FIGHT"),
-      mode: z.literal("quest"),
-      enemies: z.array(rosterEntrySchema).min(1),
-      allies: z.array(rosterEntrySchema).default([]),
-      chatStart: z.string().default(""),
-      chatWin: z.string().default(""),
-      chatLose: z.string().default(""),
-    })
-    .strict(),
+const questStartFightSchema = z
+  .object({
+    type: z.literal("START_FIGHT"),
+    mode: z.literal("quest"),
+    enemies: z.array(rosterEntrySchema).min(1),
+    allies: z.array(rosterEntrySchema).default([]),
+    chatStart: z.string().default(""),
+    chatWin: z.string().default(""),
+    chatLose: z.string().default(""),
+  })
+  .strict();
+
+const ambushStartFightSchema = z
+  .object({
+    type: z.literal("START_FIGHT"),
+    artikulId: z.number().int().positive(),
+    chance: z.number().gte(0).lte(1).optional(),
+  })
+  .strict();
+
+const scriptOpSchema = z.union([
+  questStartFightSchema,
+  ambushStartFightSchema,
   z
     .object({
       type: z.literal("GRANT_ARTIKUL"),

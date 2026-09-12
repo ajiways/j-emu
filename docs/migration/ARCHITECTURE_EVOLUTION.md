@@ -273,10 +273,15 @@ per-board welcome; talk signal несёт `npcId`; `JUMP_AREA` — wire leftover
 REMOVE — public `consumeByArtikul`. Контракт:
 [COMBAT.md](../modules/COMBAT.md), [QUESTS.md](../modules/QUESTS.md).
 
-**Replan после QST-ENG-03:** сюжет `CONTENT-STORY-*` не `next`. Сначала
-leftover-механика: `CMB-11` (join team 2) landed raw-AMF; далее QST-ENG-04
-(deny leave / ambush / QL-2), OPEN_STORE, instance leftovers, persist trade.
-CEF и DATA-mass — не эта очередь.
+**Replan после QST-ENG-04:** сюжет `CONTENT-STORY-*` не `next`. Сначала
+leftover-механика: `OPEN_STORE` (QST-ENG-05), instance leftovers, persist
+trade. CEF и DATA-mass — не эта очередь.
+
+**Решение QST-ENG-04:** текущих границ достаточно; `ARC-QST` не нужен.
+Landed raw-AMF: deny leave — CombatPort/fproxy; ambush `START_FIGHT` без
+`mode:"quest"`, бой `purpose:"hunt"`; QL-2 — quests-port `syncOwned` после
+bag mutation. `progress_on_win:false` и `OPEN_STORE` не этот срез.
+Контракт: [QUESTS.md](../modules/QUESTS.md).
 
 **Решение CMB-11:** текущих границ достаточно; `ARC-CMB` не нужен.
 Landed: `joinHunt.team` = `1|2`; HELP = team цели; copy gate = RAM
@@ -286,12 +291,6 @@ Combat не импортирует instance/party. Один `FightDuel`: team-2 
 leftover, не этот срез. Hunt EXP/лут только opener-team. Team 2 не врать
 как «неактивный бой». ADR-0017–0020. Контракт: [COMBAT.md](../modules/COMBAT.md),
 [PARTY.md](../modules/PARTY.md), [INSTANCE.md](../modules/INSTANCE.md).
-
-**Решение QST-ENG-04:** текущих границ достаточно; `ARC-QST` не нужен.
-Deny leave — CombatPort/fproxy, не quests tables. Ambush — тот же
-`START_FIGHT` op без `mode:"quest"`, бой `purpose:"hunt"`. QL-2 — quests-port
-после bag mutation, inventory не импортирует quests. `progress_on_win:false`
-и `OPEN_STORE` не этот срез. Контракт: [QUESTS.md](../modules/QUESTS.md).
 
 **Решение DAY-01:** текущих границ достаточно; отдельный `ARC-QST` не нужен.
 Daily cycle — lazy `Clock` на quests ports (UTC+3 / 06:00), не

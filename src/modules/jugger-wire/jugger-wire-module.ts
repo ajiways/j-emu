@@ -62,6 +62,7 @@ import type { QuestDesk } from "../../app/quest-desk.ts";
 import type { JuggerWireBootstrapPolicy, JuggerWireFightPolicy } from "./jugger-wire-policy.ts";
 import type { ContentEditor } from "../content/ports/content-editor.ts";
 import { startJuggerServers } from "./infrastructure/start-jugger-servers.ts";
+import type { RandomSource } from "../combat/domain/random-source.ts";
 
 export type { JuggerWireBootstrapPolicy, JuggerWireFightPolicy } from "./jugger-wire-policy.ts";
 
@@ -129,6 +130,7 @@ export class JuggerWireModule {
     questCatalog: QuestCatalog;
     pvpHonor: PvpFightHonorCache;
     contentEditor: ContentEditor;
+    ambushRandom: RandomSource;
   }): Promise<JuggerWireModule> {
     const config = requirePresent(input.config, "Jugger-wire module requires config");
     const identity = requirePresent(input.identity, "Jugger-wire module requires identity");
@@ -253,6 +255,7 @@ export class JuggerWireModule {
       input.contentEditor,
       "Jugger-wire requires content editor",
     );
+    const ambushRandom = requirePresent(input.ambushRandom, "Jugger-wire requires ambush random");
     try {
       const fightWire = new FightWireMapper(
         {
@@ -354,6 +357,7 @@ export class JuggerWireModule {
         professions,
         craft,
         quests,
+        ambushRandom,
       );
       const { http, fightTcp } = await startJuggerServers({
         config,

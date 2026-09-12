@@ -16,7 +16,11 @@ import { scriptEffects, type QuestScriptEffect } from "../domain/quest-script-ef
 import type { QuestSignal } from "../domain/quest-signal.ts";
 import { bumpMatchingGoal } from "../domain/bump-goal.ts";
 import { hasQuestStartFight, startFightEffects } from "../domain/quest-start-fight.ts";
-import { completeParkedAreaFight as completeParked, neededForHero } from "./quest-hero-progress.ts";
+import {
+  completeParkedAreaFight as completeParked,
+  neededForHero,
+  syncOwnedGoals,
+} from "./quest-hero-progress.ts";
 import { catchUpDailyCycle, hideFinishedDaily } from "./quest-daily-wipe.ts";
 import type { QuestAnswerInput, QuestMutation } from "./quest-mutation.ts";
 import { boardLinkForNpc } from "../domain/npc-board-link.ts";
@@ -354,20 +358,7 @@ export class QuestService implements QuestLootNeeded {
   }
 
   async syncOwned(heroId: number, counts: ReadonlyMap<number, number>): Promise<QuestMutation> {
-    const effects: QuestScriptEffect[] = [];
-    let bookDirty = false;
-    let npcId = 0;
-    for (const [artikulId, count] of counts) {
-      const loot = await this.recordSignal(heroId, { kind: "loot", artikulId, count });
-      effects.push(...loot.effects);
-      bookDirty = bookDirty || loot.bookDirty;
-      if (loot.npcId) npcId = loot.npcId;
-      const deliver = await this.recordSignal(heroId, { kind: "deliver", artikulId, count });
-      effects.push(...deliver.effects);
-      bookDirty = bookDirty || deliver.bookDirty;
-      if (deliver.npcId) npcId = deliver.npcId;
-    }
-    return { effects, bookDirty, npcId };
+    return syncOwnedGoals(this.catalog, this.progress, heroId, counts);
   }
 
   private async requireQuest(key: string): Promise<QuestDocument> {

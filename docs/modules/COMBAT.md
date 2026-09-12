@@ -10,10 +10,10 @@ handoff и GEAR-01 RAM kind-3 с надетой 20546 (raw-AMF). CMB-11: OA
 `FIGHT_JOIN` `{team:1|2}` / `FIGHT_HELP` входят в тот же RAM `fightId`,
 copy gate, team-2 без hunt EXP; CEF не прогонялся — product status combat
 остаётся частично. CMB-09 отдаёт
-quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA leftover
-`START_FIGHT` и hunt loot-cap — composition (`QuestDesk` /
+quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA
+`START_FIGHT` (quest + ambush) и hunt loot-cap — composition (`QuestDesk` /
 `HuntFightSettlement`), не combat domain. Roster/flags квестового боя
-landed raw-AMF (`CMB-10`); CEF leftover.
+landed raw-AMF (`CMB-10`); deny leave — `QST-ENG-04`; CEF leftover.
 
 ## Источники поведения
 
@@ -215,8 +215,8 @@ fight заканчивается. `chat|add` «Вами получено» / «�
 этой capability. `fight|finish`
 без самовольного `common|area_conf`.
 
-`leaveFight` — dump-proven fproxy `rc`, не OA. Outdoor hunt уже `can_leave:1`.
-Quest/dungeon deny «нельзя выйти из боя» — QST-ENG-04.
+Outdoor hunt `can_leave:1`. Quest/dungeon `leaveFight` deny
+`{rs:false, err:"нельзя выйти из боя", sq}` — QST-ENG-04.
 
 ### Content / schema
 
@@ -460,7 +460,8 @@ fan-out в composition, combat quests не импортирует. `purpose: "qu
 запрещает `joinHunt`. CMB-03 UoW (HP/EXP/loot) не меняется; QST-ENG-02
 режет hunt grant в composition через quests `needed`, не внутри combat.
 Dialog `START_FIGHT` — QST-ENG-01; AREA leftover
-`START_FIGHT` — QST-ENG-02 (`QuestDesk`, не combat). Roster — `CMB-10`.
+`START_FIGHT` `mode:"quest"` — QST-ENG-02; ambush без `mode` — QST-ENG-04
+(`QuestDesk`, не combat). Roster — `CMB-10`.
 
 ### Architecture decision
 
@@ -470,7 +471,7 @@ ADR-0017–0020 достаточны. `ARC-*` нет. Active fight RAM; restart 
 ### Out of scope (CMB-09 leftover)
 
 `on_win`/`on_lose` scripts сверх terminal notice; `progress_on_win:false`;
-curated Акрилон. Quest deny leave — QST-ENG-04.
+curated Акрилон.
 
 ## CMB-10 — Quest fight roster
 
@@ -484,7 +485,7 @@ Landed raw-AMF. Product-status не менять здесь. Очередь:
 (`q_engine_fight`). Ally/enemy боты — ephemeral IDs, тот же `FightDuel`,
 bot↔bot. `chat_*` — ChatDesk после start / terminal. Синтетика
 `q_engine_roster` (bots 2+32 vs ally 4). Акрилон 83–90 не этот срез. Deny
-leave leftover. CEF leftover
+leave — QST-ENG-04. CEF leftover
 ([CEF_MANUAL.md](../migration/CEF_MANUAL.md)).
 
 ## GEAR-01 — equipped gear spells

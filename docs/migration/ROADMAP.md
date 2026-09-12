@@ -741,7 +741,7 @@
   ATTACK_BOT всегда `"hunt"`). Quest-модуль подписывается через fan-out
   observer в composition, combat quests не импортирует. Join в `purpose:
 "quest"` — `HuntJoinDenied`. Roster allies/enemies, `flags:"8"`, chat_*, bot↔bot —
-  `CMB-10`. Deny leave leftover. Restart mid-fight
+  `CMB-10`. Deny leave / ambush / QL-2 — `QST-ENG-04` (`done`). Restart mid-fight
   без `on_win`/`on_lose` (нет RAM). CEF не прогоняется.
 - **Acceptance:** внешний вызывающий модуль может запросить fight с
   `purpose: "quest"` и получить `on_win`/`on_lose` без изменения
@@ -1158,7 +1158,7 @@
   `area_conf` offer href только NPC-доска / AREA hotspot, не hunt-бот.
   Ложь `mergeFinishedQuestsForMapMarkers` и Pub1 `quest_info` не переносятся.
   Roster allies/enemies, `flags:"8"`, chat_*, bot↔bot — `CMB-10`. Deny leave,
-  ambush `chance`, QL-2 — `QST-ENG-04`. Контракт: [QUESTS.md](../modules/QUESTS.md).
+  ambush `chance`, QL-2 — `QST-ENG-04` (`done`). Контракт: [QUESTS.md](../modules/QUESTS.md).
 - **Acceptance:** AREA waiting запускает нужный quest-fight через CMB-09
   hook; markers и quest-loot limits работают generic, не per-quest кодом.
 - **Status:** `done`
@@ -1186,8 +1186,9 @@
   90002 / не NPC 1617/2024. File seed `playable-slice/v32` (editor
   `hasReleaseEntry` новых ключей не открывает).
   NPC **271** остаётся в 503, `itemId` **4** (снять с item **1**; USE **584**
-  без изменения). Item **1** на 503 свободен (live плита 2024 позже).
-  Запрещены 271/272 на items **1** (плита), **3** (AREA камень), **5**
+  без изменения). После QST-ENG-04 item **1** на 503 занят AREA
+  `q_engine_ambush` (плита 2024 — CONTENT-STORY, без коллизии с засадой).
+  Запрещены 271/272 на items **1** (плита/засада), **3** (AREA камень), **5**
   (лавка), **7** (ущелье).
   NPC **272** (`id`/`infoId` 272) в 503 `itemId` **8**; title/picture —
   dump-proven Pub1 `images/data/npcs/…`, не копировать плиту 2024.
@@ -1593,8 +1594,8 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
 
 Волны 0–13 закрыты. Осталась **неперенесённая механика**, которую capability
 оставили leftover. Это не CEF-backlog, не DATA-02…06 mass import и не
-куратские квесты. Порядок: stateful combat → quest-fight rules → store
-script → instance leftovers → trade persist.
+куратские квесты. Порядок: CMB-11 (`done`) → QST-ENG-04 (`done`) →
+QST-ENG-05 (`next`, `OPEN_STORE`) → DNG-03 → TRD-02.
 
 `CONTENT-STORY-*` не брать, пока этот блок не `done` (явный приоритет:
 функционал до конца, сюжет не переносить).
@@ -1674,12 +1675,13 @@ CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
   **CEF.** Production consumer. Product **частично** до CEF.
   Контракт: [QUESTS.md](../modules/QUESTS.md), [COMBAT.md](../modules/COMBAT.md),
   [INVENTORY.md](../modules/INVENTORY.md).
+  Landed: `playable-slice/v33`; deny leave / ambush / QL-2 raw-AMF.
 - **Acceptance:** raw-AMF: `leaveFight` в `q_engine_fight` → `{rs:false,
 err:"нельзя выйти из боя"}`, бой жив; dungeon copy — тот же deny; hunt 50310
   leave по-прежнему flee; AREA ambush без `mode:"quest"` стартует hunt-бой
   (chance 1) и бампает клик сразу; chance miss — без `fight|conf`; DROP 77 при
   loot 1/1 → done=0, повторный дроп снова нужен; quest join по-прежнему deny.
-- **Status:** `next`
+- **Status:** `done`
 
 ### QST-ENG-05 — OPEN_STORE
 
@@ -1691,7 +1693,7 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
 - **Architecture checkpoint / decision:** до coding — architecture pass.
 - **Acceptance:** script открывает лавку 504; area героя штатный COME_IN, не
   `setArea` fallback.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### DNG-03 — Instance leftovers
 
@@ -1762,9 +1764,8 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   Грызль **2** → ритуал 85+83×7 с союзниками → turn-in (exp/репа/478);
   9095 снята после победы; progress/награды после restart. Slice-файл не
   dual-write. CEF тот же сценарий.
-  **После QST-ENG-03:** 503 item **1** свободен (271 стоит на item **4**,
-  синтетика 272 на **8**). Плита 2024 может занять item 1 без коллизии с
-  головой.
+  **После QST-ENG-04:** 503 item **1** занят AREA `q_engine_ambush`. Плита
+  2024 не ставится на item 1, пока засада там; 271 на **4**, 272 на **8**.
 - **Status:** `queued`
 
 ### CONTENT-STORY-02 — q_4 «Первое задание скорпиона»

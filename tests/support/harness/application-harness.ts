@@ -31,6 +31,7 @@ export class ApplicationHarness {
     combatRules?: Partial<BattleRules>;
     combatBotStrength?: number;
     farmRandom?: FarmRng;
+    ambushRandom?: RandomSource;
   }>;
 
   constructor(
@@ -44,6 +45,7 @@ export class ApplicationHarness {
       combatRules?: Partial<BattleRules>;
       combatBotStrength?: number;
       farmRandom?: FarmRng;
+      ambushRandom?: RandomSource;
     }> = {},
   ) {
     this.clock = clock ?? new MutableClock(new Date("2026-09-07T12:00:00.000Z"));

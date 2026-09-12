@@ -1,16 +1,25 @@
 export type QuestGoalKind =
   "talk" | "kill" | "loot" | "buy" | "equip" | "deliver" | "area_action" | "win_fight";
 
+export type QuestStartFightOpDocument = Readonly<{
+  type: "START_FIGHT";
+  mode: "quest";
+  enemies: readonly Readonly<{ artikulId: number; count: number }>[];
+  allies: readonly Readonly<{ artikulId: number; count: number }>[];
+  chatStart: string;
+  chatWin: string;
+  chatLose: string;
+}>;
+
+export type AmbushStartFightOpDocument = Readonly<{
+  type: "START_FIGHT";
+  artikulId: number;
+  chance?: number;
+}>;
+
 export type QuestScriptOpDocument =
-  | Readonly<{
-      type: "START_FIGHT";
-      mode: "quest";
-      enemies: readonly Readonly<{ artikulId: number; count: number }>[];
-      allies: readonly Readonly<{ artikulId: number; count: number }>[];
-      chatStart: string;
-      chatWin: string;
-      chatLose: string;
-    }>
+  | QuestStartFightOpDocument
+  | AmbushStartFightOpDocument
   | Readonly<{ type: "GRANT_ARTIKUL"; artikulId: number; count: number }>
   | Readonly<{ type: "GRANT_PROFESSION"; professionId: number }>
   | Readonly<{ type: "REMOVE_ARTIKUL"; artikulId: number; count: number }>

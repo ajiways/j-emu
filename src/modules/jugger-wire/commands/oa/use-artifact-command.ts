@@ -72,6 +72,7 @@ export class UseArtifactCommand implements OaCommand {
           heroLevel: hero.level,
           nowSec,
         });
+        await this.quests.afterBagChange(context.accountId, hero.id);
         if (used.kind === "add_hp") {
           await this.characters.noteHp({
             characterId: hero.id,
@@ -122,6 +123,7 @@ export class UseArtifactCommand implements OaCommand {
               characterId: hero.id,
               itemId: used.itemId,
             });
+            await this.quests.afterBagChange(context.accountId, hero.id);
           }
           const mutation = await this.bootstrap.useMutation(context.accountId, {
             msgText: null,
@@ -142,6 +144,7 @@ export class UseArtifactCommand implements OaCommand {
             characterId: hero.id,
             itemId: used.itemId,
           });
+          await this.quests.afterBagChange(context.accountId, hero.id);
         }
         return this.bootstrap.useMutation(context.accountId, {
           msgText: null,

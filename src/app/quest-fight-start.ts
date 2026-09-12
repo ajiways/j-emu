@@ -11,28 +11,64 @@ import { HuntCombatLoadout } from "../modules/jugger-wire/application/hunt-comba
 import { heroFightAppearance } from "../modules/jugger-wire/application/hero-fight-appearance.ts";
 import { huntBotSpellBookFromCatalog } from "../modules/jugger-wire/application/hunt-bot-spell-book-from-catalog.ts";
 import { QuestDeniedError } from "../modules/quests/domain/quest-denied-error.ts";
-import type { QuestScriptEffect } from "../modules/quests/domain/quest-script-effect.ts";
+import type { QuestStartFightOpDocument } from "../modules/content/domain/content-quest.ts";
+
+type FightStartDeps = Readonly<{
+  catalog: Catalog;
+  world: WorldService;
+  inventory: InventoryService;
+  combat: CombatPort;
+  combatStrength: (heroId: number) => Promise<number>;
+}>;
 
 export async function startQuestFight(
   hero: Hero,
-  effect: Extract<QuestScriptEffect, { type: "START_FIGHT" }>,
-  deps: Readonly<{
-    catalog: Catalog;
-    world: WorldService;
-    inventory: InventoryService;
-    combat: CombatPort;
-    combatStrength: (heroId: number) => Promise<number>;
+  effect: QuestStartFightOpDocument,
+  deps: FightStartDeps,
+): Promise<FightStart> {
+  return startAuthoredHunt(hero, deps, {
+    purpose: "quest",
+    enemies: effect.enemies,
+    allies: effect.allies,
+    chatWin: effect.chatWin,
+    chatLose: effect.chatLose,
+  });
+}
+
+export async function startAmbushHunt(
+  hero: Hero,
+  artikulId: number,
+  deps: FightStartDeps,
+): Promise<FightStart> {
+  return startAuthoredHunt(hero, deps, {
+    purpose: "hunt",
+    enemies: [{ artikulId, count: 1 }],
+    allies: [],
+    chatWin: "",
+    chatLose: "",
+  });
+}
+
+async function startAuthoredHunt(
+  hero: Hero,
+  deps: FightStartDeps,
+  input: Readonly<{
+    purpose: "hunt" | "quest";
+    enemies: readonly Readonly<{ artikulId: number; count: number }>[];
+    allies: readonly Readonly<{ artikulId: number; count: number }>[];
+    chatWin: string;
+    chatLose: string;
   }>,
 ): Promise<FightStart> {
   if (hero.ghost || hero.hp < 1) throw new QuestDeniedError("нельзя атаковать");
-  const enemies = await loadRosterBots(deps.catalog, effect.enemies);
+  const enemies = await loadRosterBots(deps.catalog, input.enemies);
   const primary = enemies[0];
   if (!primary) throw new Error("START_FIGHT requires an enemy");
   const area = await deps.world.area(hero.areaId);
   await deps.inventory.ensureStarterInventory(hero.id);
   const loadout = await new HuntCombatLoadout(deps.inventory, deps.catalog).snapshot(hero.id);
   const fightId = await deps.combat.nextFightId();
-  const fight = await deps.combat.startHunt({
+  return deps.combat.startHunt({
     accountId: hero.accountId,
     heroId: hero.id,
     heroNick: hero.nick,
@@ -58,13 +94,12 @@ export async function startQuestFight(
     appearance: await heroFightAppearance(deps.catalog, hero),
     loadout,
     botSpellBook: primary.spellBook,
-    purpose: "quest",
+    purpose: input.purpose,
     extraEnemies: enemies.slice(1),
-    allies: await loadRosterBots(deps.catalog, effect.allies),
-    chatWin: effect.chatWin,
-    chatLose: effect.chatLose,
+    allies: await loadRosterBots(deps.catalog, input.allies),
+    chatWin: input.chatWin,
+    chatLose: input.chatLose,
   });
-  return fight;
 }
 
 async function loadRosterBots(

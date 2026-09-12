@@ -53,6 +53,7 @@ describe("quest engine", () => {
         "q_engine_area",
         "q_engine_daily",
         "q_engine_roster",
+        "q_engine_ambush",
       ]),
     );
 
@@ -108,6 +109,7 @@ describe("quest engine", () => {
         "q_engine_area",
         "q_engine_daily",
         "q_engine_roster",
+        "q_engine_ambush",
       ]),
     );
     expect(keys).not.toContain("q_engine_board");

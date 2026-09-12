@@ -481,6 +481,7 @@ describe("module factories", () => {
         questCatalog: {} as QuestCatalog,
         pvpHonor: {} as PvpFightHonorCache,
         contentEditor: {} as ContentEditor,
+        ambushRandom: { unit: () => 0, integer: () => 0 },
       }),
     ).rejects.toThrow(/Jugger-wire module requires config/);
   });
@@ -683,6 +684,7 @@ describe("module factories", () => {
         questCatalog: {} as QuestCatalog,
         pvpHonor: {} as PvpFightHonorCache,
         contentEditor: {} as ContentEditor,
+        ambushRandom: { unit: () => 0, integer: () => 0 },
       }),
     ).rejects.toThrow(/Pub1 directory does not exist/);
   });

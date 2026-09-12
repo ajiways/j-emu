@@ -39,4 +39,27 @@ describe("CombatService leaveFight", () => {
     expect(await combat.hasFight(start.fightId)).toBe(true);
     expect(await combat.activeFightId(2)).toBe(start.fightId);
   });
+
+  it("denies leave on a quest fight without fleeing", async () => {
+    const { combat } = createCombatService({ random: new SequenceRandom([8, 2]) });
+    const start = await startHuntWithIssuedId(combat, unitHuntStart({ purpose: "quest" }));
+    await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await expect(combat.execute(1, { kind: "leave", sequence: 9 })).resolves.toEqual([
+      { type: "command-denied", sequence: 9, err: "нельзя выйти из боя" },
+    ]);
+    expect(await combat.takeExit(1)).toBeNull();
+    expect(await combat.hasFight(start.fightId)).toBe(true);
+  });
+
+  it("denies leave when the hunt is in an instance copy", async () => {
+    const { combat } = createCombatService({ random: new SequenceRandom([8, 2]) });
+    const start = await startHuntWithIssuedId(combat, unitHuntStart({ instanceCopyId: 12 }));
+    await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await expect(combat.execute(1, { kind: "leave", sequence: 9 })).resolves.toEqual([
+      { type: "command-denied", sequence: 9, err: "нельзя выйти из боя" },
+    ]);
+    expect(await combat.hasFight(start.fightId)).toBe(true);
+  });
 });

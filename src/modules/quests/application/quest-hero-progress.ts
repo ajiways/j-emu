@@ -1,6 +1,7 @@
 import { bumpMatchingGoal } from "../domain/bump-goal.ts";
 import { currentGoal } from "../domain/prior-gate.ts";
 import { neededLoot } from "../domain/quest-loot-needed.ts";
+import { bagCountForGoal, itemGoalToSync, rewriteItemGoal } from "../domain/sync-item-goal.ts";
 import { hasQuestStartFight } from "../domain/quest-start-fight.ts";
 import { effectsWithoutLeftover } from "../domain/quest-script-leftover.ts";
 import type { QuestScriptEffect } from "../domain/quest-script-effect.ts";
@@ -53,6 +54,31 @@ export async function neededForHero(
     });
   }
   return neededLoot(rows, artikulId, ownedInBag);
+}
+
+export async function syncOwnedGoals(
+  catalog: QuestCatalog,
+  progress: HeroQuestRepository,
+  heroId: number,
+  counts: ReadonlyMap<number, number>,
+): Promise<QuestMutation> {
+  const active = (await progress.lockHeroQuests(heroId)).filter((row) => row.status === "active");
+  const effects: QuestScriptEffect[] = [];
+  let bookDirty = false;
+  let npcId = 0;
+  for (const row of active) {
+    const quest = await requireQuest(catalog, row.questKey);
+    const goals = await progress.goals(heroId, quest.key);
+    const target = itemGoalToSync(quest, goals);
+    if (!target) continue;
+    const rewritten = rewriteItemGoal(goals, target, bagCountForGoal(target, counts));
+    if (!rewritten) continue;
+    await progress.saveGoal(rewritten.goal);
+    effects.push(...rewritten.onFinish);
+    bookDirty = true;
+    npcId = quest.npcId;
+  }
+  return { effects, bookDirty, npcId };
 }
 
 async function requireQuest(catalog: QuestCatalog, key: string) {

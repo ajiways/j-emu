@@ -45,6 +45,7 @@ export class QuestDesk {
     private readonly unitOfWork: UnitOfWork,
     private readonly fightWire: FightWireMapper,
     private readonly bootstrap: BootstrapReadModel,
+    private readonly random: Readonly<{ unit(): number }>,
   ) {}
 
   async execute(
@@ -77,6 +78,10 @@ export class QuestDesk {
       await this.quests.board(hero.id, npcId);
     });
     return this.boardBlocks(accountId, hero.id, npcId);
+  }
+
+  async afterBagChange(accountId: number, heroId: number): Promise<void> {
+    await this.syncBagGoals(accountId, heroId);
   }
 
   async recordBuy(heroId: number, artikulId: number): Promise<BookTrioBlocks | null> {
@@ -251,6 +256,7 @@ export class QuestDesk {
         combat: this.combat,
         chat: this.chat,
         fightWire: this.fightWire,
+        random: this.random,
       })),
     });
   }
@@ -293,6 +299,7 @@ export class QuestDesk {
       combat: this.combat,
       chat: this.chat,
       fightWire: this.fightWire,
+      random: this.random,
     });
     return { ...blocks, ...fight };
   }

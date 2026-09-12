@@ -236,7 +236,7 @@ async function insertOps(
   if (rows.length === 0) return;
   await session.insert(questScriptOps).values(rows.map((row) => opColumns(releaseId, row)));
   const roster = rows.flatMap((row) => {
-    if (row.op.type !== "START_FIGHT") return [];
+    if (row.op.type !== "START_FIGHT" || !("mode" in row.op)) return [];
     return [
       ...row.op.enemies.map((entry, ord) => ({
         releaseId,
@@ -294,12 +294,19 @@ function opColumns(
   };
   const op = row.op;
   if (op.type === "START_FIGHT") {
+    if ("mode" in op) {
+      return {
+        ...base,
+        fightMode: op.mode,
+        chatStart: op.chatStart,
+        chatWin: op.chatWin,
+        chatLose: op.chatLose,
+      };
+    }
     return {
       ...base,
-      fightMode: op.mode,
-      chatStart: op.chatStart,
-      chatWin: op.chatWin,
-      chatLose: op.chatLose,
+      artikulId: op.artikulId,
+      value: "chance" in op && op.chance !== undefined ? String(op.chance) : null,
     };
   }
   if (op.type === "GRANT_ARTIKUL" || op.type === "REMOVE_ARTIKUL") {

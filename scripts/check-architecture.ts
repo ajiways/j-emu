@@ -15,9 +15,9 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/quests/infrastructure/postgres-quest-catalog.ts":
     "Active-release quest catalog reads for NPCs, authored quests, dialog, scripts, and AREA hotspots",
   "src/modules/quests/infrastructure/postgres-quest-decode.ts":
-    "Hydrates authored quest rows including board links, awardRep, onAccept, and JUMP_AREA ops",
+    "Hydrates authored quest rows including board links, awardRep, onAccept, JUMP_AREA, and ambush START_FIGHT",
   "src/modules/content/application/collect-quest-issues.ts":
-    "Playable quest completeness: six engine quests, NPC 271/272 hotspots, talk objectId, awardRep tracks, and unique point ids",
+    "Playable quest completeness: seven engine quests, NPC 271/272 hotspots, talk objectId, awardRep tracks, and unique point ids",
   "src/modules/quests/infrastructure/postgres-quest-rows.ts":
     "Quest projection row mapping for NPCs, goals, dialog steps, and script ops",
   "src/modules/quests/infrastructure/postgres-hero-quest-repository.ts":
@@ -45,13 +45,13 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/character/domain/hero.ts":
     "Hero aggregate owns vitals, money, location lock, instance copy presence, and CMB-04 ghost/injury clock",
   "src/modules/combat/application/combat-service.ts":
-    "Process-local hunt/friendly service: start/join/auth/resume/poll, CMB-02 casts, CMB-03 loot/exit take and leave ack",
+    "Process-local hunt/friendly service: start/join/auth/resume/poll, CMB-02 casts, CMB-03 loot/exit take, and leave deny",
   "src/modules/combat/domain/battle.ts":
     "Hunt/friendly Battle owns FightDuel pairing, CMB-08 shuffle/waiter handoff, melee, CMB-06 bot turns, casts, CMB-04 resume, and GEAR-01 ending-turn purge clock",
   "src/modules/combat/domain/hunt-human.ts":
     "Hunt/PvP human fighter: turn clock, pocket, loadout, applied bot and human damage credits",
   "src/modules/content/application/content-validator.ts":
-    "Single bundle completeness gate including store 504/552 pay and RANK, reputation, professions 2/6, assistant 3/13, farm 4 on area 500, craft recipe 61, set bonuses, USE representatives, fight extra blobs, bot loot, bot spell books, dungeon definitions, battlegrounds, NPC 271/272, and six engine quests",
+    "Single bundle completeness gate including store 504/552 pay and RANK, reputation, professions 2/6, assistant 3/13, farm 4 on area 500, craft recipe 61, set bonuses, USE representatives, fight extra blobs, bot loot, bot spell books, dungeon definitions, battlegrounds, NPC 271/272, and seven engine quests",
   "src/modules/inventory/domain/inventory-service.ts":
     "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag, INV-05 repair, INV-06 upgrade, INV-07 set-bonus, INV-08 USE/drink, ECO-02 barter consume-by-artikul, MAIL-02 instance take/snapshot grant, AUC-01 auction take, and TRD-01 trade take",
   "src/modules/mail/infrastructure/postgres-letter-repository.ts":

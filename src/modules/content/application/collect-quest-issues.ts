@@ -7,6 +7,7 @@ import type {
   QuestDocument,
   QuestGoalKind,
   QuestScriptOpDocument,
+  QuestStartFightOpDocument,
 } from "../domain/content-quest.ts";
 
 const NPC_ID = 271;
@@ -14,11 +15,14 @@ const NPC_MULTI_ID = 272;
 const BOARD_KEY = "q_engine_board";
 const FIGHT_KEY = "q_engine_fight";
 const AREA_KEY = "q_engine_area";
+const AMBUSH_KEY = "q_engine_ambush";
 const DAILY_KEY = "q_engine_daily";
 const ROSTER_KEY = "q_engine_roster";
 const MULTI_KEY = "q_engine_multi";
 const AREA_ACTION_ID = 8;
 const AREA_ITEM_ID = 3;
+const AMBUSH_ACTION_ID = 9;
+const AMBUSH_ITEM_ID = 1;
 const NPC_ITEM_ID = 4;
 const NPC_MULTI_ITEM_ID = 8;
 const BLOCKED_HOTSPOT_ITEMS = new Set([1, 3, 5, 7]);
@@ -77,7 +81,15 @@ export function collectQuestIssues(bundle: ContentBundle): readonly string[] {
     pushQuestRefIssues(issues, bundle, quest);
     for (const goal of quest.goals) kinds.add(goal.kind);
   }
-  for (const key of [BOARD_KEY, FIGHT_KEY, AREA_KEY, DAILY_KEY, ROSTER_KEY, MULTI_KEY]) {
+  for (const key of [
+    BOARD_KEY,
+    FIGHT_KEY,
+    AREA_KEY,
+    AMBUSH_KEY,
+    DAILY_KEY,
+    ROSTER_KEY,
+    MULTI_KEY,
+  ]) {
     if (!keys.has(key)) issues.push(`quest ${key} is required`);
   }
   pushDailyFlagIssues(issues, bundle.quests);
@@ -92,11 +104,40 @@ export function collectQuestIssues(bundle: ContentBundle): readonly string[] {
   if (areaGoal && areaGoal.objectId !== AREA_ITEM_ID) {
     issues.push(`quest ${AREA_KEY} area object id must be ${AREA_ITEM_ID}`);
   }
-  if (areaGoal && !areaGoal.onFinish.some((op) => op.type === "START_FIGHT")) {
+  if (areaGoal && !areaGoal.onFinish.some((op) => op.type === "START_FIGHT" && "mode" in op)) {
     issues.push(`quest ${AREA_KEY} area_action must start a quest fight`);
   }
   if (areaGoal && bundle.npcs.some((row) => row.itemId === AREA_ITEM_ID && row.areaId === "503")) {
     issues.push(`area item ${AREA_ITEM_ID} collides with an npc hotspot`);
+  }
+  const ambushQuest = bundle.quests.find((row) => row.key === AMBUSH_KEY);
+  const ambushGoal = ambushQuest?.goals.find((goal) => goal.kind === "area_action");
+  if (ambushGoal && ambushGoal.actionId !== AMBUSH_ACTION_ID) {
+    issues.push(`quest ${AMBUSH_KEY} area_action id must be ${AMBUSH_ACTION_ID}`);
+  }
+  if (ambushGoal && ambushGoal.objectId !== AMBUSH_ITEM_ID) {
+    issues.push(`quest ${AMBUSH_KEY} area object id must be ${AMBUSH_ITEM_ID}`);
+  }
+  const ambushFight = ambushGoal?.onFinish.find((op) => op.type === "START_FIGHT");
+  if (
+    !ambushFight ||
+    ambushFight.type !== "START_FIGHT" ||
+    "mode" in ambushFight ||
+    ambushFight.artikulId !== 2
+  ) {
+    issues.push(`quest ${AMBUSH_KEY} area_action must start an ambush hunt vs bot 2`);
+  }
+  if (
+    ambushGoal &&
+    bundle.npcs.some((row) => row.itemId === AMBUSH_ITEM_ID && row.areaId === "503")
+  ) {
+    issues.push(`area item ${AMBUSH_ITEM_ID} collides with an npc hotspot`);
+  }
+  if (
+    ambushGoal &&
+    bundle.areaLinks.some((link) => link.fromAreaId === "503" && link.itemId === AMBUSH_ITEM_ID)
+  ) {
+    issues.push(`area item ${AMBUSH_ITEM_ID} collides with a travel link`);
   }
   const factIds = new Set<string>();
   for (const fact of bundle.worldFacts) {
@@ -168,7 +209,7 @@ function pushDailyFlagIssues(issues: string[], quests: readonly QuestDocument[])
   if (daily && (!Number.isInteger(daily.flags) || (daily.flags & 1) !== 1)) {
     issues.push(`quest ${DAILY_KEY} must have flags & 1`);
   }
-  for (const key of [BOARD_KEY, FIGHT_KEY, AREA_KEY, ROSTER_KEY, MULTI_KEY]) {
+  for (const key of [BOARD_KEY, FIGHT_KEY, AREA_KEY, AMBUSH_KEY, ROSTER_KEY, MULTI_KEY]) {
     const quest = quests.find((row) => row.key === key);
     if (quest && Number.isInteger(quest.flags) && (quest.flags & 1) === 1) {
       issues.push(`quest ${key} must not be daily`);
@@ -222,15 +263,19 @@ function pushScriptIssues(
   const bots = new Set(bundle.bots.map((bot) => bot.id));
   for (const op of ops) {
     if (op.type === "START_FIGHT") {
-      for (const enemy of op.enemies) {
-        if (!bots.has(enemy.artikulId)) {
-          issues.push(`quest ${questKey} fight enemy ${enemy.artikulId} is missing`);
+      if ("mode" in op) {
+        for (const enemy of op.enemies) {
+          if (!bots.has(enemy.artikulId)) {
+            issues.push(`quest ${questKey} fight enemy ${enemy.artikulId} is missing`);
+          }
         }
-      }
-      for (const ally of op.allies) {
-        if (!bots.has(ally.artikulId)) {
-          issues.push(`quest ${questKey} fight ally ${ally.artikulId} is missing`);
+        for (const ally of op.allies) {
+          if (!bots.has(ally.artikulId)) {
+            issues.push(`quest ${questKey} fight ally ${ally.artikulId} is missing`);
+          }
         }
+      } else if (!bots.has(op.artikulId)) {
+        issues.push(`quest ${questKey} ambush bot ${op.artikulId} is missing`);
       }
     }
     if (op.type === "GRANT_ARTIKUL" && !artifacts.has(op.artikulId)) {
@@ -304,13 +349,11 @@ function pushMultiQuestIssues(issues: string[], quest: QuestDocument | undefined
   }
 }
 
-function rosterStartFight(
-  quest: QuestDocument,
-): Extract<QuestScriptOpDocument, { type: "START_FIGHT" }> | null {
+function rosterStartFight(quest: QuestDocument): QuestStartFightOpDocument | null {
   for (const step of quest.dialogSteps) {
     if (step.type !== "player" && step.type !== "reward") continue;
     for (const op of step.scripts) {
-      if (op.type === "START_FIGHT") return op;
+      if (op.type === "START_FIGHT" && "mode" in op) return op;
     }
   }
   return null;

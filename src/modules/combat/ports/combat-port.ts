@@ -93,7 +93,8 @@ export type HuntJoinInput = Readonly<{
 
 export type CombatEvent =
   | BattleEvent
-  | Readonly<{ type: "command-accepted"; sequence: CommandSequence; accessKey?: string }>;
+  | Readonly<{ type: "command-accepted"; sequence: CommandSequence; accessKey?: string }>
+  | Readonly<{ type: "command-denied"; sequence: CommandSequence; err: string }>;
 
 export type FightExit = Readonly<{
   fightId: string;

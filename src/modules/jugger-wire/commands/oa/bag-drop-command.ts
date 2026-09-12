@@ -8,6 +8,7 @@ import { ProtocolError } from "../../application/protocol-error.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
 import { requireNoActiveFight } from "./require-no-active-fight.ts";
+import type { QuestDesk } from "../../../../app/quest-desk.ts";
 
 type BagDropRequest = Readonly<{
   itemId: number;
@@ -23,6 +24,7 @@ export class BagDropCommand implements OaCommand {
     private readonly characters: CharacterService,
     private readonly inventory: InventoryService,
     private readonly combat: CombatPort,
+    private readonly quests: QuestDesk,
   ) {}
 
   decode(envelope: ObjectActionEnvelope): BagDropRequest {
@@ -59,6 +61,7 @@ export class BagDropCommand implements OaCommand {
             minorUnits: settlement.creditMinor,
           });
         }
+        await this.quests.afterBagChange(context.accountId, hero.id);
         return this.bootstrap.bagDropMutation(
           context.accountId,
           this.intent === "sell" ? "SELL" : "DROP",

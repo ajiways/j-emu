@@ -5,8 +5,13 @@ import type { InventoryService } from "../modules/inventory/domain/inventory-ser
 import type { WorldService } from "../modules/world/domain/world-service.ts";
 import type { FightWireMapper } from "../modules/jugger-wire/application/fight-wire-mapper.ts";
 import type { QuestMutation } from "../modules/quests/application/quest-mutation.ts";
+import { ambushHits } from "../modules/quests/domain/ambush-chance.ts";
+import {
+  isAmbushStartFight,
+  isQuestModeStartFight,
+} from "../modules/quests/domain/quest-start-fight.ts";
 import type { ChatDesk } from "./chat-desk.ts";
-import { startQuestFight } from "./quest-fight-start.ts";
+import { startAmbushHunt, startQuestFight } from "./quest-fight-start.ts";
 
 export async function piggybackQuestFight(
   accountId: number,
@@ -19,21 +24,31 @@ export async function piggybackQuestFight(
     combat: CombatPort;
     chat: ChatDesk;
     fightWire: FightWireMapper;
+    random: Readonly<{ unit(): number }>;
   }>,
 ): Promise<Readonly<Record<string, unknown>>> {
   const fight = mutation.effects.find((effect) => effect.type === "START_FIGHT");
   if (!fight || fight.type !== "START_FIGHT") return {};
   const hero = await deps.characters.getByAccountId(accountId);
   if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
-  const started = await startQuestFight(hero, fight, {
+  const startDeps = {
     catalog: deps.catalog,
     world: deps.world,
     inventory: deps.inventory,
     combat: deps.combat,
-    combatStrength: (id) => deps.characters.combatStrength(id),
-  });
-  if (fight.chatStart.length > 0) {
-    await deps.chat.deliverSystem(accountId, fight.chatStart);
+    combatStrength: (id: number) => deps.characters.combatStrength(id),
+  };
+  if (isQuestModeStartFight(fight)) {
+    const started = await startQuestFight(hero, fight, startDeps);
+    if (fight.chatStart.length > 0) {
+      await deps.chat.deliverSystem(accountId, fight.chatStart);
+    }
+    return {
+      "fight|conf": deps.fightWire.fightConfiguration(started, { flags: "8", canLeave: 0 }),
+    };
   }
-  return { "fight|conf": deps.fightWire.fightConfiguration(started, { flags: "8" }) };
+  if (!isAmbushStartFight(fight)) throw new Error("START_FIGHT variant is not supported");
+  if (!ambushHits(fight, deps.random)) return {};
+  const started = await startAmbushHunt(hero, fight.artikulId, startDeps);
+  return { "fight|conf": deps.fightWire.fightConfiguration(started) };
 }

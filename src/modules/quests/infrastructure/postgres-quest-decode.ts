@@ -1,4 +1,5 @@
 import type {
+  AmbushStartFightOpDocument,
   NpcDocument,
   QuestAwardItemDocument,
   QuestAwardRepDocument,
@@ -202,25 +203,38 @@ function decodeOp(
   roster: readonly (typeof questScriptFightRoster.$inferSelect)[],
 ): QuestScriptOpDocument {
   if (row.type === "START_FIGHT") {
-    const entries = roster.filter(
-      (item) =>
-        item.questKey === row.questKey && item.hook === row.hook && item.ownerKey === row.ownerKey,
-    );
-    return {
+    if (row.fightMode === "quest") {
+      const entries = roster.filter(
+        (item) =>
+          item.questKey === row.questKey &&
+          item.hook === row.hook &&
+          item.ownerKey === row.ownerKey,
+      );
+      return {
+        type: "START_FIGHT",
+        mode: "quest",
+        enemies: entries
+          .filter((item) => item.side === "enemy")
+          .sort((left, right) => left.ord - right.ord)
+          .map((item) => ({ artikulId: item.artikulId, count: item.count })),
+        allies: entries
+          .filter((item) => item.side === "ally")
+          .sort((left, right) => left.ord - right.ord)
+          .map((item) => ({ artikulId: item.artikulId, count: item.count })),
+        chatStart: row.chatStart ?? "",
+        chatWin: row.chatWin ?? "",
+        chatLose: row.chatLose ?? "",
+      };
+    }
+    if (row.fightMode !== null) {
+      throw new Error(`START_FIGHT fight_mode ${row.fightMode} is not supported`);
+    }
+    const ambush: AmbushStartFightOpDocument = {
       type: "START_FIGHT",
-      mode: "quest",
-      enemies: entries
-        .filter((item) => item.side === "enemy")
-        .sort((left, right) => left.ord - right.ord)
-        .map((item) => ({ artikulId: item.artikulId, count: item.count })),
-      allies: entries
-        .filter((item) => item.side === "ally")
-        .sort((left, right) => left.ord - right.ord)
-        .map((item) => ({ artikulId: item.artikulId, count: item.count })),
-      chatStart: row.chatStart ?? "",
-      chatWin: row.chatWin ?? "",
-      chatLose: row.chatLose ?? "",
+      artikulId: requireInt(row.artikulId),
+      ...decodeAmbushChance(row.value),
     };
+    return ambush;
   }
   if (row.type === "GRANT_ARTIKUL") {
     return {
@@ -262,6 +276,15 @@ function decodeOp(
   if (row.type === "GRANT_AWARDS") return { type: "GRANT_AWARDS" };
   if (row.type === "JUMP_AREA") return { type: "JUMP_AREA" };
   throw new Error(`Quest script type ${row.type} is unknown`);
+}
+
+function decodeAmbushChance(raw: string | null): { chance: number } | Record<string, never> {
+  if (raw === null) return {};
+  const chance = Number(raw);
+  if (!Number.isFinite(chance) || chance < 0 || chance > 1) {
+    throw new Error(`Ambush chance ${raw} is not in [0, 1]`);
+  }
+  return { chance };
 }
 
 function requireInt(value: number | null): number {

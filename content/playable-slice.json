@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v32",
+  "schemaVersion": "playable-slice/v33",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -4696,6 +4696,46 @@
             }
           ]
         },
+        { "type": "reward", "answer": "Сдать задание" }
+      ]
+    },
+    {
+      "key": "q_engine_ambush",
+      "bookId": 7,
+      "title": "Засада на площади",
+      "description": "Пройди засаду у камня.",
+      "awardDescription": "Опыт",
+      "flags": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "npcId": 271,
+      "pointId": 8,
+      "boardOrd": 7,
+      "welcomeOffer": "На площади засада.",
+      "welcomeActive": "Пройди засаду.",
+      "welcomeReady": "Засада пройдена.",
+      "awardExp": 2,
+      "awardMoneyMinor": 0,
+      "awardItems": [],
+      "goals": [
+        {
+          "id": "ambush_spot",
+          "kind": "area_action",
+          "title": "Пройти засаду",
+          "goalOrd": 1,
+          "limit": 1,
+          "actionId": 9,
+          "objectId": 1,
+          "waitingTitle": "Засада",
+          "waitingDurationSec": 1,
+          "waitingPopup": "",
+          "onFinish": [{ "type": "START_FIGHT", "artikulId": 2, "chance": 1 }]
+        }
+      ],
+      "dialogSteps": [
+        { "type": "npc", "text": "Пройди засаду на площади." },
+        { "type": "goal", "goal": "ambush_spot", "text": "Понял" },
+        { "type": "player", "id": "accept_ambush", "text": "Иду" },
         { "type": "reward", "answer": "Сдать задание" }
       ]
     }

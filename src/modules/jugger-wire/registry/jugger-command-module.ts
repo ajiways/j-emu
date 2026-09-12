@@ -97,6 +97,7 @@ import type { ProfessionsService } from "../../professions/application/professio
 import type { CraftService } from "../../professions/application/craft-service.ts";
 import type { QuestService } from "../../quests/application/quest-service.ts";
 import { QuestDesk } from "../../../app/quest-desk.ts";
+import type { RandomSource } from "../../combat/domain/random-source.ts";
 export class JuggerCommandModule {
   readonly oa: OaCommandRegistry;
   readonly fproxy: FproxyCommandRegistry;
@@ -149,6 +150,7 @@ export class JuggerCommandModule {
     professions: ProfessionsService,
     craft: CraftService,
     quests: QuestService,
+    ambushRandom: RandomSource,
   ) {
     this.fightWire = fightWire;
     this.quests = new QuestDesk(
@@ -162,6 +164,7 @@ export class JuggerCommandModule {
       unitOfWork,
       fightWire,
       bootstrap,
+      ambushRandom,
     );
     const invites = new FriendlyDuelInvites(clock);
     const propose = new ProposeFriendlyDuel(
@@ -257,6 +260,7 @@ export class JuggerCommandModule {
         characters,
         inventory,
         combat,
+        this.quests,
       ),
       new BagDropCommand(
         "common|object:SELL",
@@ -266,6 +270,7 @@ export class JuggerCommandModule {
         characters,
         inventory,
         combat,
+        this.quests,
       ),
       new UseArtifactCommand(
         unitOfWork,

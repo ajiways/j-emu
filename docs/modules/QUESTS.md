@@ -1,9 +1,10 @@
 # Quests (QST-ENG-01 / QST-ENG-02)
 
-Runtime board/dialog/progress: NPC **271**, пять синтетических квестов
-(включая `q_engine_daily` с `flags:1` и `q_engine_roster`), USE **584** открывает доску без
-consume. QST-ENG-02 вешает AREA leftover
-`START_FIGHT`, generic hunt loot-cap и честные book/area_conf маркеры.
+Runtime board/dialog/progress: NPC **271**/**272**, семь синтетических квестов
+(включая `q_engine_daily` `flags:1`, `q_engine_roster`, `q_engine_multi`,
+`q_engine_ambush`), USE **584** открывает доску без consume. QST-ENG-02
+вешает AREA leftover `START_FIGHT`, generic hunt loot-cap и честные
+book/area_conf маркеры. QST-ENG-04: deny leave / ambush / QL-2 raw-AMF.
 Product status: [CAPABILITIES.md](../CAPABILITIES.md) (CEF ещё не вычеркнут).
 
 ## Sources
@@ -13,8 +14,8 @@ Product status: [CAPABILITIES.md](../CAPABILITIES.md) (CEF ещё не выче�
 - `jgr-emu/docs/PROTOCOL.md` (плашка vs `npc|answer`), `ID_RANGES.md`;
 - CMB-09 `FightTerminalObserver` / `purpose: "quest" | "hunt"`;
 - QL-1 / QM-1 / QM-2 из `TEMP_QUEST_ITEM_AND_MARKER_BUGS.md` — контракт
-  лимита и маркеров; workaround `mergeFinishedQuestsForMapMarkers` и QL-2
-  не переносятся.
+  лимита и маркеров; workaround `mergeFinishedQuestsForMapMarkers` не
+  переносится. QL-2 landed (`QST-ENG-04`).
 
 Known bugs сверх QL-1/QM-1/QM-2 в `TEMP_QUEST_ITEM_AND_MARKER_BUGS.md` не
 переносятся.
@@ -43,19 +44,22 @@ public ports. Nested `UnitOfWork.run` переиспользует ту же т�
 
 ## Content set
 
-Пять синтетических квестов в playable-slice (не DATA-06 corpus):
+Семь синтетических квестов в playable-slice (не DATA-06 corpus):
 
 1. **Board** — NPC **271** (Голова мертвеца): talk → buy **23** → equip **23**
    → deliver. Вход: USE **584** (`openDialog`) и/или hotspot 503.
 2. **Fight** — dialog `START_FIGHT` `mode:"quest"` vs bot **2**; kill/`win_fight`;
    `GRANT_ARTIKUL` **77**; loot-goal считает сумку; hunt drop того же artikul
-   режется `needed` (QST-ENG-02).
-3. **Area** — `area_action` на объекте 503 (item id ≠ 5 и ≠ 7):
+   режется `needed` (QST-ENG-02). QL-2: DROP 77 откатывает `loot_meat`.
+3. **Area** — `area_action` на объекте 503 item **3**:
    `common|waiting` → `action_finish` → leftover `START_FIGHT` `mode:"quest"`
    vs bot **2**; после победы MSG + `SET_FLAG`.
 4. **Daily** — `q_engine_daily`, `flags:1`, talk → turn-in раз за круг.
 5. **Roster** — `q_engine_roster`: talk → `win_fight`; START_FIGHT enemies
    **2**+**32**, ally **4**, `flags:"8"`, `chat_*`. CMB-10.
+6. **Multi** — `q_engine_multi` (`flags:32`) + secondary 272. QST-ENG-03.
+7. **Ambush** — `q_engine_ambush`, 503 item **1**, AREA `START_FIGHT` без
+   `mode:"quest"` vs bot **2**, `chance` 1.
 
 `book_id` / `point_id` authored с 1, не живые id из `quest_info.amf` и не 1617.
 Click-ref hotspot ≠ catalog `info_id`, кроме self-ref NPC 271
@@ -156,62 +160,38 @@ ORATORY: `{ unit(): number }`, `unit()*100 < probability`; без `probability` 
    снова ставит waiting. Mid-fight RAM без `on_win`/`on_lose`.
 
 `START_FIGHT` не кладут в onFinish **после** bump — это anti-pattern
-legacy. Засада `chance` без `mode:"quest"` — QST-ENG-04. `progress_on_win:false`
+legacy. `progress_on_win:false`
 на `mode:"quest"` AREA — leftover.
 
 ## QST-ENG-04 — deny leave / ambush / QL-2
 
-Контракт для coding. Product-status не менять здесь. Очередь:
-[ROADMAP.md](../migration/ROADMAP.md) QST-ENG-04 (`next`).
+Landed raw-AMF. Product **частично** до CEF. Очередь:
+[ROADMAP.md](../migration/ROADMAP.md) QST-ENG-04 (`done`).
 
 ### Deny leave
 
-jgr `handleLeaveFight`: `questFight || instanceCopyId > 0` →
-`{rs:false, err:"нельзя выйти из боя", sq}`, без flee. Сейчас j-emu
-`leaveFight` всегда flees; quest piggyback не ставит `can_leave:0`
-(только `flags:"8"`); dungeon overlay `can_leave:0` уже есть, сервер всё
-равно пускает leave.
-
-Combat: deny, если `purpose === "quest"` **или** `instanceCopyId !== null`.
-Friendly/outdoor hunt — прежний flee. Dump fproxy, не OA 203. Quest
-`fight|conf` overlay `can_leave:0`. Join в `purpose:"quest"` по-прежнему
+Combat deny, если `purpose === "quest"` **или** `instanceCopyId !== null`.
+Dump fproxy `{rs:false, err:"нельзя выйти из боя", sq}`, бой не flee.
+Friendly/outdoor hunt — прежний flee. Quest `fight|conf` overlay
+`can_leave:0` + `flags:"8"`. Join в `purpose:"quest"` по-прежнему
 `HuntJoinDenied`.
 
 ### Ambush `chance`
 
 `START_FIGHT` без `mode:"quest"`: один `artikulId`, optional `chance` 0..1.
-Нет `chance` = всегда (именованное правило, как jgr omit). Поле есть и не
-в [0,1] — ошибка публикации/runtime, не clamp. `mode:"quest"` и ambush не
-смешивать в одном op. Chance на quest-mode — не этот срез.
+Нет `chance` = всегда. Поле есть и не в [0,1] — ошибка публикации/runtime.
+`hasQuestStartFight` только `mode:"quest"`. Ambush бампает AREA сразу,
+бой `purpose:"hunt"`, не flags 8. Miss — `action_finish` 100 без `fight|conf`.
+RNG `{ unit(): number }`; старт если `unit() < chance`.
 
-AREA: `hasQuestStartFight` только ops с `mode:"quest"`. Ambush **не**
-паркует bump: `action_finish` считает клик сразу, исход боя цель не двигает.
-Бой — `startHunt` `purpose:"hunt"` (обычный PvE, join/leave как охота), не
-flags 8. RNG `{ unit(): number }`; старт если `unit() < chance`. Miss —
-`action_finish` 100 без `fight|conf`.
-
-Content: `q_engine_ambush` на NPC 271, 503 item **1** (свободен), бот **2**,
-e2e `chance` 1 или omit. Не `q_1`.
+Content: `q_engine_ambush` на NPC 271, 503 item **1**, бот **2**, `chance` 1.
 
 ### QL-2
 
-После DROP/SELL (тот же `BagDropCommand`) composition зовёт quests-port:
-для каждой **текущей** loot/deliver цели на этот artikul
+После DROP/SELL/USE consume и script `REMOVE_ARTIKUL` composition зовёт
+`syncOwned`: текущая loot/deliver (или последняя, если все цели done)
 `value = min(limit, bagCount)`, `done` только при `bagCount >= limit`.
-Тот же порт после USE consume и script `REMOVE_ARTIKUL`. Inventory quests
-не импортирует. Несколько текущих целей на один artikul — общий счётчик
-сумки, каждая цель независимо (как `needed` clip).
-
-`q_engine_fight` `loot_meat` artikul **77**. `consume_at=goal_complete` в
-j-emu нет — leftover. Сдача по-прежнему проверяет сумку, не только `done`.
-
-### Fail-fast / restart / CEF
-
-Невалидный ambush schema — candidate fail. leave deny не маскировать
-`rs:true`. QL-2 без sync после DROP — дыра, не «done остаётся».
-
-Deny leave RAM (ADR-0020). QL-2 bag+goals PostgreSQL. Ambush mid-fight RAM.
-Product **частично** до CEF. Строка CEF_MANUAL — на close coding.
+Inventory quests не импортирует.
 
 ### Out of this slice
 
@@ -230,7 +210,7 @@ Product **частично** до CEF. Строка CEF_MANUAL — на close co
 - чат «Вами получено» и `fight|loot` — фактически выданное.
 
 Combat таблицу квестового лута не читает. Party-bag defer — leftover
-(срез соло). QL-2 — QST-ENG-04.
+(срез соло).
 
 `GRANT_ARTIKUL` из скрипта режется тем же `needed`, только пока текущая
 цель loot/deliver на этот artikul; после bump цели authored count идёт
@@ -310,7 +290,6 @@ corpus, live `book_id` для честного клиентского «!».
 Макросы `[[ARTIFACT]]` сверх dump-проверенного award_message — leftover.
 Туториал, `OPEN_STORE`, `progress_on_win:false`,
 `consume_at=goal_complete`, `on_lose` reset всей цели сверх текущего incomplete.
-Deny leave / ambush / QL-2 — QST-ENG-04.
 
 ## QST-ENG-03 — Multi-board / JUMP_AREA / awards.rep
 
@@ -319,13 +298,13 @@ Workflow `done`. Product **частично** до CEF:
 
 ### Content
 
-`playable-slice/v32`, file seed. Не `q_1`, не book 90002, не NPC 1617/2024.
+`playable-slice/v33`, file seed. Не `q_1`, не book 90002, не NPC 1617/2024.
 
 | Сущность         | Значение                                                                                                                         |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | NPC 271          | 503 / `itemId` **4**; USE **584** без изменения                                                                                  |
 | NPC 272          | `id`/`infoId` **272**, 503 / `itemId` **8**; dump-proven picture                                                                 |
-| 503 item **1**   | свободен                                                                                                                         |
+| 503 item **1**   | AREA `q_engine_ambush` (`actionId` **9**); NPC 271/272 сюда нельзя                                                               |
 | `q_engine_multi` | `bookId` **6**, `flags` **32**, `awardExp` **6**                                                                                 |
 | `awardRep`       | `{ objectId:5, amount:10, cap:0 }`                                                                                               |
 | boards           | 271 `pointId` **6** `boardOrd` **6** `active_only:false`; 272 `pointId` **7** `boardOrd` **1** `active_only:true` + свой welcome |
@@ -334,7 +313,7 @@ Workflow `done`. Product **частично** до CEF:
 
 Talk-цели `q_engine_board` / `q_engine_daily` / `q_engine_fight` /
 `q_engine_roster` — `objectId` **271**. Хоты 271/272 не занимают items 1, 3,
-5, 7.
+5, 7. AREA item **1** — `q_engine_ambush`; item **3** — `q_engine_area`.
 
 ### Schema / lookup
 
@@ -381,7 +360,8 @@ Authored JSON (camelCase, как `onFinish` / `dialogSteps`):
 
 Публикация падает: неизвестный script; два NPC на одном `(areaId,itemId)`;
 hotspot vs travel; talk без NPC; `awardRep` на неизвестный / SUM 36 track;
-271 или 272 на item 1. Runtime 204 на неизвестный op. JUMP не fallback-телепорт.
+271 или 272 на item 1; AREA ambush не на item 1 / коллизия с NPC или travel.
+Runtime 204 на неизвестный op. JUMP не fallback-телепорт.
 
 Персистятся cursor, goals, `hero_reputations`, bag/paperdoll. Jump — только
 wire этого ответа.
@@ -393,9 +373,9 @@ CEF-PASS не ставить.
 ## CONTENT-STORY-01
 
 Очередь: [ROADMAP.md](../migration/ROADMAP.md) (`queued`). Не стартовать,
-пока leftover-движки (QST-ENG-04 / OPEN_STORE / …) не `done`.
+пока leftover-движки (`OPEN_STORE` / …) не `done`.
 Контракт q_1 там. Канон ритуала: enemies **85**×1 + **83**×7, не
-fixture-only 83×7. 503 item **1** свободен после QST-ENG-03.
+fixture-only 83×7. 503 item **1** занят `q_engine_ambush`.
 
 Ручные файлы у лимита 400 строк (`composition-root`, `jugger-command-module`,
 `parse-content-bundle`, `content-document`) перед регистрацией команд

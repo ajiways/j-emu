@@ -38,6 +38,7 @@ export type FightConfigurationBlock = Readonly<{
 
 type FightWireFrame =
   | Readonly<{ rs: true; sq: string | number; akey?: string }>
+  | Readonly<{ rs: false; err: string; sq: string | number }>
   | Readonly<{ ev: Readonly<Record<string, Readonly<Record<string, unknown>>>> }>;
 
 export type FightExitBlock =
@@ -184,6 +185,8 @@ export class FightWireMapper {
           sq: event.sequence,
           ...(event.accessKey ? { akey: event.accessKey } : {}),
         };
+      case "command-denied":
+        return { rs: false, err: event.err, sq: event.sequence };
       case "hunt-bootstrap":
         return fightEventMap(huntFightBootstrapEvents(event));
       case "friendly-bootstrap":
