@@ -6,6 +6,7 @@ import { HuntHumanFightEffects } from "../../../src/modules/combat/domain/hunt-h
 import { tryPairedMelee } from "../../../src/modules/combat/domain/paired-melee.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
+import { UNIT_HUNT_APPEARANCE } from "../../support/hunt-start-input.ts";
 
 const GEAR = {
   artikulId: 20546,
@@ -94,7 +95,7 @@ describe("gear-spell melee STR", () => {
       strength: 53,
       startedAtMs: 0,
       loadout: { ...EMPTY_COMBAT_LOADOUT, gearSpells: [GEAR] },
-      appearance: null,
+      appearance: UNIT_HUNT_APPEARANCE,
     });
     attacker.authed = true;
     attacker.beginTurn(0, 20);
@@ -114,7 +115,7 @@ describe("gear-spell melee STR", () => {
       strength: 10,
       startedAtMs: 0,
       loadout: EMPTY_COMBAT_LOADOUT,
-      appearance: null,
+      appearance: UNIT_HUNT_APPEARANCE,
     });
     const resolved = tryPairedMelee(attacker, { kind: "human", human: defender }, "center", {
       finished: false,

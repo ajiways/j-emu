@@ -13,6 +13,12 @@ export const GRYZL_FIGHT_LOOK = {
   botBody: "",
 } as const;
 
+export const UNIT_HUNT_APPEARANCE = {
+  avatar: "hero_1_sm.jpg",
+  body: "m1",
+  sk: "11",
+} as const;
+
 export function unitHuntStart(
   overrides: Partial<Omit<Parameters<CombatPort["startHunt"]>[0], "fightId">> = {},
 ): Omit<Parameters<CombatPort["startHunt"]>[0], "fightId"> {
@@ -35,6 +41,8 @@ export function unitHuntStart(
     ...GRYZL_FIGHT_LOOK,
     arena: "1_1",
     areaId: "503",
+    instanceCopyId: null,
+    appearance: UNIT_HUNT_APPEARANCE,
     loadout: EMPTY_COMBAT_LOADOUT,
     botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
     purpose: "hunt",
@@ -62,7 +70,9 @@ export function unitHuntJoin(
     heroStrength: 80,
     fightId: "1",
     areaId: "503",
+    instanceCopyId: null,
     team: 1,
+    appearance: UNIT_HUNT_APPEARANCE,
     loadout: EMPTY_COMBAT_LOADOUT,
     ...overrides,
   };

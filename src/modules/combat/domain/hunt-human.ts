@@ -37,7 +37,7 @@ type HuntHumanInit = Readonly<{
   strength: number;
   startedAtMs: number;
   loadout: CombatLoadout;
-  appearance: HuntHumanAppearance | null;
+  appearance: HuntHumanAppearance;
 }>;
 
 export class HuntHuman {
@@ -102,7 +102,7 @@ export class HuntHuman {
   get team(): 1 | 2 {
     return this.init.team;
   }
-  get appearance(): HuntHumanAppearance | null {
+  get appearance(): HuntHumanAppearance {
     return this.init.appearance;
   }
   get waiting(): boolean {
@@ -253,7 +253,7 @@ function requireHuntHumanInit(init: HuntHumanInit): void {
     throw new Error("Hunt human maxMp is invalid");
   }
   if (init.team !== 1 && init.team !== 2) throw new Error("Hunt human team must be 1 or 2");
-  if (init.appearance) requireAppearance(init.appearance);
+  requireAppearance(init.appearance);
   if (!Number.isInteger(init.strength) || init.strength < 1) {
     throw new Error("Hunt human strength must be positive");
   }

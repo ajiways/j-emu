@@ -180,6 +180,45 @@ describe("HuntFightSettlement", () => {
     expect(result.get(11)).toMatchObject({ experience: experience.get(2), money: "0" });
   });
 
+  it("persists team-2 HP without hunt EXP or loot on opener-team win", async () => {
+    const characters = recordingCharacters();
+    const inventory = recordingInventory();
+    const settlement = new HuntFightSettlement(
+      identityUow(),
+      fakeCatalog(),
+      characters,
+      inventory,
+      new SequenceRandom([0, 0, 0, 0]),
+      { routeFor: async () => null },
+      { deposit: async () => undefined },
+      { notify: async () => undefined },
+      recordingBestiary(),
+      unlimitedLoot(),
+      HEROISM_RULES,
+      new PvpFightHonorCache(),
+    );
+    const result = await settlement.persistFinished({
+      mode: "hunt",
+      fightId: "9",
+      botId: bot.id,
+      botLevel: bot.level,
+      winnerTeam: 1,
+      kind: "win",
+      humans: [human(10, 1, 20), { ...human(11, 2, 0), team: 2, hp: 19 }],
+    });
+    expect(characters.notes).toEqual([
+      { characterId: 1, hp: 27 },
+      { characterId: 2, hp: 19 },
+    ]);
+    expect(characters.grants).toEqual([
+      { characterId: 1, operationId: "fight:9:1", amount: bot.reward.baseExp },
+    ]);
+    expect(characters.credits).toEqual([{ characterId: 1, minorUnits: minMoneyMinor }]);
+    expect(inventory.grants).toEqual([]);
+    expect(result.get(10)).toMatchObject({ experience: bot.reward.baseExp });
+    expect(result.get(11)).toMatchObject({ experience: 0, money: "0", loot: [] });
+  });
+
   it("restores practice HP/MP/pocket and skips loot", async () => {
     const characters = recordingCharacters();
     const inventory = recordingInventory();

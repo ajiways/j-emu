@@ -39,7 +39,7 @@ export class CombatMeleeLoop {
       await this.settleFinished(battle, resolved.events, accountId);
       return;
     }
-    await this.followUpAfterStrike(battle, accountId);
+    await this.followUpAfterStrike(battle, accountId, resolved.events);
   }
 
   keepTurn(accountId: number, sequence: string | number, events: readonly CombatEvent[]): void {
@@ -62,7 +62,7 @@ export class CombatMeleeLoop {
       await this.settleFinished(battle, events, accountId);
       return;
     }
-    await this.followUpAfterStrike(battle, accountId);
+    await this.followUpAfterStrike(battle, accountId, events);
   }
 
   grantAfterPair(battle: Battle, accountId: number): void {
@@ -71,7 +71,11 @@ export class CombatMeleeLoop {
     );
   }
 
-  private async followUpAfterStrike(battle: Battle, accountId: number): Promise<void> {
+  private async followUpAfterStrike(
+    battle: Battle,
+    accountId: number,
+    events: readonly CombatEvent[],
+  ): Promise<void> {
     const extra = battle.tickRosterDuels();
     if (extra.length > 0) this.enqueue(accountId, extra);
     if (battle.finished) {
@@ -82,6 +86,18 @@ export class CombatMeleeLoop {
     if (opponent.kind === "bot") {
       this.scheduleBotAndGrant(battle);
       return;
+    }
+    if (events.some((event) => event.type === "opponent-new-human")) {
+      const striker = battle.livingHumans().find((human) => human.accountId === accountId);
+      if (!striker) throw new Error("Intervene striker is missing from the battle");
+      this.enqueue(opponent.accountId, [
+        {
+          type: "opponent-new-human",
+          human: striker.snapshot(),
+          appearance: striker.appearance,
+        },
+      ]);
+      this.wakeAccount(opponent.accountId);
     }
     this.scheduler.schedule(battle.id, battle.turnGrantDelayMs, () =>
       this.runGrant(battle.id, opponent.accountId),
@@ -173,7 +189,10 @@ function enqueuePlayerMelee(
   const damage = events.find((event) => event.type === "damage");
   const finished = events.find((event) => event.type === "finished");
   const extras = events.filter(
-    (event) => event.type === "effect-purge" || event.type === "opponent-new",
+    (event) =>
+      event.type === "effect-purge" ||
+      event.type === "opponent-new" ||
+      event.type === "opponent-new-human",
   );
   if (!wait || wait.type !== "turn-wait" || !damage || damage.type !== "damage") {
     throw new Error("Player melee must emit turn-wait then damage");

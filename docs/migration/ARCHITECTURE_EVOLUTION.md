@@ -274,12 +274,12 @@ REMOVE — public `consumeByArtikul`. Контракт:
 [COMBAT.md](../modules/COMBAT.md), [QUESTS.md](../modules/QUESTS.md).
 
 **Replan после QST-ENG-03:** сюжет `CONTENT-STORY-*` не `next`. Сначала
-leftover-механика: `CMB-11` (join team 2), затем QST-ENG-04 (deny leave /
-ambush / QL-2), OPEN_STORE, instance leftovers, persist trade. CEF и
-DATA-mass — не эта очередь.
+leftover-механика: `CMB-11` (join team 2) landed raw-AMF; далее QST-ENG-04
+(deny leave / ambush / QL-2), OPEN_STORE, instance leftovers, persist trade.
+CEF и DATA-mass — не эта очередь.
 
 **Решение CMB-11:** текущих границ достаточно; `ARC-CMB` не нужен.
-`joinHunt.team` = `1|2`; HELP = team цели; copy gate = RAM
+Landed: `joinHunt.team` = `1|2`; HELP = team цели; copy gate = RAM
 `instanceCopyId` (`null` мир) со `startHunt`, сравнение на join.
 Combat не импортирует instance/party. Один `FightDuel`: team-2 не берёт
 бота; после смерти бота ретаргет team-1↔team-2. N×N две дуэли сразу —

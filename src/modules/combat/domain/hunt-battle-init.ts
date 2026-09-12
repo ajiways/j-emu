@@ -1,5 +1,6 @@
 import type { CombatLoadout } from "./combat-loadout.ts";
 import type { HuntBotSpellBook } from "./hunt-bot-spell-book.ts";
+import type { HuntHumanAppearance } from "./hunt-human.ts";
 import type { HuntRosterBotSeed } from "./hunt-roster-bot.ts";
 
 export type HuntBattleInit = Readonly<{
@@ -24,8 +25,10 @@ export type HuntBattleInit = Readonly<{
   botMaxHp: number;
   arena: string;
   areaId: string;
+  instanceCopyId: number | null;
   startedAt: Date;
   loadout: CombatLoadout;
+  appearance: HuntHumanAppearance;
   heroStrength: number;
   botStrength: number;
   botSpellBook: HuntBotSpellBook;

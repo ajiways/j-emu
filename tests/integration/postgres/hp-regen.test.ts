@@ -18,7 +18,11 @@ import { playableCharacterModuleInput } from "../../support/playable-character-m
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
-import { EMPTY_HUNT_BOT_SPELL_BOOK, GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
+import {
+  EMPTY_HUNT_BOT_SPELL_BOOK,
+  GRYZL_FIGHT_LOOK,
+  UNIT_HUNT_APPEARANCE,
+} from "../../support/hunt-start-input.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
 const policy = loadGamePolicy(path.resolve(process.cwd(), "config/development.json"));
@@ -180,6 +184,8 @@ describe("HP regeneration persistence", () => {
       ...GRYZL_FIGHT_LOOK,
       arena: "2_1",
       areaId: "503",
+      instanceCopyId: null,
+      appearance: UNIT_HUNT_APPEARANCE,
       loadout: EMPTY_COMBAT_LOADOUT,
       botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
       purpose: "hunt",
@@ -218,6 +224,8 @@ describe("HP regeneration persistence", () => {
       ...GRYZL_FIGHT_LOOK,
       arena: "2_1",
       areaId: "503",
+      instanceCopyId: null,
+      appearance: UNIT_HUNT_APPEARANCE,
       loadout: EMPTY_COMBAT_LOADOUT,
       botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
       purpose: "hunt",

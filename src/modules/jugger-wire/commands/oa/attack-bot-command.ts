@@ -21,6 +21,7 @@ import { DungeonHuntMapAttack } from "../../../../app/dungeon-hunt-map-attack.ts
 import type { PartyNotify } from "../../../../app/party-notify.ts";
 import type { PartyService } from "../../../party/application/party-service.ts";
 import { HuntCombatLoadout } from "../../application/hunt-combat-loadout.ts";
+import { heroFightAppearance } from "../../application/hero-fight-appearance.ts";
 import { huntBotSpellBookFromCatalog } from "../../application/hunt-bot-spell-book-from-catalog.ts";
 import { huntFightTitle } from "../../../chat/domain/fight-macro.ts";
 import { HuntMapAttack } from "../../application/hunt-map-attack.ts";
@@ -129,6 +130,8 @@ export class AttackBotCommand implements OaCommand {
       botBody: bot.hunt.body,
       arena: area.fightBackground,
       areaId: area.id,
+      instanceCopyId: hero.instanceCopyId,
+      appearance: await heroFightAppearance(this.catalog, hero),
       loadout,
       botSpellBook: huntBotSpellBookFromCatalog(bot.spellBook),
       extraEnemies: [],

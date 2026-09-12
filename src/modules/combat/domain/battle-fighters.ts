@@ -33,7 +33,7 @@ export function huntOpener(init: HuntBattleInit): HuntHuman {
     strength: init.heroStrength,
     startedAtMs: init.startedAt.getTime(),
     loadout: init.loadout,
-    appearance: null,
+    appearance: init.appearance,
   });
 }
 
@@ -48,12 +48,12 @@ export function huntJoiner(join: HuntJoinHuman): HuntHuman {
     maxHp: join.maxHp,
     mp: join.mp,
     maxMp: join.maxMp,
-    team: 1,
+    team: join.team,
     waiting: true,
     strength: join.strength,
     startedAtMs: join.startedAtMs,
     loadout: join.loadout,
-    appearance: null,
+    appearance: join.appearance,
   });
 }
 

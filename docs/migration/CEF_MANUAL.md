@@ -38,6 +38,11 @@
 - [ ] CMB-10: NPC 271, взять «Ростер ритуала», бой flags 8 (Хисса vs
       Грызль+дух), chat start/win; сдать; «Ритуал Грызля» остаётся на
       доске. Проигрыш оставляет квест started.
+- [ ] CMB-11: JOIN `{team:2}` и HELP на цель team 2 входят в тот же
+      `fightId` на 50310; карта ATTACK_BOT на занятый spawn остаётся
+      team 1; две копии 542 изолируют JOIN; после смерти бота team-2
+      бьёт team-1, loot team-2 без hunt EXP; restart процесса → JOIN
+      204 stale.
 
 ## Inventory
 

@@ -7,6 +7,7 @@ import {
 } from "../../../src/modules/combat/domain/paired-melee.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
+import { UNIT_HUNT_APPEARANCE } from "../../support/hunt-start-input.ts";
 
 function fighter(heroId: number, team: 1 | 2, hp: number): HuntHuman {
   const human = new HuntHuman({
@@ -24,7 +25,7 @@ function fighter(heroId: number, team: 1 | 2, hp: number): HuntHuman {
     strength: 10,
     startedAtMs: 0,
     loadout: EMPTY_COMBAT_LOADOUT,
-    appearance: null,
+    appearance: UNIT_HUNT_APPEARANCE,
   });
   human.authed = true;
   return human;

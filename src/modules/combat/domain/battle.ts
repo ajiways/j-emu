@@ -34,8 +34,8 @@ import type { HuntJoinHuman } from "./hunt-join-human.ts";
 import type { RandomSource } from "./random-source.ts";
 import { requireFriendlyDuelBattleInit } from "./require-friendly-duel-battle-init.ts";
 import { requireHuntBattleInit } from "./require-hunt-battle-init.ts";
-import { pairNextHuntWaiter, shuffleHuntAfterHits } from "./battle-pairing.ts";
-import { battleOutcomeSnapshot } from "./battle-outcome.ts";
+import { livingWaiterOnTeam, pairNextHuntWaiter, shuffleHuntAfterHits } from "./battle-pairing.ts";
+import { battleOutcomeSnapshot, leaveWinnerTeam } from "./battle-outcome.ts";
 import type { FightOutcomeKind, FightOutcomeSnapshot } from "./fight-outcome-snapshot.ts";
 import type { ShuffleOutcome } from "./try-shuffle-after-hits.ts";
 
@@ -45,6 +45,7 @@ export class Battle {
   readonly accessKey: string;
   readonly arena: string;
   readonly areaId: string;
+  readonly instanceCopyId: number | null;
   readonly startedAt: Date;
   readonly turnTimeoutSeconds: number;
   readonly meleeBotCounterMs: number;
@@ -64,6 +65,7 @@ export class Battle {
     this.accessKey = init.accessKey;
     this.arena = init.arena;
     this.areaId = init.areaId;
+    this.instanceCopyId = isHumanDuelInit(init) ? null : init.instanceCopyId;
     this.startedAt = init.startedAt;
     this.turnTimeoutSeconds = rules.turnTimeoutSeconds;
     this.meleeBotCounterMs = rules.meleeBotCounterMs;
@@ -135,7 +137,7 @@ export class Battle {
   }
 
   hasWaitingHuman(): boolean {
-    return this.humans.some((human) => human.waiting && !human.leftLive && human.hp > 0);
+    return livingWaiterOnTeam(this.humans, battleOpener(this.humans).team) !== undefined;
   }
 
   opponentAccountId(accountId: number): number {
@@ -229,6 +231,7 @@ export class Battle {
       roster: this.huntRoster,
       duel: this.duel,
       opener: battleOpener(this.humans),
+      humans: this.humans,
     });
     if (applied.finished) this.finishedValue = true;
     return applied.result;
@@ -274,6 +277,7 @@ export class Battle {
         roster: this.huntRoster,
         duel: this.duel,
         opener: battleOpener(this.humans),
+        humans: this.humans,
       });
       if (extra.finished) this.finishedValue = true;
       if (extra.events.length === 0) return ending;
@@ -317,6 +321,7 @@ export class Battle {
       roster: this.huntRoster,
       finished: this.finishedValue,
       opener: battleOpener(this.humans),
+      humans: this.humans,
       fightId: this.id,
       rules: this.rules,
       random: this.random,
@@ -372,10 +377,7 @@ export class Battle {
   finishLeave(): 1 | 2 {
     if (this.finishedValue) throw new Error("Cannot leave a finished battle");
     this.finishedValue = true;
-    const remaining = this.humans.filter((human) => !human.leftLive);
-    const last = remaining[remaining.length - 1];
-    if (!last) throw new Error("Leave requires a human in the battle");
-    return last.hp <= 0 ? 2 : 1;
+    return leaveWinnerTeam(this.humans);
   }
 
   pairNextWaiter(): Readonly<{

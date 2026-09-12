@@ -151,14 +151,16 @@ export class CombatService implements CombatPort {
   async joinHunt(input: HuntJoinInput): Promise<FightStart> {
     requireWireIdentity(input.accountId, "account id");
     requireWireIdentity(input.heroId, "hero id");
-    if (input.team !== 1) throw new Error("Hunt join team must be 1");
+    if (input.team !== 1 && input.team !== 2) throw new Error("Hunt join team must be 1 or 2");
     if (this.byAccount.has(input.accountId)) throw new HuntJoinDenied("уже в бою");
     const fightId = requireFightId(input.fightId);
     const battle = this.battleByFight.get(fightId);
     if (!battle || battle.finished) throw new HuntJoinDenied("бой не найден");
     if (battle.kind !== "hunt") throw new HuntJoinDenied("нельзя вмешаться в дуэль");
     if (battle.purpose === "quest") throw new HuntJoinDenied("нельзя вмешаться в квестовый бой");
-    if (battle.areaId !== input.areaId) throw new HuntJoinDenied("бой в другой локации");
+    if (battle.areaId !== input.areaId || battle.instanceCopyId !== input.instanceCopyId) {
+      throw new HuntJoinDenied("бой в другой локации");
+    }
     if (battle.hasHuman(input.accountId, input.heroId)) {
       throw new HuntJoinDenied("вы уже участвовали в этом бою");
     }
@@ -174,6 +176,8 @@ export class CombatService implements CombatPort {
       maxMp: input.heroMaxMp,
       loadout: input.loadout,
       strength: input.heroStrength,
+      team: input.team,
+      appearance: input.appearance,
       startedAtMs: this.scheduler.now().getTime(),
     });
     this.byAccount.set(input.accountId, battle);
@@ -227,6 +231,14 @@ export class CombatService implements CombatPort {
 
   async activeFightId(accountId: number): Promise<string | null> {
     return this.byAccount.get(accountId)?.id ?? null;
+  }
+
+  async participantTeam(accountId: number): Promise<1 | 2 | null> {
+    requireWireIdentity(accountId, "account id");
+    const battle = this.byAccount.get(accountId);
+    if (!battle || battle.finished) return null;
+    const human = battle.livingHumans().find((entry) => entry.accountId === accountId);
+    return human === undefined ? null : human.team;
   }
 
   async resumeFight(accountId: number): Promise<FightStart | null> {

@@ -8,6 +8,7 @@ import type {
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
 import type { WorldService } from "../modules/world/domain/world-service.ts";
 import { HuntCombatLoadout } from "../modules/jugger-wire/application/hunt-combat-loadout.ts";
+import { heroFightAppearance } from "../modules/jugger-wire/application/hero-fight-appearance.ts";
 import { huntBotSpellBookFromCatalog } from "../modules/jugger-wire/application/hunt-bot-spell-book-from-catalog.ts";
 import { QuestDeniedError } from "../modules/quests/domain/quest-denied-error.ts";
 import type { QuestScriptEffect } from "../modules/quests/domain/quest-script-effect.ts";
@@ -53,6 +54,8 @@ export async function startQuestFight(
     botBody: primary.body,
     arena: area.fightBackground,
     areaId: area.id,
+    instanceCopyId: hero.instanceCopyId,
+    appearance: await heroFightAppearance(deps.catalog, hero),
     loadout,
     botSpellBook: primary.spellBook,
     purpose: "quest",

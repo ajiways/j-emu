@@ -1,6 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import { huntBotSnap } from "./hunt-bot-snap.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
+import { huntFightOpenerTeam } from "./hunt-fight-teams.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import { retargetDuelTo } from "./retarget-duel.ts";
@@ -12,6 +13,23 @@ export type HuntPairing = {
   pairedAccountId: number;
 };
 
+export function livingWaiterOnTeam(
+  humans: readonly HuntHuman[],
+  team: 1 | 2,
+): HuntHuman | undefined {
+  return humans.find(
+    (entry) => entry.waiting && !entry.leftLive && entry.hp > 0 && entry.team === team,
+  );
+}
+
+export function huntHumanOppNew(human: HuntHuman): BattleEvent {
+  return {
+    type: "opponent-new-human",
+    human: human.snapshot(),
+    appearance: human.appearance,
+  };
+}
+
 export function shuffleHuntAfterHits(
   input: Readonly<{
     pairing: HuntPairing;
@@ -21,10 +39,11 @@ export function shuffleHuntAfterHits(
   }>,
 ): ShuffleOutcome {
   const actor = requirePaired(input.pairing);
+  const openerTeam = huntFightOpenerTeam(input.hunt.purpose);
   const plan = planHuntShuffle({
     humanHits: input.pairing.duel.hitsFor(actor.heroId),
     botHits: input.pairing.duel.hitsFor(input.hunt.botFightId),
-    hasLivingWaiter: hasLivingWaiter(input.pairing.humans),
+    hasLivingWaiter: livingWaiterOnTeam(input.pairing.humans, openerTeam) !== undefined,
     finished: input.finished || input.botHp === 0,
   });
   if (plan === "none") return { kind: "none" };
@@ -32,7 +51,7 @@ export function shuffleHuntAfterHits(
     input.pairing.duel.resetHits();
     return { kind: "reset" };
   }
-  const waiter = livingWaiter(input.pairing.humans);
+  const waiter = livingWaiterOnTeam(input.pairing.humans, openerTeam);
   if (!waiter) throw new Error("Shuffle waiter-handoff requires a living waiter");
   const actorHp = actor.hp;
   const waiterHp = waiter.hp;
@@ -65,26 +84,29 @@ export function pairNextHuntWaiter(
   authed: boolean;
   events: readonly BattleEvent[];
 }> | null {
-  if (input.finished || input.botHp === 0) return null;
-  const waiter = livingWaiter(input.pairing.humans);
-  if (!waiter) return null;
+  if (input.finished) return null;
   const previous = requirePaired(input.pairing);
+  const team = input.botHp > 0 ? huntFightOpenerTeam(input.hunt.purpose) : previous.team;
+  const waiter = livingWaiterOnTeam(input.pairing.humans, team);
+  if (!waiter) return null;
   retargetDuelTo({ duel: input.pairing.duel, fromHeroId: previous.heroId, waiter });
   input.pairing.pairedAccountId = waiter.accountId;
   if (!waiter.authed) return { accountId: waiter.accountId, authed: false, events: [] };
+  if (input.botHp > 0) {
+    return {
+      accountId: waiter.accountId,
+      authed: true,
+      events: [{ type: "opponent-new", bot: huntBotSnap(input.hunt, input.botHp) }],
+    };
+  }
+  const opponentId = input.pairing.duel.otherId(waiter.heroId);
+  const opponent = input.pairing.humans.find((entry) => entry.heroId === opponentId);
+  if (!opponent) throw new Error("Intervene waiter has no human opponent");
   return {
     accountId: waiter.accountId,
     authed: true,
-    events: [{ type: "opponent-new", bot: huntBotSnap(input.hunt, input.botHp) }],
+    events: [huntHumanOppNew(opponent)],
   };
-}
-
-function livingWaiter(humans: readonly HuntHuman[]): HuntHuman | undefined {
-  return humans.find((entry) => entry.waiting && !entry.leftLive && entry.hp > 0);
-}
-
-function hasLivingWaiter(humans: readonly HuntHuman[]): boolean {
-  return livingWaiter(humans) !== undefined;
 }
 
 function requirePaired(pairing: HuntPairing): HuntHuman {

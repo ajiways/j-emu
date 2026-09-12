@@ -15,6 +15,7 @@ import type {
   FightWireMapper,
 } from "../../application/fight-wire-mapper.ts";
 import type { HuntAreaFanout } from "../../application/hunt-area-fanout.ts";
+import { heroFightAppearance } from "../../application/hero-fight-appearance.ts";
 import { HuntCombatLoadout } from "../../application/hunt-combat-loadout.ts";
 import { asHelpFightError } from "../../application/help-fight-error.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
@@ -54,10 +55,16 @@ export class FightJoinCommand implements OaCommand {
       return { kind: "help", nick };
     }
     const fightId = String(fields["fight"] ?? fields["fight_id"] ?? "");
-    const teamNum = Number(fields["team"] ?? 1);
-    const team = teamNum === 2 ? 2 : 1;
     if (!fightId) throw asHelpFightError(new HuntJoinDenied("бой не найден"));
-    return { kind: "join", fightId, team };
+    const rawTeam = fields["team"];
+    if (rawTeam === undefined || rawTeam === null || rawTeam === "") {
+      throw new ProtocolError(203, "FIGHT_JOIN requires team");
+    }
+    const teamNum = Number(rawTeam);
+    if (teamNum !== 1 && teamNum !== 2) {
+      throw new ProtocolError(203, "FIGHT_JOIN team must be 1 or 2");
+    }
+    return { kind: "join", fightId, team: teamNum };
   }
 
   async handle(context: OaCommandContext, request: FightJoinRequest): Promise<FightJoinBlocks> {
@@ -73,13 +80,12 @@ export class FightJoinCommand implements OaCommand {
       throw new ProtocolError(203, "нельзя во время боя");
     }
     try {
-      const fightId =
-        request.kind === "join" ? request.fightId : await this.fightIdByNick(request.nick);
-      const team = request.kind === "join" ? request.team : 1;
-      if (team !== 1) throw new HuntJoinDenied("бой не найден");
+      const target =
+        request.kind === "join"
+          ? { fightId: request.fightId, team: request.team }
+          : await this.helpTarget(request.nick);
       await this.inventory.ensureStarterInventory(hero.id);
       const loadout = await new HuntCombatLoadout(this.inventory, this.catalog).snapshot(hero.id);
-      const heroStrength = await this.characters.combatStrength(hero.id);
       const fight = await this.combat.joinHunt({
         accountId: context.accountId,
         heroId: hero.id,
@@ -90,16 +96,23 @@ export class FightJoinCommand implements OaCommand {
         heroMaxHp: hero.maxHp,
         heroMp: hero.mp,
         heroMaxMp: hero.maxMp,
-        heroStrength,
-        fightId,
+        heroStrength: await this.characters.combatStrength(hero.id),
+        fightId: target.fightId,
         areaId: hero.areaId,
-        team: 1,
+        instanceCopyId: hero.instanceCopyId,
+        team: target.team,
+        appearance: await heroFightAppearance(this.catalog, hero),
         loadout,
       });
-      await this.huntFanout.wakeArea(hero.areaId);
+      await this.huntFanout.wakeArea(hero.areaId, hero.instanceCopyId);
       return {
         "common|action": { status: 100 },
-        "fight|conf": this.fightWire.fightConfiguration(fight),
+        "fight|conf": this.fightWire.fightConfiguration(
+          fight,
+          hero.instanceCopyId === null
+            ? {}
+            : { canLeave: 0, instanceId: String(hero.instanceCopyId) },
+        ),
         "common|hunt": await this.bootstrap.hunt(context.accountId),
         "user|unitframe": await this.bootstrap.unitframe(context.accountId),
         state: await this.bootstrap.state(context.accountId),
@@ -117,11 +130,13 @@ export class FightJoinCommand implements OaCommand {
     return this.encode(await this.handle({ accountId }, this.decode(envelope)));
   }
 
-  private async fightIdByNick(nick: string): Promise<string> {
+  private async helpTarget(nick: string): Promise<Readonly<{ fightId: string; team: 1 | 2 }>> {
     const target = await this.characters.getByNick(nick);
     if (!target) throw new HuntJoinDenied("игрок не в бою");
     const fightId = await this.combat.activeFightId(target.accountId);
     if (fightId === null) throw new HuntJoinDenied("игрок не в бою");
-    return fightId;
+    const team = await this.combat.participantTeam(target.accountId);
+    if (team === null) throw new HuntJoinDenied("игрок не в бою");
+    return { fightId, team };
   }
 }

@@ -9,6 +9,12 @@ export function requireHuntBattleInit(init: HuntBattleInit, rules: BattleRules):
     throw new Error("Hunt battle purpose must be hunt or quest");
   }
   if (!init.areaId) throw new Error("Battle area is required");
+  if (init.instanceCopyId !== null) {
+    requireWireIdentity(init.instanceCopyId, "instance copy id");
+  }
+  if (!init.appearance.avatar) throw new Error("Battle hero avatar is required");
+  if (typeof init.appearance.body !== "string") throw new Error("Battle hero body is required");
+  if (!init.appearance.sk) throw new Error("Battle hero sk is required");
   requireCombatLoadout(init.loadout);
   requireHuntBotSpellBook(init.botSpellBook);
   requireWireIdentity(init.accountId, "account id");

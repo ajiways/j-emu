@@ -8,7 +8,8 @@ CEF окна группы не прогонялся — product-status **гот�
 product-status: [CAPABILITIES.md](../CAPABILITIES.md).
 
 Dungeon auto-create / bind warning / teleport on kick, dungeon lottery rules 1,
-quest `personal_only` loot — не в срезе. Hunt join team 2 — CMB-11.
+quest `personal_only` loot — не в срезе. Hunt join team 2 landed raw-AMF
+(CMB-11); вторая одновременная дуэль после intervene — leftover.
 
 ## Источники поведения
 
@@ -162,4 +163,4 @@ lottery/group loot/HELP — dump `party/chat.ts`.
 
 Dungeon bind warning (`__force_bind_invite`), search-join bind, teleport on
 kick, dungeon rules-1 lottery, quest personal_only. Одновременные две дуэли
-после intervene — leftover CMB-11.
+после intervene — leftover (CMB-11 не вводил N×N).

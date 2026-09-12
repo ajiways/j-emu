@@ -3,7 +3,11 @@ import { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import type { HuntBattleInit } from "../../../src/modules/combat/domain/hunt-battle-init.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
-import { EMPTY_HUNT_BOT_SPELL_BOOK, GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
+import {
+  EMPTY_HUNT_BOT_SPELL_BOOK,
+  GRYZL_FIGHT_LOOK,
+  UNIT_HUNT_APPEARANCE,
+} from "../../support/hunt-start-input.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
 const AUTH_NOW = Date.parse("2026-09-07T12:00:00.000Z");
@@ -31,8 +35,10 @@ function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
     botMaxHp: 50,
     arena: "1_1",
     areaId: "503",
+    instanceCopyId: null,
     startedAt: new Date("2026-09-07T12:00:00.000Z"),
     loadout: EMPTY_COMBAT_LOADOUT,
+    appearance: UNIT_HUNT_APPEARANCE,
     botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
     purpose: "hunt",
     extraEnemies: [],
@@ -62,6 +68,8 @@ describe("Battle 3↔3 shuffle", () => {
       mp: 10,
       maxMp: 10,
       strength: 10,
+      team: 1,
+      appearance: UNIT_HUNT_APPEARANCE,
       loadout: EMPTY_COMBAT_LOADOUT,
       startedAtMs: AUTH_NOW,
     });

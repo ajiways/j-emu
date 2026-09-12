@@ -21,6 +21,10 @@ describe("asHelpFightError", () => {
       status: 204,
       message: "Нельзя вмешаться в неактивный бой!",
     });
+    expect(asHelpFightError(new HuntJoinDenied("нельзя вмешаться в квестовый бой"))).toMatchObject({
+      status: 204,
+      message: "нельзя вмешаться в квестовый бой",
+    });
     const keep = new ProtocolError(203, "нельзя во время боя");
     expect(asHelpFightError(keep)).toBe(keep);
   });

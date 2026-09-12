@@ -308,7 +308,7 @@ fight id (второй human team 1, тот же access key). `hasFight` отл�
 ### Out of scope
 
 Wander/route/respawn — **WLD-03**. Pub1 `.map` polygons; dungeon copies;
-quest/menu attack; hunt join team 2 (CMB-11); hunt cross-swap двух 3↔3 пар.
+quest/menu attack; hunt join team 2 landed (CMB-11); hunt cross-swap двух 3↔3 пар.
 Не копировать live `10_000_000 + heroes.id` в `userId`.
 
 ### Acceptance

@@ -2,6 +2,7 @@ import type { BattleEvent } from "../domain/battle-event.ts";
 import type { CombatLoadout } from "../domain/combat-loadout.ts";
 import type { HuntBotSpellBook } from "../domain/hunt-bot-spell-book.ts";
 import type { FightLootBlock } from "../domain/fight-loot-block.ts";
+import type { HuntHumanAppearance } from "../domain/hunt-human.ts";
 
 type CommandSequence = string | number;
 
@@ -48,6 +49,8 @@ export type HuntStartInput = Readonly<{
   botBody: string;
   arena: string;
   areaId: string;
+  instanceCopyId: number | null;
+  appearance: HuntHumanAppearance;
   loadout: CombatLoadout;
   botSpellBook: HuntBotSpellBook;
   purpose: "hunt" | "quest";
@@ -82,7 +85,9 @@ export type HuntJoinInput = Readonly<{
   heroStrength: number;
   fightId: string;
   areaId: string;
-  team: 1;
+  instanceCopyId: number | null;
+  team: 1 | 2;
+  appearance: HuntHumanAppearance;
   loadout: CombatLoadout;
 }>;
 
@@ -128,6 +133,7 @@ export interface CombatPort {
   startFriendlyDuel(input: FriendlyDuelStartInput): Promise<FightStart>;
   startPvp(input: FriendlyDuelStartInput): Promise<FightStart>;
   hasFight(fightId: string): Promise<boolean>;
+  participantTeam(accountId: number): Promise<1 | 2 | null>;
   execute(accountId: number, command: FightCommand): Promise<readonly CombatEvent[]>;
   takePocketConsume(accountId: number): number | null;
   activeFightId(accountId: number): Promise<string | null>;

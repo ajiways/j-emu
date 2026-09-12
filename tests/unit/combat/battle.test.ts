@@ -3,7 +3,11 @@ import { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import type { HuntBattleInit } from "../../../src/modules/combat/domain/hunt-battle-init.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
-import { EMPTY_HUNT_BOT_SPELL_BOOK, GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
+import {
+  EMPTY_HUNT_BOT_SPELL_BOOK,
+  GRYZL_FIGHT_LOOK,
+  UNIT_HUNT_APPEARANCE,
+} from "../../support/hunt-start-input.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
 function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
@@ -29,8 +33,10 @@ function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
     botMaxHp: 20,
     arena: "1_1",
     areaId: "503",
+    instanceCopyId: null,
     startedAt: new Date("2026-09-07T12:00:00.000Z"),
     loadout: EMPTY_COMBAT_LOADOUT,
+    appearance: UNIT_HUNT_APPEARANCE,
     botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
     purpose: "hunt",
     extraEnemies: [],
@@ -190,6 +196,8 @@ describe("Battle", () => {
       mp: 10,
       maxMp: 10,
       strength: 80,
+      team: 1,
+      appearance: UNIT_HUNT_APPEARANCE,
       loadout: EMPTY_COMBAT_LOADOUT,
       startedAtMs: AUTH_NOW,
     });
@@ -207,6 +215,40 @@ describe("Battle", () => {
       events: [{ type: "turn-wait" }, { type: "damage", sourceId: 1, targetId: 1_000_000 }],
     });
     expect(battle.pairedOpponent(1)).toEqual({ kind: "bot" });
+  });
+
+  it("retargets a living team-2 waiter after the hunt bot dies", () => {
+    const battle = createBattle(new SequenceRandom([20]), { heroStrength: 200 });
+    battle.authenticate(1, AUTH_NOW);
+    battle.addHuman({
+      accountId: 2,
+      heroId: 2,
+      nick: "Intervenor",
+      level: 1,
+      kind: 1,
+      hp: 27,
+      maxHp: 27,
+      mp: 10,
+      maxMp: 10,
+      strength: 80,
+      team: 2,
+      appearance: UNIT_HUNT_APPEARANCE,
+      loadout: EMPTY_COMBAT_LOADOUT,
+      startedAtMs: AUTH_NOW,
+    });
+    battle.authenticate(2, AUTH_NOW);
+    const hit = battle.tryPlayerMelee(1, "left", AUTH_NOW);
+    if (hit.kind !== "resolved") throw new Error("Expected a resolved melee hit");
+    expect(hit.events.some((event) => event.type === "finished")).toBe(false);
+    const retarget = hit.events.find((event) => event.type === "opponent-new-human");
+    expect(retarget).toMatchObject({
+      type: "opponent-new-human",
+      human: { id: 2, team: 2 },
+      appearance: UNIT_HUNT_APPEARANCE,
+    });
+    expect(battle.finished).toBe(false);
+    expect(battle.pairedOpponent(1)).toEqual({ kind: "human", accountId: 2 });
+    expect(battle.tickRosterDuels().some((event) => event.type === "finished")).toBe(false);
   });
 
   it("resumes a paired hunter without resetting the turn deadline", () => {

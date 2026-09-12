@@ -1606,12 +1606,13 @@ CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
 - **ID:** `CMB-11`
 - **depends_on:** `SOC-03`, `CMB-08`, `DNG-01`
 - **Behavior evidence:** [FIGHT_JOIN.md](../../../jgr-emu/docs/FIGHT_JOIN.md);
-  `jgr-emu/src/fight/lifecycle.ts` `joinFight` / `joinFightByNick` (area **и**
-  `instanceCopyId`; HELP = team цели; team 2 enqueue без немедленного
-  `tryPairQueues`); `jgr-emu/src/routes/oa/helpers.ts` `helpFightError`
-  (dump 204). Live j-emu: `FightJoinCommand` режет team 2 как «бой не
-  найден»; `huntJoiner` хардкодит `team: 1`; `Battle` хранит только
-  `areaId` — две копии 542 с одним area проходят current join.
+  `jgr-emu/src/fight/lifecycle.ts` `joinFight` / `joinFightByNick`;
+  `jgr-emu/src/routes/oa/helpers.ts` `helpFightError` (dump 204).
+  Landed: `FIGHT_JOIN` явный `team` 1\|2; HELP = `CombatPort.participantTeam`;
+  `joinHunt` сравнивает `areaId` **и** `instanceCopyId`; dungeon
+  `startHunt` проставляет copy; карта occupied spawn team 1; team-2 не
+  берёт бота; после смерти бота ретаргет тот же `FightDuel`; hunt EXP
+  только opener-team. Leftover: N×N две дуэли сразу.
 - **Content set:** без новых квестов. Hunt **50310** + копия огра **542**;
   два героя same-area / same-copy. Quest `purpose:"quest"` по-прежнему
   `HuntJoinDenied` (CMB-09).
@@ -1632,7 +1633,7 @@ CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
   **Restart.** Mid-fight RAM; join после restart процесса — stale 204
   (ADR-0020).
   **CEF.** Production consumer. Product **частично** до CEF; строка
-  CEF_MANUAL — на close coding, не здесь.
+  CEF_MANUAL добавлена на close coding.
   Контракт: [COMBAT.md](../modules/COMBAT.md), [PARTY.md](../modules/PARTY.md),
   [INSTANCE.md](../modules/INSTANCE.md).
 - **Acceptance:** raw-AMF: JOIN `{team:2}` и HELP на цель team 2 входят в
@@ -1640,7 +1641,7 @@ CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
   две копии 542 изолируют JOIN; quest-fight join deny как сейчас; после
   смерти бота живой team-2 продолжает vs team-1; settlement без hunt EXP
   team-2; restart → 204 stale.
-- **Status:** `next`
+- **Status:** `done`
 
 ### QST-ENG-04 — Quest-fight leftovers
 
@@ -1654,7 +1655,7 @@ CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
   pass. `ARC-*` не предполагается.
 - **Acceptance:** deny leave / ambush / QL-2 на raw-AMF; quest join по-прежнему
   запрещён.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### QST-ENG-05 — OPEN_STORE
 

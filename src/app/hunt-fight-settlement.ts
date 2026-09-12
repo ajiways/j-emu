@@ -96,8 +96,11 @@ export class HuntFightSettlement implements FightSettlement {
     if (cached) return cached;
     const bot = await this.catalog.bot(outcome.botId);
     if (!bot) throw new Error(`Bot catalog entry ${outcome.botId} is missing`);
+    const opener = outcome.humans[0];
+    if (!opener) throw new Error("Hunt outcome is missing the opener");
+    const rewarded = outcome.humans.filter((human) => human.team === opener.team);
     const win = outcome.kind === "win";
-    const shares = outcome.humans.map((human) => ({
+    const shares = rewarded.map((human) => ({
       characterId: human.characterId,
       damage: human.damageToBot,
       level: human.level,
@@ -121,7 +124,7 @@ export class HuntFightSettlement implements FightSettlement {
       );
       if (worldLootAllowed(over)) rolled = rollBotLoot(bot.reward, this.random);
     }
-    const route = await this.lootRouting.routeFor(outcome.humans.map((human) => human.characterId));
+    const route = await this.lootRouting.routeFor(rewarded.map((human) => human.characterId));
     const topInParty = Boolean(top && route?.memberCharacterIds.has(top.characterId));
     const partyMoney = topInParty ? moneyMinor : 0;
     const deferItems = Boolean(
@@ -146,8 +149,8 @@ export class HuntFightSettlement implements FightSettlement {
         );
       }
       for (const human of outcome.humans) {
-        const exp = experience.get(human.characterId) ?? 0;
-        const isTop = top?.characterId === human.characterId;
+        const exp = human.team === opener.team ? (experience.get(human.characterId) ?? 0) : 0;
+        const isTop = human.team === opener.team && top?.characterId === human.characterId;
         const splitIndex = partyFighters.findIndex((row) => row.characterId === human.characterId);
         const goldMinor = moneyShares
           ? splitIndex >= 0
@@ -199,7 +202,7 @@ export class HuntFightSettlement implements FightSettlement {
       for (const heroId of bestiaryCreditHeroIds({
         kind: outcome.kind,
         topCharacterId: top === undefined ? null : top.characterId,
-        humanIds: outcome.humans.map((human) => human.characterId),
+        humanIds: rewarded.map((human) => human.characterId),
         partyMemberIds: route?.memberCharacterIds ?? null,
       })) {
         await this.bestiary.noteWin(heroId, outcome.botId);

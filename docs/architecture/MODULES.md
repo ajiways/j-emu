@@ -52,7 +52,8 @@ area presence roster:
   `quests` runtime QST-ENG-01/02 / DAY-01 / CMB-10 / QST-ENG-03: NPC 271/272,
   шесть engine-квестов, USE 584, lazy 06:00 wipe, `book|quest_delete`,
   quest roster, JUMP_AREA leftover, `award.rep`, REMOVE equipped, hunt
-  loot-cap через quests-port. Следующий движок — `CMB-11` (join team 2).
+  loot-cap через quests-port. Следующий движок — `QST-ENG-04` (deny leave /
+  ambush / QL-2).
   Акрилон (`CONTENT-STORY-*`) не брать, пока leftover-движки не закрыты.
   `content` file
   seed/publish и EDT-01/02 operator HTTP `/operator/content/*` (GET
@@ -150,9 +151,11 @@ state и outbound packets. В PostgreSQL владеет только завер�
 `finished_fights` history с TTL 72 часа. Не начисляет награды и не меняет
 персонажа/инвентарь напрямую.
 
-**API:** `startHunt`, `joinHunt`, `hasFight`, `execute`, `activeFightId`,
+**API:** `startHunt`, `joinHunt`, `hasFight`, `participantTeam`, `execute`,
+`activeFightId`,
 `resumeFight`, `accountForFight`, `takePocketConsume`, `takeExit`, `takeLoot`.
-CMB-11: `joinHunt.team` `1|2`; `startHunt`/`joinHunt` несут `instanceCopyId`
+CMB-11 landed: `joinHunt.team` `1|2`; `startHunt`/`joinHunt` несут
+`instanceCopyId`
 (`null` = мир) — RAM на `Battle`, не FK в combat schema. Injected `CombatDelay`
 (dueAt + cancel по fight id) и `CombatWake` для fproxy. Loadout snapshot
 собирает `jugger-wire` из inventory/catalog ports; CMB-03 settlement —

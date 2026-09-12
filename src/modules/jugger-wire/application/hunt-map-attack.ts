@@ -42,7 +42,9 @@ export class HuntMapAttack {
         heroStrength: input.heroStrength,
         fightId,
         areaId: input.areaId,
+        instanceCopyId: null,
         team: 1,
+        appearance: input.appearance,
         loadout: input.loadout,
       });
       await this.fanout.wakeArea(input.areaId);
@@ -96,6 +98,8 @@ export class HuntMapAttack {
         botBody: input.botBody,
         arena: input.arena,
         areaId: input.areaId,
+        instanceCopyId: null,
+        appearance: input.appearance,
         loadout: input.loadout,
         botSpellBook: input.botSpellBook,
         extraEnemies: [],

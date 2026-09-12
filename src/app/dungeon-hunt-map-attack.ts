@@ -49,7 +49,9 @@ export class DungeonHuntMapAttack {
         heroStrength: input.heroStrength,
         fightId,
         areaId: input.areaId,
+        instanceCopyId: input.copyId,
         team: 1,
+        appearance: input.appearance,
         loadout: input.loadout,
       });
       await this.fanout.wakeArea(input.areaId, input.copyId);
@@ -104,6 +106,8 @@ export class DungeonHuntMapAttack {
         botBody: input.botBody,
         arena: input.arena,
         areaId: input.areaId,
+        instanceCopyId: input.copyId,
+        appearance: input.appearance,
         loadout: input.loadout,
         botSpellBook: input.botSpellBook,
         extraEnemies: [],

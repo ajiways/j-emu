@@ -4,6 +4,13 @@ import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { FightOutcomeKind, FightOutcomeSnapshot } from "./fight-outcome-snapshot.ts";
 
+export function leaveWinnerTeam(humans: readonly HuntHuman[]): 1 | 2 {
+  const remaining = humans.filter((human) => !human.leftLive);
+  const last = remaining[remaining.length - 1];
+  if (!last) throw new Error("Leave requires a human in the battle");
+  return last.hp <= 0 ? 2 : 1;
+}
+
 export function battleOutcomeSnapshot(
   input: Readonly<{
     init: HuntBattleInit | FriendlyDuelBattleInit;

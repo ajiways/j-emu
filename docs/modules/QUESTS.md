@@ -334,7 +334,7 @@ CEF-PASS не ставить.
 ## CONTENT-STORY-01
 
 Очередь: [ROADMAP.md](../migration/ROADMAP.md) (`queued`). Не стартовать,
-пока leftover-движки (CMB-11 / QST-ENG-04 / OPEN_STORE / …) не `done`.
+пока leftover-движки (QST-ENG-04 / OPEN_STORE / …) не `done`.
 Контракт q_1 там. Канон ритуала: enemies **85**×1 + **83**×7, не
 fixture-only 83×7. 503 item **1** свободен после QST-ENG-03.
 
