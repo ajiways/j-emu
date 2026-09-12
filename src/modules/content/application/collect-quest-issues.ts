@@ -19,6 +19,7 @@ const AMBUSH_KEY = "q_engine_ambush";
 const DAILY_KEY = "q_engine_daily";
 const ROSTER_KEY = "q_engine_roster";
 const MULTI_KEY = "q_engine_multi";
+const STORE_KEY = "q_engine_store";
 const AREA_ACTION_ID = 8;
 const AREA_ITEM_ID = 3;
 const AMBUSH_ACTION_ID = 9;
@@ -89,6 +90,7 @@ export function collectQuestIssues(bundle: ContentBundle): readonly string[] {
     DAILY_KEY,
     ROSTER_KEY,
     MULTI_KEY,
+    STORE_KEY,
   ]) {
     if (!keys.has(key)) issues.push(`quest ${key} is required`);
   }
@@ -209,7 +211,15 @@ function pushDailyFlagIssues(issues: string[], quests: readonly QuestDocument[])
   if (daily && (!Number.isInteger(daily.flags) || (daily.flags & 1) !== 1)) {
     issues.push(`quest ${DAILY_KEY} must have flags & 1`);
   }
-  for (const key of [BOARD_KEY, FIGHT_KEY, AREA_KEY, AMBUSH_KEY, ROSTER_KEY, MULTI_KEY]) {
+  for (const key of [
+    BOARD_KEY,
+    FIGHT_KEY,
+    AREA_KEY,
+    AMBUSH_KEY,
+    ROSTER_KEY,
+    MULTI_KEY,
+    STORE_KEY,
+  ]) {
     const quest = quests.find((row) => row.key === key);
     if (quest && Number.isInteger(quest.flags) && (quest.flags & 1) === 1) {
       issues.push(`quest ${key} must not be daily`);
@@ -283,6 +293,18 @@ function pushScriptIssues(
     }
     if (op.type === "SET_FLAG" && !facts.has(op.flag)) {
       issues.push(`quest ${questKey} flag ${op.flag} is missing`);
+    }
+    if (op.type === "OPEN_STORE") {
+      if (!Number.isInteger(op.areaId) || op.areaId <= 0) {
+        issues.push(`quest ${questKey} OPEN_STORE areaId is required`);
+      } else {
+        const area = bundle.areas.find((row) => row.id === String(op.areaId));
+        if (!area) {
+          issues.push(`quest ${questKey} OPEN_STORE area ${op.areaId} is missing`);
+        } else if (area.code !== "store") {
+          issues.push(`quest ${questKey} OPEN_STORE area ${op.areaId} is not a store`);
+        }
+      }
     }
   }
 }

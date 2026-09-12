@@ -1,29 +1,15 @@
-import type { CharacterService } from "../../../character/application/character-service.ts";
-import type { CombatPort } from "../../../combat/ports/combat-port.ts";
-import type { InventoryService } from "../../../inventory/domain/inventory-service.ts";
-import type { Clock } from "../../../../shared/kernel/clock.ts";
 import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
-import { MissingLinkError } from "../../../world/domain/missing-link-error.ts";
-import {
-  addTravelSeconds,
-  travelFtime,
-  travelLockActive,
-  waitLockError,
-  waitLockSeconds,
-} from "../../../world/domain/travel-ftime.ts";
-import type { WorldService } from "../../../world/domain/world-service.ts";
+import type { CharacterService } from "../../../character/application/character-service.ts";
 import type { BootstrapReadModel } from "../../application/bootstrap-read-model.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
+import type { PresenceFanout } from "../../application/presence-fanout.ts";
+import type { ComeInTravel } from "../../../../app/come-in-travel.ts";
+import type { InstanceDesk } from "../../../../app/instance-desk.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
-import { requireNoActiveFight } from "./require-no-active-fight.ts";
-import type { PresenceFanout } from "../../application/presence-fanout.ts";
-import type { InstanceDesk } from "../../../../app/instance-desk.ts";
 import { InstanceDeniedError } from "../../../instance/domain/instance-denied-error.ts";
 import { PartyDeniedError } from "../../../party/domain/party-denied-error.ts";
-
-const SLICE_SPEED = 0;
-const OVERLOAD_ERROR = "Вы не можете перемещаться, т.к. рюкзак перегружен!";
+import { MissingLinkError } from "../../../world/domain/missing-link-error.ts";
 
 type ComeInRequest = Readonly<{ areaId: string }>;
 
@@ -35,10 +21,7 @@ export class ComeInCommand implements OaCommand {
     private readonly unitOfWork: UnitOfWork,
     private readonly bootstrap: BootstrapReadModel,
     private readonly characters: CharacterService,
-    private readonly inventory: InventoryService,
-    private readonly world: WorldService,
-    private readonly combat: CombatPort,
-    private readonly clock: Clock,
+    private readonly travel: ComeInTravel,
     private readonly presence: PresenceFanout,
     private readonly instances: InstanceDesk,
   ) {}
@@ -59,32 +42,18 @@ export class ComeInCommand implements OaCommand {
     try {
       const moved = await this.unitOfWork.run(async () => {
         const locked = await this.characters.lockByAccountId(context.accountId);
-        await requireNoActiveFight(this.combat, context.accountId);
-        const load = await this.inventory.bagLoad({ characterId: locked.id });
-        if (load.amount > load.amountMax) throw new ProtocolError(204, OVERLOAD_ERROR);
-        const now = this.clock.now();
-        if (travelLockActive(locked.moveReadyAt, now) && locked.moveReadyAt) {
-          throw new ProtocolError(204, waitLockError(waitLockSeconds(locked.moveReadyAt, now)));
-        }
-        await this.world.requireLink(locked.areaId, request.areaId);
-        const dest = await this.world.area(request.areaId);
-        await this.characters.syncResources({ characterId: locked.id });
-        const ftime = travelFtime(dest.ftimeMax, SLICE_SPEED);
-        const fromAreaId = locked.areaId;
-        const fromCopyId = locked.instanceCopyId;
-        const plan = await this.instances.prepareTravel(locked, dest.id);
-        await this.characters.setArea({
-          characterId: locked.id,
-          areaId: dest.id,
-          moveReadyAt: ftime > 0 ? addTravelSeconds(this.clock.now(), ftime) : null,
-          instanceCopyId: plan.copyId,
-        });
+        const travel = await this.travel.move(context.accountId, locked, request.areaId);
         const blocks = await this.bootstrap.travelMutation(context.accountId, "COME_IN");
         return {
-          fromAreaId,
-          toAreaId: dest.id,
-          fromCopyId,
-          blocks: await this.instances.decorateComeIn(blocks, plan, context.accountId, locked.id),
+          fromAreaId: travel.fromAreaId,
+          toAreaId: travel.toAreaId,
+          fromCopyId: travel.fromCopyId,
+          blocks: await this.instances.decorateComeIn(
+            blocks,
+            travel.plan,
+            context.accountId,
+            locked.id,
+          ),
         };
       });
       await this.presence.afterMove(

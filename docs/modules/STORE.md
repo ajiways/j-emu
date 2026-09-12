@@ -171,7 +171,7 @@ Live RANK/REPUTATION (и LEVEL на лоте) — **status 203** + `error` из 
 
 Ghost buy: **203** + `error` (не status 2). Fight: не блокировать.
 
-OPEN_STORE — QST-ENG-05 (контракт [QUESTS.md](QUESTS.md)): dialog leftover
+OPEN_STORE — QST-ENG-05 landed ([QUESTS.md](QUESTS.md)): dialog leftover
 op, штатный ComeIn в `code=store` area + `jump:"area"`. Не piggyback
 `store|list`. NPC board `code=store` и dual-badge — out of scope.
 

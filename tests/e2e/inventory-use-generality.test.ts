@@ -171,6 +171,7 @@ describe("inventory USE generality", () => {
         "q_engine_daily",
         "q_engine_roster",
         "q_engine_ambush",
+        "q_engine_store",
       ]),
     );
     const again = await client.objectAction({ object: "common", action: "init", sq: 4 });

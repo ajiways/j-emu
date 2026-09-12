@@ -1,0 +1,3 @@
+ALTER TABLE "quests"."quest_script_ops" DROP CONSTRAINT "quest_script_ops_type_check";--> statement-breakpoint
+ALTER TABLE "quests"."quest_script_ops" ADD COLUMN "area_id" integer;--> statement-breakpoint
+ALTER TABLE "quests"."quest_script_ops" ADD CONSTRAINT "quest_script_ops_type_check" CHECK ("quests"."quest_script_ops"."type" in ('START_FIGHT','GRANT_ARTIKUL','GRANT_PROFESSION','REMOVE_ARTIKUL','MSG','SET_FLAG','CLEAR_FLAG','BUMP_GOAL','COMPLETE_GOAL','GRANT_AWARDS','JUMP_AREA','OPEN_STORE'));

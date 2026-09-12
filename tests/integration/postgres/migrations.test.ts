@@ -366,6 +366,7 @@ describe("Drizzle migrations", () => {
       "0023_quests_daily_journal.sql",
       "0024_content_editor_candidates.sql",
       "0025_quests_multi_board.sql",
+      "0026_quests_open_store.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -397,8 +398,9 @@ describe("Drizzle migrations", () => {
       "0023_quests_daily_journal",
       "0024_content_editor_candidates",
       "0025_quests_multi_board",
+      "0026_quests_open_store",
     ]);
-    expect(await appliedCount()).toBe(26);
+    expect(await appliedCount()).toBe(27);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -758,7 +760,20 @@ describe("Drizzle migrations", () => {
           WHERE constraint_schema = 'quests'
             AND constraint_name = 'quest_script_ops_type_check'`,
     );
-    expect([...scriptTypeCheck].map((row) => row.check_clause).join(" ")).toMatch(/JUMP_AREA/);
+    expect([...scriptTypeCheck].map((row) => row.check_clause).join(" ")).toMatch(/OPEN_STORE/);
+    const scriptArea = await database.session().execute<{
+      column_name: string;
+      is_nullable: string;
+      data_type: string;
+    }>(
+      sql`SELECT column_name, is_nullable, data_type
+          FROM information_schema.columns
+          WHERE table_schema = 'quests' AND table_name = 'quest_script_ops'
+            AND column_name = 'area_id'`,
+    );
+    expect([...scriptArea]).toEqual([
+      { column_name: "area_id", is_nullable: "YES", data_type: "integer" },
+    ]);
     const hookCheck = await database.session().execute<{ check_clause: string }>(
       sql`SELECT check_clause
           FROM information_schema.check_constraints

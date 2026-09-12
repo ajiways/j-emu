@@ -29,7 +29,8 @@ export type QuestScriptOpDocument =
   | Readonly<{ type: "BUMP_GOAL"; goal: string }>
   | Readonly<{ type: "COMPLETE_GOAL"; goal: string }>
   | Readonly<{ type: "GRANT_AWARDS" }>
-  | Readonly<{ type: "JUMP_AREA" }>;
+  | Readonly<{ type: "JUMP_AREA" }>
+  | Readonly<{ type: "OPEN_STORE"; areaId: number }>;
 
 export type QuestDialogStepDocument =
   | Readonly<{ type: "npc" | "note" | "stage"; text: string; id: string }>

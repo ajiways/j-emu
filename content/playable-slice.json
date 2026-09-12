@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v33",
+  "schemaVersion": "playable-slice/v34",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -4736,6 +4736,46 @@
         { "type": "npc", "text": "Пройди засаду на площади." },
         { "type": "goal", "goal": "ambush_spot", "text": "Понял" },
         { "type": "player", "id": "accept_ambush", "text": "Иду" },
+        { "type": "reward", "answer": "Сдать задание" }
+      ]
+    },
+    {
+      "key": "q_engine_store",
+      "bookId": 8,
+      "title": "Лавка головы",
+      "description": "Зайди в деревенскую лавку.",
+      "awardDescription": "Лавка",
+      "flags": 0,
+      "levelMin": 1,
+      "levelMax": 0,
+      "npcId": 271,
+      "pointId": 9,
+      "boardOrd": 8,
+      "welcomeOffer": "Голова шлёт в лавку.",
+      "welcomeActive": "Зайди в лавку.",
+      "welcomeReady": "Лавка открыта — сдавай.",
+      "awardExp": 1,
+      "awardMoneyMinor": 0,
+      "awardItems": [],
+      "goals": [
+        {
+          "id": "talk_store",
+          "kind": "talk",
+          "title": "Поговорить с головой",
+          "goalOrd": 1,
+          "limit": 1,
+          "objectId": 271
+        }
+      ],
+      "dialogSteps": [
+        { "type": "npc", "text": "Сходи в лавку за прилавком." },
+        { "type": "goal", "goal": "talk_store", "text": "Открыть лавку" },
+        {
+          "type": "player",
+          "id": "open_store",
+          "text": "Иду в лавку",
+          "scripts": [{ "type": "OPEN_STORE", "areaId": 504 }]
+        },
         { "type": "reward", "answer": "Сдать задание" }
       ]
     }

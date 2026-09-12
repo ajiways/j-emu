@@ -275,6 +275,7 @@ function decodeOp(
   }
   if (row.type === "GRANT_AWARDS") return { type: "GRANT_AWARDS" };
   if (row.type === "JUMP_AREA") return { type: "JUMP_AREA" };
+  if (row.type === "OPEN_STORE") return { type: "OPEN_STORE", areaId: requireInt(row.areaId) };
   throw new Error(`Quest script type ${row.type} is unknown`);
 }
 

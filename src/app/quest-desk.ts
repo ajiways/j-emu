@@ -16,22 +16,26 @@ import type { QuestService } from "../modules/quests/application/quest-service.t
 import type { QuestMutation } from "../modules/quests/application/quest-mutation.ts";
 import { QuestDeniedError } from "../modules/quests/domain/quest-denied-error.ts";
 import {
-  leftoverJumpArea,
   leftoverQuestEffects,
   effectsWithoutLeftover,
 } from "../modules/quests/domain/quest-script-leftover.ts";
 import type { QuestSignal } from "../modules/quests/domain/quest-signal.ts";
 import type { ChatDesk } from "./chat-desk.ts";
-import { piggybackQuestFight } from "./quest-fight-piggyback.ts";
+import { applyOpenStoreLeftover, type ComeInTravel } from "./come-in-travel.ts";
 import { applyQuestScriptEffect } from "./quest-script-apply.ts";
+import { questAreaBegin, questAreaFinish, type QuestAreaOaDeps } from "./quest-area-oa.ts";
+import {
+  questAnswerBlocks,
+  questBoardBlocks,
+  type QuestAnswerWireDeps,
+} from "./quest-answer-wire.ts";
 import {
   answerIdOf,
   npcRefOf,
-  questDialogPayload,
-  jumpAreaAnswer,
   questFlat as flat,
   requireQuestInt as requireInt,
 } from "./quest-oa-codec.ts";
+import type { PresenceFanout } from "../modules/jugger-wire/application/presence-fanout.ts";
 
 export class QuestDesk {
   constructor(
@@ -46,6 +50,8 @@ export class QuestDesk {
     private readonly fightWire: FightWireMapper,
     private readonly bootstrap: BootstrapReadModel,
     private readonly random: Readonly<{ unit(): number }>,
+    private readonly travel: ComeInTravel,
+    private readonly presence: PresenceFanout,
   ) {}
 
   async execute(
@@ -62,8 +68,9 @@ export class QuestDesk {
       if (key === "book|quest_list") return await this.bookList(accountId, envelope);
       if (key === "book|quest_cancel") return await this.cancel(accountId, envelope);
       if (key === "book|quest_delete") return await this.hideJournal(accountId, envelope);
-      if (key === "common|object:AREA") return await this.areaBegin(accountId, envelope);
-      if (key === "common|action_finish") return await this.areaFinish(accountId);
+      if (key === "common|object:AREA")
+        return await questAreaBegin(this.areaDeps(), accountId, envelope);
+      if (key === "common|action_finish") return await questAreaFinish(this.areaDeps(), accountId);
       throw new Error(`Quest OA ${key} is not registered`);
     } catch (error) {
       if (error instanceof QuestDeniedError) throw new ProtocolError(203, error.message);
@@ -77,7 +84,7 @@ export class QuestDesk {
       await this.characters.lockById(hero.id);
       await this.quests.board(hero.id, npcId);
     });
-    return this.boardBlocks(accountId, hero.id, npcId);
+    return questBoardBlocks(this.answerWire(), accountId, hero.id, npcId);
   }
 
   async afterBagChange(accountId: number, heroId: number): Promise<void> {
@@ -136,19 +143,34 @@ export class QuestDesk {
     const hero = await this.requireHero(accountId);
     const fields = { ...(envelope.form ?? {}), ...(envelope.root ?? {}) };
     const leftover = await this.unitOfWork.run(async () => {
-      await this.characters.lockById(hero.id);
-      const mutation = await this.quests.answer(
+      const locked = await this.characters.lockById(hero.id);
+      const mutation = await this.applyEffects(
+        accountId,
         hero.id,
-        {
-          npcRef: npcRefOf(envelope),
-          pointId: requireInt(fields["point_id"], "point_id"),
-          answerId: answerIdOf(fields["answer_id"]),
-        },
-        hero.level,
+        await this.quests.answer(
+          hero.id,
+          {
+            npcRef: npcRefOf(envelope),
+            pointId: requireInt(fields["point_id"], "point_id"),
+            answerId: answerIdOf(fields["answer_id"]),
+          },
+          hero.level,
+        ),
       );
-      return this.applyEffects(accountId, hero.id, mutation);
+      return {
+        mutation,
+        moved: await applyOpenStoreLeftover(this.travel, accountId, locked, mutation.effects),
+      };
     });
-    return flat(await this.answerBlocks(accountId, leftover));
+    if (leftover.moved) {
+      await this.presence.afterMove(
+        accountId,
+        leftover.moved.fromAreaId,
+        leftover.moved.toAreaId,
+        leftover.moved.fromCopyId,
+      );
+    }
+    return flat(await questAnswerBlocks(this.answerWire(), accountId, leftover.mutation));
   }
 
   private async bookList(
@@ -205,62 +227,6 @@ export class QuestDesk {
     });
   }
 
-  private async areaBegin(
-    accountId: number,
-    envelope: ObjectActionEnvelope,
-  ): Promise<OaEncodedResponse> {
-    const hero = await this.requireHero(accountId);
-    const form = envelope.form;
-    if (!form) throw new ProtocolError(203, "common|object requires form");
-    const actionId = requireInt(form["action_id"], "action_id");
-    const mutation = await this.unitOfWork.run(async () => {
-      await this.characters.lockById(hero.id);
-      return this.quests.beginAreaAction(
-        hero.id,
-        requireInt(form["object_id"], "object_id"),
-        actionId,
-      );
-    });
-    if (!mutation.waiting) throw new Error("AREA waiting payload is missing");
-    return flat({
-      "common|action": { status: 100, action: String(actionId) },
-      "common|waiting": {
-        status: 100,
-        title: mutation.waiting.title,
-        start: String(mutation.waiting.start),
-        finish: String(mutation.waiting.finish),
-        action_src: 0,
-      },
-      state: await this.bootstrap.state(accountId),
-    });
-  }
-
-  private async areaFinish(accountId: number): Promise<OaEncodedResponse> {
-    const hero = await this.requireHero(accountId);
-    const leftover = await this.unitOfWork.run(async () => {
-      await this.characters.lockById(hero.id);
-      return this.applyEffects(accountId, hero.id, await this.quests.finishAreaAction(hero.id));
-    });
-    return flat({
-      "common|action_finish": {
-        status: 100,
-        ...(leftover.popup ? { msg_text: leftover.popup } : {}),
-      },
-      ...(await this.bookTrio(hero.id, "started")),
-      state: await this.bootstrap.state(accountId),
-      ...(await piggybackQuestFight(accountId, leftover, {
-        characters: this.characters,
-        catalog: this.catalog,
-        world: this.world,
-        inventory: this.inventory,
-        combat: this.combat,
-        chat: this.chat,
-        fightWire: this.fightWire,
-        random: this.random,
-      })),
-    });
-  }
-
   private async applyEffects(
     accountId: number,
     heroId: number,
@@ -273,47 +239,28 @@ export class QuestDesk {
     return { ...mutation, effects: leftoverQuestEffects(mutation.effects) };
   }
 
-  private async answerBlocks(
-    accountId: number,
-    mutation: QuestMutation,
-  ): Promise<Record<string, unknown>> {
-    const hero = await this.requireHero(accountId);
-    const blocks: Record<string, unknown> = {
-      "npc|answer": { status: 100 },
-      ...(await this.boardBlocks(accountId, hero.id, mutation.npcId)),
-    };
-    if (leftoverJumpArea(mutation.effects)) {
-      blocks["npc|answer"] = jumpAreaAnswer();
-    } else if (mutation.dialog && mutation.pointId) {
-      blocks["npc|answer"] = questDialogPayload(
-        mutation.pointId,
-        mutation.dialog,
-        await this.quests.npcInfo(mutation.npcId),
-      );
-    }
-    const fight = await piggybackQuestFight(accountId, mutation, {
+  private answerWire(): QuestAnswerWireDeps {
+    return {
+      quests: this.quests,
       characters: this.characters,
+      inventory: this.inventory,
       catalog: this.catalog,
       world: this.world,
-      inventory: this.inventory,
       combat: this.combat,
       chat: this.chat,
       fightWire: this.fightWire,
+      bootstrap: this.bootstrap,
       random: this.random,
-    });
-    return { ...blocks, ...fight };
+      bookTrio: (heroId, filterType) => this.bookTrio(heroId, filterType),
+    };
   }
 
-  private async boardBlocks(
-    accountId: number,
-    heroId: number,
-    npcId: number,
-  ): Promise<Record<string, unknown>> {
+  private areaDeps(): QuestAreaOaDeps {
     return {
-      "npc|quests": await this.quests.boardRows(heroId, npcId),
-      "npc|info": await this.quests.npcInfo(npcId),
-      ...(await this.bookTrio(heroId, "started")),
-      state: await this.bootstrap.state(accountId),
+      ...this.answerWire(),
+      unitOfWork: this.unitOfWork,
+      applyEffects: (accountId, heroId, mutation) => this.applyEffects(accountId, heroId, mutation),
+      requireHero: (accountId) => this.requireHero(accountId),
     };
   }
 

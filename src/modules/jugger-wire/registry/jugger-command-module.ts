@@ -97,7 +97,9 @@ import type { ProfessionsService } from "../../professions/application/professio
 import type { CraftService } from "../../professions/application/craft-service.ts";
 import type { QuestService } from "../../quests/application/quest-service.ts";
 import { QuestDesk } from "../../../app/quest-desk.ts";
+import { ComeInTravel } from "../../../app/come-in-travel.ts";
 import type { RandomSource } from "../../combat/domain/random-source.ts";
+
 export class JuggerCommandModule {
   readonly oa: OaCommandRegistry;
   readonly fproxy: FproxyCommandRegistry;
@@ -153,6 +155,7 @@ export class JuggerCommandModule {
     ambushRandom: RandomSource,
   ) {
     this.fightWire = fightWire;
+    const travel = new ComeInTravel(characters, inventory, world, combat, clock, instanceDesk);
     this.quests = new QuestDesk(
       quests,
       characters,
@@ -165,6 +168,8 @@ export class JuggerCommandModule {
       fightWire,
       bootstrap,
       ambushRandom,
+      travel,
+      presence,
     );
     const invites = new FriendlyDuelInvites(clock);
     const propose = new ProposeFriendlyDuel(
@@ -283,17 +288,7 @@ export class JuggerCommandModule {
         this.quests,
       ),
       new UpgradeCommand(unitOfWork, bootstrap, characters, inventory, combat),
-      new ComeInCommand(
-        unitOfWork,
-        bootstrap,
-        characters,
-        inventory,
-        world,
-        combat,
-        clock,
-        presence,
-        instanceDesk,
-      ),
+      new ComeInCommand(unitOfWork, bootstrap, characters, travel, presence, instanceDesk),
       new CommonExitCommand(
         unitOfWork,
         bootstrap,

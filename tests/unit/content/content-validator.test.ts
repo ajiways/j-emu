@@ -497,6 +497,15 @@ describe("parseContentBundle", () => {
     ).toThrow(/quest q_engine_ambush is required/);
   });
 
+  it("rejects a bundle without quest q_engine_store", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        quests: playable.quests.filter((quest) => quest.key !== "q_engine_store"),
+      }),
+    ).toThrow(/quest q_engine_store is required/);
+  });
+
   it("rejects npc 271 on item 1", () => {
     expect(() =>
       new ContentValidator().validate({
@@ -554,7 +563,7 @@ describe("parseContentBundle", () => {
         ...playable,
         quests: [
           ...playable.quests,
-          { ...extra, key: "q_engine_daily_extra", bookId: 9, pointId: 9, boardOrd: 9 },
+          { ...extra, key: "q_engine_daily_extra", bookId: 10, pointId: 10, boardOrd: 10 },
         ],
       }),
     ).toThrow(/exactly one quest with flags & 1/);

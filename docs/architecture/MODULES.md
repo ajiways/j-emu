@@ -50,11 +50,11 @@ area presence roster:
   500), HERO-01 match honor sum. POST-04 / fairness seal leftover.
 - Репутация Радвея **5** есть (REP-01, product частично).
   `quests` runtime QST-ENG-01/02 / DAY-01 / CMB-10 / QST-ENG-03: NPC 271/272,
-  семь engine-квестов, USE 584, lazy 06:00 wipe, `book|quest_delete`,
+  восемь engine-квестов, USE 584, lazy 06:00 wipe, `book|quest_delete`,
   quest roster, JUMP_AREA wire, `award.rep`, REMOVE equipped, hunt
   loot-cap через quests-port. Deny leave / ambush / QL-2 landed raw-AMF
-  (`QST-ENG-04`). Следующий движок — `QST-ENG-05` (`OPEN_STORE`: ComeIn +
-  `jump:"area"`, не телепорт `JUMP_AREA`).
+  (`QST-ENG-04`). `OPEN_STORE` landed raw-AMF (`QST-ENG-05`: ComeIn +
+  `jump:"area"`, не телепорт `JUMP_AREA`). Следующий движок — `DNG-03`.
   Акрилон (`CONTENT-STORY-*`) не брать, пока leftover-движки не закрыты.
   `content` file
   seed/publish и EDT-01/02 operator HTTP `/operator/content/*` (GET
@@ -189,7 +189,7 @@ leftover — composition `QuestDesk`; hunt drop-cap — `HuntFightSettlement`
 через тот же `needed`, не импорт владельцев в domain. Multi-board
 `npc_quests`, talk-npc, `JUMP_AREA` wire, `GRANT_AWARDS.rep` — QST-ENG-03.
 Deny leave / ambush / QL-2 — QST-ENG-04 (`syncOwned` после bag mutation).
-`OPEN_STORE` — QST-ENG-05: leftover op, composition штатный ComeIn, не
+`OPEN_STORE` — QST-ENG-05 landed: leftover op, composition штатный ComeIn, не
 импорт store/world tables в quests domain.
 
 **События leftover:** `quests.accepted.v1` и outbox не вводятся, пока нет

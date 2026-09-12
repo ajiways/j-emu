@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   leftoverJumpArea,
+  leftoverOpenStore,
   leftoverQuestEffects,
 } from "../../../src/modules/quests/domain/quest-script-leftover.ts";
 
@@ -21,5 +22,14 @@ describe("quest script leftover", () => {
     ]);
     expect(effects.map((effect) => effect.type)).toEqual(["JUMP_AREA", "START_FIGHT"]);
     expect(leftoverJumpArea(effects)).toEqual({ type: "JUMP_AREA" });
+  });
+
+  it("keeps OPEN_STORE as leftover with its areaId", () => {
+    const effects = leftoverQuestEffects([
+      { type: "OPEN_STORE", areaId: 504 },
+      { type: "GRANT_ARTIKUL", artikulId: 23, count: 1 },
+    ]);
+    expect(effects).toEqual([{ type: "OPEN_STORE", areaId: 504 }]);
+    expect(leftoverOpenStore(effects)).toEqual({ type: "OPEN_STORE", areaId: 504 });
   });
 });

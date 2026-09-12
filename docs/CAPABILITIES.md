@@ -223,15 +223,15 @@ vs team-1 без hunt EXP; restart → 204 stale. CEF join/intervene не
 ## Quests и NPC — частично
 
 Есть raw-AMF и PostgreSQL: NPC 271 (Голова мертвеца, 503 item **4**) и
-NPC 272 (вторичная доска, item **8**); семь синтетических квестов
+NPC 272 (вторичная доска, item **8**); восемь синтетических квестов
 (`q_engine_board` / `q_engine_fight` / `q_engine_area` /
 `q_engine_daily` / `q_engine_roster` / `q_engine_multi` /
-`q_engine_ambush`). USE 584 открывает
+`q_engine_ambush` / `q_engine_store`). USE 584 открывает
 доску 271 без consume (`npc|info` + `npc|quests`). `npc|answer` двигает
 курсор; dialog `START_FIGHT` `mode:"quest"` vs Грызль (bot 2). Цели
 talk/kill/loot/buy/equip/deliver/area_action/win_fight; скрипты `GRANT_*` /
 `REMOVE_ARTIKUL` (bag или paperdoll) / `MSG` / `SET_FLAG` / `JUMP_AREA` /
-waiting AREA. `q_engine_multi`: MAIN `flags:32`, secondary `active_only` на
+`OPEN_STORE` / waiting AREA. `q_engine_multi`: MAIN `flags:32`, secondary `active_only` на
 272, talk только с целевого NPC, accept `{ jump:"area", macros_list:[] }`
 без смены area, turn-in `awardRep` track **5** +10. `book|quest_list` /
 `quest_targets` / `quest_counters` только `currentGoal`. AREA
@@ -243,16 +243,19 @@ href только NPC-доска / AREA hotspot. DAY-01: ежедневка `fla
 границы. QST-ENG-04: `leaveFight` в quest/copy — `{rs:false,
 err:"нельзя выйти из боя"}`, бой жив; outdoor hunt 50310 — flee; AREA
 ambush без `mode:"quest"` стартует hunt-бой и бампает клик сразу; chance
-miss без `fight|conf`; DROP 77 при loot 1/1 → `done=0`. Cursor, goals,
+miss без `fight|conf`; DROP 77 при loot 1/1 → `done=0`. QST-ENG-05:
+player `OPEN_STORE` на `q_engine_store` — `npc|answer` `{jump:"area"}`,
+герой в 504, следующий `store|list` type `-131` лоты 23/24; `JUMP_AREA`
+без OPEN_STORE area не меняет. Cursor, goals,
 facts, waiting, done, hidden, репа и bag/paperdoll переживают
 reconnect/restart. CEF доски NPC 271, buy/equip 23, dialog-боя,
 AREA waiting на 503, quest-fight на `action_finish`, loot-cap, ежедневки,
-roster flags 8, QST-ENG-03 (MAIN + jump + репа) и QST-ENG-04 (deny leave /
-ambush / QL-2) не прогонялся —
+roster flags 8, QST-ENG-03 (MAIN + jump + репа), QST-ENG-04 (deny leave /
+ambush / QL-2) и QST-ENG-05 (лавка из диалога) не прогонялся —
 [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 
 Не перенесены куратский Акрилон, полный NPC corpus, данж `256`/`257`,
-MAIN `33`, live 75/276, `daily_pvp_kills` / stats 49, `OPEN_STORE`, ложь
+MAIN `33`, live 75/276, `daily_pvp_kills` / stats 49, ложь
 `mergeFinishedQuestsForMapMarkers`.
 
 ## Mail — частично
@@ -355,10 +358,12 @@ pay/gate: gold / diamond / barter по `artikul_id` инстанса, RANK/REPUT
 на лоте. Арсенал 552 lot 438 / artikul 621 — list + buy RANK 203 `Нужно
 звание «Громила».`. Отказы status 2, gate 203 и ghost 203 `storeBuy` покрыты
 e2e. `store|repair` instance `{ id }` чинит finite item (ghost не блокирует;
-cost 0 не зовёт `debitMoney`). CEF лавки и мастерской не прогонялся.
+cost 0 не зовёт `debitMoney`). QST-ENG-05: dialog `OPEN_STORE` штатный ComeIn
+в 504 + `jump:"area"`, без piggyback `store|list`. CEF лавки и мастерской не
+прогонялся.
 
 Не перенесены остальные лоты 504, diamond JSON lots, dungeon/barter shops,
-REPUTATION lots, COME_IN LEVEL entry, OPEN_STORE.
+REPUTATION lots, COME_IN LEVEL entry.
 
 ## Reputation — частично
 

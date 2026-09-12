@@ -273,22 +273,22 @@ per-board welcome; talk signal несёт `npcId`; `JUMP_AREA` — wire leftover
 REMOVE — public `consumeByArtikul`. Контракт:
 [COMBAT.md](../modules/COMBAT.md), [QUESTS.md](../modules/QUESTS.md).
 
-**Replan после QST-ENG-04:** сюжет `CONTENT-STORY-*` не `next`. Сначала
-leftover-механика: `OPEN_STORE` (QST-ENG-05), instance leftovers, persist
-trade. CEF и DATA-mass — не эта очередь.
+**Replan после QST-ENG-05:** сюжет `CONTENT-STORY-*` не `next`. Сначала
+leftover-механика: instance leftovers (DNG-03), persist trade. CEF и
+DATA-mass — не эта очередь.
 
 **Решение QST-ENG-04:** текущих границ достаточно; `ARC-QST` не нужен.
 Landed raw-AMF: deny leave — CombatPort/fproxy; ambush `START_FIGHT` без
 `mode:"quest"`, бой `purpose:"hunt"`; QL-2 — quests-port `syncOwned` после
-bag mutation. `progress_on_win:false` и `OPEN_STORE` не этот срез.
+bag mutation. `progress_on_win:false` не этот срез.
 Контракт: [QUESTS.md](../modules/QUESTS.md).
 
 **Решение QST-ENG-05:** текущих границ достаточно; `ARC-QST` / `ARC-ECO`
-не нужны. `OPEN_STORE` — leftover script: composition зовёт те же ворота,
+не нужны. Landed raw-AMF: leftover `OPEN_STORE` — composition зовёт те же ворота,
 что `ComeInCommand` (`requireLink`, overload, lock, fight, `setArea`,
 presence), затем `npc|answer` `jump:"area"`. Не piggyback `store|list`.
 `JUMP_AREA` по-прежнему без смены area. jgr `comeInArea` без graph —
-не копировать: канон j-emu ComeIn. Контракт: [QUESTS.md](../modules/QUESTS.md),
+не копировать: канон j-emu ComeIn. `playable-slice/v34`. Контракт: [QUESTS.md](../modules/QUESTS.md),
 [STORE.md](../modules/STORE.md).
 
 **Решение CMB-11:** текущих границ достаточно; `ARC-CMB` не нужен.

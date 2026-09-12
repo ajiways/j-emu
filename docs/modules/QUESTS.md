@@ -1,10 +1,11 @@
 # Quests (QST-ENG-01 / QST-ENG-02)
 
-Runtime board/dialog/progress: NPC **271**/**272**, семь синтетических квестов
+Runtime board/dialog/progress: NPC **271**/**272**, восемь синтетических квестов
 (включая `q_engine_daily` `flags:1`, `q_engine_roster`, `q_engine_multi`,
-`q_engine_ambush`), USE **584** открывает доску без consume. QST-ENG-02
+`q_engine_ambush`, `q_engine_store`), USE **584** открывает доску без consume. QST-ENG-02
 вешает AREA leftover `START_FIGHT`, generic hunt loot-cap и честные
 book/area_conf маркеры. QST-ENG-04: deny leave / ambush / QL-2 raw-AMF.
+QST-ENG-05: dialog `OPEN_STORE` штатный ComeIn + `jump:"area"`.
 Product status: [CAPABILITIES.md](../CAPABILITIES.md) (CEF ещё не вычеркнут).
 
 ## Sources
@@ -44,7 +45,7 @@ public ports. Nested `UnitOfWork.run` переиспользует ту же т�
 
 ## Content set
 
-Семь синтетических квестов в playable-slice (не DATA-06 corpus):
+Восемь синтетических квестов в playable-slice (не DATA-06 corpus):
 
 1. **Board** — NPC **271** (Голова мертвеца): talk → buy **23** → equip **23**
    → deliver. Вход: USE **584** (`openDialog`) и/или hotspot 503.
@@ -60,6 +61,8 @@ public ports. Nested `UnitOfWork.run` переиспользует ту же т�
 6. **Multi** — `q_engine_multi` (`flags:32`) + secondary 272. QST-ENG-03.
 7. **Ambush** — `q_engine_ambush`, 503 item **1**, AREA `START_FIGHT` без
    `mode:"quest"` vs bot **2**, `chance` 1.
+8. **Store** — `q_engine_store`, talk 271, player `OPEN_STORE` `areaId` **504**.
+   Не `q_5`. Хотспот не ставить.
 
 `book_id` / `point_id` authored с 1, не живые id из `quest_info.amf` и не 1617.
 Click-ref hotspot ≠ catalog `info_id`, кроме self-ref NPC 271
@@ -196,13 +199,13 @@ Inventory quests не импортирует.
 
 ### Out of this slice
 
-`progress_on_win:false`; `on_lose` reset цели; `OPEN_STORE` (QST-ENG-05);
+`progress_on_win:false`; `on_lose` reset цели;
 `consume_at`; chance на `mode:"quest"`; Акрилон.
 
 ## QST-ENG-05 — OPEN_STORE
 
-Контракт для coding. Очередь: [ROADMAP.md](../migration/ROADMAP.md)
-QST-ENG-05 (`next`). Product не менять.
+Landed raw-AMF. Product **частично** до CEF. Очередь:
+[ROADMAP.md](../migration/ROADMAP.md) QST-ENG-05 (`done`).
 
 ### Отличие от JUMP_AREA
 
@@ -341,7 +344,7 @@ Slice bump. Validator: ровно один `flags & 1`.
 DATA-06 / `CONTENT-STORY-*`: Акрилон после QST-ENG-03, полный NPC
 corpus, live `book_id` для честного клиентского «!».
 Макросы `[[ARTIFACT]]` сверх dump-проверенного award_message — leftover.
-Туториал, `OPEN_STORE`, `progress_on_win:false`,
+Туториал, `progress_on_win:false`,
 `consume_at=goal_complete`, `on_lose` reset всей цели сверх текущего incomplete.
 
 ## QST-ENG-03 — Multi-board / JUMP_AREA / awards.rep
@@ -426,10 +429,10 @@ CEF-PASS не ставить.
 ## CONTENT-STORY-01
 
 Очередь: [ROADMAP.md](../migration/ROADMAP.md) (`queued`). Не стартовать,
-пока leftover-движки (`OPEN_STORE` / …) не `done`.
+пока leftover-движки (`DNG-03` / …) не `done`.
 Контракт q_1 там. Канон ритуала: enemies **85**×1 + **83**×7, не
 fixture-only 83×7. 503 item **1** занят `q_engine_ambush`.
 
-Ручные файлы у лимита 400 строк (`quest-desk` 367, `composition-root` 382,
-`jugger-wire-module` 397, `combat-service`/`battle` 400) перед OPEN_STORE
-извлекаются, а не растут.
+Ручные файлы у лимита 400 строк (`composition-root` 382,
+`jugger-wire-module` 397, `combat-service`/`battle` 400). `quest-desk`
+извлечён (`come-in-travel`, `quest-answer-wire`, `quest-area-oa`); не растить.

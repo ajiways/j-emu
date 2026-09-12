@@ -183,6 +183,13 @@
       "when": 1789225841303,
       "tag": "0025_quests_multi_board",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1789243927272,
+      "tag": "0026_quests_open_store",
+      "breakpoints": true
     }
   ]
 }

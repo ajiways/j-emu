@@ -76,6 +76,7 @@ export const questScriptOps = questsOpsSchema.table(
     chatStart: text("chat_start"),
     chatWin: text("chat_win"),
     chatLose: text("chat_lose"),
+    areaId: integer("area_id"),
   },
   (table) => [
     primaryKey({
@@ -88,7 +89,7 @@ export const questScriptOps = questsOpsSchema.table(
     ),
     check(
       "quest_script_ops_type_check",
-      sql`${table.type} in ('START_FIGHT','GRANT_ARTIKUL','GRANT_PROFESSION','REMOVE_ARTIKUL','MSG','SET_FLAG','CLEAR_FLAG','BUMP_GOAL','COMPLETE_GOAL','GRANT_AWARDS','JUMP_AREA')`,
+      sql`${table.type} in ('START_FIGHT','GRANT_ARTIKUL','GRANT_PROFESSION','REMOVE_ARTIKUL','MSG','SET_FLAG','CLEAR_FLAG','BUMP_GOAL','COMPLETE_GOAL','GRANT_AWARDS','JUMP_AREA','OPEN_STORE')`,
     ),
   ],
 );

@@ -1595,7 +1595,7 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
 Волны 0–13 закрыты. Осталась **неперенесённая механика**, которую capability
 оставили leftover. Это не CEF-backlog, не DATA-02…06 mass import и не
 куратские квесты. Порядок: CMB-11 (`done`) → QST-ENG-04 (`done`) →
-QST-ENG-05 (`next`, `OPEN_STORE`) → DNG-03 → TRD-02.
+QST-ENG-05 (`done`, `OPEN_STORE`) → DNG-03 (`next`) → TRD-02.
 
 `CONTENT-STORY-*` не брать, пока этот блок не `done` (явный приоритет:
 функционал до конца, сюжет не переносить).
@@ -1716,22 +1716,24 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   не этот срез (504 без entry requires). Quests не импортирует store
   catalog; store не импортирует quests. Миграция `quests_open_store`:
   CHECK `OPEN_STORE` + колонка `area_id` (integer, nullable); не класть
-  area в `artikul_id`. Wire: `npc|answer` `{status:100, jump:"area",
-macros_list:[]}` + book trio + `user|bag` + `user|view` + `user|unitframe`
-  - `state` (как jgr `withBagBookState`). Клиент сам шлёт `store|list`.
-    **Fail-fast.** Пустой `areaId`; area не `store`; нет link; неизвестный op
-    по-прежнему 204. `JUMP_AREA` без `OPEN_STORE` area не меняет.
-    **Restart.** `heroes.area_id` PostgreSQL; mid-dialog RAM нет.
-    **CEF.** Production consumer. Product **частично** до CEF.
-    Контракт: [QUESTS.md](../modules/QUESTS.md), [STORE.md](../modules/STORE.md),
-    [WORLD.md](../modules/WORLD.md).
-    Лимит 400: `quest-desk` 367, `composition-root` 382, `jugger-wire-module`
-    397, `combat-service`/`battle` 400 — extract, не растить.
+  area в `artikul_id`. Wire этого `npc|answer` (jgr `withBagBookState`):
+  `{status:100, jump:"area", macros_list:[]}` + book trio + `user|bag` +
+  `user|view` + `user|unitframe` + `state`. Клиент сам шлёт `store|list`.
+  **Fail-fast.** Пустой `areaId`; area не `store`; нет link; неизвестный op
+  по-прежнему 204. `JUMP_AREA` без `OPEN_STORE` area не меняет.
+  **Restart.** `heroes.area_id` PostgreSQL; mid-dialog RAM нет.
+  **CEF.** Production consumer. Product **частично** до CEF.
+  Контракт: [QUESTS.md](../modules/QUESTS.md), [STORE.md](../modules/STORE.md),
+  [WORLD.md](../modules/WORLD.md).
+  Лимит 400: extract `come-in-travel` / `quest-answer-wire` / `quest-area-oa`;
+  `composition-root` / `jugger-wire-module` / combat не растить.
 - **Acceptance:** raw-AMF: player `OPEN_STORE` на `q_engine_store` →
   `{jump:"area"}`, `area_id` **504**, `store|list` type `-131` лоты 23/24;
   `JUMP_AREA` без OPEN_STORE area не меняет; fight/overload/unlinked —
   текущие ComeIn deny; reconnect в 504. Quest join/leave не этот срез.
-- **Status:** `next`
+  Landed: `playable-slice/v34`; `0026_quests_open_store`; raw-AMF
+  `tests/e2e/quest-engine-05.test.ts`. CEF не прогонялся.
+- **Status:** `done`
 
 ### DNG-03 — Instance leftovers
 
@@ -1744,7 +1746,7 @@ macros_list:[]}` + book trio + `user|bag` + `user|view` + `user|unitframe`
   копия 542 — решить на architecture pass.
 - **Architecture checkpoint / decision:** до coding — architecture pass.
 - **Acceptance:** expiry/abort и clear-bar wire без JSON runtime.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### TRD-02 — Persist trade session
 

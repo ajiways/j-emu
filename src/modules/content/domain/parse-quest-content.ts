@@ -63,6 +63,12 @@ const scriptOpSchema = z.union([
   z.object({ type: z.literal("COMPLETE_GOAL"), goal: z.string().min(1) }).strict(),
   z.object({ type: z.literal("GRANT_AWARDS") }).strict(),
   z.object({ type: z.literal("JUMP_AREA") }).strict(),
+  z
+    .object({
+      type: z.literal("OPEN_STORE"),
+      areaId: z.number().int().positive(),
+    })
+    .strict(),
 ]);
 
 const goalKindSchema = z.enum([

@@ -291,6 +291,7 @@ function opColumns(
     chatStart: null as string | null,
     chatWin: null as string | null,
     chatLose: null as string | null,
+    areaId: null as number | null,
   };
   const op = row.op;
   if (op.type === "START_FIGHT") {
@@ -317,5 +318,6 @@ function opColumns(
   if (op.type === "SET_FLAG") return { ...base, flag: op.flag, value: op.value };
   if (op.type === "CLEAR_FLAG") return { ...base, flag: op.flag };
   if (op.type === "BUMP_GOAL" || op.type === "COMPLETE_GOAL") return { ...base, goalId: op.goal };
+  if (op.type === "OPEN_STORE") return { ...base, areaId: op.areaId };
   return base;
 }
