@@ -61,8 +61,9 @@ new copy.
 the copy id (world `0`).
 
 Exit to parent: presence copy `0`, bind remains. Reconnect/restart reads
-Postgres. `fight|conf.instance_id` is the copy id string; `can_leave:0`. OA
-`FIGHT_JOIN` / `FIGHT_HELP` в копии landed (CMB-11): тот же RAM
+Postgres. `fight|conf.instance_id` is the copy id string; `can_leave:0`.
+Серверный `leaveFight` deny в копии — QST-ENG-04 (сейчас overlay без deny).
+OA `FIGHT_JOIN` / `FIGHT_HELP` в копии landed (CMB-11): тот же RAM
 `instanceCopyId`, что у opener; чужая копия = dump 204 «другой локации».
 Карта ATTACK_BOT в копии остаётся team 1.
 

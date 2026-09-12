@@ -287,6 +287,12 @@ leftover, не этот срез. Hunt EXP/лут только opener-team. Team
 как «неактивный бой». ADR-0017–0020. Контракт: [COMBAT.md](../modules/COMBAT.md),
 [PARTY.md](../modules/PARTY.md), [INSTANCE.md](../modules/INSTANCE.md).
 
+**Решение QST-ENG-04:** текущих границ достаточно; `ARC-QST` не нужен.
+Deny leave — CombatPort/fproxy, не quests tables. Ambush — тот же
+`START_FIGHT` op без `mode:"quest"`, бой `purpose:"hunt"`. QL-2 — quests-port
+после bag mutation, inventory не импортирует quests. `progress_on_win:false`
+и `OPEN_STORE` не этот срез. Контракт: [QUESTS.md](../modules/QUESTS.md).
+
 **Решение DAY-01:** текущих границ достаточно; отдельный `ARC-QST` не нужен.
 Daily cycle — lazy `Clock` на quests ports (UTC+3 / 06:00), не
 `DelayScheduler` и не `Clock.schedule`. `hidden_in_journal` на том же

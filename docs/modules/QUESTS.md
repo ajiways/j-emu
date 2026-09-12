@@ -156,8 +156,67 @@ ORATORY: `{ unit(): number }`, `unit()*100 < probability`; без `probability` 
    снова ставит waiting. Mid-fight RAM без `on_win`/`on_lose`.
 
 `START_FIGHT` не кладут в onFinish **после** bump — это anti-pattern
-legacy. Засада `chance` без `mode:"quest"` и `progress_on_win:false` —
-leftover.
+legacy. Засада `chance` без `mode:"quest"` — QST-ENG-04. `progress_on_win:false`
+на `mode:"quest"` AREA — leftover.
+
+## QST-ENG-04 — deny leave / ambush / QL-2
+
+Контракт для coding. Product-status не менять здесь. Очередь:
+[ROADMAP.md](../migration/ROADMAP.md) QST-ENG-04 (`next`).
+
+### Deny leave
+
+jgr `handleLeaveFight`: `questFight || instanceCopyId > 0` →
+`{rs:false, err:"нельзя выйти из боя", sq}`, без flee. Сейчас j-emu
+`leaveFight` всегда flees; quest piggyback не ставит `can_leave:0`
+(только `flags:"8"`); dungeon overlay `can_leave:0` уже есть, сервер всё
+равно пускает leave.
+
+Combat: deny, если `purpose === "quest"` **или** `instanceCopyId !== null`.
+Friendly/outdoor hunt — прежний flee. Dump fproxy, не OA 203. Quest
+`fight|conf` overlay `can_leave:0`. Join в `purpose:"quest"` по-прежнему
+`HuntJoinDenied`.
+
+### Ambush `chance`
+
+`START_FIGHT` без `mode:"quest"`: один `artikulId`, optional `chance` 0..1.
+Нет `chance` = всегда (именованное правило, как jgr omit). Поле есть и не
+в [0,1] — ошибка публикации/runtime, не clamp. `mode:"quest"` и ambush не
+смешивать в одном op. Chance на quest-mode — не этот срез.
+
+AREA: `hasQuestStartFight` только ops с `mode:"quest"`. Ambush **не**
+паркует bump: `action_finish` считает клик сразу, исход боя цель не двигает.
+Бой — `startHunt` `purpose:"hunt"` (обычный PvE, join/leave как охота), не
+flags 8. RNG `{ unit(): number }`; старт если `unit() < chance`. Miss —
+`action_finish` 100 без `fight|conf`.
+
+Content: `q_engine_ambush` на NPC 271, 503 item **1** (свободен), бот **2**,
+e2e `chance` 1 или omit. Не `q_1`.
+
+### QL-2
+
+После DROP/SELL (тот же `BagDropCommand`) composition зовёт quests-port:
+для каждой **текущей** loot/deliver цели на этот artikul
+`value = min(limit, bagCount)`, `done` только при `bagCount >= limit`.
+Тот же порт после USE consume и script `REMOVE_ARTIKUL`. Inventory quests
+не импортирует. Несколько текущих целей на один artikul — общий счётчик
+сумки, каждая цель независимо (как `needed` clip).
+
+`q_engine_fight` `loot_meat` artikul **77**. `consume_at=goal_complete` в
+j-emu нет — leftover. Сдача по-прежнему проверяет сумку, не только `done`.
+
+### Fail-fast / restart / CEF
+
+Невалидный ambush schema — candidate fail. leave deny не маскировать
+`rs:true`. QL-2 без sync после DROP — дыра, не «done остаётся».
+
+Deny leave RAM (ADR-0020). QL-2 bag+goals PostgreSQL. Ambush mid-fight RAM.
+Product **частично** до CEF. Строка CEF_MANUAL — на close coding.
+
+### Out of this slice
+
+`progress_on_win:false`; `on_lose` reset цели; `OPEN_STORE` (QST-ENG-05);
+`consume_at`; chance на `mode:"quest"`; Акрилон.
 
 ## Loot-cap (QL-1)
 
@@ -171,7 +230,7 @@ leftover.
 - чат «Вами получено» и `fight|loot` — фактически выданное.
 
 Combat таблицу квестового лута не читает. Party-bag defer — leftover
-(срез соло). QL-2 (DROP откатывает loot/deliver done) — leftover.
+(срез соло). QL-2 — QST-ENG-04.
 
 `GRANT_ARTIKUL` из скрипта режется тем же `needed`, только пока текущая
 цель loot/deliver на этот artikul; после bump цели authored count идёт
@@ -195,8 +254,8 @@ Generic в этом срезе:
 ## Clock, ID, lock
 
 Clock — request-time `Clock` (метки waiting/started). Бой не стартует из
-таймера. RNG только явный `{ unit(): number }` в hunt roll; loot-cap
-детерминированный clip после ролла. Authored id из контента;
+таймера. RNG только явный `{ unit(): number }` (hunt roll, ambush `chance`);
+loot-cap детерминированный clip после ролла. Authored id из контента;
 player row id — PostgreSQL identity с 1. `answer_id=0` — исключение
 [ID_POLICY.md](../architecture/ID_POLICY.md). Лок — строка героя в той же
 UoW, что progress, награды и `needed`. `START_FIGHT` — после commit
@@ -249,9 +308,9 @@ Slice bump. Validator: ровно один `flags & 1`.
 DATA-06 / `CONTENT-STORY-*`: Акрилон после QST-ENG-03, полный NPC
 corpus, live `book_id` для честного клиентского «!».
 Макросы `[[ARTIFACT]]` сверх dump-проверенного award_message — leftover.
-Туториал, `OPEN_STORE`, ambush `chance` без `mode:"quest"`,
-`progress_on_win:false`, QL-2, deny leave,
-`on_lose` reset всей цели сверх текущего incomplete.
+Туториал, `OPEN_STORE`, `progress_on_win:false`,
+`consume_at=goal_complete`, `on_lose` reset всей цели сверх текущего incomplete.
+Deny leave / ambush / QL-2 — QST-ENG-04.
 
 ## QST-ENG-03 — Multi-board / JUMP_AREA / awards.rep
 

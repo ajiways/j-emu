@@ -1158,7 +1158,7 @@
   `area_conf` offer href только NPC-доска / AREA hotspot, не hunt-бот.
   Ложь `mergeFinishedQuestsForMapMarkers` и Pub1 `quest_info` не переносятся.
   Roster allies/enemies, `flags:"8"`, chat_*, bot↔bot — `CMB-10`. Deny leave,
-  ambush `chance`, QL-2 — leftover. Контракт: [QUESTS.md](../modules/QUESTS.md).
+  ambush `chance`, QL-2 — `QST-ENG-04`. Контракт: [QUESTS.md](../modules/QUESTS.md).
 - **Acceptance:** AREA waiting запускает нужный quest-fight через CMB-09
   hook; markers и quest-loot limits работают generic, не per-quest кодом.
 - **Status:** `done`
@@ -1650,11 +1650,35 @@ CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
 - **Behavior evidence:** leftover CMB-09/10 / QST-ENG-02: deny leave,
   ambush `chance` без `mode:"quest"`, QL-2 (DROP откатывает loot/deliver
   done). Не Акрилон.
-- **Content set:** синтетика на NPC 271, без `q_1`.
-- **Architecture checkpoint / decision:** до coding — отдельный architecture
-  pass. `ARC-*` не предполагается.
-- **Acceptance:** deny leave / ambush / QL-2 на raw-AMF; quest join по-прежнему
-  запрещён.
+- **Content set:** синтетика на NPC 271, без `q_1`. Deny leave — существующий
+  `q_engine_fight` / roster. Ambush — новый `q_engine_ambush`, 503 item **1**,
+  AREA `START_FIGHT` без `mode:"quest"` (бот **2**). QL-2 — loot **77**
+  (`q_engine_fight` `loot_meat` или тот же artikul на hunt drop).
+- **Architecture checkpoint / decision:** ADR-0017–0020 достаточны; `ARC-*`
+  не нужен. Combat не импортирует quests/inventory. `leaveFight` deny —
+  RAM `purpose:"quest"` **или** `instanceCopyId !== null` (тот же jgr
+  `questFight || copy`); dump fproxy `{rs:false, err:"нельзя выйти из боя", sq}`,
+  бой не flee. Quest `fight|conf.can_leave:0` (piggyback overlay). Outdoor hunt
+  `can_leave:1`. Ambush: authored `START_FIGHT` без `mode` + `artikulId` +
+  optional `chance` 0..1 (нет поля = всегда; невалидный chance — fail-fast,
+  не clamp). Бой `purpose:"hunt"`; AREA bump **не** откладывается
+  (`hasQuestStartFight` только `mode:"quest"`). RNG — явный `{ unit(): number }`,
+  старт если `unit() < chance`. QL-2: public quests-port после DROP/SELL (и
+  тот же вызов с USE/REMOVE); `value = min(limit, bagCount)`, `done` только
+  при `bagCount >= limit`. Несколько текущих loot/deliver на один artikul —
+  общий bag count, каждая цель независимо. `consume_at=goal_complete` нет в
+  runtime — leftover. Inventory quests не импортирует.
+  **Fail-fast.** leave deny не `rs:true`; chance вне [0,1] не публикуется;
+  DROP без sync — запрещён для item-backed current goal.
+  **Restart.** Deny leave RAM; QL-2 goals/bag PostgreSQL; ambush mid-fight RAM.
+  **CEF.** Production consumer. Product **частично** до CEF.
+  Контракт: [QUESTS.md](../modules/QUESTS.md), [COMBAT.md](../modules/COMBAT.md),
+  [INVENTORY.md](../modules/INVENTORY.md).
+- **Acceptance:** raw-AMF: `leaveFight` в `q_engine_fight` → `{rs:false,
+err:"нельзя выйти из боя"}`, бой жив; dungeon copy — тот же deny; hunt 50310
+  leave по-прежнему flee; AREA ambush без `mode:"quest"` стартует hunt-бой
+  (chance 1) и бампает клик сразу; chance miss — без `fight|conf`; DROP 77 при
+  loot 1/1 → done=0, повторный дроп снова нужен; quest join по-прежнему deny.
 - **Status:** `next`
 
 ### QST-ENG-05 — OPEN_STORE

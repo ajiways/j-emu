@@ -216,7 +216,7 @@ fight заканчивается. `chat|add` «Вами получено» / «�
 без самовольного `common|area_conf`.
 
 `leaveFight` — dump-proven fproxy `rc`, не OA. Outdoor hunt уже `can_leave:1`.
-Quest/dungeon deny «нельзя выйти из боя» не в срезе (нет quest fight).
+Quest/dungeon deny «нельзя выйти из боя» — QST-ENG-04.
 
 ### Content / schema
 
@@ -469,8 +469,8 @@ ADR-0017–0020 достаточны. `ARC-*` нет. Active fight RAM; restart 
 
 ### Out of scope (CMB-09 leftover)
 
-`on_win`/`on_lose` scripts сверх terminal notice; quest deny leave; curated
-Акрилон.
+`on_win`/`on_lose` scripts сверх terminal notice; `progress_on_win:false`;
+curated Акрилон. Quest deny leave — QST-ENG-04.
 
 ## CMB-10 — Quest fight roster
 

@@ -123,6 +123,8 @@ instance `items.id`. Аукцион AUC-01/AUC-02 — модуль `auction` + �
 take-by-instance на fill заказа; `ARC-ECO` нужен только для ledger/trade.
 
 DROP не идемпотентен по `operation_id`: повтор клиента — вторая мутация.
+QL-2 (QST-ENG-04): после успешного DROP/SELL composition синхронизирует
+текущие loot/deliver цели через quests-port; inventory quests не импортирует.
 
 ### Wire
 
