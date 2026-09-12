@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "playable-slice/v31",
+  "schemaVersion": "playable-slice/v32",
   "commonConfFile": "common-conf.json",
   "artifacts": [
     {
@@ -4320,7 +4320,17 @@
       "description": "Рот отсеченной головы застыл в немой агонии.",
       "elsetext": "",
       "areaId": "503",
-      "itemId": 1
+      "itemId": 4
+    },
+    {
+      "id": 272,
+      "infoId": 272,
+      "title": "Диковинная голова мертвеца",
+      "picture": "images/data/npcs/NPC_golova_zombi_shut.jpg",
+      "description": "Болтливый зомби даже после смерти не утратил желания поразглагольствовать на разные темы. Его голова, отделенная от туловища, продолжает веселить местных жителей своими шутками и забавными историями. Чего только не услышишь порой от этого странного рассказчика!",
+      "elsetext": "",
+      "areaId": "503",
+      "itemId": 8
     }
   ],
   "quests": [
@@ -4348,7 +4358,8 @@
           "kind": "talk",
           "title": "Поговорить с головой",
           "goalOrd": 1,
-          "limit": 1
+          "limit": 1,
+          "objectId": 271
         },
         {
           "id": "buy",
@@ -4406,7 +4417,8 @@
           "kind": "talk",
           "title": "Выслушать ритуал",
           "goalOrd": 1,
-          "limit": 1
+          "limit": 1,
+          "objectId": 271
         },
         {
           "id": "kill_gryzl",
@@ -4535,7 +4547,8 @@
           "kind": "talk",
           "title": "Поговорить с головой",
           "goalOrd": 1,
-          "limit": 1
+          "limit": 1,
+          "objectId": 271
         }
       ],
       "dialogSteps": [
@@ -4569,7 +4582,8 @@
           "kind": "talk",
           "title": "Выслушать ростер",
           "goalOrd": 1,
-          "limit": 1
+          "limit": 1,
+          "objectId": 271
         },
         {
           "id": "win_roster",
@@ -4599,6 +4613,86 @@
               "chatStart": "Ритуал ростера начался.",
               "chatWin": "Ритуал ростера выигран.",
               "chatLose": "Ритуал ростера проигран."
+            }
+          ]
+        },
+        { "type": "reward", "answer": "Сдать задание" }
+      ]
+    },
+    {
+      "key": "q_engine_multi",
+      "bookId": 6,
+      "title": "Две головы",
+      "description": "Поговори с диковинной головой и победи Грызля.",
+      "awardDescription": "Репутация Радвея",
+      "flags": 32,
+      "levelMin": 1,
+      "levelMax": 0,
+      "npcId": 271,
+      "pointId": 6,
+      "boardOrd": 6,
+      "welcomeOffer": "MAIN: сходи к соседней голове.",
+      "welcomeActive": "Задание ещё не закончено.",
+      "welcomeReady": "Грызль повержен — сдавай.",
+      "awardExp": 6,
+      "awardMoneyMinor": 0,
+      "awardItems": [],
+      "awardRep": { "objectId": 5, "amount": 10, "cap": 0 },
+      "boards": [
+        {
+          "npcId": 272,
+          "boardOrd": 1,
+          "pointId": 7,
+          "activeOnly": true,
+          "welcomeMessage": "Диковинная голова ждёт разговор."
+        }
+      ],
+      "scripts": {
+        "onAccept": [
+          { "type": "JUMP_AREA" },
+          { "type": "GRANT_ARTIKUL", "artikulId": 23, "count": 1 }
+        ]
+      },
+      "goals": [
+        {
+          "id": "talk_multi",
+          "kind": "talk",
+          "title": "Поговорить с диковинной головой",
+          "goalOrd": 1,
+          "limit": 1,
+          "objectId": 272
+        },
+        {
+          "id": "win_multi",
+          "kind": "win_fight",
+          "title": "Победить Грызля",
+          "goalOrd": 2,
+          "limit": 1,
+          "onFinish": [
+            { "type": "REMOVE_ARTIKUL", "artikulId": 23, "count": 1 },
+            { "type": "MSG", "text": "Голова забрала перчатку." }
+          ]
+        }
+      ],
+      "dialogSteps": [
+        { "type": "npc", "text": "Сначала поговори с соседней головой, потом бей Грызля." },
+        { "type": "goal", "goal": "talk_multi", "text": "Принять поручение" },
+        { "type": "player", "id": "accept_multi", "text": "Хорошо" },
+        { "type": "npc", "text": "Грызль ждёт" },
+        {
+          "type": "player",
+          "id": "start_multi",
+          "text": "В бой",
+          "toFight": 1,
+          "scripts": [
+            {
+              "type": "START_FIGHT",
+              "mode": "quest",
+              "enemies": [{ "artikulId": 2, "count": 1 }],
+              "allies": [],
+              "chatStart": "",
+              "chatWin": "",
+              "chatLose": ""
             }
           ]
         },

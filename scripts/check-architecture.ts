@@ -14,6 +14,10 @@ const lineJustifications: Readonly<Record<string, string>> = {
     "Quest application facade: board, dialog cursor, prior-gate signals, AREA waiting, daily catch-up/hide, flags, and bag sync",
   "src/modules/quests/infrastructure/postgres-quest-catalog.ts":
     "Active-release quest catalog reads for NPCs, authored quests, dialog, scripts, and AREA hotspots",
+  "src/modules/quests/infrastructure/postgres-quest-decode.ts":
+    "Hydrates authored quest rows including board links, awardRep, onAccept, and JUMP_AREA ops",
+  "src/modules/content/application/collect-quest-issues.ts":
+    "Playable quest completeness: six engine quests, NPC 271/272 hotspots, talk objectId, awardRep tracks, and unique point ids",
   "src/modules/quests/infrastructure/postgres-quest-rows.ts":
     "Quest projection row mapping for NPCs, goals, dialog steps, and script ops",
   "src/modules/quests/infrastructure/postgres-hero-quest-repository.ts":
@@ -23,7 +27,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/jugger-wire/jugger-wire-module.ts":
     "HTTP/TCP servers and OA command module factory including mail, auction, trade, chat, party, instance, battleground, professions, craft, and quest ports",
   "src/modules/jugger-wire/registry/jugger-command-module.ts":
-    "Static OA command constructors including mail, auction, trade, chat, party, instance, battleground, live user|professions, assistant|*, craft|*, and quest|*",
+    "Static OA command constructors including mail, auction, trade, chat, party, instance, battleground, live user|professions, assistant|*, craft|*, quest|*, and fight|finish",
   "src/modules/character/application/character-service.ts":
     "Character application facade: progression, resources, money, reputation, profession licenses, craft XP bump, learn-bonus, location, and presence",
   "src/modules/character/infrastructure/postgres-hero-repository.ts":
@@ -47,7 +51,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/combat/domain/hunt-human.ts":
     "Hunt/PvP human fighter: turn clock, pocket, loadout, applied bot and human damage credits",
   "src/modules/content/application/content-validator.ts":
-    "Single bundle completeness gate including store 504/552 pay and RANK, reputation, professions 2/6, assistant 3/13, farm 4 on area 500, craft recipe 61, set bonuses, USE representatives, fight extra blobs, bot loot, bot spell books, dungeon definitions, battlegrounds, NPC 271, and five engine quests",
+    "Single bundle completeness gate including store 504/552 pay and RANK, reputation, professions 2/6, assistant 3/13, farm 4 on area 500, craft recipe 61, set bonuses, USE representatives, fight extra blobs, bot loot, bot spell books, dungeon definitions, battlegrounds, NPC 271/272, and six engine quests",
   "src/modules/inventory/domain/inventory-service.ts":
     "Bag/pocket/paperdoll mutations plus CMB-03 grantToBag, INV-05 repair, INV-06 upgrade, INV-07 set-bonus, INV-08 USE/drink, ECO-02 barter consume-by-artikul, MAIL-02 instance take/snapshot grant, AUC-01 auction take, and TRD-01 trade take",
   "src/modules/mail/infrastructure/postgres-letter-repository.ts":
