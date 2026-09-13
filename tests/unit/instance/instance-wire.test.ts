@@ -41,7 +41,16 @@ describe("instance wire", () => {
       "Создан инстанс подземелья «Мрачная пещера». Он будет активен 1 час.",
     );
     expect(instanceConf("1", false)).toEqual({ artikul_id: "1", status: 100 });
-    expect(() => instanceConf("1", true)).toThrow(/progress bar is outside this slice/);
+    expect(instanceConf("2", true, { finish: 7, value: 0 })).toEqual({
+      artikul_id: "2",
+      progress_finish_value: "7",
+      progress_value: 0,
+      status: 100,
+    });
+    expect(() => instanceConf("2", true)).toThrow(/progress_finish_value is required/);
+    expect(() => instanceConf("1", false, { finish: 7, value: 0 })).toThrow(
+      /progress bar is not published/,
+    );
   });
 });
 

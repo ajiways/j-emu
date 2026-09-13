@@ -37,11 +37,12 @@ export async function finishStartedMeleeHunt(
   fightId: string,
   elapse: (ms: number) => Promise<void>,
   sequenceStart: number,
+  maxStrikes = MAX_MELEE_STRIKES,
 ): Promise<void> {
   const authBody = await client.fight({ rc: "auth", eid: fightId, sq: sequenceStart });
   if (authBody.length !== 0) throw new Error("fproxy auth must return an empty body");
   await client.pollFight();
-  await strikeUntilHuntFinish(client, elapse, sequenceStart + 1);
+  await strikeUntilHuntFinish(client, elapse, sequenceStart + 1, undefined, undefined, maxStrikes);
 }
 
 export async function strikeUntilHuntFinish(
@@ -50,10 +51,11 @@ export async function strikeUntilHuntFinish(
   sequenceStart: number,
   joiner?: AuthenticatedClient,
   collect?: (frames: readonly AmfValue[]) => void,
+  maxStrikes = MAX_MELEE_STRIKES,
 ): Promise<void> {
   let striker = opener;
   let finished = false;
-  for (let strike = 0; strike < MAX_MELEE_STRIKES && !finished; strike += 1) {
+  for (let strike = 0; strike < maxStrikes && !finished; strike += 1) {
     const castBody = await striker.fight({
       rc: "castSpell",
       srcType: 1,

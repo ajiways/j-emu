@@ -2,6 +2,7 @@ import type { DungeonDocument } from "../../content/domain/content-dungeon.ts";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import {
   dungeonAreas,
+  dungeonPersonalGuaranteed,
   dungeonSpawnEncounters,
   dungeonSpawnRoutes,
   dungeonSpawnZones,
@@ -26,8 +27,28 @@ export async function insertDungeons(
       durationSec: dungeon.durationSec,
       imgUrl: dungeon.imgUrl,
       hasClear: dungeon.hasClear ? 1 : 0,
+      progressFinishValue:
+        dungeon.progressFinishValue === undefined ? null : dungeon.progressFinishValue,
+      coinArtikulId: dungeon.clear === undefined ? null : dungeon.clear.coinArtikulId,
+      coinMin: dungeon.clear === undefined ? null : dungeon.clear.coinMin,
+      coinMax: dungeon.clear === undefined ? null : dungeon.clear.coinMax,
+      lootBossBotId:
+        dungeon.loot === undefined || dungeon.loot.bossBotId === undefined
+          ? null
+          : dungeon.loot.bossBotId,
     })),
   );
+  const personalRows = rows.flatMap((dungeon) => {
+    if (dungeon.loot === undefined) return [];
+    return dungeon.loot.personalGuaranteed.map((lootArtikulId) => ({
+      releaseId,
+      dungeonArtikulId: dungeon.artikulId,
+      lootArtikulId,
+    }));
+  });
+  if (personalRows.length > 0) {
+    await session.insert(dungeonPersonalGuaranteed).values(personalRows);
+  }
   await session.insert(dungeonAreas).values(
     rows.flatMap((dungeon) =>
       dungeon.areas.map((area) => ({

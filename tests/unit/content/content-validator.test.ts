@@ -334,6 +334,28 @@ describe("ContentValidator", () => {
       new ContentValidator().validate(replaceArtifact(tyrant, { ...tyrant, picture: "" })),
     ).toThrow(/picture is required for gear-spell img/);
   });
+
+  it("rejects a dungeon coin artikul that is not in the bundle", () => {
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        artifacts: playable.artifacts.filter((artifact) => artifact.id !== 5986),
+      }),
+    ).toThrow(/coin artikul 5986 is missing/);
+  });
+
+  it("rejects a dungeon floor that is a store area", () => {
+    const pitFloor = playable.areas.find((area) => area.id === "544");
+    if (!pitFloor) throw new Error("playable bundle is missing area 544");
+    expect(() =>
+      new ContentValidator().validate({
+        ...playable,
+        areas: playable.areas.map((area) =>
+          area.id === "544" ? { ...pitFloor, code: "store" } : area,
+        ),
+      }),
+    ).toThrow(/must not be a store area/);
+  });
 });
 
 describe("parseContentBundle", () => {
@@ -375,6 +397,32 @@ describe("parseContentBundle", () => {
         ],
       }),
     ).toThrow(/cannot author both a route and a zone/);
+  });
+
+  it("rejects hasClear without progressFinishValue", () => {
+    const pit = playable.dungeons.find((row) => row.artikulId === 2);
+    if (!pit) throw new Error("playable bundle is missing pit dungeon 2");
+    const { progressFinishValue: _ignored, ...withoutFinish } = pit;
+    void _ignored;
+    expect(() =>
+      parseContentBundle({
+        ...playable,
+        dungeons: playable.dungeons.map((row) => (row.artikulId === 2 ? withoutFinish : row)),
+      }),
+    ).toThrow(/hasClear is missing progressFinishValue/);
+  });
+
+  it("rejects hasClear false with authored progressFinishValue", () => {
+    const ogre = playable.dungeons.find((row) => row.artikulId === 1);
+    if (!ogre) throw new Error("playable bundle is missing ogre dungeon 1");
+    expect(() =>
+      parseContentBundle({
+        ...playable,
+        dungeons: playable.dungeons.map((row) =>
+          row.artikulId === 1 ? { ...ogre, progressFinishValue: 7 } : row,
+        ),
+      }),
+    ).toThrow(/hasClear is false but progressFinishValue is authored/);
   });
 
   it("rejects a hunt spawn zone with fewer than 3 points", () => {

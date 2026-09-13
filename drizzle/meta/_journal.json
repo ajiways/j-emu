@@ -190,6 +190,13 @@
       "when": 1789243927272,
       "tag": "0026_quests_open_store",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1789250347377,
+      "tag": "0027_catalog_dungeon_clear",
+      "breakpoints": true
     }
   ]
 }

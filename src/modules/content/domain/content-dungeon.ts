@@ -35,6 +35,17 @@ type DungeonAreaDocument = Readonly<{
   spawns: readonly DungeonSpawnDocument[];
 }>;
 
+type DungeonClearDocument = Readonly<{
+  coinArtikulId: number;
+  coinMin: number;
+  coinMax: number;
+}>;
+
+type DungeonLootDocument = Readonly<{
+  bossBotId?: number;
+  personalGuaranteed: readonly number[];
+}>;
+
 export type DungeonDocument = Readonly<{
   artikulId: number;
   title: string;
@@ -44,5 +55,8 @@ export type DungeonDocument = Readonly<{
   durationSec: number;
   imgUrl: string;
   hasClear: boolean;
+  progressFinishValue?: number;
+  clear?: DungeonClearDocument;
+  loot?: DungeonLootDocument;
   areas: readonly DungeonAreaDocument[];
 }>;

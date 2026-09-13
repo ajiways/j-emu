@@ -15,6 +15,7 @@ import { PartyFightLootNotify } from "./party-fight-loot-notify.ts";
 import { PartyLootRouting } from "./party-loot-routing.ts";
 import type { PartyNotify } from "./party-notify.ts";
 import type { QuestLootNeeded } from "../modules/quests/ports/quest-loot-needed.ts";
+import type { DungeonPersonalGrant } from "./dungeon-personal-grant.ts";
 
 export function createChatHuntSettlement(input: {
   unitOfWork: UnitOfWork;
@@ -30,6 +31,7 @@ export function createChatHuntSettlement(input: {
   lootNeeded: QuestLootNeeded;
   heroism: HeroismRules;
   pvpHonor: PvpFightHonorCache;
+  dungeonGrant: DungeonPersonalGrant;
 }): ChatFightSettlement {
   return new ChatFightSettlement(
     new HuntFightSettlement(
@@ -51,6 +53,7 @@ export function createChatHuntSettlement(input: {
       input.lootNeeded,
       input.heroism,
       input.pvpHonor,
+      input.dungeonGrant,
     ),
     input.chat,
     {

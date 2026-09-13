@@ -13,16 +13,46 @@ export function instanceCreatedChat(title: string, durationSec: number): string 
   return `Создан инстанс подземелья «${title}». Он будет активен ${formatDurationHours(durationSec)}.`;
 }
 
+export type InstanceConfProgress = Readonly<{
+  finish: number;
+  value: number;
+}>;
+
+export type InstanceConfWire = Readonly<{
+  artikul_id: string;
+  status: 100;
+  progress_finish_value?: string;
+  progress_value?: number;
+}>;
+
 export function instanceConf(
   artikulId: string,
   hasClear: boolean,
-): Readonly<{
-  artikul_id: string;
-  status: 100;
-}> {
+  progress: InstanceConfProgress | null = null,
+): InstanceConfWire {
   if (!artikulId) throw new Error("Instance artikul is required");
-  if (hasClear) {
-    throw new Error(`Dungeon ${artikulId} progress bar is outside this slice`);
+  if (!hasClear) {
+    if (progress !== null) {
+      throw new Error(`Dungeon ${artikulId} progress bar is not published`);
+    }
+    return { artikul_id: artikulId, status: 100 };
   }
-  return { artikul_id: artikulId, status: 100 };
+  if (progress === null) {
+    throw new Error(`Dungeon ${artikulId} progress_finish_value is required`);
+  }
+  if (!Number.isInteger(progress.finish) || progress.finish < 1) {
+    throw new Error(`Dungeon ${artikulId} progress_finish_value is invalid`);
+  }
+  if (!Number.isInteger(progress.value) || progress.value < 0) {
+    throw new Error(`Dungeon ${artikulId} progress_value is invalid`);
+  }
+  if (progress.value > progress.finish) {
+    throw new Error(`Dungeon ${artikulId} progress_value exceeds finish`);
+  }
+  return {
+    artikul_id: artikulId,
+    progress_finish_value: String(progress.finish),
+    progress_value: progress.value,
+    status: 100,
+  };
 }

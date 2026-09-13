@@ -42,6 +42,14 @@ export class HuntSpawnOverlay {
     this.forgetFight(existing.fightId);
   }
 
+  peekFight(fightId: string): { areaId: string; spawnId: number } | null {
+    const key = this.byFight.get(requireFightId(fightId));
+    if (!key) return null;
+    const lock = this.bySpawn.get(key);
+    if (!lock) throw new Error(`Hunt overlay fight ${fightId} is missing its spawn lock`);
+    return { areaId: lock.areaId, spawnId: lock.spawnId };
+  }
+
   releaseFight(fightId: string): { areaId: string; spawnId: number } | null {
     const key = this.byFight.get(requireFightId(fightId));
     if (!key) return null;

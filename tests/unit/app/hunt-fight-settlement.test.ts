@@ -12,7 +12,15 @@ import { playableHuntBot } from "../../support/playable-bot.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { HEROISM_RULES } from "../../../src/app/heroism-rules.ts";
 import { PvpFightHonorCache } from "../../../src/app/pvp-fight-honor-cache.ts";
+import { DungeonPersonalGrant } from "../../../src/app/dungeon-personal-grant.ts";
 import { testHero } from "../../support/hero-fixtures.ts";
+
+function silentDungeonGrant(): DungeonPersonalGrant {
+  return new DungeonPersonalGrant(
+    { peekFight: () => null },
+    { dungeonByArea: async () => null, killedSpawnKeys: async () => [] },
+  );
+}
 
 describe("HuntFightSettlement", () => {
   const bot = playableHuntBot();
@@ -36,6 +44,7 @@ describe("HuntFightSettlement", () => {
       unlimitedLoot(),
       HEROISM_RULES,
       new PvpFightHonorCache(),
+      silentDungeonGrant(),
     );
     const win = await settlement.persistFinished(outcome("win", 27, 20));
     expect(characters.notes).toEqual([{ characterId: 1, hp: 27 }]);
@@ -84,6 +93,7 @@ describe("HuntFightSettlement", () => {
       unlimitedLoot(),
       HEROISM_RULES,
       new PvpFightHonorCache(),
+      silentDungeonGrant(),
     );
     const lost = await loss.persistFinished(outcome("loss", 0, 20));
     expect(lossCharacters.notes).toEqual([]);
@@ -110,6 +120,7 @@ describe("HuntFightSettlement", () => {
       unlimitedLoot(),
       HEROISM_RULES,
       new PvpFightHonorCache(),
+      silentDungeonGrant(),
     );
     const win = await settlement.persistFinished(outcome("win", 27, 20));
     expect(inventory.grants).toEqual([{ characterId: 1, artifactId: 77, quantity: 1 }]);
@@ -137,6 +148,7 @@ describe("HuntFightSettlement", () => {
       },
       HEROISM_RULES,
       new PvpFightHonorCache(),
+      silentDungeonGrant(),
     );
     await settlement.persistFinished(outcome("win", 27, 20));
     expect(inventory.grants).toEqual([]);
@@ -157,6 +169,7 @@ describe("HuntFightSettlement", () => {
       unlimitedLoot(),
       HEROISM_RULES,
       new PvpFightHonorCache(),
+      silentDungeonGrant(),
     );
     const result = await settlement.persistFinished({
       mode: "hunt",
@@ -196,6 +209,7 @@ describe("HuntFightSettlement", () => {
       unlimitedLoot(),
       HEROISM_RULES,
       new PvpFightHonorCache(),
+      silentDungeonGrant(),
     );
     const result = await settlement.persistFinished({
       mode: "hunt",
@@ -235,6 +249,7 @@ describe("HuntFightSettlement", () => {
       unlimitedLoot(),
       HEROISM_RULES,
       new PvpFightHonorCache(),
+      silentDungeonGrant(),
     );
     const loot = await settlement.persistFinished({
       mode: "friendly-practice",
@@ -281,6 +296,7 @@ describe("HuntFightSettlement", () => {
       unlimitedLoot(),
       HEROISM_RULES,
       cache,
+      silentDungeonGrant(),
     );
     const snapshot: FightOutcomeSnapshot = {
       mode: "pvp",

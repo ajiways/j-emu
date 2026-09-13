@@ -106,6 +106,22 @@ export class DungeonHuntWorld implements InstanceHuntWorld {
     this.overlay.release(worldKey(copyId, areaId), spawnId);
   }
 
+  peekFight(fightId: string): DungeonHuntRelease | null {
+    const peeked = this.overlay.peekFight(fightId);
+    if (!peeked) return null;
+    const parsed = parseWorldKey(peeked.areaId);
+    const spawnKey = this.spawnKeys.get(metaKey(parsed.copyId, parsed.areaId, peeked.spawnId));
+    if (!spawnKey) {
+      throw new Error(`Dungeon hunt fight ${fightId} is missing spawn key`);
+    }
+    return {
+      copyId: parsed.copyId,
+      areaId: parsed.areaId,
+      spawnId: peeked.spawnId,
+      spawnKey,
+    };
+  }
+
   releaseFight(fightId: string): DungeonHuntRelease | null {
     const released = this.overlay.releaseFight(fightId);
     if (!released) return null;

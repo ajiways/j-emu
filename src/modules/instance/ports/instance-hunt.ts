@@ -31,6 +31,7 @@ export interface InstanceHuntWorld {
   tryAcquire(command: DungeonHuntLockCommand): Promise<SpawnAcquireResult>;
   release(copyId: number, areaId: string, spawnId: number): void;
   releaseFight(fightId: string): DungeonHuntRelease | null;
+  peekFight(fightId: string): DungeonHuntRelease | null;
   forget(copyId: number, areaId: string, spawnId: number): void;
   bindWake(wake: (copyId: number, areaId: string) => Promise<void>): void;
 }

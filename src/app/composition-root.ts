@@ -22,10 +22,8 @@ import { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.ts";
 import { LongPollCoordinator } from "../modules/jugger-wire/application/long-poll-coordinator.ts";
 import { PresenceFanout } from "../modules/jugger-wire/application/presence-fanout.ts";
 import { HuntAreaFanout } from "../modules/jugger-wire/application/hunt-area-fanout.ts";
-import { HuntLockRelease } from "./hunt-lock-release.ts";
 import { CatalogHonorRanks } from "../modules/catalog/infrastructure/catalog-honor-ranks.ts";
-import { createChatHuntSettlement } from "./create-chat-hunt-settlement.ts";
-import { HEROISM_RULES } from "./heroism-rules.ts";
+import { bindInstanceHuntRuntime } from "./bind-instance-hunt-runtime.ts";
 import { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 import { MailModule } from "../modules/mail/mail-module.ts";
 import { AuctionModule } from "../modules/auction/auction-module.ts";
@@ -41,8 +39,6 @@ import { PartyModule } from "../modules/party/party-module.ts";
 import { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
 import { buildUserBag } from "../modules/jugger-wire/application/user-bag-block.ts";
 import { InstanceModule } from "../modules/instance/instance-module.ts";
-import { InstanceDesk } from "./instance-desk.ts";
-import { InstanceHuntLockRelease } from "./instance-hunt-lock-release.ts";
 import { chainFightTerminal } from "./battleground-ops.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 import type { FarmRng } from "../modules/professions/domain/farm-formulas.ts";
@@ -220,53 +216,34 @@ export class CompositionRoot {
       });
       closers.push(instance);
       instance.hunt.bindWake((copyId, areaId) => huntFanout.wakeArea(areaId, copyId));
-      const instanceDesk = new InstanceDesk({
-        instances: instance.service,
-        hunt: instance.hunt,
-        characters: characters.service,
-        parties: party.service,
+      combat.bindWake({ wake: (accountId) => longPoll.wake(accountId) });
+      world.service.bindAreaWake(huntFanout);
+      const pvpHonor = new PvpFightHonorCache();
+      const { instanceDesk, instanceHuntRelease } = bindInstanceHuntRuntime({
+        instance,
+        characters,
+        parties: party,
         partySnapshot,
-        combat: combat.combat,
+        combat,
         world: world.service,
         catalog: catalog.catalog,
+        battlegrounds: catalog.battlegrounds,
         clock,
         unitOfWork: database,
         presence,
         presenceFanout,
+        huntFanout,
         chat: chatDesk,
         outbox,
         wake: longPoll,
         unreadMail: mail.service,
-        battlegrounds: catalog.battlegrounds,
         quests: quests.catalog,
+        inventory: inventory.service,
+        lootRandom: extras.lootRandom ?? new SystemRandomSource(),
+        partyNotify,
+        lootNeeded: quests.service,
+        pvpHonor,
       });
-      combat.bindWake({ wake: (accountId) => longPoll.wake(accountId) });
-      world.service.bindAreaWake(huntFanout);
-      const instanceHuntRelease = new InstanceHuntLockRelease(
-        new HuntLockRelease(world.service, huntFanout),
-        instance.hunt,
-        instance.service,
-        instanceDesk,
-        huntFanout,
-      );
-      const pvpHonor = new PvpFightHonorCache();
-      combat.bindSettlement(
-        createChatHuntSettlement({
-          unitOfWork: database,
-          catalog: catalog.catalog,
-          characters: characters.service,
-          inventory: inventory.service,
-          lootRandom: extras.lootRandom ?? new SystemRandomSource(),
-          party: party.service,
-          partyBag: party.bag,
-          partyNotify,
-          chat: chatDesk,
-          bestiary: characters.bestiary,
-          lootNeeded: quests.service,
-          heroism: HEROISM_RULES,
-          pvpHonor,
-        }),
-      );
       const { registration, developmentIdentity, mailSend, mailClaim } = createPlayableIdentity({
         identity: identity.service,
         characters: characters.service,

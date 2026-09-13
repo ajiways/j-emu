@@ -1003,8 +1003,8 @@
   generic: N данжей в одном bundle без per-dungeon кода. Spawn document
   получает `zone` (XOR с `route`, как outdoor hunt) в
   `catalog.dungeon_spawn_zones`, не jsonb и не отдельный mapper на данж.
-  `has_clear: true` 4/6/7, `loot.bands`, shops — leftover DNG-03 / POST-03.
-  DNG-03 забирает яму `2` (clear bar/coins) и огр `personal_guaranteed`.
+  `has_clear: true` 4/6/7, `loot.bands`, shops — leftover POST-03.
+  DNG-03 landed яму `2` (clear bar/coins) и огр `personal_guaranteed`.
   Контракт: [INSTANCE.md](../modules/INSTANCE.md).
 - **Acceptance:** каждый опубликованный `has_clear: false` данж проходит
   enter/bind/hunt/exit/rejoin/expiry без runtime JSON reads и без кода на
@@ -1595,7 +1595,7 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
 Волны 0–13 закрыты. Осталась **неперенесённая механика**, которую capability
 оставили leftover. Это не CEF-backlog, не DATA-02…06 mass import и не
 куратские квесты. Порядок: CMB-11 (`done`) → QST-ENG-04 (`done`) →
-QST-ENG-05 (`done`, `OPEN_STORE`) → DNG-03 (`next`) → TRD-02.
+QST-ENG-05 (`done`, `OPEN_STORE`) → DNG-03 (`done`) → TRD-02 (`next`).
 
 `CONTENT-STORY-*` не брать, пока этот блок не `done` (явный приоритет:
 функционал до конца, сюжет не переносить).
@@ -1805,7 +1805,9 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   `fight|loot` этого team-1; win огра → 2371×1 каждому team-1; TTL в бою
   не abort (pending_kick после finish). Level<11 — 204. Shop 830 / bands
   / abort / данжи 4/6/7 — не этот срез.
-- **Status:** `next`
+  Landed: `playable-slice/v35`; `0027_catalog_dungeon_clear`; raw-AMF
+  `tests/e2e/dungeon-clear.test.ts`. CEF не прогонялся.
+- **Status:** `done`
 
 ### TRD-02 — Persist trade session
 
@@ -1818,7 +1820,7 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   (RAM vs persist; ADR-0020 может потребовать уточнения).
 - **Acceptance:** restart посреди сессии не теряет put/confirm либо
   документированно рвёт обоих с dump-error, не молчаливый success.
-- **Status:** `queued`
+- **Status:** `next`
 
 ## Content-fill track — сюжет, не брать сейчас
 

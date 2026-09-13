@@ -3,7 +3,9 @@ import type { ContentBundle } from "../domain/content-document.ts";
 export function collectDungeonIssues(bundle: ContentBundle): readonly string[] {
   const issues: string[] = [];
   const areaIds = new Set(bundle.areas.map((area) => area.id));
+  const areasById = new Map(bundle.areas.map((area) => [area.id, area]));
   const botIds = new Set(bundle.bots.map((bot) => bot.id));
+  const artifactIds = new Set(bundle.artifacts.map((artifact) => artifact.id));
   const huntAreas = new Set(bundle.huntSpawns.map((spawn) => spawn.areaId));
   const artikuls = new Set<number>();
   const startAreas = new Set<string>();
@@ -27,6 +29,29 @@ export function collectDungeonIssues(bundle: ContentBundle): readonly string[] {
         `dungeon ${dungeon.artikulId} start area ${dungeon.startAreaId} must not have outdoor hunt_spawns`,
       );
     }
+    const startArea = areasById.get(dungeon.startAreaId);
+    if (startArea && startArea.code === "store") {
+      issues.push(
+        `dungeon ${dungeon.artikulId} start area ${dungeon.startAreaId} must not be a store area`,
+      );
+    }
+    if (dungeon.clear && !artifactIds.has(dungeon.clear.coinArtikulId)) {
+      issues.push(
+        `dungeon ${dungeon.artikulId} coin artikul ${dungeon.clear.coinArtikulId} is missing`,
+      );
+    }
+    if (dungeon.loot?.bossBotId !== undefined && !botIds.has(dungeon.loot.bossBotId)) {
+      issues.push(
+        `dungeon ${dungeon.artikulId} loot boss bot ${dungeon.loot.bossBotId} is missing`,
+      );
+    }
+    for (const lootArtikulId of dungeon.loot === undefined ? [] : dungeon.loot.personalGuaranteed) {
+      if (!artifactIds.has(lootArtikulId)) {
+        issues.push(
+          `dungeon ${dungeon.artikulId} personal_guaranteed artikul ${lootArtikulId} is missing`,
+        );
+      }
+    }
     for (const area of dungeon.areas) {
       if (!areaIds.has(area.areaId)) {
         issues.push(`dungeon ${dungeon.artikulId} area ${area.areaId} is missing`);
@@ -35,6 +60,10 @@ export function collectDungeonIssues(bundle: ContentBundle): readonly string[] {
         issues.push(
           `dungeon ${dungeon.artikulId} area ${area.areaId} must not have outdoor hunt_spawns`,
         );
+      }
+      const floor = areasById.get(area.areaId);
+      if (floor && floor.code === "store") {
+        issues.push(`dungeon ${dungeon.artikulId} area ${area.areaId} must not be a store area`);
       }
       for (const spawn of area.spawns) {
         if (!botIds.has(spawn.huntBotId)) {

@@ -1,14 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import type { ActiveContentRevision } from "../../content/ports/active-content-revision.ts";
-import type {
-  DungeonAreaDefinition,
-  DungeonDefinition,
-  DungeonSpawnDefinition,
-} from "../domain/dungeon-definition.ts";
+import type { DungeonAreaDefinition, DungeonDefinition } from "../domain/dungeon-definition.ts";
 import type { DungeonCatalog } from "../ports/dungeon-catalog.ts";
+import { hydrateClear, spawnFromRow } from "./postgres-dungeon-hydrate.ts";
 import {
   dungeonAreas,
+  dungeonPersonalGuaranteed,
   dungeonSpawnEncounters,
   dungeonSpawnRoutes,
   dungeonSpawnZones,
@@ -77,6 +75,11 @@ export class PostgresDungeonCatalog implements DungeonCatalog {
       durationSec: number;
       imgUrl: string;
       hasClear: number;
+      progressFinishValue: number | null;
+      coinArtikulId: number | null;
+      coinMin: number | null;
+      coinMax: number | null;
+      lootBossBotId: number | null;
     },
   ): Promise<DungeonDefinition> {
     const areaRows = await this.database
@@ -121,6 +124,16 @@ export class PostgresDungeonCatalog implements DungeonCatalog {
           eq(dungeonSpawnZones.artikulId, row.artikulId),
         ),
       );
+    const personalRows = await this.database
+      .session()
+      .select()
+      .from(dungeonPersonalGuaranteed)
+      .where(
+        and(
+          eq(dungeonPersonalGuaranteed.releaseId, releaseId),
+          eq(dungeonPersonalGuaranteed.dungeonArtikulId, row.artikulId),
+        ),
+      );
     const areas: DungeonAreaDefinition[] = areaRows.map((area) => ({
       areaId: area.areaId,
       spawns: spawnRows
@@ -130,6 +143,18 @@ export class PostgresDungeonCatalog implements DungeonCatalog {
     if (row.hasClear !== 0 && row.hasClear !== 1) {
       throw new Error(`Dungeon ${row.artikulId} has_clear is invalid`);
     }
+    const hasClear = row.hasClear === 1;
+    if (hasClear && (row.progressFinishValue === null || row.progressFinishValue < 1)) {
+      throw new Error(`Dungeon ${row.artikulId} progress_finish_value is required`);
+    }
+    if (!hasClear && row.progressFinishValue !== null) {
+      throw new Error(
+        `Dungeon ${row.artikulId} progress_finish_value is published without hasClear`,
+      );
+    }
+    if (!hasClear && row.coinArtikulId !== null) {
+      throw new Error(`Dungeon ${row.artikulId} clear coins are published without hasClear`);
+    }
     return {
       artikulId: String(row.artikulId),
       title: row.title,
@@ -138,77 +163,14 @@ export class PostgresDungeonCatalog implements DungeonCatalog {
       levelMin: row.levelMin,
       durationSec: row.durationSec,
       imgUrl: row.imgUrl,
-      hasClear: row.hasClear === 1,
+      hasClear,
+      progressFinishValue: row.progressFinishValue,
+      clear: hydrateClear(row),
+      loot: {
+        bossBotId: row.lootBossBotId,
+        personalGuaranteed: personalRows.map((entry) => entry.lootArtikulId),
+      },
       areas,
     };
   }
-}
-
-function spawnFromRow(
-  spawn: {
-    areaId: string;
-    spawnKey: string;
-    huntBotId: number;
-    isBoss: number;
-    countsForClear: number;
-    huntMask: string;
-    positionX: number;
-    positionY: number;
-    waitMin: number;
-    waitMax: number;
-  },
-  encounters: readonly {
-    areaId: string;
-    spawnKey: string;
-    botId: number;
-    count: number;
-  }[],
-  routes: readonly {
-    areaId: string;
-    spawnKey: string;
-    ord: number;
-    x: number;
-    y: number;
-    waitMin: number;
-    waitMax: number;
-  }[],
-  zones: readonly {
-    areaId: string;
-    spawnKey: string;
-    ord: number;
-    x: number;
-    y: number;
-  }[],
-): DungeonSpawnDefinition {
-  const encounter = encounters
-    .filter((entry) => entry.areaId === spawn.areaId && entry.spawnKey === spawn.spawnKey)
-    .map((entry) => ({ botId: entry.botId, count: entry.count }));
-  if (encounter.length < 1) {
-    throw new Error(`Dungeon spawn ${spawn.spawnKey} encounter is missing`);
-  }
-  return {
-    spawnKey: spawn.spawnKey,
-    huntBotId: spawn.huntBotId,
-    encounter,
-    isBoss: spawn.isBoss === 1,
-    countsForClear: spawn.countsForClear === 1,
-    huntMask: spawn.huntMask,
-    positionX: spawn.positionX,
-    positionY: spawn.positionY,
-    waitMin: spawn.waitMin,
-    waitMax: spawn.waitMax,
-    zone: zones
-      .filter((point) => point.areaId === spawn.areaId && point.spawnKey === spawn.spawnKey)
-      .sort((left, right) => left.ord - right.ord)
-      .map((point) => ({ x: point.x, y: point.y })),
-    route: routes
-      .filter((stop) => stop.areaId === spawn.areaId && stop.spawnKey === spawn.spawnKey)
-      .sort((left, right) => left.ord - right.ord)
-      .map((stop) => ({
-        x: stop.x,
-        y: stop.y,
-        waitMin: stop.waitMin,
-        waitMax: stop.waitMax,
-      })),
-  };
 }

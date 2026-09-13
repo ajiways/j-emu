@@ -55,6 +55,32 @@ const dungeonSpawnSchema = z
     message: "dungeon spawn cannot author both a route and a zone",
   });
 
+const dungeonClearSchema = z
+  .object({
+    coinArtikulId: z.number().int().positive(),
+    coinMin: z.number().int().positive(),
+    coinMax: z.number().int().positive(),
+  })
+  .strict()
+  .refine((coins) => coins.coinMax >= coins.coinMin, {
+    message: "dungeon clear coin_max is below coin_min",
+  });
+
+const dungeonLootSchema = z
+  .object({
+    bossBotId: z.number().int().positive().optional(),
+    personalGuaranteed: z.array(z.number().int().positive()),
+  })
+  .strict()
+  .superRefine((loot, ctx) => {
+    if (new Set(loot.personalGuaranteed).size !== loot.personalGuaranteed.length) {
+      ctx.addIssue({
+        code: "custom",
+        message: "dungeon personal_guaranteed has duplicate artikul ids",
+      });
+    }
+  });
+
 const dungeonAreaSchema = z
   .object({
     areaId: z.string().min(1),
@@ -84,6 +110,9 @@ export const dungeonDocumentSchema = z
     durationSec: z.number().int().positive(),
     imgUrl: z.string().min(1),
     hasClear: z.boolean(),
+    progressFinishValue: z.number().int().positive().optional(),
+    clear: dungeonClearSchema.optional(),
+    loot: dungeonLootSchema.optional(),
     areas: z.array(dungeonAreaSchema).min(1),
   })
   .strict()
@@ -103,6 +132,36 @@ export const dungeonDocumentSchema = z
         code: "custom",
         message: `dungeon ${dungeon.artikulId} parent area matches start area`,
       });
+    }
+    const clearable = dungeon.areas.some((area) =>
+      area.spawns.some((spawn) => spawn.countsForClear),
+    );
+    if (dungeon.hasClear) {
+      if (dungeon.progressFinishValue === undefined) {
+        ctx.addIssue({
+          code: "custom",
+          message: `dungeon ${dungeon.artikulId} hasClear is missing progressFinishValue`,
+        });
+      }
+      if (!clearable) {
+        ctx.addIssue({
+          code: "custom",
+          message: `dungeon ${dungeon.artikulId} hasClear has no countsForClear spawn`,
+        });
+      }
+    } else {
+      if (dungeon.progressFinishValue !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          message: `dungeon ${dungeon.artikulId} hasClear is false but progressFinishValue is authored`,
+        });
+      }
+      if (dungeon.clear !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          message: `dungeon ${dungeon.artikulId} hasClear is false but clear coins are authored`,
+        });
+      }
     }
   });
 

@@ -1,3 +1,4 @@
+import { decorateInstanceComeIn } from "./instance-come-in-chrome.ts";
 import { partyCreateInput } from "./party-form.ts";
 import type { CharacterService } from "../modules/character/application/character-service.ts";
 import type { Hero } from "../modules/character/domain/hero.ts";
@@ -8,7 +9,6 @@ import type { Clock } from "../shared/kernel/clock.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
 import type { EnterCopyResult } from "../modules/instance/application/instance-service.ts";
 import type { InstanceService } from "../modules/instance/application/instance-service.ts";
-import { instanceConf, instanceCreatedChat } from "../modules/instance/domain/instance-wire.ts";
 import { isCopyLive } from "../modules/instance/domain/instance-copy.ts";
 import type { PartyService } from "../modules/party/application/party-service.ts";
 import type { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
@@ -113,29 +113,7 @@ export class InstanceDesk {
     accountId: number,
     heroId: number,
   ): Promise<Readonly<Record<string, unknown>>> {
-    if (!plan.enter) return blocks;
-    const extra: Record<string, unknown> = {
-      ...blocks,
-      "common|instance_conf": instanceConf(
-        plan.enter.dungeon.artikulId,
-        plan.enter.dungeon.hasClear,
-      ),
-    };
-    if (plan.autoParty) {
-      const party = await this.deps.partySnapshot.restore(heroId);
-      if (!party) throw new Error(`Auto-party chrome for hero ${heroId} is missing`);
-      extra["party|create"] = { status: 100 };
-      extra["party|members"] = party["party|members"];
-      extra["party|settings"] = party["party|settings"];
-      extra["party|bag"] = party["party|bag"];
-    }
-    if (plan.enter.created) {
-      await this.deps.chat.deliverSystem(
-        accountId,
-        instanceCreatedChat(plan.enter.dungeon.title, plan.enter.dungeon.durationSec),
-      );
-    }
-    return extra;
+    return decorateInstanceComeIn(this.deps, blocks, plan, accountId, heroId);
   }
 
   async ensureResurrectArea(hero: Hero): Promise<void> {

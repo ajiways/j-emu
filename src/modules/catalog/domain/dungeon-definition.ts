@@ -25,6 +25,17 @@ export type DungeonAreaDefinition = Readonly<{
   spawns: readonly DungeonSpawnDefinition[];
 }>;
 
+export type DungeonClearCoins = Readonly<{
+  coinArtikulId: number;
+  coinMin: number;
+  coinMax: number;
+}>;
+
+type DungeonLootDefinition = Readonly<{
+  bossBotId: number | null;
+  personalGuaranteed: readonly number[];
+}>;
+
 export type DungeonDefinition = Readonly<{
   artikulId: string;
   title: string;
@@ -34,6 +45,9 @@ export type DungeonDefinition = Readonly<{
   durationSec: number;
   imgUrl: string;
   hasClear: boolean;
+  progressFinishValue: number | null;
+  clear: DungeonClearCoins | null;
+  loot: DungeonLootDefinition;
   areas: readonly DungeonAreaDefinition[];
 }>;
 

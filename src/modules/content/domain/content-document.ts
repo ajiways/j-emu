@@ -43,8 +43,8 @@ export type {
   UseScriptDocument,
 } from "./content-playable-entities.ts";
 
-export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v34";
-export const CONTENT_VALIDATOR_VERSION = "34";
+export const PLAYABLE_SLICE_SCHEMA_VERSION = "playable-slice/v35";
+export const CONTENT_VALIDATOR_VERSION = "35";
 
 type PlayableSliceDocuments = {
   artifacts: readonly ArtifactDocument[];

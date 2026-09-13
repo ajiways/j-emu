@@ -18,6 +18,11 @@ export const dungeons = catalogSchema.table(
     durationSec: integer("duration_sec").notNull(),
     imgUrl: text("img_url").notNull(),
     hasClear: smallint("has_clear").notNull(),
+    progressFinishValue: integer("progress_finish_value"),
+    coinArtikulId: integer("coin_artikul_id"),
+    coinMin: integer("coin_min"),
+    coinMax: integer("coin_max"),
+    lootBossBotId: integer("loot_boss_bot_id"),
   },
   (table) => [
     primaryKey({ columns: [table.releaseId, table.artikulId] }),
@@ -25,6 +30,45 @@ export const dungeons = catalogSchema.table(
     check("dungeons_level_min_check", sql`${table.levelMin} > 0`),
     check("dungeons_duration_sec_check", sql`${table.durationSec} > 0`),
     check("dungeons_has_clear_check", sql`${table.hasClear} IN (0, 1)`),
+    check(
+      "dungeons_progress_finish_value_check",
+      sql`${table.progressFinishValue} IS NULL OR ${table.progressFinishValue} > 0`,
+    ),
+    check(
+      "dungeons_coin_trio_null_check",
+      sql`(${table.coinArtikulId} IS NULL) = (${table.coinMin} IS NULL)
+        AND (${table.coinArtikulId} IS NULL) = (${table.coinMax} IS NULL)`,
+    ),
+    check(
+      "dungeons_coin_trio_positive_check",
+      sql`${table.coinArtikulId} IS NULL OR (
+        ${table.coinArtikulId} > 0 AND ${table.coinMin} > 0
+        AND ${table.coinMax} >= ${table.coinMin}
+      )`,
+    ),
+    check(
+      "dungeons_loot_boss_bot_id_check",
+      sql`${table.lootBossBotId} IS NULL OR ${table.lootBossBotId} > 0`,
+    ),
+  ],
+);
+
+export const dungeonPersonalGuaranteed = catalogSchema.table(
+  "dungeon_personal_guaranteed",
+  {
+    releaseId: uuid("release_id").notNull(),
+    dungeonArtikulId: integer("dungeon_artikul_id").notNull(),
+    lootArtikulId: integer("loot_artikul_id").notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.releaseId, table.dungeonArtikulId, table.lootArtikulId],
+    }),
+    check(
+      "dungeon_personal_guaranteed_dungeon_artikul_id_check",
+      sql`${table.dungeonArtikulId} > 0`,
+    ),
+    check("dungeon_personal_guaranteed_loot_artikul_id_check", sql`${table.lootArtikulId} > 0`),
   ],
 );
 

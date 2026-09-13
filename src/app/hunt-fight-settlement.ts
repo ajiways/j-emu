@@ -1,11 +1,9 @@
-import type { ArtifactDefinition } from "../modules/catalog/domain/artifact-definition.ts";
 import type { ArtifactSkillBonus } from "../modules/catalog/domain/artifact-skill-bonus.ts";
 import type { Catalog } from "../modules/catalog/ports/catalog.ts";
 import type { Hero } from "../modules/character/domain/hero.ts";
 import type { CharacterMoney } from "../modules/character/ports/character-money.ts";
 import type { CharacterProgression } from "../modules/character/ports/character-progression.ts";
 import type { CharacterResources } from "../modules/character/ports/character-resources.ts";
-import type { FightArtikulListWire } from "../modules/combat/domain/fight-loot-block.ts";
 import { fightLootBlock, type FightLootBlock } from "../modules/combat/domain/fight-loot-block.ts";
 import {
   goldToMinor,
@@ -38,13 +36,14 @@ import { bestiaryCreditHeroIds } from "../modules/character/domain/bestiary-kill
 import type { HeroBestiary } from "../modules/character/ports/hero-bestiary.ts";
 import { splitMinorUnits } from "../modules/combat/domain/split-minor-units.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
-import { capDropQuantity } from "../modules/quests/domain/quest-loot-needed.ts";
 import type { QuestLootNeeded } from "../modules/quests/ports/quest-loot-needed.ts";
 import type { PartyBagDeposit } from "../modules/party/ports/party-bag-deposit.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
 import type { HeroismRules } from "./heroism-rules.ts";
 import { persistPvpHonor } from "./persist-pvp-honor.ts";
 import type { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
+import type { DungeonPersonalGrant } from "./dungeon-personal-grant.ts";
+import { capRolledDrops, loadArtikulList, persistFightHp } from "./hunt-fight-loot-apply.ts";
 
 type SettlementCharacters = CharacterResources &
   CharacterProgression &
@@ -71,6 +70,7 @@ export class HuntFightSettlement implements FightSettlement {
     private readonly lootNeeded: QuestLootNeeded,
     private readonly heroism: HeroismRules,
     private readonly pvpHonor: PvpFightHonorCache,
+    private readonly dungeonGrant: DungeonPersonalGrant,
   ) {}
 
   persistHumanLeft(snapshot: HumanLeftSnapshot): Promise<void> {
@@ -124,6 +124,10 @@ export class HuntFightSettlement implements FightSettlement {
       );
       if (worldLootAllowed(over)) rolled = rollBotLoot(bot.reward, this.random);
     }
+    const dungeonCtx = win ? await this.dungeonGrant.load(outcome.fightId) : null;
+    if (dungeonCtx) {
+      rolled = rolled.filter((drop) => !dungeonCtx.exclude.has(drop.artikulId));
+    }
     const route = await this.lootRouting.routeFor(rewarded.map((human) => human.characterId));
     const topInParty = Boolean(top && route?.memberCharacterIds.has(top.characterId));
     const partyMoney = topInParty ? moneyMinor : 0;
@@ -131,7 +135,12 @@ export class HuntFightSettlement implements FightSettlement {
       route && (route.lootRules === "2" || route.lootRules === "3") && topInParty && rolled.length,
     );
     if (win && top && rolled.length > 0 && !deferItems) {
-      rolled = await this.capRolled(top.characterId, rolled);
+      rolled = await capRolledDrops({
+        inventory: this.inventory,
+        lootNeeded: this.lootNeeded,
+        characterId: top.characterId,
+        rolled,
+      });
     }
     const partyFighters = route
       ? outcome.humans.filter((human) => route.memberCharacterIds.has(human.characterId))
@@ -139,9 +148,15 @@ export class HuntFightSettlement implements FightSettlement {
     const splitMoney =
       route?.lootRules === "1" && partyFighters.length > 1 && topInParty && moneyMinor > 0;
     const moneyShares = splitMoney ? splitMinorUnits(moneyMinor, partyFighters.length) : null;
-    const artikulList = await this.artikulList(rolled);
+    const artikulList = await loadArtikulList(this.catalog, rolled);
     const lootByAccount = new Map<number, FightLootBlock>();
     await this.unitOfWork.run(async () => {
+      const personal =
+        dungeonCtx === null ? [] : await this.dungeonGrant.prepare(dungeonCtx, outcome);
+      const personalList = await loadArtikulList(
+        this.catalog,
+        personal[0] === undefined ? [] : personal[0].items,
+      );
       if (deferItems && route) {
         await this.partyBag.deposit(
           route.partyId,
@@ -160,6 +175,8 @@ export class HuntFightSettlement implements FightSettlement {
             ? moneyMinor
             : 0;
         const drops = isTop && !deferItems ? rolled : [];
+        const mine = personal.find((row) => row.characterId === human.characterId);
+        const extra = mine === undefined ? [] : mine.items;
         if (!human.leftLive) {
           await persistFightHp(this.characters, human.characterId, human.hp);
           await this.applyDeathIfDefeated(human.characterId, human.hp);
@@ -188,14 +205,27 @@ export class HuntFightSettlement implements FightSettlement {
             quantity: drop.quantity,
           });
         }
+        for (const drop of extra) {
+          await this.inventory.grantToBag({
+            characterId: human.characterId,
+            artifactId: drop.artikulId,
+            quantity: drop.quantity,
+          });
+        }
         lootByAccount.set(
           human.accountId,
           fightLootBlock({
             fightId: outcome.fightId,
             experience: exp,
             money: goldWireString(goldMinor),
-            items: drops.map((drop) => ({ artikul_id: drop.artikulId, amount: drop.quantity })),
-            artikulList: isTop && !deferItems ? artikulList : [],
+            items: [
+              ...drops.map((drop) => ({ artikul_id: drop.artikulId, amount: drop.quantity })),
+              ...extra.map((drop) => ({ artikul_id: drop.artikulId, amount: drop.quantity })),
+            ],
+            artikulList: [
+              ...(isTop && !deferItems ? artikulList : []),
+              ...(extra.length === 0 ? [] : personalList),
+            ],
           }),
         );
       }
@@ -287,63 +317,4 @@ export class HuntFightSettlement implements FightSettlement {
       await this.inventory.equippedSkillBonuses(characterId),
     );
   }
-
-  private async capRolled(
-    characterId: number,
-    rolled: readonly { artikulId: number; quantity: number }[],
-  ): Promise<readonly { artikulId: number; quantity: number }[]> {
-    const owned = new Map<number, number>();
-    const capped: { artikulId: number; quantity: number }[] = [];
-    for (const drop of rolled) {
-      const have =
-        owned.get(drop.artikulId) ??
-        (await this.inventory.countBagByArtifact({
-          characterId,
-          artifactId: drop.artikulId,
-        }));
-      const needed = await this.lootNeeded.needed(characterId, drop.artikulId, have);
-      const quantity = capDropQuantity(drop.quantity, needed);
-      owned.set(drop.artikulId, have + quantity);
-      if (quantity < 1) continue;
-      capped.push({ artikulId: drop.artikulId, quantity });
-    }
-    return capped;
-  }
-
-  private async artikulList(
-    rolled: readonly { artikulId: number; quantity: number }[],
-  ): Promise<readonly FightArtikulListWire[]> {
-    const entries: FightArtikulListWire[] = [];
-    for (const drop of rolled) {
-      const definition = await this.catalog.artifact(drop.artikulId);
-      if (!definition) throw new Error(`Artifact catalog entry ${drop.artikulId} is missing`);
-      entries.push(artikulListEntry(definition));
-    }
-    return entries;
-  }
-}
-
-function persistFightHp(
-  characters: SettlementCharacters,
-  characterId: number,
-  hp: number,
-): Promise<unknown> {
-  if (hp === 0) return characters.noteDefeat({ characterId, hp: 0 });
-  return characters.noteHp({ characterId, hp });
-}
-
-function artikulListEntry(definition: ArtifactDefinition): FightArtikulListWire {
-  return {
-    id: definition.id,
-    title: definition.title,
-    picture: definition.picture,
-    type_id: definition.typeId,
-    kind_id: definition.kindId,
-    price: definition.priceMinor / 100,
-    level_min: definition.levelMin,
-    level_max: definition.levelMax,
-    flags: definition.flags,
-    slot_mask: definition.slotMask,
-    cnt: 1,
-  };
 }

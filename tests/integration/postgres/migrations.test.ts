@@ -173,6 +173,7 @@ describe("Drizzle migrations", () => {
         "catalog.bots",
         "catalog.craft_recipes",
         "catalog.dungeon_areas",
+        "catalog.dungeon_personal_guaranteed",
         "catalog.dungeon_spawn_encounters",
         "catalog.dungeon_spawn_routes",
         "catalog.dungeon_spawn_zones",
@@ -367,6 +368,7 @@ describe("Drizzle migrations", () => {
       "0024_content_editor_candidates.sql",
       "0025_quests_multi_board.sql",
       "0026_quests_open_store.sql",
+      "0027_catalog_dungeon_clear.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -399,8 +401,9 @@ describe("Drizzle migrations", () => {
       "0024_content_editor_candidates",
       "0025_quests_multi_board",
       "0026_quests_open_store",
+      "0027_catalog_dungeon_clear",
     ]);
-    expect(await appliedCount()).toBe(27);
+    expect(await appliedCount()).toBe(28);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );

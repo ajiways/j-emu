@@ -163,10 +163,12 @@ create_title, create_level_min, table_id)` PK `(release_id, id)`; UNIQUE
   PK `(release_id, bonus_id)`; **нет** FK на `bonuses` (script **2827** без
   bonus row).
 - `dungeons(release_id, artikul_id, title, start_area_id, parent_area_id,
-level_min, duration_sec, img_url, has_clear)` PK `(release_id, artikul_id)`.
-  Slice: `has_clear=0` artikul 1/11/12/14. План DNG-03: nullable
-  `progress_finish_value`, coin trio, `loot_boss_bot_id`; таблица
-  `dungeon_personal_guaranteed`; яма artikul **2**.
+level_min, duration_sec, img_url, has_clear, progress_finish_value,
+coin_artikul_id, coin_min, coin_max, loot_boss_bot_id)` PK
+  `(release_id, artikul_id)`. Slice: `has_clear=0` artikul 1/11/12/14;
+  яма **2** `has_clear=1` finish 7, coins 5986/1/26, `loot_boss_bot_id` 106.
+  `dungeon_personal_guaranteed` PK `(release_id, dungeon_artikul_id, loot_artikul_id)`
+  (огр **2371**). Coin trio все три или все null. Не jsonb bands.
 - `dungeon_areas` / `dungeon_spawns` / `dungeon_spawn_encounters` /
   `dungeon_spawn_routes` / `dungeon_spawn_zones` — spawn authors route **или**
   zone, не оба. Не jsonb.

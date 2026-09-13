@@ -6,12 +6,13 @@ binds the entering hero, isolates hunt/presence per copy, expires by
 in RAM. Extra `has_clear: false` dungeons publish through the same typed
 document; a spawn authors either `route` or `zone`, not both.
 
-DNG-03 (этот срез, ещё не landed): generic `has_clear` progress bar, clear
-coins on boss kill, and dungeon `personal_guaranteed`. Product status stays
-[CAPABILITIES.md](../CAPABILITIES.md) until coding closeout.
+DNG-03 landed raw-AMF: generic `has_clear` progress bar, clear coins on boss
+kill, and dungeon `personal_guaranteed`. Product **частично** until CEF —
+[CAPABILITIES.md](../CAPABILITIES.md). Leftover: `loot.bands`, shops, abort
+fight, `has_clear: true` 4/6/7.
 
-Published today: ogre cave `1`/542/bot 99, kopi `11`/654/bot 354, tomb
-`12`/653/bot 353, usadba `14`/673/bot 373. DNG-03 adds pit `2`/544.
+Published today: ogre cave `1`/542/bot 99, pit `2`/544/bots 106–109, kopi
+`11`/654/bot 354, tomb `12`/653/bot 353, usadba `14`/673/bot 373.
 
 BG match is [BATTLEGROUND.md](BATTLEGROUND.md) (`copy_type='bg'`, no dungeon
 bind). Instance book tab is [BOOK.md](BOOK.md). Quest `personal_only` is
@@ -76,9 +77,10 @@ progress на `hasClear: true` — fail-fast.
 `counts_for_clear !== false`, cap `progress_finish_value`. Яма dump:
 `progress_finish_value` **7** (6 trash + boss).
 
-Если `hasClear` и authored `progressFinishValue` нет — взять
-`counts_for_clear` count, иначе `boss` count; ноль — ошибка публикации, не
-`instanceConf` throw на ogre.
+`hasClear: true` требует authored `progressFinishValue` ≥ 1 и хотя бы один
+`countsForClear` spawn (publication fail-fast). Runtime не выводит finish
+из спавнов. `hasClear: false` не авторит finish/`clear`. Ogre
+`instanceConf` без `progress_*` — не throw.
 
 Wire (jgr `pushInstanceConf`): `artikul_id` string; при `hasClear` —
 `progress_finish_value` **string**, `progress_value` **number**, `status:100`.
@@ -106,7 +108,7 @@ team-1 по 1 шт на **boss** kill, сразу в bag, `personal_only`, иг�
 
 ## Catalog / schema (DNG-03)
 
-`catalog.dungeons` (план миграции coding): nullable `progress_finish_value`;
+`catalog.dungeons` (`0027_catalog_dungeon_clear`): nullable `progress_finish_value`;
 nullable `coin_artikul_id` / `coin_min` / `coin_max` — все три вместе или
 все null; `loot_boss_bot_id` nullable. Таблица
 `catalog.dungeon_personal_guaranteed` PK

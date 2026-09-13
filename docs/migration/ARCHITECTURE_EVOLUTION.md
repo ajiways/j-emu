@@ -273,8 +273,8 @@ per-board welcome; talk signal несёт `npcId`; `JUMP_AREA` — wire leftover
 REMOVE — public `consumeByArtikul`. Контракт:
 [COMBAT.md](../modules/COMBAT.md), [QUESTS.md](../modules/QUESTS.md).
 
-**Replan после QST-ENG-05:** сюжет `CONTENT-STORY-*` не `next`. Сначала
-leftover-механика: instance leftovers (DNG-03), persist trade. CEF и
+**Replan после DNG-03:** сюжет `CONTENT-STORY-*` не `next`. Сначала
+leftover-механика: persist trade (`TRD-02`). CEF и
 DATA-mass — не эта очередь.
 
 **Решение QST-ENG-04:** текущих границ достаточно; `ARC-QST` не нужен.
@@ -292,11 +292,11 @@ presence), затем `npc|answer` `jump:"area"`. Не piggyback `store|list`.
 [STORE.md](../modules/STORE.md).
 
 **Решение DNG-03:** текущих границ достаточно; `ARC-INS` / новый ADR не
-нужны. Checkpoint (ещё не landed): generic `has_clear` bar + coins на
+нужны. Landed raw-AMF: generic `has_clear` bar + coins на
 представителе яма artikul **2**/544; огр **2371** `personal_guaranteed`;
 `loot.bands` leftover. Abort mid-fight не переносить: jgr TODO, dump нет,
 `pending_kick` после finish уже совпадает. Combat instance не импортирует;
-grant — composition UoW. Контракт: [INSTANCE.md](../modules/INSTANCE.md).
+grant — composition UoW. `playable-slice/v35`. Контракт: [INSTANCE.md](../modules/INSTANCE.md).
 
 **Решение CMB-11:** текущих границ достаточно; `ARC-CMB` не нужен.
 Landed: `joinHunt.team` = `1|2`; HELP = team цели; copy gate = RAM
