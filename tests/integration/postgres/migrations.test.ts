@@ -81,6 +81,7 @@ import {
 import { accounts, sessions } from "../../../src/modules/identity/infrastructure/schema.ts";
 import { items } from "../../../src/modules/inventory/infrastructure/schema.ts";
 import { letters, letterAttachments } from "../../../src/modules/mail/infrastructure/schema.ts";
+import { heldItems } from "../../../src/modules/trade/infrastructure/schema.ts";
 import { listings } from "../../../src/modules/auction/infrastructure/schema.ts";
 import {
   copies,
@@ -132,7 +133,7 @@ describe("Drizzle migrations", () => {
   it("creates only the live module schemas and tables", async () => {
     const schemas = await names(
       sql`SELECT schema_name AS name FROM information_schema.schemata
-          WHERE schema_name IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','battleground','professions','quests','social','economy')`,
+          WHERE schema_name IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','battleground','professions','quests','trade','social','economy')`,
     );
     expect(schemas.sort()).toEqual([
       "auction",
@@ -148,13 +149,14 @@ describe("Drizzle migrations", () => {
       "party",
       "professions",
       "quests",
+      "trade",
       "world",
     ]);
 
     const tables = await names(
       sql`SELECT table_schema || '.' || table_name AS name
           FROM information_schema.tables
-          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','battleground','professions','quests')
+          WHERE table_schema IN ('identity','character','catalog','inventory','world','combat','content','mail','auction','party','instance','battleground','professions','quests','trade')
             AND table_type = 'BASE TABLE'`,
     );
     expect(tables.sort()).toEqual(
@@ -241,6 +243,7 @@ describe("Drizzle migrations", () => {
         "quests.quest_script_ops",
         "quests.quests",
         "quests.world_facts",
+        "trade.held_items",
         "world.area_links",
         "world.areas",
         "world.hunt_spawns",
@@ -334,7 +337,8 @@ describe("Drizzle migrations", () => {
       candidateEntries,
       validationReports,
       publicationAudits,
-    ]).toHaveLength(84);
+      heldItems,
+    ]).toHaveLength(85);
 
     const sqlFiles = fs
       .readdirSync(drizzleFolder)
@@ -369,6 +373,7 @@ describe("Drizzle migrations", () => {
       "0025_quests_multi_board.sql",
       "0026_quests_open_store.sql",
       "0027_catalog_dungeon_clear.sql",
+      "0028_trade_held_items.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -402,8 +407,9 @@ describe("Drizzle migrations", () => {
       "0025_quests_multi_board",
       "0026_quests_open_store",
       "0027_catalog_dungeon_clear",
+      "0028_trade_held_items",
     ]);
-    expect(await appliedCount()).toBe(28);
+    expect(await appliedCount()).toBe(29);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -527,6 +533,29 @@ describe("Drizzle migrations", () => {
       { column_name: "artifact_id", is_nullable: "NO" },
       { column_name: "ord", is_nullable: "NO" },
       { column_name: "original_item_id", is_nullable: "NO" },
+    ]);
+    const tradeHeld = await database.session().execute<{
+      column_name: string;
+      is_nullable: string;
+      is_identity: string;
+    }>(
+      sql`SELECT column_name, is_nullable, is_identity
+          FROM information_schema.columns
+          WHERE table_schema = 'trade' AND table_name = 'held_items'
+            AND column_name IN ('id', 'hero_id', 'original_item_id', 'artifact_id')
+          ORDER BY column_name`,
+    );
+    expect(
+      [...tradeHeld].map((row) => ({
+        column_name: row.column_name,
+        is_nullable: row.is_nullable,
+        is_identity: row.is_identity,
+      })),
+    ).toEqual([
+      { column_name: "artifact_id", is_nullable: "NO", is_identity: "NO" },
+      { column_name: "hero_id", is_nullable: "NO", is_identity: "NO" },
+      { column_name: "id", is_nullable: "NO", is_identity: "YES" },
+      { column_name: "original_item_id", is_nullable: "NO", is_identity: "NO" },
     ]);
   });
 

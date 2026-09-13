@@ -55,6 +55,11 @@ async function settleTrade(deps: TradeDeskDeps, session: TradeSession): Promise<
     const second = await deps.characters.lockById(secondId);
     const initiator = initiatorId === firstId ? first : second;
     const invitee = inviteeId === firstId ? first : second;
+    for (const tray of [initiatorTray, inviteeTray]) {
+      for (const art of tray.artifacts.values()) {
+        await deps.heldItems.lock(tray.heroId, art.originalItemId);
+      }
+    }
     if (
       !(await deps.inventory.canFitMailSnapshots({
         characterId: initiatorId,
@@ -91,6 +96,7 @@ async function settleTrade(deps: TradeDeskDeps, session: TradeSession): Promise<
         snapshots: toInvitee,
       });
     }
+    await deps.heldItems.deleteForHeroes([initiatorId, inviteeId]);
     await transferMoney(
       deps,
       initiatorId,

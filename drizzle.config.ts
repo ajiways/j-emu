@@ -18,6 +18,7 @@ export default defineConfig({
     "./src/modules/inventory/infrastructure/schema.ts",
     "./src/modules/combat/infrastructure/schema.ts",
     "./src/modules/mail/infrastructure/schema.ts",
+    "./src/modules/trade/infrastructure/schema.ts",
     "./src/modules/auction/infrastructure/schema.ts",
     "./src/modules/party/infrastructure/schema.ts",
     "./src/modules/instance/infrastructure/schema.ts",

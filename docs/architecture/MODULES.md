@@ -37,7 +37,8 @@ area presence roster:
 - `auction` — `auction.listings` лоты и заказы, bid/buyout/cancel/fill и TTL
   sweep через mail settlement. Target `economy` listings ещё план.
 - `trade` — process-local P2P сессия (инвайт, стол, confirm_key), settle в
-  composition UoW. Target `economy` trade ещё план.
+  composition UoW. Leftover TRD-02 landed: escrow `held_items` на
+  restart-refund, окно не persist. Target `economy` trade ещё план.
 - `chat` — process-local area/private/system/party fan-out через esrv outbox,
   без таблиц. Target `social` channels ещё план.
 - `party` — `party.parties` / `party_members` / `party_invites` /
@@ -55,10 +56,10 @@ area presence roster:
   quest roster, JUMP_AREA wire, `award.rep`, REMOVE equipped, hunt
   loot-cap через quests-port. Deny leave / ambush / QL-2 landed raw-AMF
   (`QST-ENG-04`). `OPEN_STORE` landed raw-AMF (`QST-ENG-05`: ComeIn +
-  `jump:"area"`, не телепорт `JUMP_AREA`). Следующий движок — `TRD-02`
-  (persist trade session). Яма 2 clear bar/coins и огр 2371 — DNG-03 landed;
-  abort/bands не этот срез.
-  Акрилон (`CONTENT-STORY-*`) не брать, пока leftover-движки не закрыты.
+  `jump:"area"`, не телепорт `JUMP_AREA`). Leftover-движки закрыты
+  (TRD-02 refund trays `done`). `CONTENT-STORY-*` остаются queued, не
+  `next`. Яма 2 clear bar/coins и огр 2371 — DNG-03 landed; abort/bands
+  leftover instance.
   `content` file
   seed/publish и EDT-01/02 operator HTTP `/operator/content/*` (GET
   document/keys).
@@ -232,11 +233,13 @@ take + mail `deliverSystemInbox`. Контракт:
 ### `trade` — TRD-01 / TRD-02 runtime
 
 **Владеет:** process-local сессией обмена (тарелки, `confirm_key`,
-`confirmed`). Не владеет балансом и bag. Таблиц нет.
+`confirmed`) и escrow `trade.held_items` (снимки стола). Не владеет
+балансом и bag.
 
 **API:** `request`, `confirm`, `put`, `putMoney`, `withdraw`, `ready`,
 `sessionDecline`, `sessionConfirm`, `decline`. Put/withdraw/decline/settle —
-composition + inventory take/grant + character money. Контракт:
+composition + inventory take/grant + character money. Boot refund —
+composition + trade escrow + inventory grant. Контракт:
 [TRADE.md](../modules/TRADE.md).
 
 **Шов извлечения:** не цель TRD-01/TRD-02. Target trade в `economy` ниже —

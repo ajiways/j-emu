@@ -16,13 +16,15 @@ export async function putTradeItem(
     throw new TradeDeniedError("предмет не найден в рюкзаке");
   }
   const quantity = Number.isInteger(amount) && amount >= 1 ? amount : 1;
-  const took = await deps.unitOfWork.run(() =>
-    deps.inventory.takeFromBagForTrade({
+  const took = await deps.unitOfWork.run(async () => {
+    const snapshot = await deps.inventory.takeFromBagForTrade({
       characterId: hero.id,
       itemId,
       quantity,
-    }),
-  );
+    });
+    await deps.heldItems.upsertAdd(hero.id, tradeSnapshotFromMail(snapshot));
+    return snapshot;
+  });
   const existing = mine.artifacts.get(itemId);
   if (existing) {
     mine.artifacts.set(itemId, {

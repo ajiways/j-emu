@@ -428,8 +428,9 @@ CEF-PASS не ставить.
 
 ## CONTENT-STORY-01
 
-Очередь: [ROADMAP.md](../migration/ROADMAP.md) (`queued`). Не стартовать,
-пока leftover-движки (`TRD-02` / …) не `done`.
+Очередь: [ROADMAP.md](../migration/ROADMAP.md) (`queued`). Leftover-движки
+закрыты (`TRD-02` refund trays `done`). Не стартовать: остаётся queued,
+не `next`.
 Контракт q_1 там. Канон ритуала: enemies **85**×1 + **83**×7, не
 fixture-only 83×7. 503 item **1** занят `q_engine_ambush`.
 

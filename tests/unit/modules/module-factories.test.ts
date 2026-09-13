@@ -530,7 +530,7 @@ describe("module factories", () => {
       clock,
     });
     await expect(auction.close()).resolves.toBeUndefined();
-    const trade = TradeModule.create();
+    const trade = TradeModule.create({ database: {} as PostgresDatabase });
     await expect(trade.close()).resolves.toBeUndefined();
     const party = PartyModule.create({
       database: {} as PostgresDatabase,

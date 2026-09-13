@@ -26,7 +26,7 @@ import type { HuntAreaFanout } from "../modules/jugger-wire/application/hunt-are
 import type { LongPollCoordinator } from "../modules/jugger-wire/application/long-poll-coordinator.ts";
 import type { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
 import type { PresenceFanout } from "../modules/jugger-wire/application/presence-fanout.ts";
-import { TradeModule } from "../modules/trade/trade-module.ts";
+import type { TradeModule } from "../modules/trade/trade-module.ts";
 import type { PostgresDatabase } from "../infrastructure/postgres/database.ts";
 import type { Clock } from "../shared/kernel/clock.ts";
 import type { DelayScheduler } from "../shared/kernel/delay-scheduler.ts";
@@ -108,82 +108,78 @@ export async function createJuggerRuntime(input: {
   pvpHonor: PvpFightHonorCache;
   contentEditor: ContentEditor;
   ambushRandom: RandomSource;
-}): Promise<{ wire: JuggerWireModule; trade: { close(): Promise<void> } }> {
-  const trade = TradeModule.create();
-  try {
-    const wire = await JuggerWireModule.create({
-      config: input.config,
-      identity: input.identity,
-      registration: input.registration,
-      developmentIdentity: input.developmentIdentity,
+  trade: TradeModule;
+}): Promise<{ wire: JuggerWireModule }> {
+  const wire = await JuggerWireModule.create({
+    config: input.config,
+    identity: input.identity,
+    registration: input.registration,
+    developmentIdentity: input.developmentIdentity,
+    characters: input.characters,
+    inventory: input.inventory,
+    catalog: input.catalog,
+    world: input.world,
+    combat: input.combat,
+    clock: input.clock,
+    bootstrap: input.bootstrap,
+    fightWire: input.fightWire,
+    meleeSourceIds: input.meleeSourceIds,
+    unitOfWork: input.database,
+    presence: input.presence,
+    presenceFanout: input.presenceFanout,
+    huntFanout: input.huntFanout,
+    outbox: input.outbox,
+    longPoll: input.longPoll,
+    storePurchase: new StorePurchase(
+      input.database,
+      input.characters,
+      input.inventory,
+      input.catalog,
+      input.world,
+    ),
+    storeRepair: new StoreRepair(input.database, input.characters, input.inventory),
+    mail: input.mail,
+    mailSend: input.mailSend,
+    mailClaim: input.mailClaim,
+    auction: input.auction,
+    auctionBoard: input.auctionBoard,
+    auctionList: input.auctionList,
+    auctionBid: input.auctionBid,
+    auctionBuyout: input.auctionBuyout,
+    auctionCancel: input.auctionCancel,
+    auctionTenderAdd: input.auctionTenderAdd,
+    auctionTenderSell: input.auctionTenderSell,
+    auctionTenderCancel: input.auctionTenderCancel,
+    trade: new TradeDesk({
+      sessions: input.trade.sessions,
+      heldItems: input.trade.heldItems,
+      unitOfWork: input.database,
       characters: input.characters,
       inventory: input.inventory,
       catalog: input.catalog,
-      world: input.world,
-      combat: input.combat,
-      clock: input.clock,
-      bootstrap: input.bootstrap,
-      fightWire: input.fightWire,
-      meleeSourceIds: input.meleeSourceIds,
-      unitOfWork: input.database,
-      presence: input.presence,
-      presenceFanout: input.presenceFanout,
-      huntFanout: input.huntFanout,
-      outbox: input.outbox,
-      longPoll: input.longPoll,
-      storePurchase: new StorePurchase(
-        input.database,
-        input.characters,
-        input.inventory,
-        input.catalog,
-        input.world,
-      ),
-      storeRepair: new StoreRepair(input.database, input.characters, input.inventory),
-      mail: input.mail,
-      mailSend: input.mailSend,
-      mailClaim: input.mailClaim,
-      auction: input.auction,
-      auctionBoard: input.auctionBoard,
-      auctionList: input.auctionList,
-      auctionBid: input.auctionBid,
-      auctionBuyout: input.auctionBuyout,
-      auctionCancel: input.auctionCancel,
-      auctionTenderAdd: input.auctionTenderAdd,
-      auctionTenderSell: input.auctionTenderSell,
-      auctionTenderCancel: input.auctionTenderCancel,
-      trade: new TradeDesk({
-        sessions: trade.sessions,
-        unitOfWork: input.database,
-        characters: input.characters,
-        inventory: input.inventory,
-        catalog: input.catalog,
-        presence: input.identity,
-      }),
-      chat: input.chat,
-      party: input.party,
-      partyJoin: input.partyJoin,
-      partySnapshot: input.partySnapshot,
-      partyNotify: input.partyNotify,
-      partyBag: input.partyBag,
-      instanceHunt: input.instanceHunt,
-      instanceDesk: input.instanceDesk,
-      dungeonHunt: input.dungeonHunt,
-      battlegrounds: input.battlegrounds,
-      instances: input.instances,
-      bestiary: input.bestiary,
-      database: input.database,
-      delay: input.delay,
-      professions: input.professions,
-      craft: input.craft,
-      quests: input.quests,
-      questCatalog: input.questCatalog,
-      pvpHonor: input.pvpHonor,
-      contentEditor: input.contentEditor,
-      ambushRandom: input.ambushRandom,
-    });
-    return { wire, trade };
-  } catch (error) {
-    await trade.close();
-    throw error;
-  }
+      presence: input.identity,
+    }),
+    chat: input.chat,
+    party: input.party,
+    partyJoin: input.partyJoin,
+    partySnapshot: input.partySnapshot,
+    partyNotify: input.partyNotify,
+    partyBag: input.partyBag,
+    instanceHunt: input.instanceHunt,
+    instanceDesk: input.instanceDesk,
+    dungeonHunt: input.dungeonHunt,
+    battlegrounds: input.battlegrounds,
+    instances: input.instances,
+    bestiary: input.bestiary,
+    database: input.database,
+    delay: input.delay,
+    professions: input.professions,
+    craft: input.craft,
+    quests: input.quests,
+    questCatalog: input.questCatalog,
+    pvpHonor: input.pvpHonor,
+    contentEditor: input.contentEditor,
+    ambushRandom: input.ambushRandom,
+  });
+  return { wire };
 }

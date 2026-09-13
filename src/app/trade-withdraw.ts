@@ -19,12 +19,13 @@ export async function withdrawTradeItem(
   if (!art) throw new TradeDeniedError("предмета нет на столе");
   const quantity = Number.isInteger(amount) && amount >= 1 ? amount : 1;
   const move = Math.min(quantity, art.quantity);
-  await deps.unitOfWork.run(() =>
-    deps.inventory.grantMailSnapshots({
+  await deps.unitOfWork.run(async () => {
+    await deps.heldItems.decrease(hero.id, itemId, move);
+    await deps.inventory.grantMailSnapshots({
       characterId: hero.id,
       snapshots: [mailSnapshotFromTrade({ ...art, quantity: move })],
-    }),
-  );
+    });
+  });
   if (move >= art.quantity) mine.artifacts.delete(itemId);
   else mine.artifacts.set(itemId, { ...art, quantity: art.quantity - move });
   deps.sessions.rotateKey(session);

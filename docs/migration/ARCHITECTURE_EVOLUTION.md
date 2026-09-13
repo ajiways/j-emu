@@ -273,9 +273,14 @@ per-board welcome; talk signal несёт `npcId`; `JUMP_AREA` — wire leftover
 REMOVE — public `consumeByArtikul`. Контракт:
 [COMBAT.md](../modules/COMBAT.md), [QUESTS.md](../modules/QUESTS.md).
 
-**Replan после DNG-03:** сюжет `CONTENT-STORY-*` не `next`. Сначала
-leftover-механика: persist trade (`TRD-02`). CEF и
-DATA-mass — не эта очередь.
+**Replan после DNG-03:** сюжет `CONTENT-STORY-*` не `next`. Leftover-механика
+закрыта leftover `TRD-02` (`done`) — refund вещей со стола после restart,
+**не** persist окна обмена. CEF и DATA-mass — не эта очередь.
+
+**Решение leftover TRD-02:** текущих границ достаточно; `ARC-ECO` / новый
+ADR не нужны. Landed: RAM-сессия как TRD-01; escrow снимков в
+`trade.held_items`; boot grant как `decline`. jgr теряет вещи — не
+копировать. Контракт: [TRADE.md](../modules/TRADE.md).
 
 **Решение QST-ENG-04:** текущих границ достаточно; `ARC-QST` не нужен.
 Landed raw-AMF: deny leave — CombatPort/fproxy; ambush `START_FIGHT` без

@@ -194,6 +194,157 @@ describe("direct trade session", () => {
     expect(sellerDone["trade|session"]).toEqual({ status: 100 });
     expect(() => bagItemByArtikulId(sellerDone, SHOP_GLOVE)).toThrow(/23 is missing/);
   });
+
+  it("refunds tray items after process restart and has no session", async () => {
+    const [a, b, nickB] = await dualHeroes(application);
+    const asked = await a.objectAction({
+      object: "trade",
+      action: "request",
+      form: { nick: nickB },
+      sq: 2,
+    });
+    const trayId = requireNumber(
+      requireRecord(requireRecord(asked["trade|session"], "trade|session").my_tray, "my_tray").id,
+    );
+    await b.pollEsrv();
+    await b.objectAction({
+      object: "trade",
+      action: "confirm",
+      form: { tray_id: trayId },
+      sq: 3,
+    });
+    await a.pollEsrv();
+    const boughtA = await buyShopGlove(a, 4);
+    const boughtB = await buyShopGlove(b, 4);
+    const itemA = requireNumber(bagItemByArtikulId(boughtA, SHOP_GLOVE).id);
+    const itemB = requireNumber(bagItemByArtikulId(boughtB, SHOP_GLOVE).id);
+    const putA = await a.objectAction({
+      object: "trade",
+      action: "put",
+      form: { item: itemA, amount: 1 },
+      sq: 6,
+    });
+    expect(putA["trade|put"]).toEqual({ status: 100 });
+    const moneyA = moneyFromSession(putA);
+    await b.pollEsrv();
+    const putB = await b.objectAction({
+      object: "trade",
+      action: "put",
+      form: { item: itemB, amount: 1 },
+      sq: 6,
+    });
+    expect(putB["trade|put"]).toEqual({ status: 100 });
+    const moneyB = moneyFromSession(putB);
+
+    application = await harness.restart();
+    const restartedA = new AuthenticatedClient(application, a.cookie);
+    const restartedB = new AuthenticatedClient(application, b.cookie);
+    const [initA, initB] = await Promise.all([
+      restartedA.objectAction({ object: "common", action: "init", sq: 20 }),
+      restartedB.objectAction({ object: "common", action: "init", sq: 20 }),
+    ]);
+    expect(initA).not.toHaveProperty("trade|session");
+    expect(initB).not.toHaveProperty("trade|session");
+    expect(bagItemByArtikulId(initA, SHOP_GLOVE).artikul_id).toBe(SHOP_GLOVE);
+    expect(bagItemByArtikulId(initB, SHOP_GLOVE).artikul_id).toBe(SHOP_GLOVE);
+    expect(moneyFromConf(initA)).toBe(moneyA);
+    expect(moneyFromConf(initB)).toBe(moneyB);
+
+    const refundedId = requireNumber(bagItemByArtikulId(initA, SHOP_GLOVE).id);
+    const noPut = await restartedA.objectAction({
+      object: "trade",
+      action: "put",
+      form: { item: refundedId, amount: 1 },
+      sq: 21,
+    });
+    expect(noPut["trade|put"]).toEqual({ status: 203, error: "нет сессии обмена" });
+    const noConfirm = await restartedA.objectAction({
+      object: "trade",
+      action: "session_confirm",
+      form: { confirm_key: "dead" },
+      sq: 22,
+    });
+    expect(noConfirm["trade|session_confirm"]).toEqual({
+      status: 203,
+      error: "нет сессии обмена",
+    });
+  });
+
+  it("does not refund items already settled after process restart", async () => {
+    const [seller, buyer, nickBuyer] = await dualHeroes(application);
+    const bought = await buyShopGlove(seller, 2);
+    const itemId = requireNumber(bagItemByArtikulId(bought, SHOP_GLOVE).id);
+    const asked = await seller.objectAction({
+      object: "trade",
+      action: "request",
+      form: { nick: nickBuyer },
+      sq: 4,
+    });
+    const trayId = requireNumber(
+      requireRecord(requireRecord(asked["trade|session"], "trade|session").my_tray, "my_tray").id,
+    );
+    await buyer.pollEsrv();
+    await buyer.objectAction({
+      object: "trade",
+      action: "confirm",
+      form: { tray_id: trayId },
+      sq: 3,
+    });
+    await seller.pollEsrv();
+    const put = await seller.objectAction({
+      object: "trade",
+      action: "put",
+      form: { item: itemId, amount: 1 },
+      sq: 5,
+    });
+    const sellerKey = requireString(
+      requireRecord(put["trade|session"], "trade|session").confirm_key,
+      "confirm_key",
+    );
+    await buyer.pollEsrv();
+    await seller.objectAction({
+      object: "trade",
+      action: "session_ready",
+      form: { confirm_key: sellerKey },
+      sq: 6,
+    });
+    const buyerSession = personalObject(await buyer.pollEsrv())["trade|session"];
+    const buyerKey = requireString(
+      requireRecord(buyerSession, "peer session").confirm_key,
+      "confirm_key",
+    );
+    await buyer.objectAction({
+      object: "trade",
+      action: "session_ready",
+      form: { confirm_key: buyerKey },
+      sq: 4,
+    });
+    await seller.pollEsrv();
+    await seller.objectAction({
+      object: "trade",
+      action: "session_confirm",
+      form: { confirm_key: sellerKey },
+      sq: 7,
+    });
+    await buyer.pollEsrv();
+    const settled = await buyer.objectAction({
+      object: "trade",
+      action: "session_confirm",
+      form: { confirm_key: buyerKey },
+      sq: 5,
+    });
+    expect(bagItemByArtikulId(settled, SHOP_GLOVE).artikul_id).toBe(SHOP_GLOVE);
+
+    application = await harness.restart();
+    const restartedSeller = new AuthenticatedClient(application, seller.cookie);
+    const restartedBuyer = new AuthenticatedClient(application, buyer.cookie);
+    const [initSeller, initBuyer] = await Promise.all([
+      restartedSeller.objectAction({ object: "common", action: "init", sq: 20 }),
+      restartedBuyer.objectAction({ object: "common", action: "init", sq: 20 }),
+    ]);
+    expect(() => bagItemByArtikulId(initSeller, SHOP_GLOVE)).toThrow(/23 is missing/);
+    expect(bagItemByArtikulId(initBuyer, SHOP_GLOVE).artikul_id).toBe(SHOP_GLOVE);
+  });
 });
 
 async function dualHeroes(
@@ -291,4 +442,16 @@ function isRecord(value: AmfValue | undefined): value is Record<string, AmfValue
 function requireRecord(value: AmfValue | undefined, label: string): Record<string, AmfValue> {
   if (!isRecord(value)) throw new Error(`${label} must be an object`);
   return value;
+}
+
+function moneyFromSession(payload: Record<string, AmfValue>): number {
+  const session = requireRecord(payload["trade|session"], "trade|session");
+  if (typeof session.money !== "number") throw new Error("trade|session.money must be a number");
+  return session.money;
+}
+
+function moneyFromConf(payload: Record<string, AmfValue>): number {
+  const conf = requireRecord(payload["user|conf"], "user|conf");
+  if (typeof conf.money !== "number") throw new Error("user|conf.money must be a number");
+  return conf.money;
 }

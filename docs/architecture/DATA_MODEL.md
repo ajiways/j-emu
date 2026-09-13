@@ -22,7 +22,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и pre-baseline миграции `drizzle/0000_foundation_init.sql` плюс последующие
-`drizzle/0001`…`0021`. Поля ниже совпадают с runtime.
+`drizzle/0001`…`0028`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -286,8 +286,10 @@ JSONB снимка dump нет. Unix `rtime` только в jugger-wire.
 
 ### `trade`
 
-Таблиц нет. Сессия process-local (TRD-01); settle пишет только `heroes.money_minor`
-и `inventory.items` через composition UoW (TRD-02).
+Сессия process-local (TRD-01); settle пишет `heroes.money_minor` и
+`inventory.items` через composition UoW (wave TRD-02). `trade.held_items`
+(identity id с 1, hero_id FK, колонки снимка как mail attachments, UNIQUE
+hero+original_item_id). Не persist tray / confirm_key.
 
 ### `chat`
 
@@ -365,7 +367,8 @@ Durable sides/turns/effects, active participants и JSONB event log не
 `social` / `economy` модулей в runtime нет. Mailbox MAIL-02 живёт в `mail`
 (`letters` + `letter_attachments`), не в `social` и без JSONB снимка dump.
 Лоты и заказы AUC-01/AUC-02 живут в `auction.listings`, не в `economy`.
-P2P обмен TRD-01/TRD-02 живёт в `trade` без таблиц, не в `economy`.
+P2P обмен TRD-01 / wave TRD-02 / leftover TRD-02 живёт в `trade` (сессия RAM;
+escrow `held_items`), не в `economy`.
 Чат SOC-01 живёт в `chat` без таблиц, не в `social`.
 Party SOC-02/SOC-03 живёт в `party` (`parties` / `party_members` /
 `party_invites` / `party_bag_items`), не в `social`.

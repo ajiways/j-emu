@@ -284,10 +284,12 @@ DelayScheduler. Buyout/bid/fill/expiry гонки — один победите�
 Есть raw-AMF: `trade|request` / `confirm` / `put` / `put_money` / `withdraw`,
 `session_ready` / `session_decline` / `session_confirm` / `decline`. Инвайт
 esrv `common|window` на `2:`; сессия process-local через disconnect; settle
-в одной UoW списывает налог и меняет bag/деньги. CEF окна обмена не
-прогонялся.
+в одной UoW списывает налог и меняет bag/деньги. Restart процесса возвращает
+вещи со стола в bag (escrow `held_items`, новый `items.id`); сессию не
+persist. CEF окна обмена не прогонялся.
 
-Не перенесены persist сессии через restart процесса.
+Не перенесены persist сессии обмена (сознательно leftover TRD-02: окно не
+переживает рестарт процесса).
 
 ## Chat — частично
 

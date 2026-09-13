@@ -17,12 +17,14 @@ import type { AppConfig } from "./config.ts";
 import { createPlayableIdentity } from "./create-playable-identity.ts";
 import { createJuggerRuntime } from "./create-jugger-runtime.ts";
 import { loadGamePolicy } from "./game-policy.ts";
+import { refundTradeHeldItems } from "./trade-held-refund.ts";
 import { PresenceService } from "../modules/world/application/presence-service.ts";
 import { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.ts";
 import { LongPollCoordinator } from "../modules/jugger-wire/application/long-poll-coordinator.ts";
 import { PresenceFanout } from "../modules/jugger-wire/application/presence-fanout.ts";
 import { HuntAreaFanout } from "../modules/jugger-wire/application/hunt-area-fanout.ts";
 import { CatalogHonorRanks } from "../modules/catalog/infrastructure/catalog-honor-ranks.ts";
+import { TradeModule } from "../modules/trade/trade-module.ts";
 import { bindInstanceHuntRuntime } from "./bind-instance-hunt-runtime.ts";
 import { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 import { MailModule } from "../modules/mail/mail-module.ts";
@@ -269,7 +271,14 @@ export class CompositionRoot {
         closers.push(sweep);
       }
       const contentEditor = createPostgresContentEditor(database);
-      const { wire, trade } = await createJuggerRuntime({
+      const trade = TradeModule.create({ database });
+      closers.push(trade);
+      await refundTradeHeldItems({
+        heldItems: trade.heldItems,
+        inventory: inventory.service,
+        unitOfWork: database,
+      });
+      const { wire } = await createJuggerRuntime({
         config,
         identity: identity.service,
         registration,
@@ -321,8 +330,8 @@ export class CompositionRoot {
         pvpHonor,
         contentEditor,
         ambushRandom: extras.ambushRandom ?? new SystemRandomSource(),
+        trade,
       });
-      closers.push(trade);
       closers.push(wire);
       combat.bindTerminalObserver(
         chainFightTerminal(

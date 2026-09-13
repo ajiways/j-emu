@@ -22,7 +22,8 @@ target `economy` и не `social`.
 
 Владение:
 
-- `trade` держит process-local сессию (тарелки, `confirm_key`, `confirmed`);
+- `trade` держит process-local сессию (тарелки, `confirm_key`, `confirmed`)
+  и escrow `held_items`;
 - деньги — `heroes.money_minor` через character `debitMoney` / `creditMoney`;
 - bag — inventory take-by-instance и snapshot grant.
 
@@ -30,10 +31,18 @@ Composition UoW атомарно снимает bag на стол, возвра�
 меняет оба героя на settle. Trade не пишет `heroes` и `inventory.items`.
 Inventory не пишет trade-state. Character не пишет trade-state.
 
-Ledger, reservation rows и таблицы сессии не вводятся. Предметы на столе уже
-сняты из bag (как dump). Рестарт процесса рвёт открытый обмен: вещи на столе
-без `decline` не возвращаются. Disconnect/reconnect в том же процессе держит
-ту же сессию (ключ — `heroes.id`).
+Ledger и таблицы **сессии** (tray / confirm_key / confirmed) не вводятся.
+Предметы на столе уже сняты из bag (как dump). Деньги `put_money` не
+списываются до settle. Disconnect/reconnect в том же процессе держит ту же
+RAM-сессию (ключ — `heroes.id`).
+
+**Leftover TRD-02 (landed):** сессию **не** восстанавливать
+после рестарта процесса. Окно пропадает. Чтобы оба не теряли вещи, модуль
+`trade` держит escrow-снимки стола в PostgreSQL (`trade.held_items`), не
+confirm_key и не tray id. Старт процесса возвращает снимки владельцам как
+`decline` (новый `items.id`). **Конфликт с jgr:** `TRADE.md` jgr — после
+краша потеря, «пока не будет persist»; для цикла 1–8 in-process. Канон этого
+среза — refund без persist окна, не dump-proven «обмен прерван» chat.
 
 Tray id — ephemeral in-process счётчик с `1` (как dump), не persisted identity и
 не hunt-bot диапазон. Wire integer `1..2_147_483_647`.
@@ -51,10 +60,21 @@ Fight lock / ghost / same-area dump на `trade|*` не ставит — не в
 Инвайтее биндится на `request` (`pendingInvitee`), тарелка появляется на
 `confirm`.
 
-**Решение TRD-02:** когда оба `confirmed=2`, одна UoW: `canFit` снимков,
-`money ≥ pledged + tax`, grant снимков партнёру, debit pledged+tax, credit
-pledged партнёра, unbind. Dump sequential grant+setMoney в j-emu не копировать.
-Гонка двух `session_confirm` — serial gate процесса (как dump).
+**Решение TRD-02 (wave, landed):** когда оба `confirmed=2`, одна UoW: `canFit`
+снимков, `money ≥ pledged + tax`, grant снимков партнёру, debit pledged+tax,
+credit pledged партнёра, unbind. Dump sequential grant+setMoney в j-emu не
+копировать. Гонка двух `session_confirm` — serial gate процесса (как dump).
+Settle обязан снять escrow тех же снимков в той же UoW.
+
+**Решение leftover TRD-02:** сессия остаётся RAM (TRD-01). Не persist
+tray / `confirm_key` / `confirmed` / инвайт. На `put` composition в той же
+UoW, что `takeFromBagForTrade`, пишет escrow-строку (колонки снимка как
+mail attachment, не JSONB dump). `withdraw` / `decline` / settle удаляют
+escrow в той же UoW, что grant. Старт `Application` — refund всех
+`held_items` через `grantMailSnapshots`, затем delete; RAM пустая. Деньги
+на столе не эскроуятся. Bag full на refund — не удалять строку, не слать
+в почту. Следующий `trade|*` после рестарта — `203` «нет сессии обмена».
+Не выдумывать dump-текст «обмен прерван».
 
 Withdraw/decline/settle выдают новый `items.id` (как MAIL-02 pick), не
 восстанавливают `originalItemId`.

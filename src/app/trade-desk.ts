@@ -4,6 +4,7 @@ import type { SessionPresence } from "../modules/identity/ports/session-presence
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
 import type { TradeSession } from "../modules/trade/domain/trade-session.ts";
 import type { TradeSessions } from "../modules/trade/application/trade-sessions.ts";
+import type { HeldItemsRepository } from "../modules/trade/ports/held-items-repository.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
 import { confirmTrade } from "./trade-confirm.ts";
 import { declineTrade } from "./trade-decline.ts";
@@ -17,6 +18,7 @@ import { withdrawTradeItem } from "./trade-withdraw.ts";
 
 export type TradeDeskDeps = Readonly<{
   sessions: TradeSessions;
+  heldItems: HeldItemsRepository;
   unitOfWork: UnitOfWork;
   characters: Pick<
     CharacterService,

@@ -1592,13 +1592,11 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
 
 ## Leftover engines — механика, не сюжет
 
-Волны 0–13 закрыты. Осталась **неперенесённая механика**, которую capability
-оставили leftover. Это не CEF-backlog, не DATA-02…06 mass import и не
-куратские квесты. Порядок: CMB-11 (`done`) → QST-ENG-04 (`done`) →
-QST-ENG-05 (`done`, `OPEN_STORE`) → DNG-03 (`done`) → TRD-02 (`next`).
+Волны 0–13 закрыты. Leftover-механика закрыта: CMB-11 (`done`) → QST-ENG-04
+(`done`) → QST-ENG-05 (`done`, `OPEN_STORE`) → DNG-03 (`done`) → leftover
+TRD-02 (`done`, refund trays, не persist session).
 
-`CONTENT-STORY-*` не брать, пока этот блок не `done` (явный приоритет:
-функционал до конца, сюжет не переносить).
+`CONTENT-STORY-*` остаются queued, не `next`.
 
 CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
 
@@ -1809,24 +1807,60 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   `tests/e2e/dungeon-clear.test.ts`. CEF не прогонялся.
 - **Status:** `done`
 
-### TRD-02 — Persist trade session
+### TRD-02 — Restart refund trays
 
-- **ID:** `TRD-02`
+- **ID:** `TRD-02` (leftover; не wave «Direct trade settlement», тот `done`)
 - **depends_on:** `TRD-01`
-- **Behavior evidence:** leftover CAPABILITIES: сессия обмена не переживает
-  restart процесса.
+- **Behavior evidence:** CAPABILITIES leftover: сессия не переживает
+  restart. jgr [TRADE.md](../../../jgr-emu/docs/TRADE.md): сессия
+  in-process; `put` снимает bag; после краша вещи теряются, «пока не
+  будет persist». Live OA dump окна после restart процесса нет.
+  **Решение среза (замок):** сессию **не** persist. Нужен только возврат
+  вещей обоим. Деньги на столе не списаны — уже на герое.
 - **Content set:** нет.
-- **Architecture checkpoint / decision:** до coding — architecture pass
-  (RAM vs persist; ADR-0020 может потребовать уточнения).
-- **Acceptance:** restart посреди сессии не теряет put/confirm либо
-  документированно рвёт обоих с dump-error, не молчаливый success.
-- **Status:** `next`
+- **Architecture checkpoint / decision:** ADR-0017–0020 достаточны;
+  `ARC-ECO` / новый ADR не нужны. ADR-0020 про бой; trade-окно остаётся
+  RAM как hunt overlay. Escrow — custody снятых `items`, как mail
+  snapshot, не restore UI.
+  Таблица `trade.held_items`: identity id с 1; `hero_id` FK heroes;
+  колонки снимка как `mail.letter_attachments` (original_item_id,
+  artifact_id, quantity, durability*, upgrade_*), не JSONB. PK id;
+  lookup `(hero_id, original_item_id)` уникален (стек на столе мержится
+  как RAM map).
+  Composition: `put` take+insert escrow одна UoW (сейчас take commit, RAM
+  после — дыра при краше). `withdraw`/`decline`/settle grant/transfer +
+  delete escrow та же UoW. Serial gate TRD-01 без изменений.
+  Старт `Application`: refund всех строк `grantMailSnapshots` (новый
+  `items.id`), delete только после успеха. Bag full — оставить строку,
+  не mail, не silent drop. RAM `TradeSessions` с нуля: нет окна, нет
+  restore `trade|session`. F5 в том же процессе — по-прежнему RAM.
+  **Fail-fast.** Withdraw/settle RAM-слот без escrow — 204, не пустой 100. После restart `trade|*` без сессии — текущий 203 «нет сессии
+  обмена». Не выдумывать chat «обмен прерван».
+  **Clock/RNG/ID.** Нет. Escrow id — PostgreSQL identity. Tray id —
+  process counter с 1, как сейчас.
+  **Restart.** Вещи обоих в bag; pledged money на герое; окна нет.
+  **CEF.** Production consumer. Product **частично** до CEF.
+  Контракт: [TRADE.md](../modules/TRADE.md).
+  Лимит 400: `inventory-service` ~395, `composition-root` ~359,
+  `trade-desk` ~90 — extract `trade-held-refund` в app; escrow repo в
+  `trade`; не растить inventory-service / combat / jugger-wire.
+- **Acceptance:** raw-AMF два героя, оба `put` dump-предмет (например
+  9095/77), `harness.restart()`, init: bag содержит те же artikul
+  (новый `items.id` ок), money не списан, `trade|session` нет; повторный
+  `put`/`confirm` без новой сессии — 203 «нет сессии обмена». Live F5
+  без restart процесса окно не рвёт. Settle/decline по-прежнему не
+  дублируют вещи. Wave settlement/tax не этот срез.
+  Landed: `drizzle/0028_trade_held_items.sql`; `src/app/trade-held-refund.ts`;
+  `src/modules/trade` escrow repo; raw-AMF `tests/e2e/trade.test.ts`.
+  CEF не прогонялся.
+- **Status:** `done`
 
 ## Content-fill track — сюжет, не брать сейчас
 
 Куратский авторский контент (Акрилон и далее) — не цель переноса (см.
-`SOURCE_BOUNDARY.md`). **Не стартовать**, пока leftover-движки выше не
-`done`. Эти пункты никогда не входят в `depends_on` capability волн 0–13.
+`SOURCE_BOUNDARY.md`). Leftover-движки выше `done`. **Не стартовать**:
+остаются queued, не `next`. Эти пункты никогда не входят в `depends_on`
+capability волн 0–13.
 
 `CHT-01`/`QST-01…04`/`IUS-01` из прежней версии этого документа заменены на
 `QST-ENG-01`/`QST-ENG-02` (Wave 11, движок квестов) и на system-notification

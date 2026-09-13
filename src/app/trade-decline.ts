@@ -23,7 +23,9 @@ export async function declineTrade(
   if (!allowed) throw new TradeDeniedError("это предложение не вам");
   const peerAccountId = peerAccountForDecline(deps, session, hero.id);
   await deps.unitOfWork.run(async () => {
+    const heroIds: number[] = [];
     for (const tray of session.trays.values()) {
+      heroIds.push(tray.heroId);
       const snapshots = [...tray.artifacts.values()].map(mailSnapshotFromTrade);
       if (snapshots.length < 1) continue;
       await deps.inventory.grantMailSnapshots({
@@ -33,6 +35,7 @@ export async function declineTrade(
       tray.artifacts.clear();
       tray.moneyGold = 0;
     }
+    await deps.heldItems.deleteForHeroes(heroIds);
   });
   deps.sessions.unbind(session);
   return closedTradeResult(accountId, peerAccountId, false);

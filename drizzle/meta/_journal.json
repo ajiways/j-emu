@@ -197,6 +197,13 @@
       "when": 1789250347377,
       "tag": "0027_catalog_dungeon_clear",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1789295315062,
+      "tag": "0028_trade_held_items",
+      "breakpoints": true
     }
   ]
 }
