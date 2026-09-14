@@ -126,6 +126,8 @@ export class BattlegroundMatchRuntime {
       fightId,
       arena: this.deps.definition.fightBg,
       areaId: attacker.areaId,
+      instanceCopyId: match.copyId,
+      fightFlags: this.deps.definition.fightFlags,
       challenger: challengerStart,
       acceptor: acceptorStart,
     });

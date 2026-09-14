@@ -18,6 +18,7 @@ import type { HuntAreaFanout } from "../../application/hunt-area-fanout.ts";
 import { heroFightAppearance } from "../../application/hero-fight-appearance.ts";
 import { HuntCombatLoadout } from "../../application/hunt-combat-loadout.ts";
 import { asHelpFightError } from "../../application/help-fight-error.ts";
+import { pvpFightWireOverlay } from "../../application/pvp-fight-wire-overlay.ts";
 import { huntHeroStatFields } from "../../../combat/domain/combatant-fight-stats.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
@@ -108,12 +109,15 @@ export class FightJoinCommand implements OaCommand {
       await this.huntFanout.wakeArea(hero.areaId, hero.instanceCopyId);
       return {
         "common|action": { status: 100 },
-        "fight|conf": this.fightWire.fightConfiguration(
-          fight,
-          hero.instanceCopyId === null
-            ? {}
-            : { canLeave: 0, instanceId: String(hero.instanceCopyId) },
-        ),
+        "fight|conf":
+          fight.purpose === "pvp"
+            ? this.fightWire.pvpConfiguration(fight, pvpFightWireOverlay(fight))
+            : this.fightWire.fightConfiguration(
+                fight,
+                hero.instanceCopyId === null
+                  ? {}
+                  : { canLeave: 0, instanceId: String(hero.instanceCopyId) },
+              ),
         "common|hunt": await this.bootstrap.hunt(context.accountId),
         "user|unitframe": await this.bootstrap.unitframe(context.accountId),
         state: await this.bootstrap.state(context.accountId),

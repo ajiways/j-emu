@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { Battle } from "../domain/battle.ts";
+import { fightStartOf } from "./fight-start-of.ts";
 import type { BattleRules } from "../domain/battle-rules.ts";
 import type { RandomSource } from "../domain/random-source.ts";
 import type { FightStart, FriendlyDuelStartInput } from "../ports/combat-port.ts";
@@ -34,10 +35,5 @@ export function startHumanDuelBattle(
   deps.byAccount.set(input.challenger.accountId, battle);
   deps.byAccount.set(input.acceptor.accountId, battle);
   deps.battleByFight.set(fightId, battle);
-  return {
-    fightId,
-    accessKey,
-    participantId: input.acceptor.heroId,
-    arena: input.arena,
-  };
+  return fightStartOf(battle, input.acceptor.heroId);
 }

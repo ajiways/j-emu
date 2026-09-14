@@ -13,6 +13,8 @@ export function friendlyDuelInitFromStart(
     accessKey,
     arena: input.arena,
     areaId: input.areaId,
+    instanceCopyId: input.instanceCopyId,
+    fightFlags: input.fightFlags,
     startedAt,
     challenger: fighter(input.challenger),
     acceptor: fighter(input.acceptor),

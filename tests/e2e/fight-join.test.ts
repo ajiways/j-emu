@@ -26,7 +26,7 @@ import {
 const START_MS = 1_700_000_000_000;
 const LEVEL3_EXP = 202;
 
-describe("hunt fight join team 2", () => {
+describe("hunt fight join team 2 opener pin", () => {
   let harness: ApplicationHarness;
   let application: Application;
 
@@ -34,6 +34,7 @@ describe("hunt fight join team 2", () => {
     harness = new ApplicationHarness(undefined, undefined, {
       combatBotStrength: 1,
       combatRules: { strPerDamagePoint: 1 },
+      combatRandom: new SequenceRandom([0.4]),
     });
     application = await harness.start();
   });
@@ -108,6 +109,23 @@ describe("hunt fight join team 2", () => {
     expect(fightPersTeam(bootstrapD, heroB)).toBe(1);
     expect(fightPersTeam(bootstrapD, heroC)).toBe(2);
   });
+});
+
+describe("hunt fight join team 2", () => {
+  let harness: ApplicationHarness;
+  let application: Application;
+
+  beforeEach(async () => {
+    harness = new ApplicationHarness(undefined, undefined, {
+      combatBotStrength: 1,
+      combatRules: { strPerDamagePoint: 1 },
+    });
+    application = await harness.start();
+  });
+
+  afterEach(async () => {
+    await harness.stop();
+  });
 
   it("denies JOIN into a quest fight with the current quest text", async () => {
     const hunter = await createIsolatedHero(application);
@@ -126,6 +144,38 @@ describe("hunt fight join team 2", () => {
     expect(denied["common|action"]).toEqual({
       status: 204,
       error: "нельзя вмешаться в квестовый бой",
+    });
+  });
+
+  it("denies JOIN into a friendly duel", async () => {
+    const a = await createIsolatedHero(application);
+    const b = await createIsolatedHero(application);
+    const c = await createIsolatedHero(application);
+    const initA = await a.objectAction({ object: "common", action: "init", sq: 1 });
+    const initB = await b.objectAction({ object: "common", action: "init", sq: 1 });
+    await c.objectAction({ object: "common", action: "init", sq: 1 });
+    await a.objectAction({
+      object: "user",
+      action: "friendly_duel_propose",
+      form: { nick: requireNick(initB) },
+      sq: 2,
+    });
+    await b.pollEsrv();
+    const accept = await b.objectAction({
+      object: "user",
+      action: "friendly_duel_accept",
+      form: { nick: requireNick(initA) },
+      sq: 3,
+    });
+    const denied = await c.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "FIGHT_JOIN", fight: huntFightIdFrom(accept), team: 1 },
+      sq: 2,
+    });
+    expect(denied["common|action"]).toEqual({
+      status: 204,
+      error: "нельзя вмешаться в дуэль",
     });
   });
 

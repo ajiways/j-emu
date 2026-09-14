@@ -1,10 +1,15 @@
 import type { BattleEvent } from "./battle-event.ts";
 import { huntJoiner } from "./battle-fighters.ts";
+import { requireBattleHuntRoster, requireHuntInit } from "./battle-lookups.ts";
+import type { FightDuel } from "./fight-duel.ts";
 import { huntBotSnap } from "./hunt-bot-snap.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
+import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntJoinHuman } from "./hunt-join-human.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
+import type { RandomSource } from "./random-source.ts";
+import { pairHuntQueues } from "./try-pair-hunt-queues.ts";
 
 export function huntHistoryOf(opener: HuntHuman, hunt: HuntBattleInit) {
   return {
@@ -19,7 +24,45 @@ export function huntHistoryOf(opener: HuntHuman, hunt: HuntBattleInit) {
   };
 }
 
-export function addHuntHuman(input: {
+export function joinBattleHuman(input: {
+  kind: "hunt" | "friendly-duel" | "pvp";
+  finished: boolean;
+  humans: HuntHuman[];
+  huntRoster: HuntRoster | null;
+  init: HuntBattleInit | FriendlyDuelBattleInit;
+  join: HuntJoinHuman;
+  hasHuman: (accountId: number, heroId: number) => boolean;
+  duels: FightDuel[];
+  random: RandomSource;
+}): BattleEvent {
+  const roster =
+    input.kind === "pvp"
+      ? addPvpHuman({
+          kind: input.kind,
+          finished: input.finished,
+          humans: input.humans,
+          join: input.join,
+          hasHuman: input.hasHuman,
+        })
+      : addHuntHuman({
+          kind: input.kind,
+          finished: input.finished,
+          humans: input.humans,
+          roster: requireBattleHuntRoster(input.huntRoster),
+          hunt: requireHuntInit(input.init),
+          join: input.join,
+          hasHuman: input.hasHuman,
+        });
+  pairHuntQueues({
+    humans: input.humans,
+    duels: input.duels,
+    roster: input.huntRoster,
+    random: input.random,
+  });
+  return roster;
+}
+
+function addHuntHuman(input: {
   kind: "hunt" | "friendly-duel" | "pvp";
   finished: boolean;
   humans: HuntHuman[];
@@ -43,5 +86,27 @@ export function addHuntHuman(input: {
     humans: input.humans.map((entry) => entry.snapshot()),
     bot: huntBotSnap(input.hunt, input.roster.primary.hp),
     joined: human.snapshot(),
+  };
+}
+
+function addPvpHuman(input: {
+  kind: "hunt" | "friendly-duel" | "pvp";
+  finished: boolean;
+  humans: HuntHuman[];
+  join: HuntJoinHuman;
+  hasHuman: (accountId: number, heroId: number) => boolean;
+}): BattleEvent {
+  if (input.kind !== "pvp") throw new Error("Cannot PvP-join a non-PvP battle");
+  if (input.finished) throw new Error("Cannot join a finished battle");
+  if (input.hasHuman(input.join.accountId, input.join.heroId)) {
+    throw new Error("Human is already in this battle");
+  }
+  const human = huntJoiner(input.join);
+  input.humans.push(human);
+  return {
+    type: "roster-updated",
+    humans: input.humans.map((entry) => entry.snapshot()),
+    joined: human.snapshot(),
+    rosterBots: [],
   };
 }

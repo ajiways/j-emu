@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { createCombatService } from "../../support/create-combat-service.ts";
-import { unitHuntJoin, unitHuntStart } from "../../support/hunt-start-input.ts";
+import {
+  unitHuntJoin,
+  unitHuntStart,
+  UNIT_FIGHT_SECONDARIES,
+} from "../../support/hunt-start-input.ts";
+import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
 describe("CombatService leaveFight", () => {
@@ -61,5 +66,57 @@ describe("CombatService leaveFight", () => {
       { type: "command-denied", sequence: 9, err: "нельзя выйти из боя" },
     ]);
     expect(await combat.hasFight(start.fightId)).toBe(true);
+  });
+
+  it("allows leave on a PvP fight in a battleground copy", async () => {
+    const { combat } = createCombatService({ random: new SequenceRandom([1]) });
+    const fightId = await combat.nextFightId();
+    await combat.startPvp({
+      fightId,
+      arena: "5_1",
+      areaId: "636",
+      instanceCopyId: 12,
+      fightFlags: "128",
+      challenger: {
+        accountId: 1,
+        heroId: 1,
+        heroNick: "A",
+        heroLevel: 1,
+        heroKind: 1,
+        heroHp: 27,
+        heroMaxHp: 27,
+        heroMp: 10,
+        heroMaxMp: 10,
+        heroStrength: 10,
+        ...UNIT_FIGHT_SECONDARIES,
+        loadout: EMPTY_COMBAT_LOADOUT,
+        avatar: "avatar_small.jpg",
+        body: "m1",
+        sk: "1",
+      },
+      acceptor: {
+        accountId: 2,
+        heroId: 2,
+        heroNick: "B",
+        heroLevel: 1,
+        heroKind: 1,
+        heroHp: 27,
+        heroMaxHp: 27,
+        heroMp: 10,
+        heroMaxMp: 10,
+        heroStrength: 10,
+        ...UNIT_FIGHT_SECONDARIES,
+        loadout: EMPTY_COMBAT_LOADOUT,
+        avatar: "avatar_small.jpg",
+        body: "m1",
+        sk: "1",
+      },
+    });
+    await combat.execute(1, { kind: "authenticate", fightId, sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await expect(combat.execute(1, { kind: "leave", sequence: 9 })).resolves.toEqual([
+      { type: "command-accepted", sequence: 9 },
+    ]);
+    expect(await combat.hasFight(fightId)).toBe(true);
   });
 });

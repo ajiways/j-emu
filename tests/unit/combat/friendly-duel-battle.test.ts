@@ -45,6 +45,8 @@ function duelInit(): FriendlyDuelBattleInit {
     accessKey: "duel-key",
     arena: "1_1",
     areaId: "503",
+    instanceCopyId: null,
+    fightFlags: null,
     startedAt: new Date("2026-09-07T12:00:00.000Z"),
     challenger: fighter(1, 1, "A"),
     acceptor: fighter(2, 2, "B"),

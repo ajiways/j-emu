@@ -139,6 +139,8 @@ describe("CombatService melee turns", () => {
       fightId,
       arena: "1_1",
       areaId: "503",
+      instanceCopyId: null,
+      fightFlags: null,
       challenger: duelFighter(1, 1),
       acceptor: duelFighter(2, 2),
     });

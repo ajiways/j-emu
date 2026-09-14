@@ -74,7 +74,8 @@ Inventory layout lock (`PUT_ON`/`PUT_OFF`/`DROP`/`SELL` → `203` в бою) —
 Трата из кармана — fproxy. World USE, COME_IN/`common|exit` и ATTACK — live
 `fightBusy`; WLD-01 применяет то же `FightRules` `203`. Карта ATTACK_BOT:
 ключ — spawn id; занятая живая точка — `joinHunt` team 1. OA `FIGHT_JOIN` /
-`FIGHT_HELP` — hunt team 1\|2, same-area **и** same-copy, dump 204 (CMB-11).
+`FIGHT_HELP` — hunt team 1\|2 и PvP Раскопа (CMB-16), same-area **и**
+same-copy, dump 204 (CMB-11).
 Live `10_000_000 + heroes.id` в `userId` не копировать
 — participant = `heroes.id`.
 
@@ -389,7 +390,8 @@ OA `FIGHT_JOIN` `{fight, team:1|2}` и `FIGHT_HELP` `{nick}` входят в **�
 `state`). Остальным authed в бою — roster/pers. Карта `ATTACK_BOT` на
 занятый spawn (outdoor и dungeon copy) по-прежнему `joinHunt` team **1**.
 Party chat ACTION «ПОМОЧЬ» остаётся team **1** (opener охоты).
-`purpose:"quest"`, friendly/pvp `kind` — `HuntJoinDenied`, как сейчас.
+`purpose:"quest"` и friendly `kind` — `HuntJoinDenied`. PvP Раскопа —
+CMB-16.
 
 ### Copy и area
 
@@ -458,13 +460,13 @@ Production consumer. Product **частично** до CEF. Строка в
 ### Out of scope (CMB-12 leftover)
 
 Закрыто CMB-13 (pairing), CMB-14 (melee outcomes), CMB-15a–c (magic).
-Дальше: CMB-16 BG `FIGHT_JOIN`; CMB-17 practice history; CMB-18 outdoor
-`ATTACK` только после явного решения. Quest-fight join — deny CMB-09.
+Дальше: CMB-17 practice history; CMB-18 outdoor `ATTACK` только после
+явного решения. Quest-fight join — deny CMB-09. BG `FIGHT_JOIN` — CMB-16.
 
 ## CMB-13 — hunt N×N pairing
 
 Срез закрыт (unit + raw-AMF). Product-status не поднимать: CEF не
-прогонялся. Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-16.
+прогонялся. Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-17.
 
 Seekers = unpaired living humans **и** bots обеих команд. Pair loop как
 jgr: shuffle + last-foe score (`lastOpponentId`). Occupied spawn bot не
@@ -489,7 +491,7 @@ Unpublished bot initiative = `0` (нет LUCK в `BotDefinition`). Delay token
 
 Срез закрыт (unit + hunt raw-AMF без регресса). Product-status не
 поднимать: CEF не прогонялся.
-Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-16.
+Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-17.
 
 Player L/C/R и bot melee: dodge → block → crit → DEF → HP (`legacy
 behavior`, knobs на `BattleRules`: `combatSoftC=600`, cap 0.40, crit×2.35,
@@ -529,7 +531,41 @@ success. Kind 18 stun skip-turn, `duration` обязателен. Kind 10 summon
 landed (явный skip). Period deadline без удара (~20s unpaired) — не
 этот срез.
 
-Не в срезе: BG JOIN, practice history, outdoor `ATTACK`/`FightRules`.
+Не в срезе: practice history, outdoor `ATTACK`/`FightRules`. BG JOIN —
+CMB-16.
+
+## CMB-16 — BG FIGHT_JOIN
+
+Срез закрыт (raw-AMF). Product-status не поднимать: CEF не прогонялся.
+Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-17.
+
+OA `FIGHT_JOIN` `{fight, team:1|2}` и `FIGHT_HELP` `{nick}` входят в
+живой PvP Раскопа (`kind:"pvp"`, `purpose:"pvp"`) при том же `areaId` и
+`instanceCopyId`, что у `Battle`. Тот же OA-handler, что hunt (CMB-11):
+`joinHunt`, dump 204 через `asHelpFightError`. Friendly duel остаётся
+deny «нельзя вмешаться в дуэль». Quest — CMB-09.
+
+`startPvp` несёт `instanceCopyId` копии матча и `fightFlags` с
+composition (combat battleground не импортирует). JOIN `fight|conf` —
+`pvpConfiguration`: `is_pvp:1`, `type:"1"`, `can_leave:1`, тот же
+`instance_id`/`flags`, что ATTACK. Leave в PvP copy разрешён; dungeon
+hunt copy по-прежнему `fightLeaveDenied`.
+
+Seekers JOIN — waiting humans (`pairHuntQueues`, roster `null`).
+Стартовая 1v1 PvP-пара не seeker. Team-1 waiter без unpaired team-2
+ждёт; JOIN противоположной team сразу human↔human (`oppnew`,
+`bot !== true`). A↔B продолжают свою дуэль. Bootstrap PvP-joiner:
+`friendly-bootstrap` `pvp:true`, `persList` всех людей; unpaired —
+`oppwait`.
+
+Dump 204: другая локация/копия; stale/missing fight. Restart процесса
+уничтожает RAM бой: JOIN после restart — 204, без resurrect.
+
+### Out of scope (CMB-16 leftover)
+
+CMB-17 practice `arena|finished_fights`; CMB-18 outdoor `ATTACK` /
+`FightRules`. Третий герой в Раскопе не член матча — test teleport в
+копию; kick orphan на restart уже BG-01.
 
 ## HERO-01 — PvP honor snapshot
 

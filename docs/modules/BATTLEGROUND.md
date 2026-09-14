@@ -40,7 +40,9 @@ status **2** on deny (not 203). Invite is esrv `common|window` TTL 120s.
 Both confirm → `arena|bg_waiting` then `{start:1}` → teleport (kind 2 → 637,
 kind 3 → 635). `COME_IN` 636. `common|object:ATTACK` `{nick}` starts PvP
 `is_pvp:1`, `type:"1"`, `flags:"128"`, `bg:"5_1"`, `can_leave:1`. Score 20
-per kill or 600s timeout → esrv `arena|bg_finish` + kick 500.
+per kill or 600s timeout → esrv `arena|bg_finish` + kick 500. OA
+`FIGHT_JOIN` / `FIGHT_HELP` into a live Раскоп PvP fight — CMB-16, same
+`fightId`/`instance_id`, same-copy only.
 
 `arena|bg_running` empty page. `arena|bg_finished` typed history, page size 10. `arena|great_fights` `{fight_ids:[]}`. `arena|leader_rating` dump groups
 and `rating:{}` (leftover).

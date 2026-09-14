@@ -327,6 +327,13 @@ cross-swap; initiative на новых парах `tryPairQueues`. Snapshot stat
 не нужен. CMB-18 (outdoor challenge) — единственная точка, где jgr сам
 откладывает `FightRules` / `startBattle({team1,team2,rules})`.
 
+**Решение CMB-16:** текущих границ достаточно; `ARC-CMB` не нужен. Не
+выделять `FightRules`. `joinHunt` пускает `kind:"pvp"` при том же
+area/copy; friendly остаётся deny. `startPvp` несёт `instanceCopyId` и
+`fightFlags` с composition; combat battleground не импортирует. Leave в
+PvP copy разрешён. ADR-0017–0020. Контракт: [COMBAT.md](../modules/COMBAT.md),
+[BATTLEGROUND.md](../modules/BATTLEGROUND.md).
+
 **Решение DAY-01:** текущих границ достаточно; отдельный `ARC-QST` не нужен.
 Daily cycle — lazy `Clock` на quests ports (UTC+3 / 06:00), не
 `DelayScheduler` и не `Clock.schedule`. `hidden_in_journal` на том же

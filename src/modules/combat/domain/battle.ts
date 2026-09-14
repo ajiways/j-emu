@@ -2,7 +2,7 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { authenticateFighter } from "./battle-authenticate.ts";
 import { isHumanDuelInit } from "./battle-fighters.ts";
-import { addHuntHuman, huntHistoryOf } from "./battle-hunt-join.ts";
+import { huntHistoryOf, joinBattleHuman } from "./battle-hunt-join.ts";
 import {
   applyBattleBotMelee,
   applyBattleGlove,
@@ -41,11 +41,7 @@ import { seedBattleParticipants } from "./battle-seed.ts";
 import { battleOutcomeSnapshot, leaveWinnerTeam } from "./battle-outcome.ts";
 import type { FightOutcomeKind, FightOutcomeSnapshot } from "./fight-outcome-snapshot.ts";
 import type { ShuffleOutcome } from "./try-shuffle-after-hits.ts";
-import {
-  dissolveDuelContaining,
-  pairHuntQueues,
-  requireDuelContaining,
-} from "./try-pair-hunt-queues.ts";
+import { dissolveDuelContaining, requireDuelContaining } from "./try-pair-hunt-queues.ts";
 
 export class Battle {
   readonly kind: "hunt" | "friendly-duel" | "pvp";
@@ -54,6 +50,7 @@ export class Battle {
   readonly arena: string;
   readonly areaId: string;
   readonly instanceCopyId: number | null;
+  readonly fightFlags: string | null;
   readonly startedAt: Date;
   readonly turnTimeoutSeconds: number;
   readonly meleeBotCounterMs: number;
@@ -73,7 +70,8 @@ export class Battle {
     this.accessKey = init.accessKey;
     this.arena = init.arena;
     this.areaId = init.areaId;
-    this.instanceCopyId = isHumanDuelInit(init) ? null : init.instanceCopyId;
+    this.instanceCopyId = init.instanceCopyId;
+    this.fightFlags = isHumanDuelInit(init) ? init.fightFlags : null;
     this.startedAt = init.startedAt;
     this.turnTimeoutSeconds = rules.turnTimeoutSeconds;
     this.meleeBotCounterMs = rules.meleeBotCounterMs;
@@ -181,22 +179,17 @@ export class Battle {
   }
 
   addHuman(join: HuntJoinHuman): BattleEvent {
-    const roster = addHuntHuman({
+    return joinBattleHuman({
       kind: this.kind,
       finished: this.finishedValue,
       humans: this.humans,
-      roster: requireBattleHuntRoster(this.huntRoster),
-      hunt: requireHuntInit(this.init),
+      huntRoster: this.huntRoster,
+      init: this.init,
       join,
       hasHuman: (accountId, heroId) => this.hasHuman(accountId, heroId),
-    });
-    pairHuntQueues({
-      humans: this.humans,
       duels: this.duels,
-      roster: this.huntRoster,
       random: this.random,
     });
-    return roster;
   }
 
   authenticate(accountId: number, nowMs: number): readonly BattleEvent[] {
@@ -208,7 +201,6 @@ export class Battle {
       huntRoster: this.huntRoster,
       timeoutSeconds: this.rules.turnTimeoutSeconds,
       accountId,
-      opponentAccountId: (id) => this.opponentAccountId(id),
       nowMs,
     });
   }

@@ -70,6 +70,8 @@ export class AcceptFriendlyDuel {
       fightId,
       arena: area.fightBackground,
       areaId: area.id,
+      instanceCopyId: null,
+      fightFlags: null,
       challenger: challengerStart,
       acceptor: acceptorStart,
     });

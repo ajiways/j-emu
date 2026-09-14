@@ -4,5 +4,5 @@ export function fightLeaveDenied(
   purpose: "hunt" | "quest" | "friendly-duel" | "pvp",
   instanceCopyId: number | null,
 ): boolean {
-  return purpose === "quest" || instanceCopyId !== null;
+  return purpose === "quest" || (purpose === "hunt" && instanceCopyId !== null);
 }

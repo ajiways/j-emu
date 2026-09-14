@@ -238,15 +238,17 @@ CMB-11: OA `FIGHT_JOIN` `{team:1|2}` и `FIGHT_HELP` входят в тот же
 `fightId` на 50310; карта ATTACK_BOT на занятый spawn остаётся team 1;
 две копии 542 изолируют JOIN; после смерти бота живой team-2 продолжает
 vs team-1 без hunt EXP; restart → 204 stale. CMB-12: три героя на 50310 —
-JOIN `{team:2}` сразу human↔human, opener продолжает vs Грызля. CEF join/intervene не
+JOIN `{team:2}` сразу human↔human, opener продолжает vs Грызля. CMB-16:
+тот же OA входит в живой PvP Раскопа same-copy; world JOIN — 204 другая
+локация; friendly JOIN — дуэль. CEF join/intervene/Раскоп JOIN не
 прогонялся.
 
-Не перенесены: BG/pvp `FIGHT_JOIN` на живой Раскоп (CMB-16 `next`);
-OA `arena|finished_fights` (CMB-17); outdoor `ATTACK` challenge
-(CMB-18, только после явного решения — в jgr runtime этого нет);
+Не перенесены: OA `arena|finished_fights` (CMB-17); outdoor `ATTACK`
+challenge (CMB-18, только после явного решения — в jgr runtime этого нет);
 kind 10 summon clone в roster. Hunt N×N две дуэли на 50310 landed
 (CMB-12). Aggro clone + 3↔3 cross-swap landed (CMB-13). Melee
-outcomes (CMB-14) и magic 15a–c landed. CEF боя не прогонялся.
+outcomes (CMB-14) и magic 15a–c landed. BG `FIGHT_JOIN` landed (CMB-16).
+CEF боя не прогонялся.
 
 ## Quests и NPC — частично
 

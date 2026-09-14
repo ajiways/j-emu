@@ -17,6 +17,7 @@ import { CombatTerminal } from "./combat-terminal.ts";
 import { createHuntBattle } from "./create-hunt-battle.ts";
 import { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 import { startHumanDuelBattle } from "./start-human-duel.ts";
+import { fightStartOf } from "./fight-start-of.ts";
 import { castFightSpecial } from "./combat-special-casts.ts";
 import type {
   CombatEvent,
@@ -134,12 +135,7 @@ export class CombatService implements CombatPort {
     );
     this.byAccount.set(input.accountId, battle);
     this.battleByFight.set(fightId, battle);
-    return {
-      fightId,
-      accessKey,
-      participantId: input.heroId,
-      arena: input.arena,
-    };
+    return fightStartOf(battle, input.heroId);
   }
 
   async startFriendlyDuel(input: FriendlyDuelStartInput): Promise<FightStart> {
@@ -158,7 +154,7 @@ export class CombatService implements CombatPort {
     const fightId = requireFightId(input.fightId);
     const battle = this.battleByFight.get(fightId);
     if (!battle || battle.finished) throw new HuntJoinDenied("бой не найден");
-    if (battle.kind !== "hunt") throw new HuntJoinDenied("нельзя вмешаться в дуэль");
+    if (battle.kind === "friendly-duel") throw new HuntJoinDenied("нельзя вмешаться в дуэль");
     if (battle.purpose === "quest") throw new HuntJoinDenied("нельзя вмешаться в квестовый бой");
     if (battle.areaId !== input.areaId || battle.instanceCopyId !== input.instanceCopyId) {
       throw new HuntJoinDenied("бой в другой локации");
@@ -196,12 +192,7 @@ export class CombatService implements CombatPort {
       this.enqueue(accountId, [roster]);
     }
     this.melee.notifyJoinedPair(battle, input.accountId);
-    return {
-      fightId: battle.id,
-      accessKey: battle.accessKey,
-      participantId: input.heroId,
-      arena: battle.arena,
-    };
+    return fightStartOf(battle, input.heroId);
   }
 
   async execute(accountId: number, command: FightCommand) {
@@ -273,12 +264,7 @@ export class CombatService implements CombatPort {
     if (!battle || battle.finished) return null;
     this.queues.delete(accountId);
     battle.prepareResume(accountId);
-    return {
-      fightId: battle.id,
-      accessKey: battle.accessKey,
-      participantId: battle.heroIdFor(accountId),
-      arena: battle.arena,
-    };
+    return fightStartOf(battle, battle.heroIdFor(accountId));
   }
 
   async accountForFight(fightId: string): Promise<number | null> {

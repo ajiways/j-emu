@@ -25,6 +25,9 @@ export type FightStart = Readonly<{
   accessKey: string;
   participantId: number;
   arena: string;
+  purpose: "hunt" | "quest" | "friendly-duel" | "pvp";
+  instanceCopyId: number | null;
+  fightFlags: string | null;
 }>;
 
 export type HuntStartInput = Readonly<{
@@ -130,6 +133,8 @@ export type FriendlyDuelStartInput = Readonly<{
   fightId: string;
   arena: string;
   areaId: string;
+  instanceCopyId: number | null;
+  fightFlags: string | null;
 }>;
 
 type FriendlyDuelFighterInput = Readonly<{

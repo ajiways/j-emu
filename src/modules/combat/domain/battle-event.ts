@@ -43,8 +43,8 @@ export type BattleEvent =
   | Readonly<{
       type: "roster-updated";
       humans: readonly HuntHumanSnap[];
-      bot: HuntBotSnap;
       joined: HuntHumanSnap;
+      bot?: HuntBotSnap;
       rosterBots?: readonly HuntBotSnap[];
     }>
   | Readonly<{
@@ -72,16 +72,18 @@ export type BattleEvent =
     }>
   | Readonly<{
       type: "friendly-bootstrap";
+      waiting: boolean;
       hero: HuntHumanSnap;
-      opponent: HuntHumanSnap;
-      opponentAppearance: Readonly<{ avatar: string; body: string; sk: string }>;
+      allies: readonly HuntHumanSnap[];
+      opponent?: HuntHumanSnap;
+      opponentAppearance?: Readonly<{ avatar: string; body: string; sk: string }>;
       cp: number;
       cpHits: readonly number[];
       rage: number;
       aggro: number;
       loadout: CombatLoadout;
       heroEffects: readonly FightEffectSnap[];
-      opponentEffects: readonly FightEffectSnap[];
+      opponentEffects?: readonly FightEffectSnap[];
     }>
   | Readonly<{ type: "finished"; winnerTeam: 1 | 2; fightId: string }>
   | Readonly<{

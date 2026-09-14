@@ -7,7 +7,6 @@ import type { HuntRoster } from "./hunt-roster.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import { isHumanDuelInit } from "./battle-fighters.ts";
 import { requireBattleHuman, requireBattleHuntRoster, requireHuntInit } from "./battle-lookups.ts";
-import { requireDuelContaining } from "./try-pair-hunt-queues.ts";
 
 function huntAuthenticateEvents(
   input: Readonly<{
@@ -64,31 +63,43 @@ function huntAuthenticateEvents(
 function friendlyAuthenticateEvents(
   input: Readonly<{
     human: HuntHuman;
-    opponent: HuntHuman;
-    nextActorId: number;
+    allies: readonly HuntHuman[];
+    opponent?: HuntHuman;
+    nextActorId?: number;
     timeoutSeconds: number;
     nowMs: number;
   }>,
 ): readonly BattleEvent[] {
   const { human, opponent } = input;
-  const appearance = opponent.appearance;
-  if (!appearance) throw new Error("Friendly duel opponent appearance is required");
-  if (human.heroId === input.nextActorId && !human.turnActive) {
-    human.beginTurn(input.nowMs, input.timeoutSeconds);
+  if (!human.waiting) {
+    if (!opponent) throw new Error("Paired human duel fighter is missing an opponent");
+    if (input.nextActorId === undefined) {
+      throw new Error("Paired human duel is missing next actor");
+    }
+    if (!opponent.appearance) throw new Error("Friendly duel opponent appearance is required");
+    if (human.heroId === input.nextActorId && !human.turnActive) {
+      human.beginTurn(input.nowMs, input.timeoutSeconds);
+    }
   }
   const events: BattleEvent[] = [
     {
       type: "friendly-bootstrap",
+      waiting: human.waiting,
       hero: human.snapshot(),
-      opponent: opponent.snapshot(),
-      opponentAppearance: appearance,
+      allies: input.allies.map((entry) => entry.snapshot()),
+      ...(opponent && opponent.appearance
+        ? {
+            opponent: opponent.snapshot(),
+            opponentAppearance: opponent.appearance,
+            opponentEffects: opponent.effects.snapshot(),
+          }
+        : {}),
       cp: human.casts.cp,
       cpHits: human.casts.hits,
       rage: human.casts.rage,
       aggro: human.casts.aggro,
       loadout: human.casts.loadout,
       heroEffects: human.effects.snapshot(),
-      opponentEffects: opponent.effects.snapshot(),
     },
   ];
   if (human.turnActive) {
@@ -106,7 +117,6 @@ export function authenticateFighter(
     huntRoster: HuntRoster | null;
     timeoutSeconds: number;
     accountId: number;
-    opponentAccountId: (accountId: number) => number;
     nowMs: number;
   }>,
 ): readonly BattleEvent[] {
@@ -116,10 +126,21 @@ export function authenticateFighter(
   const resume = human.takeResume();
   human.authed = true;
   if (isHumanDuelInit(input.init)) {
+    const duel = input.duels.find((entry) => entry.has(human.heroId));
+    const opponent =
+      duel === undefined
+        ? undefined
+        : input.humans.find((entry) => entry.heroId === duel.otherId(human.heroId));
+    if (!human.waiting && opponent === undefined) {
+      throw new Error("Paired human duel fighter is missing an opponent");
+    }
     return friendlyAuthenticateEvents({
       human,
-      opponent: requireBattleHuman(input.humans, input.opponentAccountId(input.accountId)),
-      nextActorId: requireDuelContaining(input.duels, human.heroId).nextActorId,
+      allies: input.humans.filter(
+        (entry) => entry.heroId !== human.heroId && entry.heroId !== opponent?.heroId,
+      ),
+      ...(opponent ? { opponent } : {}),
+      ...(duel ? { nextActorId: duel.nextActorId } : {}),
       timeoutSeconds: input.timeoutSeconds,
       nowMs: input.nowMs,
     });

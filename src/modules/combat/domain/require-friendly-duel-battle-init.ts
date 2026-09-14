@@ -20,6 +20,14 @@ export function requireFriendlyDuelBattleInit(
   if (!init.areaId) throw new Error("Friendly duel area is required");
   if (!init.arena) throw new Error("Friendly duel arena is required");
   if (!init.accessKey) throw new Error("Friendly duel access key is required");
+  if (init.kind === "pvp") {
+    if (init.instanceCopyId === null) throw new Error("PvP fight copy is required");
+    requireWireIdentity(init.instanceCopyId, "pvp instance copy id");
+    if (!init.fightFlags) throw new Error("PvP fight flags are required");
+  } else {
+    if (init.instanceCopyId !== null) throw new Error("Friendly duel must be in the world");
+    if (init.fightFlags !== null) throw new Error("Friendly duel must not carry PvP flags");
+  }
   requireFighter(init.challenger, "challenger");
   requireFighter(init.acceptor, "acceptor");
   if (init.challenger.accountId === init.acceptor.accountId) {

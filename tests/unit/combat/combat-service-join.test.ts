@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import { CombatService } from "../../../src/modules/combat/application/combat-service.ts";
 import { FinishedFightRecorder } from "../../../src/modules/combat/application/finished-fight-recorder.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
-import { unitHuntJoin, unitHuntStart } from "../../support/hunt-start-input.ts";
+import {
+  unitHuntJoin,
+  unitHuntStart,
+  UNIT_FIGHT_SECONDARIES,
+} from "../../support/hunt-start-input.ts";
+import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
+import type { FriendlyDuelStartInput } from "../../../src/modules/combat/ports/combat-port.ts";
 import { MonotonicFightIdSource } from "../../support/fakes/monotonic-fight-id-source.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingFinishedFightStore } from "../../support/fakes/recording-finished-fight-store.ts";
@@ -169,6 +175,99 @@ describe("CombatService hunt join", () => {
   });
 });
 
+describe("CombatService PvP join", () => {
+  it("joins a live PvP fight and pairs a team-2 waiter", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const delay = new ManualCombatDelay();
+    const combat = new CombatService(
+      new MonotonicFightIdSource(1),
+      new SequenceRandom([0.4]),
+      rules,
+      clock,
+      new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
+      new RecordingHistoryWriteObserver(),
+      delay,
+    );
+    const start = await combat.startPvp(unitPvpStart("1"));
+    expect(start.purpose).toBe("pvp");
+    expect(start.instanceCopyId).toBe(12);
+    expect(start.fightFlags).toBe("128");
+    await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(2, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(2, { kind: "poll" });
+    const waiter = await combat.joinHunt(
+      unitHuntJoin({
+        accountId: 3,
+        heroId: 3,
+        heroNick: "C",
+        fightId: start.fightId,
+        areaId: "636",
+        instanceCopyId: 12,
+        team: 1,
+      }),
+    );
+    expect(waiter.fightId).toBe(start.fightId);
+    expect(waiter.purpose).toBe("pvp");
+    await combat.execute(3, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    const waiterEvents = await combat.execute(3, { kind: "poll" });
+    const waiterBoot = waiterEvents.find((event) => event.type === "friendly-bootstrap");
+    if (!waiterBoot || waiterBoot.type !== "friendly-bootstrap") {
+      throw new Error("Expected PvP waiter bootstrap");
+    }
+    expect(waiterBoot.waiting).toBe(true);
+    expect(waiterEvents.some((event) => event.type === "turn-granted")).toBe(false);
+    await combat.joinHunt(
+      unitHuntJoin({
+        accountId: 4,
+        heroId: 4,
+        heroNick: "D",
+        fightId: start.fightId,
+        areaId: "636",
+        instanceCopyId: 12,
+        team: 2,
+      }),
+    );
+    const pairedWaiter = await combat.execute(3, { kind: "poll" });
+    expect(pairedWaiter.some((event) => event.type === "opponent-new-human")).toBe(true);
+    await combat.execute(4, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    const joinerEvents = await combat.execute(4, { kind: "poll" });
+    const joinerBoot = joinerEvents.find((event) => event.type === "friendly-bootstrap");
+    if (!joinerBoot || joinerBoot.type !== "friendly-bootstrap") {
+      throw new Error("Expected PvP joiner bootstrap");
+    }
+    expect(joinerBoot.waiting).toBe(false);
+    expect(joinerBoot.opponent).toMatchObject({ id: 3, team: 1 });
+  });
+
+  it("denies friendly-duel join and a PvP copy mismatch", async () => {
+    const duelCombat = service();
+    const duel = await duelCombat.startFriendlyDuel(unitPvpStart("1", "friendly-duel"));
+    await expect(
+      duelCombat.joinHunt(
+        unitHuntJoin({ accountId: 3, heroId: 3, fightId: duel.fightId, areaId: "503" }),
+      ),
+    ).rejects.toMatchObject({
+      name: "HuntJoinDenied",
+      message: "нельзя вмешаться в дуэль",
+    });
+    const pvpCombat = service();
+    const pvp = await pvpCombat.startPvp(unitPvpStart("1"));
+    await expect(
+      pvpCombat.joinHunt(
+        unitHuntJoin({
+          accountId: 3,
+          heroId: 3,
+          fightId: pvp.fightId,
+          areaId: "636",
+          instanceCopyId: 8,
+          team: 1,
+        }),
+      ),
+    ).rejects.toMatchObject({ name: "HuntJoinDenied", message: "бой в другой локации" });
+  });
+});
+
 function service(): CombatService {
   const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
   return new CombatService(
@@ -180,4 +279,40 @@ function service(): CombatService {
     new RecordingHistoryWriteObserver(),
     new ManualCombatDelay(),
   );
+}
+
+function unitPvpStart(
+  fightId: string,
+  kind: "pvp" | "friendly-duel" = "pvp",
+): FriendlyDuelStartInput {
+  const pvp = kind === "pvp";
+  return {
+    fightId,
+    arena: pvp ? "5_1" : "1_1",
+    areaId: pvp ? "636" : "503",
+    instanceCopyId: pvp ? 12 : null,
+    fightFlags: pvp ? "128" : null,
+    challenger: pvpFighter(1, 1),
+    acceptor: pvpFighter(2, 2),
+  };
+}
+
+function pvpFighter(accountId: number, heroId: number): FriendlyDuelStartInput["challenger"] {
+  return {
+    accountId,
+    heroId,
+    heroNick: `H${heroId}`,
+    heroLevel: 1,
+    heroKind: 1,
+    heroHp: 27,
+    heroMaxHp: 27,
+    heroMp: 10,
+    heroMaxMp: 10,
+    heroStrength: 10,
+    ...UNIT_FIGHT_SECONDARIES,
+    loadout: EMPTY_COMBAT_LOADOUT,
+    avatar: "avatar_small.jpg",
+    body: "m1",
+    sk: "1",
+  };
 }

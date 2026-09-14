@@ -31,6 +31,8 @@ export type FriendlyDuelBattleInit = Readonly<{
   accessKey: string;
   arena: string;
   areaId: string;
+  instanceCopyId: number | null;
+  fightFlags: string | null;
   startedAt: Date;
   challenger: FriendlyDuelFighterInit;
   acceptor: FriendlyDuelFighterInit;

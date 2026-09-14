@@ -166,6 +166,111 @@ describe("battleground raskop", () => {
     ).toBeGreaterThanOrEqual(1);
   });
 
+  it("lets a same-copy third and fourth hero JOIN/HELP a live Раскоп PvP fight", async () => {
+    const a = await createIsolatedHero(application);
+    const b = await createIsolatedHero(application);
+    const c = await createIsolatedHero(application);
+    const d = await createIsolatedHero(application);
+    const outsider = await createIsolatedHero(application);
+    const initA = await a.objectAction({ object: "common", action: "init", sq: 1 });
+    const initB = await b.objectAction({ object: "common", action: "init", sq: 1 });
+    const initC = await c.objectAction({ object: "common", action: "init", sq: 1 });
+    const initD = await d.objectAction({ object: "common", action: "init", sq: 1 });
+    await outsider.objectAction({ object: "common", action: "init", sq: 1 });
+    const nickB = nickFrom(initB);
+    await grantLevel(application, heroIdFrom(initA), 6, LEVEL6_EXP);
+    await grantLevel(application, heroIdFrom(initB), 7, LEVEL7_EXP);
+    await grantLevel(application, heroIdFrom(initC), 6, LEVEL6_EXP);
+    await grantLevel(application, heroIdFrom(initD), 6, LEVEL6_EXP);
+    await putOnStarterGloveIfInBag(a, 2);
+    await putOnStarterGloveIfInBag(b, 2);
+    await queueAdd(a, 5);
+    await queueAdd(b, 5);
+    await a.pollEsrv();
+    await b.pollEsrv();
+    await queueConfirm(a, 6);
+    await queueConfirm(b, 6);
+    await a.pollEsrv();
+    await b.pollEsrv();
+    await comeIn(a, 636, 7);
+    await comeIn(b, 636, 7);
+    const attack = await a.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK", nick: nickB },
+      sq: 9,
+    });
+    const confA = pvpFightConf(attack);
+    const copyId = Number(confA.instanceId);
+    expect(await a.fight({ rc: "auth", eid: confA.fightId, sq: 10 })).toHaveLength(0);
+    expect(await b.fight({ rc: "auth", eid: confA.fightId, sq: 10 })).toHaveLength(0);
+    await a.pollFight();
+    await b.pollFight();
+
+    const worldDenied = await outsider.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "FIGHT_JOIN", fight: confA.fightId, team: 1 },
+      sq: 2,
+    });
+    expect(worldDenied["common|action"]).toEqual({
+      status: 204,
+      error: "Нельзя вмешаться в бой, находящийся в другой локации!",
+    });
+
+    await placeInRaskopArena(application, heroIdFrom(initC), copyId);
+    await placeInRaskopArena(application, heroIdFrom(initD), copyId);
+    const joined = await c.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "FIGHT_JOIN", fight: confA.fightId, team: 1 },
+      sq: 2,
+    });
+    expect(joined["common|action"]).toEqual({ status: 100 });
+    const joinConf = pvpFightConf(joined);
+    expect(joinConf.fightId).toBe(confA.fightId);
+    expect(joinConf).toMatchObject({
+      is_pvp: 1,
+      type: "1",
+      flags: "128",
+      bg: "5_1",
+      can_leave: 1,
+      instanceId: confA.instanceId,
+    });
+    expect(await c.fight({ rc: "auth", eid: confA.fightId, sq: 3 })).toHaveLength(0);
+    const bootstrapC = await c.pollFight();
+    expect(fightEventTypes(bootstrapC)).toEqual(expect.arrayContaining(["oppwait"]));
+    expect(fightEventTypes(bootstrapC)).not.toContain("attacknow");
+    expect(fightPersTeam(bootstrapC, heroIdFrom(initC))).toBe(1);
+
+    const helped = await d.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "FIGHT_HELP", nick: nickB },
+      sq: 2,
+    });
+    expect(helped["common|action"]).toEqual({ status: 100 });
+    expect(pvpFightConf(helped).fightId).toBe(confA.fightId);
+    expect(await d.fight({ rc: "auth", eid: confA.fightId, sq: 3 })).toHaveLength(0);
+    const bootstrapD = await d.pollFight();
+    expect(fightPersTeam(bootstrapD, heroIdFrom(initD))).toBe(2);
+    expect(fightPersTeam(bootstrapD, heroIdFrom(initC))).toBe(1);
+    expect(framesIncludeHumanOppNew(bootstrapD)).toBe(true);
+
+    application = await harness.restart();
+    const againC = new AuthenticatedClient(application, c.cookie);
+    const stale = await againC.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "FIGHT_JOIN", fight: confA.fightId, team: 1 },
+      sq: 20,
+    });
+    expect(stale["common|action"]).toEqual({
+      status: 204,
+      error: "Нельзя вмешаться в неактивный бой!",
+    });
+  });
+
   it("bans an unconfirmed invite after the 120s TTL", async () => {
     const a = await createIsolatedHero(application);
     const b = await createIsolatedHero(application);
@@ -381,6 +486,53 @@ async function grantLevel(
   if (granted.levelAfter !== level) {
     throw new Error(`Expected level ${level} after ${amount} EXP, got ${granted.levelAfter}`);
   }
+}
+
+async function placeInRaskopArena(
+  application: Application,
+  characterId: number,
+  copyId: number,
+): Promise<void> {
+  await application.characterLocation.setArea({
+    characterId,
+    areaId: "636",
+    moveReadyAt: null,
+    instanceCopyId: copyId,
+  });
+}
+
+function fightPersTeam(events: readonly AmfValue[], heroId: number): number {
+  for (const event of events) {
+    if (!event || typeof event !== "object" || Array.isArray(event)) continue;
+    const ev = event["ev"];
+    if (!ev || typeof ev !== "object" || Array.isArray(ev)) continue;
+    for (const item of Object.values(ev)) {
+      if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+      if (item["et"] !== "persList") continue;
+      const row = item[String(heroId)];
+      if (!row || typeof row !== "object" || Array.isArray(row)) {
+        throw new Error(`persList is missing hero ${heroId}`);
+      }
+      if (row.team !== 1 && row.team !== 2) {
+        throw new Error(`persList team for ${heroId} is missing`);
+      }
+      return row.team;
+    }
+  }
+  throw new Error("persList is missing");
+}
+
+function framesIncludeHumanOppNew(events: readonly AmfValue[]): boolean {
+  for (const event of events) {
+    if (!event || typeof event !== "object" || Array.isArray(event)) continue;
+    const ev = event["ev"];
+    if (!ev || typeof ev !== "object" || Array.isArray(ev)) continue;
+    for (const item of Object.values(ev)) {
+      if (!item || typeof item !== "object" || Array.isArray(item)) continue;
+      if (item["et"] === "oppnew" && item.bot !== true) return true;
+    }
+  }
+  return false;
 }
 
 function queueAdd(client: AuthenticatedClient, sq: number) {

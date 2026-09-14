@@ -1792,9 +1792,27 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
 - **depends_on:** `CMB-15c`, `CMB-11`, `BG-01`
 - **Behavior evidence:** [FIGHT_JOIN.md](../../../jgr-emu/docs/FIGHT_JOIN.md)
   на живой Раскоп. CMB-11 и BG-01 landed; срез не входил в close CMB-13..15c.
-- **Architecture checkpoint / decision:** отложен до coding. Не выделять
-  `FightRules` заранее.
-- **Status:** `next`
+- **Architecture checkpoint / decision:** ADR-0017–0020 достаточны; `ARC-CMB`
+  не нужен. Не выделять `FightRules` (CMB-18). Combat battleground не
+  импортирует: `startPvp` принимает `instanceCopyId` и `fightFlags` с
+  composition (BG-01 runtime). `joinHunt` пускает `kind:"pvp"` при том же
+  `areaId`/`instanceCopyId`; `kind:"friendly-duel"` остаётся deny «нельзя
+  вмешаться в дуэль»; quest — CMB-09. Pairing — существующий
+  `pairHuntQueues` (seekers = waiting humans; стартовая 1v1 PvP-пара не
+  seeker). JOIN `fight|conf` в PvP — `pvpConfiguration` (`is_pvp:1`,
+  `type:"1"`, `can_leave:1`, `instance_id` и flags с боя). Leave в PvP
+  copy разрешён (`can_leave:1`); dungeon hunt copy по-прежнему deny.
+  Active fight RAM (ADR-0020). **Fail-fast.** Copy mismatch dump 204.
+  **Restart.** JOIN после restart — stale 204. **CEF.** Product
+  **частично** до CEF. Контракт: [COMBAT.md](../modules/COMBAT.md),
+  [BATTLEGROUND.md](../modules/BATTLEGROUND.md).
+- **Acceptance:** raw-AMF третий и четвёртый герои в той же копии Раскопа:
+  `FIGHT_JOIN`/`FIGHT_HELP` в живой PvP `fightId`; `fight|conf` как ATTACK
+  (`is_pvp:1`, `type:"1"`, `can_leave:1`, тот же `instance_id`/`flags`);
+  C JOIN `{team:1}` ждёт, D JOIN `{team:2}` сразу vs C; A↔B продолжают;
+  world JOIN — 204 другая локация; friendly JOIN — дуэль; restart —
+  204 stale.
+- **Status:** `done`
 
 ### CMB-17 — Practice fight history
 
@@ -1803,7 +1821,7 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
 - **Behavior evidence:** OA `arena|finished_fights` / type 6 practice
   history. Mapper `finished_fights` уже есть; OA нет.
 - **Architecture checkpoint / decision:** отложен до coding.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### CMB-18 — Outdoor ATTACK challenge
 
