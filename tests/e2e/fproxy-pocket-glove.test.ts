@@ -72,7 +72,7 @@ describe("fproxy pocket glove rage", () => {
     expect(await client.fight({ rc: "castSpell", srcType: 1, srcId: 7, sq: 8 })).toHaveLength(0);
     const aggro = await client.pollFight();
     expect(aggro[0]).toEqual({ rs: true, sq: 8 });
-    expect(fightEventTypes(aggro)).toEqual(["persSpells"]);
+    expect(fightEventTypes(aggro)).toEqual(["persSpells", "persList", "persChangeInfo"]);
     expect(nativeCount(aggro, 7)).toBe(0);
   });
 

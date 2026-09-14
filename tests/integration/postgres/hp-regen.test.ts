@@ -17,11 +17,13 @@ import { PLAYABLE_REGEN_POLICY } from "../../support/hero-fixtures.ts";
 import { playableCharacterModuleInput } from "../../support/playable-character-module-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
+import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import {
   EMPTY_HUNT_BOT_SPELL_BOOK,
   GRYZL_FIGHT_LOOK,
   UNIT_HUNT_APPEARANCE,
+  UNIT_HUNT_BATTLE_STATS,
 } from "../../support/hunt-start-input.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
@@ -57,13 +59,7 @@ describe("HP regeneration persistence", () => {
     });
     combat = CombatModule.create({
       database,
-      rules: {
-        strPerDamagePoint: policy.combat.strPerDamagePoint,
-        damageSpread: policy.combat.damageSpread,
-        turnTimeoutSeconds: policy.combat.turnTimeoutSeconds,
-        meleeBotCounterMs: policy.combat.meleeBotCounterMs,
-        turnGrantDelayMs: policy.combat.turnGrantDelayMs,
-      },
+      rules: UNIT_BATTLE_RULES,
       clock,
       delay: new SystemCombatDelay(),
     });
@@ -176,6 +172,7 @@ describe("HP regeneration persistence", () => {
       heroMp: hero.mp,
       heroMaxMp: hero.maxMp,
       heroStrength: 80,
+      ...UNIT_HUNT_BATTLE_STATS,
       botId: 2,
       botNick: "Gryzl",
       botLevel: 1,
@@ -216,6 +213,7 @@ describe("HP regeneration persistence", () => {
       heroMp: hero.mp,
       heroMaxMp: hero.maxMp,
       heroStrength: 80,
+      ...UNIT_HUNT_BATTLE_STATS,
       botId: 2,
       botNick: "Gryzl",
       botLevel: 1,

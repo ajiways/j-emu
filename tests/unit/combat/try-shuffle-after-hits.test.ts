@@ -8,16 +8,64 @@ describe("planHuntShuffle", () => {
   it("hands the bot to a waiter at 3↔3 and resets when nobody waits", () => {
     expect(PAIR_HITS_TO_SWITCH).toBe(3);
     expect(
-      planHuntShuffle({ humanHits: 3, botHits: 3, hasLivingWaiter: true, finished: false }),
+      planHuntShuffle({
+        humanHits: 3,
+        botHits: 3,
+        hasLivingWaiter: true,
+        hasSwappableOther: false,
+        hasPartnerDuel: false,
+        finished: false,
+      }),
     ).toBe("waiter-handoff");
     expect(
-      planHuntShuffle({ humanHits: 3, botHits: 3, hasLivingWaiter: false, finished: false }),
+      planHuntShuffle({
+        humanHits: 3,
+        botHits: 3,
+        hasLivingWaiter: false,
+        hasSwappableOther: false,
+        hasPartnerDuel: false,
+        finished: false,
+      }),
     ).toBe("reset");
     expect(
-      planHuntShuffle({ humanHits: 2, botHits: 3, hasLivingWaiter: true, finished: false }),
+      planHuntShuffle({
+        humanHits: 3,
+        botHits: 3,
+        hasLivingWaiter: false,
+        hasSwappableOther: true,
+        hasPartnerDuel: true,
+        finished: false,
+      }),
+    ).toBe("cross-swap");
+    expect(
+      planHuntShuffle({
+        humanHits: 3,
+        botHits: 3,
+        hasLivingWaiter: false,
+        hasSwappableOther: false,
+        hasPartnerDuel: true,
+        finished: false,
+      }),
     ).toBe("none");
     expect(
-      planHuntShuffle({ humanHits: 3, botHits: 3, hasLivingWaiter: true, finished: true }),
+      planHuntShuffle({
+        humanHits: 2,
+        botHits: 3,
+        hasLivingWaiter: true,
+        hasSwappableOther: false,
+        hasPartnerDuel: false,
+        finished: false,
+      }),
+    ).toBe("none");
+    expect(
+      planHuntShuffle({
+        humanHits: 3,
+        botHits: 3,
+        hasLivingWaiter: true,
+        hasSwappableOther: false,
+        hasPartnerDuel: false,
+        finished: true,
+      }),
     ).toBe("none");
   });
 });

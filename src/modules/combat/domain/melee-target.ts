@@ -1,11 +1,13 @@
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
+import type { MagStats } from "./mag-stats.ts";
 
 export type BotMeleePresence = Readonly<{
   fightId: number;
   hp: number;
   maxHp: number;
   team: 1 | 2;
+  mag: MagStats;
 }>;
 
 export type MeleeTarget =
@@ -16,6 +18,7 @@ export type MeleeTarget =
       team: 1 | 2;
       hp: number;
       maxHp: number;
+      mag: MagStats;
     }>;
 
 export function resolveMeleeTarget(
@@ -37,6 +40,7 @@ export function resolveMeleeTarget(
       team: bot.team,
       hp: bot.hp,
       maxHp: bot.maxHp,
+      mag: bot.mag,
     };
   }
   throw new Error(`Duel opponent ${otherId} is neither a human nor a fight bot`);

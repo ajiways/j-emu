@@ -11,6 +11,7 @@ import type { BootstrapReadModel } from "./bootstrap-read-model.ts";
 import type { EsrvOutbox } from "./esrv-outbox.ts";
 import type { FightWireMapper } from "./fight-wire-mapper.ts";
 import type { FriendlyDuelInvites } from "./friendly-duel-invites.ts";
+import { huntHeroStatFields } from "../../combat/domain/combatant-fight-stats.ts";
 import { HuntCombatLoadout } from "./hunt-combat-loadout.ts";
 
 export type FriendlyDuelAcceptBlocks = Readonly<{
@@ -112,7 +113,7 @@ export class AcceptFriendlyDuel {
       heroMaxHp: locked.maxHp,
       heroMp: locked.mp,
       heroMaxMp: locked.maxMp,
-      heroStrength: await this.characters.combatStrength(locked.id),
+      ...huntHeroStatFields(await this.characters.combatFightStats(locked.id)),
       loadout,
       avatar: appearance.avatarSmall,
       body: locked.body,

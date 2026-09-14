@@ -13,6 +13,7 @@ export type ArtifactSpellEffect = Readonly<{
   hidden?: number;
   targetCount?: number;
   duration?: number;
+  period?: number;
   forceSelfTargeting?: boolean;
   realStartTime?: boolean;
   skills?: readonly ArtifactSpellSkill[];

@@ -17,7 +17,10 @@
     "skills": [
       { "id": "HPREG", "value": 700 },
       { "id": "ORATORY", "value": 1 },
-      { "id": "MONEYMOD", "value": 0 }
+      { "id": "MONEYMOD", "value": 0 },
+      { "id": "LUCK", "value": 0 },
+      { "id": "BLOK", "value": 0 },
+      { "id": "AGRILKA_MOBOV", "value": 0 }
     ]
   },
   "regen": {
@@ -109,6 +112,15 @@
     "meleeBotCounterMs": 1400,
     "turnGrantDelayMs": 2500,
     "damageProvenance": "legacy behavior",
+    "combatSoftC": 600,
+    "combatChanceCap": 0.4,
+    "critMult": 2.35,
+    "blockSoftC": 450,
+    "blockChanceCap": 0.33,
+    "ragChokesDef": 0.35,
+    "dexChokesRag": 0.4,
+    "defChokesDex": 0.3,
+    "magresSoftC": 200,
     "meleeSourceIds": {
       "left": 1,
       "center": 2,

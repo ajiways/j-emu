@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { FightDuel } from "../../../src/modules/combat/domain/fight-duel.ts";
 import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
-import { UNIT_HUNT_APPEARANCE } from "../../support/hunt-start-input.ts";
+import { UNIT_HUNT_APPEARANCE, unitHuntHumanStats } from "../../support/hunt-start-input.ts";
 import {
   enemySideCleared,
   resolveMeleeTarget,
@@ -21,7 +21,7 @@ function human(heroId: number, team: 1 | 2, waiting = false): HuntHuman {
     maxMp: 10,
     team,
     waiting,
-    strength: 10,
+    ...unitHuntHumanStats(10),
     startedAtMs: 0,
     loadout: EMPTY_COMBAT_LOADOUT,
     appearance: UNIT_HUNT_APPEARANCE,
@@ -36,9 +36,16 @@ describe("resolveMeleeTarget", () => {
       attackerHeroId: 1,
       duel: new FightDuel(1, 1_000_000, 1),
       humans: [opener, waiter],
-      bots: [{ fightId: 1_000_000, hp: 20, maxHp: 20, team: 2 }],
+      bots: [{ fightId: 1_000_000, hp: 20, maxHp: 20, team: 2, mag: { power: 0, resist: 0 } }],
     });
-    expect(target).toEqual({ kind: "bot", id: 1_000_000, team: 2, hp: 20, maxHp: 20 });
+    expect(target).toEqual({
+      kind: "bot",
+      id: 1_000_000,
+      team: 2,
+      hp: 20,
+      maxHp: 20,
+      mag: { power: 0, resist: 0 },
+    });
   });
 
   it("resolves the paired human when there is no bot", () => {
@@ -59,7 +66,7 @@ describe("resolveMeleeTarget", () => {
         attackerHeroId: 1,
         duel: new FightDuel(1, 99, 1),
         humans: [human(1, 1)],
-        bots: [{ fightId: 1_000_000, hp: 20, maxHp: 20, team: 2 }],
+        bots: [{ fightId: 1_000_000, hp: 20, maxHp: 20, team: 2, mag: { power: 0, resist: 0 } }],
       }),
     ).toThrow(/neither a human nor a fight bot/);
   });
@@ -79,6 +86,7 @@ describe("enemySideCleared", () => {
             hp: 10,
             maxHp: 10,
             team: 2,
+            mag: { power: 0, resist: 0 },
           },
         ],
       ),
@@ -96,6 +104,7 @@ describe("enemySideCleared", () => {
             hp: 0,
             maxHp: 20,
             team: 2,
+            mag: { power: 0, resist: 0 },
           },
         ],
       ),

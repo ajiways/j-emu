@@ -11,6 +11,14 @@ export type FriendlyDuelFighterInit = Readonly<{
   mp: number;
   maxMp: number;
   strength: number;
+  initiative: number;
+  rage: number;
+  dexterity: number;
+  defense: number;
+  block: number;
+  aggroCharges: number;
+  magPower: number;
+  magResist: number;
   loadout: CombatLoadout;
   avatar: string;
   body: string;

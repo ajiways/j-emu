@@ -7,6 +7,8 @@ import {
   EMPTY_HUNT_BOT_SPELL_BOOK,
   GRYZL_FIGHT_LOOK,
   UNIT_HUNT_APPEARANCE,
+  UNIT_HUNT_BATTLE_STATS,
+  unitHuntHumanStats,
 } from "../../support/hunt-start-input.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
@@ -23,6 +25,7 @@ function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
     heroMaxMp: 10,
     heroStrength: 80,
     botStrength: 20,
+    ...UNIT_HUNT_BATTLE_STATS,
     botArtikulId: 2,
     botFightId: 1_000_000,
     botNick: "Грызль",
@@ -195,7 +198,7 @@ describe("Battle", () => {
       maxHp: 27,
       mp: 10,
       maxMp: 10,
-      strength: 80,
+      ...unitHuntHumanStats(80),
       team: 1,
       appearance: UNIT_HUNT_APPEARANCE,
       loadout: EMPTY_COMBAT_LOADOUT,
@@ -230,7 +233,7 @@ describe("Battle", () => {
       maxHp: 27,
       mp: 10,
       maxMp: 10,
-      strength: 80,
+      ...unitHuntHumanStats(80),
       team: 2,
       appearance: UNIT_HUNT_APPEARANCE,
       loadout: EMPTY_COMBAT_LOADOUT,
@@ -252,7 +255,7 @@ describe("Battle", () => {
   });
 
   it("pairs a team-2 joiner with a team-1 waiter while the opener stays on the bot", () => {
-    const battle = createBattle(new SequenceRandom([8]));
+    const battle = createBattle(new SequenceRandom([0.4, 8]));
     battle.authenticate(1, AUTH_NOW);
     battle.addHuman({
       accountId: 2,
@@ -264,7 +267,7 @@ describe("Battle", () => {
       maxHp: 27,
       mp: 10,
       maxMp: 10,
-      strength: 80,
+      ...unitHuntHumanStats(80),
       team: 1,
       appearance: UNIT_HUNT_APPEARANCE,
       loadout: EMPTY_COMBAT_LOADOUT,
@@ -281,7 +284,7 @@ describe("Battle", () => {
       maxHp: 27,
       mp: 10,
       maxMp: 10,
-      strength: 80,
+      ...unitHuntHumanStats(80),
       team: 2,
       appearance: UNIT_HUNT_APPEARANCE,
       loadout: EMPTY_COMBAT_LOADOUT,

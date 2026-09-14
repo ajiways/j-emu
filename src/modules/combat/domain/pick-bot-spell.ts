@@ -7,6 +7,7 @@ export function pickBotSpell(
     botHp: number;
     botMaxHp: number;
     casts: Map<number, number>;
+    foeGroups?: readonly number[];
   }>,
   random: RandomSource,
 ): HuntBotSpellCard | null {
@@ -42,12 +43,19 @@ function castCount(casts: Map<number, number>, artikulId: number): number {
 
 function canCast(
   card: HuntBotSpellCard,
-  input: Readonly<{ botHp: number; botMaxHp: number; casts: Map<number, number> }>,
+  input: Readonly<{
+    botHp: number;
+    botMaxHp: number;
+    casts: Map<number, number>;
+    foeGroups?: readonly number[];
+  }>,
 ): boolean {
   if (card.slot === "never") return false;
-  if (card.gate === "foe_has_dispel_groups") return false;
-  if (!card.spell.effects.some((effect) => effect.kind === 1 || effect.kind === 2)) {
-    return false;
+  if (!supportedBotSpell(card)) return false;
+  if (card.spell.effects.some((effect) => effect.kind === 10)) return false;
+  if (card.gate === "foe_has_dispel_groups") {
+    const groups = input.foeGroups ?? [];
+    if (groups.length < 1) return false;
   }
   if (card.gate === "once" && castCount(input.casts, card.artikulId) >= (card.maxCasts ?? 1)) {
     return false;
@@ -60,6 +68,12 @@ function canCast(
     if ((input.botHp * 100) / input.botMaxHp > card.hpPct) return false;
   }
   return true;
+}
+
+const SUPPORTED_BOT_KINDS = new Set([1, 2, 3, 4, 5, 8, 11, 18]);
+
+function supportedBotSpell(card: HuntBotSpellCard): boolean {
+  return card.spell.effects.some((effect) => SUPPORTED_BOT_KINDS.has(effect.kind));
 }
 
 function rollWeighted(

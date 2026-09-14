@@ -198,9 +198,11 @@ hunt overlay и map join: первый ATTACK_BOT **50310** ставит `fight_
 точке и в `131:`; второй клиент входит в тот же бой (`fight|conf` с тем же
 `fightId`/`akey`, свой `userId`). Raw-AMF и CEF двумя клиентами.
 
-Не перенесена вторая одновременная hunt-дуэль полного jgr N×N
-(bot seekers, cross-swap двух 3↔3). CMB-12: на 50310 opener↔bot и
-team-1↔team-2 идут параллельно. Wander: 50310 паркуется на
+CMB-13: на 50310 «Разозлить» клонирует бота, две human↔bot дуэли, 3↔3
+cross-swap без сброса HP. CMB-12: opener↔bot и team-1↔team-2
+параллельно. CMB-14: melee dodge/block/crit/DEF (`react` 1/2/6/10/14).
+CMB-15: MAGSTR/MAGRES snapshot, kind-1 overlay, ticks/stun/dispel;
+kind 10 summon 632 сжигается без clone. Wander: 50310 паркуется на
 home (в dump нет route/zone); 50309 идёт по dump-proven route, 50101–03 —
 по zone.
 
@@ -239,9 +241,12 @@ vs team-1 без hunt EXP; restart → 204 stale. CMB-12: три героя на
 JOIN `{team:2}` сразу human↔human, opener продолжает vs Грызля. CEF join/intervene не
 прогонялся.
 
-Не перенесены: BG/pvp `FIGHT_JOIN`; `ATTACK` challenge. Hunt N×N две дуэли
-на 50310 landed (CMB-12); полный jgr N×N (bot seekers, 3↔3 cross-swap) —
-leftover.
+Не перенесены: BG/pvp `FIGHT_JOIN` на живой Раскоп (CMB-16 `next`);
+OA `arena|finished_fights` (CMB-17); outdoor `ATTACK` challenge
+(CMB-18, только после явного решения — в jgr runtime этого нет);
+kind 10 summon clone в roster. Hunt N×N две дуэли на 50310 landed
+(CMB-12). Aggro clone + 3↔3 cross-swap landed (CMB-13). Melee
+outcomes (CMB-14) и magic 15a–c landed. CEF боя не прогонялся.
 
 ## Quests и NPC — частично
 

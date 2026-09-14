@@ -63,6 +63,18 @@ export function requireHuntBattleInit(init: HuntBattleInit, rules: BattleRules):
   if (!Number.isInteger(init.botStrength) || init.botStrength < 1) {
     throw new Error("Battle bot strength must be positive");
   }
+  if (!Number.isInteger(init.heroMagPower) || init.heroMagPower < 0) {
+    throw new Error("Battle hero mag power must be a non-negative integer");
+  }
+  if (!Number.isInteger(init.heroMagResist) || init.heroMagResist < 0) {
+    throw new Error("Battle hero mag resist must be a non-negative integer");
+  }
+  if (!Number.isInteger(init.botMagPower) || init.botMagPower < 0) {
+    throw new Error("Battle bot mag power must be a non-negative integer");
+  }
+  if (!Number.isInteger(init.botMagResist) || init.botMagResist < 0) {
+    throw new Error("Battle bot mag resist must be a non-negative integer");
+  }
   if (rules.turnTimeoutSeconds < 1) throw new Error("Turn timeout must be positive");
   if (!Number.isInteger(rules.meleeBotCounterMs) || rules.meleeBotCounterMs < 1) {
     throw new Error("Melee bot-counter delay must be positive");

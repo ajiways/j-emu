@@ -25,6 +25,8 @@ import { heroFightAppearance } from "../../application/hero-fight-appearance.ts"
 import { huntBotSpellBookFromCatalog } from "../../application/hunt-bot-spell-book-from-catalog.ts";
 import { huntFightTitle } from "../../../chat/domain/fight-macro.ts";
 import { HuntMapAttack } from "../../application/hunt-map-attack.ts";
+import { huntHeroStatFields } from "../../../combat/domain/combatant-fight-stats.ts";
+import { unpublishedBotFightStats } from "../../../combat/domain/combatant-fight-stats.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
@@ -107,7 +109,7 @@ export class AttackBotCommand implements OaCommand {
         ? this.world.occupiedFightId(area.id, spawn.id)
         : this.dungeonHunt.occupiedFightId(hero.instanceCopyId, area.id, spawn.id);
     const joining = occupied !== null && (await this.combat.hasFight(occupied));
-    const heroStrength = await this.characters.combatStrength(hero.id);
+    const heroStats = await this.characters.combatFightStats(hero.id);
     const fightInput = {
       accountId: context.accountId,
       heroId: hero.id,
@@ -118,13 +120,16 @@ export class AttackBotCommand implements OaCommand {
       heroMaxHp: hero.maxHp,
       heroMp: hero.mp,
       heroMaxMp: hero.maxMp,
-      heroStrength,
+      ...huntHeroStatFields(heroStats),
       spawnId: spawn.id,
       botId: bot.id,
       botNick: bot.title,
       botLevel: bot.level,
       botHp: bot.maxHp,
       botStrength: bot.strength,
+      botInitiative: unpublishedBotFightStats(bot.strength).initiative,
+      botMagPower: unpublishedBotFightStats(bot.strength).mag.power,
+      botMagResist: unpublishedBotFightStats(bot.strength).mag.resist,
       botAvatar: bot.hunt.avatar,
       botSk: bot.hunt.sk,
       botBody: bot.hunt.body,

@@ -34,6 +34,9 @@ export const PLAYABLE_HERO_CREATION: HeroCreationPolicy = {
     { id: "HPREG", value: 700 },
     { id: "ORATORY", value: 1 },
     { id: "MONEYMOD", value: 0 },
+    { id: "LUCK", value: 0 },
+    { id: "BLOK", value: 0 },
+    { id: "AGRILKA_MOBOV", value: 0 },
   ],
 };
 

@@ -2,6 +2,8 @@ import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { HuntBotSnap } from "./battle-event.ts";
 import type { HuntBotSpellBook } from "./hunt-bot-spell-book.ts";
 import { requireHuntBotSpellBook } from "./hunt-bot-spell-book.ts";
+import type { MagStats } from "./mag-stats.ts";
+import type { SchoolOverlay } from "./school-overlay.ts";
 import type { BotMeleePresence } from "./melee-target.ts";
 
 export type HuntRosterBotSeed = Readonly<{
@@ -11,6 +13,9 @@ export type HuntRosterBotSeed = Readonly<{
   level: number;
   hp: number;
   strength: number;
+  initiative: number;
+  magPower: number;
+  magResist: number;
   avatar: string;
   sk: string;
   body: string;
@@ -19,7 +24,10 @@ export type HuntRosterBotSeed = Readonly<{
 
 export class HuntRosterBot {
   private hpValue: number;
+  private lastOpponentIdValue: number | null = null;
   readonly casts = new Map<number, number>();
+  schoolOverlay: SchoolOverlay | null = null;
+  stunnedTurns = 0;
 
   constructor(
     readonly fightId: number,
@@ -31,6 +39,9 @@ export class HuntRosterBot {
     readonly body: string,
     readonly team: 1 | 2,
     readonly strength: number,
+    readonly initiative: number,
+    readonly magPower: number,
+    readonly magResist: number,
     readonly maxHp: number,
     readonly spellBook: HuntBotSpellBook,
     hp: number,
@@ -45,6 +56,15 @@ export class HuntRosterBot {
     if (typeof body !== "string") throw new Error("Roster bot body is required");
     if (!Number.isInteger(strength) || strength < 1) {
       throw new Error("Roster bot strength must be positive");
+    }
+    if (!Number.isInteger(initiative) || initiative < 0) {
+      throw new Error("Roster bot initiative must be a non-negative integer");
+    }
+    if (!Number.isInteger(magPower) || magPower < 0) {
+      throw new Error("Roster bot mag power must be a non-negative integer");
+    }
+    if (!Number.isInteger(magResist) || magResist < 0) {
+      throw new Error("Roster bot mag resist must be a non-negative integer");
     }
     if (!Number.isInteger(maxHp) || maxHp < 1) throw new Error("Roster bot maxHp is invalid");
     if (!Number.isInteger(hp) || hp < 0 || hp > maxHp) {
@@ -65,6 +85,9 @@ export class HuntRosterBot {
       seed.body,
       team,
       seed.strength,
+      seed.initiative,
+      seed.magPower,
+      seed.magResist,
       seed.hp,
       seed.spellBook,
       seed.hp,
@@ -73,6 +96,41 @@ export class HuntRosterBot {
 
   get hp(): number {
     return this.hpValue;
+  }
+
+  get lastOpponentId(): number | null {
+    return this.lastOpponentIdValue;
+  }
+
+  get mag(): MagStats {
+    return { power: this.magPower, resist: this.magResist };
+  }
+
+  markFought(opponentId: number): void {
+    if (!Number.isInteger(opponentId) || opponentId < 1) {
+      throw new Error("Last opponent id must be a positive integer");
+    }
+    this.lastOpponentIdValue = opponentId;
+  }
+
+  cloneWithFightId(fightId: number): HuntRosterBot {
+    return new HuntRosterBot(
+      fightId,
+      this.artikulId,
+      this.nick,
+      this.level,
+      this.avatar,
+      this.sk,
+      this.body,
+      this.team,
+      this.strength,
+      this.initiative,
+      this.magPower,
+      this.magResist,
+      this.maxHp,
+      this.spellBook,
+      this.maxHp,
+    );
   }
 
   applyDamage(damage: number): boolean {
@@ -96,6 +154,7 @@ export class HuntRosterBot {
       hp: this.hpValue,
       maxHp: this.maxHp,
       team: this.team,
+      mag: this.mag,
     };
   }
 

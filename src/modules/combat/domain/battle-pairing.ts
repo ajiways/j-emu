@@ -3,9 +3,14 @@ import { huntBotSnap } from "./hunt-bot-snap.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import { huntFightOpenerTeam } from "./hunt-fight-teams.ts";
 import type { HuntHuman } from "./hunt-human.ts";
+import type { HuntRoster } from "./hunt-roster.ts";
 import type { FightDuel } from "./fight-duel.ts";
+import {
+  PAIR_HITS_TO_SWITCH,
+  planHuntShuffle,
+  type ShuffleOutcome,
+} from "./try-shuffle-after-hits.ts";
 import { retargetDuelTo } from "./retarget-duel.ts";
-import { planHuntShuffle, type ShuffleOutcome } from "./try-shuffle-after-hits.ts";
 
 export type HuntPairing = {
   duel: FightDuel;
@@ -34,22 +39,50 @@ export function shuffleHuntAfterHits(
   input: Readonly<{
     pairing: HuntPairing;
     hunt: HuntBattleInit;
-    botHp: number;
+    roster: HuntRoster;
+    duels: readonly FightDuel[];
     finished: boolean;
   }>,
 ): ShuffleOutcome {
   const actor = requirePaired(input.pairing);
+  const foeBot = input.roster.findBot(input.pairing.duel.otherId(actor.heroId));
+  if (!foeBot) return { kind: "none" };
   const openerTeam = huntFightOpenerTeam(input.hunt.purpose);
+  const partner = otherHumanBotDuel(
+    input.duels,
+    input.pairing.duel,
+    input.pairing.humans,
+    input.roster,
+  );
+  const swappable =
+    partner && partner.hitsA >= PAIR_HITS_TO_SWITCH && partner.hitsB >= PAIR_HITS_TO_SWITCH
+      ? partner
+      : null;
   const plan = planHuntShuffle({
     humanHits: input.pairing.duel.hitsFor(actor.heroId),
-    botHits: input.pairing.duel.hitsFor(input.hunt.botFightId),
+    botHits: input.pairing.duel.hitsFor(foeBot.fightId),
     hasLivingWaiter: livingWaiterOnTeam(input.pairing.humans, openerTeam) !== undefined,
-    finished: input.finished || input.botHp === 0,
+    hasSwappableOther: swappable !== null,
+    hasPartnerDuel: partner !== null,
+    finished: input.finished || foeBot.hp === 0,
   });
   if (plan === "none") return { kind: "none" };
+  actor.markFought(foeBot.fightId);
+  foeBot.markFought(actor.heroId);
   if (plan === "reset") {
     input.pairing.duel.resetHits();
     return { kind: "reset" };
+  }
+  if (plan === "cross-swap") {
+    if (!swappable) throw new Error("Shuffle cross-swap requires another 3↔3 duel");
+    return applyCrossSwap(
+      input.pairing,
+      swappable,
+      input.pairing.humans,
+      input.roster,
+      actor,
+      foeBot,
+    );
   }
   const waiter = livingWaiterOnTeam(input.pairing.humans, openerTeam);
   if (!waiter) throw new Error("Shuffle waiter-handoff requires a living waiter");
@@ -66,9 +99,7 @@ export function shuffleHuntAfterHits(
     actorAccountId: actor.accountId,
     waiterAccountId: waiter.accountId,
     waiterAuthed: waiter.authed,
-    events: waiter.authed
-      ? [{ type: "opponent-new", bot: huntBotSnap(input.hunt, input.botHp) }]
-      : [],
+    events: waiter.authed ? [{ type: "opponent-new", bot: foeBot.snap() }] : [],
   };
 }
 
@@ -107,6 +138,67 @@ export function pairNextHuntWaiter(
     authed: true,
     events: [huntHumanOppNew(opponent)],
   };
+}
+
+function applyCrossSwap(
+  leftPairing: HuntPairing,
+  other: FightDuel,
+  humans: readonly HuntHuman[],
+  roster: HuntRoster,
+  actor: HuntHuman,
+  actorBot: ReturnType<HuntRoster["bot"]>,
+): ShuffleOutcome {
+  const otherHuman = humans.find(
+    (human) => other.has(human.heroId) && !human.waiting && human.hp > 0 && !human.leftLive,
+  );
+  if (!otherHuman) throw new Error("Shuffle cross-swap requires a living other human");
+  const otherBot = roster.findBot(other.otherId(otherHuman.heroId));
+  if (!otherBot || otherBot.hp === 0) {
+    throw new Error("Shuffle cross-swap requires a living other bot");
+  }
+  const leftHp = actor.hp;
+  const rightHp = otherHuman.hp;
+  const leftBotHp = actorBot.hp;
+  const rightBotHp = otherBot.hp;
+  otherHuman.markFought(otherBot.fightId);
+  otherBot.markFought(otherHuman.heroId);
+  leftPairing.duel.replace(actorBot.fightId, otherBot.fightId);
+  other.replace(otherBot.fightId, actorBot.fightId);
+  leftPairing.duel.resetHits();
+  other.resetHits();
+  if (
+    actor.hp !== leftHp ||
+    otherHuman.hp !== rightHp ||
+    actorBot.hp !== leftBotHp ||
+    otherBot.hp !== rightBotHp
+  ) {
+    throw new Error("Shuffle must not change participant HP");
+  }
+  return {
+    kind: "cross-swap",
+    leftAccountId: actor.accountId,
+    rightAccountId: otherHuman.accountId,
+    leftBot: otherBot.snap(),
+    rightBot: actorBot.snap(),
+  };
+}
+
+function otherHumanBotDuel(
+  duels: readonly FightDuel[],
+  actorDuel: FightDuel,
+  humans: readonly HuntHuman[],
+  roster: HuntRoster,
+): FightDuel | null {
+  for (const duel of duels) {
+    if (duel === actorDuel) continue;
+    const human = humans.find(
+      (entry) => duel.has(entry.heroId) && !entry.waiting && entry.hp > 0 && !entry.leftLive,
+    );
+    if (!human) continue;
+    const bot = roster.findBot(duel.otherId(human.heroId));
+    if (bot && bot.hp > 0) return duel;
+  }
+  return null;
 }
 
 function requirePaired(pairing: HuntPairing): HuntHuman {

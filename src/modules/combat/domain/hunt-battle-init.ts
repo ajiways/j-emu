@@ -30,7 +30,18 @@ export type HuntBattleInit = Readonly<{
   loadout: CombatLoadout;
   appearance: HuntHumanAppearance;
   heroStrength: number;
+  heroInitiative: number;
+  heroRage: number;
+  heroDexterity: number;
+  heroDefense: number;
+  heroBlock: number;
+  heroAggroCharges: number;
+  heroMagPower: number;
+  heroMagResist: number;
   botStrength: number;
+  botInitiative: number;
+  botMagPower: number;
+  botMagResist: number;
   botSpellBook: HuntBotSpellBook;
   purpose: "hunt" | "quest";
   extraEnemies: readonly HuntRosterBotSeed[];

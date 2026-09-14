@@ -68,6 +68,12 @@ function requireFighter(fighter: FriendlyDuelFighterInit, label: string): void {
   if (!Number.isInteger(fighter.strength) || fighter.strength < 1) {
     throw new Error(`${label} strength must be positive`);
   }
+  if (!Number.isInteger(fighter.magPower) || fighter.magPower < 0) {
+    throw new Error(`${label} mag power must be a non-negative integer`);
+  }
+  if (!Number.isInteger(fighter.magResist) || fighter.magResist < 0) {
+    throw new Error(`${label} mag resist must be a non-negative integer`);
+  }
   if (!fighter.avatar) throw new Error(`${label} avatar is required`);
   if (typeof fighter.body !== "string") throw new Error(`${label} body is required`);
   if (!fighter.sk) throw new Error(`${label} sk is required`);

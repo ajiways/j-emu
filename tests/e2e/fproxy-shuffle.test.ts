@@ -12,7 +12,9 @@ describe("fproxy hunt 3↔3 shuffle", () => {
 
   beforeEach(async () => {
     harness = new ApplicationHarness(undefined, undefined, {
-      combatRandom: new SequenceRandom([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
+      combatRandom: new SequenceRandom([
+        1, 0.99, 1, 0.99, 1, 0.99, 1, 0.99, 1, 0.99, 1, 0.99, 1, 0.99, 1, 0.99,
+      ]),
     });
     application = await harness.start();
   });

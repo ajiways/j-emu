@@ -38,3 +38,12 @@ export function requiredSkillTotal(skills: readonly HeroSkill[], id: string): nu
   if (skill.value < 1) throw new Error(`Hero skill ${id} total must be positive`);
   return skill.value;
 }
+
+export function skillTotalNonNegative(skills: readonly HeroSkill[], id: string): number {
+  const skill = skills.find((entry) => entry.id === id);
+  if (!skill) throw new Error(`Hero skill ${id} is missing`);
+  if (!Number.isInteger(skill.value) || skill.value < 0) {
+    throw new Error(`Hero skill ${id} total must be a non-negative integer`);
+  }
+  return skill.value;
+}

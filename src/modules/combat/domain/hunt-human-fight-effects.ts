@@ -4,6 +4,20 @@ import type { CombatGearSpell } from "./combat-loadout.ts";
 
 const TURN_SECONDS = 40;
 
+export type FightTickPulse = Readonly<{
+  effectId: number;
+  kind: number;
+  sourceId: number;
+  dmgType: number;
+  amount?: number | string;
+  catalogPcStr: number;
+  catalogStr: number;
+  casterStrength: number;
+  casterMagPower: number;
+  casterMagResist: number;
+  last: boolean;
+}>;
+
 export type FightEffectSnap = Readonly<{
   id: number;
   kind: number;
@@ -29,6 +43,13 @@ type StandingEffect = {
   skills: Readonly<Record<string, number>>;
   remainTurns: number;
   expiresAtMs: number;
+  ticksLeft?: number;
+  tickAmount?: number | string;
+  catalogPcStr?: number;
+  catalogStr?: number;
+  casterStrength?: number;
+  casterMagPower?: number;
+  casterMagResist?: number;
 };
 
 export class HuntHumanFightEffects {
@@ -85,6 +106,10 @@ export class HuntHumanFightEffects {
     const purged: number[] = [];
     const keep: StandingEffect[] = [];
     for (const fx of this.standing) {
+      if (fx.kind === 4 || fx.kind === 5) {
+        keep.push(fx);
+        continue;
+      }
       if (nowMs >= fx.expiresAtMs) {
         purged.push(fx.id);
         continue;
@@ -99,6 +124,119 @@ export class HuntHumanFightEffects {
     this.standing.length = 0;
     this.standing.push(...keep);
     return purged;
+  }
+
+  standingGroups(): readonly number[] {
+    const groups: number[] = [];
+    for (const fx of this.standing) {
+      if (fx.groupId !== undefined) groups.push(fx.groupId);
+    }
+    return groups;
+  }
+
+  dispelGroups(groups: readonly number[]): readonly number[] {
+    if (groups.length < 1) return [];
+    const wanted = new Set(groups);
+    const purged: number[] = [];
+    const keep: StandingEffect[] = [];
+    for (const fx of this.standing) {
+      if (fx.groupId !== undefined && wanted.has(fx.groupId)) {
+        purged.push(fx.id);
+        continue;
+      }
+      keep.push(fx);
+    }
+    this.standing.length = 0;
+    this.standing.push(...keep);
+    return purged;
+  }
+
+  takeTickPulses(): readonly FightTickPulse[] {
+    const pulses: FightTickPulse[] = [];
+    const keep: StandingEffect[] = [];
+    for (const fx of this.standing) {
+      if (fx.kind !== 4 && fx.kind !== 5) {
+        keep.push(fx);
+        continue;
+      }
+      if (fx.ticksLeft === undefined) {
+        throw new Error(`Tick effect ${fx.id} ticksLeft is required`);
+      }
+      if (
+        fx.casterStrength === undefined ||
+        fx.casterMagPower === undefined ||
+        fx.casterMagResist === undefined ||
+        fx.catalogPcStr === undefined ||
+        fx.catalogStr === undefined
+      ) {
+        throw new Error(`Tick effect ${fx.id} caster snapshot is required`);
+      }
+      const left = fx.ticksLeft;
+      if (left < 1) continue;
+      const next = left - 1;
+      pulses.push({
+        effectId: fx.id,
+        kind: fx.kind,
+        sourceId: fx.sourceId,
+        dmgType: fx.dmgType,
+        ...(fx.tickAmount !== undefined ? { amount: fx.tickAmount } : {}),
+        catalogPcStr: fx.catalogPcStr,
+        catalogStr: fx.catalogStr,
+        casterStrength: fx.casterStrength,
+        casterMagPower: fx.casterMagPower,
+        casterMagResist: fx.casterMagResist,
+        last: next < 1,
+      });
+      fx.ticksLeft = next;
+      fx.remainTurns = next;
+      if (next > 0) keep.push(fx);
+    }
+    this.standing.length = 0;
+    this.standing.push(...keep);
+    return pulses;
+  }
+
+  attachTick(
+    input: Readonly<{
+      kind: 4 | 5;
+      sourceId: number;
+      artikulId: number;
+      title: string;
+      img: string;
+      dmgType: number;
+      groupId?: number;
+      duration: number;
+      period: number;
+      amount?: number | string;
+      catalogPcStr: number;
+      catalogStr: number;
+      casterStrength: number;
+      casterMagPower: number;
+      casterMagResist: number;
+    }>,
+  ): void {
+    const ticks = Math.max(1, Math.round(input.duration / input.period));
+    this.standing.push({
+      id: this.nextId,
+      kind: input.kind,
+      sourceId: input.sourceId,
+      artikulId: input.artikulId,
+      title: input.title,
+      img: input.img,
+      dmgType: input.dmgType,
+      ...(input.groupId !== undefined ? { groupId: input.groupId } : {}),
+      skills: {},
+      remainTurns: ticks,
+      expiresAtMs: Number.MAX_SAFE_INTEGER,
+      ticksLeft: ticks,
+      ...(input.amount !== undefined ? { tickAmount: input.amount } : {}),
+      catalogPcStr: input.catalogPcStr,
+      catalogStr: input.catalogStr,
+      casterStrength: input.casterStrength,
+      casterMagPower: input.casterMagPower,
+      casterMagResist: input.casterMagResist,
+    });
+    this.nextId += 1;
   }
 
   private attach(

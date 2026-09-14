@@ -10,6 +10,11 @@ import type { WorldService } from "../modules/world/domain/world-service.ts";
 import { HuntCombatLoadout } from "../modules/jugger-wire/application/hunt-combat-loadout.ts";
 import { heroFightAppearance } from "../modules/jugger-wire/application/hero-fight-appearance.ts";
 import { huntBotSpellBookFromCatalog } from "../modules/jugger-wire/application/hunt-bot-spell-book-from-catalog.ts";
+import {
+  huntHeroStatFields,
+  unpublishedBotFightStats,
+  type CombatantFightStats,
+} from "../modules/combat/domain/combatant-fight-stats.ts";
 import { QuestDeniedError } from "../modules/quests/domain/quest-denied-error.ts";
 import type { QuestStartFightOpDocument } from "../modules/content/domain/content-quest.ts";
 
@@ -18,7 +23,7 @@ type FightStartDeps = Readonly<{
   world: WorldService;
   inventory: InventoryService;
   combat: CombatPort;
-  combatStrength: (heroId: number) => Promise<number>;
+  combatFightStats: (heroId: number) => Promise<CombatantFightStats>;
 }>;
 
 export async function startQuestFight(
@@ -78,13 +83,16 @@ async function startAuthoredHunt(
     heroMaxHp: hero.maxHp,
     heroMp: hero.mp,
     heroMaxMp: hero.maxMp,
-    heroStrength: await deps.combatStrength(hero.id),
+    ...huntHeroStatFields(await deps.combatFightStats(hero.id)),
     fightId,
     botId: primary.artikulId,
     botNick: primary.nick,
     botLevel: primary.level,
     botHp: primary.hp,
     botStrength: primary.strength,
+    botInitiative: primary.initiative,
+    botMagPower: primary.magPower,
+    botMagResist: primary.magResist,
     botAvatar: primary.avatar,
     botSk: primary.sk,
     botBody: primary.body,
@@ -117,6 +125,9 @@ async function loadRosterBots(
         level: bot.level,
         hp: bot.maxHp,
         strength: bot.strength,
+        initiative: unpublishedBotFightStats(bot.strength).initiative,
+        magPower: unpublishedBotFightStats(bot.strength).mag.power,
+        magResist: unpublishedBotFightStats(bot.strength).mag.resist,
         avatar: bot.hunt.avatar,
         sk: bot.hunt.sk,
         body: bot.hunt.body,

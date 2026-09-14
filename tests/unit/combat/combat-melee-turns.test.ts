@@ -5,7 +5,11 @@ import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { createCombatService } from "../../support/create-combat-service.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
-import { unitHuntJoin, unitHuntStart } from "../../support/hunt-start-input.ts";
+import {
+  unitHuntJoin,
+  unitHuntStart,
+  UNIT_FIGHT_SECONDARIES,
+} from "../../support/hunt-start-input.ts";
 
 describe("CombatService melee turns", () => {
   it("keeps bot-counter and grant off the caster melee poll", async () => {
@@ -173,6 +177,7 @@ function duelFighter(accountId: number, heroId: number): FriendlyDuelStartInput[
     heroMp: 10,
     heroMaxMp: 10,
     heroStrength: 10,
+    ...UNIT_FIGHT_SECONDARIES,
     loadout: EMPTY_COMBAT_LOADOUT,
     avatar: "avatar_small.jpg",
     body: "m1",

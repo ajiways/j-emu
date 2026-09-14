@@ -3,6 +3,7 @@ import type { CombatLoadout } from "./combat-loadout.ts";
 import { HuntHumanCastState } from "./hunt-human-cast-state.ts";
 import type { PocketCellSnapshot } from "./fight-outcome-snapshot.ts";
 import { HuntHumanFightEffects } from "./hunt-human-fight-effects.ts";
+import type { MagStats } from "./mag-stats.ts";
 
 export type HuntHumanAppearance = Readonly<{
   avatar: string;
@@ -35,6 +36,14 @@ type HuntHumanInit = Readonly<{
   team: 1 | 2;
   waiting: boolean;
   strength: number;
+  initiative: number;
+  rage: number;
+  dexterity: number;
+  defense: number;
+  block: number;
+  aggroCharges: number;
+  magPower: number;
+  magResist: number;
   startedAtMs: number;
   loadout: CombatLoadout;
   appearance: HuntHumanAppearance;
@@ -52,12 +61,14 @@ export class HuntHuman {
   private damageToBotValue = 0;
   private damageToHumansValue = 0;
   private leftLiveValue = false;
+  private lastOpponentIdValue: number | null = null;
+  stunnedTurns = 0;
 
   constructor(private readonly init: HuntHumanInit) {
     requireHuntHumanInit(init);
     this.waitingValue = init.waiting;
     this.hpValue = init.hp;
-    this.casts = new HuntHumanCastState(init.loadout);
+    this.casts = new HuntHumanCastState(init.loadout, init.aggroCharges);
     this.effects = new HuntHumanFightEffects({
       heroId: init.heroId,
       strength: init.strength,
@@ -96,8 +107,35 @@ export class HuntHuman {
   get strength(): number {
     return this.init.strength;
   }
+  get initiative(): number {
+    return this.init.initiative;
+  }
+  get rageStat(): number {
+    return this.init.rage;
+  }
+  get dexterity(): number {
+    return this.init.dexterity;
+  }
+  get defense(): number {
+    return this.init.defense;
+  }
+  get block(): number {
+    return this.init.block;
+  }
+  get mag(): MagStats {
+    return { power: this.init.magPower, resist: this.init.magResist };
+  }
+  get lastOpponentId(): number | null {
+    return this.lastOpponentIdValue;
+  }
   meleeStrength(): number {
     return this.init.strength + this.effects.standingStrength();
+  }
+  markFought(opponentId: number): void {
+    if (!Number.isInteger(opponentId) || opponentId < 1) {
+      throw new Error("Last opponent id must be a positive integer");
+    }
+    this.lastOpponentIdValue = opponentId;
   }
   get team(): 1 | 2 {
     return this.init.team;
@@ -256,5 +294,19 @@ function requireHuntHumanInit(init: HuntHumanInit): void {
   requireAppearance(init.appearance);
   if (!Number.isInteger(init.strength) || init.strength < 1) {
     throw new Error("Hunt human strength must be positive");
+  }
+  requireNonNegative(init.initiative, "Hunt human initiative");
+  requireNonNegative(init.rage, "Hunt human rage");
+  requireNonNegative(init.dexterity, "Hunt human dexterity");
+  requireNonNegative(init.defense, "Hunt human defense");
+  requireNonNegative(init.block, "Hunt human block");
+  requireNonNegative(init.aggroCharges, "Hunt human aggro charges");
+  requireNonNegative(init.magPower, "Hunt human mag power");
+  requireNonNegative(init.magResist, "Hunt human mag resist");
+}
+
+function requireNonNegative(value: number, label: string): void {
+  if (!Number.isInteger(value) || value < 0) {
+    throw new Error(`${label} must be a non-negative integer`);
   }
 }

@@ -14,6 +14,7 @@ import {
 } from "../support/harness/complete-melee-hunt.ts";
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
 import { uniqueDevelopmentSlot } from "../support/harness/unique-development-slot.ts";
+import { SequenceRandom } from "../support/fakes/sequence-random.ts";
 import {
   fightEventTypes,
   framesIncludeFightFinish,
@@ -228,6 +229,7 @@ describe("hunt fight join parallel duels", () => {
   beforeEach(async () => {
     harness = new ApplicationHarness(undefined, undefined, {
       combatBotStrength: 1,
+      combatRandom: new SequenceRandom([0.4, 1, 0.99, 1, 0.99, 1, 0.99, 1, 0.99, 1, 0.99, 1, 0.99]),
     });
     application = await harness.start();
   });

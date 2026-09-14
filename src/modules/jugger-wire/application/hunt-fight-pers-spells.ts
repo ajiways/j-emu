@@ -2,8 +2,11 @@ import type { CombatLoadout, CombatPocketRow } from "../../combat/domain/combat-
 import { pocketSpellWireFlags } from "../../combat/domain/pocket-spell-wire-flags.ts";
 import { huntNativePersSpells } from "./hunt-native-pers-spells.ts";
 
-export function huntPersSpellsEvent(loadout: CombatLoadout): Readonly<Record<string, unknown>> {
-  const native = huntNativePersSpells();
+export function huntPersSpellsEvent(
+  loadout: CombatLoadout,
+  aggroCount: number,
+): Readonly<Record<string, unknown>> {
+  const native = huntNativePersSpells(aggroCount);
   const extras = [...pocketSpells(loadout.pocket), ...gloveSpells(loadout)];
   if (extras.length === 0) return native;
   const merged: Record<string, unknown> = { ...native };

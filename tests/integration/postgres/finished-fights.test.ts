@@ -22,6 +22,7 @@ import {
   EMPTY_HUNT_BOT_SPELL_BOOK,
   GRYZL_FIGHT_LOOK,
   UNIT_HUNT_APPEARANCE,
+  UNIT_HUNT_BATTLE_STATS,
 } from "../../support/hunt-start-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 
@@ -63,6 +64,7 @@ describe("finished fight history storage", () => {
       heroMp: hero.mp,
       heroMaxMp: hero.maxMp,
       heroStrength: 200,
+      ...UNIT_HUNT_BATTLE_STATS,
       botId: 2,
       botNick: "Грызль",
       botLevel: 1,

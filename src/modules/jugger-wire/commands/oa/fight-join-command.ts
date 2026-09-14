@@ -18,6 +18,7 @@ import type { HuntAreaFanout } from "../../application/hunt-area-fanout.ts";
 import { heroFightAppearance } from "../../application/hero-fight-appearance.ts";
 import { HuntCombatLoadout } from "../../application/hunt-combat-loadout.ts";
 import { asHelpFightError } from "../../application/help-fight-error.ts";
+import { huntHeroStatFields } from "../../../combat/domain/combatant-fight-stats.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
@@ -96,7 +97,7 @@ export class FightJoinCommand implements OaCommand {
         heroMaxHp: hero.maxHp,
         heroMp: hero.mp,
         heroMaxMp: hero.maxMp,
-        heroStrength: await this.characters.combatStrength(hero.id),
+        ...huntHeroStatFields(await this.characters.combatFightStats(hero.id)),
         fightId: target.fightId,
         areaId: hero.areaId,
         instanceCopyId: hero.instanceCopyId,

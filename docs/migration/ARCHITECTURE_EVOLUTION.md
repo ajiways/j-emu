@@ -317,6 +317,16 @@ CMB-12.
 не team-2 skip `addHumanToBattle`. 2-hero team-2 wait без team-1 waiter
 не режется. ADR-0017–0020. Контракт: [COMBAT.md](../modules/COMBAT.md).
 
+**Решение CMB-13:** текущих границ достаточно; `ARC-CMB` не нужен.
+Seekers humans+bots; aggro clone только outdoor hunt; last-foe + 3↔3
+cross-swap; initiative на новых парах `tryPairQueues`. Snapshot stats на
+старт. ADR-0017–0020. Контракт: [COMBAT.md](../modules/COMBAT.md).
+
+**Решение CMB-14 / CMB-15a–c:** текущих границ достаточно, пока knobs
+живут в `BattleRules` и spell blobs в start snapshot. Отдельный `ARC-CMB`
+не нужен. CMB-18 (outdoor challenge) — единственная точка, где jgr сам
+откладывает `FightRules` / `startBattle({team1,team2,rules})`.
+
 **Решение DAY-01:** текущих границ достаточно; отдельный `ARC-QST` не нужен.
 Daily cycle — lazy `Clock` на quests ports (UTC+3 / 06:00), не
 `DelayScheduler` и не `Clock.schedule`. `hidden_in_journal` на том же

@@ -46,6 +46,15 @@
 - [ ] CMB-12: три героя на 50310 — A vs Грызль, B occupied ATTACK_BOT
       team 1, C JOIN `{team:2}` сразу vs B; A после пары всё ещё бьёт
       бота; 2-hero JOIN team 2 без B по-прежнему ждёт смерть бота.
+- [ ] CMB-13: два героя team 1 на 50310 — A vs Грызль, B occupied
+      ATTACK_BOT, «Разозлить» → две human↔bot дуэли; после трёх обменов
+      на обеих парах cross-swap, полоски HP те же.
+- [ ] CMB-14: голый L1 vs Грызль 50310 — на полоске видны dodge/block/crit
+      (`react` 1/6/14), не только hit.
+- [ ] CMB-15a: Хисса 50101 — instant kind-1 с MAGRES, не копия STR/10.
+- [ ] CMB-15b: charging overlay (Хисса 397 / перчатка 181) — второе
+      `hpChange` школы, в том числе после dodge/block.
+- [ ] CMB-15c: tick DoT/HoT или summon 632, если bot есть в DATA-03.
 
 ## Inventory
 

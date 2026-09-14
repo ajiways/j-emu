@@ -17,6 +17,7 @@ import { CombatTerminal } from "./combat-terminal.ts";
 import { createHuntBattle } from "./create-hunt-battle.ts";
 import { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 import { startHumanDuelBattle } from "./start-human-duel.ts";
+import { castFightSpecial } from "./combat-special-casts.ts";
 import type {
   CombatEvent,
   CombatPort,
@@ -177,6 +178,14 @@ export class CombatService implements CombatPort {
       maxMp: input.heroMaxMp,
       loadout: input.loadout,
       strength: input.heroStrength,
+      initiative: input.heroInitiative,
+      rage: input.heroRage,
+      dexterity: input.heroDexterity,
+      defense: input.heroDefense,
+      block: input.heroBlock,
+      aggroCharges: input.heroAggroCharges,
+      magPower: input.heroMagPower,
+      magResist: input.heroMagResist,
       team: input.team,
       appearance: input.appearance,
       startedAtMs: this.scheduler.now().getTime(),
@@ -226,7 +235,16 @@ export class CombatService implements CombatPort {
       await this.finish.leaveFight(accountId);
       return [{ type: "command-accepted" as const, sequence: command.sequence }];
     }
-    await this.castSpecial(accountId, command);
+    await castFightSpecial({
+      accountId,
+      command,
+      battle: this.byAccount.get(accountId),
+      nowMs: this.scheduler.now().getTime(),
+      botFightIds: this.botFightIds,
+      melee: this.melee,
+      pendingPocketConsume: this.pendingPocketConsume,
+      enqueue: (id, events) => this.enqueue(id, events),
+    });
     return [];
   }
 
@@ -305,37 +323,6 @@ export class CombatService implements CombatPort {
     this.exitSent.clear();
   }
 
-  private async castSpecial(
-    accountId: number,
-    command: Extract<FightCommand, { kind: "pocket" | "glove" | "rage" | "aggro" }>,
-  ): Promise<void> {
-    const battle = this.byAccount.get(accountId);
-    if (!battle) {
-      this.enqueue(accountId, [{ type: "command-accepted", sequence: command.sequence }]);
-      return;
-    }
-    const nowMs = this.scheduler.now().getTime();
-    if (command.kind === "pocket") {
-      const resolved = battle.tryPocket(accountId, command.itemId, nowMs, command.sequence);
-      this.finishKeepTurn(accountId, command.sequence, resolved);
-      return;
-    }
-    if (command.kind === "rage") {
-      this.finishKeepTurn(accountId, command.sequence, battle.tryRage(accountId));
-      return;
-    }
-    if (command.kind === "aggro") {
-      this.finishKeepTurn(accountId, command.sequence, battle.tryAggro(accountId));
-      return;
-    }
-    const resolved = battle.tryGlove(accountId, command.spellId, command.sequence, nowMs);
-    if (resolved.kind === "ending") {
-      await this.melee.endingGlove(accountId, command.sequence, resolved.events);
-      return;
-    }
-    this.finishKeepTurn(accountId, command.sequence, resolved);
-  }
-
   private startHumanDuel(input: FriendlyDuelStartInput, kind: "friendly-duel" | "pvp"): FightStart {
     requireWireIdentity(input.challenger.accountId, "challenger account id");
     requireWireIdentity(input.acceptor.accountId, "acceptor account id");
@@ -349,23 +336,6 @@ export class CombatService implements CombatPort {
       now: this.scheduler.now(),
       requireFightId,
     });
-  }
-
-  private finishKeepTurn(
-    accountId: number,
-    sequence: string | number,
-    resolved:
-      | { kind: "ignored" }
-      | { kind: "resolved"; events: readonly CombatEvent[]; consumePocketItemId?: number },
-  ): void {
-    if (resolved.kind === "ignored") {
-      this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
-      return;
-    }
-    if (resolved.consumePocketItemId !== undefined) {
-      this.pendingPocketConsume.set(accountId, resolved.consumePocketItemId);
-    }
-    this.melee.keepTurn(accountId, sequence, resolved.events);
   }
 
   private enqueue(accountId: number, events: readonly CombatEvent[]): void {

@@ -7,7 +7,7 @@ import {
 } from "../../../src/modules/combat/domain/paired-melee.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
-import { UNIT_HUNT_APPEARANCE } from "../../support/hunt-start-input.ts";
+import { UNIT_HUNT_APPEARANCE, unitHuntHumanStats } from "../../support/hunt-start-input.ts";
 
 function fighter(heroId: number, team: 1 | 2, hp: number): HuntHuman {
   const human = new HuntHuman({
@@ -22,7 +22,7 @@ function fighter(heroId: number, team: 1 | 2, hp: number): HuntHuman {
     maxMp: 10,
     team,
     waiting: false,
-    strength: 10,
+    ...unitHuntHumanStats(10),
     startedAtMs: 0,
     loadout: EMPTY_COMBAT_LOADOUT,
     appearance: UNIT_HUNT_APPEARANCE,
@@ -68,7 +68,7 @@ describe("tryPairedMelee", () => {
       random: new SequenceRandom([1]),
       fightId: "8",
       humans: [attacker, defender],
-      bots: [{ fightId: 1_000_000, hp: 10, maxHp: 10, team: 2 }],
+      bots: [{ fightId: 1_000_000, hp: 10, maxHp: 10, team: 2, mag: { power: 0, resist: 0 } }],
       nowMs: 0,
     });
     expect(resolved.finished).toBe(false);

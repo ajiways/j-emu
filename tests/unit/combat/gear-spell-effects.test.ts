@@ -6,7 +6,7 @@ import { HuntHumanFightEffects } from "../../../src/modules/combat/domain/hunt-h
 import { tryPairedMelee } from "../../../src/modules/combat/domain/paired-melee.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
-import { UNIT_HUNT_APPEARANCE } from "../../support/hunt-start-input.ts";
+import { UNIT_HUNT_APPEARANCE, unitHuntHumanStats } from "../../support/hunt-start-input.ts";
 
 const GEAR = {
   artikulId: 20546,
@@ -92,7 +92,7 @@ describe("gear-spell melee STR", () => {
       maxMp: 10,
       team: 1,
       waiting: false,
-      strength: 53,
+      ...unitHuntHumanStats(53),
       startedAtMs: 0,
       loadout: { ...EMPTY_COMBAT_LOADOUT, gearSpells: [GEAR] },
       appearance: UNIT_HUNT_APPEARANCE,
@@ -112,7 +112,7 @@ describe("gear-spell melee STR", () => {
       maxMp: 10,
       team: 2,
       waiting: false,
-      strength: 10,
+      ...unitHuntHumanStats(10),
       startedAtMs: 0,
       loadout: EMPTY_COMBAT_LOADOUT,
       appearance: UNIT_HUNT_APPEARANCE,

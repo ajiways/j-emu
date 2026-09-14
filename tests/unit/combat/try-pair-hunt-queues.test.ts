@@ -2,8 +2,12 @@ import { describe, expect, it } from "vitest";
 import { FightDuel } from "../../../src/modules/combat/domain/fight-duel.ts";
 import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
-import { pairHuntHumanQueues } from "../../../src/modules/combat/domain/try-pair-hunt-queues.ts";
-import { UNIT_HUNT_APPEARANCE } from "../../support/hunt-start-input.ts";
+import {
+  pairHuntHumanQueues,
+  pickHuntPair,
+} from "../../../src/modules/combat/domain/try-pair-hunt-queues.ts";
+import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
+import { UNIT_HUNT_APPEARANCE, unitHuntHumanStats } from "../../support/hunt-start-input.ts";
 
 function human(
   input: Readonly<{ accountId: number; heroId: number; team: 1 | 2; waiting: boolean }>,
@@ -20,7 +24,7 @@ function human(
     maxMp: 10,
     team: input.team,
     waiting: input.waiting,
-    strength: 80,
+    ...unitHuntHumanStats(),
     startedAtMs: 0,
     loadout: EMPTY_COMBAT_LOADOUT,
     appearance: UNIT_HUNT_APPEARANCE,
@@ -33,7 +37,11 @@ describe("pairHuntHumanQueues", () => {
     const waiter = human({ accountId: 2, heroId: 2, team: 1, waiting: true });
     const intervenor = human({ accountId: 3, heroId: 3, team: 2, waiting: true });
     const duels = [new FightDuel(1, 1_000_000, 1)];
-    const created = pairHuntHumanQueues([opener, waiter, intervenor], duels);
+    const created = pairHuntHumanQueues(
+      [opener, waiter, intervenor],
+      duels,
+      new SequenceRandom([0.4]),
+    );
     expect(created).toMatchObject({ aId: 2, bId: 3, nextActorId: 2 });
     expect(waiter.waiting).toBe(false);
     expect(intervenor.waiting).toBe(false);
@@ -45,8 +53,23 @@ describe("pairHuntHumanQueues", () => {
     const opener = human({ accountId: 1, heroId: 1, team: 1, waiting: false });
     const intervenor = human({ accountId: 2, heroId: 2, team: 2, waiting: true });
     const duels = [new FightDuel(1, 1_000_000, 1)];
-    expect(pairHuntHumanQueues([opener, intervenor], duels)).toBeNull();
+    expect(pairHuntHumanQueues([opener, intervenor], duels, new SequenceRandom([0.4]))).toBeNull();
     expect(intervenor.waiting).toBe(true);
     expect(duels).toHaveLength(1);
+  });
+});
+
+describe("pickHuntPair last-foe", () => {
+  it("prefers a foe who is not the last opponent", () => {
+    const seekers = [
+      { id: 1, team: 1 as const, lastOpponentId: 3, initiative: 0, kind: "human" as const },
+      { id: 2, team: 1 as const, lastOpponentId: null, initiative: 0, kind: "human" as const },
+      { id: 3, team: 2 as const, lastOpponentId: 1, initiative: 0, kind: "bot" as const },
+      { id: 4, team: 2 as const, lastOpponentId: null, initiative: 0, kind: "bot" as const },
+    ];
+    expect(pickHuntPair(seekers, new Set(), new SequenceRandom([0, 0, 0.4]))).toEqual({
+      aId: 2,
+      bId: 4,
+    });
   });
 });

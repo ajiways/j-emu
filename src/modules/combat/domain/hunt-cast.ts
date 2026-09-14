@@ -1,7 +1,8 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { CombatPocketRow, CombatSpell } from "./combat-loadout.ts";
-import { rollMeleeDamage } from "./melee-damage.ts";
+import { kind1OverlayCharges, magicHitFromKind1, magicReact } from "./magic-hit.ts";
+import { schoolOverlayFromKind1 } from "./school-overlay.ts";
 import { FightCastDenied } from "./fight-cast-denied.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
@@ -104,15 +105,6 @@ export function tryRageCast(human: HuntHuman): KeepTurnResult {
   };
 }
 
-export function tryAggroCast(human: HuntHuman): KeepTurnResult {
-  if (!human.authed || human.waiting || human.hp === 0) return { kind: "ignored" };
-  const count = human.casts.spendAggro();
-  return {
-    kind: "resolved",
-    events: [{ type: "native-count", srcId: 7, count, title: "Разозлить" }],
-  };
-}
-
 export function tryGloveKeepTurn(
   human: HuntHuman,
   spellId: number,
@@ -127,7 +119,12 @@ export function tryGloveKeepTurn(
     return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };
   }
   const cp = human.casts.spendCombo(glove.cost);
-  human.casts.armGloveCrit(spellCharging(glove.spell) || 1);
+  const overlay = schoolOverlayFromKind1(glove.spell, human.meleeStrength());
+  if (overlay) {
+    human.casts.schoolOverlay = overlay;
+  } else {
+    human.casts.armGloveCrit(spellCharging(glove.spell) || 1);
+  }
   return {
     kind: "resolved",
     events: [
@@ -186,11 +183,19 @@ export function resolveGloveFinisher(
   });
   human.endTurn();
   const cp = human.casts.spendCombo(glove.cost);
-  const damage = endingGloveDamage(glove.spell, human.meleeStrength(), input.random, input.rules);
+  const damage = magicHitFromKind1(
+    glove.spell,
+    human.meleeStrength(),
+    human.mag,
+    target.kind === "human" ? target.human.mag : target.mag,
+    input.random,
+    input.rules,
+  );
   const hit = applyDamageToMeleeTarget(human, target, damage, {
     humans: input.humans,
     bots: input.bots,
   });
+  const dmgType = glove.spell.effects.find((effect) => effect.kind === 1)?.dmgType;
   const events: BattleEvent[] = [
     { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },
     {
@@ -202,6 +207,8 @@ export function resolveGloveFinisher(
       targetMaxHp: hit.targetMaxHp,
       killed: hit.killed,
       comboCp: cp,
+      ...(dmgType !== undefined ? { dmgType } : {}),
+      react: magicReact(hit.killed),
     },
   ];
   for (const effectId of human.effects.onActorEndingTurn(input.nowMs)) {
@@ -214,17 +221,8 @@ export function resolveGloveFinisher(
 }
 
 function isEndingGlove(spell: CombatSpell): boolean {
+  if (kind1OverlayCharges(spell) > 0) return false;
   return spell.endTurn === true || spellKind(spell, 1);
-}
-
-function endingGloveDamage(
-  spell: CombatSpell,
-  strength: number,
-  random: RandomSource,
-  rules: BattleRules,
-): number {
-  if (spell.effects.some((effect) => effect.targetCount === 2)) return 16;
-  return rollMeleeDamage(strength, random, rules);
 }
 
 function pocketEffectUse(

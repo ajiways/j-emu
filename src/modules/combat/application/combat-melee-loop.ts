@@ -77,7 +77,10 @@ export class CombatMeleeLoop {
     const joiner = battle.livingHumans().find((human) => human.accountId === joinerAccountId);
     if (!joiner || joiner.waiting) return;
     const opponent = battle.pairedOpponent(joinerAccountId);
-    if (opponent.kind !== "human") return;
+    if (opponent.kind === "bot") {
+      this.grantPairedBot(battle, joinerAccountId);
+      return;
+    }
     if (!battle.authedAccountIds().includes(opponent.accountId)) return;
     this.enqueue(opponent.accountId, [
       {
@@ -90,6 +93,26 @@ export class CombatMeleeLoop {
     const opener = battle.nextActorAccountId(joinerAccountId);
     if (!battle.authedAccountIds().includes(opener)) return;
     this.grantAfterPair(battle, opener);
+  }
+
+  notifyAggroPairs(
+    battle: Battle,
+    casterAccountId: number,
+    pairedAccountIds: readonly number[],
+    roster: Extract<CombatEvent, { type: "roster-updated" }> | null,
+  ): void {
+    for (const accountId of battle.authedAccountIds()) {
+      if (accountId === casterAccountId || !roster) continue;
+      this.enqueue(accountId, [roster]);
+      this.wakeAccount(accountId);
+    }
+    for (const accountId of pairedAccountIds) {
+      const human = battle.livingHumans().find((entry) => entry.accountId === accountId);
+      if (!human || human.waiting || !human.authed) continue;
+      this.enqueue(accountId, [{ type: "opponent-new", bot: battle.foeBotSnap(accountId) }]);
+      this.wakeAccount(accountId);
+      this.grantPairedBot(battle, accountId);
+    }
   }
 
   private async followUpAfterStrike(
@@ -183,14 +206,34 @@ export class CombatMeleeLoop {
 
   private applyShuffle(battle: Battle, accountId: number): void {
     const shuffle = battle.tryShuffleAfterHits(accountId);
-    if (shuffle.kind !== "waiter-handoff") return;
-    cancelDuel(this.scheduler, battle, accountId);
-    this.enqueue(shuffle.actorAccountId, [{ type: "opponent-wait" }]);
-    this.wakeAccount(shuffle.actorAccountId);
-    if (!shuffle.waiterAuthed) return;
-    this.enqueue(shuffle.waiterAccountId, shuffle.events);
-    this.wakeAccount(shuffle.waiterAccountId);
-    this.grantAfterPair(battle, shuffle.waiterAccountId);
+    if (shuffle.kind === "waiter-handoff") {
+      cancelDuel(this.scheduler, battle, accountId);
+      this.enqueue(shuffle.actorAccountId, [{ type: "opponent-wait" }]);
+      this.wakeAccount(shuffle.actorAccountId);
+      if (!shuffle.waiterAuthed) return;
+      this.enqueue(shuffle.waiterAccountId, shuffle.events);
+      this.wakeAccount(shuffle.waiterAccountId);
+      this.grantAfterPair(battle, shuffle.waiterAccountId);
+      return;
+    }
+    if (shuffle.kind !== "cross-swap") return;
+    cancelDuel(this.scheduler, battle, shuffle.leftAccountId);
+    cancelDuel(this.scheduler, battle, shuffle.rightAccountId);
+    this.enqueue(shuffle.leftAccountId, [{ type: "opponent-new", bot: shuffle.leftBot }]);
+    this.enqueue(shuffle.rightAccountId, [{ type: "opponent-new", bot: shuffle.rightBot }]);
+    this.wakeAccount(shuffle.leftAccountId);
+    this.wakeAccount(shuffle.rightAccountId);
+    this.grantPairedBot(battle, shuffle.leftAccountId);
+    this.grantPairedBot(battle, shuffle.rightAccountId);
+  }
+
+  private grantPairedBot(battle: Battle, accountId: number): void {
+    if (!battle.authedAccountIds().includes(accountId)) return;
+    if (battle.humanOpensDuel(accountId)) {
+      this.grantAfterPair(battle, accountId);
+      return;
+    }
+    this.scheduleBotAndGrant(battle, accountId);
   }
 
   private runGrant(fightId: string, accountId: number): void {

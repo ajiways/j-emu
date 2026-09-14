@@ -124,7 +124,7 @@ describe("CombatService hunt join", () => {
     const delay = new ManualCombatDelay();
     const combat = new CombatService(
       new MonotonicFightIdSource(1),
-      new SequenceRandom([8, 2]),
+      new SequenceRandom([0.4, 8, 2]),
       rules,
       clock,
       new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),

@@ -36,7 +36,7 @@ export async function piggybackQuestFight(
     world: deps.world,
     inventory: deps.inventory,
     combat: deps.combat,
-    combatStrength: (id: number) => deps.characters.combatStrength(id),
+    combatFightStats: (id: number) => deps.characters.combatFightStats(id),
   };
   if (isQuestModeStartFight(fight)) {
     const started = await startQuestFight(hero, fight, startDeps);

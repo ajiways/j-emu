@@ -71,7 +71,9 @@ Playerbot presence и bot-generated market/world state исключаются.
 - [FIGHT_LOCK.md](../../../jgr-emu/docs/FIGHT_LOCK.md);
 - [POCKET.md](../../../jgr-emu/docs/POCKET.md);
 - [GLOVE_MAGIC.md](../../../jgr-emu/docs/GLOVE_MAGIC.md);
-- [BOT_SPELLS.md](../../../jgr-emu/docs/BOT_SPELLS.md).
+- [BOT_SPELLS.md](../../../jgr-emu/docs/BOT_SPELLS.md);
+- `jgr-emu/src/fight/battle.ts` `tryPairQueues`; `swap.ts`; `actions/aggro.ts`;
+  `damage.ts` `rollOpensFirst` / `rollMeleeOutcome`.
 
 [FIGHT_DAMAGE.md](../../../jgr-emu/docs/FIGHT_DAMAGE.md) и
 [FIGHT_MAGIC.md](../../../jgr-emu/docs/FIGHT_MAGIC.md) содержат empirical или

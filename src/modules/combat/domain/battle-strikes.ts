@@ -1,9 +1,8 @@
 import type { FightDuel } from "./fight-duel.ts";
-import type { HuntBattleInit } from "./hunt-battle-init.ts";
-import { huntFightEnemyTeam } from "./hunt-fight-teams.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { resolveBotTurn } from "./hunt-bot-turn.ts";
 import { type BotMeleeResult } from "./hunt-melee.ts";
+import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import { tryPairedMelee, type PlayerMeleeResult } from "./paired-melee.ts";
 import { resolveGloveFinisher, type EndingGloveResult, type KeepTurnResult } from "./hunt-cast.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -86,31 +85,24 @@ export function applyPairedGloveEnding(
 export function applyBotTurn(
   input: Readonly<{
     target: HuntHuman;
+    bot: HuntRosterBot;
     rules: BattleRules;
     random: RandomSource;
-    hunt: HuntBattleInit;
-    botHp: number;
     fightId: string;
     keepFightOnKill: boolean;
-    casts: Map<number, number>;
     living: readonly HuntHuman[];
     duel: FightDuel;
+    winnerTeam: 1 | 2;
   }>,
 ): BotMeleeResult & Readonly<{ botHp: number }> {
-  const result = resolveBotTurn(input.target, {
+  const result = resolveBotTurn(input.target, input.bot, {
     rules: input.rules,
     random: input.random,
-    botFightId: input.hunt.botFightId,
-    botStrength: input.hunt.botStrength,
-    botHp: input.botHp,
-    botMaxHp: input.hunt.botMaxHp,
     fightId: input.fightId,
     keepFightOnKill: input.keepFightOnKill,
-    book: input.hunt.botSpellBook,
-    casts: input.casts,
     living: input.living,
-    winnerTeam: huntFightEnemyTeam(input.hunt.purpose),
+    winnerTeam: input.winnerTeam,
   });
-  input.duel.addHit(input.hunt.botFightId);
+  input.duel.addHit(input.bot.fightId);
   return result;
 }

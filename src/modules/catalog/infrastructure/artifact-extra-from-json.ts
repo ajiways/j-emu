@@ -132,6 +132,7 @@ function optionalEffectFields(record: Record<string, unknown>): Partial<Artifact
     ...(typeof record.hidden === "number" ? { hidden: record.hidden } : {}),
     ...(typeof record.targetCount === "number" ? { targetCount: record.targetCount } : {}),
     ...(typeof record.duration === "number" ? { duration: record.duration } : {}),
+    ...(typeof record.period === "number" ? { period: record.period } : {}),
     ...(typeof record.forceSelfTargeting === "boolean"
       ? { forceSelfTargeting: record.forceSelfTargeting }
       : {}),

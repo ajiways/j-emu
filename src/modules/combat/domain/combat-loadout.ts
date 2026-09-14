@@ -5,8 +5,10 @@ type CombatSpellEffect = Readonly<{
   amount?: number | string;
   dmgType?: number;
   charging?: number;
+  capacity?: number;
   targetCount?: number;
   duration?: number;
+  period?: number;
   forceSelfTargeting?: boolean;
   realStartTime?: boolean;
   skills?: readonly Readonly<{ skillId: string; value: number }>[];

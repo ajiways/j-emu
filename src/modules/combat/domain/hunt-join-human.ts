@@ -12,6 +12,14 @@ export type HuntJoinHuman = Readonly<{
   mp: number;
   maxMp: number;
   strength: number;
+  initiative: number;
+  rage: number;
+  dexterity: number;
+  defense: number;
+  block: number;
+  aggroCharges: number;
+  magPower: number;
+  magResist: number;
   team: 1 | 2;
   appearance: HuntHumanAppearance;
   loadout: CombatLoadout;

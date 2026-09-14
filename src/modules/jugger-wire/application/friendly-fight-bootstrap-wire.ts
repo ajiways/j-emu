@@ -33,7 +33,7 @@ export function friendlyFightBootstrapEvents(
       aggro: event.aggro,
       team: hero.team,
     },
-    huntPersSpellsEvent(event.loadout),
+    huntPersSpellsEvent(event.loadout, event.aggro),
     fightPersEffEvent(hero.id, event.heroEffects),
     ...event.heroEffects.map((fx) => fightStandingEffectUseEvent(fx, hero.id)),
     humanOppNewEvent(opponent, event.opponentAppearance),

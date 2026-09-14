@@ -13,6 +13,7 @@ import {
   bgStatsPayload,
   instanceMapConf,
 } from "../modules/battleground/domain/battleground-wire.ts";
+import { huntHeroStatFields } from "../modules/combat/domain/combatant-fight-stats.ts";
 import { HuntCombatLoadout } from "../modules/jugger-wire/application/hunt-combat-loadout.ts";
 import { bootstrapHeroState } from "../modules/jugger-wire/application/bootstrap-hero-state.ts";
 import { buildUserConf } from "../modules/jugger-wire/application/user-conf-block.ts";
@@ -156,7 +157,7 @@ export class BattlegroundChrome {
       heroMaxHp: locked.maxHp,
       heroMp: locked.mp,
       heroMaxMp: locked.maxMp,
-      heroStrength: await this.deps.characters.combatStrength(locked.id),
+      ...huntHeroStatFields(await this.deps.characters.combatFightStats(locked.id)),
       loadout,
       avatar: appearance.avatarSmall,
       body: locked.body,

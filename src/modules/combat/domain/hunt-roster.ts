@@ -27,6 +27,9 @@ export class HuntRoster {
         level: init.botLevel,
         hp: init.botMaxHp,
         strength: init.botStrength,
+        initiative: init.botInitiative,
+        magPower: init.botMagPower,
+        magResist: init.botMagResist,
         avatar: init.botAvatar,
         sk: init.botSk,
         body: init.botBody,
@@ -81,6 +84,10 @@ export class HuntRoster {
     return this.requireBot(fightId);
   }
 
+  findBot(fightId: number): HuntRosterBot | null {
+    return this.bots.find((entry) => entry.fightId === fightId) ?? null;
+  }
+
   takeNextEnemyForHuman(occupiedFightId: number): HuntRosterBot | null {
     const waiting = this.waitingEnemies.find((bot) => bot.hp > 0);
     if (waiting) {
@@ -96,6 +103,35 @@ export class HuntRoster {
       return enemy;
     }
     return null;
+  }
+
+  extraDuelParticipantIds(): readonly number[] {
+    const ids: number[] = [];
+    for (const duel of this.extraDuels) {
+      ids.push(duel.aId, duel.bId);
+    }
+    return ids;
+  }
+
+  unpairedLiving(occupied: ReadonlySet<number>): readonly HuntRosterBot[] {
+    return this.bots.filter((bot) => bot.hp > 0 && !occupied.has(bot.fightId));
+  }
+
+  addExtraDuel(duel: FightDuel): void {
+    this.extraDuels.push(duel);
+  }
+
+  enqueueAggroClone(sourceFightId: number, cloneFightId: number): HuntRosterBot {
+    const source = this.requireBot(sourceFightId);
+    if (source.team !== this.enemyTeam) {
+      throw new Error("Aggro clone source must be an enemy bot");
+    }
+    const clone = source.cloneWithFightId(cloneFightId);
+    if (this.bots.some((bot) => bot.fightId === clone.fightId)) {
+      throw new Error(`Roster bot fight id ${clone.fightId} collides`);
+    }
+    this.bots.push(clone);
+    return clone;
   }
 
   tick(rules: BattleRules, random: RandomSource, fightId: string): readonly BattleEvent[] {

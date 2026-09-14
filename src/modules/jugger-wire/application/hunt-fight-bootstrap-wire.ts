@@ -29,7 +29,7 @@ export function huntFightBootstrapEvents(
       aggro: event.aggro,
       team: hero.team,
     },
-    huntPersSpellsEvent(event.loadout),
+    huntPersSpellsEvent(event.loadout, event.aggro),
     fightPersEffEvent(hero.id, event.heroEffects),
     ...event.heroEffects.map((fx) => fightStandingEffectUseEvent(fx, hero.id)),
   ];
@@ -50,7 +50,7 @@ export function huntFightRosterEvents(
   event: Extract<CombatEvent, { type: "roster-updated" }>,
 ): readonly Readonly<Record<string, unknown>>[] {
   return [
-    huntPersListEvent(event.humans, [event.bot]),
+    huntPersListEvent(event.humans, event.rosterBots ?? [event.bot]),
     { ...huntHumanPersFields(event.joined), et: "persChangeInfo" },
   ];
 }

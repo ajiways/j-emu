@@ -1598,14 +1598,18 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
 
 ## Leftover engines — механика, не сюжет
 
-Волны 0–13 закрыты. Leftover-механика закрыта: CMB-11 (`done`) → CMB-12
-(`done`, hunt N×N две дуэли на 50310) → QST-ENG-04
-(`done`) → QST-ENG-05 (`done`, `OPEN_STORE`) → DNG-03 (`done`) → leftover
-TRD-02 (`done`, refund trays, не persist session).
+Волны 0–13 закрыты. Сюжетный leftover не этот трек: CMB-11 (`done`) →
+CMB-12 (`done`, hunt N×N две дуэли на 50310) → QST-ENG-04 (`done`) →
+QST-ENG-05 (`done`, `OPEN_STORE`) → DNG-03 (`done`) → leftover TRD-02
+(`done`, refund trays, не persist session).
 
-`CONTENT-STORY-*` остаются queued, не `next`.
+Боевой leftover после CMB-12 — отдельная очередь `CMB-13+` ниже
+(pairing → melee outcomes → magic kinds → JOIN/history/challenge).
+Ровно один `next`. `CONTENT-STORY-*` остаются queued.
 
-CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
+CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят. Новые production-срезы
+этого трека несут CEF в acceptance (EDT-02); product **частично** до
+операторского прогона.
 
 ### CMB-11 — Join team 2 / intervene
 
@@ -1681,6 +1685,137 @@ CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
   2-hero team-2 wait + retarget после смерти бота; JOIN copy isolation 542;
   quest deny; occupied ATTACK_BOT team 1 — без регресса.
 - **Status:** `done`
+
+### CMB-13 — Hunt N×N pairing
+
+- **ID:** `CMB-13`
+- **depends_on:** `CMB-12`
+- **Behavior evidence:** [FIGHT_MODEL.md](../../../jgr-emu/docs/FIGHT_MODEL.md)
+  §5–6; `jgr-emu/src/fight/battle.ts` `tryPairQueues` / last-foe score;
+  `jgr-emu/src/fight/swap.ts` (waiter-handoff, 3↔3 cross-swap);
+  `jgr-emu/src/fight/actions/aggro.ts`; `jgr-emu/src/fight/damage.ts`
+  `rollOpensFirst` (`INITIATIVE_SOFT_C=80`, skill `LUCK`);
+  `jgr-emu/src/bonuses.ts` `huntAggroCharges` = `1+AGRILKA_MOBOV`.
+- **Content set:** без нового контента. Hunt **50310**, два героя team 1:
+  opener vs Грызль, второй `ATTACK_BOT` occupied затем «Разозлить» →
+  ephemeral clone → две human↔bot дуэли; после 3↔3 обмен, HP без сброса.
+  CMB-12 три героя JOIN team 2 — без регресса.
+- **Architecture checkpoint / decision:** ADR-0017–0020 достаточны;
+  `ARC-CMB` не нужен. Active fight RAM. Seekers = unpaired living humans
+  **и** bots обеих команд; pair loop shuffle + last-foe. Occupied spawn
+  bot остаётся в дуэли opener-а (CMB-12). Aggro clone только outdoor hunt
+  (`purpose:"hunt"` и `instanceCopyId === null`); quest/copy/friendly —
+  fury + абсолютный `persSpells`, без −1 если заряд 0. Цель — enemy bot
+  id; clone id — `EphemeralBotFightIds` от `1_000_000`. Snapshot
+  `CombatantFightStats` на старт/join; combat не читает character tables.
+  Unpublished bot secondaries (нет LUCK в `BotDefinition`) — named policy
+  initiative `0`, не STR-as-luck. Новая пара из `tryPairQueues` открывает
+  `rollOpensFirst`; стартовая opener↔spawn-bot пара по-прежнему opener.
+  Delay token `${fightId}:{min}:{max}`. Extract, не рост `battle.ts` /
+  `combat-service.ts`. **Fail-fast.** Нет duel у waiting striker → melee
+  ignored, не throw. Нет fallback «один duel на Battle».
+  **Restart.** Mid-fight RAM (ADR-0020).
+  **CEF.** Production consumer. Product **частично** до CEF; строка
+  CEF_MANUAL на close coding.
+  Контракт: [COMBAT.md](../modules/COMBAT.md).
+- **Acceptance:** unit `tryPairQueues` / last-foe / aggro deny; raw-AMF
+  два team-1 на 50310 + Разозлить → две human↔bot дуэли, после 3↔3
+  cross-swap без сброса HP; CMB-12 JOIN team 2 и 2-hero wait без регресса;
+  quest/copy aggro без клона и без −1 при 0 зарядов.
+- **Status:** `done`
+
+### CMB-14 — Melee outcomes
+
+- **ID:** `CMB-14`
+- **depends_on:** `CMB-13`
+- **Behavior evidence:** [FIGHT_DAMAGE.md](../../../jgr-emu/docs/FIGHT_DAMAGE.md)
+  invented; `jgr-emu/src/fight/damage.ts` `rollMeleeOutcome`. Swing:
+  dodge → block → crit → DEF → HP. Knobs `COMBAT_SOFT_C=600`, cap 0.40,
+  crit×2.35, block 450/0.33 на named `BattleRules`, метка `legacy
+behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот срез
+  (FIGHT_RAGE OPEN). RAG/DEX/DEF/BLOK/LUCK в snapshot на старт.
+- **Content set:** голый L1 vs Грызль 50310; representative dodge/block/crit
+  через unit RNG, не новый контент.
+- **Architecture checkpoint / decision:** ADR-0017–0020 достаточны;
+  `ARC-CMB` не нужен. Combat не читает character tables mid-fight.
+  **Restart.** Mid-fight RAM. **CEF.** Production consumer; product
+  **частично** до CEF.
+  Контракт: [COMBAT.md](../modules/COMBAT.md).
+- **Acceptance:** unit swing order + react codes; raw-AMF hunt 50310
+  по-прежнему завершается; CMB-13 pairing без регресса.
+- **Status:** `done`
+
+### CMB-15a — Instant kind-1 magic
+
+- **ID:** `CMB-15a`
+- **depends_on:** `CMB-14`
+- **Behavior evidence:** [FIGHT_MAGIC.md](../../../jgr-emu/docs/FIGHT_MAGIC.md),
+  [BOT_SPELLS.md](../../../jgr-emu/docs/BOT_SPELLS.md) invented;
+  `rollMagicHit`; магия не критует. Snapshot MAGSTR/MAGRES на старт.
+  Hissa 396/50101 уже kind-1 без школ — выровнять формулу.
+- **Architecture checkpoint / decision:** ADR-0017–0020; `ARC-CMB` не
+  нужен. **CEF.** Production consumer; product **частично** до CEF.
+- **Acceptance:** Hissa 50101 instant kind-1 с MAGRES; Грызль melee-only.
+- **Status:** `done`
+
+### CMB-15b — Kind-1 charging overlay
+
+- **ID:** `CMB-15b`
+- **depends_on:** `CMB-15a`
+- **Behavior evidence:** FIGHT_MAGIC charging overlay: melee физика +
+  второе `hpChange` школы, в том числе после dodge/block. Representative:
+  Hissa 397 / перчатка 181.
+- **Architecture checkpoint / decision:** ADR-0017–0020; `ARC-CMB` не
+  нужен. **CEF.** Product **частично** до CEF.
+- **Acceptance:** charging overlay после melee, в том числе dodge/block.
+- **Status:** `done`
+
+### CMB-15c — Remaining magic kinds
+
+- **ID:** `CMB-15c`
+- **depends_on:** `CMB-15b`
+- **Behavior evidence:** kind 3 charging/attack-curse; kind 4/5 ticks
+  (бюджет `duration/period`, sibling `hpChange`, known DoT-kill as
+  physics); kind 8/11; kind 10 summon; kind 18 stun; gate
+  `foe_has_dispel_groups`. Kind-2 heal уже CMB-06. Summon — dump-bot с
+  `fight_start` 632 если есть в DATA-03.
+- **Architecture checkpoint / decision:** ADR-0017–0020; `ARC-CMB` не
+  нужен. **CEF.** Product **частично** до CEF.
+- **Acceptance:** representative Hissa 397 overlay path + хотя бы один
+  kind 4/5 tick и gate dispel; summon если 632 в DATA-03, иначе явный
+  skip в контракте.
+- **Status:** `done`
+
+### CMB-16 — BG FIGHT_JOIN
+
+- **ID:** `CMB-16`
+- **depends_on:** `CMB-15c`, `CMB-11`, `BG-01`
+- **Behavior evidence:** [FIGHT_JOIN.md](../../../jgr-emu/docs/FIGHT_JOIN.md)
+  на живой Раскоп. CMB-11 и BG-01 landed; срез не входил в close CMB-13..15c.
+- **Architecture checkpoint / decision:** отложен до coding. Не выделять
+  `FightRules` заранее.
+- **Status:** `next`
+
+### CMB-17 — Practice fight history
+
+- **ID:** `CMB-17`
+- **depends_on:** `CMB-16`
+- **Behavior evidence:** OA `arena|finished_fights` / type 6 practice
+  history. Mapper `finished_fights` уже есть; OA нет.
+- **Architecture checkpoint / decision:** отложен до coding.
+- **Status:** `queued`
+
+### CMB-18 — Outdoor ATTACK challenge
+
+- **ID:** `CMB-18`
+- **depends_on:** `CMB-17`
+- **Behavior evidence:** leftover дока, не рабочий jgr runtime (`ATTACK`
+  по нику идёт только в Раскоп). **Только после явного решения:** третий
+  режим последствий → тогда `FightRules` + `startBattle({team1,team2,rules})`
+  по FIGHT_MODEL. Не изобретать outdoor challenge из mapper-а.
+- **Architecture checkpoint / decision:** блокируется продуктовым
+  решением, не coding.
+- **Status:** `queued`
 
 ### QST-ENG-04 — Quest-fight leftovers
 

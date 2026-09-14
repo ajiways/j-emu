@@ -457,9 +457,79 @@ Production consumer. Product **частично** до CEF. Строка в
 
 ### Out of scope (CMB-12 leftover)
 
-Полный jgr N×N (bot seekers, shuffle last-foe, initiative roll, cross-swap
-двух живых 3↔3); BG/pvp `FIGHT_JOIN`; quest-fight join; `ATTACK` challenge;
-CEF.
+Закрыто CMB-13 (pairing), CMB-14 (melee outcomes), CMB-15a–c (magic).
+Дальше: CMB-16 BG `FIGHT_JOIN`; CMB-17 practice history; CMB-18 outdoor
+`ATTACK` только после явного решения. Quest-fight join — deny CMB-09.
+
+## CMB-13 — hunt N×N pairing
+
+Срез закрыт (unit + raw-AMF). Product-status не поднимать: CEF не
+прогонялся. Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-16.
+
+Seekers = unpaired living humans **и** bots обеих команд. Pair loop как
+jgr: shuffle + last-foe score (`lastOpponentId`). Occupied spawn bot не
+seeker (CMB-12: lone team-2 не крадёт бота).
+
+«Разозлить»: outdoor hunt, цель — enemy bot; ephemeral clone; enqueue +
+`tryPairQueues`; заряд `1+AGRILKA_MOBOV` из snapshot. Quest/copy/friendly
+deny: fury + абсолютный `persSpells`, без −1 если заряд 0.
+
+Shuffle: solo reset hits; 2v1 waiter-handoff (CMB-08); partner duel ниже
+3↔3 **держит** hits; **cross-swap** только если **оба** дуэля уже 3↔3.
+HP без сброса.
+
+Новая пара из `tryPairQueues` — `rollOpensFirst` (LUCK, `INITIATIVE_SOFT_C=80`,
+`legacy behavior`). Стартовая opener↔spawn-bot пара открывает opener.
+Unpublished bot initiative = `0` (нет LUCK в `BotDefinition`). Delay token
+`${fightId}:{min}:{max}`.
+
+Не в срезе: dodge/crit (CMB-14), magic kinds (CMB-15), BG JOIN, assault/`FightRules`.
+
+## CMB-14 — melee outcomes
+
+Срез закрыт (unit + hunt raw-AMF без регресса). Product-status не
+поднимать: CEF не прогонялся.
+Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-16.
+
+Player L/C/R и bot melee: dodge → block → crit → DEF → HP (`legacy
+behavior`, knobs на `BattleRules`: `combatSoftC=600`, cap 0.40, crit×2.35,
+block 450/0.33, choke RAG/DEX/DEF). Wire `react` 1 dodge / 2 hit-or-block /
+6 crit / 10 kill / 14 crit-kill. Шанс 0 не бросает RNG (unit secondaries
+и unpublished bot RAG/DEX/DEF/BLOK = 0). Fatality/казнь — не этот срез.
+Glove/pocket/kind-1 extra не критуют.
+
+## CMB-15a — instant kind-1
+
+Срез закрыт (unit). Product-status не поднимать: CEF не прогонялся.
+
+Snapshot MAGSTR/MAGRES на старт/join (`heroMagPower`/`heroMagResist`,
+bot twin). Naked MAGSTR/MAGRES в `hero_skills` нет: unpublished schools =
+`{ power: 0, resist: 0 }` — не STR-as-magic. `rollMagicHit` invented:
+catalog amount иначе STR/pcSTR как CMB-06, плюс MAGSTR, integer ±spread,
+затем MAGRES soft-C `200` (`BattleRules.magresSoftC`, `legacy behavior`).
+Магия не критует. Physical dmgType 1 и 256 не берут school MAGSTR.
+Hissa 396 / 50101 `magic_direct` остаётся kind-1; Грызль melee-only.
+
+## CMB-15b — kind-1 charging overlay
+
+Срез закрыт (unit). Kind-1 с `dmgType !== 1` и capacity/charging > 0
+не бьёт сразу: keep-turn, `schoolOverlay`, затем melee физика + второе
+`hpChange` школы (`extraHits`), в том числе после dodge/block (`applied`
+0, HP без изменения). Убийство физикой не жжёт заряд overlay.
+Representative: Hissa 397, перчатка 181.
+
+## CMB-15c — remaining magic kinds
+
+Срез закрыт (unit). Kind 2 heal — CMB-06. Kind 3 keep-turn / buff-cast.
+Kind 4/5 ticks: бюджет `duration/period` (каталог без period → named
+jgr default 20s), sibling `hpChange` на carrier melee. Kind 8 dispel
+стоящих `groupId` при gate `foe_has_dispel_groups`. Kind 11 empty
+success. Kind 18 stun skip-turn, `duration` обязателен. Kind 10 summon
+632: `fight_start` сжигается без каста; clone цели в roster **не**
+landed (явный skip). Period deadline без удара (~20s unpaired) — не
+этот срез.
+
+Не в срезе: BG JOIN, practice history, outdoor `ATTACK`/`FightRules`.
 
 ## HERO-01 — PvP honor snapshot
 

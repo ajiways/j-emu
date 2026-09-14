@@ -11,7 +11,7 @@ describe("fproxy bot spell", () => {
 
   beforeEach(async () => {
     harness = new ApplicationHarness(undefined, undefined, {
-      combatRandom: new SequenceRandom([1, 0.9, 1]),
+      combatRandom: new SequenceRandom([1, 0.9, 0.88, 1]),
     });
     application = await harness.start();
   });

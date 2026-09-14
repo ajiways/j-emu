@@ -6,6 +6,7 @@ import {
   type CombatSpell,
 } from "./combat-loadout.ts";
 import type { PocketCellSnapshot } from "./fight-outcome-snapshot.ts";
+import type { SchoolOverlay } from "./school-overlay.ts";
 
 type PocketRuntime = {
   readonly row: CombatPocketRow;
@@ -16,15 +17,23 @@ type PocketRuntime = {
 export class HuntHumanCastState {
   cp = 0;
   rage = 0;
-  aggro = 1;
+  aggro: number;
   private orbHits = 0;
   private orbPcStr = 0;
   private gloveCritHits = 0;
+  schoolOverlay: SchoolOverlay | null = null;
   private readonly pockets = new Map<number, PocketRuntime>();
   private readonly groupLastUseAt = new Map<number, number>();
 
-  constructor(readonly loadout: CombatLoadout) {
+  constructor(
+    readonly loadout: CombatLoadout,
+    aggroCharges: number,
+  ) {
     requireCombatLoadout(loadout);
+    if (!Number.isInteger(aggroCharges) || aggroCharges < 0) {
+      throw new Error("Hunt aggro charges must be a non-negative integer");
+    }
+    this.aggro = aggroCharges;
     for (const row of loadout.pocket) {
       this.pockets.set(row.itemId, { row, count: row.count, lastUseAt: 0 });
     }
@@ -139,8 +148,7 @@ export class HuntHumanCastState {
 
   spendAggro(): number {
     if (this.aggro < 1) {
-      this.aggro = 0;
-      return 0;
+      throw new Error("Hunt aggro has no remaining charges");
     }
     this.aggro -= 1;
     return this.aggro;

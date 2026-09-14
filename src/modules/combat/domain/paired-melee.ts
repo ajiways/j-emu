@@ -1,7 +1,14 @@
+import { applyCarrierTicks } from "./apply-carrier-ticks.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HuntHuman } from "./hunt-human.ts";
-import { meleeDamageBounds, rollMeleeDamage } from "./melee-damage.ts";
+import { rollMeleeDamage } from "./melee-damage.ts";
+import {
+  rollMeleeOutcome,
+  strikeStatsFromHuman,
+  unpublishedBotStrikeStats,
+} from "./melee-outcome.ts";
+import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import { enemySideCleared, type BotMeleePresence, type MeleeTarget } from "./melee-target.ts";
 import type { RandomSource } from "./random-source.ts";
 
@@ -31,17 +38,75 @@ export function tryPairedMelee(
   }
   requireLivingMeleeTarget(target);
   attacker.endTurn();
-  let damage = rollMeleeDamage(attacker.meleeStrength(), input.random, input.rules);
+  let baseDamage = rollMeleeDamage(attacker.meleeStrength(), input.random, input.rules);
   const orb = attacker.casts.takeOrbPcStr();
-  if (orb > 0) damage = Math.max(1, Math.round(damage * (1 + orb / 100)));
-  if (attacker.casts.takeGloveCrit()) {
-    damage = meleeDamageBounds(attacker.meleeStrength(), input.rules).max;
-  }
-  const comboCp = attacker.casts.hits.length > 0 ? attacker.casts.advanceCombo(side) : undefined;
-  const hit = applyDamageToMeleeTarget(attacker, target, damage, {
-    humans: input.humans,
-    bots: input.bots,
+  if (orb > 0) baseDamage = Math.max(1, Math.round(baseDamage * (1 + orb / 100)));
+  const outcome = rollMeleeOutcome({
+    baseDamage,
+    attacker: strikeStatsFromHuman(attacker),
+    defender:
+      target.kind === "human" ? strikeStatsFromHuman(target.human) : unpublishedBotStrikeStats(1),
+    targetHp: target.kind === "human" ? target.human.hp : target.hp,
+    forceCrit: attacker.casts.takeGloveCrit(),
+    random: input.random,
+    rules: input.rules,
   });
+  const comboCp = attacker.casts.hits.length > 0 ? attacker.casts.advanceCombo(side) : undefined;
+  const hit =
+    outcome.applied < 1
+      ? {
+          killed: false,
+          hitBot:
+            target.kind === "bot"
+              ? {
+                  fightId: target.id,
+                  hp: target.hp,
+                  maxHp: target.maxHp,
+                  team: target.team,
+                  mag: target.mag,
+                }
+              : null,
+          finished: input.finished,
+          targetId: target.kind === "human" ? target.human.heroId : target.id,
+          targetMaxHp: target.kind === "human" ? target.human.maxHp : target.maxHp,
+        }
+      : applyDamageToMeleeTarget(attacker, target, outcome.applied, {
+          humans: input.humans,
+          bots: input.bots,
+        });
+  const extraHp =
+    target.kind === "human" ? target.human.hp : hit.hitBot !== null ? hit.hitBot.hp : target.hp;
+  const extra = rollOverlayExtra(
+    attacker.casts,
+    attacker.mag,
+    target.kind === "human" ? target.human.mag : target.mag,
+    extraHp,
+    input.random,
+    input.rules,
+  );
+  let finished = hit.finished;
+  let hitBot = hit.hitBot;
+  let killed = hit.killed;
+  if (extra) {
+    const extraApplied = -extra.hpChange;
+    if (target.kind === "human") {
+      const extraHit = applyDamageToMeleeTarget(attacker, target, extraApplied, {
+        humans: input.humans,
+        bots: input.bots,
+      });
+      finished = extraHit.finished;
+      killed = extraHit.killed || hit.killed;
+    } else if (hitBot) {
+      const remaining = hitBot.hp;
+      const applied = Math.min(remaining, extraApplied);
+      attacker.creditDamageToBot(applied);
+      const updated: BotMeleePresence = { ...hitBot, hp: remaining - applied };
+      hitBot = updated;
+      killed = updated.hp === 0 || hit.killed;
+      const botsAfter = input.bots.map((bot) => (bot.fightId === updated.fightId ? updated : bot));
+      finished = killed && enemySideCleared(target.team, input.humans, botsAfter);
+    }
+  }
   const events: BattleEvent[] = [
     { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },
     {
@@ -49,19 +114,22 @@ export function tryPairedMelee(
       sourceId: attacker.heroId,
       targetId: hit.targetId,
       animation: `attack_${side}`,
-      hpChange: -damage,
+      hpChange: -outcome.applied,
       targetMaxHp: hit.targetMaxHp,
-      killed: hit.killed,
+      killed,
+      react: outcome.react,
       ...(comboCp !== undefined ? { comboCp } : {}),
+      ...(extra ? { extraHits: [extra] } : {}),
     },
   ];
   for (const effectId of attacker.effects.onActorEndingTurn(input.nowMs)) {
     events.push({ type: "effect-purge", effectId });
   }
-  if (hit.finished) {
+  events.push(...applyCarrierTicks(attacker, input.random, input.rules));
+  if (finished) {
     events.push({ type: "finished", winnerTeam: attacker.team, fightId: input.fightId });
   }
-  return { result: { kind: "resolved", events }, hitBot: hit.hitBot, finished: hit.finished };
+  return { result: { kind: "resolved", events }, hitBot, finished };
 }
 
 export function applyDamageToMeleeTarget(
@@ -102,6 +170,7 @@ export function applyDamageToMeleeTarget(
     hp: target.hp - applied,
     maxHp: target.maxHp,
     team: target.team,
+    mag: target.mag,
   };
   const botsAfter = context.bots.map((bot) => (bot.fightId === target.id ? hitBot : bot));
   if (!context.bots.some((bot) => bot.fightId === target.id)) {

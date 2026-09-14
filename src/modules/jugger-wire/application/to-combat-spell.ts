@@ -17,8 +17,10 @@ export function toCombatSpell(spell: ArtifactSpell): CombatSpell {
       ...(effect.amount !== undefined ? { amount: effect.amount } : {}),
       ...(effect.dmgType !== undefined ? { dmgType: effect.dmgType } : {}),
       ...(effect.charging !== undefined ? { charging: effect.charging } : {}),
+      ...(effect.capacity !== undefined ? { capacity: effect.capacity } : {}),
       ...(effect.targetCount !== undefined ? { targetCount: effect.targetCount } : {}),
       ...(effect.duration !== undefined ? { duration: effect.duration } : {}),
+      ...(effect.period !== undefined ? { period: effect.period } : {}),
       ...(effect.forceSelfTargeting !== undefined
         ? { forceSelfTargeting: effect.forceSelfTargeting }
         : {}),

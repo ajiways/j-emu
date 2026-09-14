@@ -15,6 +15,7 @@ import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { EndingGloveResult, KeepTurnResult } from "./hunt-cast.ts";
 import { tryGloveKeepTurn } from "./hunt-cast.ts";
 import type { HuntHuman } from "./hunt-human.ts";
+import { huntFightEnemyTeam } from "./hunt-fight-teams.ts";
 import type { BotMeleeResult } from "./hunt-melee.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
@@ -118,16 +119,9 @@ export function applyBattleBotMelee(
   const bot = roster.bot(duel.otherId(target.heroId));
   const result = applyBotTurn({
     target,
+    bot,
     rules: state.rules,
     random: state.random,
-    hunt: {
-      ...hunt,
-      botFightId: bot.fightId,
-      botStrength: bot.strength,
-      botMaxHp: bot.maxHp,
-      botSpellBook: bot.spellBook,
-    },
-    botHp: bot.hp,
     fightId: state.fightId,
     keepFightOnKill: state.humans.some(
       (entry) =>
@@ -136,9 +130,9 @@ export function applyBattleBotMelee(
         !entry.leftLive &&
         entry.hp > 0,
     ),
-    casts: bot.casts,
     living,
     duel,
+    winnerTeam: huntFightEnemyTeam(hunt.purpose),
   });
   bot.setHp(result.botHp);
   return {

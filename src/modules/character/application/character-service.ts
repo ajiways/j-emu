@@ -13,6 +13,7 @@ import { requireHeroSkills, type HeroSkill } from "../domain/hero-skill.ts";
 import { loadProgressionSnapshot } from "../domain/load-progression-snapshot.ts";
 import { planLearnBonus } from "../domain/plan-learn-bonus.ts";
 import { requiredManagedL1 } from "../domain/required-managed-l1.ts";
+import { heroCombatStatsFromTotals, type HeroCombatStats } from "../domain/hero-combat-stats.ts";
 import type { RegenPolicy } from "../domain/regen-policy.ts";
 import type { ActiveFightQuery } from "../ports/active-fight-query.ts";
 import type { EquippedModifiers } from "../ports/equipped-modifiers.ts";
@@ -309,13 +310,19 @@ export class CharacterService
   }
 
   async combatStrength(characterId: number): Promise<number> {
+    const stats = await this.combatFightStats(characterId);
+    return stats.strength;
+  }
+
+  async combatFightStats(characterId: number): Promise<HeroCombatStats> {
     if (!Number.isInteger(characterId) || characterId < 1) {
       throw new Error("Character id is required");
     }
     const snapshot = await loadProgressionSnapshot(this.progression);
     const naked = requireHeroSkills(await this.skills.list(characterId));
     const bonuses = await this.equipment.modifiersForHero(characterId, snapshot.contentReleaseId);
-    return requiredSkillTotal(totalHeroSkills(naked, bonuses), "STR");
+    const totals = totalHeroSkills(naked, bonuses);
+    return heroCombatStatsFromTotals(totals);
   }
 
   async applyEquipmentVitals(hero: Hero, bonuses: readonly ArtifactSkillBonus[]): Promise<Hero> {

@@ -1,14 +1,12 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
-import {
-  botSpellAnimation,
-  botSpellEndsTurn,
-  botSpellKind1DmgType,
-  rollBotSpellDamage,
-} from "./bot-spell-damage.ts";
-import { pocketHealAmount, spellKind } from "./hunt-human-cast-state.ts";
+import { actBotSpellCard } from "./bot-spell-act.ts";
+import { botSpellEndsTurn } from "./bot-spell-damage.ts";
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import { kind1OverlayCharges } from "./magic-hit.ts";
 import { rollMeleeDamage } from "./melee-damage.ts";
+import { rollMeleeOutcome, unpublishedBotStrikeStats } from "./melee-outcome.ts";
+import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import { noteCast, pickBotSpell } from "./pick-bot-spell.ts";
 import type { RandomSource } from "./random-source.ts";
 
@@ -22,6 +20,10 @@ export function resolveRosterBotTurn(
 ): readonly BattleEvent[] {
   if (actor.hp === 0) throw new Error("Roster bot actor is dead");
   if (target.hp === 0) throw new Error("Roster bot target is dead");
+  if (actor.stunnedTurns > 0) {
+    actor.stunnedTurns -= 1;
+    return [];
+  }
   const card = pickBotSpell(
     actor.spellBook,
     { botHp: actor.hp, botMaxHp: actor.maxHp, casts: actor.casts },
@@ -29,15 +31,20 @@ export function resolveRosterBotTurn(
   );
   if (!card) return [meleeHit(actor, target, input)];
   noteCast(actor.casts, card.artikulId);
-  if (spellKind(card.spell, 1)) {
-    const struck = kind1Hit(actor, target, card.artikulId, card.spell, input);
-    if (!botSpellEndsTurn(card.spell) && target.hp > 0) {
-      return [struck, meleeHit(actor, target, input)];
-    }
-    return [struck];
+  const events = [
+    ...actBotSpellCard(actor, target, card, {
+      rules: input.rules,
+      random: input.random,
+      fightId: "roster",
+      keepFightOnKill: true,
+      living: [],
+      winnerTeam: 1,
+    }),
+  ];
+  if (target.hp > 0 && (kind1OverlayCharges(card.spell) > 0 || !botSpellEndsTurn(card.spell))) {
+    events.push(meleeHit(actor, target, input));
   }
-  if (spellKind(card.spell, 2)) return [healSelf(actor, card.artikulId, card.spell)];
-  throw new Error(`Bot spell ${card.artikulId} has no supported CMB-06 effect`);
+  return events;
 }
 
 function meleeHit(
@@ -45,54 +52,36 @@ function meleeHit(
   target: HuntRosterBot,
   input: Readonly<{ rules: BattleRules; random: RandomSource }>,
 ): BattleEvent {
-  const damage = rollMeleeDamage(actor.strength, input.random, input.rules);
-  const killed = target.applyDamage(damage);
+  const baseDamage = rollMeleeDamage(actor.strength, input.random, input.rules);
+  const outcome = rollMeleeOutcome({
+    baseDamage,
+    attacker: unpublishedBotStrikeStats(actor.strength),
+    defender: unpublishedBotStrikeStats(target.strength),
+    targetHp: target.hp,
+    forceCrit: false,
+    random: input.random,
+    rules: input.rules,
+  });
+  const extra = rollOverlayExtra(
+    actor,
+    actor.mag,
+    target.mag,
+    outcome.applied < 1 ? target.hp : Math.max(0, target.hp - outcome.applied),
+    input.random,
+    input.rules,
+  );
+  if (outcome.applied > 0) target.applyDamage(outcome.applied);
+  if (extra) target.applyDamage(-extra.hpChange);
+  const killed = target.hp === 0;
   return {
     type: "damage",
     sourceId: actor.fightId,
     targetId: target.fightId,
     animation: "attack_center",
-    hpChange: -damage,
+    hpChange: -outcome.applied,
     targetMaxHp: target.maxHp,
     killed,
-  };
-}
-
-function kind1Hit(
-  actor: HuntRosterBot,
-  target: HuntRosterBot,
-  artikulId: number,
-  spell: HuntRosterBot["spellBook"]["spells"][number]["spell"],
-  input: Readonly<{ rules: BattleRules; random: RandomSource }>,
-): BattleEvent {
-  const damage = rollBotSpellDamage(actor.strength, spell, input.random, input.rules);
-  const killed = target.applyDamage(damage);
-  return {
-    type: "damage",
-    sourceId: actor.fightId,
-    targetId: target.fightId,
-    animation: botSpellAnimation(spell, artikulId),
-    hpChange: -damage,
-    targetMaxHp: target.maxHp,
-    killed,
-    dmgType: botSpellKind1DmgType(spell),
-  };
-}
-
-function healSelf(
-  actor: HuntRosterBot,
-  artikulId: number,
-  spell: HuntRosterBot["spellBook"]["spells"][number]["spell"],
-): BattleEvent {
-  const healed = Math.min(actor.maxHp - actor.hp, pocketHealAmount(spell, actor.maxHp));
-  actor.setHp(actor.hp + healed);
-  return {
-    type: "damage",
-    sourceId: actor.fightId,
-    targetId: actor.fightId,
-    animation: botSpellAnimation(spell, artikulId),
-    hpChange: healed,
-    targetMaxHp: actor.maxHp,
-    killed: false,
+    react: outcome.react,
+    ...(extra ? { extraHits: [extra] } : {}),
   };
 }

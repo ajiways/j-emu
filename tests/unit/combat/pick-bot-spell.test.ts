@@ -58,11 +58,11 @@ describe("pickBotSpell", () => {
     expect(picked?.artikulId).toBe(396);
   });
 
-  it("skips catalog leftover kinds that CMB-06 cannot cast", () => {
+  it("skips leftover kinds that CMB-15 cannot cast", () => {
     const buff: HuntBotSpellBook["spells"][number] = {
       ...spit,
       artikulId: 400,
-      spell: { animData: "magic_baf", effects: [{ kind: 3 }] },
+      spell: { animData: "magic_baf", effects: [{ kind: 99 }] },
     };
     expect(
       pickBotSpell(
@@ -90,5 +90,47 @@ describe("pickBotSpell", () => {
       ),
     ).toBeNull();
     expect(casts.get(10)).toBe(1);
+  });
+
+  it("holds foe_has_dispel_groups until the foe has a standing group", () => {
+    const dispel: HuntBotSpellBook["spells"][number] = {
+      ...spit,
+      artikulId: 8,
+      slot: "prefer",
+      weight: 0,
+      gate: "foe_has_dispel_groups",
+      spell: { animData: "magic_baf", effects: [{ kind: 8 }] },
+    };
+    expect(
+      pickBotSpell(
+        { nothingWeight: 0, spells: [dispel] },
+        { botHp: 20, botMaxHp: 20, casts: new Map() },
+        new SequenceRandom([0.99]),
+      ),
+    ).toBeNull();
+    const picked = pickBotSpell(
+      { nothingWeight: 0, spells: [dispel] },
+      { botHp: 20, botMaxHp: 20, casts: new Map(), foeGroups: [936] },
+      new SequenceRandom([0.99]),
+    );
+    expect(picked?.artikulId).toBe(8);
+  });
+
+  it("burns fight_start kind-10 summon without casting", () => {
+    const summon: HuntBotSpellBook["spells"][number] = {
+      ...spit,
+      artikulId: 632,
+      slot: "fight_start",
+      spell: { animData: "magic_baf", effects: [{ kind: 10 }] },
+    };
+    const casts = new Map<number, number>();
+    expect(
+      pickBotSpell(
+        { nothingWeight: 100, spells: [summon] },
+        { botHp: 20, botMaxHp: 20, casts },
+        new SequenceRandom([0.5]),
+      ),
+    ).toBeNull();
+    expect(casts.get(632)).toBe(1);
   });
 });

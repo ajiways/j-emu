@@ -2,6 +2,13 @@ import type { CombatLoadout } from "./combat-loadout.ts";
 import type { FightEffectSnap } from "./hunt-human-fight-effects.ts";
 import type { HuntHumanAppearance, HuntHumanSnap } from "./hunt-human.ts";
 
+export type ExtraHit = Readonly<{
+  hpChange: number;
+  dmgType: number;
+  react: number;
+  killed: boolean;
+}>;
+
 export type HuntBotSnap = Readonly<{
   id: number;
   nick: string;
@@ -38,6 +45,7 @@ export type BattleEvent =
       humans: readonly HuntHumanSnap[];
       bot: HuntBotSnap;
       joined: HuntHumanSnap;
+      rosterBots?: readonly HuntBotSnap[];
     }>
   | Readonly<{
       type: "damage";
@@ -50,6 +58,8 @@ export type BattleEvent =
       comboCp?: number;
       dRage?: number;
       dmgType?: number;
+      react?: number;
+      extraHits?: readonly ExtraHit[];
     }>
   | Readonly<{ type: "turn-granted"; timeoutSeconds: number }>
   | Readonly<{ type: "turn-wait"; timeoutSeconds: number }>
