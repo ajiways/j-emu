@@ -49,13 +49,22 @@ export async function useFromBag(
     throw new UseDeniedError(`С ${definition.levelMin} уровня!`);
   }
   if (action.code === "ADD_HP") {
-    const gain = addHpGain(command.hpMax, action.param1, action.param2);
+    const gain = addHpGain(
+      command.hpMax,
+      requireIntegerActionParam(action.param1, "ADD_HP param1"),
+      requireIntegerActionParam(action.param2, "ADD_HP param2"),
+    );
     if (gain < 1) throw UseDeniedError.invalidEffect();
     await consumeDispose(inventory, item, action);
     return { kind: "add_hp", gain };
   }
   if (action.code === "ADD_MP") {
-    const gain = amountFromParams(command.mpMax, action.param1, action.param2, "ADD_MP");
+    const gain = amountFromParams(
+      command.mpMax,
+      requireIntegerActionParam(action.param1, "ADD_MP param1"),
+      requireIntegerActionParam(action.param2, "ADD_MP param2"),
+      "ADD_MP",
+    );
     if (gain < 1) throw UseDeniedError.invalidEffect();
     await consumeDispose(inventory, item, action);
     return { kind: "add_mp", gain };
@@ -70,10 +79,9 @@ export async function useFromBag(
     return { kind: "drink", title: action.title };
   }
   if (action.code === "NPC") {
-    if (!Number.isInteger(action.param1) || action.param1 < 1) {
-      throw new Error("NPC use action requires param1 npc id");
-    }
-    return { kind: "open_npc", npcId: action.param1 };
+    const npcId = requireIntegerActionParam(action.param1, "NPC param1");
+    if (npcId < 1) throw new Error("NPC use action requires param1 npc id");
+    return { kind: "open_npc", npcId };
   }
   if (action.code === "LEARN_RECIPE") {
     return {
@@ -116,6 +124,13 @@ function requireBagItem(
   if (!item || item.heroId !== heroId) throw UseDeniedError.itemMissing();
   if (item.location.kind !== "bag") throw UseDeniedError.mustUnequip();
   return item;
+}
+
+function requireIntegerActionParam(value: number | string, label: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value)) {
+    throw new Error(`${label} must be an integer`);
+  }
+  return value;
 }
 
 export async function consumeBagCharge(

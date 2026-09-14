@@ -13,13 +13,14 @@ export async function insertBotSpellBooks(
   rows: readonly BotDocument[],
 ): Promise<void> {
   if (rows.length === 0) return;
-  await session.insert(botSpellBooks).values(
-    rows.map((bot) => ({
-      releaseId,
-      botId: bot.id,
-      nothingWeight: bot.spellBook.nothingWeight,
-    })),
-  );
+  const books = rows.map((bot) => ({
+    releaseId,
+    botId: bot.id,
+    nothingWeight: bot.spellBook.nothingWeight,
+  }));
+  await insertInBatches(books, async (batch) => {
+    await session.insert(botSpellBooks).values(batch);
+  });
   const spells = rows.flatMap((bot) =>
     bot.spellBook.spells.map((card, ord) => ({
       releaseId,
@@ -34,7 +35,11 @@ export async function insertBotSpellBooks(
       spell: card.spell,
     })),
   );
-  if (spells.length > 0) await session.insert(botSpellBookSpells).values(spells);
+  if (spells.length > 0) {
+    await insertInBatches(spells, async (batch) => {
+      await session.insert(botSpellBookSpells).values(batch);
+    });
+  }
 }
 
 export async function loadBotSpellBook(
@@ -76,7 +81,12 @@ function spellCardFromRow(
   ) {
     throw new Error(`Bot ${botId} spell ${row.artikulId} slot is invalid`);
   }
-  if (row.gate !== null && row.gate !== "self_hp_le") {
+  if (
+    row.gate !== null &&
+    row.gate !== "self_hp_le" &&
+    row.gate !== "once" &&
+    row.gate !== "foe_has_dispel_groups"
+  ) {
     throw new Error(`Bot ${botId} spell ${row.artikulId} gate is not supported`);
   }
   return {
@@ -88,4 +98,15 @@ function spellCardFromRow(
     hpPct: row.hpPct,
     spell: extra.spell,
   };
+}
+
+const INSERT_BATCH = 250;
+
+async function insertInBatches<T>(
+  rows: readonly T[],
+  write: (batch: T[]) => Promise<unknown>,
+): Promise<void> {
+  for (let offset = 0; offset < rows.length; offset += INSERT_BATCH) {
+    await write(rows.slice(offset, offset + INSERT_BATCH));
+  }
 }

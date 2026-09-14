@@ -58,6 +58,21 @@ describe("pickBotSpell", () => {
     expect(picked?.artikulId).toBe(396);
   });
 
+  it("skips catalog leftover kinds that CMB-06 cannot cast", () => {
+    const buff: HuntBotSpellBook["spells"][number] = {
+      ...spit,
+      artikulId: 400,
+      spell: { animData: "magic_baf", effects: [{ kind: 3 }] },
+    };
+    expect(
+      pickBotSpell(
+        { nothingWeight: 0, spells: [buff] },
+        { botHp: 20, botMaxHp: 20, casts: new Map() },
+        new SequenceRandom([0.99]),
+      ),
+    ).toBeNull();
+  });
+
   it("burns an uncastable fight_start opener", () => {
     const opener: HuntBotSpellBook["spells"][number] = {
       ...spit,

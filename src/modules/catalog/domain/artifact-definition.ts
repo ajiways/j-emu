@@ -1,7 +1,6 @@
 import type { ArtifactSkillBonus } from "./artifact-skill-bonus.ts";
 import type { ArtifactUseAction } from "./artifact-use-action.ts";
 import type { ArtifactExtra } from "./artifact-extra.ts";
-import { ARTIFACT_KIND_SET_BONUS } from "./artifact-kind.ts";
 
 export class ArtifactDefinition {
   constructor(
@@ -25,8 +24,8 @@ export class ArtifactDefinition {
     readonly durabilityMax: number,
   ) {
     if (!Number.isInteger(id) || id <= 0) throw new Error("Invalid artifact id");
-    if (!title) throw new Error(`Artifact ${id} title is required`);
-    if (!picture && kindId !== ARTIFACT_KIND_SET_BONUS) {
+    if (typeof title !== "string") throw new Error(`Artifact ${id} title is required`);
+    if (typeof picture !== "string") {
       throw new Error(`Artifact ${id} picture is required`);
     }
     if (!typeId) throw new Error(`Artifact ${id} typeId is required`);
@@ -65,9 +64,6 @@ export class ArtifactDefinition {
     }
     if (!Number.isInteger(durabilityMax) || durabilityMax < 0) {
       throw new Error(`Artifact ${id} durabilityMax is invalid`);
-    }
-    if (durability > durabilityMax) {
-      throw new Error(`Artifact ${id} durability exceeds durabilityMax`);
     }
     const ids = new Set<string>();
     for (const skill of skills) {

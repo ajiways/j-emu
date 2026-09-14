@@ -64,10 +64,13 @@ describe("experience grant activation races", () => {
           account.account.nick,
         );
         const glove = playable.artifacts[0];
-        if (!glove) throw new Error("Playable bundle is missing artifact 9095");
+        if (!glove) throw new Error("Playable bundle is missing artifacts");
         const extraArtifact: ContentBundle = {
           ...playable,
-          artifacts: [...playable.artifacts, { ...glove, id: 9096, title: "Другая" }],
+          artifacts: [
+            ...playable.artifacts,
+            { ...glove, id: nextUnusedArtifactId(playable.artifacts), title: "Другая" },
+          ],
         };
         const grantCatalog = await CatalogModule.create({ database: grantClient });
         const grantInventory = InventoryModule.create({
@@ -108,5 +111,16 @@ describe("experience grant activation races", () => {
         await Promise.all([database.close(), grantClient.close(), publishClient.close()]);
       }
     });
-  });
+  }, 30_000);
 });
+
+function nextUnusedArtifactId(artifacts: ContentBundle["artifacts"]): number {
+  if (artifacts.length === 0) throw new Error("playable bundle has no artifacts");
+  let maxId = 0;
+  for (const artifact of artifacts) {
+    if (artifact.id > maxId) maxId = artifact.id;
+  }
+  const id = maxId + 1;
+  if (id > 2_147_483_647) throw new Error(`next artifact id ${id} exceeds wire integer`);
+  return id;
+}

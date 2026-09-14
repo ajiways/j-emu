@@ -8,7 +8,7 @@ import { splitFightExperience } from "../../../src/modules/combat/domain/split-f
 import type { InventoryService } from "../../../src/modules/inventory/domain/inventory-service.ts";
 import type { UnitOfWork } from "../../../src/shared/kernel/unit-of-work.ts";
 import { testArtifact } from "../../support/artifact-fixtures.ts";
-import { playableHuntBot } from "../../support/playable-bot.ts";
+import { playableHuntBot, playableHuntMeatSettlementDraw } from "../../support/playable-bot.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { HEROISM_RULES } from "../../../src/app/heroism-rules.ts";
 import { PvpFightHonorCache } from "../../../src/app/pvp-fight-honor-cache.ts";
@@ -112,7 +112,7 @@ describe("HuntFightSettlement", () => {
       fakeCatalog(),
       recordingCharacters(),
       inventory,
-      new SequenceRandom([0, 0.2, 0.95, 1]),
+      new SequenceRandom(playableHuntMeatSettlementDraw()),
       { routeFor: async () => null },
       { deposit: async () => undefined },
       { notify: async () => undefined },
@@ -137,7 +137,7 @@ describe("HuntFightSettlement", () => {
       fakeCatalog(),
       recordingCharacters(),
       inventory,
-      new SequenceRandom([0, 0.2, 0.95, 1]),
+      new SequenceRandom(playableHuntMeatSettlementDraw()),
       { routeFor: async () => null },
       { deposit: async () => undefined },
       { notify: async () => undefined },

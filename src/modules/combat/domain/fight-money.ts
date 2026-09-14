@@ -4,10 +4,12 @@ export function goldToMinor(gold: number): number {
 }
 
 export function rollMoneyGold(min: number, max: number, random: { unit(): number }): number {
-  if (!Number.isFinite(min) || !Number.isFinite(max) || max < min || min < 0) {
+  if (!Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max < 0) {
     throw new Error("Money range is invalid");
   }
-  return min + random.unit() * (max - min);
+  const lo = Math.min(min, max);
+  const hi = Math.max(min, max);
+  return lo + random.unit() * (hi - lo);
 }
 
 export function goldWireString(minorUnits: number): string {

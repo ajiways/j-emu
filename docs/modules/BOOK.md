@@ -45,5 +45,5 @@ maps decode the same way.
 
 ## Out of slice
 
-Quest book, achievements, DATA-03 full bestiary catalog, dungeon cooldown
-wipe at 06:00 MSK, `show_in_book` flags not authored in the playable slice.
+Quest book, achievements, dungeon cooldown wipe at 06:00 MSK,
+`show_in_book` flags not authored in the playable slice.

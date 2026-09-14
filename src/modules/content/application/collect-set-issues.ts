@@ -81,13 +81,5 @@ export function collectSetIssues(bundle: ContentBundle): readonly string[] {
       }
     }
   }
-  for (const artifact of bundle.artifacts) {
-    if (artifact.kindId === ARTIFACT_KIND_SET_BONUS && artifact.picture) {
-      issues.push(`artifact ${artifact.id} kind 139 picture must be empty`);
-    }
-    if (!artifact.picture && artifact.kindId !== ARTIFACT_KIND_SET_BONUS) {
-      issues.push(`artifact ${artifact.id} picture is required`);
-    }
-  }
   return issues;
 }

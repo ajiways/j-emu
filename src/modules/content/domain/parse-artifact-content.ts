@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { ARTIFACT_KIND_SET_BONUS } from "../../catalog/domain/artifact-kind.ts";
 
 const artifactSkillSchema = z
   .object({
@@ -12,10 +11,10 @@ const artifactSkillSchema = z
 const artifactActionSchema = z
   .object({
     code: z.string(),
-    param1: z.number().int().nonnegative(),
-    param2: z.number().int().nonnegative(),
+    param1: z.union([z.number().int(), z.string()]),
+    param2: z.union([z.number().int(), z.string()]),
     dispose: z.union([z.literal(0), z.literal(1)]),
-    title: z.string().min(1),
+    title: z.string(),
     bonusId: z.number().int().nonnegative().optional(),
     description: z.string().optional(),
   })
@@ -120,7 +119,7 @@ const artifactExtraSchema = z
 export const artifactDocumentSchema = z
   .object({
     id: z.number().int().positive(),
-    title: z.string().min(1),
+    title: z.string(),
     picture: z.string(),
     typeId: z.string().min(1),
     kindId: z.number().int().nonnegative(),
@@ -138,13 +137,4 @@ export const artifactDocumentSchema = z
     artifact_actions: z.record(z.string().min(1), artifactActionSchema),
     extra: artifactExtraSchema,
   })
-  .strict()
-  .refine((artifact) => artifact.durability <= artifact.durabilityMax, {
-    message: "durability must be <= durabilityMax",
-  })
-  .refine(
-    (artifact) => artifact.picture.length > 0 || artifact.kindId === ARTIFACT_KIND_SET_BONUS,
-    {
-      message: "picture is required except for kind 139",
-    },
-  );
+  .strict();

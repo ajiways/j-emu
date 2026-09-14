@@ -66,7 +66,7 @@ describe("content publication", () => {
       })),
     ).toEqual([...authored.lootEntries]);
     const hissa = await catalog.bot(4);
-    expect(hissa?.spellBook.spells.map((card) => card.artikulId)).toEqual([396]);
+    expect(hissa?.spellBook.spells.map((card) => card.artikulId)).toEqual([396, 397]);
   });
 
   it("does not change the active revision when a candidate is invalid", async () => {
@@ -91,15 +91,16 @@ describe("content publication", () => {
     const firstClient = new PostgresDatabase(databaseUrl);
     const secondClient = new PostgresDatabase(databaseUrl);
     try {
+      const extraId = nextUnusedBotId(playable.bots);
       const extraBot: ContentBundle = {
         ...playable,
-        bots: [...playable.bots, withHuntBot(3, "Другой")],
+        bots: [...playable.bots, withHuntBot(extraId, "Другой")],
       };
       const results = await Promise.allSettled([
         createPostgresContentPublication(firstClient).publish(extraBot),
         createPostgresContentPublication(secondClient).publish({
           ...extraBot,
-          bots: [...playable.bots, withHuntBot(4, "Четвёртый")],
+          bots: [...playable.bots, withHuntBot(extraId + 1, "Четвёртый")],
         }),
       ]);
       const accepted = results.filter((result) => result.status === "fulfilled");
@@ -237,7 +238,14 @@ describe("content publication", () => {
     await expect(publication.publish(changedSkills)).rejects.toBeInstanceOf(ContentValidationError);
     const extraArtifact: ContentBundle = {
       ...playable,
-      artifacts: [...playable.artifacts, { ...playable.artifacts[0]!, id: 9096, title: "Другая" }],
+      artifacts: [
+        ...playable.artifacts,
+        {
+          ...playable.artifacts[0]!,
+          id: nextUnusedArtifactId(playable.artifacts),
+          title: "Другая",
+        },
+      ],
     };
     await expect(publication.publish(extraArtifact)).resolves.toMatchObject({
       checksum: expect.stringMatching(/^[0-9a-f]{64}$/),
@@ -287,4 +295,26 @@ function withHuntBot(id: number, title: string): ContentBundle["bots"][number] {
   const sample = playable.bots[0];
   if (!sample) throw new Error("playable bundle has no bots");
   return { ...sample, id, title };
+}
+
+function nextUnusedBotId(bots: ContentBundle["bots"]): number {
+  if (bots.length === 0) throw new Error("playable bundle has no bots");
+  let maxId = 0;
+  for (const bot of bots) {
+    if (bot.id > maxId) maxId = bot.id;
+  }
+  const id = maxId + 1;
+  if (id > 2_147_483_647) throw new Error(`next bot id ${id} exceeds wire integer`);
+  return id;
+}
+
+function nextUnusedArtifactId(artifacts: ContentBundle["artifacts"]): number {
+  if (artifacts.length === 0) throw new Error("playable bundle has no artifacts");
+  let maxId = 0;
+  for (const artifact of artifacts) {
+    if (artifact.id > maxId) maxId = artifact.id;
+  }
+  const id = maxId + 1;
+  if (id > 2_147_483_647) throw new Error(`next artifact id ${id} exceeds wire integer`);
+  return id;
 }

@@ -31,6 +31,9 @@ export function parseUpgradeAction(
 ): UpgradeAction | null {
   for (const action of Object.values(useActions)) {
     if (action.code !== "ARTIFACT_UPGRADE") continue;
+    if (typeof action.param1 !== "number" || typeof action.param2 !== "number") {
+      throw new Error("ARTIFACT_UPGRADE params must be integers");
+    }
     return { code: "ARTIFACT_UPGRADE", param1: action.param1, param2: action.param2 };
   }
   return null;

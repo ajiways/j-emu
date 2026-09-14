@@ -1,8 +1,5 @@
 import type { ContentBundle } from "../domain/content-document.ts";
 
-/** AS3 SlotCodes bits 0..19 — paperdoll, same mask as inventory `paperdoll-slot`. */
-const SLOT_PAPERDOLL = (1 << 20) - 1;
-
 const GEAR_SPELL_ARTIKUL_ID = 20546;
 const GEAR_SPELL_GROUP_ID = 936;
 const GEAR_SPELL_DURATION = 320;
@@ -75,13 +72,10 @@ function collectPaperdollGearSpellIssues(
   if (tyrant.slotMask !== 32) {
     issues.push(`artifact ${GEAR_SPELL_ARTIKUL_ID} slotMask must be 32`);
   }
-  if (tyrant.extra.spells && tyrant.extra.spells.length > 0) {
-    issues.push(`artifact ${GEAR_SPELL_ARTIKUL_ID} extra.spells must be omitted in this slice`);
-  }
   const spell = tyrant.extra.spell;
   if (!spell) {
     issues.push(`artifact ${GEAR_SPELL_ARTIKUL_ID} is missing dump-proven extra.spell`);
-    return [...issues, ...paperdollSpellPolicyIssues(artifacts)];
+    return [...issues, ...paperdollSpellPolicyIssues(tyrant)];
   }
   if (spell.groupId !== GEAR_SPELL_GROUP_ID) {
     issues.push(
@@ -116,39 +110,34 @@ function collectPaperdollGearSpellIssues(
       );
     }
   }
-  issues.push(...paperdollSpellPolicyIssues(artifacts));
+  issues.push(...paperdollSpellPolicyIssues(tyrant));
   return issues;
 }
 
-function paperdollSpellPolicyIssues(artifacts: ContentBundle["artifacts"]): readonly string[] {
+function paperdollSpellPolicyIssues(
+  artifact: ContentBundle["artifacts"][number],
+): readonly string[] {
   const issues: string[] = [];
-  for (const artifact of artifacts) {
-    if (!isPaperdollArtifact(artifact.slotMask)) continue;
-    const spell = artifact.extra.spell;
-    if (!spell) continue;
-    if (spell.triggers !== undefined) {
-      issues.push(`paperdoll artifact ${artifact.id} extra.spell must not have triggers`);
+  const spell = artifact.extra.spell;
+  if (!spell) return issues;
+  if (spell.triggers !== undefined) {
+    issues.push(`paperdoll artifact ${artifact.id} extra.spell must not have triggers`);
+  }
+  if (spell.onlyPvP !== undefined) {
+    issues.push(`paperdoll artifact ${artifact.id} extra.spell must not have onlyPvP`);
+  }
+  for (const [index, effect] of spell.effects.entries()) {
+    if (effect.kind !== 3) {
+      issues.push(`paperdoll artifact ${artifact.id} extra.spell effect ${index} kind must be 3`);
     }
-    if (spell.onlyPvP !== undefined) {
-      issues.push(`paperdoll artifact ${artifact.id} extra.spell must not have onlyPvP`);
-    }
-    for (const [index, effect] of spell.effects.entries()) {
-      if (effect.kind !== 3) {
-        issues.push(`paperdoll artifact ${artifact.id} extra.spell effect ${index} kind must be 3`);
-      }
-      if (effect.duration === undefined) {
-        issues.push(
-          `paperdoll artifact ${artifact.id} extra.spell effect ${index} duration is required`,
-        );
-      }
-    }
-    if (!artifact.picture) {
-      issues.push(`paperdoll artifact ${artifact.id} picture is required for gear-spell img`);
+    if (effect.duration === undefined) {
+      issues.push(
+        `paperdoll artifact ${artifact.id} extra.spell effect ${index} duration is required`,
+      );
     }
   }
+  if (!artifact.picture) {
+    issues.push(`paperdoll artifact ${artifact.id} picture is required for gear-spell img`);
+  }
   return issues;
-}
-
-function isPaperdollArtifact(slotMask: number): boolean {
-  return (slotMask & SLOT_PAPERDOLL) !== 0;
 }

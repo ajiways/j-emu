@@ -437,11 +437,12 @@ Provenance `artifactUse.ts` `amountFromParams`. `param1` обязателен и
 | 77  | Кусок мяса | `rawmeat_grey.png` | `"10"` | 48     | 0        | 0      | 3          | 40    | 99       |
 
 Dump instance: `flags: 40`, `price: 0.03`, `actions: 7`, `noweight: 1`,
-`artifact_actions["20"].code=ADD_HP`, `param1=30`, `param2=0`, `dispose=1`,
+`artifact_actions["5"].code=ADD_HP`, `param1=30`, `param2=0`, `dispose=1`,
 `title` «Съесть мясо». `level_min=0`; `level_max` live-сентинел `536870911`
-**не копировать** → `0`. `bagStack=99`: dump доказывает stack (`cnt=4`); 99 —
-именованный food-stack, не `9999`. Wire `artifact_actions` — **map**, не
-array; ключ `"20"` как в dump.
+**не копировать** → `0`. `bagStack` в Pub1 AMF — `9999`; slice INV-04 держал
+именованный food-stack `99`. Wire `artifact_actions` — **map**, не array.
+Ключ `"5"` — `row.id` из `artifact_artikul_77.amf` (`DATA-02`). Старый
+handwritten slice ставил `"20"` без AMF evidence.
 
 Bag `actions` = `FLAG_DROP\|FLAG_SELL\|FLAG_USE` = **7**, без PUT_ON.
 Starter: 9095×1, 93×2, 99×10, **77×4** bag.
@@ -494,6 +495,30 @@ ECO-01 buy (inventory mutation + `debitMoney`). Economy-модуля нет.
 `durabilityMax > 0` или infinite → предмет tracks durability. `0`/`0` —
 еда/пояс/спеллы, прочность не ведётся. Instance копирует catalog при create.
 Не `Number(x) || 0` и не catalog overlay поверх missing instance.
+
+**Коррекция по `DATA-02` full-corpus audit.** `durability <= durabilityMax`
+как обязательный invariant был выведен только из 7 представительных
+предметов минимального slice (все `X/X`) и не подтверждён legacy-кодом:
+`jgr-emu/src/db/seed_artifacts.ts` пишет оба поля из AMF verbatim
+(`Number(d["durability"]) || 0`), без сравнения; `jgr-emu/src/durability.ts`
+(`tracksDurability`/`canRepair`/`applyBreak`) не требует `current <= max` и
+безопасно обрабатывает `current > max` (не ломается, не даёт отрицательных
+значений — просто не считает предмет «battle broken» и не даёт repair,
+т.к. `current < max` ложно). Полный Pub1-корпус (`DATA-02`, 22 560
+artifacts) содержит **37 записей** с `durability > durabilityMax`,
+систематически `durabilityMax = 1` при разном `durability` (4/15/30) —
+например `1904` «Патронташ первооткрывателя», `5775` «Клепаная кираса»,
+`1883` «Шлем тирана (тестовый)». Это live dump evidence (rank 1 по
+`SOURCE_BOUNDARY.md` § «Приоритет доказательств»), не decode-баг: значения
+дублируются в generated corpus между запусками. Правило исправлено:
+инвариант — только `durability >= 0` и `durabilityMax >= 0`, `current`
+может превышать `max` для отдельных legacy-предметов (сохраняется как
+`legacy behavior`, не «исправляется» до консистентности). Затрагивает
+идентичный constraint `*_durability_range_check` на пяти таблицах:
+`catalog.artifacts`, `inventory.items`, `trade.held_items`,
+`mail.letter_attachments`, `auction.listings` — все копируют шаблон
+catalog/instance без клэмпинга, все должны быть согласованно ослаблены
+одной миграцией.
 
 Смерть (hp 0 на hunt finish): pool = надетые tracking с `current > 0`, без
 TEMPEFFECT; `pickDeathBreaks` 4–5 или весь pool. −1; finite `1/1` delete;

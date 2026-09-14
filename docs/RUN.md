@@ -23,8 +23,19 @@ npm run db:reset
 ```
 
 `db:reset` делает `DROP DATABASE` + `CREATE DATABASE` для имени в `DATABASE_URL`,
-затем migrate и publish. Это уничтожает героев и активный release. Команда
-отказывается трогать БД с суффиксом `_test` и URL, равный `TEST_DATABASE_URL`.
+затем migrate и publish из `CONTENT_BUNDLE_FILE` (`playable-slice.json` +
+`itemsFile` / `botsFile` generated JSON). `PUB1_DIR` для этого шага не нужен.
+
+Item и bot corpus обновляются отдельно, когда меняется Pub1:
+
+```text
+PUB1_DIR=../Pub1 npm run content:decode:items
+PUB1_DIR=../Pub1 npm run content:decode:bots
+```
+
+Повтор с тем же corpus digest не переписывает файл. Decoder не входит в
+`db:reset`. Это уничтожает героев и активный release. Команда отказывается
+трогать БД с суффиксом `_test` и URL, равный `TEST_DATABASE_URL`.
 Тестовая БД сбрасывается только `npm run test:integration` / `test:e2e`.
 
 Тот же publish-скрипт на уже заполненной БД: совпавший checksum — no-op;

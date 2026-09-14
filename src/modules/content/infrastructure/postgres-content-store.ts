@@ -1,4 +1,4 @@
-import { and, eq, max, sql } from "drizzle-orm";
+import { eq, max, sql } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import type { PublishedRelease, ValidatedContentBundle } from "../domain/content-document.ts";
 import type { ContentStore } from "../ports/content-store.ts";
@@ -11,6 +11,8 @@ import {
   releaseVersionSeq,
   releases,
 } from "./schema.ts";
+
+const INSERT_BATCH = 250;
 
 export class PostgresContentStore implements ContentStore {
   constructor(private readonly database: PostgresDatabase) {}
@@ -70,39 +72,67 @@ export class PostgresContentStore implements ContentStore {
       .returning({ id: releases.id, version: releases.version, checksum: releases.checksum });
     const release = this.singleRelease(releaseRows, "new release");
     if (!release) throw new Error("Release insert did not return an id");
-    const entryRows = [];
-    for (const entry of bundle.entries) {
-      const draftId = await this.requireDraftId(entry.type, entry.key);
-      const versionRows = await session
-        .select({ value: max(draftVersions.version) })
-        .from(draftVersions)
-        .where(eq(draftVersions.draftId, draftId));
-      const current = versionRows[0]?.value;
-      const nextVersion = current === null || current === undefined ? 1 : current + 1;
-      const versionInsert = await session
+    const draftIds = await this.ensureDraftIds(bundle.entries);
+    const nextVersion = await this.nextDraftVersions(draftIds);
+    const versionValues = bundle.entries.map((entry) => {
+      const draftId = draftIds.get(`${entry.type}:${entry.key}`);
+      if (!draftId) throw new Error(`Draft id missing for ${entry.type}:${entry.key}`);
+      const version = nextVersion.get(draftId);
+      if (version === undefined)
+        throw new Error(`Draft version missing for ${entry.type}:${entry.key}`);
+      return {
+        draftId,
+        version,
+        schemaVersion: bundle.schemaVersion,
+        document: entry.document,
+        createdBy: "bootstrap",
+        createdAt: sql`now()`,
+        type: entry.type,
+        key: entry.key,
+        digest: entry.digest,
+      };
+    });
+    const versionIds = new Map<string, string>();
+    for (let offset = 0; offset < versionValues.length; offset += INSERT_BATCH) {
+      const batch = versionValues.slice(offset, offset + INSERT_BATCH);
+      const inserted = await session
         .insert(draftVersions)
-        .values({
-          draftId,
-          version: nextVersion,
-          schemaVersion: bundle.schemaVersion,
-          document: entry.document,
-          createdBy: "bootstrap",
-          createdAt: sql`now()`,
-        })
-        .returning({ id: draftVersions.id });
-      const draftVersionId = versionInsert[0]?.id;
-      if (versionInsert.length !== 1 || !draftVersionId) {
+        .values(
+          batch.map((row) => ({
+            draftId: row.draftId,
+            version: row.version,
+            schemaVersion: row.schemaVersion,
+            document: row.document,
+            createdBy: row.createdBy,
+            createdAt: row.createdAt,
+          })),
+        )
+        .returning({ id: draftVersions.id, draftId: draftVersions.draftId });
+      if (inserted.length !== batch.length) {
+        throw new Error("Draft version batch insert returned a different row count");
+      }
+      for (const row of inserted) {
+        versionIds.set(row.draftId, row.id);
+      }
+    }
+    const entryRows = bundle.entries.map((entry) => {
+      const draftId = draftIds.get(`${entry.type}:${entry.key}`);
+      if (!draftId) throw new Error(`Draft id missing for ${entry.type}:${entry.key}`);
+      const draftVersionId = versionIds.get(draftId);
+      if (!draftVersionId) {
         throw new Error(`Draft version insert failed for ${entry.type}:${entry.key}`);
       }
-      entryRows.push({
+      return {
         releaseId: release.id,
         contentType: entry.type,
         contentKey: entry.key,
         draftVersionId,
         digest: entry.digest,
-      });
+      };
+    });
+    for (let offset = 0; offset < entryRows.length; offset += INSERT_BATCH) {
+      await session.insert(releaseEntries).values(entryRows.slice(offset, offset + INSERT_BATCH));
     }
-    if (entryRows.length > 0) await session.insert(releaseEntries).values(entryRows);
     return release;
   }
 
@@ -130,26 +160,66 @@ export class PostgresContentStore implements ContentStore {
       });
   }
 
-  private async requireDraftId(contentType: string, contentKey: string): Promise<string> {
+  private async ensureDraftIds(
+    entries: readonly { type: string; key: string }[],
+  ): Promise<Map<string, string>> {
     const session = this.database.session();
     const existing = await session
-      .select({ id: drafts.id })
-      .from(drafts)
-      .where(and(eq(drafts.contentType, contentType), eq(drafts.contentKey, contentKey)));
-    if (existing.length > 1) {
-      throw new Error(`Multiple drafts found for ${contentType}:${contentKey}`);
+      .select({
+        id: drafts.id,
+        contentType: drafts.contentType,
+        contentKey: drafts.contentKey,
+      })
+      .from(drafts);
+    const byKey = new Map(existing.map((row) => [`${row.contentType}:${row.contentKey}`, row.id]));
+    if (existing.length !== byKey.size) throw new Error("Duplicate drafts found");
+    const missing = entries.filter((entry) => !byKey.has(`${entry.type}:${entry.key}`));
+    const uniqueMissing = [];
+    const seen = new Set<string>();
+    for (const entry of missing) {
+      const key = `${entry.type}:${entry.key}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      uniqueMissing.push({ contentType: entry.type, contentKey: entry.key });
     }
-    const found = existing[0]?.id;
-    if (found) return found;
-    const inserted = await session
-      .insert(drafts)
-      .values({ contentType, contentKey })
-      .returning({ id: drafts.id });
-    const id = inserted[0]?.id;
-    if (inserted.length !== 1 || !id) {
-      throw new Error(`Draft insert failed for ${contentType}:${contentKey}`);
+    for (let offset = 0; offset < uniqueMissing.length; offset += INSERT_BATCH) {
+      const batch = uniqueMissing.slice(offset, offset + INSERT_BATCH);
+      const inserted = await session.insert(drafts).values(batch).returning({
+        id: drafts.id,
+        contentType: drafts.contentType,
+        contentKey: drafts.contentKey,
+      });
+      if (inserted.length !== batch.length) {
+        throw new Error("Draft batch insert returned a different row count");
+      }
+      for (const row of inserted) {
+        byKey.set(`${row.contentType}:${row.contentKey}`, row.id);
+      }
     }
-    return id;
+    return byKey;
+  }
+
+  private async nextDraftVersions(
+    draftIds: ReadonlyMap<string, string>,
+  ): Promise<Map<string, number>> {
+    const session = this.database.session();
+    const ids = [...new Set(draftIds.values())];
+    const current = new Map<string, number>();
+    if (ids.length > 0) {
+      const rows = await session
+        .select({ draftId: draftVersions.draftId, value: max(draftVersions.version) })
+        .from(draftVersions)
+        .groupBy(draftVersions.draftId);
+      for (const row of rows) {
+        if (row.value !== null && row.value !== undefined) current.set(row.draftId, row.value);
+      }
+    }
+    const next = new Map<string, number>();
+    for (const id of ids) {
+      const value = current.get(id);
+      next.set(id, value === undefined ? 1 : value + 1);
+    }
+    return next;
   }
 
   private singleRelease(

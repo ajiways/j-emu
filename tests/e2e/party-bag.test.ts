@@ -10,6 +10,7 @@ import {
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
 import { uniqueDevelopmentSlot } from "../support/harness/unique-development-slot.ts";
 import { SequenceRandom } from "../support/fakes/sequence-random.ts";
+import { playableHuntMeatSettlementDraw } from "../support/playable-bot.ts";
 import {
   bagItemByArtikulId,
   huntFightIdFrom,
@@ -22,7 +23,11 @@ describe("party bag, grouploot and HELP", () => {
 
   beforeEach(async () => {
     harness = new ApplicationHarness(undefined, undefined, {
-      lootRandom: new SequenceRandom([0, 0.2, 0.95, 1, 0, 0.2, 0.95, 1, 0, 0.2, 0.95, 1]),
+      lootRandom: new SequenceRandom([
+        ...playableHuntMeatSettlementDraw(),
+        ...playableHuntMeatSettlementDraw(),
+        ...playableHuntMeatSettlementDraw(),
+      ]),
       partyRandom: new SequenceRandom([90, 10]),
     });
     application = await harness.start();

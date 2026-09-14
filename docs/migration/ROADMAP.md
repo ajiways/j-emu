@@ -660,9 +660,10 @@
 - **Content set:** dump-proven offensive books on Hissa **4** / 50101 (396
   `magic_direct`, `pcSTR: -50`), Spirit **32** / 50102 (422 `magic_darkball`),
   Red gryzl **24** / 50103 (394); Gryzl **2** empty book. Full
-  `bot_spell_book.json` — DATA-03, не эта capability. Heal+AOE dump-бот
-  (Пещерный огр 99, area 542) не в playable 503/501/504 — не добавлять
-  (WLD). Движок всё же принимает kind-2 heal и `targetCount>=2` AOE.
+  `bot_spell_book.json` — DATA-03 (закрыт), не эта capability. Heal+AOE
+  dump-бот (Пещерный огр 99) в каталоге DATA-03; CMB-06 не добавлял его
+  в playable 503/501/504. Движок принимает kind-2 heal и `targetCount>=2`
+  AOE.
 - **Architecture checkpoint / decision:** complete. Выбор AI — чистая
   функция `pickBotSpell` в combat domain, не scheduler/process. Книга
   снапшотится на ATTACK_BOT (`HuntStartInput.botSpellBook`); combat не
@@ -683,7 +684,7 @@
 - **depends_on:** `CMB-03`
 - **Behavior evidence:** legacy `FIGHT_LOOT.md` full weighted-table algorithm.
 - **Content set:** переиспользует существующий `bot_loot_entries`; расширение
-  до полного корпуса — DATA-03 bulk import, не эта capability.
+  до полного корпуса — DATA-03 (закрыт), не эта capability.
 - **Architecture checkpoint / decision:** complete. `rollBotLoot` — чистая
   domain-функция от `BotReward` + `RandomSource`; combat/catalog не читают
   mid-roll. Произвольное число entries/весов уже в алгоритме (guaranteed
@@ -693,7 +694,8 @@
   `pickBotSpell`.
 - **Acceptance:** таблица лута работает для произвольного набора entries и
   весов: одна entry, равные веса, `nothing_weight` доминирует; Gryzl 50310
-  может выдать **77** (raw-AMF). Empty tables 4/24/32 остаются пустыми.
+  может выдать **77** (raw-AMF). Empty tables 4/24/32 в срезе CMB-07;
+  DATA-03 заполнил overlay-таблицы.
   CEF не прогонялся — см. [CEF_MANUAL.md](CEF_MANUAL.md).
 - **Status:** `done`
 
@@ -1854,6 +1856,228 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   `src/modules/trade` escrow repo; raw-AMF `tests/e2e/trade.test.ts`.
   CEF не прогонялся.
 - **Status:** `done`
+
+## Wave 14 — content corpus decoders
+
+Приоритет `CONTENT_MATRIX.md` § «Приоритет: тянуть DATA-стадии за
+движком, не откладывать»: как только домен механики стал generic, полный
+импорт его Pub1-корпуса — следующая задача, не отдельная поздняя волна.
+Это generalized per-domain decoder tooling, не куратский контент —
+`CONTENT-STORY-*` ниже остаётся `queued` и не входит в `depends_on` ни
+одной записи этой волны.
+
+### DATA-02 — Pub1 item corpus decoder
+
+- **ID:** `DATA-02`
+- **depends_on:** `FND-01`
+- **Behavior evidence:** [CONTENT_MATRIX.md](CONTENT_MATRIX.md) § DATA-02
+  rows; `jgr-emu/src/db/seed_artifacts.ts` (алгоритм разбора
+  `artifact_artikul_*.amf`, читается как evidence формата, не подключается
+  как зависимость — `SOURCE_BOUNDARY.md`); текущий
+  `content/playable-slice.json` как evidence целевой типизации
+  (`ArtifactDocument`, `src/modules/content/domain/content-playable-entities.ts`).
+- **Content set:** весь Pub1 `Pub1/images/locale/ru/amf/artifact_artikul_*.amf`
+  корпус (~22 560 файлов, ~55 МБ входа; ожидаемый выход — единицы МБ
+  структурированного JSON, не ассеты). Один сгенерированный content-seed
+  файл в формате `ArtifactDocument[]` — тот же тип, что уже использует
+  `content/playable-slice.json`, не новый формат. Wire `artikul_id`
+  сохраняется без перенумерации. `artikul_weights.json` и другие item-field
+  overlays входят как отдельный `provenance: authored` слой того же
+  decoder поверх `provenance: live-dump` базовых записей (два
+  последовательных `draft_version` одного ключа — `SOURCE_BOUNDARY.md` §
+  «Собственные правки поверх базовых данных», не файловый overlay-merge).
+- **Architecture checkpoint / decision:** ADR-0011/ADR-0018 достаточны;
+  новый ADR/`ARC-*` не нужен — это generated tooling поверх уже принятой
+  publication-модели, не новая persistence-модель и не новый public port.
+  **Ownership.** `catalog` владеет `artifacts` (без изменений). Decoder —
+  новый offline dev-tooling script, не HTTP-хендлер и не production
+  request path; не импортируется в domain/application. Раздача статики
+  клиенту (`StaticAssetRegistrar`, читает весь `PUB1_DIR` как есть) не
+  трогается этой capability и не зависит от decoder.
+  **Формат вывода — решение, не оставлено coding agent на догадку.**
+  Сейчас `loadContentBundleFile` читает один JSON-объект
+  (`PlayableSliceDocuments`) и мержит только `commonConfFile`. Decoder
+  выдаёт отдельный committed файл (например
+  `content/pub1-items.generated.json`) с тем же типом `artifacts`, а
+  bundle-loading расширяется по тому же паттерну, что уже есть у
+  `commonConfFile`: явный доп. ключ (например `itemsFile`) на второй
+  JSON-файл, чьё содержимое подмешивается в разбираемый bundle **до**
+  `parseContentBundle`. Конфликт stable key (`artikul_id`) между
+  `playable-slice.json` и generated-файлом — ошибка candidate, не
+  last-write-wins и не silent override. `content/playable-slice.json`
+  вручную не растится корпусом — генерируемый файл живёт отдельно и
+  отдельно коммитится.
+  **`db:reset`/`db:publish:development`.** После этой capability
+  `npm run db:reset` обязан поднимать полный item-корпус **без**
+  смонтированного `PUB1_DIR` — читает только committed generated-файл(ы).
+  Decoder — отдельная explicit команда (например
+  `npm run content:decode:items`, вызывается вручную при обновлении Pub1
+  corpus), не часть `db:reset` и не dynamic import во время runtime.
+  **Fail-fast.** Нечитаемый/неизвестный AMF record — весь decode
+  завершается ошибкой, не «импортировано 99 из 100»
+  (`SOURCE_BOUNDARY.md` § «Правила одного importer»). Дублирующий
+  `artikul_id` внутри corpus — ошибка decode. Ссылка на несуществующий
+  skill id — ошибка `ContentValidator` на этапе candidate, не молчаливый
+  skip на decode.
+  **Manifest.** Source manifest перед записью — относительный путь, size,
+  digest каждого `.amf`, decoder/schema version, отсортированный список
+  authored keys с digest документа (`CONTENT_MATRIX.md` § «Правила
+  manifest, count и checksum»). Повторный decode того же Pub1 corpus (тот
+  же digest) не создаёт новый файл/версию.
+  **Не в этом срезе.** Generic export/import произвольной active release
+  (план `CONTENT_PIPELINE.md` § «Экспорт и восстановление» остаётся
+  отдельной, не начатой задачей — не путать с этим decoder-специфичным
+  файлом); item overlays помимо `artikul_weights.json`; `DATA-04…06`
+  (areas/hunts, stores/reputation, NPC/квесты — следующие записи этой
+  волны по той же схеме, после `DATA-03`).
+- **Acceptance:** decode свежего `PUB1_DIR` производит один committed
+  JSON-файл с полным corpus (~22 560+ artifacts); wire ID уже
+  зафиксированных в existing raw-AMF e2e (9095, 20/21/26, 93, 99, 77, 23,
+  24, 621, 553/1310/4603/11408/13224, recruit 27/28/30/33/35/106, mix
+  43/46, USE 640/623/2371/55/584, farm 1720/1721/1722, craft 1861/1714,
+  монета 5986, …) совпадают между старым `playable-slice.json` и новым
+  сгенерированным файлом; `npm run db:reset` на машине **без** `PUB1_DIR`
+  успешно поднимает БД только из committed файлов; существующие raw-AMF
+  e2e проходят без изменения ожидаемых wire значений; повторный decode
+  того же Pub1 corpus даёт тот же digest/файл.
+- **Boundary/contract audit (закрыт):** decode/файл/manifest в порядке.
+  Cross-field `durability <= durabilityMax` снят миграцией
+  `drizzle/0029_catalog_drop_durability_range.sql` на пяти таблицах
+  (`catalog.artifacts`, `inventory.items`, `trade.held_items`,
+  `mail.letter_attachments`, `auction.listings`); остаются отдельные
+  `durability >= 0` / `durabilityMax >= 0`. 37/22 560 dump-строк с
+  `current > max` публикуются verbatim (`INVENTORY.md` § INV-05 «Коррекция»).
+  Других numeric CHECK-нарушений в корпусе нет. `npm run db:reset` без
+  `PUB1_DIR`, `test:integration`, `test:e2e` и `check` зелёные.
+  Editor `candidate_entries` пишется батчами по 250 (postgres.js лимит
+  65534 параметров на 22 560 ключах). Pocket `persSpells`/`effUse` flags
+  `"262144"`, когда AMF опускает `extra.spell.flags` —
+  `POCKET_SPELL_WIRE_FLAGS`. Meat 77 USE key — AMF `"5"`, не handwritten
+  `"20"`.
+- **Status:** `done`
+
+### DATA-03 — Bestiary/bot spellbook/loot corpus decoder
+
+- **ID:** `DATA-03`
+- **depends_on:** `DATA-02`, `CMB-06`, `CMB-07`
+- **Precondition (уже выполнено, не проверять заново):**
+  `CONTENT_MATRIX.md` § «Приоритет» требует, чтобы механика домена стала
+  generic до массового импорта. `CMB-06` — «Выбор AI — чистая функция
+  `pickBotSpell` … Catalog `BotDefinition.spellBook`» (произвольная книга,
+  не только Hissa/Spirit/Red gryzl). `CMB-07` — «Произвольное число
+  entries/весов уже в алгоритме». Оба `done`: combat/catalog уже
+  domain-generic, массовый импорт этого домена не блокирован дальнейшей
+  переработкой движка.
+- **Behavior evidence:** [CONTENT_MATRIX.md](CONTENT_MATRIX.md) § три
+  строки `DATA-03` (bestiary/bot overlays; spell definitions; base loot);
+  `jgr-emu/src/db/seed_bots.ts` (алгоритм разбора `bestiary.amf` +
+  authored-overlay порядок `fixtures/bots_overlay.json` /
+  `radvei_hunt_bots.json`, читается как evidence формата, не подключается
+  как зависимость); `jgr-emu/src/db/seed_bot_spell_book.ts`
+  (`fixtures/bot_spell_book.json` — уже curated JSON, не сырой AMF);
+  текущий `content/playable-slice.json` bots/`bot_spell_books` как
+  evidence целевой типизации.
+- **Content set:** полный Pub1 `bestiary.amf` corpus (базовые
+  bot stats/look, без spell/loot policy) + authored overlay слой
+  `bots_overlay.json`/`radvei_hunt_bots.json` тем же
+  двух-`draft_version` паттерном, что `artikul_weights.json` в `DATA-02`
+  (`provenance: live-dump` затем `provenance: authored` того же ключа —
+  не файловый merge). Отдельно: полный `bot_spell_book.json` (spell
+  definitions/AI книги) и base bot loot (`bot_loot_entries` из bestiary
+  drops + overlay loot, dwar-lite heuristics как в legacy
+  `seed_bots.ts`). Три source group декодируются и валидируются в этом
+  порядке, чтобы не создать bot↔spell cycle
+  (`CONTENT_MATRIX.md` уже фиксирует эту причину): base bots → spell
+  definitions (нужны `DATA-02` items для spell-linked artifacts) → base
+  loot (нужны `DATA-02` items и base bots). Wire bot/artikul ID
+  сохраняются без перенумерации.
+- **Architecture checkpoint / decision:** ADR-0011/ADR-0017–0020
+  достаточны; новый ADR/`ARC-*` не нужен — тот же generated-tooling
+  паттерн, что `DATA-02`, не новая persistence-модель и не новый public
+  port. **Ownership.** `catalog` владеет `bots`/`bot_spell_books`/
+  `bot_loot_entries` (без изменений). Decoder(ы) — offline dev-tooling
+  script(ы) (например `npm run content:decode:bots`,
+  `content:decode:bot-spells`), не HTTP-хендлер, не часть `db:reset`, не
+  dynamic import. **Формат вывода.** Один committed файл на source group
+  (например `content/bots.generated.json`,
+  `content/bot-spell-books.generated.json`,
+  `content/bot-loot.generated.json`), тот же тип, что уже использует
+  `content/playable-slice.json`. Bundle-loading расширяется тем же
+  паттерном, что `itemsFile` у `DATA-02`: явные доп. ключи, содержимое
+  подмешивается до `parseContentBundle`. Конфликт stable key (bot id)
+  между `playable-slice.json` и generated-файлом — ошибка candidate, не
+  last-write-wins. `content/playable-slice.json` вручную не растится
+  полным bestiary corpus. **`db:reset`/`db:publish:development`.** После
+  этой capability поднимает полный bot+spellbook+loot корпус **без**
+  смонтированного `PUB1_DIR` — только committed generated-файл(ы).
+  **Fail-fast.** Нечитаемый/неизвестный `bestiary.amf` record — весь
+  decode завершается ошибкой. Дублирующий bot id внутри corpus — ошибка
+  decode. Ссылка spell/loot на несуществующий item/skill/bot — ошибка
+  `ContentValidator` на этапе candidate, не молчаливый skip.
+  **Manifest** — те же правила, что `DATA-02`
+  (`CONTENT_MATRIX.md` § «Правила manifest, count и checksum»). Повторный
+  decode того же corpus не создаёт новый файл/версию. **Не в этом
+  срезе.** Размещение новых ботов на area/hunt spawn (`DATA-04`);
+  quest-conditioned loot policy (`DATA-05`/`DATA-06`); NPC/dialog
+  bindings (`DATA-06`).
+- **Acceptance:** decode свежего `PUB1_DIR` производит committed
+  bots/spellbook/loot файлы с полным corpus; wire ID уже
+  зафиксированных в existing raw-AMF e2e (Hissa **4**/50101, Spirit
+  **32**/50102, Red gryzl **24**/50103, Gryzl **2**, dungeon bots
+  99/106–109/354/353/373) совпадают между старым `playable-slice.json` и
+  новыми generated-файлами; `npm run db:reset` без `PUB1_DIR` поднимает
+  полный корпус только из committed файлов; существующие CMB-06/CMB-07
+  raw-AMF e2e проходят без изменения wire значений; повторный decode того
+  же corpus даёт тот же digest/файлы; `npm run check`, `test:integration`,
+  `test:e2e` зелёные до смены статуса на `done` (обязательный
+  boundary/contract audit тем же порядком, что закрыл `DATA-02`: сначала
+  реальный прогон, потом статус).
+- **Boundary/contract audit (закрыт):** decode/файл/manifest в порядке.
+  164 bots из `bestiary.amf` (135) + gap-fill dungeon-only IDs + overlay
+  upsert. Title = AMF `nick` (Грызл **2**, не handwritten «Грызль»).
+  VIT ≡ maxHp (бот 2: 10/STR 8). Overlay loot verbatim: NOTHING 3000 /
+  27 entries; `money_min`/`money_max` оба `>= 0` без порядка (бот 117:
+  9 и 0, `rollMoneyGold` закрытый интервал между границами). Spell
+  gates `once` / `foe_has_dispel_groups`; kind 3/10 picker skips.
+  Catalog inserts батчами по 250. `npm run db:reset` без `PUB1_DIR`,
+  `test:integration`, `test:e2e` и `check` зелёные.
+- **Status:** `done`
+
+### DATA-04 — Areas, links and hunt spawn corpus decoder
+
+- **ID:** `DATA-04`
+- **depends_on:** `DATA-03`
+- **Precondition (уже выполнено, не проверять заново):**
+  `CONTENT_MATRIX.md` § «Приоритет» требует, чтобы механика домена стала
+  generic до массового импорта. Travel/hunt/dungeon/BG уже `done` на
+  representative dump-proven subset. `DATA-03` закрыл bot refs для spawn.
+- **Behavior evidence:** [CONTENT_MATRIX.md](CONTENT_MATRIX.md) § две
+  строки `DATA-04` (areas/links; hunt definitions);
+  `jgr-emu/src/db/seed_game_config.ts` (`radvei_areas.json` /
+  `radvei_client_data.json` / `hunt_spawns.json` / `radvei_hunt_bots.json`,
+  читается как evidence формата, не подключается как зависимость);
+  текущий `content/playable-slice.json` areas/`areaLinks`/`huntSpawns`
+  как evidence целевой типизации.
+- **Content set:** полный authored atlas areas/links/client presentation
+  плюс hunt spawns/routes/zones. Wire area/hunt/bot ID без перенумерации.
+  Provenance: live-dump затем authored overlays того же ключа, не
+  файловый merge. Не в этом срезе: DATA-05 stores, DATA-06 NPC/квесты.
+- **Architecture checkpoint / decision:** ADR-0011/ADR-0017–0020
+  достаточны; новый ADR/`ARC-*` не нужен — тот же generated-tooling
+  паттерн, что `DATA-02`/`DATA-03`. **Ownership.** `world` владеет
+  `areas`/`area_links`/`hunt_spawns`. Decoder — offline
+  `npm run content:decode:areas` (имя уточняется при реализации), не
+  HTTP, не часть `db:reset`, не `import()`. **Формат вывода.** Committed
+  generated JSON плюс manifests; bundle keys как `itemsFile`/`botsFile`.
+  Конфликт stable key — ошибка candidate. `db:reset` без `PUB1_DIR`.
+  **Fail-fast.** Нечитаемый/неизвестный record — весь decode ошибка.
+  Ссылка hunt на отсутствующий bot/area — ошибка `ContentValidator`.
+- **Acceptance:** decode производит committed areas/hunt файлы; wire ID
+  already-e2e (503/501/504/…, hunt 50310/50309/50101–50103, dungeon
+  542/544/…) совпадают; `db:reset` без `PUB1_DIR`; existing travel/hunt
+  raw-AMF e2e без изменения wire значений; `check` /
+  `test:integration` / `test:e2e` зелёные до `done`.
+- **Status:** `next`
 
 ## Content-fill track — сюжет, не брать сейчас
 

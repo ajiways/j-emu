@@ -70,7 +70,6 @@ export const listings = auctionSchema.table(
     ),
     check("listings_durability_check", sql`${table.durability} >= 0`),
     check("listings_durability_max_check", sql`${table.durabilityMax} >= 0`),
-    check("listings_durability_range_check", sql`${table.durability} <= ${table.durabilityMax}`),
     check("listings_upgrade_id_check", sql`${table.upgradeId} >= 0`),
     check(
       "listings_upgrade_level_check",

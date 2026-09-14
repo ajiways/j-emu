@@ -43,7 +43,6 @@ export const items = inventorySchema.table(
     check("items_version_check", sql`${table.version} > 0`),
     check("items_durability_check", sql`${table.durability} >= 0`),
     check("items_durability_max_check", sql`${table.durabilityMax} >= 0`),
-    check("items_durability_range_check", sql`${table.durability} <= ${table.durabilityMax}`),
     check("items_upgrade_id_check", sql`${table.upgradeId} >= 0`),
     check(
       "items_upgrade_level_check",

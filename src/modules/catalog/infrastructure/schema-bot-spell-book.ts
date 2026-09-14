@@ -58,7 +58,7 @@ export const botSpellBookSpells = catalogSchema.table(
     ),
     check(
       "bot_spell_book_spells_gate_check",
-      sql`${table.gate} IS NULL OR ${table.gate} = 'self_hp_le'`,
+      sql`${table.gate} IS NULL OR ${table.gate} IN ('self_hp_le', 'once', 'foe_has_dispel_groups')`,
     ),
     check(
       "bot_spell_book_spells_hp_pct_check",

@@ -10,7 +10,7 @@ export type BotSpellCard = Readonly<{
   slot: CatalogBotSpellSlot;
   weight: number;
   maxCasts: number | null;
-  gate: "self_hp_le" | null;
+  gate: "self_hp_le" | "once" | "foe_has_dispel_groups" | null;
   hpPct: number | null;
   spell: ArtifactSpell;
 }>;
@@ -39,7 +39,12 @@ export class BotSpellBook {
       if (card.maxCasts !== null && (!Number.isInteger(card.maxCasts) || card.maxCasts < 1)) {
         throw new Error(`Bot spell ${card.artikulId} maxCasts is invalid`);
       }
-      if (card.gate !== null && card.gate !== "self_hp_le") {
+      if (
+        card.gate !== null &&
+        card.gate !== "self_hp_le" &&
+        card.gate !== "once" &&
+        card.gate !== "foe_has_dispel_groups"
+      ) {
         throw new Error(`Bot spell ${card.artikulId} gate is not supported`);
       }
       if ((card.gate === "self_hp_le") !== (card.hpPct !== null)) {

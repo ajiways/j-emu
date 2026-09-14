@@ -9,3 +9,5 @@ package-lock.json
 *.amf
 *.bin
 *.log
+content/*.generated.json
+content/*.generated.manifest.json

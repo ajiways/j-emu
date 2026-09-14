@@ -8,6 +8,7 @@ import type { HuntHuman } from "./hunt-human.ts";
 import { pocketHealAmount, spellCharging, spellKind, spellPcStr } from "./hunt-human-cast-state.ts";
 import { resolveMeleeTarget, type BotMeleePresence } from "./melee-target.ts";
 import { applyDamageToMeleeTarget } from "./paired-melee.ts";
+import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
 import type { RandomSource } from "./random-source.ts";
 
 export type KeepTurnResult =
@@ -232,13 +233,12 @@ function pocketEffectUse(
   kind: number,
   dmgType?: number,
 ): BattleEvent {
-  if (!row.spell.flags) throw new Error(`Pocket item ${row.itemId} flags are required`);
   return {
     type: "effect-use",
     artikulId: row.artifactId,
     animation: row.spell.animData ?? "",
     kind,
-    flags: row.spell.flags,
+    flags: pocketSpellWireFlags(row.spell.flags),
     img: row.picture,
     title: row.title,
     persId,

@@ -374,6 +374,9 @@ describe("Drizzle migrations", () => {
       "0026_quests_open_store.sql",
       "0027_catalog_dungeon_clear.sql",
       "0028_trade_held_items.sql",
+      "0029_catalog_drop_durability_range.sql",
+      "0030_catalog_bots_money_bounds.sql",
+      "0031_catalog_bot_spell_gates.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -408,8 +411,11 @@ describe("Drizzle migrations", () => {
       "0026_quests_open_store",
       "0027_catalog_dungeon_clear",
       "0028_trade_held_items",
+      "0029_catalog_drop_durability_range",
+      "0030_catalog_bots_money_bounds",
+      "0031_catalog_bot_spell_gates",
     ]);
-    expect(await appliedCount()).toBe(29);
+    expect(await appliedCount()).toBe(32);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -451,6 +457,13 @@ describe("Drizzle migrations", () => {
           WHERE table_schema = 'inventory' AND table_name = 'items' AND column_name = 'expire'`,
     );
     expect([...expireColumn]).toEqual([{ is_nullable: "NO", column_default: null }]);
+    const durabilityRangeChecks = await database.session().execute<{ constraint_name: string }>(
+      sql`SELECT constraint_name
+          FROM information_schema.check_constraints
+          WHERE constraint_name LIKE '%durability_range_check'
+          ORDER BY constraint_name`,
+    );
+    expect([...durabilityRangeChecks]).toEqual([]);
     const draftTypes = await database.session().execute<{ check_clause: string }>(
       sql`SELECT check_clause
           FROM information_schema.check_constraints

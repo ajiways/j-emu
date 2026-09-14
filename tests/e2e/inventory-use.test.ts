@@ -33,7 +33,7 @@ describe("inventory USE", () => {
       picture: "rawmeat_grey.png",
       action: "bag",
     });
-    expect(objectBlock(meat.artifact_actions)["20"]).toMatchObject({
+    expect(objectBlock(meat.artifact_actions)["5"]).toMatchObject({
       code: "ADD_HP",
       param1: "30",
       param2: "0",

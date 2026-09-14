@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { BotLootEntry } from "../../../src/modules/catalog/domain/bot-loot-entry.ts";
 import { BotReward } from "../../../src/modules/catalog/domain/bot-reward.ts";
 import { rollBotLoot } from "../../../src/modules/combat/domain/roll-bot-loot.ts";
-import { playableHuntBot } from "../../support/playable-bot.ts";
+import { playableHuntBot, playableHuntMeatLootDraw } from "../../support/playable-bot.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
 describe("rollBotLoot", () => {
@@ -11,9 +11,9 @@ describe("rollBotLoot", () => {
   });
 
   it("picks Gryzl 77 when the unit draw lands past NOTHING", () => {
-    expect(rollBotLoot(playableHuntBot().reward, new SequenceRandom([0.2, 0.95, 1]))).toEqual([
-      { artikulId: 77, quantity: 1 },
-    ]);
+    expect(
+      rollBotLoot(playableHuntBot().reward, new SequenceRandom(playableHuntMeatLootDraw())),
+    ).toEqual([{ artikulId: 77, quantity: 1 }]);
   });
 
   it("grants a single weighted entry when NOTHING is zero", () => {

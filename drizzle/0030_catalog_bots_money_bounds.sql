@@ -1,0 +1,2 @@
+ALTER TABLE "catalog"."bots" DROP CONSTRAINT "bots_money_check";--> statement-breakpoint
+ALTER TABLE "catalog"."bots" ADD CONSTRAINT "bots_money_check" CHECK ("catalog"."bots"."money_min" >= 0 AND "catalog"."bots"."money_max" >= 0);

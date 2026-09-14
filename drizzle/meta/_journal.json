@@ -204,6 +204,27 @@
       "when": 1789295315062,
       "tag": "0028_trade_held_items",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1789310659507,
+      "tag": "0029_catalog_drop_durability_range",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1789321883260,
+      "tag": "0030_catalog_bots_money_bounds",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1789322100780,
+      "tag": "0031_catalog_bot_spell_gates",
+      "breakpoints": true
     }
   ]
 }

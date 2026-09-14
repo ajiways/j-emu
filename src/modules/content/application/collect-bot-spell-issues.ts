@@ -17,19 +17,6 @@ export function collectBotSpellIssues(bundle: ContentBundle): readonly string[] 
   const red = byId.get(24);
   if (!red) issues.push("bot 24 is required for CMB-06 spellbook");
   else requireSpell(issues, red.id, red.spellBook, 394, "magic_direct", null);
-  for (const bot of bundle.bots) {
-    for (const card of bot.spellBook.spells) {
-      if (card.slot === "never") {
-        issues.push(`bot ${bot.id} spell ${card.artikulId} never-slot is not imported in CMB-06`);
-      }
-      if (!card.spell.effects.some((effect) => effect.kind === 1 || effect.kind === 2)) {
-        issues.push(`bot ${bot.id} spell ${card.artikulId} must include kind 1 or 2`);
-      }
-      if (card.spell.effects.some((effect) => effect.kind === 3 || effect.kind === 10)) {
-        issues.push(`bot ${bot.id} spell ${card.artikulId} kind 3/10 is not in the CMB-06 slice`);
-      }
-    }
-  }
   return issues;
 }
 

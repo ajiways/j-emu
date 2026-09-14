@@ -1,0 +1,1195 @@
+{
+  "generated_from": "live area_conf dump research_07_08_2025_07_05utro (amf_decoded_0705) + bestiary sk/arena; unvisited areas patched from artikul canon / prior fixture",
+  "note": "Permanent Radvei wildlife only (canon walk list). Event artikuls stripped from spawn lists; see hunt_event_artikuls.json. hunt_swf/avatar from live area_conf dump 0705. Area 826 (Скалистый берег) dump rows kept but treated as event/deferred. sk/arena/body from bestiary_bots.json via enrichHuntBots.",
+  "areas": {
+    "495": {},
+    "499": {
+      "9": {
+        "id": 9,
+        "nick": "Озерная Гарпина",
+        "level": 13,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "strekoza_3.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_garpina2_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "52",
+        "arena": "2_1",
+        "body": "armor(2#2);size(0.9)"
+      },
+      "50": {
+        "id": 50,
+        "nick": "Гарпина",
+        "level": 12,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "strekoza_1.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_garpina1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "52",
+        "arena": "2_1",
+        "body": "size(0.8)"
+      }
+    },
+    "500": {
+      "13": {
+        "id": 13,
+        "nick": "Ядовитая хисса",
+        "level": 7,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "snake2.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_hissa2_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "17",
+        "arena": "2_1",
+        "body": ""
+      },
+      "18": {
+        "id": 18,
+        "nick": "Болотный огонек",
+        "level": 8,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "svetlyak_green.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_svetlyak1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "31",
+        "arena": "4_1",
+        "body": ""
+      },
+      "357": {
+        "id": 357,
+        "nick": "Блуждающий призрак",
+        "level": 6,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "zombie_ghost.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_svetlyak_sm10.jpg",
+        "hide_on_map": 0,
+        "sk": "35",
+        "arena": "3_1",
+        "body": "ghost(1,1,1)"
+      }
+    },
+    "501": {
+      "4": {
+        "id": 4,
+        "nick": "Хисса",
+        "level": 2,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "snake1.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_hissa1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "16",
+        "arena": "2_1",
+        "body": ""
+      },
+      "24": {
+        "id": 24,
+        "nick": "Рыжий грызл",
+        "level": 3,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "gryzl2.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_gryzl2_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "12",
+        "arena": "2_1",
+        "body": ""
+      },
+      "32": {
+        "id": 32,
+        "nick": "Заблудший дух",
+        "level": 2,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "svetlyak_blue.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_svetlyak2_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "30",
+        "arena": "2_1",
+        "body": ""
+      }
+    },
+    "502": {
+      "3": {
+        "id": 3,
+        "nick": "Лютый грызл",
+        "level": 5,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "gryzl3.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_gryzl3_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "13",
+        "arena": "2_1",
+        "body": ""
+      },
+      "7": {
+        "id": 7,
+        "nick": "Рогач-разведчик",
+        "level": 4,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "beetle_l1.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_zhuk_s2.jpg",
+        "hide_on_map": 0,
+        "sk": "44",
+        "arena": "2_1",
+        "body": ""
+      },
+      "86": {
+        "id": 86,
+        "nick": "Рогач-добытчик ",
+        "level": 5,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "beetle_l2.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_zhuk_s1.jpg",
+        "hide_on_map": 0,
+        "sk": "44",
+        "arena": "2_1",
+        "body": "armor(2#1026)"
+      }
+    },
+    "503": {
+      "2": {
+        "id": 2,
+        "nick": "Грызл",
+        "level": 1,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "gryzl1.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_gryzl1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "11",
+        "arena": "2_1",
+        "body": ""
+      },
+      "4": {
+        "id": 4,
+        "nick": "Хисса",
+        "level": 2,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "snake1.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_hissa1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "16",
+        "arena": "2_1",
+        "body": ""
+      }
+    },
+    "504": {},
+    "506": {
+      "14": {
+        "id": 14,
+        "nick": "Болотная хисса",
+        "level": 9,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "snake3.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_hissa3_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "18",
+        "arena": "4_1",
+        "body": ""
+      },
+      "18": {
+        "id": 18,
+        "nick": "Болотный огонек",
+        "level": 8,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "svetlyak_green.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_svetlyak1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "31",
+        "arena": "4_1",
+        "body": ""
+      },
+      "38": {
+        "id": 38,
+        "nick": "Болотный грибень",
+        "level": 8,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "pogan_1.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_pogan1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "32",
+        "arena": "4_1",
+        "body": ""
+      }
+    },
+    "507": {
+      "18": {
+        "id": 18,
+        "nick": "Болотный огонек",
+        "level": 8,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "svetlyak_green.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_svetlyak1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "31",
+        "arena": "4_1",
+        "body": ""
+      },
+      "33": {
+        "id": 33,
+        "nick": "Поганище",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "pogan_3.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_pogan3_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "34",
+        "arena": "4_1",
+        "body": ""
+      },
+      "39": {
+        "id": 39,
+        "nick": "Трясинный поганочник",
+        "level": 9,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "pogan_2.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_pogan2_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "33",
+        "arena": "4_1",
+        "body": ""
+      }
+    },
+    "509": {
+      "36": {
+        "id": 36,
+        "nick": "Дух скорби",
+        "level": 11,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "ghost_elemental.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_svetlyak2_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "30",
+        "arena": "3_1",
+        "body": ""
+      },
+      "40": {
+        "id": 40,
+        "nick": "Неупокоенный мертвец",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "zombie_1.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_zombi1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "35",
+        "arena": "3_1",
+        "body": ""
+      }
+    },
+    "510": {
+      "41": {
+        "id": 41,
+        "nick": "Иссохший упырь",
+        "level": 11,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "zombie_2.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_zombi2_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "36",
+        "arena": "3_1",
+        "body": ""
+      },
+      "42": {
+        "id": 42,
+        "nick": "Смрадень",
+        "level": 12,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "zombie_3.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_zombi3_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "37",
+        "arena": "3_1",
+        "body": ""
+      }
+    },
+    "513": {
+      "43": {
+        "id": 43,
+        "nick": "Головорез",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "green_assasin_m_dark.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_golovorez1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "1",
+        "arena": "1_1",
+        "body": "armor(5_2#2049,5#4098,1#4100,1#8200,5#2064,8#4128,5#4160,3#4224,3#8448);head(rand[1-6],rand[151-160]);skin(rand[101-107])"
+      },
+      "477": {
+        "id": 477,
+        "nick": "Головорез-вербовщик",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "green_assasin_f_dark.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_golovorez2_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "2",
+        "arena": "1_1",
+        "body": "armor(5_2#2049,5#4098,1#4100,1#8200,5#2064,8#4128,5#4160,3#4224,3#8448);head(rand[1-6],rand[151-160]);skin(rand[101-107])"
+      }
+    },
+    "514": {
+      "9": {
+        "id": 9,
+        "nick": "Озерная Гарпина",
+        "level": 13,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "strekoza_3.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_garpina2_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "52",
+        "arena": "2_1",
+        "body": "armor(2#2);size(0.9)"
+      },
+      "50": {
+        "id": 50,
+        "nick": "Гарпина",
+        "level": 12,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "strekoza_1.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_garpina1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "52",
+        "arena": "2_1",
+        "body": "size(0.8)"
+      },
+      "483": {
+        "id": 483,
+        "nick": "Одержимый грызл",
+        "level": 13,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "gryzl4.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_staya_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "13",
+        "arena": "7_1",
+        "body": "size(1.2);skin(52)"
+      }
+    },
+    "516": {
+      "43": {
+        "id": 43,
+        "nick": "Головорез",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "green_assasin_m_dark.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_golovorez1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "1",
+        "arena": "1_1",
+        "body": "armor(5_2#2049,5#4098,1#4100,1#8200,5#2064,8#4128,5#4160,3#4224,3#8448);head(rand[1-6],rand[151-160]);skin(rand[101-107])"
+      },
+      "477": {
+        "id": 477,
+        "nick": "Головорез-вербовщик",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "green_assasin_f_dark.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_golovorez2_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "2",
+        "arena": "1_1",
+        "body": "armor(5_2#2049,5#4098,1#4100,1#8200,5#2064,8#4128,5#4160,3#4224,3#8448);head(rand[1-6],rand[151-160]);skin(rand[101-107])"
+      }
+    },
+    "536": {
+      "86": {
+        "id": 86,
+        "nick": "Рогач-добытчик ",
+        "level": 5,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "beetle_l2.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_zhuk_s1.jpg",
+        "hide_on_map": 0,
+        "sk": "44",
+        "arena": "2_1",
+        "body": "armor(2#1026)"
+      },
+      "87": {
+        "id": 87,
+        "nick": "Рогач-солдат",
+        "level": 6,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "beetle_l3.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_zhuk_s3.jpg",
+        "hide_on_map": 0,
+        "sk": "44",
+        "arena": "2_1",
+        "body": "armor(3#1026)"
+      }
+    },
+    "540": {
+      "6": {
+        "id": 6,
+        "nick": "Разбойник",
+        "level": 7,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "gray_set1_m.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_razboynik_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "1",
+        "arena": "2_1",
+        "body": "armor(rand[2#2049,107#2049,106#2049],100#4098,2#4100,2#8200,2#2064,2#4128,2#4160,2#4224,2#8448);head(rand[1-10],rand[151-161]);skin(rand[101-107])"
+      },
+      "23": {
+        "id": 23,
+        "nick": "Воровка",
+        "level": 6,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "gray_set1_w.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_vorovka_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "2",
+        "arena": "2_1",
+        "body": "armor(1#4128,1#4112,1#4352,1#4160,1#4100,1#4104,1#4224,100#4098);head(rand[1-6],rand[151-158]);skin(rand[101-107])"
+      }
+    },
+    "541": {
+      "6": {
+        "id": 6,
+        "nick": "Разбойник",
+        "level": 7,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "gray_set1_m.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_razboynik_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "1",
+        "arena": "2_1",
+        "body": "armor(rand[2#2049,107#2049,106#2049],100#4098,2#4100,2#8200,2#2064,2#4128,2#4160,2#4224,2#8448);head(rand[1-10],rand[151-161]);skin(rand[101-107])"
+      },
+      "471": {
+        "id": 471,
+        "nick": "Бывалый разбойник",
+        "level": 7,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "gray_set2_m.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_razboynik_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "1",
+        "arena": "2_1",
+        "body": "armor(rand[2#2049,107#2049,106#2049],100#4098,2#4100,2#8200,2#2064,2#4128,2#4160,2#4224,2#8448);head(rand[1-10],rand[151-161]);skin(rand[101-107])"
+      }
+    },
+    "542": {
+      "99": {
+        "id": 99,
+        "nick": "Пещерный огр",
+        "level": 5,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "ogr1.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_ogr1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "15",
+        "arena": "5_1",
+        "body": "skin(5,10,6,0,0,1,2,0);size(1.2)"
+      }
+    },
+    "560": {
+      "33": {
+        "id": 33,
+        "nick": "Поганище",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "pogan_3.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_pogan3_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "34",
+        "arena": "4_1",
+        "body": ""
+      },
+      "168": {
+        "id": 168,
+        "nick": "Болотный пламень",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "svetlyak_purpl.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_svetlyak3_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "28",
+        "arena": "4_1",
+        "body": ""
+      }
+    },
+    "561": {
+      "9": {
+        "id": 9,
+        "nick": "Озерная Гарпина",
+        "level": 13,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "strekoza_3.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_garpina2_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "52",
+        "arena": "2_1",
+        "body": "armor(2#2);size(0.9)"
+      },
+      "218": {
+        "id": 218,
+        "nick": "Гниловодная Гарпина",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "strekoza_2.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_garpina3_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "52",
+        "arena": "1_1",
+        "body": "armor(3#2)"
+      }
+    },
+    "610": {
+      "50": {
+        "id": 50,
+        "nick": "Гарпина",
+        "level": 12,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "strekoza_1.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_garpina1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "52",
+        "arena": "2_1",
+        "body": "size(0.8)"
+      }
+    },
+    "612": {
+      "301": {
+        "id": 301,
+        "nick": "Кратч",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "crab_1.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_krab1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "56",
+        "arena": "7_1",
+        "body": ""
+      }
+    },
+    "651": {},
+    "826": {
+      "1118": {
+        "id": 1118,
+        "nick": "Сбежавший гиблорос",
+        "level": 11,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "gibloros2.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_gibloros2_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "53",
+        "arena": "6_1",
+        "body": ""
+      },
+      "1119": {
+        "id": 1119,
+        "nick": "Сбежавший цераптор",
+        "level": 11,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "lizard_snow.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_snow_raptor4_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "72_2",
+        "arena": "11_1",
+        "body": ""
+      },
+      "1120": {
+        "id": 1120,
+        "nick": "Сбежавший кабан",
+        "level": 12,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "kaban3.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_kaban4_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "20",
+        "arena": "8_1",
+        "body": ""
+      },
+      "1122": {
+        "id": 1122,
+        "nick": "Сбежавший вервур",
+        "level": 13,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "gryzl4.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_gryzl5_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "72_1",
+        "arena": "11_1",
+        "body": ""
+      },
+      "1124": {
+        "id": 1124,
+        "nick": "[12] Матрос «Лютого»",
+        "level": 1,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "gray_set1_m.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_shwr_matros1_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "43",
+        "arena": "2_1",
+        "body": ""
+      },
+      "1191": {
+        "id": 1191,
+        "nick": "Одичавший Урго",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "zurg_white.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_snowgrizl_sm.jpg",
+        "hide_on_map": 0,
+        "sk": "13",
+        "arena": "11_1",
+        "body": ""
+      }
+    },
+    "548": {
+      "117": {
+        "id": 117,
+        "nick": "Рогач-шахтер",
+        "level": 8,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "beetle_l6.swf",
+        "hunt_scale": 60,
+        "hunt_fps": 15,
+        "avatar": "avatar_zhuk_s4.jpg",
+        "hide_on_map": 0,
+        "sk": "44",
+        "arena": "5_1",
+        "body": "armor(4#1026)"
+      }
+    },
+    "549": {
+      "116": {
+        "id": 116,
+        "nick": "Рогач-страж",
+        "level": 8,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "beetle_l4.swf",
+        "hunt_scale": 60,
+        "hunt_fps": 15,
+        "avatar": "avatar_zhuk_s4.jpg",
+        "hide_on_map": 0,
+        "sk": "44",
+        "arena": "5_1",
+        "body": "armor(4#1026);size(1.1)"
+      }
+    },
+    "550": {
+      "118": {
+        "id": 118,
+        "nick": "Рогач-страж",
+        "level": 8,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "beetle_l4.swf",
+        "hunt_scale": 60,
+        "hunt_fps": 15,
+        "avatar": "avatar_zhuk_s4.jpg",
+        "hide_on_map": 0,
+        "sk": "44",
+        "arena": "5_1",
+        "body": "armor(4#1026);size(1.1)"
+      },
+      "780": {
+        "id": 780,
+        "nick": "Тварь подземелья",
+        "level": 8,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "skolopendra_3.swf",
+        "hunt_scale": 80,
+        "hunt_fps": 15,
+        "avatar": "avatar_skolopendra2sm.jpg",
+        "hide_on_map": 0,
+        "sk": "68",
+        "arena": "5_1",
+        "body": "armor(2#2)"
+      }
+    },
+    "551": {
+      "115": {
+        "id": 115,
+        "nick": "Рогоматка",
+        "level": 8,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "beetle_l5.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_zhuk_s5.jpg",
+        "hide_on_map": 0,
+        "sk": "44",
+        "arena": "5_1",
+        "body": "armor(5#1026);size(1.3)"
+      }
+    },
+    "586": {
+      "201": {
+        "id": 201,
+        "nick": "Болотный Топр",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "topr_m1.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_topr1_s.jpg",
+        "hide_on_map": 0
+      },
+      "206": {
+        "id": 206,
+        "nick": "Прирученная Хисса",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "snake3.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_hissa3_sm.jpg",
+        "hide_on_map": 0
+      },
+      "207": {
+        "id": 207,
+        "nick": "Болотный Топр",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "topr_m1.swf",
+        "hunt_scale": 80,
+        "hunt_fps": 15,
+        "avatar": "avatar_topr1_s.jpg",
+        "hide_on_map": 0
+      }
+    },
+    "587": {
+      "201": {
+        "id": 201,
+        "nick": "Болотный Топр",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "topr_m1.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_topr1_s.jpg",
+        "hide_on_map": 0
+      }
+    },
+    "588": {
+      "202": {
+        "id": 202,
+        "nick": "Хранительница болот",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "topr_w1.swf",
+        "hunt_scale": 80,
+        "hunt_fps": 15,
+        "avatar": "avatar_topr2_s.jpg",
+        "hide_on_map": 0
+      },
+      "213": {
+        "id": 213,
+        "nick": "Хранительница болот",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "topr_w1.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_topr2_s.jpg",
+        "hide_on_map": 0
+      }
+    },
+    "589": {
+      "204": {
+        "id": 204,
+        "nick": "Матерь Топров",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "topr_w1.swf",
+        "hunt_scale": 120,
+        "hunt_fps": 15,
+        "avatar": "avatar_topr2_s.jpg",
+        "hide_on_map": 0
+      },
+      "213": {
+        "id": 213,
+        "nick": "Хранительница болот",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "topr_w1.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_topr2_s.jpg",
+        "hide_on_map": 0
+      }
+    },
+    "590": {
+      "203": {
+        "id": 203,
+        "nick": "Служитель Болотника",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "topr_m1.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_topr1_s.jpg",
+        "hide_on_map": 0
+      },
+      "208": {
+        "id": 208,
+        "nick": "Служитель Болотника",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "topr_m1.swf",
+        "hunt_scale": 80,
+        "hunt_fps": 15,
+        "avatar": "avatar_topr1_s.jpg",
+        "hide_on_map": 0
+      },
+      "205": {
+        "id": 205,
+        "nick": "Дух ведьмы Эмилии",
+        "level": 10,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "emilia_1.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_emilija_s.jpg",
+        "hide_on_map": 0
+      }
+    },
+    "544": {
+      "106": {
+        "id": 106,
+        "nick": "Демон скорби Соверинг",
+        "level": 12,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "sovereign.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_sovereign_sm.jpg",
+        "hide_on_map": 0
+      },
+      "107": {
+        "id": 107,
+        "nick": "Исчадие Соверинга",
+        "level": 12,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "sovereign.swf",
+        "hunt_scale": 70,
+        "hunt_fps": 15,
+        "avatar": "avatar_sovereign_sm.jpg",
+        "hide_on_map": 0
+      },
+      "108": {
+        "id": 108,
+        "nick": "Глашатай Соверинга",
+        "level": 12,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "zombie_3.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_zombi3_sm.jpg",
+        "hide_on_map": 0
+      },
+      "109": {
+        "id": 109,
+        "nick": "Солдат Соверинга",
+        "level": 12,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "zombie_2.swf",
+        "hunt_scale": 90,
+        "hunt_fps": 15,
+        "avatar": "avatar_zombi2_sm.jpg",
+        "hide_on_map": 0
+      }
+    },
+    "617": {
+      "302": {
+        "id": 302,
+        "nick": "Кратч-паразит",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "crab_2.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_krab2_sm.jpg",
+        "hide_on_map": 0
+      },
+      "303": {
+        "id": 303,
+        "nick": "Кратч-паразит",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "crab_2.swf",
+        "hunt_scale": 80,
+        "hunt_fps": 15,
+        "avatar": "avatar_krab2_sm.jpg",
+        "hide_on_map": 0
+      }
+    },
+    "618": {
+      "302": {
+        "id": 302,
+        "nick": "Кратч-паразит",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "crab_2.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_krab2_sm.jpg",
+        "hide_on_map": 0
+      }
+    },
+    "619": {
+      "302": {
+        "id": 302,
+        "nick": "Кратч-паразит",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "crab_2.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_krab2_sm.jpg",
+        "hide_on_map": 0
+      }
+    },
+    "620": {
+      "302": {
+        "id": 302,
+        "nick": "Кратч-паразит",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "crab_2.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_krab2_sm.jpg",
+        "hide_on_map": 0
+      },
+      "304": {
+        "id": 304,
+        "nick": "Крабнид",
+        "level": 14,
+        "kind": 0,
+        "speed": 15,
+        "hunt_swf": "crab_3.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_krab3_sm.jpg",
+        "hide_on_map": 0
+      },
+      "305": {
+        "id": 305,
+        "nick": "Кратч-страж",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "crab_2.swf",
+        "hunt_scale": 110,
+        "hunt_fps": 15,
+        "avatar": "avatar_krab2_sm.jpg",
+        "hide_on_map": 0
+      }
+    },
+    "653": {
+      "353": {
+        "id": 353,
+        "nick": "Лангерд Проклятый",
+        "level": 12,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "skeleton_2.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_skeleton4_sm.jpg",
+        "hide_on_map": 0
+      }
+    },
+    "654": {
+      "354": {
+        "id": 354,
+        "nick": "Хозяин копей",
+        "level": 8,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "worm2.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_cherv4_sm.jpg",
+        "hide_on_map": 0
+      }
+    },
+    "673": {
+      "373": {
+        "id": 373,
+        "nick": "Пушок",
+        "level": 14,
+        "kind": 0,
+        "speed": 10,
+        "hunt_swf": "tiger_1.swf",
+        "hunt_scale": 100,
+        "hunt_fps": 15,
+        "avatar": "avatar_tiger1_sm.jpg",
+        "hide_on_map": 0
+      }
+    }
+  }
+}

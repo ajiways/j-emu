@@ -9,9 +9,22 @@ import { finishStartedMeleeHunt } from "../support/harness/complete-melee-hunt.t
 import { heroIdFrom } from "../support/harness/wire-payload.ts";
 import { uniqueDevelopmentSlot } from "../support/harness/unique-development-slot.ts";
 import { dungeonHuntId } from "../../src/modules/instance/domain/dungeon-hunt-id.ts";
+import type { RandomSource } from "../../src/modules/combat/domain/random-source.ts";
 
 const START_MS = 1_700_000_000_000;
 const LEVEL3_EXP = 202;
+
+const meleeOnlyBotRandom: RandomSource = {
+  integer(minInclusive, maxInclusive) {
+    if (minInclusive > maxInclusive) {
+      throw new Error(`Random range ${minInclusive}..${maxInclusive} is invalid`);
+    }
+    return minInclusive;
+  },
+  unit() {
+    return 0;
+  },
+};
 
 describe("dungeon ogre cave", () => {
   let harness: ApplicationHarness;
@@ -23,6 +36,7 @@ describe("dungeon ogre cave", () => {
     harness = new ApplicationHarness(clock, new ManualCombatDelay(), {
       combatBotStrength: 1,
       combatRules: { strPerDamagePoint: 1 },
+      combatRandom: meleeOnlyBotRandom,
     });
     application = await harness.start();
   });

@@ -16,6 +16,8 @@ import {
   validationReports,
 } from "./schema.ts";
 
+const INSERT_BATCH = 250;
+
 export class PostgresContentEditorStore
   extends PostgresContentEditorReadStore
   implements ContentEditorStore
@@ -74,14 +76,15 @@ export class PostgresContentEditorStore
     if (inserted.length !== 1 || !candidateId)
       throw new Error("Candidate insert did not return an id");
     if (input.entries.length === 0) throw new Error("Candidate has no entries");
-    await session.insert(candidateEntries).values(
-      input.entries.map((entry) => ({
-        candidateId,
-        contentType: entry.contentType,
-        contentKey: entry.contentKey,
-        draftVersionId: entry.draftVersionId,
-      })),
-    );
+    const entryRows = input.entries.map((entry) => ({
+      candidateId,
+      contentType: entry.contentType,
+      contentKey: entry.contentKey,
+      draftVersionId: entry.draftVersionId,
+    }));
+    for (let offset = 0; offset < entryRows.length; offset += INSERT_BATCH) {
+      await session.insert(candidateEntries).values(entryRows.slice(offset, offset + INSERT_BATCH));
+    }
     return candidateId;
   }
 
@@ -165,9 +168,10 @@ export class PostgresContentEditorStore
       throw new Error("Release insert did not return an id");
     }
     const release = releaseRows[0];
-    await session
-      .insert(releaseEntries)
-      .values(entryRows.map((entry) => ({ ...entry, releaseId: release.id })));
+    const rows = entryRows.map((entry) => ({ ...entry, releaseId: release.id }));
+    for (let offset = 0; offset < rows.length; offset += INSERT_BATCH) {
+      await session.insert(releaseEntries).values(rows.slice(offset, offset + INSERT_BATCH));
+    }
     return release;
   }
 

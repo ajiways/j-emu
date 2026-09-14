@@ -2,8 +2,8 @@ export class ArtifactUseAction {
   constructor(
     readonly key: string,
     readonly code: string,
-    readonly param1: number,
-    readonly param2: number,
+    readonly param1: number | string,
+    readonly param2: number | string,
     readonly dispose: number,
     readonly title: string,
     readonly bonusId: number,
@@ -13,21 +13,28 @@ export class ArtifactUseAction {
     if (typeof code !== "string") {
       throw new Error(`Artifact use action ${key} code is required`);
     }
-    if (!title) throw new Error(`Artifact use action ${key} title is required`);
+    if (typeof title !== "string") {
+      throw new Error(`Artifact use action ${key} title is required`);
+    }
     if (!Number.isInteger(bonusId) || bonusId < 0) {
       throw new Error(`Artifact use action ${key} bonusId is invalid`);
     }
     if (typeof description !== "string") {
       throw new Error(`Artifact use action ${key} description is required`);
     }
-    if (!Number.isInteger(param1) || param1 < 0) {
+    if (!isActionParam(param1)) {
       throw new Error(`Artifact use action ${key} param1 is invalid`);
     }
-    if (!Number.isInteger(param2) || param2 < 0) {
+    if (!isActionParam(param2)) {
       throw new Error(`Artifact use action ${key} param2 is invalid`);
     }
     if (dispose !== 0 && dispose !== 1) {
       throw new Error(`Artifact use action ${key} dispose is invalid`);
     }
   }
+}
+
+function isActionParam(value: number | string): boolean {
+  if (typeof value === "string") return true;
+  return Number.isInteger(value);
 }

@@ -133,29 +133,30 @@ async function insertArtifacts(
   rows: readonly ArtifactDocument[],
 ): Promise<void> {
   if (rows.length === 0) return;
-  await session.insert(artifacts).values(
-    rows.map((artifact) => ({
-      releaseId,
-      id: artifact.id,
-      title: artifact.title,
-      picture: artifact.picture,
-      typeId: artifact.typeId,
-      kindId: artifact.kindId,
-      slotMask: artifact.slotMask,
-      weight: artifact.weight,
-      levelMin: artifact.levelMin,
-      levelMax: artifact.levelMax,
-      gender: artifact.gender,
-      priceMinor: artifact.priceMinor,
-      flags: artifact.flags,
-      bagStack: artifact.bagStack,
-      durability: artifact.durability,
-      durabilityMax: artifact.durabilityMax,
-      skills: artifact.skills,
-      artifactActions: artifact.artifact_actions,
-      extra: artifact.extra,
-    })),
-  );
+  const values = rows.map((artifact) => ({
+    releaseId,
+    id: artifact.id,
+    title: artifact.title,
+    picture: artifact.picture,
+    typeId: artifact.typeId,
+    kindId: artifact.kindId,
+    slotMask: artifact.slotMask,
+    weight: artifact.weight,
+    levelMin: artifact.levelMin,
+    levelMax: artifact.levelMax,
+    gender: artifact.gender,
+    priceMinor: artifact.priceMinor,
+    flags: artifact.flags,
+    bagStack: artifact.bagStack,
+    durability: artifact.durability,
+    durabilityMax: artifact.durabilityMax,
+    skills: artifact.skills,
+    artifactActions: artifact.artifact_actions,
+    extra: artifact.extra,
+  }));
+  await insertInBatches(values, async (batch) => {
+    await session.insert(artifacts).values(batch);
+  });
 }
 
 async function insertBots(
@@ -164,34 +165,35 @@ async function insertBots(
   rows: readonly BotDocument[],
 ): Promise<void> {
   if (rows.length === 0) return;
-  await session.insert(bots).values(
-    rows.map((bot) => ({
-      releaseId,
-      id: bot.id,
-      title: bot.title,
-      level: bot.level,
-      maxHp: bot.maxHp,
-      strength: bot.strength,
-      huntNick: bot.hunt.nick,
-      huntSwf: bot.hunt.swf,
-      huntScale: bot.hunt.scale,
-      huntFps: bot.hunt.fps,
-      huntSpeed: bot.hunt.speed,
-      huntAvatar: bot.hunt.avatar,
-      huntKind: bot.hunt.kind,
-      huntHideOnMap: bot.hunt.hideOnMap,
-      huntSk: bot.hunt.sk,
-      huntBody: bot.hunt.body,
-      baseExp: bot.baseExp,
-      moneyMin: bot.moneyMin,
-      moneyMax: bot.moneyMax,
-      lootDropCnt: bot.lootDropCnt,
-      lootBonusChance: bot.lootBonusChance,
-      lootBonusMin: bot.lootBonusMin,
-      lootBonusMax: bot.lootBonusMax,
-      lootNothingWeight: bot.lootNothingWeight,
-    })),
-  );
+  const values = rows.map((bot) => ({
+    releaseId,
+    id: bot.id,
+    title: bot.title,
+    level: bot.level,
+    maxHp: bot.maxHp,
+    strength: bot.strength,
+    huntNick: bot.hunt.nick,
+    huntSwf: bot.hunt.swf,
+    huntScale: bot.hunt.scale,
+    huntFps: bot.hunt.fps,
+    huntSpeed: bot.hunt.speed,
+    huntAvatar: bot.hunt.avatar,
+    huntKind: bot.hunt.kind,
+    huntHideOnMap: bot.hunt.hideOnMap,
+    huntSk: bot.hunt.sk,
+    huntBody: bot.hunt.body,
+    baseExp: bot.baseExp,
+    moneyMin: bot.moneyMin,
+    moneyMax: bot.moneyMax,
+    lootDropCnt: bot.lootDropCnt,
+    lootBonusChance: bot.lootBonusChance,
+    lootBonusMin: bot.lootBonusMin,
+    lootBonusMax: bot.lootBonusMax,
+    lootNothingWeight: bot.lootNothingWeight,
+  }));
+  await insertInBatches(values, async (batch) => {
+    await session.insert(bots).values(batch);
+  });
   const lootRows = rows.flatMap((bot) =>
     bot.lootEntries.map((entry) => ({
       releaseId,
@@ -202,7 +204,11 @@ async function insertBots(
       countMax: entry.countMax,
     })),
   );
-  if (lootRows.length > 0) await session.insert(botLootEntries).values(lootRows);
+  if (lootRows.length > 0) {
+    await insertInBatches(lootRows, async (batch) => {
+      await session.insert(botLootEntries).values(batch);
+    });
+  }
 }
 
 async function insertSkills(
@@ -288,4 +294,15 @@ async function insertAppearances(
       avatarSmall: row.avatarSmall,
     })),
   );
+}
+
+const INSERT_BATCH = 250;
+
+async function insertInBatches<T>(
+  rows: readonly T[],
+  write: (batch: T[]) => Promise<unknown>,
+): Promise<void> {
+  for (let offset = 0; offset < rows.length; offset += INSERT_BATCH) {
+    await write(rows.slice(offset, offset + INSERT_BATCH));
+  }
 }

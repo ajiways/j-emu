@@ -22,7 +22,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и pre-baseline миграции `drizzle/0000_foundation_init.sql` плюс последующие
-`drizzle/0001`…`0028`. Поля ниже совпадают с runtime.
+`drizzle/0001`…`0031`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -77,7 +77,10 @@ artikul; инкремент в hunt finish UoW. PRF-01:
 
 - `item_id_seq`: `MIN 100_000` `MAX 2_147_483_647` `NO CYCLE` (не пересекаться с native/glove `persSpells.srcId`). [ID_POLICY.md](ID_POLICY.md), [ID_RANGES.md](../../../jgr-emu/docs/ID_RANGES.md).
 - `items(id bigint DEFAULT nextval, hero_id integer, artifact_id, quantity, location_kind, pocket_position, equipment_slot, durability, durability_max, upgrade_id, upgrade_level, upgrade_skill_id, upgrade_bound, expire, version)`.
-  Instance `durability`/`durability_max` — INV-05, целые `>= 0`,
+  Instance `durability`/`durability_max` — INV-05, целые `>= 0` каждый;
+  `current` может превышать `max` для отдельных legacy-предметов
+  (`DATA-02` full-corpus audit нашёл 37/22 560 таких artifacts,
+  `INVENTORY.md` § INV-05 «Коррекция»), поэтому это НЕ CHECK
   `durability <= durability_max`. Overlay заточки — INV-06: `upgrade_id` ≥ 0,
   `upgrade_level` 0..6, `upgrade_bound` 0/1, `upgrade_skill_id` text; unupgraded
   xor upgraded CHECK. `expire` — INV-08 unix seconds ≥ 0, `NOT NULL` без SQL
@@ -101,8 +104,9 @@ level_min, level_max, gender, price_minor, flags, bag_stack, durability,
 durability_max, skills jsonb, artifact_actions jsonb, extra jsonb)`
   PK `(release_id, id)`. `price_minor` — integer cents ≥ 0 (`0` валиден);
   `flags` integer ≥ 0; `bag_stack` integer ≥ 1; `durability` /
-  `durability_max` integer ≥ 0, `durability <= durability_max` (`0`/`0` =
-  не tracking). `artifact_actions` — typed map
+  `durability_max` integer ≥ 0 каждый, без cross-field CHECK (`0`/`0` =
+  не tracking; `current > max` допустим для 37 legacy artifacts —
+  `INVENTORY.md` § INV-05 «Коррекция»). `artifact_actions` — typed map
   (пустой объект = нет USE). `extra` — dump-proven fight blobs (`spell`,
   `spells`/`hits` на 9095); пустой объект валиден (еда 77).
 - `bots(release_id, id, title, level, max_hp, strength, hunt_nick, hunt_swf,
@@ -111,11 +115,17 @@ hunt_sk, hunt_body, base_exp, money_min, money_max, loot_drop_cnt,
 loot_bonus_chance, loot_bonus_min, loot_bonus_max, loot_nothing_weight)`
   PK `(release_id, id)`. Map hunt uses swf/avatar; fight `oppnew` uses
   `hunt_sk`/`hunt_body`/`hunt_avatar` (Gryzl live: sk `"11"`, body `""`).
-  Reward scalars — overlay Gryzl bot 2; `loot_nothing_weight` = 3000 + сумма
-  unpublished overlay entry weights.
+  Reward scalars — overlay Gryzl bot 2; `money_min`/`money_max` оба `>= 0`
+  без порядка (overlay 117: 9 и 0). `loot_nothing_weight` = overlay 3000.
 - `bot_loot_entries(release_id, bot_id, artikul_id, drop_weight, count_min,
 count_max)` PK `(release_id, bot_id, artikul_id)`; FK на `bots` и `artifacts`
-  той же release. Published Gryzl entries: 77, 93, 99.
+  той же release. Overlay Gryzl: 27 entries (включая 56–63, 77, 93, 99).
+- `bot_spell_books(release_id, bot_id, nothing_weight)` PK
+  `(release_id, bot_id)`; FK на `bots`.
+- `bot_spell_book_spells(release_id, bot_id, artikul_id, ord, slot, weight,
+max_casts, gate, hp_pct, spell jsonb)` PK `(release_id, bot_id, artikul_id)`.
+  `gate` NULL / `self_hp_le` / `once` / `foe_has_dispel_groups`; `max_casts`
+  NULL или ≥ 1.
 - `skill_definitions(release_id, id, title, group_key, sort_order, weight,
 image, value_kind)` PK `(release_id, id)`.
 - `level_boundaries(release_id, level, exp_min, exp_max, bag_cnt, honor_rank,

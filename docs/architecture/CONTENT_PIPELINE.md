@@ -29,19 +29,25 @@ counts/checksums и completeness gates:
 
 ## Текущий playable slice
 
-Текущая `playable-slice/v35` release — минимальный bundle: 38 artifacts
-(9095 + dump-proven L1 greyset **20/21/26**, glove spells **9098/9100/9099**, paperdoll gear-spell **20546**, pocketables **93** и **99**, food **77**,
-shop wear **23** и **24**, arsenal amulet **621**, upgrade crystals **553/1310/4603/11408/13224**, recruit set **27/28/30/33/35/106** и mix **43/46**,
-USE **640/623/2371/55/584**, farm **1720/1721/1722**, craft book **1861** / flask **1714**, монета ямы **5986**; без 209 и патронташа), 12 bots (2/4/24/32/99/106/107/108/109/353/354/373) с overlay reward scalars; loot entries только у bot 2 (77/93/99),
+Текущая `playable-slice/v35` release публикует полный Pub1 item corpus
+из `content/pub1-items.generated.json` (22 560 `ArtifactDocument`, bundle-ключ
+`itemsFile`) и полный bestiary/overlay bot corpus из
+`content/bots.generated.json` (164 `BotDocument`, ключи `botsFile` /
+`botLootFile` / `botSpellBooksFile`; `db:reset` читает их без `PUB1_DIR`)
+и по-прежнему минимальный набор остальных типов. Representative hunt IDs
+остаются 2/4/24/32/99/106/107/108/109/353/354/373; loot/spell policy —
+overlay/`bot_spell_book.json`, не handwritten slice. Gryzl **2** nick Pub1
+«Грызл»; overlay loot NOTHING 3000 / 27 entries. Хисса **4** книга 396+397.
 bonus **601**, use script **2827**, assistant types **3/13**, farm resource **4** on area **500**, craft recipe **61**,
-12 areas (503/501/504/495/552/542/541/654/651/653/499/673) plus isolated **510**/pit **544**, BG return 500 and rooms 635/636/637, authored travel `area_links` including dungeon doors 501↔542, 541↔654, 651↔653, 499↔673, 510↔544 and Раскоп 635↔636↔637, hunt 50310 (home), 50309 (route+respawn) и 50101–50103 (zone), dungeons 1/2/11/12/14 (bots 99/106–109/354/353/373), battlegrounds Раскоп `general|2` plus dump cards, store 504 type `-131` lots 80/23 и 82/24, store 552 type 11 lot 438/621 RANK, reputation track **5**, 17 skills (включая **MAGSTR**, **LUCK**, **INJ_RESIST**), 14 levels с normalized managed skills,
+12 areas (503/501/504/495/552/542/541/654/651/653/499/673) plus isolated **510**/pit **544**, BG return 500 and rooms 635/636/637, authored travel `area_links` including dungeon doors 501↔542, 541↔654, 651↔653, 499↔673, 510↔544 and Раскоп 635↔636↔637, hunt 50310 (home), 50309 (route+respawn) и 50101–50103 (zone), dungeons 1/2/11/12/14 (bots 99/106–109/354/353/373), battlegrounds Раскоп `general|2` plus dump cards, store 504 type `-131` lots 80/23 и 82/24, store 552 type 11 lot 438/621 RANK, reputation track **5**, 82 skills (DATA-01 набор плюс skill id с Pub1-артефактов), 14 levels с normalized managed skills,
 3 appearance presets (kind 1/2/3 gender 1), NPC **271** (503 item **4**) и
 **272** (item **8**), AREA ambush 503 item **1**, with eight engine quests
 (`q_engine_board` / `q_engine_fight` / `q_engine_area` / `q_engine_daily` /
 `q_engine_roster` / `q_engine_multi` / `q_engine_ambush` / `q_engine_store`)
 and world fact `engine_area`, и common-conf/chrome/HUD/welcome документы в составе текущего
-bundle. Bots 2/4/24/32 несут `spellBook` (Грызль пустая; Хисса 396, дух 422,
-рыжий 394); огр 99, яма 106–109 и боссы 353/354/373 — пустая книга. Это нельзя называть полным игровым контентом или полным контентом
+bundle. Bots 2/4/24/32 несут `spellBook` (Грызл пустая; Хисса 396+397, дух 422+428,
+рыжий 394+395); огр 99 и боссы имеют authored книги; яма 107–109 — пустые.
+Это нельзя называть полным игровым контентом или полным контентом
 цикла 1–8.
 
 DNG-03 landed: `playable-slice/v35` добавляет данж **2**
@@ -52,17 +58,17 @@ Seed: `npm run db:publish:development` с `CONTENT_BUNDLE_FILE` и `DATABASE_URL
 из `.env` в корне пакета. Повтор с тем же checksum не создаёт новый release.
 Новый checksum на уже опубликованной БД создаёт и активирует следующую release
 через `publish` (тот же npm-скрипт).
-Остальные типы и расширение текущих минимальных каталогов из матрицы — план.
+Полный item и bot corpus уже в generated-файлах. Остальные типы (areas/stores/quests)
+из матрицы — план, кроме уже опубликованного playable subset.
 
 ## `playable-slice.json` — временный bootstrap, не целевой механизм
 
-`content/playable-slice.json` — это вручную собранный bundle для самого
-раннего этапа (Wave 0–3), пока не было ни одного типизированного decoder.
-Он **не является** целевым способом заводить контент и не должен расти рукой
-до полного каталога — руками добавленный файл на весь Pub1-каталог (~22 560
-артикулов, весь бестиарий, все области) физически станет неподъёмным
-(порядка миллионов строк) и не даст ни manifest, ни per-source checksum, ни
-дедупликации, которые требует `CONTENT_MATRIX.md`.
+`content/playable-slice.json` — вручную собранный bundle для типов без
+отдельного decoder. Item corpus сюда не кладётся: `itemsFile` указывает на
+`content/pub1-items.generated.json` (`npm run content:decode:items`).
+Bot corpus тоже не кладётся: `botsFile` / `botLootFile` / `botSpellBooksFile`
+указывают на generated JSON (`npm run content:decode:bots`).
+Руками не расти `artifacts`/`bots` до полного каталога.
 
 Правило: как только для домена (`catalog` items, `catalog` bots/spells,
 `world` areas/hunt, `economy` stores, …) появляется хотя бы одна capability,
@@ -227,14 +233,16 @@ source group ведутся только в
   validator проверяет одну непрерывную curve, одинаковый полный skill set,
   evidence kind и source digest. Runtime formula, clamping и смешивание release
   запрещены.
-- `catalog`: Pub1 artifact/artikul AMF и item overlays; decoder сохраняет wire
-  ID без перенумерации, validator проверяет обязательные type/kind/picture,
-  skills, цены и ссылки на assets. Bonus/action policies — отдельные dependent
-  documents DATA-05 и не являются обратной ссылкой base artifact.
-- `catalog`: Pub1 bestiary, `bots_overlay.json`, hunt/event/quest bot sources;
-  base validator проверяет bot ID, stats и presentation. Spell/loot policies
-  валидируются отдельными documents после base bots и соответствующих
-  definitions.
+- `catalog`: Pub1 artifact/artikul AMF (`npm run content:decode:items` →
+  `content/pub1-items.generated.json` + manifest). Decoder сохраняет wire ID
+  без перенумерации; `artikul-weights.json` применяется в decode как authored
+  слой того же файла. Validator проверяет type/kind, skill refs и duplicate
+  `artikul_id`. `db:reset` читает только committed JSON, без `PUB1_DIR`.
+- `catalog`: Pub1 bestiary AMF (`npm run content:decode:bots` →
+  `content/bots.generated.json` + loot/spell-book files + manifests).
+  Overlay `bots-overlay.json` / gap-fill `bestiary-bots.json` /
+  `radvei-hunt-bots.json` / `bot-spell-book.json` применяются в decode.
+  `db:reset` читает только committed JSON, без `PUB1_DIR`.
 - `catalog`: base loot/drop sources; validator запускается после items и bots
   и проверяет item references, количества и веса. Quest/reputation conditions
   являются отдельными dependent policies DATA-05/06.
@@ -290,7 +298,11 @@ handlers/seed-функции и не читает другой источник 
 
 ## Экспорт и восстановление
 
-План, в текущем срезе команд нет. Целевое поведение:
+План, в текущем срезе команд нет. Не путать с `DATA-02` (`ROADMAP.md` Wave
+14): это generic export/import произвольной уже активной release; `DATA-02`
+— decoder-специфичный committed файл только для Pub1 item corpus, узкая
+задача внутри одной content-стадии, а не эта генерик-фича. Целевое
+поведение generic export/import:
 
 Export release формирует переносимый пакет с manifest, checksum, schema versions и полным содержимым логического bundle. Runtime-таблицы не экспортируются как произвольный snapshot: они должны проверяться или воспроизводиться из bundle.
 

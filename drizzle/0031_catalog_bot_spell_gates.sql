@@ -1,0 +1,2 @@
+ALTER TABLE "catalog"."bot_spell_book_spells" DROP CONSTRAINT "bot_spell_book_spells_gate_check";--> statement-breakpoint
+ALTER TABLE "catalog"."bot_spell_book_spells" ADD CONSTRAINT "bot_spell_book_spells_gate_check" CHECK ("catalog"."bot_spell_book_spells"."gate" IS NULL OR "catalog"."bot_spell_book_spells"."gate" IN ('self_hp_le', 'once', 'foe_has_dispel_groups'));

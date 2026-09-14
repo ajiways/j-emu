@@ -1,4 +1,5 @@
 import type { CombatLoadout, CombatPocketRow } from "../../combat/domain/combat-loadout.ts";
+import { pocketSpellWireFlags } from "../../combat/domain/pocket-spell-wire-flags.ts";
 import { huntNativePersSpells } from "./hunt-native-pers-spells.ts";
 
 export function huntPersSpellsEvent(loadout: CombatLoadout): Readonly<Record<string, unknown>> {
@@ -18,7 +19,6 @@ function pocketSpells(
   rows: readonly CombatPocketRow[],
 ): readonly Readonly<Record<string, unknown>>[] {
   return rows.map((row) => {
-    if (!row.spell.flags) throw new Error(`Pocket item ${row.itemId} flags are required`);
     if (!row.spell.persRestr) throw new Error(`Pocket item ${row.itemId} persRestr is required`);
     if (!row.spell.targetRestr)
       throw new Error(`Pocket item ${row.itemId} targetRestr is required`);
@@ -26,7 +26,7 @@ function pocketSpells(
       artikulId: row.artifactId,
       ...(row.spell.cooldown !== undefined ? { cooldown: row.spell.cooldown } : {}),
       count: row.count,
-      flags: row.spell.flags,
+      flags: pocketSpellWireFlags(row.spell.flags),
       ...(row.spell.groupId !== undefined ? { groupId: row.spell.groupId } : {}),
       img: row.picture,
       persRestr: row.spell.persRestr,

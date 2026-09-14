@@ -20,6 +20,12 @@
 - PostgreSQL + Drizzle и pre-baseline init migration;
 - database-generated persistent IDs;
 - versioned content drafts/releases/publication;
+- Pub1 item corpus decoder (`npm run content:decode:items` →
+  `content/pub1-items.generated.json`); Pub1 bot corpus decoder
+  (`npm run content:decode:bots` → `content/bots.generated.json` /
+  `bot-loot.generated.json` / `bot-spell-books.generated.json`);
+  `npm run db:reset` без `PUB1_DIR` поднимает полный корпус из committed
+  `playable-slice.json` + generated files;
 - typed static OA/fproxy/esrv dispatch;
 - raw-AMF E2E через Fastify и отдельную test DB;
 - active combat в RAM, finished history в PostgreSQL на 72 часа;
@@ -119,7 +125,9 @@ Equipment-derived `user|skills` / `hpMax` считаются из naked skills +
 Есть raw-AMF E2E и подтверждённый CEF-прогон: мясо 77 съедается из bag,
 стек падает, `artifact_actions` ADD_HP на wire, reconnect совпадает с PostgreSQL.
 
-- catalog v8: **77** (`rawmeat_grey.png`, type 10, `actions=7`, map `"20"`);
+- catalog v8: **77** (`rawmeat_grey.png`, type 10, `actions=7`, map `"5"` —
+  `row.id` из `artifact_artikul_77.amf`, `DATA-02`; старый handwritten
+  slice держал `"20"` без AMF evidence);
 - OA `object_class=ARTIFACT` без `code` → `common|object:USE`;
 - `ADD_HP` по каталогу (`param2=0` → % от hpMax), не хардкод id 77;
 - полный HP всё равно consume; в бою и без action — `203`;
@@ -405,7 +413,8 @@ USE 2827 failPlaque; restart GET совпадает; 422 не двигает poi
 Flash-редактора нет. Исключение «Отложенный CEF Wave 5–12» закрыто.
 
 Не перенесены SPA `/dev/content`, rollback/export, `operator_roles`,
-DATA-02…06 mass import, новые ключи вне active release.
+DATA-04…06 mass import (DATA-02/DATA-03 — готово, см. выше), новые ключи вне active
+release.
 
 ## Вне первой волны
 

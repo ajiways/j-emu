@@ -6,14 +6,14 @@ const flag = z.union([z.literal(0), z.literal(1)]);
 const huntLookSchema = z
   .object({
     nick: z.string().min(1),
-    swf: z.string().min(1),
+    swf: z.string(),
     scale: z.number().int().positive(),
     fps: z.number().int().positive(),
     speed: z.number().int().nonnegative(),
-    avatar: z.string().min(1),
+    avatar: z.string(),
     kind: z.number().int().nonnegative(),
     hideOnMap: flag,
-    sk: z.string().min(1),
+    sk: z.string(),
     body: z.string(),
   })
   .strict();
@@ -36,7 +36,7 @@ const botSpellCardSchema = z
     slot: z.enum(["fight_start", "prefer", "turn_roulette", "never"]),
     weight: z.number().int().nonnegative(),
     maxCasts: z.number().int().positive().nullable(),
-    gate: z.literal("self_hp_le").nullable(),
+    gate: z.enum(["self_hp_le", "once", "foe_has_dispel_groups"]).nullable(),
     hpPct: z.number().int().min(1).max(100).nullable(),
     spell: artifactSpellSchema,
   })
@@ -76,7 +76,6 @@ export const botDocumentSchema = z
     spellBook: botSpellBookSchema,
   })
   .strict()
-  .refine((bot) => bot.moneyMax >= bot.moneyMin, { message: "moneyMax must be >= moneyMin" })
   .refine((bot) => bot.lootBonusMax >= bot.lootBonusMin, {
     message: "lootBonusMax must be >= lootBonusMin",
   })

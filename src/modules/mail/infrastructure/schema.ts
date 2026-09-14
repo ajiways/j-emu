@@ -82,10 +82,6 @@ export const letterAttachments = mailSchema.table(
     check("letter_attachments_quantity_check", sql`${table.quantity} > 0`),
     check("letter_attachments_durability_check", sql`${table.durability} >= 0`),
     check("letter_attachments_durability_max_check", sql`${table.durabilityMax} >= 0`),
-    check(
-      "letter_attachments_durability_range_check",
-      sql`${table.durability} <= ${table.durabilityMax}`,
-    ),
     check("letter_attachments_upgrade_id_check", sql`${table.upgradeId} >= 0`),
     check(
       "letter_attachments_upgrade_level_check",

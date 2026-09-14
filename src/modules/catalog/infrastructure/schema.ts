@@ -50,7 +50,6 @@ export const artifacts = catalogSchema.table(
     check("artifacts_bag_stack_check", sql`${table.bagStack} >= 1`),
     check("artifacts_durability_check", sql`${table.durability} >= 0`),
     check("artifacts_durability_max_check", sql`${table.durabilityMax} >= 0`),
-    check("artifacts_durability_range_check", sql`${table.durability} <= ${table.durabilityMax}`),
   ],
 );
 
@@ -95,10 +94,7 @@ export const bots = catalogSchema.table(
     check("bots_hunt_kind_check", sql`${table.huntKind} >= 0`),
     check("bots_hunt_hide_on_map_check", sql`${table.huntHideOnMap} IN (0, 1)`),
     check("bots_base_exp_check", sql`${table.baseExp} >= 0`),
-    check(
-      "bots_money_check",
-      sql`${table.moneyMin} >= 0 AND ${table.moneyMax} >= ${table.moneyMin}`,
-    ),
+    check("bots_money_check", sql`${table.moneyMin} >= 0 AND ${table.moneyMax} >= 0`),
     check("bots_loot_drop_cnt_check", sql`${table.lootDropCnt} >= 0`),
     check(
       "bots_loot_bonus_chance_check",

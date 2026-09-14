@@ -13,6 +13,7 @@ import {
 } from "../support/harness/complete-melee-hunt.ts";
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
 import { SequenceRandom } from "../support/fakes/sequence-random.ts";
+import { playableHuntMeatSettlementDraw } from "../support/playable-bot.ts";
 import {
   bagItemByArtikulId,
   heroIdFrom,
@@ -108,7 +109,7 @@ describe("fproxy settlement weighted loot", () => {
 
   beforeEach(async () => {
     harness = new ApplicationHarness(undefined, undefined, {
-      lootRandom: new SequenceRandom([0, 0.2, 0.95, 1]),
+      lootRandom: new SequenceRandom(playableHuntMeatSettlementDraw()),
     });
     application = await harness.start();
   });

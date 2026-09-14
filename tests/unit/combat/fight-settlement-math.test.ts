@@ -39,6 +39,11 @@ describe("fight money", () => {
     expect(goldWireString(20)).toBe("0.2");
     expect(goldWireString(0)).toBe("0");
   });
+
+  it("rolls the closed interval even when overlay bounds are inverted", () => {
+    expect(rollMoneyGold(9, 0, { unit: () => 0 })).toBe(0);
+    expect(rollMoneyGold(9, 0, { unit: () => 1 })).toBe(9);
+  });
 });
 
 describe("split fight experience", () => {

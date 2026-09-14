@@ -11,7 +11,7 @@ import { ManualCombatDelay } from "../support/fakes/manual-combat-delay.ts";
 import {
   completeMeleeHunt,
   putOnStarterGloveIfInBag,
-  strikeUntilHuntFinish,
+  strikeUntilPvpFinish,
 } from "../support/harness/complete-melee-hunt.ts";
 import { fightEventTypes, heroIdFrom, huntFightIdFrom } from "../support/harness/wire-payload.ts";
 import { HEROISM_RULES, rawHonorFromDamage } from "../../src/app/heroism-rules.ts";
@@ -123,7 +123,7 @@ describe("battleground raskop", () => {
       expect.arrayContaining(["fightState", "persList", "oppnew", "attacknow"]),
     );
     await b.pollFight();
-    await strikeUntilHuntFinish(a, (ms) => harness.elapseCombat(ms), 11, b);
+    await strikeUntilPvpFinish(a, b, (ms) => harness.elapseCombat(ms), 11);
     await harness.elapseCombat(2_000);
 
     const finishA = personalBlocks(await a.pollEsrv());
@@ -242,11 +242,11 @@ describe("battleground raskop", () => {
     const frames: AmfValue[] = [];
     frames.push(...(await a.pollFight()));
     frames.push(...(await b.pollFight()));
-    await strikeUntilHuntFinish(
+    await strikeUntilPvpFinish(
       a,
+      b,
       (ms) => harness.elapseCombat(ms),
       11,
-      b,
       (more) => {
         frames.push(...more);
       },
@@ -361,7 +361,7 @@ describe("battleground raskop", () => {
     expect(await b.fight({ rc: "auth", eid: fightId, sq: 4 })).toHaveLength(0);
     await a.pollFight();
     await b.pollFight();
-    await strikeUntilHuntFinish(a, (ms) => harness.elapseCombat(ms), 5, b);
+    await strikeUntilPvpFinish(a, b, (ms) => harness.elapseCombat(ms), 5);
     expect(await heroismStat(a, 20)).toBe(0);
     expect(await heroismStat(b, 20)).toBe(0);
   });

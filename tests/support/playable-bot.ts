@@ -18,6 +18,32 @@ export function playableHuntBot(): BotDefinition {
   return botDefinitionFromDocument(document);
 }
 
+export function playableHuntMeatLootDraw(): number[] {
+  return lootDrawPastBonus(playableHuntBot().reward, 77);
+}
+
+export function playableHuntMeatSettlementDraw(): number[] {
+  return [0, ...playableHuntMeatLootDraw()];
+}
+
+function lootDrawPastBonus(reward: BotReward, artikulId: number): number[] {
+  const pool = reward.lootEntries.filter((entry) => entry.dropWeight > 0);
+  const weightSum = pool.reduce((sum, entry) => sum + entry.dropWeight, 0);
+  const total = weightSum + reward.lootNothingWeight;
+  let prefix = 0;
+  const picked = pool.find((entry) => {
+    if (entry.artikulId === artikulId) return true;
+    prefix += entry.dropWeight;
+    return false;
+  });
+  if (!picked) throw new Error(`Playable hunt loot is missing artikul ${artikulId}`);
+  const unit = (reward.lootNothingWeight + prefix + picked.dropWeight / 2) / total;
+  if (unit < 0 || unit >= 1) throw new Error(`Loot unit ${unit} is outside [0, 1)`);
+  const draws = [unit, picked.countMin];
+  if (reward.lootBonusChance > 0) draws.unshift(reward.lootBonusChance);
+  return draws;
+}
+
 function botDefinitionFromDocument(document: BotDocument): BotDefinition {
   return new BotDefinition(
     document.id,

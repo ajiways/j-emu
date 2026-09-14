@@ -14,7 +14,7 @@ export class BotReward {
   ) {
     if (!Number.isInteger(baseExp) || baseExp < 0) throw new Error("Bot baseExp is invalid");
     if (!Number.isFinite(moneyMin) || moneyMin < 0) throw new Error("Bot moneyMin is invalid");
-    if (!Number.isFinite(moneyMax) || moneyMax < moneyMin) {
+    if (!Number.isFinite(moneyMax) || moneyMax < 0) {
       throw new Error("Bot moneyMax is invalid");
     }
     if (!Number.isInteger(lootDropCnt) || lootDropCnt < 0) {

@@ -144,7 +144,10 @@ strike с leading `attackwait`. Off-turn ending: `{rs:true}` + абсолютн�
 Melee L/C/R остаётся strike-then-rs.
 
 Content: dump-proven `spell` у **93** (хил, CD 20) и **99** (орб `ev:[]`);
-**9095** сокеты **9098/9100/9099**. 77 без fight blob. Нет `srcId:5` в
+**9095** сокеты **9098/9100/9099**. 77 без fight blob. Pub1 AMF у 93/99
+часто опускает `extra.spell.flags` (ноль). Live fproxy pocket `persSpells` /
+`effUse` всё равно шлёт `flags:"262144"` — `POCKET_SPELL_WIRE_FLAGS`, не
+catalog fallback. Нет `srcId:5` в
 fproxy, нет 77 в бою, нет generic effect engine. AOE ending (`targetCount===2`)
 урон `16` — `legacy behavior`, не `FIGHT_DAMAGE`. Kind 11 HTTP
 `{rs:false, restriction:18}` — только если опубликованный spell kind 11
@@ -156,8 +159,8 @@ fproxy, нет 77 в бою, нет generic effect engine. AOE ending (`targetCo
 одна UoW (`noteHp`, `grantExperience` если ≥ 1, `creditMoney`, `grantToBag`,
 `refillPocketAfterFight`), затем history best-effort, затем esrv
 `fight|loot` затем `fight|exit`. Combat не пишет `heroes`/`items`. Catalog
-бот 2: `baseExp` 15, money 0.2–0.44, `lootNothingWeight` 3460 (= 3000 + 460
-неопубликованных overlay-весов), entries 77/93/99. `leaveFight` HTTP
+бот 2: `baseExp` 15, money 0.2–0.44, `lootNothingWeight` 3000,
+entries overlay 27 штук (включая **77 / 93 / 99**). `leaveFight` HTTP
 `{rs:true}`; last human — flee `type:2` без лута; союзник жив — только
 flee-exit, бой продолжается. Loss: HP 0, loot-блок с нулями, ghost/injury через character `noteDefeat`.
 CEF экрана результата не прогонялся.
@@ -182,9 +185,9 @@ Solo win: игрок — top damager. EXP = overlay `base_exp` 15 (оверле�
 L1 = 100%). `grantExperience` только если amount ≥ 1; иначе skip, не
 вызывать port с `0`. Money: roll overlay `money_min`…`money_max` золотых
 монет → `creditMoney` minor = `round(gold * 100)`. `money_gold` с охоты нет.
-Item loot: FIGHT_LOOT ролл на мёртвого бота 2. Published entries **77 / 93 /
-99** с overlay весами; `nothing_weight` = 3000 + сумма overlay-весов
-неопубликованных artikul. Не подставлять 56–63 и т.п. Квест/данж лут нет.
+Item loot: FIGHT_LOOT ролл на мёртвого бота 2. Overlay entries **27**
+(включая **77 / 93 / 99**) с authored весами; `nothing_weight` = 3000.
+Квест/данж лут нет.
 Loss и last-human leave: `noteHp` + refill, без item loot и без EXP.
 `noteHp` пишет fight HP как есть; HP `0` идёт в `noteDefeat` (ghost/injury).
 
@@ -278,9 +281,9 @@ repositories. Dodge/block/crit choke, charging overlay и VAMP — вне сре
 Glove ending (не AOE 16) крутит ту же STR-формулу; crit перчатки = верхняя
 граница bounds.
 
-Content: Грызль **2** STR 10 / 50310; Хисса **4** STR 15 / 50101; дух **32**
-STR 35 / 50102; рыжий грызль **24** STR 45 / 50103. Луты 4/24/32 пустые
-(`nothing_weight=1`) — DATA-03 bulk, не CMB-07. CEF урона не прогонялся.
+Content: Грызль **2** STR 8 / 50310; Хисса **4** STR 15 / 50101; дух **32**
+STR 35 / 50102; рыжий грызль **24** STR 45 / 50103. Overlay-луты 4/24/32
+не пустые. CEF урона не прогонялся.
 
 ### Architecture decision
 
@@ -302,16 +305,17 @@ weapon DPS aparte от STR.
 читает catalog mid-fight. Пустая книга не зовёт `random.unit()` — Gryzl
 остаётся melee-only. Kind-1 урон =
 `max(1, round(STR/10 × (1+pcSTR/100) × [0.85…1.15]))`. Kind-2 heal и
-AOE `targetCount>=2` есть в движке; в slice нет heal-бота (огр 99 / area
-542 — WLD). Charging/self-buff, DoT ticks, MAGSTR/MAGRES, virus, summon —
-вне среза. Полный `bot_spell_book.json` — DATA-03.
+AOE `targetCount>=2` есть в движке; огр **99** книга в каталоге DATA-03
+(kind-2 heal на 40% HP). Charging/self-buff, DoT ticks, MAGSTR/MAGRES, virus, summon —
+вне боя: карточки живут в каталоге DATA-03, `pickBotSpell` не выбирает
+kind 3/10 и gate `foe_has_dispel_groups`. Полный `bot_spell_book.json`
+импортирован.
 
-Content: Грызль **2** пустая книга / 50310; Хисса **4** spell **396**
-`magic_direct` / 50101; дух **32** **422** `magic_darkball` / 50102;
-рыжий грызль **24** **394** `magic_direct` / 50103. Execution blob на
-карточке книги (нет type_id 72 dump). Catalog tables
-`catalog.bot_spell_books` / `bot_spell_book_spells`. Schema
-`playable-slice/v23`. CEF плевка Хиссы не прогонялся.
+Content: Грызл **2** пустая книга / 50310; Хисса **4** spells **396**+**397**
+(`396` `magic_direct` / 50101); дух **32** **422**+**428**;
+рыжий грызль **24** **394**+**395**. Execution blob с DATA-02 artifact
+`extra.spell`. Catalog tables
+`catalog.bot_spell_books` / `bot_spell_book_spells`.
 
 ### Architecture decision
 
@@ -320,20 +324,22 @@ Content: Грызль **2** пустая книга / 50310; Хисса **4** sp
 
 ### Out of scope (CMB-06 leftover)
 
-DoT ticks (kind 4); charging overlay 397/428/395; MAGSTR/MAGRES;
-virus 631; summon; full `bot_spell_book.json`; heal+AOE dump bot 99.
+DoT ticks (kind 4); charging overlay 397/428/395 как эффект, не как
+отсутствие карточки; MAGSTR/MAGRES; virus 631; summon; gate
+`foe_has_dispel_groups`.
 
 ## CMB-07 — weighted loot table
 
 Срез закрыт (raw-AMF). `rollBotLoot(BotReward, RandomSource)` — generic
 Dwar-lite таблица: guaranteed `drop_weight=0`, затем `loot_drop_cnt` picks
 (+ bonus `2^(max-n)`), пул `drop_weight>0` + NOTHING. Шанс pick ∝ вес /
-сумма. Пустая таблица (Хисса/дух/рыжий) не выдумывает предметы. Quest
+сумма. Overlay-таблицы Хиссы/духа/рыжего не пустые. Quest
 `kind:loot` — не эта capability. Dungeon personal/coins — DNG-03
-landed (composition). `loot.bands` leftover. Полный корпус — DATA-03.
+landed (composition). `loot.bands` leftover.
 
-Gryzl **2**: NOTHING 3460 доминирует 77/93/99; unit past NOTHING даёт
-**77**. CEF нефорсируемого RNG не прогонялся.
+Gryzl **2**: overlay NOTHING 3000 / 27 entries (не handwritten 3460/77/93/99).
+`rollMoneyGold` берёт закрытый интервал между `money_min` и `money_max`
+независимо от порядка (overlay 117: 9 и 0). CEF нефорсируемого RNG не прогонялся.
 
 ### Architecture decision
 
@@ -344,7 +350,7 @@ Gryzl **2**: NOTHING 3460 доминирует 77/93/99; unit past NOTHING да�
 
 Quest loot tables в combat (drop-cap — QST-ENG-02 composition);
 dungeon `loot.bands` leftover; personal/coins — DNG-03 landed composition, не
-combat import; party lottery; honor; полный `bot_loot_entries` corpus.
+combat import; party lottery; honor.
 
 ## CMB-08 — duels and team shuffle
 

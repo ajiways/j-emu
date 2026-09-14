@@ -33,8 +33,8 @@ describe("ContentValidator", () => {
   });
 
   it("rejects bot loot that points at a missing artifact", () => {
-    const bot = playable.bots[0];
-    if (!bot) throw new Error("playable bundle has no bots");
+    const bot = playable.bots.find((row) => row.lootEntries.length > 0);
+    if (!bot) throw new Error("playable bundle has no bot loot");
     const bundle: ContentBundle = {
       ...playable,
       bots: replaceBot(bot, {
@@ -51,7 +51,7 @@ describe("ContentValidator", () => {
   });
 
   it("rejects duplicate loot artikul on the same bot", () => {
-    const bot = playable.bots[0];
+    const bot = playable.bots.find((row) => row.lootEntries.length > 0);
     const entry = bot?.lootEntries[0];
     if (!bot || !entry) throw new Error("playable bundle has no bot loot");
     const bundle: ContentBundle = {
@@ -445,13 +445,13 @@ describe("parseContentBundle", () => {
     ).toThrow(/zone must be empty or have at least 3 points/);
   });
 
-  it("rejects a missing wire asset", () => {
+  it("rejects an artifact with empty typeId", () => {
     const artifact = playable.artifacts[0];
     if (!artifact) throw new Error("playable bundle has no artifacts");
     expect(() =>
       parseContentBundle({
         ...playable,
-        artifacts: [{ ...artifact, picture: "" }],
+        artifacts: [{ ...artifact, typeId: "" }],
       }),
     ).toThrow();
   });
@@ -646,19 +646,19 @@ describe("parseContentBundle", () => {
     ).toThrow();
   });
 
-  it("rejects a hunt look without fight sk", () => {
+  it("rejects a hunt look without a nick", () => {
     const bot = playable.bots[0];
     if (!bot) throw new Error("playable bundle has no bots");
     expect(() =>
       parseContentBundle({
         ...playable,
-        bots: [{ ...bot, hunt: { ...bot.hunt, sk: "" } }],
+        bots: [{ ...bot, hunt: { ...bot.hunt, nick: "" } }],
       }),
     ).toThrow();
   });
 
   it("rejects duplicate loot artikul ids on a bot", () => {
-    const bot = playable.bots[0];
+    const bot = playable.bots.find((row) => row.lootEntries.length > 0);
     const entry = bot?.lootEntries[0];
     if (!bot || !entry) throw new Error("playable bundle has no bot loot");
     expect(() =>

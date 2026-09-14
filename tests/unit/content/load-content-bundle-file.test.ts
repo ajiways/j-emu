@@ -1,0 +1,129 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+import { loadContentBundleFile } from "../../../src/modules/content/infrastructure/load-content-bundle-file.ts";
+
+const slicePath = path.resolve(process.cwd(), "content/playable-slice.json");
+
+describe("loadContentBundleFile generated files", () => {
+  it("loads artifacts from itemsFile when the bundle list is empty", () => {
+    const raw = readSlice();
+    const sample = sampleArtifact(raw);
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "items-file-"));
+    writeBundle(dir, { ...raw, artifacts: [], itemsFile: "items.json" }, [
+      ["items.json", [sample]],
+    ]);
+    const loaded = loadContentBundleFile(path.join(dir, "bundle.json"));
+    expect(loaded.artifacts.some((row) => row.id === sample.id)).toBe(true);
+  });
+
+  it("rejects the same artikul_id in both files", () => {
+    const raw = readSlice();
+    const sample = sampleArtifact(raw);
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "items-conflict-"));
+    writeBundle(dir, { ...raw, artifacts: [sample], itemsFile: "items.json" }, [
+      ["items.json", [sample]],
+    ]);
+    expect(() => loadContentBundleFile(path.join(dir, "bundle.json"))).toThrow(
+      /Duplicate artifact artikul_id/,
+    );
+  });
+
+  it("loads bots from botsFile when the bundle list is empty", () => {
+    const raw = readSlice();
+    const sample = sampleBot(raw);
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bots-file-"));
+    const bundle: Record<string, unknown> = { ...raw, bots: [], botsFile: "bots.json" };
+    delete bundle.botLootFile;
+    delete bundle.botSpellBooksFile;
+    writeBundle(dir, bundle, [["bots.json", [sample]]]);
+    const loaded = loadContentBundleFile(path.join(dir, "bundle.json"));
+    expect(loaded.bots.some((row) => row.id === sample.id)).toBe(true);
+  });
+
+  it("rejects the same bot id in both files", () => {
+    const raw = readSlice();
+    const sample = sampleBot(raw);
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bots-conflict-"));
+    const bundle: Record<string, unknown> = { ...raw, bots: [sample], botsFile: "bots.json" };
+    delete bundle.botLootFile;
+    delete bundle.botSpellBooksFile;
+    writeBundle(dir, bundle, [["bots.json", [sample]]]);
+    expect(() => loadContentBundleFile(path.join(dir, "bundle.json"))).toThrow(/Duplicate bot id/);
+  });
+});
+
+function readSlice(): Record<string, unknown> & {
+  artifacts: Array<{ id: number }>;
+  bots: Array<{ id: number }>;
+} {
+  return JSON.parse(fs.readFileSync(slicePath, "utf8")) as Record<string, unknown> & {
+    artifacts: Array<{ id: number }>;
+    bots: Array<{ id: number }>;
+  };
+}
+
+function sampleArtifact(raw: { artifacts: Array<{ id: number }>; itemsFile?: unknown }): {
+  id: number;
+} {
+  const fromBundle = raw.artifacts[0];
+  if (fromBundle) return fromBundle;
+  if (typeof raw.itemsFile !== "string") throw new Error("playable-slice has no artifacts");
+  const items = JSON.parse(
+    fs.readFileSync(path.resolve(process.cwd(), "content", raw.itemsFile), "utf8"),
+  ) as Array<{ id: number }>;
+  const row = items[0];
+  if (!row) throw new Error("itemsFile has no artifacts");
+  return row;
+}
+
+function sampleBot(raw: { bots: Array<{ id: number }>; botsFile?: unknown; itemsFile?: unknown }): {
+  id: number;
+} {
+  const fromBundle = raw.bots[0];
+  if (fromBundle) return fromBundle;
+  if (typeof raw.botsFile !== "string") throw new Error("playable-slice has no bots");
+  const bots = JSON.parse(
+    fs.readFileSync(path.resolve(process.cwd(), "content", raw.botsFile), "utf8"),
+  ) as Array<{ id: number }>;
+  const row = bots[0];
+  if (!row) throw new Error("botsFile has no bots");
+  return row;
+}
+
+function writeBundle(
+  dir: string,
+  bundle: Record<string, unknown>,
+  extras: ReadonlyArray<readonly [string, unknown]>,
+): void {
+  fs.copyFileSync(
+    path.resolve(process.cwd(), "content/common-conf.json"),
+    path.join(dir, "common-conf.json"),
+  );
+  if (typeof bundle.botsFile === "string") {
+    const dest = path.join(dir, bundle.botsFile);
+    if (!fs.existsSync(dest)) fs.writeFileSync(dest, "[]\n");
+  }
+  if (typeof bundle.botLootFile === "string") {
+    const dest = path.join(dir, bundle.botLootFile);
+    if (!fs.existsSync(dest)) fs.writeFileSync(dest, "[]\n");
+  }
+  if (typeof bundle.botSpellBooksFile === "string") {
+    const dest = path.join(dir, bundle.botSpellBooksFile);
+    if (!fs.existsSync(dest)) fs.writeFileSync(dest, "[]\n");
+  }
+  if (typeof bundle.itemsFile === "string" && bundle.itemsFile !== "items.json") {
+    const dest = path.join(dir, bundle.itemsFile);
+    if (!fs.existsSync(dest)) {
+      const sample = sampleArtifact(
+        bundle as { artifacts: Array<{ id: number }>; itemsFile?: unknown },
+      );
+      fs.writeFileSync(dest, JSON.stringify([sample]));
+    }
+  }
+  for (const [name, value] of extras) {
+    fs.writeFileSync(path.join(dir, name), JSON.stringify(value));
+  }
+  fs.writeFileSync(path.join(dir, "bundle.json"), JSON.stringify(bundle));
+}

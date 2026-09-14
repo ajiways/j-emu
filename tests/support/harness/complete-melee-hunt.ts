@@ -88,7 +88,53 @@ export async function strikeUntilHuntFinish(
       continue;
     }
     await elapse(1100);
-    collect?.(await striker.pollFight());
+    const after = await striker.pollFight();
+    collect?.(after);
+    if (framesIncludeFightFinish(after)) finished = true;
+  }
+  if (!finished) throw new Error("Hunt fight did not finish");
+}
+
+/** Human↔human: each melee hit grants the opponent after `turnGrantDelayMs`. */
+export async function strikeUntilPvpFinish(
+  opener: AuthenticatedClient,
+  opponent: AuthenticatedClient,
+  elapse: (ms: number) => Promise<void>,
+  sequenceStart: number,
+  collect?: (frames: readonly AmfValue[]) => void,
+  maxStrikes = MAX_MELEE_STRIKES,
+): Promise<void> {
+  let striker = opener;
+  let other = opponent;
+  let finished = false;
+  for (let strike = 0; strike < maxStrikes && !finished; strike += 1) {
+    const castBody = await striker.fight({
+      rc: "castSpell",
+      srcType: 1,
+      srcId: 2,
+      sq: sequenceStart + strike,
+    });
+    if (castBody.length !== 0) throw new Error("castSpell must return an empty body");
+    const melee = await striker.pollFight();
+    collect?.(melee);
+    if (framesIncludeFightFinish(melee)) {
+      finished = true;
+      break;
+    }
+    await elapse(2500);
+    const otherFrames = await other.pollFight();
+    collect?.(otherFrames);
+    const strikerFrames = await striker.pollFight();
+    collect?.(strikerFrames);
+    if (framesIncludeFightFinish(otherFrames) || framesIncludeFightFinish(strikerFrames)) {
+      finished = true;
+      break;
+    }
+    if (fightEventTypes(otherFrames).includes("attacknow")) {
+      const next = other;
+      other = striker;
+      striker = next;
+    }
   }
   if (!finished) throw new Error("Hunt fight did not finish");
 }

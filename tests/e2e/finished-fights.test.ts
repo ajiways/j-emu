@@ -30,7 +30,7 @@ describe("finished fights", () => {
     expect(row).toMatchObject({
       id: BigInt(fightId),
       heroId,
-      title: `Нападение ${nick} на Грызль`,
+      title: `Нападение ${nick} на Грызл`,
       type: 1,
       timeout: 20,
       levelMin: 1,

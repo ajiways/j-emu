@@ -45,6 +45,13 @@ function canCast(
   input: Readonly<{ botHp: number; botMaxHp: number; casts: Map<number, number> }>,
 ): boolean {
   if (card.slot === "never") return false;
+  if (card.gate === "foe_has_dispel_groups") return false;
+  if (!card.spell.effects.some((effect) => effect.kind === 1 || effect.kind === 2)) {
+    return false;
+  }
+  if (card.gate === "once" && castCount(input.casts, card.artikulId) >= (card.maxCasts ?? 1)) {
+    return false;
+  }
   if (card.maxCasts !== null && castCount(input.casts, card.artikulId) >= card.maxCasts) {
     return false;
   }

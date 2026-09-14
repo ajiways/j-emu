@@ -39,7 +39,7 @@ describe("fproxy", () => {
       expect.arrayContaining(["fightState", "persList", "oppnew", "attacknow"]),
     );
     const opponent = huntOppNewFrom(authenticated);
-    expect(opponent).toMatchObject({ et: "oppnew", nick: "Грызль", bot: true, sk: "11", team: 2 });
+    expect(opponent).toMatchObject({ et: "oppnew", nick: "Грызл", bot: true, sk: "11", team: 2 });
     expect(opponent.id).toBeGreaterThanOrEqual(1_000_000);
 
     const sides = [

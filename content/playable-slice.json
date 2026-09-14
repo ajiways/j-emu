@@ -1,2008 +1,12 @@
 {
   "schemaVersion": "playable-slice/v35",
   "commonConfFile": "common-conf.json",
-  "artifacts": [
-    {
-      "id": 9095,
-      "title": "Ветхая магическая перчатка",
-      "picture": "greyset5_lhand.png",
-      "typeId": "2",
-      "kindId": 44,
-      "slotMask": 32,
-      "weight": 0,
-      "levelMin": 1,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 0,
-      "flags": 40,
-      "bagStack": 1,
-      "durability": 3,
-      "durabilityMax": 3,
-      "skills": [
-        {
-          "id": "STR",
-          "value": 6,
-          "flags": 0
-        },
-        {
-          "id": "RAG",
-          "value": 2,
-          "flags": 0
-        },
-        {
-          "id": "DEX",
-          "value": 1,
-          "flags": 0
-        },
-        {
-          "id": "DEF",
-          "value": 1,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 5,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {
-        "hits": [2, 3, 2, 3, 1, 2, 3, 1],
-        "spells": [
-          {
-            "id": 1,
-            "cost": 2,
-            "row": 1,
-            "artikul_id0": 9098
-          },
-          {
-            "id": 2,
-            "cost": 3,
-            "row": 1,
-            "artikul_id0": 9100
-          },
-          {
-            "id": 3,
-            "cost": 4,
-            "row": 1,
-            "artikul_id0": 9099
-          }
-        ]
-      }
-    },
-    {
-      "id": 9098,
-      "title": "Разряд молнии",
-      "picture": "electro_ball1.png",
-      "typeId": "2",
-      "kindId": 0,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 1,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 0,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {},
-      "extra": {
-        "spell": {
-          "animData": "magic_electroball",
-          "endTurn": true,
-          "persRestr": {
-            "active": true,
-            "dead": false
-          },
-          "targetRestr": {
-            "opp": true,
-            "dead": false,
-            "selgroupdeny": {}
-          },
-          "effects": [
-            {
-              "kind": 1,
-              "dmgType": 128,
-              "order": 1,
-              "hidden": 0,
-              "skills": [
-                {
-                  "skill_id": "pcSTR",
-                  "value": 52
-                }
-              ]
-            }
-          ]
-        }
-      }
-    },
-    {
-      "id": 9100,
-      "title": "Жажда крови",
-      "picture": "kaban_magic_mosch.png",
-      "typeId": "2",
-      "kindId": 0,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 1,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 0,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {},
-      "extra": {
-        "spell": {
-          "persRestr": {
-            "active": true,
-            "dead": false
-          },
-          "targetRestr": {
-            "self": true,
-            "dead": false
-          },
-          "effects": [
-            {
-              "kind": 3,
-              "charging": 1
-            }
-          ]
-        }
-      }
-    },
-    {
-      "id": 9099,
-      "title": "Волна света",
-      "picture": "ludoed_magic_light.png",
-      "typeId": "2",
-      "kindId": 0,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 1,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 0,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {},
-      "extra": {
-        "spell": {
-          "animData": "magic_aoe_light",
-          "endTurn": true,
-          "persRestr": {
-            "active": true,
-            "dead": false
-          },
-          "targetRestr": {
-            "opp": true,
-            "dead": false
-          },
-          "effects": [
-            {
-              "kind": 1,
-              "targetCount": 2
-            }
-          ]
-        }
-      }
-    },
-    {
-      "id": 93,
-      "title": "Малый эликсир жизни",
-      "picture": "bottles_live1_2712.png",
-      "typeId": "7",
-      "kindId": 154,
-      "slotMask": 67108864,
-      "weight": 100,
-      "levelMin": 1,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 100,
-      "flags": 0,
-      "bagStack": 99,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {},
-      "extra": {
-        "spell": {
-          "animData": "botles_healself_grey",
-          "cooldown": 20,
-          "groupId": 841,
-          "flags": "262144",
-          "persRestr": {
-            "dead": false
-          },
-          "targetRestr": {
-            "dead": false,
-            "self": true,
-            "selgroupdeny": {
-              "cond": true,
-              "id": 956
-            }
-          },
-          "effects": [
-            {
-              "kind": 2,
-              "amount": 15
-            }
-          ]
-        }
-      }
-    },
-    {
-      "id": 99,
-      "title": "Малый усиливающий орб",
-      "picture": "bottles_sila1.png",
-      "typeId": "7",
-      "kindId": 152,
-      "slotMask": 603979776,
-      "weight": 10,
-      "levelMin": 1,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 15,
-      "flags": 0,
-      "bagStack": 999,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {},
-      "extra": {
-        "spell": {
-          "animData": "botles_strenght_grey",
-          "groupId": 842,
-          "flags": "262144",
-          "persRestr": {
-            "dead": false
-          },
-          "targetRestr": {
-            "dead": false,
-            "groupdeny": true,
-            "self": true,
-            "selgroupdeny": []
-          },
-          "effects": [
-            {
-              "kind": 3,
-              "charging": 1,
-              "dmgType": 1,
-              "skills": [
-                {
-                  "skill_id": "pcSTR",
-                  "value": 10
-                }
-              ]
-            }
-          ]
-        }
-      }
-    },
-    {
-      "id": 77,
-      "title": "Кусок мяса",
-      "picture": "rawmeat_grey.png",
-      "typeId": "10",
-      "kindId": 48,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 0,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 3,
-      "flags": 40,
-      "bagStack": 99,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {
-        "20": {
-          "code": "ADD_HP",
-          "param1": 30,
-          "param2": 0,
-          "dispose": 1,
-          "title": "Съесть мясо"
-        }
-      },
-      "extra": {}
-    },
-    {
-      "id": 23,
-      "title": "Простая магическая перчатка",
-      "picture": "greyset5_lhand.png",
-      "typeId": "2",
-      "kindId": 44,
-      "slotMask": 32,
-      "weight": 0,
-      "levelMin": 2,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 100,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 30,
-      "durabilityMax": 30,
-      "skills": [
-        {
-          "id": "STR",
-          "value": 6,
-          "flags": 0
-        },
-        {
-          "id": "RAG",
-          "value": 2,
-          "flags": 0
-        },
-        {
-          "id": "DEX",
-          "value": 1,
-          "flags": 0
-        },
-        {
-          "id": "DEF",
-          "value": 1,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 5,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {}
-    },
-    {
-      "id": 24,
-      "title": "Простой наруч",
-      "picture": "greyset5_rhand.png",
-      "typeId": "2",
-      "kindId": 5,
-      "slotMask": 16,
-      "weight": 0,
-      "levelMin": 2,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 100,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 30,
-      "durabilityMax": 30,
-      "skills": [
-        {
-          "id": "DEF",
-          "value": 2,
-          "flags": 0
-        },
-        {
-          "id": "DEX",
-          "value": 2,
-          "flags": 0
-        },
-        {
-          "id": "RAG",
-          "value": 2,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 8,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 7,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {}
-    },
-    {
-      "id": 621,
-      "title": "Амулет громилы",
-      "picture": "amulet_boec_615.png",
-      "typeId": "11",
-      "kindId": 25,
-      "slotMask": 512,
-      "weight": 0,
-      "levelMin": 6,
-      "levelMax": 536870911,
-      "gender": 0,
-      "priceMinor": 30000,
-      "flags": 32,
-      "bagStack": 1,
-      "durability": 15,
-      "durabilityMax": 15,
-      "skills": [
-        {
-          "id": "MPMAX",
-          "value": 5,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 14,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 12,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {}
-    },
-    {
-      "id": 20,
-      "title": "Простая кираса",
-      "picture": "greyset5_armour.png",
-      "typeId": "2",
-      "kindId": 20,
-      "slotMask": 2,
-      "weight": 0,
-      "levelMin": 1,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 100,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 30,
-      "durabilityMax": 30,
-      "skills": [
-        {
-          "id": "DEF",
-          "value": 2,
-          "flags": 0
-        },
-        {
-          "id": "DEX",
-          "value": 2,
-          "flags": 0
-        },
-        {
-          "id": "RAG",
-          "value": 1,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 7,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 6,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {}
-    },
-    {
-      "id": 21,
-      "title": "Простые сапоги",
-      "picture": "greyset5_shoes.png",
-      "typeId": "2",
-      "kindId": 2,
-      "slotMask": 1,
-      "weight": 0,
-      "levelMin": 1,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 100,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 30,
-      "durabilityMax": 30,
-      "skills": [
-        {
-          "id": "DEF",
-          "value": 2,
-          "flags": 0
-        },
-        {
-          "id": "DEX",
-          "value": 1,
-          "flags": 0
-        },
-        {
-          "id": "RAG",
-          "value": 2,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 7,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 6,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {}
-    },
-    {
-      "id": 26,
-      "title": "Простые поножи",
-      "picture": "greyset5_trousers.png",
-      "typeId": "2",
-      "kindId": 6,
-      "slotMask": 4,
-      "weight": 0,
-      "levelMin": 1,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 100,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 30,
-      "durabilityMax": 30,
-      "skills": [
-        {
-          "id": "DEF",
-          "value": 1,
-          "flags": 0
-        },
-        {
-          "id": "DEX",
-          "value": 2,
-          "flags": 0
-        },
-        {
-          "id": "RAG",
-          "value": 2,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 7,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 6,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {}
-    },
-    {
-      "id": 553,
-      "title": "Древний кристалл заточки",
-      "picture": "zatochka_old_21102010.png",
-      "typeId": "73",
-      "kindId": 12,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 6,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 8000,
-      "flags": 40,
-      "bagStack": 9999,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {
-        "152": {
-          "code": "ARTIFACT_UPGRADE",
-          "param1": 0,
-          "param2": 1,
-          "dispose": 1,
-          "title": "Древняя заточка"
-        }
-      },
-      "extra": {}
-    },
-    {
-      "id": 1310,
-      "title": "Обычный кристалл заточки",
-      "picture": "zatochka_20100609.png",
-      "typeId": "73",
-      "kindId": 12,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 6,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 8000,
-      "flags": 0,
-      "bagStack": 9999,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {
-        "467": {
-          "code": "ARTIFACT_UPGRADE",
-          "param1": 0,
-          "param2": 2,
-          "dispose": 1,
-          "title": "Обычная заточка"
-        }
-      },
-      "extra": {}
-    },
-    {
-      "id": 4603,
-      "title": "Ледяной кристалл заточки",
-      "picture": "zatochka_ny_20111222.png",
-      "typeId": "73",
-      "kindId": 12,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 10,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 0,
-      "flags": 40,
-      "bagStack": 9999,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {
-        "1888": {
-          "code": "ARTIFACT_UPGRADE",
-          "param1": 0,
-          "param2": 3,
-          "dispose": 1,
-          "title": "Ледяная заточка"
-        }
-      },
-      "extra": {}
-    },
-    {
-      "id": 11408,
-      "title": "Волшебный резонатор заточки",
-      "picture": "rezonator_zatochki_4.png",
-      "typeId": "73",
-      "kindId": 12,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 7,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 50000,
-      "flags": 40,
-      "bagStack": 9999,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {
-        "5703": {
-          "code": "ARTIFACT_UPGRADE",
-          "param1": 3,
-          "param2": 2,
-          "dispose": 1,
-          "title": "Изменить заточку"
-        }
-      },
-      "extra": {}
-    },
-    {
-      "id": 13224,
-      "title": "Адамантовый кристалл заточки",
-      "picture": "adamant_zatochka_4.png",
-      "typeId": "73",
-      "kindId": 12,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 35,
-      "levelMax": 35,
-      "gender": 0,
-      "priceMinor": 0,
-      "flags": 40,
-      "bagStack": 9999,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {
-        "6963": {
-          "code": "ARTIFACT_UPGRADE",
-          "param1": 0,
-          "param2": 4,
-          "dispose": 1,
-          "title": "Бесконечная заточка"
-        }
-      },
-      "extra": {}
-    },
-    {
-      "id": 27,
-      "title": "Палица рекрута",
-      "picture": "greyset15_mace.png",
-      "typeId": "2",
-      "kindId": 98,
-      "slotMask": 64,
-      "weight": 0,
-      "levelMin": 10,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 2000,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 30,
-      "durabilityMax": 30,
-      "skills": [
-        {
-          "id": "DEF",
-          "value": 4,
-          "flags": 0
-        },
-        {
-          "id": "DEX",
-          "value": 4,
-          "flags": 0
-        },
-        {
-          "id": "MAGSTR",
-          "value": 1,
-          "flags": 0
-        },
-        {
-          "id": "RAG",
-          "value": 4,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 17,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 15,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {
-        "trend": 0,
-        "set": {
-          "id": 47,
-          "title": "Рекрута",
-          "bonus5": 106,
-          "bonus9": 107,
-          "avatar_man": "avatar_m_set_1_gray.png",
-          "avatar_woman": "avatar_f_set_1_gray.png"
-        }
-      }
-    },
-    {
-      "id": 28,
-      "title": "Шлем рекрута",
-      "picture": "greyset15_helmet.png",
-      "typeId": "2",
-      "kindId": 47,
-      "slotMask": 256,
-      "weight": 0,
-      "levelMin": 12,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 2000,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 30,
-      "durabilityMax": 30,
-      "skills": [
-        {
-          "id": "DEF",
-          "value": 5,
-          "flags": 0
-        },
-        {
-          "id": "DEX",
-          "value": 4,
-          "flags": 0
-        },
-        {
-          "id": "MAGSTR",
-          "value": 1,
-          "flags": 0
-        },
-        {
-          "id": "RAG",
-          "value": 4,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 18,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 14,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {
-        "trend": 0,
-        "set": {
-          "id": 47,
-          "title": "Рекрута",
-          "bonus5": 106,
-          "bonus9": 107,
-          "avatar_man": "avatar_m_set_1_gray.png",
-          "avatar_woman": "avatar_f_set_1_gray.png"
-        }
-      }
-    },
-    {
-      "id": 30,
-      "title": "Кираса рекрута",
-      "picture": "greyset15_armour.png",
-      "typeId": "2",
-      "kindId": 20,
-      "slotMask": 2,
-      "weight": 0,
-      "levelMin": 8,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 2000,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 30,
-      "durabilityMax": 30,
-      "skills": [
-        {
-          "id": "DEF",
-          "value": 3,
-          "flags": 0
-        },
-        {
-          "id": "DEX",
-          "value": 3,
-          "flags": 0
-        },
-        {
-          "id": "MAGSTR",
-          "value": 1,
-          "flags": 0
-        },
-        {
-          "id": "RAG",
-          "value": 4,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 15,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 13,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {
-        "trend": 0,
-        "set": {
-          "id": 47,
-          "title": "Рекрута",
-          "bonus5": 106,
-          "bonus9": 107,
-          "avatar_man": "avatar_m_set_1_gray.png",
-          "avatar_woman": "avatar_f_set_1_gray.png"
-        }
-      }
-    },
-    {
-      "id": 33,
-      "title": "Перчатка рекрута",
-      "picture": "greyset15_lhand.png",
-      "typeId": "2",
-      "kindId": 44,
-      "slotMask": 32,
-      "weight": 0,
-      "levelMin": 7,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 2000,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 30,
-      "durabilityMax": 30,
-      "skills": [
-        {
-          "id": "DEF",
-          "value": 3,
-          "flags": 0
-        },
-        {
-          "id": "DEX",
-          "value": 3,
-          "flags": 0
-        },
-        {
-          "id": "RAG",
-          "value": 3,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 13,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 11,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {
-        "trend": 0,
-        "set": {
-          "id": 47,
-          "title": "Рекрута",
-          "bonus5": 106,
-          "bonus9": 107,
-          "avatar_man": "avatar_m_set_1_gray.png",
-          "avatar_woman": "avatar_f_set_1_gray.png"
-        }
-      }
-    },
-    {
-      "id": 35,
-      "title": "Поножи рекрута",
-      "picture": "greyset15_trousers.png",
-      "typeId": "2",
-      "kindId": 6,
-      "slotMask": 4,
-      "weight": 0,
-      "levelMin": 9,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 2000,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 30,
-      "durabilityMax": 30,
-      "skills": [
-        {
-          "id": "DEF",
-          "value": 4,
-          "flags": 0
-        },
-        {
-          "id": "DEX",
-          "value": 4,
-          "flags": 0
-        },
-        {
-          "id": "MAGSTR",
-          "value": 1,
-          "flags": 0
-        },
-        {
-          "id": "RAG",
-          "value": 4,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 16,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 13,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {
-        "trend": 0,
-        "set": {
-          "id": 47,
-          "title": "Рекрута",
-          "bonus5": 106,
-          "bonus9": 107,
-          "avatar_man": "avatar_m_set_1_gray.png",
-          "avatar_woman": "avatar_f_set_1_gray.png"
-        }
-      }
-    },
-    {
-      "id": 106,
-      "title": "Комплект рекрута - 5 вещей",
-      "picture": "",
-      "typeId": "9",
-      "kindId": 139,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 1,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 0,
-      "flags": 0,
-      "bagStack": 9999,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [
-        {
-          "id": "DEF",
-          "value": 1,
-          "flags": 0
-        },
-        {
-          "id": "DEX",
-          "value": 2,
-          "flags": 0
-        },
-        {
-          "id": "RAG",
-          "value": 2,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 7,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 6,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {}
-    },
-    {
-      "id": 43,
-      "title": "Перчатка убийцы",
-      "picture": "G_A_set10_magic.png",
-      "typeId": "2",
-      "kindId": 44,
-      "slotMask": 32,
-      "weight": 0,
-      "levelMin": 7,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 300000,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 30,
-      "durabilityMax": 30,
-      "skills": [
-        {
-          "id": "DEX",
-          "value": 12,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 17,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 13,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {
-        "trend": 1,
-        "set": {
-          "id": 48,
-          "title": "Убийцы",
-          "bonus5": 109,
-          "bonus9": 110,
-          "avatar_man": "avatar_m_ubiyca.jpg",
-          "avatar_woman": "avatar_w_ubiyca.jpg"
-        }
-      }
-    },
-    {
-      "id": 46,
-      "title": "Шлем стража",
-      "picture": "G_Z_set10_helmet.png",
-      "typeId": "2",
-      "kindId": 47,
-      "slotMask": 256,
-      "weight": 0,
-      "levelMin": 12,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 300000,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 30,
-      "durabilityMax": 30,
-      "skills": [
-        {
-          "id": "DEF",
-          "value": 15,
-          "flags": 0
-        },
-        {
-          "id": "MAGSTR",
-          "value": 3,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 23,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 18,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {
-        "trend": 3,
-        "set": {
-          "id": 49,
-          "title": "Стража",
-          "bonus5": 111,
-          "bonus9": 112,
-          "avatar_man": "avatar_m_set_1_g_z.png",
-          "avatar_woman": "avatar_w_straj.jpg"
-        }
-      }
-    },
-    {
-      "id": 640,
-      "title": "Буханка изумительного хлеба",
-      "picture": "breadbaf_20100714.png",
-      "typeId": "10",
-      "kindId": 48,
-      "slotMask": 134217728,
-      "weight": 0,
-      "levelMin": 1,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 1000,
-      "flags": 40,
-      "bagStack": 9999,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [
-        {
-          "id": "STR",
-          "value": 6,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 4,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {
-        "850": {
-          "code": "DRINK",
-          "param1": 0,
-          "param2": 0,
-          "dispose": 1,
-          "title": "Съесть"
-        }
-      },
-      "extra": {
-        "param1": 1800
-      }
-    },
-    {
-      "id": 623,
-      "title": "Пособие «Слабая злость»",
-      "picture": "book_taunt_20100705.png",
-      "typeId": "75",
-      "kindId": 33,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 1,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 30000,
-      "flags": 32,
-      "bagStack": 1,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {
-        "167": {
-          "code": "",
-          "param1": 0,
-          "param2": 0,
-          "dispose": 1,
-          "title": "Изучение книги_Пособие_Слабая злость",
-          "bonusId": 601
-        }
-      },
-      "extra": {}
-    },
-    {
-      "id": 2371,
-      "title": "Часть амулета огра",
-      "picture": "amuletogra_part_20110311.png",
-      "typeId": "20",
-      "kindId": 34,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 6,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 1500,
-      "flags": 40,
-      "bagStack": 99,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {
-        "490": {
-          "code": "",
-          "param1": 0,
-          "param2": 0,
-          "dispose": 0,
-          "title": "Собрать Амулет огра",
-          "bonusId": 2827,
-          "description": "Для сборки амулета вам потребуется две таких половинки."
-        }
-      },
-      "extra": {}
-    },
-    {
-      "id": 5986,
-      "title": "Монета Поганой ямы",
-      "picture": "badge_yama1.png",
-      "typeId": "85",
-      "kindId": 108,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 0,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 0,
-      "flags": 32,
-      "bagStack": 99,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {},
-      "extra": {}
-    },
-    {
-      "id": 55,
-      "title": "Амулет огра",
-      "picture": "amulet_ogr_2112.png",
-      "typeId": "11",
-      "kindId": 25,
-      "slotMask": 512,
-      "weight": 0,
-      "levelMin": 6,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 5000,
-      "flags": 32,
-      "bagStack": 1,
-      "durability": 15,
-      "durabilityMax": 15,
-      "skills": [
-        {
-          "id": "STR",
-          "value": 10,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 10,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {}
-    },
-    {
-      "id": 584,
-      "title": "Голова мертвеца",
-      "picture": "golova_zombi_20100622.png",
-      "typeId": "20",
-      "kindId": 66,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 1,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 5000,
-      "flags": 0,
-      "bagStack": 1,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {
-        "131": {
-          "code": "NPC",
-          "param1": 271,
-          "param2": 0,
-          "dispose": 0,
-          "title": "Разговор"
-        }
-      },
-      "extra": {}
-    },
-    {
-      "id": 1720,
-      "title": "Хрусталь",
-      "picture": "res_starat_hrustal1.png",
-      "typeId": "96",
-      "kindId": 36,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 7,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 80,
-      "flags": 0,
-      "bagStack": 9999,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {},
-      "extra": {}
-    },
-    {
-      "id": 1721,
-      "title": "Гранат",
-      "picture": "res_starat_granat1.png",
-      "typeId": "96",
-      "kindId": 36,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 9,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 25,
-      "flags": 0,
-      "bagStack": 9999,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {},
-      "extra": {}
-    },
-    {
-      "id": 1722,
-      "title": "Халцедон",
-      "picture": "res_starat_halcedon1.png",
-      "typeId": "96",
-      "kindId": 36,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 11,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 25,
-      "flags": 0,
-      "bagStack": 9999,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {},
-      "extra": {}
-    },
-    {
-      "id": 1861,
-      "title": "Рецепт: Раствор хрусталя",
-      "picture": "recept_znak_grey.png",
-      "typeId": "95",
-      "kindId": 122,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 7,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 1000,
-      "flags": 8,
-      "bagStack": 1,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {
-        "718": {
-          "code": "LEARN_RECIPE",
-          "param1": 0,
-          "param2": 0,
-          "dispose": 1,
-          "title": "Изучить рецепт",
-          "bonusId": 0,
-          "description": "Вы уверены, что хотите изучить этот рецепт?"
-        }
-      },
-      "extra": {}
-    },
-    {
-      "id": 1714,
-      "title": "Колба с раствором хрусталя",
-      "picture": "res_reag_rastvorhrustalya.png",
-      "typeId": "94",
-      "kindId": 110,
-      "slotMask": 0,
-      "weight": 0,
-      "levelMin": 7,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 8,
-      "flags": 0,
-      "bagStack": 9999,
-      "durability": 0,
-      "durabilityMax": 0,
-      "skills": [],
-      "artifact_actions": {},
-      "extra": {}
-    },
-    {
-      "id": 20546,
-      "title": "Изначальная мифическая перчатка тирана VI",
-      "picture": "dosp_tir_mif_mag.png",
-      "typeId": "2",
-      "kindId": 44,
-      "slotMask": 32,
-      "weight": 0,
-      "levelMin": 7,
-      "levelMax": 0,
-      "gender": 0,
-      "priceMinor": 1000000,
-      "flags": 536870944,
-      "bagStack": 1,
-      "durability": 40,
-      "durabilityMax": 40,
-      "skills": [
-        {
-          "id": "INJ_RESIST",
-          "value": 3,
-          "flags": 0
-        },
-        {
-          "id": "LUCK",
-          "value": 10,
-          "flags": 0
-        },
-        {
-          "id": "RAG",
-          "value": 22,
-          "flags": 0
-        },
-        {
-          "id": "STR",
-          "value": 33,
-          "flags": 0
-        },
-        {
-          "id": "VIT",
-          "value": 26,
-          "flags": 0
-        }
-      ],
-      "artifact_actions": {},
-      "extra": {
-        "spell": {
-          "groupId": 936,
-          "persRestr": {},
-          "targetRestr": {
-            "self": true,
-            "selgroupdeny": {}
-          },
-          "effects": [
-            {
-              "kind": 3,
-              "dmgType": 0,
-              "order": -1,
-              "forceSelfTargeting": true,
-              "hidden": 0,
-              "duration": 320,
-              "realStartTime": true,
-              "skills": [{ "skill_id": "pcSTR", "value": 10 }]
-            }
-          ]
-        }
-      }
-    }
-  ],
-  "bots": [
-    {
-      "id": 2,
-      "title": "Грызль",
-      "level": 1,
-      "maxHp": 20,
-      "strength": 10,
-      "baseExp": 15,
-      "moneyMin": 0.2,
-      "moneyMax": 0.44,
-      "lootDropCnt": 1,
-      "lootBonusChance": 0.2,
-      "lootBonusMin": 1,
-      "lootBonusMax": 1,
-      "lootNothingWeight": 3460,
-      "lootEntries": [
-        {
-          "artikulId": 77,
-          "dropWeight": 77,
-          "countMin": 1,
-          "countMax": 2
-        },
-        {
-          "artikulId": 93,
-          "dropWeight": 66,
-          "countMin": 1,
-          "countMax": 4
-        },
-        {
-          "artikulId": 99,
-          "dropWeight": 72,
-          "countMin": 5,
-          "countMax": 25
-        }
-      ],
-      "spellBook": {
-        "nothingWeight": 100,
-        "spells": []
-      },
-      "hunt": {
-        "nick": "Грызл",
-        "swf": "gryzl1.swf",
-        "scale": 90,
-        "fps": 15,
-        "speed": 10,
-        "avatar": "avatar_gryzl1_sm.jpg",
-        "kind": 0,
-        "hideOnMap": 0,
-        "sk": "11",
-        "body": ""
-      }
-    },
-    {
-      "id": 4,
-      "title": "Хисса",
-      "level": 2,
-      "maxHp": 19,
-      "strength": 15,
-      "baseExp": 15,
-      "moneyMin": 0.4,
-      "moneyMax": 0.72,
-      "lootDropCnt": 1,
-      "lootBonusChance": 0,
-      "lootBonusMin": 0,
-      "lootBonusMax": 0,
-      "lootNothingWeight": 1,
-      "lootEntries": [],
-      "spellBook": {
-        "nothingWeight": 100,
-        "spells": [
-          {
-            "artikulId": 396,
-            "slot": "turn_roulette",
-            "weight": 10,
-            "maxCasts": null,
-            "gate": null,
-            "hpPct": null,
-            "spell": {
-              "animData": "magic_direct",
-              "endTurn": true,
-              "targetRestr": {
-                "opp": true,
-                "dead": false
-              },
-              "effects": [
-                {
-                  "kind": 1,
-                  "skills": [
-                    {
-                      "skill_id": "pcSTR",
-                      "value": -50
-                    }
-                  ]
-                },
-                {
-                  "kind": 4
-                }
-              ]
-            }
-          }
-        ]
-      },
-      "hunt": {
-        "nick": "Хисса",
-        "swf": "snake1.swf",
-        "scale": 90,
-        "fps": 15,
-        "speed": 10,
-        "avatar": "avatar_hissa1_sm.jpg",
-        "kind": 0,
-        "hideOnMap": 0,
-        "sk": "16",
-        "body": ""
-      }
-    },
-    {
-      "id": 24,
-      "title": "Рыжий грызл",
-      "level": 3,
-      "maxHp": 32,
-      "strength": 45,
-      "baseExp": 15,
-      "moneyMin": 0.6,
-      "moneyMax": 0.98,
-      "lootDropCnt": 1,
-      "lootBonusChance": 0,
-      "lootBonusMin": 0,
-      "lootBonusMax": 0,
-      "lootNothingWeight": 1,
-      "lootEntries": [],
-      "spellBook": {
-        "nothingWeight": 100,
-        "spells": [
-          {
-            "artikulId": 394,
-            "slot": "turn_roulette",
-            "weight": 10,
-            "maxCasts": null,
-            "gate": null,
-            "hpPct": null,
-            "spell": {
-              "animData": "magic_direct",
-              "endTurn": true,
-              "targetRestr": {
-                "opp": true,
-                "dead": false
-              },
-              "effects": [
-                {
-                  "kind": 1
-                }
-              ]
-            }
-          }
-        ]
-      },
-      "hunt": {
-        "nick": "Рыжий грызл",
-        "swf": "gryzl2.swf",
-        "scale": 100,
-        "fps": 15,
-        "speed": 10,
-        "avatar": "avatar_gryzl2_sm.jpg",
-        "kind": 0,
-        "hideOnMap": 0,
-        "sk": "12",
-        "body": ""
-      }
-    },
-    {
-      "id": 32,
-      "title": "Заблудший дух",
-      "level": 2,
-      "maxHp": 29,
-      "strength": 35,
-      "baseExp": 15,
-      "moneyMin": 0.4,
-      "moneyMax": 0.72,
-      "lootDropCnt": 1,
-      "lootBonusChance": 0,
-      "lootBonusMin": 0,
-      "lootBonusMax": 0,
-      "lootNothingWeight": 1,
-      "lootEntries": [],
-      "spellBook": {
-        "nothingWeight": 100,
-        "spells": [
-          {
-            "artikulId": 422,
-            "slot": "turn_roulette",
-            "weight": 10,
-            "maxCasts": null,
-            "gate": null,
-            "hpPct": null,
-            "spell": {
-              "animData": "magic_darkball",
-              "endTurn": true,
-              "targetRestr": {
-                "opp": true,
-                "dead": false
-              },
-              "effects": [
-                {
-                  "kind": 1
-                },
-                {
-                  "kind": 4
-                }
-              ]
-            }
-          }
-        ]
-      },
-      "hunt": {
-        "nick": "Заблудший дух",
-        "swf": "svetlyak_blue.swf",
-        "scale": 100,
-        "fps": 15,
-        "speed": 10,
-        "avatar": "avatar_svetlyak2_sm.jpg",
-        "kind": 0,
-        "hideOnMap": 0,
-        "sk": "30",
-        "body": ""
-      }
-    },
-    {
-      "id": 99,
-      "title": "Пещерный огр",
-      "level": 5,
-      "maxHp": 270,
-      "strength": 100,
-      "baseExp": 100,
-      "moneyMin": 0,
-      "moneyMax": 0,
-      "lootDropCnt": 1,
-      "lootBonusChance": 0,
-      "lootBonusMin": 0,
-      "lootBonusMax": 0,
-      "lootNothingWeight": 1,
-      "lootEntries": [],
-      "spellBook": {
-        "nothingWeight": 100,
-        "spells": []
-      },
-      "hunt": {
-        "nick": "Пещерный огр",
-        "swf": "ogr1.swf",
-        "scale": 100,
-        "fps": 15,
-        "speed": 10,
-        "avatar": "avatar_ogr1_sm.jpg",
-        "kind": 0,
-        "hideOnMap": 0,
-        "sk": "15",
-        "body": "skin(5,10,6,0,0,1,2,0);size(1.2)"
-      }
-    },
-    {
-      "id": 106,
-      "title": "Демон скорби Соверинг",
-      "level": 12,
-      "maxHp": 1000,
-      "strength": 247,
-      "baseExp": 200,
-      "moneyMin": 10,
-      "moneyMax": 12,
-      "lootDropCnt": 1,
-      "lootBonusChance": 0,
-      "lootBonusMin": 0,
-      "lootBonusMax": 0,
-      "lootNothingWeight": 1,
-      "lootEntries": [],
-      "spellBook": {
-        "nothingWeight": 100,
-        "spells": []
-      },
-      "hunt": {
-        "nick": "Демон скорби Соверинг",
-        "swf": "sovereign.swf",
-        "scale": 100,
-        "fps": 15,
-        "speed": 10,
-        "avatar": "avatar_sovereign_sm.jpg",
-        "kind": 0,
-        "hideOnMap": 0,
-        "sk": "45",
-        "body": ""
-      }
-    },
-    {
-      "id": 107,
-      "title": "Исчадие Соверинга",
-      "level": 12,
-      "maxHp": 280,
-      "strength": 180,
-      "baseExp": 40,
-      "moneyMin": 0,
-      "moneyMax": 0,
-      "lootDropCnt": 1,
-      "lootBonusChance": 0,
-      "lootBonusMin": 0,
-      "lootBonusMax": 0,
-      "lootNothingWeight": 1,
-      "lootEntries": [],
-      "spellBook": {
-        "nothingWeight": 100,
-        "spells": []
-      },
-      "hunt": {
-        "nick": "Исчадие Соверинга",
-        "swf": "sovereign.swf",
-        "scale": 70,
-        "fps": 15,
-        "speed": 10,
-        "avatar": "avatar_sovereign_sm.jpg",
-        "kind": 0,
-        "hideOnMap": 0,
-        "sk": "45",
-        "body": "size(0.8)"
-      }
-    },
-    {
-      "id": 108,
-      "title": "Глашатай Соверинга",
-      "level": 12,
-      "maxHp": 231,
-      "strength": 215,
-      "baseExp": 50,
-      "moneyMin": 0,
-      "moneyMax": 0,
-      "lootDropCnt": 1,
-      "lootBonusChance": 0,
-      "lootBonusMin": 0,
-      "lootBonusMax": 0,
-      "lootNothingWeight": 1,
-      "lootEntries": [],
-      "spellBook": {
-        "nothingWeight": 100,
-        "spells": []
-      },
-      "hunt": {
-        "nick": "Глашатай Соверинга",
-        "swf": "zombie_3.swf",
-        "scale": 90,
-        "fps": 15,
-        "speed": 10,
-        "avatar": "avatar_zombi3_sm.jpg",
-        "kind": 0,
-        "hideOnMap": 0,
-        "sk": "37",
-        "body": ""
-      }
-    },
-    {
-      "id": 109,
-      "title": "Солдат Соверинга",
-      "level": 12,
-      "maxHp": 200,
-      "strength": 190,
-      "baseExp": 40,
-      "moneyMin": 0,
-      "moneyMax": 0,
-      "lootDropCnt": 1,
-      "lootBonusChance": 0,
-      "lootBonusMin": 0,
-      "lootBonusMax": 0,
-      "lootNothingWeight": 1,
-      "lootEntries": [],
-      "spellBook": {
-        "nothingWeight": 100,
-        "spells": []
-      },
-      "hunt": {
-        "nick": "Солдат Соверинга",
-        "swf": "zombie_2.swf",
-        "scale": 90,
-        "fps": 15,
-        "speed": 10,
-        "avatar": "avatar_zombi2_sm.jpg",
-        "kind": 0,
-        "hideOnMap": 0,
-        "sk": "36",
-        "body": ""
-      }
-    },
-    {
-      "id": 354,
-      "title": "Хозяин копей",
-      "level": 8,
-      "maxHp": 1266,
-      "strength": 240,
-      "baseExp": 170,
-      "moneyMin": 0,
-      "moneyMax": 0,
-      "lootDropCnt": 1,
-      "lootBonusChance": 0,
-      "lootBonusMin": 0,
-      "lootBonusMax": 0,
-      "lootNothingWeight": 1,
-      "lootEntries": [],
-      "spellBook": {
-        "nothingWeight": 100,
-        "spells": []
-      },
-      "hunt": {
-        "nick": "Хозяин копей",
-        "swf": "worm2.swf",
-        "scale": 100,
-        "fps": 15,
-        "speed": 10,
-        "avatar": "avatar_cherv4_sm.jpg",
-        "kind": 0,
-        "hideOnMap": 0,
-        "sk": "51",
-        "body": "armor(3#2)"
-      }
-    },
-    {
-      "id": 353,
-      "title": "Лангерд Проклятый",
-      "level": 12,
-      "maxHp": 1481,
-      "strength": 339,
-      "baseExp": 200,
-      "moneyMin": 0,
-      "moneyMax": 0,
-      "lootDropCnt": 1,
-      "lootBonusChance": 0,
-      "lootBonusMin": 0,
-      "lootBonusMax": 0,
-      "lootNothingWeight": 1,
-      "lootEntries": [],
-      "spellBook": {
-        "nothingWeight": 100,
-        "spells": []
-      },
-      "hunt": {
-        "nick": "Лангерд Проклятый",
-        "swf": "skeleton_2.swf",
-        "scale": 100,
-        "fps": 15,
-        "speed": 10,
-        "avatar": "avatar_skeleton4_sm.jpg",
-        "kind": 0,
-        "hideOnMap": 0,
-        "sk": "1",
-        "body": "armor(13#2049,13#4100,13#8200,13#2064,13#4128,13#4160,13#4224,13#8448);skin(9,0,0,0,0,0,0,0);head(1,2,1,);size(1)"
-      }
-    },
-    {
-      "id": 373,
-      "title": "Пушок",
-      "level": 14,
-      "maxHp": 2591,
-      "strength": 404,
-      "baseExp": 300,
-      "moneyMin": 0,
-      "moneyMax": 0,
-      "lootDropCnt": 1,
-      "lootBonusChance": 0,
-      "lootBonusMin": 0,
-      "lootBonusMax": 0,
-      "lootNothingWeight": 1,
-      "lootEntries": [],
-      "spellBook": {
-        "nothingWeight": 100,
-        "spells": []
-      },
-      "hunt": {
-        "nick": "Пушок",
-        "swf": "tiger_1.swf",
-        "scale": 100,
-        "fps": 15,
-        "speed": 10,
-        "avatar": "avatar_tiger1_sm.jpg",
-        "kind": 0,
-        "hideOnMap": 0,
-        "sk": "62",
-        "body": "size(1.2)"
-      }
-    }
-  ],
+  "itemsFile": "pub1-items.generated.json",
+  "artifacts": [],
+  "botsFile": "bots.generated.json",
+  "botLootFile": "bot-loot.generated.json",
+  "botSpellBooksFile": "bot-spell-books.generated.json",
+  "bots": [],
   "areas": [
     {
       "id": "503",
@@ -3054,8 +1058,14 @@
               "spawnKey": "544_1",
               "huntBotId": 108,
               "encounter": [
-                { "botId": 108, "count": 1 },
-                { "botId": 109, "count": 4 }
+                {
+                  "botId": 108,
+                  "count": 1
+                },
+                {
+                  "botId": 109,
+                  "count": 4
+                }
               ],
               "isBoss": false,
               "countsForClear": true,
@@ -3071,8 +1081,14 @@
               "spawnKey": "544_2",
               "huntBotId": 108,
               "encounter": [
-                { "botId": 108, "count": 1 },
-                { "botId": 109, "count": 4 }
+                {
+                  "botId": 108,
+                  "count": 1
+                },
+                {
+                  "botId": 109,
+                  "count": 4
+                }
               ],
               "isBoss": false,
               "countsForClear": true,
@@ -3088,8 +1104,14 @@
               "spawnKey": "544_3",
               "huntBotId": 108,
               "encounter": [
-                { "botId": 108, "count": 1 },
-                { "botId": 109, "count": 4 }
+                {
+                  "botId": 108,
+                  "count": 1
+                },
+                {
+                  "botId": 109,
+                  "count": 4
+                }
               ],
               "isBoss": false,
               "countsForClear": true,
@@ -3105,8 +1127,14 @@
               "spawnKey": "544_4",
               "huntBotId": 108,
               "encounter": [
-                { "botId": 108, "count": 1 },
-                { "botId": 109, "count": 4 }
+                {
+                  "botId": 108,
+                  "count": 1
+                },
+                {
+                  "botId": 109,
+                  "count": 4
+                }
               ],
               "isBoss": false,
               "countsForClear": true,
@@ -3122,8 +1150,14 @@
               "spawnKey": "544_5",
               "huntBotId": 108,
               "encounter": [
-                { "botId": 108, "count": 1 },
-                { "botId": 109, "count": 4 }
+                {
+                  "botId": 108,
+                  "count": 1
+                },
+                {
+                  "botId": 109,
+                  "count": 4
+                }
               ],
               "isBoss": false,
               "countsForClear": true,
@@ -3139,8 +1173,14 @@
               "spawnKey": "544_6",
               "huntBotId": 108,
               "encounter": [
-                { "botId": 108, "count": 1 },
-                { "botId": 109, "count": 4 }
+                {
+                  "botId": 108,
+                  "count": 1
+                },
+                {
+                  "botId": 109,
+                  "count": 4
+                }
               ],
               "isBoss": false,
               "countsForClear": true,
@@ -3156,8 +1196,14 @@
               "spawnKey": "boss",
               "huntBotId": 106,
               "encounter": [
-                { "botId": 106, "count": 1 },
-                { "botId": 107, "count": 5 }
+                {
+                  "botId": 106,
+                  "count": 1
+                },
+                {
+                  "botId": 107,
+                  "count": 5
+                }
               ],
               "isBoss": true,
               "countsForClear": true,
@@ -3167,13 +1213,34 @@
               "waitMin": 2,
               "waitMax": 8,
               "zone": [
-                { "x": 952, "y": 771 },
-                { "x": 845, "y": 842 },
-                { "x": 782, "y": 960 },
-                { "x": 937, "y": 1141 },
-                { "x": 1054, "y": 1084 },
-                { "x": 1139, "y": 1001 },
-                { "x": 1105, "y": 866 }
+                {
+                  "x": 952,
+                  "y": 771
+                },
+                {
+                  "x": 845,
+                  "y": 842
+                },
+                {
+                  "x": 782,
+                  "y": 960
+                },
+                {
+                  "x": 937,
+                  "y": 1141
+                },
+                {
+                  "x": 1054,
+                  "y": 1084
+                },
+                {
+                  "x": 1139,
+                  "y": 1001
+                },
+                {
+                  "x": 1105,
+                  "y": 866
+                }
               ],
               "route": []
             }
@@ -3657,6 +1724,591 @@
       "group": "6",
       "order": "0",
       "weight": "550",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "13_LET_PRAZDNIK",
+      "title": "Праздничное настроение",
+      "group": "5",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "13_LET_TORT",
+      "title": "Любитель вкусняшек",
+      "group": "4",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "14LET_KRASOTA",
+      "title": "Красота",
+      "group": "5",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "ADDL_CRAFT",
+      "title": "Искусность",
+      "group": "6",
+      "order": "0",
+      "weight": "210",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "ADDL_FARM",
+      "title": "Наблюдательность",
+      "group": "6",
+      "order": "0",
+      "weight": "220",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "ADDL_P_EXT",
+      "title": "Дополнительное место для орбов",
+      "group": "6",
+      "order": "0",
+      "weight": "80",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "ARHEOLOGY",
+      "title": "Археология",
+      "group": "6",
+      "order": "0",
+      "weight": "240",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "BAG_CNT",
+      "title": "Дополнительные слоты под сумки",
+      "group": "6",
+      "order": "0",
+      "weight": "90",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "BATTLE_SPEEDUP",
+      "title": "Ускорение анимации в бою",
+      "group": "6",
+      "order": "0",
+      "weight": "795",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "BONUSLEARNING",
+      "title": "Бонус к очкам постижения глав",
+      "group": "6",
+      "order": "0",
+      "weight": "235",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "BOTMONEYMOD",
+      "title": "Увеличенный процент дропа денег",
+      "group": "6",
+      "order": "0",
+      "weight": "250",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "CAPACITY",
+      "title": "Дополнительное место в рюкзаке",
+      "group": "6",
+      "order": "0",
+      "weight": "100",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "CHARM",
+      "title": "Обаяние",
+      "group": "3",
+      "order": "0",
+      "weight": "0",
+      "image": "charakteristika_charm_icon2.png",
+      "valueKind": "number"
+    },
+    {
+      "id": "COMP_PVE_COST",
+      "title": "Стоимость призыва спутницы",
+      "group": "18",
+      "order": "0",
+      "weight": "50",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "DRAKONIS_DROP",
+      "title": "Добыча Дракониса",
+      "group": "9",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "DRAKONIS_SHAN",
+      "title": "Добыча Дракониса (Шанхалы)",
+      "group": "9",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "EPIC_RATE",
+      "title": "Эпичность при закрытом героизме, %",
+      "group": "6",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "EPICMOD",
+      "title": "Увеличенная эпичность",
+      "group": "6",
+      "order": "0",
+      "weight": "400",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "EXPMOD",
+      "title": "Увеличенный опыт",
+      "group": "6",
+      "order": "0",
+      "weight": "600",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "FISH_LINE",
+      "title": "Качество лески",
+      "group": "6",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "FISH_ROD",
+      "title": "Качество удочки",
+      "group": "6",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "HONORMOD",
+      "title": "Увеличенный героизм",
+      "group": "6",
+      "order": "0",
+      "weight": "500",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "INCR_EXP",
+      "title": "Увеличенный опыт спутника",
+      "group": "18",
+      "order": "0",
+      "weight": "45",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "INCR_HNR",
+      "title": "Увеличенный героизм спутника",
+      "group": "18",
+      "order": "0",
+      "weight": "40",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "JUNRES_DROP",
+      "title": "Добыча ресурсов джунглей",
+      "group": "9",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "LOOSE_EPIC_MOD",
+      "title": "Эпичность при поражении, %",
+      "group": "6",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGRES",
+      "title": "Сопротивление магии",
+      "group": "7",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGRES_ACD",
+      "title": "Сопротивление магии кислоты",
+      "group": "1",
+      "order": "0",
+      "weight": "310",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGRES_DRK",
+      "title": "Сопротивление магии тьмы  ",
+      "group": "1",
+      "order": "0",
+      "weight": "360",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGRES_FR",
+      "title": "Сопротивление магии огня",
+      "group": "1",
+      "order": "0",
+      "weight": "340",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGRES_ICE",
+      "title": "Сопротивление магии льда",
+      "group": "1",
+      "order": "0",
+      "weight": "330",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGRES_LGH",
+      "title": "Сопротивление магии света ",
+      "group": "1",
+      "order": "0",
+      "weight": "350",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGRES_LTN",
+      "title": "Сопротивление магии молнии ",
+      "group": "1",
+      "order": "0",
+      "weight": "320",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGSTR_ACD",
+      "title": "Магическая сила кислоты ",
+      "group": "1",
+      "order": "0",
+      "weight": "410",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGSTR_DRK",
+      "title": "Магическая сила тьмы ",
+      "group": "1",
+      "order": "0",
+      "weight": "460",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGSTR_FR",
+      "title": "Магическая сила огня",
+      "group": "1",
+      "order": "0",
+      "weight": "440",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGSTR_ICE",
+      "title": "Магическая сила льда",
+      "group": "1",
+      "order": "0",
+      "weight": "430",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGSTR_LGH",
+      "title": "Магическая сила света ",
+      "group": "1",
+      "order": "0",
+      "weight": "450",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAGSTR_LTN",
+      "title": "Магическая сила молнии",
+      "group": "1",
+      "order": "0",
+      "weight": "420",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MAX_ENERGY",
+      "title": "Дополнительная энергия",
+      "group": "6",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MERGE_CH",
+      "title": "Усиление слияния",
+      "group": "6",
+      "order": "0",
+      "weight": "200",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MPREG",
+      "title": "Скорость восстановления маны",
+      "group": "6",
+      "order": "0",
+      "weight": "800",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "MUDROST_ZNANIE",
+      "title": "Мудрость",
+      "group": "3",
+      "order": "0",
+      "weight": "400",
+      "image": "mudrost.png",
+      "valueKind": "number"
+    },
+    {
+      "id": "NOATTACK",
+      "title": "Неприкосновенность",
+      "group": "6",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "OSKOL_DROP",
+      "title": "Добыча реагентов Осколка",
+      "group": "9",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "PET_CAST_FREQ",
+      "title": "Частота применения способностей питомца",
+      "group": "17",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "PET_EXP_MOD",
+      "title": "Увеличенный опыт питомца",
+      "group": "17",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "PET_GOLD",
+      "title": "Поиск золота питомцем",
+      "group": "17",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "PET_STR",
+      "title": "Сила питомца",
+      "group": "17",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "PR_INJURY",
+      "title": "Мастерство палача",
+      "group": "2",
+      "order": "0",
+      "weight": "900",
+      "image": "palach_master.png",
+      "valueKind": "number"
+    },
+    {
+      "id": "PREM_CHEST",
+      "title": "Доступ к складу казначейства",
+      "group": "15",
+      "order": "0",
+      "weight": "190",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "PROZRENIE",
+      "title": "Прозрение",
+      "group": "1",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "PVP_SHIELD",
+      "title": "Мощность щита",
+      "group": "1",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "PWRMAX",
+      "title": "Максимальный урон",
+      "group": "1",
+      "order": "0",
+      "weight": "500",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "RAGE_MOD",
+      "title": "Увеличенный набор ярости",
+      "group": "1",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "SEAL_ABS",
+      "title": "Абсолютное увеличение срабатывания печатей",
+      "group": "6",
+      "order": "0",
+      "weight": "222",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "SLOT_CNT",
+      "title": "Добавочные слоты боеприпасов",
+      "group": "6",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "SLOT_SHIELD2",
+      "title": "Перевязь для знамени и щита",
+      "group": "6",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "SUPPLY",
+      "title": "Снабжение",
+      "group": "6",
+      "order": "0",
+      "weight": "233",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "TENDERS_MAX",
+      "title": "Дополнительные лоты заказов",
+      "group": "6",
+      "order": "0",
+      "weight": "91",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "UDACHA",
+      "title": "Удача",
+      "group": "6",
+      "order": "0",
+      "weight": "200",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "UNBREAK",
+      "title": "Несокрушимость",
+      "group": "6",
+      "order": "0",
+      "weight": "200",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "USER_LOT_MAX",
+      "title": "Дополнительные лоты аукциона",
+      "group": "6",
+      "order": "0",
+      "weight": "92",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "VAMP",
+      "title": "Вампиризм относительный, %",
+      "group": "1",
+      "order": "0",
+      "weight": "0",
+      "image": "",
+      "valueKind": "number"
+    },
+    {
+      "id": "VAMPMOD",
+      "title": "Вампиризм абсолютный, %",
+      "group": "1",
+      "order": "0",
+      "weight": "0",
       "image": "",
       "valueKind": "number"
     }
@@ -4685,7 +3337,12 @@
       "professionId": 6,
       "skillValue": 0,
       "maxSkillValue": 60,
-      "ingredients": [{ "artikulId": 1720, "amount": 1 }],
+      "ingredients": [
+        {
+          "artikulId": 1720,
+          "amount": 1
+        }
+      ],
       "duration": 35,
       "createArtikulId": 1714,
       "createArtikulNum": 10,
@@ -4696,7 +3353,12 @@
       "tableId": 0
     }
   ],
-  "worldFacts": [{ "id": "engine_area", "values": [] }],
+  "worldFacts": [
+    {
+      "id": "engine_area",
+      "values": []
+    }
+  ],
   "npcs": [
     {
       "id": 271,
@@ -4753,7 +3415,12 @@
           "title": "Купить перчатку",
           "goalOrd": 2,
           "limit": 1,
-          "artikuls": [{ "role": "buy", "artikulId": 23 }]
+          "artikuls": [
+            {
+              "role": "buy",
+              "artikulId": 23
+            }
+          ]
         },
         {
           "id": "equip",
@@ -4761,7 +3428,12 @@
           "title": "Надеть перчатку",
           "goalOrd": 3,
           "limit": 1,
-          "artikuls": [{ "role": "equip", "artikulId": 23 }]
+          "artikuls": [
+            {
+              "role": "equip",
+              "artikulId": 23
+            }
+          ]
         },
         {
           "id": "deliver",
@@ -4769,14 +3441,33 @@
           "title": "Отдать перчатку",
           "goalOrd": 4,
           "limit": 1,
-          "artikuls": [{ "role": "deliver", "artikulId": 23 }]
+          "artikuls": [
+            {
+              "role": "deliver",
+              "artikulId": 23
+            }
+          ]
         }
       ],
       "dialogSteps": [
-        { "type": "npc", "text": "Купи перчатку в лавке, надень и вернись." },
-        { "type": "goal", "goal": "talk", "text": "Принять поручение" },
-        { "type": "player", "id": "accept_board", "text": "Хорошо" },
-        { "type": "reward", "answer": "Сдать задание" }
+        {
+          "type": "npc",
+          "text": "Купи перчатку в лавке, надень и вернись."
+        },
+        {
+          "type": "goal",
+          "goal": "talk",
+          "text": "Принять поручение"
+        },
+        {
+          "type": "player",
+          "id": "accept_board",
+          "text": "Хорошо"
+        },
+        {
+          "type": "reward",
+          "answer": "Сдать задание"
+        }
       ]
     },
     {
@@ -4812,7 +3503,12 @@
           "title": "Победить Грызля",
           "goalOrd": 2,
           "limit": 1,
-          "artikuls": [{ "role": "kill", "artikulId": 2 }]
+          "artikuls": [
+            {
+              "role": "kill",
+              "artikulId": 2
+            }
+          ]
         },
         {
           "id": "win_ritual",
@@ -4820,7 +3516,13 @@
           "title": "Выиграть ритуал",
           "goalOrd": 3,
           "limit": 1,
-          "onFinish": [{ "type": "GRANT_ARTIKUL", "artikulId": 77, "count": 1 }]
+          "onFinish": [
+            {
+              "type": "GRANT_ARTIKUL",
+              "artikulId": 77,
+              "count": 1
+            }
+          ]
         },
         {
           "id": "loot_meat",
@@ -4828,12 +3530,24 @@
           "title": "Получить мясо",
           "goalOrd": 4,
           "limit": 1,
-          "artikuls": [{ "role": "loot", "artikulId": 77 }]
+          "artikuls": [
+            {
+              "role": "loot",
+              "artikulId": 77
+            }
+          ]
         }
       ],
       "dialogSteps": [
-        { "type": "npc", "text": "Сразись с Грызлем. Это ритуал." },
-        { "type": "goal", "goal": "talk_fight", "text": "Начать ритуал" },
+        {
+          "type": "npc",
+          "text": "Сразись с Грызлем. Это ритуал."
+        },
+        {
+          "type": "goal",
+          "goal": "talk_fight",
+          "text": "Начать ритуал"
+        },
         {
           "type": "player",
           "id": "start_ritual",
@@ -4843,7 +3557,12 @@
             {
               "type": "START_FIGHT",
               "mode": "quest",
-              "enemies": [{ "artikulId": 2, "count": 1 }],
+              "enemies": [
+                {
+                  "artikulId": 2,
+                  "count": 1
+                }
+              ],
               "allies": [],
               "chatStart": "",
               "chatWin": "",
@@ -4891,22 +3610,48 @@
             {
               "type": "START_FIGHT",
               "mode": "quest",
-              "enemies": [{ "artikulId": 2, "count": 1 }],
+              "enemies": [
+                {
+                  "artikulId": 2,
+                  "count": 1
+                }
+              ],
               "allies": [],
               "chatStart": "",
               "chatWin": "",
               "chatLose": ""
             },
-            { "type": "MSG", "text": "Камень осмотрен." },
-            { "type": "SET_FLAG", "flag": "engine_area", "value": "1" }
+            {
+              "type": "MSG",
+              "text": "Камень осмотрен."
+            },
+            {
+              "type": "SET_FLAG",
+              "flag": "engine_area",
+              "value": "1"
+            }
           ]
         }
       ],
       "dialogSteps": [
-        { "type": "npc", "text": "Осмотри камень на площади." },
-        { "type": "goal", "goal": "look_stone", "text": "Понял" },
-        { "type": "player", "id": "accept_area", "text": "Иду" },
-        { "type": "reward", "answer": "Сдать задание" }
+        {
+          "type": "npc",
+          "text": "Осмотри камень на площади."
+        },
+        {
+          "type": "goal",
+          "goal": "look_stone",
+          "text": "Понял"
+        },
+        {
+          "type": "player",
+          "id": "accept_area",
+          "text": "Иду"
+        },
+        {
+          "type": "reward",
+          "answer": "Сдать задание"
+        }
       ]
     },
     {
@@ -4938,10 +3683,24 @@
         }
       ],
       "dialogSteps": [
-        { "type": "npc", "text": "Заходи каждый день после шести утра." },
-        { "type": "goal", "goal": "talk_daily", "text": "Принять поручение" },
-        { "type": "player", "id": "accept_daily", "text": "Хорошо" },
-        { "type": "reward", "answer": "Сдать задание" }
+        {
+          "type": "npc",
+          "text": "Заходи каждый день после шести утра."
+        },
+        {
+          "type": "goal",
+          "goal": "talk_daily",
+          "text": "Принять поручение"
+        },
+        {
+          "type": "player",
+          "id": "accept_daily",
+          "text": "Хорошо"
+        },
+        {
+          "type": "reward",
+          "answer": "Сдать задание"
+        }
       ]
     },
     {
@@ -4980,8 +3739,15 @@
         }
       ],
       "dialogSteps": [
-        { "type": "npc", "text": "Возьми Хиссу против Грызля и духа." },
-        { "type": "goal", "goal": "talk_roster", "text": "Начать ростер" },
+        {
+          "type": "npc",
+          "text": "Возьми Хиссу против Грызля и духа."
+        },
+        {
+          "type": "goal",
+          "goal": "talk_roster",
+          "text": "Начать ростер"
+        },
         {
           "type": "player",
           "id": "start_roster",
@@ -4992,17 +3758,31 @@
               "type": "START_FIGHT",
               "mode": "quest",
               "enemies": [
-                { "artikulId": 2, "count": 1 },
-                { "artikulId": 32, "count": 1 }
+                {
+                  "artikulId": 2,
+                  "count": 1
+                },
+                {
+                  "artikulId": 32,
+                  "count": 1
+                }
               ],
-              "allies": [{ "artikulId": 4, "count": 1 }],
+              "allies": [
+                {
+                  "artikulId": 4,
+                  "count": 1
+                }
+              ],
               "chatStart": "Ритуал ростера начался.",
               "chatWin": "Ритуал ростера выигран.",
               "chatLose": "Ритуал ростера проигран."
             }
           ]
         },
-        { "type": "reward", "answer": "Сдать задание" }
+        {
+          "type": "reward",
+          "answer": "Сдать задание"
+        }
       ]
     },
     {
@@ -5023,7 +3803,11 @@
       "awardExp": 6,
       "awardMoneyMinor": 0,
       "awardItems": [],
-      "awardRep": { "objectId": 5, "amount": 10, "cap": 0 },
+      "awardRep": {
+        "objectId": 5,
+        "amount": 10,
+        "cap": 0
+      },
       "boards": [
         {
           "npcId": 272,
@@ -5035,8 +3819,14 @@
       ],
       "scripts": {
         "onAccept": [
-          { "type": "JUMP_AREA" },
-          { "type": "GRANT_ARTIKUL", "artikulId": 23, "count": 1 }
+          {
+            "type": "JUMP_AREA"
+          },
+          {
+            "type": "GRANT_ARTIKUL",
+            "artikulId": 23,
+            "count": 1
+          }
         ]
       },
       "goals": [
@@ -5055,16 +3845,37 @@
           "goalOrd": 2,
           "limit": 1,
           "onFinish": [
-            { "type": "REMOVE_ARTIKUL", "artikulId": 23, "count": 1 },
-            { "type": "MSG", "text": "Голова забрала перчатку." }
+            {
+              "type": "REMOVE_ARTIKUL",
+              "artikulId": 23,
+              "count": 1
+            },
+            {
+              "type": "MSG",
+              "text": "Голова забрала перчатку."
+            }
           ]
         }
       ],
       "dialogSteps": [
-        { "type": "npc", "text": "Сначала поговори с соседней головой, потом бей Грызля." },
-        { "type": "goal", "goal": "talk_multi", "text": "Принять поручение" },
-        { "type": "player", "id": "accept_multi", "text": "Хорошо" },
-        { "type": "npc", "text": "Грызль ждёт" },
+        {
+          "type": "npc",
+          "text": "Сначала поговори с соседней головой, потом бей Грызля."
+        },
+        {
+          "type": "goal",
+          "goal": "talk_multi",
+          "text": "Принять поручение"
+        },
+        {
+          "type": "player",
+          "id": "accept_multi",
+          "text": "Хорошо"
+        },
+        {
+          "type": "npc",
+          "text": "Грызль ждёт"
+        },
         {
           "type": "player",
           "id": "start_multi",
@@ -5074,7 +3885,12 @@
             {
               "type": "START_FIGHT",
               "mode": "quest",
-              "enemies": [{ "artikulId": 2, "count": 1 }],
+              "enemies": [
+                {
+                  "artikulId": 2,
+                  "count": 1
+                }
+              ],
               "allies": [],
               "chatStart": "",
               "chatWin": "",
@@ -5082,7 +3898,10 @@
             }
           ]
         },
-        { "type": "reward", "answer": "Сдать задание" }
+        {
+          "type": "reward",
+          "answer": "Сдать задание"
+        }
       ]
     },
     {
@@ -5115,14 +3934,34 @@
           "waitingTitle": "Засада",
           "waitingDurationSec": 1,
           "waitingPopup": "",
-          "onFinish": [{ "type": "START_FIGHT", "artikulId": 2, "chance": 1 }]
+          "onFinish": [
+            {
+              "type": "START_FIGHT",
+              "artikulId": 2,
+              "chance": 1
+            }
+          ]
         }
       ],
       "dialogSteps": [
-        { "type": "npc", "text": "Пройди засаду на площади." },
-        { "type": "goal", "goal": "ambush_spot", "text": "Понял" },
-        { "type": "player", "id": "accept_ambush", "text": "Иду" },
-        { "type": "reward", "answer": "Сдать задание" }
+        {
+          "type": "npc",
+          "text": "Пройди засаду на площади."
+        },
+        {
+          "type": "goal",
+          "goal": "ambush_spot",
+          "text": "Понял"
+        },
+        {
+          "type": "player",
+          "id": "accept_ambush",
+          "text": "Иду"
+        },
+        {
+          "type": "reward",
+          "answer": "Сдать задание"
+        }
       ]
     },
     {
@@ -5154,15 +3993,30 @@
         }
       ],
       "dialogSteps": [
-        { "type": "npc", "text": "Сходи в лавку за прилавком." },
-        { "type": "goal", "goal": "talk_store", "text": "Открыть лавку" },
+        {
+          "type": "npc",
+          "text": "Сходи в лавку за прилавком."
+        },
+        {
+          "type": "goal",
+          "goal": "talk_store",
+          "text": "Открыть лавку"
+        },
         {
           "type": "player",
           "id": "open_store",
           "text": "Иду в лавку",
-          "scripts": [{ "type": "OPEN_STORE", "areaId": 504 }]
+          "scripts": [
+            {
+              "type": "OPEN_STORE",
+              "areaId": 504
+            }
+          ]
         },
-        { "type": "reward", "answer": "Сдать задание" }
+        {
+          "type": "reward",
+          "answer": "Сдать задание"
+        }
       ]
     }
   ]

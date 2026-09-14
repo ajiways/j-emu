@@ -26,10 +26,10 @@ function actionFromJson(artifactId: number, key: string, value: unknown): Artifa
   if (typeof record["title"] !== "string") {
     throw new Error(`Artifact ${artifactId} use action ${key} title is required`);
   }
-  if (typeof record["param1"] !== "number") {
+  if (typeof record["param1"] !== "number" && typeof record["param1"] !== "string") {
     throw new Error(`Artifact ${artifactId} use action ${key} param1 is required`);
   }
-  if (typeof record["param2"] !== "number") {
+  if (typeof record["param2"] !== "number" && typeof record["param2"] !== "string") {
     throw new Error(`Artifact ${artifactId} use action ${key} param2 is required`);
   }
   if (typeof record["dispose"] !== "number") {

@@ -96,8 +96,10 @@ DNG-03, не POST-03), остальные battleground-карты,
 только отдельным решением после core 1–8. Clan и встроенные playerbots не
 переносятся.
 
-Текущая БД `j-emu` содержит минимальный `playable-slice/v23` (artifacts 9095,
-20, 21, 26, 9098, 9100, 9099, 93, 99, 77, 23, 24, 621, 553, 1310, 4603, 11408, 13224, recruit 27/28/30/33/35/106, mix 43/46, USE 640/623/2371/55/584; bots 2/4/24/32/99/353/354/373 и `spellBook` (пустая у 2, 99, 353, 354, 373; 396/422/394 у 4/32/24), hunts 50310/50309/50101–50103; overlay loot only bot 2: 77/93/99; areas 503/501/504/495/552/542/541/654/651/653/499/673/500/635/636/637 и travel `area_links`; dungeons 1/11/12/14; battleground Раскоп `general|2`; store 504 type `-131` lots 23/24; store 552 type 11 lot 438/621 RANK; reputation track 5; bonus 601; use script 2827). DATA-02 импорт корпуса ещё не сделан.
+Текущая граница правды — [CONTENT_MATRIX.md](CONTENT_MATRIX.md) § «Текущая
+граница правды»: `DATA-02` done (22 560 artifacts) и `DATA-03` bot corpus
+(164 bots из generated JSON); остальные типы — минимальный playable
+slice.
 
 ## Приоритет доказательств
 
@@ -147,8 +149,10 @@ error с обоими источниками и отклоняет весь cand
 Это даёт то же самое, что давали overlay-файлы в `jgr-emu` (не терять факт
 правки при повторном импорте оригинала, не путать «как было» и «как решили
 мы»), но без второго источника истины и без merge-логики в рантайме.
-Runtime-код никогда не знает про «оверлей» — он читает одну активную
-projection.
+DATA-02 `artikul-weights.json` применяется в offline decoder и попадает в
+committed `ArtifactDocument` (публикуемая запись уже с authored weight).
+Runtime overlay-merge нет. Два `draft_version` на ключ — модель editor/pipeline,
+не файловый merge при `db:reset`.
 
 ## Граф переноса
 
@@ -179,6 +183,10 @@ Importer конкретного типа:
 7. не активирует release.
 
 Если одна строка файла невалидна, не импортируется весь candidate source set. Допустим отдельный исправленный draft с новой версией; недопустим «успешный импорт 99 из 100».
+
+DATA-02 item decoder (`npm run content:decode:items`) — этот importer для
+Pub1 `artifact_artikul_*.amf`: один нечитаемый record валит весь decode;
+выход — committed JSON, не runtime-зависимость от `PUB1_DIR`.
 
 ## Цикл переноса capability
 

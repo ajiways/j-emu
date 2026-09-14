@@ -2,8 +2,8 @@ type ArtifactSkillDocument = Readonly<{ id: string; value: number; flags: number
 
 type ArtifactActionDocument = Readonly<{
   code: string;
-  param1: number;
-  param2: number;
+  param1: number | string;
+  param2: number | string;
   dispose: 0 | 1;
   title: string;
   bonusId: number;
@@ -122,7 +122,7 @@ type BotSpellDocument = Readonly<{
   slot: "fight_start" | "prefer" | "turn_roulette" | "never";
   weight: number;
   maxCasts: number | null;
-  gate: "self_hp_le" | null;
+  gate: "self_hp_le" | "once" | "foe_has_dispel_groups" | null;
   hpPct: number | null;
   spell: ArtifactSpellDocument;
 }>;
