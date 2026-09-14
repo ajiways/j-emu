@@ -2250,92 +2250,14 @@
       "leaderGroups": []
     }
   ],
-  "assistantTypes": [
-    {
-      "id": 3,
-      "title": "Имуро-Юи",
-      "description": "",
-      "profession": 2,
-      "level": 1,
-      "quality": 0,
-      "nextArtikulId": 13,
-      "skillSum": 4,
-      "price": 10,
-      "priceType": 1,
-      "picture": "gremlin_star_grey_1.png",
-      "restrictionsXml": "",
-      "voodooEnergy": 0
-    },
-    {
-      "id": 13,
-      "title": "Имуро-Юи",
-      "description": "",
-      "profession": 2,
-      "level": 2,
-      "quality": 0,
-      "nextArtikulId": 0,
-      "skillSum": 6,
-      "price": 10,
-      "priceType": 1,
-      "picture": "gremlin_star_green_1.png",
-      "restrictionsXml": "<requirement type=\"artifact\" id=\"1720\" value=\"180\"/><requirement type=\"artifact\" id=\"1721\" value=\"170\"/><requirement type=\"artifact\" id=\"1722\" value=\"170\"/>",
-      "voodooEnergy": 0
-    }
-  ],
-  "farmResources": [
-    {
-      "id": 4,
-      "title": "Хрусталь",
-      "typeId": 2,
-      "picture": "res_starat_hrustal1.png",
-      "swf": "",
-      "quality": 0,
-      "profession": 2,
-      "artifactArtikulId": 1720,
-      "masteryValue": 0,
-      "masteryMax": 60,
-      "farmTime": 60,
-      "staminaDrain": 4
-    }
-  ],
-  "areaFarms": [
-    {
-      "areaId": "500",
-      "huntSpotId": 15,
-      "farmId": 4,
-      "tactics": 0,
-      "assistantMax": 37,
-      "cntMax": 1600,
-      "cntCurrent": 1396,
-      "cntCooldown": 1800
-    }
-  ],
-  "craftRecipes": [
-    {
-      "id": 61,
-      "title": "Раствор хрусталя",
-      "description": "",
-      "artikulId": 1861,
-      "type": 1,
-      "professionId": 6,
-      "skillValue": 0,
-      "maxSkillValue": 60,
-      "ingredients": [
-        {
-          "artikulId": 1720,
-          "amount": 1
-        }
-      ],
-      "duration": 35,
-      "createArtikulId": 1714,
-      "createArtikulNum": 10,
-      "createQuality": 0,
-      "createTypeId": 94,
-      "createTitle": "Колба с раствором хрусталя",
-      "createLevelMin": 7,
-      "tableId": 0
-    }
-  ],
+  "assistantTypesFile": "assistant-types.generated.json",
+  "assistantTypes": [],
+  "farmResourcesFile": "farm-resources.generated.json",
+  "farmResources": [],
+  "areaFarmsFile": "area-farms.generated.json",
+  "areaFarms": [],
+  "craftRecipesFile": "craft-recipes.generated.json",
+  "craftRecipes": [],
   "worldFacts": [
     {
       "id": "engine_area",

@@ -39,6 +39,30 @@ const ARRAY_FILES: ReadonlyArray<{
   },
   { fileKey: "bonusesFile", bundleKey: "bonuses", label: "bonus id", keyOf: numericDocumentId },
   { fileKey: "useScriptsFile", bundleKey: "useScripts", label: "use_script", keyOf: useScriptKey },
+  {
+    fileKey: "assistantTypesFile",
+    bundleKey: "assistantTypes",
+    label: "assistant type",
+    keyOf: numericDocumentId,
+  },
+  {
+    fileKey: "farmResourcesFile",
+    bundleKey: "farmResources",
+    label: "farm resource",
+    keyOf: numericDocumentId,
+  },
+  {
+    fileKey: "areaFarmsFile",
+    bundleKey: "areaFarms",
+    label: "area farm",
+    keyOf: areaFarmKey,
+  },
+  {
+    fileKey: "craftRecipesFile",
+    bundleKey: "craftRecipes",
+    label: "craft recipe",
+    keyOf: numericDocumentId,
+  },
 ];
 
 function mergeItemsFile(
@@ -239,6 +263,17 @@ function reputationTrackKey(row: unknown, label: string): string {
     throw new Error(`${label} objectId is required`);
   }
   return String(objectId);
+}
+
+function areaFarmKey(row: unknown, label: string): string {
+  if (!isRecord(row)) throw new Error(`${label} document must be an object`);
+  const areaId = row.areaId;
+  const huntSpotId = row.huntSpotId;
+  if (typeof areaId !== "string" || !areaId) throw new Error(`${label} areaId is required`);
+  if (typeof huntSpotId !== "number" || !Number.isInteger(huntSpotId) || huntSpotId < 1) {
+    throw new Error(`${label} huntSpotId is required`);
+  }
+  return `${areaId}:${huntSpotId}`;
 }
 
 function useScriptKey(row: unknown, label: string): string {

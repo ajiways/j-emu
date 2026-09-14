@@ -190,6 +190,10 @@ function writeBundle(
     "reputationTracksFile",
     "bonusesFile",
     "useScriptsFile",
+    "assistantTypesFile",
+    "farmResourcesFile",
+    "areaFarmsFile",
+    "craftRecipesFile",
   ] as const) {
     const relative = bundle[key];
     if (typeof relative !== "string") continue;

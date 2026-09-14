@@ -47,8 +47,10 @@ ProfessionList only draws ids 2 and 6.
 
 Dump pair в playable slice: Старатель **2** (type 2, gather) and
 Знаковед **6** (type 1, craft). Remaining 1/3/4/5/7–16, fishing/cooking
-tabs, license NPC — DATA POST-02 / leftover. PRF-03 adds recipe **61**
-and artifacts **1861** / **1714**.
+tabs, license NPC — leftover. POST-02 импортирует полный gathering/farm/recipe
+корпус (`npm run content:decode:professions`): 45 assistants, 83 farms,
+86 spots, 266 type-1 recipes. Pins **3/13**, farm **4** on **500**, recipe
+**61** остаются.
 
 ## Schema
 
@@ -60,7 +62,8 @@ info_url, user_stat_id)` PK `(release_id, id)`; type 1 or 2; id 1…16;
 
 PRF-02 tables: `catalog.assistant_types`, `farm_resources`,
 `area_farms`; `professions.hero_assistants` (identity id), `hero_farm_stats`,
-`farm_stocks`. Runtime writes explicit FREE sentinels; no request-path
+`farm_stocks`. Farm `profession` 0 is dump-proven universal nodes (map 73/74/75).
+Runtime writes explicit FREE sentinels; no request-path
 SQL DEFAULT as business value.
 
 PRF-03: `catalog.craft_recipes` authored id (slice **61**); ingredients JSON
@@ -136,7 +139,9 @@ Dump cycle: recipe **61** «Раствор хрусталя» (profession **6**,
 `skill_value` 0, `max_skill_value` 60, `duration` **35**), book **1861**
 (`LEARN_RECIPE`, dispose 1), ingredient **1720**×1, output **1714**×10.
 Learn and craft require hero level ≥7 (`max_profession_skill` 59) and
-license 6. Remaining bands (66/71/…) are DATA POST-02.
+license 6. POST-02 landed remaining type-1 bands (including 66/71/…) as
+catalog rows; unpublished craft professions 4/5/10/11/15 still cannot be
+licensed.
 
 **Clock:** request-time consume+grant. Cooldown is `hero_recipes.ftime`
 checked on the next `craft_items` (`Рецепт ещё готовится`). No
@@ -164,8 +169,8 @@ id; ghost; already learned; skill/cap gate (`Недостаточное маст
 ## Out of scope
 
 `GRANT_PROFESSION` quest op. Ids 1/3/4/5/7–16. Profession swap NPC.
-Climate rotation. Full Pub1 assistant/farm/recipe corpus (DATA POST-02).
-Fish stats. `common|farm_agregate` live overlay. Craft mastery chat line.
+Climate rotation. Profession-0 voodoo assistants. Fish stats.
+`common|farm_agregate` live overlay. Craft mastery chat line.
 `craft|cook_list`.
 
 ## Acceptance

@@ -17,3 +17,9 @@ export const REPUTATION_TRACKS_DECODER_VERSION = "reputation-tracks/v1";
 export const BONUSES_DECODER_VERSION = "bonuses/v1";
 export const USE_SCRIPTS_DECODER_VERSION = "use-scripts/v1";
 export const ECONOMY_DOCUMENT_SCHEMA = "economy-document/playable-slice-v35";
+
+export const ASSISTANT_TYPES_DECODER_VERSION = "assistant-types/v1";
+export const FARM_RESOURCES_DECODER_VERSION = "farm-resources/v1";
+export const AREA_FARMS_DECODER_VERSION = "area-farms/v1";
+export const CRAFT_RECIPES_DECODER_VERSION = "craft-recipes/v1";
+export const PROFESSIONS_DOCUMENT_SCHEMA = "profession-document/playable-slice-v35";

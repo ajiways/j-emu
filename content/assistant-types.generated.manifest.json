@@ -1,0 +1,217 @@
+{
+  "sourceGroup": "POST-02 / professions assistants farms recipes",
+  "decoderVersion": "assistant-types/v1",
+  "documentSchema": "profession-document/playable-slice-v35",
+  "files": [
+    {
+      "relativePath": "area-farms.json",
+      "size": 18114,
+      "digest": "392796f7a82df93c3ebdfd01fc440d0335d358ece27e0f8a6526e9ce78a3a90d"
+    },
+    {
+      "relativePath": "images/locale/ru/amf/assistant_list.amf",
+      "size": 8352,
+      "digest": "21e520a32a2fe8a78fb2be7da65b927f189363812acedc5d1f254f0666a880f6"
+    },
+    {
+      "relativePath": "images/locale/ru/amf/farm_list.amf",
+      "size": 6084,
+      "digest": "bf5ce0b67b9dfa6eca13cdcda27c8ca089eae03b1e70d655a768cce72290bbd5"
+    },
+    {
+      "relativePath": "images/locale/ru/amf/farm_types.amf",
+      "size": 133,
+      "digest": "bbe550078e6b38a386b3da6829ec30b3d648e9285d74d92fe1823c6f3bca1f8e"
+    },
+    {
+      "relativePath": "images/locale/ru/amf/recipes.amf",
+      "size": 290982,
+      "digest": "29b04376f6f023c5ea51e0286d6839c10debe978d20181b3f38293671c087c0d"
+    }
+  ],
+  "filesDigest": "382e8ff5a6b3d4b5943f53e12aa6ba11d0218597a8850d823e1ab553270be5be",
+  "acceptedCount": 45,
+  "keys": [
+    {
+      "key": "1",
+      "digest": "097e381f3fc8acd67a5e08d21650ac4f02146aec79020c4ef199d693e5c748b9"
+    },
+    {
+      "key": "10",
+      "digest": "83147998a9c2ff0817e7179c652d28f3e048e20a48ce71428accb29067beb2df"
+    },
+    {
+      "key": "11",
+      "digest": "8d632b3c6eeebfdb23cba8ef08da4514f56e6e5118c743667b4efb3de4e85f20"
+    },
+    {
+      "key": "12",
+      "digest": "f077c32ed133ddbbcfdfd31303bb024f6004b35e5f91f56d393b17d6971985e7"
+    },
+    {
+      "key": "13",
+      "digest": "6424afc81dbf9df90ce7a47c2b9a4744e1fc9cd97f386868d1c161f8a77b6053"
+    },
+    {
+      "key": "14",
+      "digest": "22d31dd34241060445eb1e5be3767064b342f9bf4f8db3a4bbc68b8d40f10869"
+    },
+    {
+      "key": "15",
+      "digest": "70d861e5abbc91236783f6d6b8739f0108c4ade7d3a645608f04fc13bddd9d79"
+    },
+    {
+      "key": "16",
+      "digest": "d9e7bcf3599fba7f455f2281227e822a0891f4a3a265034d177eb541c66813eb"
+    },
+    {
+      "key": "17",
+      "digest": "0622c7313215b938779a289d7ee3fdc6d34ed0c4da4f26a8bde5f829d8a6a453"
+    },
+    {
+      "key": "18",
+      "digest": "c70d3d65774c1e7be44568837e818a37a58eba51a72af65901fa7e8166c7db4b"
+    },
+    {
+      "key": "19",
+      "digest": "7241b363c4a34d8eb6154757d00cdc1380b78b8a3e86d005c521b951ac3e75d1"
+    },
+    {
+      "key": "2",
+      "digest": "90b110905d1850673902bc1c791e4334281f14b47ba2e555e26c0b4667b94de9"
+    },
+    {
+      "key": "20",
+      "digest": "daf4829571b42e086562861020ac410f31b53a2ecf30a6394a6767bcc966f0bb"
+    },
+    {
+      "key": "21",
+      "digest": "bea9a7c42049087b49ff5ddbdb8a4f4f33f799a63f74bd479ea7dae4b21e1b4a"
+    },
+    {
+      "key": "22",
+      "digest": "fe88e28246ad72b95aac137f58aab0109f44d5c3500da8f2985f4c2d32a432ec"
+    },
+    {
+      "key": "23",
+      "digest": "e207e002ade579ae4aa6c3fd4c79ef45cb25d8cac5bec4e5b4c737fcb76ced9b"
+    },
+    {
+      "key": "24",
+      "digest": "5c2d9e2a14aa2a69a75f6869f2056cf225aeead7170f8b99fc296836792f4266"
+    },
+    {
+      "key": "25",
+      "digest": "46f659f571f233c1b72577ba37f5f2d86d7242c8f6a7b03c7da004ff1887fac4"
+    },
+    {
+      "key": "26",
+      "digest": "fb227d8eee7b25b7f75ec425388f40fea93a3bc45af0c3a559a03b06f4f1aa2a"
+    },
+    {
+      "key": "27",
+      "digest": "80292be5d24f3b5f9d74eb4d801cc7fc31ee27fe0085194ee1c42ed5d9a939fb"
+    },
+    {
+      "key": "3",
+      "digest": "916f6d96774f4b8b95f34b7965f82f74163d4627bbc74784edfabbdbd1a86ce1"
+    },
+    {
+      "key": "33",
+      "digest": "ce75e5c700b81ace7937318e6a12b835272c0c09c8ae75ac06a161a1aaf284ac"
+    },
+    {
+      "key": "34",
+      "digest": "40e0766fd348d2f46563db2b97a1c25b1a52ba2d7a14cc6726c41c0df12df5d5"
+    },
+    {
+      "key": "35",
+      "digest": "26299d72ae01392543874d2a6711d1e67ffafc6602c2f4cc111ecee208b81005"
+    },
+    {
+      "key": "36",
+      "digest": "27d6c58af9f8dc73f6e8289830e618c96205ec3c29df54004672dd0a668e13a6"
+    },
+    {
+      "key": "37",
+      "digest": "93cfe8615bc84119ad232b1c5d3b496ae3c7145badf34eb64727c0d6a3c5befc"
+    },
+    {
+      "key": "38",
+      "digest": "f713dec3d9c86198314945239529a12cb0a58a96abd131e16043f44380d733e7"
+    },
+    {
+      "key": "39",
+      "digest": "e71bf014926165066caa0f0067e3fd3a64acb58cadbd60fde6cf2353e9eb1c6c"
+    },
+    {
+      "key": "4",
+      "digest": "f4a89e70f7cd0de53fe85e016c93ba92d7afb590ad372039fbba8e92e8ad78f8"
+    },
+    {
+      "key": "40",
+      "digest": "a0a80a632d33b8a482655e547ce01915ec98e5b03fe4d1f09d27da66797dbfee"
+    },
+    {
+      "key": "41",
+      "digest": "c0498988cafc801ba797292587a08cca96fee36261b97a91f5be06ef1644b845"
+    },
+    {
+      "key": "45",
+      "digest": "8da4522956e5e3d064673c90604e89af8f0ca8bbe5adb4cb523093ed56d3d6a0"
+    },
+    {
+      "key": "46",
+      "digest": "c8e82f9c914a49a8fb50774415b644bb8f5e9bed2f9b5be397a05a4019d5e467"
+    },
+    {
+      "key": "47",
+      "digest": "4c3a384f4eed13f828e2d4f1de5a1bdc970e211674cd4c1e1813b6c834aaf544"
+    },
+    {
+      "key": "48",
+      "digest": "282edaf70d602ee5bbdd8e729a6abe6ae8f2b69dcecd23e638ff553820d9e7a6"
+    },
+    {
+      "key": "49",
+      "digest": "6aece0179f81c56727aebcd6407766fec5400d828c0883e8e66de4c424dbf9a8"
+    },
+    {
+      "key": "5",
+      "digest": "43ac74c536b307b28728af60496cc607130e5fd7f5f188ecfa8cd6190f108756"
+    },
+    {
+      "key": "50",
+      "digest": "d38717d10d8ac1a1a027be271c63c0333b893ba05cb47fea8ff3db9cbdc6f255"
+    },
+    {
+      "key": "51",
+      "digest": "52be3def9a2a230bfd2c6a334b69d50ff33797221ffbcbbc42eb9a88e09a3eba"
+    },
+    {
+      "key": "52",
+      "digest": "4aa84cb7b2809f7329a092bd35413c9f4608491d43fdf678d1c36022e06f4748"
+    },
+    {
+      "key": "53",
+      "digest": "bce00f994a5f785c5a51eafb8849f468f452008dbca95e9f82ed95554ce7c534"
+    },
+    {
+      "key": "6",
+      "digest": "7323c999eaa750c7b01c61bcd37f1e65207ea0ab5567fe7363536ce6fd7b5056"
+    },
+    {
+      "key": "7",
+      "digest": "d2d639ac882e28465d61d1d6ef3bff6d7e2abf49a117d34422c8ef8b75e11ace"
+    },
+    {
+      "key": "8",
+      "digest": "570ac26b96ceb1cd095682520acfa426e20cc5aed8d0dae1cd42c2ffff0077b4"
+    },
+    {
+      "key": "9",
+      "digest": "08b2832edecd2b5db91c5ca953ab5be65b98a9aa9abeaaea9f325be416d7e17d"
+    }
+  ],
+  "corpusDigest": "cf7ea70224e225c0dfceea5b65a3b348de32146c38094619fa998887b0c2121b"
+}

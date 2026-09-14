@@ -31,6 +31,9 @@
   `content/store-types.generated.json` / `store-lots.generated.json` /
   `reputation-tracks.generated.json` / `bonuses.generated.json` /
   `use-scripts.generated.json`);
+  professions decoder (`npm run content:decode:professions` →
+  `content/assistant-types.generated.json` / `farm-resources.generated.json` /
+  `area-farms.generated.json` / `craft-recipes.generated.json`);
   `npm run db:reset` без `PUB1_DIR` поднимает полный корпус из committed
   `playable-slice.json` + generated files;
 - typed static OA/fproxy/esrv dispatch;
@@ -407,7 +410,9 @@ repeat/revoke, upgrade **3→13**; рецепт **61**, USE книги **1861**,
 craft **1720→1714×10**, cooldown 35с, избранное. Reconnect/restart читает
 Postgres. CEF вкладки профессий и гремлинов не прогонялся; квестового GRANT нет.
 
-Не перенесены ids 1/3/4/5/7–16, смена лицензии, полный корпус рецептов.
+Не перенесены ids 1/3/4/5/7–16, смена лицензии, cooking/`craft|cook_list`,
+voodoo-ассистенты, climate rotation. POST-02: 45 assistants / 83 farms /
+86 spots / 266 type-1 recipes из generated JSON.
 
 ## Content editor — частично
 

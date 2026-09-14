@@ -232,6 +232,13 @@
       "when": 1789387053254,
       "tag": "0032_catalog_store_lot_price_gold",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1789390570710,
+      "tag": "0033_catalog_farm_profession_zero",
+      "breakpoints": true
     }
   ]
 }

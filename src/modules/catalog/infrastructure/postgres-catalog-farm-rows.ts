@@ -10,7 +10,7 @@ export async function insertAssistantTypes(
   rows: readonly AssistantTypeDocument[],
 ): Promise<void> {
   if (rows.length === 0) throw new Error("Assistant types are missing");
-  await session.insert(assistantTypes).values(
+  await insertInBatches(
     rows.map((row) => ({
       releaseId,
       id: row.id,
@@ -27,6 +27,9 @@ export async function insertAssistantTypes(
       restrictionsXml: row.restrictionsXml,
       voodooEnergy: row.voodooEnergy,
     })),
+    async (batch) => {
+      await session.insert(assistantTypes).values(batch);
+    },
   );
 }
 
@@ -36,7 +39,7 @@ export async function insertFarmResources(
   rows: readonly FarmResourceDocument[],
 ): Promise<void> {
   if (rows.length === 0) throw new Error("Farm resources are missing");
-  await session.insert(farmResources).values(
+  await insertInBatches(
     rows.map((row) => ({
       releaseId,
       id: row.id,
@@ -52,6 +55,9 @@ export async function insertFarmResources(
       farmTime: row.farmTime,
       staminaDrain: row.staminaDrain,
     })),
+    async (batch) => {
+      await session.insert(farmResources).values(batch);
+    },
   );
 }
 
@@ -61,7 +67,7 @@ export async function insertAreaFarms(
   rows: readonly AreaFarmDocument[],
 ): Promise<void> {
   if (rows.length === 0) throw new Error("Area farms are missing");
-  await session.insert(areaFarms).values(
+  await insertInBatches(
     rows.map((row) => ({
       releaseId,
       areaId: row.areaId,
@@ -72,5 +78,19 @@ export async function insertAreaFarms(
       cntMax: row.cntMax,
       cntCooldown: row.cntCooldown,
     })),
+    async (batch) => {
+      await session.insert(areaFarms).values(batch);
+    },
   );
+}
+
+const INSERT_BATCH = 250;
+
+async function insertInBatches<T>(
+  rows: readonly T[],
+  write: (batch: T[]) => Promise<unknown>,
+): Promise<void> {
+  for (let offset = 0; offset < rows.length; offset += INSERT_BATCH) {
+    await write(rows.slice(offset, offset + INSERT_BATCH));
+  }
 }

@@ -36,7 +36,9 @@ counts/checksums и completeness gates:
 `botLootFile` / `botSpellBooksFile`; `db:reset` читает их без `PUB1_DIR`),
 полный atlas из `content/areas.generated.json` (74 areas / 156 links / 10 hunts)
 и DATA-05 economy из generated store/reputation/bonus/USE файлов
-(113 types / 2095 lots / 22 tracks / 5 bonuses / 7 use scripts). Representative hunt IDs
+(113 types / 2095 lots / 22 tracks / 5 bonuses / 7 use scripts), и POST-02
+profession corpus из generated assistant/farm/recipe файлов (45 assistants /
+83 farms / 86 spots / 266 type-1 recipes). Representative hunt IDs
 остаются 2/4/24/32/99/106/107/108/109/353/354/373; loot/spell policy —
 overlay/`bot_spell_book.json`, не handwritten slice. Gryzl **2** nick Pub1
 «Грызл»; overlay loot NOTHING 3000 / 27 entries. Хисса **4** книга 396+397.
@@ -105,7 +107,10 @@ DATA-стадии (не runtime-зависимость и не копирова�
   (`npm run content:decode:areas` → `content/areas.generated.json` /
   `area-links.generated.json` / `hunt-spawns.generated.json`).
 - `jgr-emu/src/db/seed_professions.ts` — `assistant_list.amf`,
-  `farm_list.amf`, `farm_types.amf`, `recipes.amf` → POST-02 professions.
+  `farm_list.amf`, `farm_types.amf`, `recipes.amf` → POST-02 professions
+  (`npm run content:decode:professions` → `content/assistant-types.generated.json`
+  / `farm-resources.generated.json` / `area-farms.generated.json` /
+  `craft-recipes.generated.json`).
 
 **Читают уже authored/curated JSON (не сырой клиентский формат) — тоже
 полезный evidence состава и связей, но decoder тут почти не нужен, нужен
@@ -276,14 +281,17 @@ source group ведутся только в
 - `catalog`: `bot_spell_book.json`, `spell_catalog_overlay.json`,
   `spell_damage.json`; validator объединяет их в полное spell definition и
   отклоняет отсутствующую формулу или presentation.
-- `professions`: Pub1/JSON definitions, recipes и resource nodes; validator
-  проверяет areas, ingredients, results и требования.
+- `professions`: POST-02 Pub1 assistant/farm/recipe corpus
+  (`content/assistant-types.generated.json` / `farm-resources.generated.json`
+  / `area-farms.generated.json` / `craft-recipes.generated.json`); validator
+  проверяет areas, ingredients, results и pins 3/13, farm 4 on 500, recipe 61.
 - `instances`: `dungeons/*.json`; validator проверяет areas, encounters,
   bots, loot и checkpoint graph.
 - `catalog`: DATA-05 reputation (`content/reputation-tracks.generated.json`,
   22 type-2; omit SUM 36; `reputation_kills` не публикуются).
 - `catalog`: PRF-01 pair `profession_info` ids **2** and **6**; publication
-  replaces `common_conf.profession_info`. Full Pub1 professions — POST-02.
+  replaces `common_conf.profession_info`. Full assistant/farm/recipe corpus
+  is POST-02; remaining profession ids 1/3/4/5/7–16 stay leftover.
 
 Имя файла не определяет порядок. Manifest объявляет типы и references, а
 validator строит и проверяет dependency graph. Decoder не импортирует старые

@@ -1,0 +1,792 @@
+{
+  "_comment": "hunt_farm + farm_time from live dumps (giga/0705/2p + 2026-08-27 509/510/826). stamina_drain not in dumps — default 4, overrides here.",
+  "farm_time_overrides": {
+    "2": 43,
+    "3": 43,
+    "5": 43,
+    "6": 43,
+    "8": 43,
+    "9": 43,
+    "10": 90,
+    "13": 90,
+    "16": 90,
+    "74": 74,
+    "75": 74
+  },
+  "stamina_drain_overrides": {},
+  "areas": {
+    "499": {
+      "tactics": 2,
+      "spots": [
+        {
+          "hunt_spot_id": 21,
+          "farm_id": 9,
+          "assistant_max": 20,
+          "cnt_max": 1000,
+          "cnt_current": 96,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 25,
+          "farm_id": 6,
+          "assistant_max": 20,
+          "cnt_max": 1000,
+          "cnt_current": 260,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 52,
+          "farm_id": 13,
+          "assistant_max": 25,
+          "cnt_max": 1240,
+          "cnt_current": 1104,
+          "cnt_cooldown": 2530
+        },
+        {
+          "hunt_spot_id": 258,
+          "farm_id": 13,
+          "assistant_max": 25,
+          "cnt_max": 500,
+          "cnt_current": 500,
+          "cnt_cooldown": 2530
+        },
+        {
+          "hunt_spot_id": 2033,
+          "farm_id": 74,
+          "assistant_max": 18,
+          "cnt_max": 290,
+          "cnt_current": 268,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 2034,
+          "farm_id": 74,
+          "assistant_max": 18,
+          "cnt_max": 95,
+          "cnt_current": 83,
+          "cnt_cooldown": 1800
+        }
+      ]
+    },
+    "500": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 15,
+          "farm_id": 4,
+          "assistant_max": 37,
+          "cnt_max": 1600,
+          "cnt_current": 1396,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 38,
+          "farm_id": 8,
+          "assistant_max": 7,
+          "cnt_max": 300,
+          "cnt_current": 251,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 2039,
+          "farm_id": 73,
+          "assistant_max": 20,
+          "cnt_max": 100,
+          "cnt_current": 100,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 2040,
+          "farm_id": 73,
+          "assistant_max": 20,
+          "cnt_max": 300,
+          "cnt_current": 300,
+          "cnt_cooldown": 1800
+        }
+      ]
+    },
+    "501": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 12,
+          "farm_id": 4,
+          "assistant_max": 37,
+          "cnt_max": 1600,
+          "cnt_current": 903,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 28,
+          "farm_id": 7,
+          "assistant_max": 10,
+          "cnt_max": 400,
+          "cnt_current": 370,
+          "cnt_cooldown": 450
+        }
+      ]
+    },
+    "502": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 10,
+          "farm_id": 1,
+          "assistant_max": 37,
+          "cnt_max": 1600,
+          "cnt_current": 1255,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 29,
+          "farm_id": 4,
+          "assistant_max": 10,
+          "cnt_max": 400,
+          "cnt_current": 21,
+          "cnt_cooldown": 450
+        }
+      ]
+    },
+    "506": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 16,
+          "farm_id": 2,
+          "assistant_max": 27,
+          "cnt_max": 1200,
+          "cnt_current": 1148,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 18,
+          "farm_id": 8,
+          "assistant_max": 27,
+          "cnt_max": 1200,
+          "cnt_current": 1200,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 33,
+          "farm_id": 7,
+          "assistant_max": 37,
+          "cnt_max": 1600,
+          "cnt_current": 130,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 34,
+          "farm_id": 5,
+          "assistant_max": 7,
+          "cnt_max": 300,
+          "cnt_current": 250,
+          "cnt_cooldown": 450
+        }
+      ]
+    },
+    "507": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 17,
+          "farm_id": 5,
+          "assistant_max": 27,
+          "cnt_max": 1200,
+          "cnt_current": 370,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 40,
+          "farm_id": 2,
+          "assistant_max": 7,
+          "cnt_max": 300,
+          "cnt_current": 262,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 41,
+          "farm_id": 6,
+          "assistant_max": 5,
+          "cnt_max": 250,
+          "cnt_current": 44,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 55,
+          "farm_id": 16,
+          "assistant_max": 25,
+          "cnt_max": 1240,
+          "cnt_current": 1240,
+          "cnt_cooldown": 2530
+        },
+        {
+          "hunt_spot_id": 261,
+          "farm_id": 16,
+          "assistant_max": 25,
+          "cnt_max": 500,
+          "cnt_current": 7,
+          "cnt_cooldown": 2530
+        },
+        {
+          "hunt_spot_id": 2023,
+          "farm_id": 73,
+          "assistant_max": 20,
+          "cnt_max": 300,
+          "cnt_current": 181,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 2024,
+          "farm_id": 73,
+          "assistant_max": 20,
+          "cnt_max": 100,
+          "cnt_current": 1,
+          "cnt_cooldown": 1800
+        }
+      ]
+    },
+    "509": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 19,
+          "farm_id": 2,
+          "assistant_max": 27,
+          "cnt_max": 1200,
+          "cnt_current": 221,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 22,
+          "farm_id": 8,
+          "assistant_max": 27,
+          "cnt_max": 1200,
+          "cnt_current": 876,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 37,
+          "farm_id": 5,
+          "assistant_max": 7,
+          "cnt_max": 300,
+          "cnt_current": 284,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 2027,
+          "farm_id": 73,
+          "assistant_max": 20,
+          "cnt_max": 300,
+          "cnt_current": 0,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 2028,
+          "farm_id": 73,
+          "assistant_max": 20,
+          "cnt_max": 100,
+          "cnt_current": 6,
+          "cnt_cooldown": 1800
+        }
+      ]
+    },
+    "510": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 24,
+          "farm_id": 6,
+          "assistant_max": 20,
+          "cnt_max": 1000,
+          "cnt_current": 941,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 48,
+          "farm_id": 10,
+          "assistant_max": 6,
+          "cnt_max": 310,
+          "cnt_current": 265,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 51,
+          "farm_id": 13,
+          "assistant_max": 25,
+          "cnt_max": 1240,
+          "cnt_current": 1128,
+          "cnt_cooldown": 2530
+        },
+        {
+          "hunt_spot_id": 57,
+          "farm_id": 16,
+          "assistant_max": 25,
+          "cnt_max": 1240,
+          "cnt_current": 1133,
+          "cnt_cooldown": 2530
+        },
+        {
+          "hunt_spot_id": 257,
+          "farm_id": 13,
+          "assistant_max": 25,
+          "cnt_max": 500,
+          "cnt_current": 486,
+          "cnt_cooldown": 2530
+        },
+        {
+          "hunt_spot_id": 263,
+          "farm_id": 16,
+          "assistant_max": 25,
+          "cnt_max": 500,
+          "cnt_current": 351,
+          "cnt_cooldown": 2530
+        },
+        {
+          "hunt_spot_id": 2029,
+          "farm_id": 73,
+          "assistant_max": 20,
+          "cnt_max": 300,
+          "cnt_current": 23,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 2030,
+          "farm_id": 73,
+          "assistant_max": 20,
+          "cnt_max": 100,
+          "cnt_current": 65,
+          "cnt_cooldown": 1800
+        }
+      ]
+    },
+    "514": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 39,
+          "farm_id": 3,
+          "assistant_max": 5,
+          "cnt_max": 250,
+          "cnt_current": 64,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 47,
+          "farm_id": 10,
+          "assistant_max": 25,
+          "cnt_max": 1240,
+          "cnt_current": 1106,
+          "cnt_cooldown": 2530
+        },
+        {
+          "hunt_spot_id": 53,
+          "farm_id": 13,
+          "assistant_max": 6,
+          "cnt_max": 310,
+          "cnt_current": 197,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 259,
+          "farm_id": 13,
+          "assistant_max": 6,
+          "cnt_max": 120,
+          "cnt_current": 32,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 2031,
+          "farm_id": 74,
+          "assistant_max": 18,
+          "cnt_max": 290,
+          "cnt_current": 52,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 2032,
+          "farm_id": 74,
+          "assistant_max": 18,
+          "cnt_max": 95,
+          "cnt_current": 95,
+          "cnt_cooldown": 1800
+        }
+      ]
+    },
+    "536": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 13,
+          "farm_id": 7,
+          "assistant_max": 37,
+          "cnt_max": 1600,
+          "cnt_current": 1589,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 30,
+          "farm_id": 1,
+          "assistant_max": 10,
+          "cnt_max": 400,
+          "cnt_current": 199,
+          "cnt_cooldown": 450
+        }
+      ]
+    },
+    "540": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 11,
+          "farm_id": 1,
+          "assistant_max": 37,
+          "cnt_max": 1600,
+          "cnt_current": 163,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 31,
+          "farm_id": 4,
+          "assistant_max": 10,
+          "cnt_max": 400,
+          "cnt_current": 376,
+          "cnt_cooldown": 450
+        }
+      ]
+    },
+    "541": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 14,
+          "farm_id": 7,
+          "assistant_max": 10,
+          "cnt_max": 400,
+          "cnt_current": 73,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 32,
+          "farm_id": 1,
+          "assistant_max": 10,
+          "cnt_max": 400,
+          "cnt_current": 217,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 35,
+          "farm_id": 8,
+          "assistant_max": 7,
+          "cnt_max": 300,
+          "cnt_current": 282,
+          "cnt_cooldown": 450
+        }
+      ]
+    },
+    "560": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 20,
+          "farm_id": 5,
+          "assistant_max": 27,
+          "cnt_max": 1200,
+          "cnt_current": 1160,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 26,
+          "farm_id": 3,
+          "assistant_max": 20,
+          "cnt_max": 1000,
+          "cnt_current": 942,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 36,
+          "farm_id": 2,
+          "assistant_max": 7,
+          "cnt_max": 300,
+          "cnt_current": 300,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 42,
+          "farm_id": 9,
+          "assistant_max": 5,
+          "cnt_max": 250,
+          "cnt_current": 225,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 2025,
+          "farm_id": 73,
+          "assistant_max": 20,
+          "cnt_max": 300,
+          "cnt_current": 47,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 2026,
+          "farm_id": 73,
+          "assistant_max": 20,
+          "cnt_max": 100,
+          "cnt_current": 12,
+          "cnt_cooldown": 1800
+        }
+      ]
+    },
+    "561": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 44,
+          "farm_id": 6,
+          "assistant_max": 5,
+          "cnt_max": 250,
+          "cnt_current": 170,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 49,
+          "farm_id": 10,
+          "assistant_max": 25,
+          "cnt_max": 1240,
+          "cnt_current": 13,
+          "cnt_cooldown": 2530
+        },
+        {
+          "hunt_spot_id": 56,
+          "farm_id": 16,
+          "assistant_max": 6,
+          "cnt_max": 310,
+          "cnt_current": 284,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 262,
+          "farm_id": 16,
+          "assistant_max": 6,
+          "cnt_max": 120,
+          "cnt_current": 116,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 2035,
+          "farm_id": 74,
+          "assistant_max": 18,
+          "cnt_max": 290,
+          "cnt_current": 3,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 2036,
+          "farm_id": 74,
+          "assistant_max": 18,
+          "cnt_max": 95,
+          "cnt_current": 32,
+          "cnt_cooldown": 1800
+        }
+      ]
+    },
+    "610": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 23,
+          "farm_id": 3,
+          "assistant_max": 20,
+          "cnt_max": 1000,
+          "cnt_current": 122,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 43,
+          "farm_id": 9,
+          "assistant_max": 5,
+          "cnt_max": 250,
+          "cnt_current": 154,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 50,
+          "farm_id": 10,
+          "assistant_max": 6,
+          "cnt_max": 310,
+          "cnt_current": 254,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 2037,
+          "farm_id": 74,
+          "assistant_max": 18,
+          "cnt_max": 290,
+          "cnt_current": 230,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 2038,
+          "farm_id": 74,
+          "assistant_max": 18,
+          "cnt_max": 95,
+          "cnt_current": 58,
+          "cnt_cooldown": 1800
+        }
+      ]
+    },
+    "612": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 27,
+          "farm_id": 9,
+          "assistant_max": 20,
+          "cnt_max": 1000,
+          "cnt_current": 514,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 45,
+          "farm_id": 3,
+          "assistant_max": 5,
+          "cnt_max": 250,
+          "cnt_current": 30,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 54,
+          "farm_id": 13,
+          "assistant_max": 6,
+          "cnt_max": 310,
+          "cnt_current": 46,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 58,
+          "farm_id": 16,
+          "assistant_max": 6,
+          "cnt_max": 310,
+          "cnt_current": 114,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 260,
+          "farm_id": 13,
+          "assistant_max": 6,
+          "cnt_max": 120,
+          "cnt_current": 77,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 264,
+          "farm_id": 16,
+          "assistant_max": 6,
+          "cnt_max": 120,
+          "cnt_current": 94,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 2043,
+          "farm_id": 75,
+          "assistant_max": 16,
+          "cnt_max": 300,
+          "cnt_current": 22,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 2044,
+          "farm_id": 75,
+          "assistant_max": 16,
+          "cnt_max": 100,
+          "cnt_current": 13,
+          "cnt_cooldown": 1800
+        }
+      ]
+    },
+    "826": {
+      "tactics": 0,
+      "spots": [
+        {
+          "hunt_spot_id": 1280,
+          "farm_id": 3,
+          "assistant_max": 5,
+          "cnt_max": 250,
+          "cnt_current": 128,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 1282,
+          "farm_id": 13,
+          "assistant_max": 6,
+          "cnt_max": 310,
+          "cnt_current": 184,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 1283,
+          "farm_id": 13,
+          "assistant_max": 6,
+          "cnt_max": 120,
+          "cnt_current": 61,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 1284,
+          "farm_id": 6,
+          "assistant_max": 5,
+          "cnt_max": 250,
+          "cnt_current": 3,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 1286,
+          "farm_id": 10,
+          "assistant_max": 6,
+          "cnt_max": 310,
+          "cnt_current": 240,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 1288,
+          "farm_id": 9,
+          "assistant_max": 5,
+          "cnt_max": 250,
+          "cnt_current": 133,
+          "cnt_cooldown": 450
+        },
+        {
+          "hunt_spot_id": 1290,
+          "farm_id": 16,
+          "assistant_max": 6,
+          "cnt_max": 310,
+          "cnt_current": 264,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 1291,
+          "farm_id": 16,
+          "assistant_max": 6,
+          "cnt_max": 120,
+          "cnt_current": 44,
+          "cnt_cooldown": 630
+        },
+        {
+          "hunt_spot_id": 2041,
+          "farm_id": 74,
+          "assistant_max": 18,
+          "cnt_max": 290,
+          "cnt_current": 290,
+          "cnt_cooldown": 1800
+        },
+        {
+          "hunt_spot_id": 2042,
+          "farm_id": 74,
+          "assistant_max": 18,
+          "cnt_max": 95,
+          "cnt_current": 95,
+          "cnt_cooldown": 1800
+        }
+      ]
+    }
+  }
+}

@@ -59,6 +59,16 @@ export function collectFarmIssues(bundle: ContentBundle): readonly string[] {
   if (!artifacts.has(LOOT_ID)) issues.push(`artifact ${LOOT_ID} is required for farm ${FARM_ID}`);
   if (!artifacts.has(1721)) issues.push("artifact 1721 is required for assistant 13 upgrade");
   if (!artifacts.has(1722)) issues.push("artifact 1722 is required for assistant 13 upgrade");
+  for (const row of bundle.farmResources) {
+    if (!artifacts.has(row.artifactArtikulId)) {
+      issues.push(`farm ${row.id} artifact ${row.artifactArtikulId} is missing`);
+    }
+  }
+  for (const row of bundle.assistantTypes) {
+    if (row.nextArtikulId > 0 && !typeIds.has(row.nextArtikulId)) {
+      issues.push(`assistant ${row.id} next ${row.nextArtikulId} is missing`);
+    }
+  }
   return issues;
 }
 

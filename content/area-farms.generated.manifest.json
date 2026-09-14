@@ -1,0 +1,354 @@
+{
+  "sourceGroup": "POST-02 / professions assistants farms recipes",
+  "decoderVersion": "area-farms/v1",
+  "documentSchema": "profession-document/playable-slice-v35",
+  "filesDigest": "382e8ff5a6b3d4b5943f53e12aa6ba11d0218597a8850d823e1ab553270be5be",
+  "acceptedCount": 86,
+  "keys": [
+    {
+      "key": "499:2033",
+      "digest": "e529d6c48b86d1a03938ce6445e76454a70e116a2197401d40e5eb9090496ce0"
+    },
+    {
+      "key": "499:2034",
+      "digest": "df4301142c4aa8fa96f8b524a2f364346979151788c3eff1a70c38a2a7de5812"
+    },
+    {
+      "key": "499:21",
+      "digest": "430481b58f70b218dccee0b9697ce64398effdbe1e69b0c02ece079b3512c42b"
+    },
+    {
+      "key": "499:25",
+      "digest": "0d6bab9e42695d22ed1ce0643b6c6691ee650e87bb1df8fb56d366e86874eee2"
+    },
+    {
+      "key": "499:258",
+      "digest": "9616c76b730d8a4467ddcb8d6beed781c7e5720de47dbcfa3af6da984fd99796"
+    },
+    {
+      "key": "499:52",
+      "digest": "fc42f6256ad903b1df5a1d2957dddf80243377fde28ebc27cccdcc733d701179"
+    },
+    {
+      "key": "500:15",
+      "digest": "246ba84b8ca42828a835fa831809c4a37644ea9346871a7aca557a943f5990ba"
+    },
+    {
+      "key": "500:2039",
+      "digest": "9c6699710ef74a163e5fcc5f7507121bf5b54072850d311813ef75f2dfe9c2f5"
+    },
+    {
+      "key": "500:2040",
+      "digest": "61d2ef2c558a96d6bfeb1dbc2b59ddf6ee955fbcb1f950dd0b5791d8df009440"
+    },
+    {
+      "key": "500:38",
+      "digest": "bf06e2565aed2c646259493ca4d7d199027752c6b4c53e8b8106b6132670aea1"
+    },
+    {
+      "key": "501:12",
+      "digest": "68fa3566c71f16e39c602807d040125cf8db41c7e7477a5e87a201a7b21a7817"
+    },
+    {
+      "key": "501:28",
+      "digest": "b83849237c3075aaf01f6d1c3f19df005c419a2129a0c4850b7714844c81351e"
+    },
+    {
+      "key": "502:10",
+      "digest": "1302f4731728740d992c8139ab294e702d35f6e1084563511378f1661689beea"
+    },
+    {
+      "key": "502:29",
+      "digest": "77b4be5a265817037be29de14d6655273195657a821f064e3305e1aa8fb64f96"
+    },
+    {
+      "key": "506:16",
+      "digest": "a636e1b6a4c9718ae27de7cdedca18847c95419f7746d5ab5c09b8ca0f78ed51"
+    },
+    {
+      "key": "506:18",
+      "digest": "d5002f2074cfea9560c54cad26137118a33a1a364aab2a22313eda6f06d0e49d"
+    },
+    {
+      "key": "506:33",
+      "digest": "e08dd7de823d6be58e85b2fe795659f9acd59a1175915ba0789d1170f699d365"
+    },
+    {
+      "key": "506:34",
+      "digest": "1eccfb9be75a64ed59e547f22bab043f4e75093948c4c49a936597f4f625b8d3"
+    },
+    {
+      "key": "507:17",
+      "digest": "dae934928e1b12cb956a05d60bb7bb5468ca1c583c0412f6535878e7648df049"
+    },
+    {
+      "key": "507:2023",
+      "digest": "fbf258b1596b42d6340bc15b6b20483fd8d6be20b401cb70aa4499ac80a16d5a"
+    },
+    {
+      "key": "507:2024",
+      "digest": "62a6e7fbd8037e8f2d996492481d7efb7d03c81015c0690fc90aeb68aec00f72"
+    },
+    {
+      "key": "507:261",
+      "digest": "8b828b7514b0b46792d39b265ace292c5f0816eb5074183273bb93c54130fd49"
+    },
+    {
+      "key": "507:40",
+      "digest": "a8ad8fbd8b867ecf766283ce162801e72d0574677c157ff45659a2a81727716c"
+    },
+    {
+      "key": "507:41",
+      "digest": "1083d4155eaa1083424b2ba0f05965cb700b28c53e9aa045a814b7c824b1e772"
+    },
+    {
+      "key": "507:55",
+      "digest": "c9c4503610ac441fa135b195dd1063ea7eb70a68b208ac23f20a064c4504c18a"
+    },
+    {
+      "key": "509:19",
+      "digest": "717af3ef48532a29b294642bbed5f4407153ec381566744b91dd7fb82e3c6646"
+    },
+    {
+      "key": "509:2027",
+      "digest": "6d33a725a8197ac60ca7d6bff6ddba5229d49162a48eb50738378bac0bd488e5"
+    },
+    {
+      "key": "509:2028",
+      "digest": "2c85293e2b722d09a62ad1ce8e135517f1302a79269d7f0c6ce454d914e53977"
+    },
+    {
+      "key": "509:22",
+      "digest": "5a0c23fc2b230042b0d05e220b15ba0b485a244a69a17731bc3db22380a43aed"
+    },
+    {
+      "key": "509:37",
+      "digest": "d7dbfcd60d0bfee3a5f223adf36b5a364d6d3261e63940428c265a9acacb5c8d"
+    },
+    {
+      "key": "510:2029",
+      "digest": "e6b44cc40afc6675b1861d6c19dc9aa23e94660e95c72ec67ccf64699add193f"
+    },
+    {
+      "key": "510:2030",
+      "digest": "044dd638fb13cbbf43bc0265262a0302abeb11b7d215714e217264d77b625f28"
+    },
+    {
+      "key": "510:24",
+      "digest": "d79d2e2b0bf7e7ed23efb044ec3659c5e955892145607278cd5132f543b9bafd"
+    },
+    {
+      "key": "510:257",
+      "digest": "613bb5ff841da6e928df5e53ee6ccad28fb51d9dbda48b6df2c7520d1e728138"
+    },
+    {
+      "key": "510:263",
+      "digest": "bb88fe488a7e8623a82d3b5c39c05c6d5b9e702e3c983c9d2d73582a2f41200a"
+    },
+    {
+      "key": "510:48",
+      "digest": "fd615382f4988fdc1127702b984456530e9dad00168b50e0a8b095c6c6e7c3a2"
+    },
+    {
+      "key": "510:51",
+      "digest": "5f942dedca55693da69775aa965e6e689636e974428a67fe56b133d517d18b32"
+    },
+    {
+      "key": "510:57",
+      "digest": "019f299251b5879101f04a8228697975a6769753a002ef196f50e16d071b6c68"
+    },
+    {
+      "key": "514:2031",
+      "digest": "2077a0f214f1a03ffc5e8ccbdcf30e72d762b0842287f3ea85a97c5e598b64a8"
+    },
+    {
+      "key": "514:2032",
+      "digest": "d517338486ca44df4dc5adc4aeb0db1804aefce633bde600ba8592d973a99ac4"
+    },
+    {
+      "key": "514:259",
+      "digest": "7177beffcc4a91081fdcfcc634500b9a1437930cd2deda0fc2c3e889e317d662"
+    },
+    {
+      "key": "514:39",
+      "digest": "db1df2164fd07287c46317941f5552cb1e8b83edf7f573d4074b5eb8cf1453d9"
+    },
+    {
+      "key": "514:47",
+      "digest": "d707bf5c86e5a1220e0819cebd47213666103c8eb84d86c78084e661889676f5"
+    },
+    {
+      "key": "514:53",
+      "digest": "5598ee37f17228972a711c0350496774eba2fd9755470f3e2d11a09f4f311d37"
+    },
+    {
+      "key": "536:13",
+      "digest": "21ac66c1694f74ca6cbddaa9b9d4c4706a8156fbbda830f4dbcf9ce7159001d6"
+    },
+    {
+      "key": "536:30",
+      "digest": "d94eec2ce4074be79943e085dcd155471878d32e00ff7f696b7a33c6755684b4"
+    },
+    {
+      "key": "540:11",
+      "digest": "4e4d41a460fca6bcfdc6d10dfc8764b7b596090d3d5dfc7bd28cb911d8cb2a5d"
+    },
+    {
+      "key": "540:31",
+      "digest": "d0927a469c578b2596613fda8a33de3bb96c664d98a9bc92b3e8aa46e026930a"
+    },
+    {
+      "key": "541:14",
+      "digest": "07a3bf5c403ccc751cf19ac2adf8691e1e42d828d08f368539922d3f61aa15cf"
+    },
+    {
+      "key": "541:32",
+      "digest": "c88b23bf3416618c0535cfaac81c50270d7e4d5c77b39f8f2e181016720649b3"
+    },
+    {
+      "key": "541:35",
+      "digest": "2a72bf61592ccc0c02a998e2075d998ec867744d8f93f80651dee7a5ed2d81d8"
+    },
+    {
+      "key": "560:20",
+      "digest": "bc02cf8a1a55763c15eac120e5fc6b6b8374422780f8efb910126183a49adb26"
+    },
+    {
+      "key": "560:2025",
+      "digest": "21b696787392eaf0489fe72e3acb7deecfed5d130f43b26c18787be1546e271e"
+    },
+    {
+      "key": "560:2026",
+      "digest": "3c2a767c51aebd0c9b385f8816ad3186dd7e01208290c7c5019686dea7347a09"
+    },
+    {
+      "key": "560:26",
+      "digest": "48793130280e5d69ce392c36dd9297d146c1a6a99587731043673c5e8c8dd78b"
+    },
+    {
+      "key": "560:36",
+      "digest": "c8558c66740c323b7373c1b190aebdfe0f7db72bdb8ba02f06e9cd597f19e380"
+    },
+    {
+      "key": "560:42",
+      "digest": "49bb887e3fe003c5c9f8ee3205175d8b7659f08f64fba5b98350c428c1f61867"
+    },
+    {
+      "key": "561:2035",
+      "digest": "e0666e4d785bb43bd477ae7225f80905875aa5e0e71ee673c041bddfd53f82ff"
+    },
+    {
+      "key": "561:2036",
+      "digest": "d0af0d631ae861fe02d3d349dd9d57eb30e0b47b3c86860fe6372ad49a14b440"
+    },
+    {
+      "key": "561:262",
+      "digest": "da62ba13041418691811878923475491d95686b4e810864bbd53486be61b5405"
+    },
+    {
+      "key": "561:44",
+      "digest": "7dd52bcc94c5298f5d005772c2beb488709f58dfa84fa59b178469edd8e564b9"
+    },
+    {
+      "key": "561:49",
+      "digest": "f657fe61739d6620a33c625ccec26ec0c4e112be88f64ed32cde66fc8580ce12"
+    },
+    {
+      "key": "561:56",
+      "digest": "4497d15eceb371e4ecf61821cc8be85e37d32ae47ef42528b64cecc937fa0053"
+    },
+    {
+      "key": "610:2037",
+      "digest": "3496604d75d997701b6cf06f21b8138dba7b289cc428a8281e9387bcee338272"
+    },
+    {
+      "key": "610:2038",
+      "digest": "931f07b93da81d34bdf52d7ff34da7293174e443c2c9f6f9290e8ab08a7b3ee3"
+    },
+    {
+      "key": "610:23",
+      "digest": "f64847732679e1cf20655f42c3cfdafa4903640563333547d9007576c36d238f"
+    },
+    {
+      "key": "610:43",
+      "digest": "a0852b3d980cd057d84fa41f01fd80519d56ceae6284a034bd536343e4ab750d"
+    },
+    {
+      "key": "610:50",
+      "digest": "610dfab0239cf7b92152986f7ff23efb424bee81200c06c673f2ac22ffc1837d"
+    },
+    {
+      "key": "612:2043",
+      "digest": "e972d2419d3e156cedabf47bd1e348dc2bcc98e4d8182f935932d28d012626eb"
+    },
+    {
+      "key": "612:2044",
+      "digest": "fcec939cd28081c4761ae3fcdbe4ef95909dd66788594089cd6d9a5e7f10d701"
+    },
+    {
+      "key": "612:260",
+      "digest": "e31dd5f2e1acc9379804d42a6d95356b71303e839e423a78587da75ac93f7498"
+    },
+    {
+      "key": "612:264",
+      "digest": "c03c16615de7195ec6a9f8e42325f77d41a193aae04da057560750e46aa687e8"
+    },
+    {
+      "key": "612:27",
+      "digest": "044fca58a33de9fe64ca13d486aebcade2ba2c0c57a087240c9b9338d8c6558c"
+    },
+    {
+      "key": "612:45",
+      "digest": "8cd80f779f775f591ed8822ae6ea1374ce84019721ed4217162b9e8cb56f9a8f"
+    },
+    {
+      "key": "612:54",
+      "digest": "22dd549e7a56250cd762b092459a2cf26f23cfc5ef97a09f20b5b20f42d207b4"
+    },
+    {
+      "key": "612:58",
+      "digest": "4eb725740fa55c318a6848a24f107f247a8b09750bf5fe8e6d186bc0a1e4bec8"
+    },
+    {
+      "key": "826:1280",
+      "digest": "2e2546a2e4ad67916ee80d492b87dc6d7e79f00cc7b583983acb092732588ea2"
+    },
+    {
+      "key": "826:1282",
+      "digest": "2f748a0be67d9a67670afed7d486c8a1ce927fdd59c28814b644a87a0b7ac173"
+    },
+    {
+      "key": "826:1283",
+      "digest": "e228c035ab97d21b7e7da0b085b484a5a036eddd0dcd42ca6b751b20c8d10960"
+    },
+    {
+      "key": "826:1284",
+      "digest": "8192808dda571c534670af21faed249191e7337b58b7f18f9c0225de5fe87e4b"
+    },
+    {
+      "key": "826:1286",
+      "digest": "a905a559635a52140d853d6e697dee43913d58212ab1a514ce882717e7f79e1f"
+    },
+    {
+      "key": "826:1288",
+      "digest": "44e8427ae66374f9ecc5d92b30e1dcfae2cf3b8709edc128b7b0c47109842b76"
+    },
+    {
+      "key": "826:1290",
+      "digest": "283c4819a1636da45a217004c5ae29e7b74ba8c73512ee48d5e6e51f682b8e05"
+    },
+    {
+      "key": "826:1291",
+      "digest": "71ff8fbbb49065674f3475076776c57daed5246704782b3c08bfe5bcf729afcb"
+    },
+    {
+      "key": "826:2041",
+      "digest": "25844c7ca4ca458544ce0d33794fa17ad2efce6572b25f801b603606e4833c74"
+    },
+    {
+      "key": "826:2042",
+      "digest": "16e466133235e439d86d1ed59712f5f08ae30f82618f1d1fcdd9a47e4906593d"
+    }
+  ],
+  "corpusDigest": "93a41376ea91a21d8cbdf4d6d113ed9971069928ecee7c613b38e03ca25cac2c"
+}

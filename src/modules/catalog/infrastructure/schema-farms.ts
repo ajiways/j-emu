@@ -67,7 +67,7 @@ export const farmResources = catalogSchema.table(
     check("farm_resources_quality_check", sql`${table.quality} >= 0`),
     check(
       "farm_resources_profession_check",
-      sql`${table.profession} >= 1 AND ${table.profession} <= 16`,
+      sql`${table.profession} >= 0 AND ${table.profession} <= 16`,
     ),
     check("farm_resources_artifact_artikul_id_check", sql`${table.artifactArtikulId} > 0`),
     check("farm_resources_mastery_value_check", sql`${table.masteryValue} >= 0`),

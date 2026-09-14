@@ -1,0 +1,2 @@
+ALTER TABLE "catalog"."farm_resources" DROP CONSTRAINT "farm_resources_profession_check";--> statement-breakpoint
+ALTER TABLE "catalog"."farm_resources" ADD CONSTRAINT "farm_resources_profession_check" CHECK ("catalog"."farm_resources"."profession" >= 0 AND "catalog"."farm_resources"."profession" <= 16);

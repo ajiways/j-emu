@@ -127,7 +127,7 @@ JUMP leftover в `jgr-emu/src/quests/dialog.ts` и `scripts.ts`.
 - `TRADE.md` → `TRD-01`, `TRD-02` (Wave 7);
 - `DUNGEON.md`, `fixtures/dungeons/*.json` → `DNG-01`, `DNG-02` (Wave 9);
 - profession/craft docs, Pub1 catalogs, `area_farms.json` →
-  `PRF-01…PRF-03` (Wave 10);
+  `PRF-01…PRF-03` (Wave 10) + POST-02 corpus decoder;
 - `BATTLEGROUNDS.md`, `HEROISM.md`, `bg_raskop_areas.json` → `BG-01` (Wave 9),
   `HERO-01` (Wave 12);
 - `BESTIARY.md`, `INFO_PAGES.md` → `BOOK-01` (Wave 9), `INFO-01`;

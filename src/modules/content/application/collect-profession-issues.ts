@@ -23,9 +23,6 @@ export function collectProfessionIssues(bundle: ContentBundle): readonly string[
   }
   const gather = bundle.professions.find((row) => row.id === SLICE_GATHER_PROFESSION_ID);
   const craft = bundle.professions.find((row) => row.id === SLICE_CRAFT_PROFESSION_ID);
-  if (bundle.professions.length !== 2) {
-    issues.push("playable slice must publish exactly professions 2 and 6");
-  }
   if (!gather) {
     issues.push(`profession ${SLICE_GATHER_PROFESSION_ID} is required`);
   } else {

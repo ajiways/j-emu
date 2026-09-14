@@ -31,8 +31,9 @@
   `post-core` больше нет — economy/social/instances/professions не «после
   ядра», они и есть часть ядра движков.
 - Ровно одна запись имеет статус `next`, пока в engine-треке есть следующая
-  capability. После закрытия Wave 14 decoder-трека `next` не назначается на
-  content-fill (`CONTENT-STORY-*`, DATA-06).
+  capability. После закрытия Wave 14 decoder-трека (`DATA-02`…`DATA-05`,
+  `POST-02`) `next` не назначается на content-fill (`CONTENT-STORY-*`,
+  DATA-06).
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -1867,7 +1868,7 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
 импорт его Pub1-корпуса — следующая задача, не отдельная поздняя волна.
 Это generalized per-domain decoder tooling, не куратский контент —
 `CONTENT-STORY-*` ниже остаётся `queued` и не входит в `depends_on` ни
-одной записи этой волны. После DATA-05 decoder-трек закрыт: `next` на
+одной записи этой волны. После POST-02 decoder-трек закрыт: `next` на
 этой волне больше нет.
 
 ### DATA-02 — Pub1 item corpus decoder
@@ -2141,6 +2142,51 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   REPUTATION 36 is derived SUM, not a published track. Store `entries`
   omitted (not a StoreType/Lot field). `reputation_kills` not imported.
   `npm run content:decode:economy` без `PUB1_DIR`; `db:reset` без
+  `PUB1_DIR`; `test:integration`, `test:e2e` и `check` зелёные.
+- **Status:** `done`
+
+### POST-02 — Profession, farm and recipe corpus decoder
+
+- **ID:** `POST-02`
+- **depends_on:** `DATA-02`, `DATA-04`, `PRF-03`
+- **Precondition (уже выполнено, не проверять заново):** PRF-01…03
+  representative pair 2+6, assistant 3/13, farm 4 on 500, recipe 61 уже
+  `done`. `DATA-02` закрыл item refs; `DATA-04` закрыл area refs для
+  `area_farms.json`.
+- **Behavior evidence:** [CONTENT_MATRIX.md](CONTENT_MATRIX.md) § POST-02;
+  `jgr-emu/src/db/seed_professions.ts` как evidence формата, не
+  runtime-зависимость; текущие profession/farm/craft documents как
+  evidence целевой типизации.
+- **Content set:** Pub1 `assistant_list.amf` / `farm_list.amf` /
+  `farm_types.amf` / `recipes.amf` плюс authored `content/area-farms.json`.
+  Wire ID already-e2e (assistant 3/13, farm 4, recipe 61, area 500 spot 15)
+  без перенумерации. Omit leftover: profession-0 voodoo assistants
+  (Дух врага, empty picture / level 0); recipe types 2/3/4/5/7
+  (`craft|cook_list`/tablets); type-1 profession-0 crafts; XP sentinel
+  `16777215`. `farm_types.amf` валидирует `typeId`, отдельной таблицы нет.
+  `profession_info` overlay остаётся пара 2+6 (type 3 и license NPC —
+  leftover). Не в этом срезе: climate rotation, `GRANT_PROFESSION`,
+  fish stats, `common|farm_agregate`, `craft|cook_list`.
+- **Architecture checkpoint / decision:** ADR-0011/ADR-0017–0020
+  достаточны; новый ADR/`ARC-*` не нужен — тот же generated-tooling
+  паттерн, что `DATA-02`…`DATA-05`. **Ownership.** `catalog` владеет
+  `assistant_types`, `farm_resources`, `area_farms`, `craft_recipes`.
+  Decoder — offline `npm run content:decode:professions`, не HTTP, не
+  часть `db:reset`, не `import()`. **Формат вывода.** Committed generated
+  JSON плюс manifests; bundle keys как `itemsFile`. Конфликт stable key —
+  ошибка candidate. `db:reset` без `PUB1_DIR`. **Fail-fast.** Нечитаемый/
+  неизвестный record — весь decode ошибка. Спот на отсутствующую area/farm
+  — ошибка decode/`ContentValidator`.
+- **Acceptance:** decode производит committed assistant/farm/recipe файлы;
+  wire ID already-e2e совпадают; `db:reset` без `PUB1_DIR`; existing
+  profession/assistant/craft raw-AMF e2e без изменения wire значений;
+  `check` / `test:integration` / `test:e2e` зелёные до `done`.
+- **Boundary/contract audit (закрыт):** 45 gathering assistants (omit 8
+  voodoo); 83 farm resources включая profession 0 map nodes 73/74/75;
+  86 area farms на 17 atlas areas; 266 type-1 craft recipes (omit leftover
+  types и profession-0). Dump `farm_time` 60, overlay overrides; stamina
+  drain 4. XP bands 8/18/28/38/48/60 совпадают с domain constants.
+  `npm run content:decode:professions` с `PUB1_DIR`; `db:reset` без
   `PUB1_DIR`; `test:integration`, `test:e2e` и `check` зелёные.
 - **Status:** `done`
 

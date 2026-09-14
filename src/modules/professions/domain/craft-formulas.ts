@@ -1,6 +1,6 @@
 import type { FarmRng } from "./farm-formulas.ts";
 
-const CRAFT_XP_BANDS: ReadonlyArray<{ delta: number; percent: number }> = [
+export const CRAFT_XP_BANDS: ReadonlyArray<{ delta: number; percent: number }> = [
   { delta: 8, percent: 90 },
   { delta: 18, percent: 50 },
   { delta: 28, percent: 25 },

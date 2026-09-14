@@ -27,7 +27,7 @@ export const farmResourceDocumentSchema = z
     picture: z.string().min(1),
     swf: z.string(),
     quality: z.number().int().nonnegative(),
-    profession: z.number().int().min(PROFESSION_ID_MIN).max(PROFESSION_ID_MAX),
+    profession: z.number().int().min(0).max(PROFESSION_ID_MAX),
     artifactArtikulId: z.number().int().positive(),
     masteryValue: z.number().int().nonnegative(),
     masteryMax: z.number().int().positive(),
