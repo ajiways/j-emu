@@ -1,0 +1,123 @@
+{
+  "area_id": "562",
+  "title": "Ведьмин погреб",
+  "types": [
+    {
+      "id": 7,
+      "title": "Боеприпасы",
+      "ord": 0
+    },
+    {
+      "id": 79,
+      "title": "Заготовки",
+      "ord": 0
+    }
+  ],
+  "artikuls": [
+    {
+      "id": 1011,
+      "lot_id": 568,
+      "type_id": 79,
+      "price": 18.75,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 12,
+            "min": 7000
+          }
+        ]
+      }
+    },
+    {
+      "id": 1010,
+      "lot_id": 567,
+      "type_id": 79,
+      "price": 15,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 12,
+            "min": 6000
+          }
+        ]
+      }
+    },
+    {
+      "id": 1009,
+      "lot_id": 566,
+      "type_id": 79,
+      "price": 10,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 12,
+            "min": 4500
+          }
+        ]
+      }
+    },
+    {
+      "id": 1008,
+      "lot_id": 565,
+      "type_id": 79,
+      "price": 7.5,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 12,
+            "min": 3000
+          }
+        ]
+      }
+    },
+    {
+      "id": 1007,
+      "lot_id": 564,
+      "type_id": 79,
+      "price": 6,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 12,
+            "min": 1000
+          }
+        ]
+      }
+    },
+    {
+      "id": 454,
+      "lot_id": 526,
+      "type_id": 7,
+      "price": 0.74,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 12,
+            "min": 4500
+          }
+        ]
+      }
+    },
+    {
+      "id": 450,
+      "lot_id": 527,
+      "type_id": 7,
+      "price": 1.47,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 12,
+            "min": 5000
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -62,8 +62,8 @@ describe("QST-ENG-05 OPEN_STORE", () => {
     const listed = await client.objectAction({ object: "store", action: "list", sq: 6 });
     const block = record(listed["store|list"], "store|list");
     expect(block.status).toBe(100);
-    expect(typeIds(block.types)).toEqual([-131]);
-    expect(lotArtikuls(block.artikuls)).toEqual([24, 23]);
+    expect(typeIds(block.types)).toEqual(expect.arrayContaining([-131]));
+    expect(lotArtikuls(block.artikuls)).toEqual(expect.arrayContaining([23, 24]));
 
     application = await harness.restart();
     const restarted = new AuthenticatedClient(application, client.cookie);

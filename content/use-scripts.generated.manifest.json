@@ -1,0 +1,38 @@
+{
+  "sourceGroup": "DATA-05 / bonuses and consumable USE",
+  "decoderVersion": "use-scripts/v1",
+  "documentSchema": "economy-document/playable-slice-v35",
+  "filesDigest": "ccbb769c297cfcd3902707292606fae67d2ea8dc6a2761e668fc0d73f59a3204",
+  "acceptedCount": 7,
+  "keys": [
+    {
+      "key": "184",
+      "digest": "16e3b1e5a5fd3b3dd196d1225ae0f8b2d9ff289a638f0ef1a9de3e1d81269885"
+    },
+    {
+      "key": "185",
+      "digest": "1df473a6795c224d1faaa798e7eabd257e5aff95d075193225fa7d32a2b67155"
+    },
+    {
+      "key": "186",
+      "digest": "0dc162dabd1a4b662107d88759b688e0d62c60768807c8d1ecee60fb3e2e8b9a"
+    },
+    {
+      "key": "187",
+      "digest": "3dba304abf39c2aaddcfdf1524603133da5cfe72ee41420e6d87286cf0054519"
+    },
+    {
+      "key": "188",
+      "digest": "8b4b7df671dde5aa47f5d27fae4812d162299445e6e8cd3666587e909557905e"
+    },
+    {
+      "key": "189",
+      "digest": "fa7bf6bdffd13bbcde0710ff20b44ad5cc88fcb544b31982ac61ad0ae8ed0111"
+    },
+    {
+      "key": "2827",
+      "digest": "0c002f9c1958f2305074a44b3ff0315fbea87d4d83c040054a4f3365da62b853"
+    }
+  ],
+  "corpusDigest": "4cc0cd1daecdf64ac95de5c1ee211e670075249bd500ef983c5928a3ecf23e3d"
+}

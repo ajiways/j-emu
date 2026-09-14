@@ -1,0 +1,710 @@
+{
+  "area_id": "971",
+  "title": "Магазин у Геара Бриллса",
+  "types": [
+    {
+      "id": -38,
+      "title": "Пропуск на водоем",
+      "ord": 1000
+    },
+    {
+      "id": 95,
+      "title": "Рецепты",
+      "ord": 0
+    },
+    {
+      "id": 164,
+      "title": "Наживка",
+      "ord": 0
+    },
+    {
+      "id": 166,
+      "title": "Леска",
+      "ord": 0
+    },
+    {
+      "id": 167,
+      "title": "Удочка",
+      "ord": 0
+    },
+    {
+      "id": 171,
+      "title": "Смайлы",
+      "ord": 0
+    },
+    {
+      "id": 192,
+      "title": "Приправы",
+      "ord": 0
+    }
+  ],
+  "artikuls": [
+    {
+      "id": 10302,
+      "lot_id": 0,
+      "type_id": 167,
+      "price": 40,
+      "badge_data": [
+        {
+          "id": "9593",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 40,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 10303,
+      "lot_id": 0,
+      "type_id": 167,
+      "price": 70,
+      "badge_data": [
+        {
+          "id": "16110",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 70,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 10304,
+      "lot_id": 0,
+      "type_id": 167,
+      "price": 100,
+      "badge_data": [
+        {
+          "id": "16111",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 100,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 10305,
+      "lot_id": 0,
+      "type_id": 167,
+      "price": 900,
+      "badge_data": [
+        {
+          "id": "9364",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 900,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 10306,
+      "lot_id": 0,
+      "type_id": 167,
+      "price": 200,
+      "badge_data": [
+        {
+          "id": "16112",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 200,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 10308,
+      "lot_id": 0,
+      "type_id": 167,
+      "price": 700,
+      "badge_data": [
+        {
+          "id": "249425",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 700,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "1"
+        }
+      ]
+    },
+    {
+      "id": 10309,
+      "lot_id": 0,
+      "type_id": 167,
+      "price": 3150,
+      "badge_data": [
+        {
+          "id": "249426",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 3150,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "1"
+        }
+      ]
+    },
+    {
+      "id": 10312,
+      "lot_id": 9382,
+      "type_id": 95,
+      "price": 10
+    },
+    {
+      "id": 10313,
+      "lot_id": 0,
+      "type_id": 166,
+      "price": 40,
+      "badge_data": [
+        {
+          "id": "9594",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 40,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 10314,
+      "lot_id": 0,
+      "type_id": 166,
+      "price": 70,
+      "badge_data": [
+        {
+          "id": "16113",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 70,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 10315,
+      "lot_id": 0,
+      "type_id": 166,
+      "price": 100,
+      "badge_data": [
+        {
+          "id": "16114",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 100,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 10316,
+      "lot_id": 0,
+      "type_id": 166,
+      "price": 900,
+      "badge_data": [
+        {
+          "id": "9365",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 900,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 10317,
+      "lot_id": 0,
+      "type_id": 166,
+      "price": 200,
+      "badge_data": [
+        {
+          "id": "16115",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 200,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 10319,
+      "lot_id": 0,
+      "type_id": 166,
+      "price": 700,
+      "badge_data": [
+        {
+          "id": "249423",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 700,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "1"
+        }
+      ]
+    },
+    {
+      "id": 10320,
+      "lot_id": 0,
+      "type_id": 166,
+      "price": 3150,
+      "badge_data": [
+        {
+          "id": "249424",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 3150,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "1"
+        }
+      ]
+    },
+    {
+      "id": 10352,
+      "lot_id": 9408,
+      "type_id": 192,
+      "price": 1
+    },
+    {
+      "id": 10353,
+      "lot_id": 9409,
+      "type_id": 192,
+      "price": 2
+    },
+    {
+      "id": 10355,
+      "lot_id": 9410,
+      "type_id": 192,
+      "price": 3
+    },
+    {
+      "id": 10356,
+      "lot_id": 244366,
+      "type_id": 192,
+      "price": 4
+    },
+    {
+      "id": 10359,
+      "lot_id": 244369,
+      "type_id": 192,
+      "price": 5
+    },
+    {
+      "id": 10487,
+      "lot_id": 0,
+      "type_id": -38,
+      "price": 11250,
+      "badge_data": [
+        {
+          "id": "9366",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 11250,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 10488,
+      "lot_id": 0,
+      "type_id": -38,
+      "price": 200,
+      "badge_data": [
+        {
+          "id": "9367",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 200,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 10552,
+      "lot_id": 9383,
+      "type_id": 95,
+      "price": 20
+    },
+    {
+      "id": 10553,
+      "lot_id": 9384,
+      "type_id": 95,
+      "price": 30
+    },
+    {
+      "id": 10554,
+      "lot_id": 9385,
+      "type_id": 95,
+      "price": 10
+    },
+    {
+      "id": 10558,
+      "lot_id": 9386,
+      "type_id": 95,
+      "price": 20
+    },
+    {
+      "id": 10559,
+      "lot_id": 9387,
+      "type_id": 95,
+      "price": 30
+    },
+    {
+      "id": 10560,
+      "lot_id": 9388,
+      "type_id": 95,
+      "price": 10
+    },
+    {
+      "id": 10561,
+      "lot_id": 9389,
+      "type_id": 95,
+      "price": 20
+    },
+    {
+      "id": 10562,
+      "lot_id": 9390,
+      "type_id": 95,
+      "price": 10
+    },
+    {
+      "id": 10563,
+      "lot_id": 9391,
+      "type_id": 95,
+      "price": 20
+    },
+    {
+      "id": 10564,
+      "lot_id": 9380,
+      "type_id": 164,
+      "price": 0.2
+    },
+    {
+      "id": 10571,
+      "lot_id": 9392,
+      "type_id": 95,
+      "price": 50
+    },
+    {
+      "id": 10572,
+      "lot_id": 9393,
+      "type_id": 95,
+      "price": 100
+    },
+    {
+      "id": 10573,
+      "lot_id": 9394,
+      "type_id": 95,
+      "price": 150
+    },
+    {
+      "id": 10574,
+      "lot_id": 9395,
+      "type_id": 95,
+      "price": 100
+    },
+    {
+      "id": 10575,
+      "lot_id": 9396,
+      "type_id": 95,
+      "price": 200
+    },
+    {
+      "id": 10576,
+      "lot_id": 9397,
+      "type_id": 95,
+      "price": 300
+    },
+    {
+      "id": 10577,
+      "lot_id": 9398,
+      "type_id": 95,
+      "price": 350
+    },
+    {
+      "id": 10578,
+      "lot_id": 9399,
+      "type_id": 95,
+      "price": 350
+    },
+    {
+      "id": 10579,
+      "lot_id": 9400,
+      "type_id": 95,
+      "price": 350
+    },
+    {
+      "id": 10580,
+      "lot_id": 9401,
+      "type_id": 95,
+      "price": 350
+    },
+    {
+      "id": 10581,
+      "lot_id": 9402,
+      "type_id": 95,
+      "price": 500
+    },
+    {
+      "id": 10582,
+      "lot_id": 9403,
+      "type_id": 95,
+      "price": 500
+    },
+    {
+      "id": 10583,
+      "lot_id": 9404,
+      "type_id": 95,
+      "price": 500
+    },
+    {
+      "id": 10584,
+      "lot_id": 9405,
+      "type_id": 95,
+      "price": 500
+    },
+    {
+      "id": 12856,
+      "lot_id": 0,
+      "type_id": -38,
+      "price": 1000,
+      "badge_data": [
+        {
+          "id": "244375",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 1000,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 14535,
+      "lot_id": 0,
+      "type_id": 171,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "247411",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 150,
+              "artikul_id": 11936
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 14715,
+      "lot_id": 0,
+      "type_id": -38,
+      "price": 22500,
+      "badge_data": [
+        {
+          "id": "247251",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 22500,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 14752,
+      "lot_id": 247535,
+      "type_id": 95,
+      "price": 60
+    },
+    {
+      "id": 14753,
+      "lot_id": 247536,
+      "type_id": 95,
+      "price": 120
+    },
+    {
+      "id": 14754,
+      "lot_id": 247537,
+      "type_id": 95,
+      "price": 90
+    },
+    {
+      "id": 14755,
+      "lot_id": 247538,
+      "type_id": 95,
+      "price": 150
+    },
+    {
+      "id": 14756,
+      "lot_id": 247539,
+      "type_id": 95,
+      "price": 60
+    },
+    {
+      "id": 14758,
+      "lot_id": 247751,
+      "type_id": 95,
+      "price": 80
+    },
+    {
+      "id": 15023,
+      "lot_id": 247540,
+      "type_id": 95,
+      "price": 400
+    },
+    {
+      "id": 15024,
+      "lot_id": 247541,
+      "type_id": 95,
+      "price": 800
+    },
+    {
+      "id": 15028,
+      "lot_id": 247553,
+      "type_id": 95,
+      "price": 600
+    },
+    {
+      "id": 15030,
+      "lot_id": 247594,
+      "type_id": 95,
+      "price": 1250,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 7000
+          }
+        ]
+      }
+    },
+    {
+      "id": 15031,
+      "lot_id": 247569,
+      "type_id": 95,
+      "price": 200
+    },
+    {
+      "id": 15032,
+      "lot_id": 247570,
+      "type_id": 95,
+      "price": 400
+    },
+    {
+      "id": 15046,
+      "lot_id": 247595,
+      "type_id": 95,
+      "price": 1250,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 7000
+          }
+        ]
+      }
+    },
+    {
+      "id": 15047,
+      "lot_id": 247596,
+      "type_id": 95,
+      "price": 1750,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 38,
+            "min": 6700
+          }
+        ]
+      }
+    },
+    {
+      "id": 15048,
+      "lot_id": 247597,
+      "type_id": 95,
+      "price": 1750,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 38,
+            "min": 6700
+          }
+        ]
+      }
+    }
+  ]
+}

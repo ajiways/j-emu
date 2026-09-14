@@ -518,75 +518,12 @@
       ]
     }
   ],
-  "storeTypes": [
-    {
-      "areaId": "504",
-      "typeId": -131,
-      "title": "Оружие и доспехи",
-      "ord": 11000
-    },
-    {
-      "areaId": "552",
-      "typeId": 11,
-      "title": "Ювелирные изделия",
-      "ord": 0
-    }
-  ],
-  "storeLots": [
-    {
-      "areaId": "504",
-      "lotId": 82,
-      "artikulId": 24,
-      "typeId": -131,
-      "price": 1,
-      "ord": 6,
-      "pay": {
-        "currency": "gold",
-        "amount": 1
-      }
-    },
-    {
-      "areaId": "504",
-      "lotId": 80,
-      "artikulId": 23,
-      "typeId": -131,
-      "price": 1,
-      "ord": 8,
-      "pay": {
-        "currency": "gold",
-        "amount": 1
-      }
-    },
-    {
-      "areaId": "552",
-      "lotId": 438,
-      "artikulId": 621,
-      "typeId": 11,
-      "price": 300,
-      "ord": 0,
-      "pay": {
-        "currency": "gold",
-        "amount": 300
-      },
-      "requires": {
-        "all": [
-          {
-            "type": "RANK",
-            "min": 4
-          }
-        ]
-      }
-    }
-  ],
-  "reputationTracks": [
-    {
-      "objectId": 5,
-      "type": 2,
-      "title": "Репутация Радвея",
-      "image": "rep_radvey_sm.png",
-      "unlockFlag": ""
-    }
-  ],
+  "storeTypesFile": "store-types.generated.json",
+  "storeTypes": [],
+  "storeLotsFile": "store-lots.generated.json",
+  "storeLots": [],
+  "reputationTracksFile": "reputation-tracks.generated.json",
+  "reputationTracks": [],
   "professions": [
     {
       "id": 2,
@@ -615,42 +552,10 @@
       "userStatId": null
     }
   ],
-  "bonuses": [
-    {
-      "id": 601,
-      "kind": "skill",
-      "skillId": "AGRILKA_MOBOV",
-      "delta": 1,
-      "needValue": 0,
-      "artikulId": 623,
-      "title": "Пособие «Слабая злость»",
-      "chatMsg": "<b>Вы прочли пособие «Слабая злость» и теперь знаете, как слегка разозлить противника во время боя.</b>"
-    }
-  ],
-  "useScripts": [
-    {
-      "bonusId": 2827,
-      "require": [
-        {
-          "artikulId": 2371,
-          "count": 2
-        }
-      ],
-      "failPlaque": "",
-      "effects": [
-        {
-          "type": "consume",
-          "artikulId": 2371,
-          "count": 2
-        },
-        {
-          "type": "grant",
-          "artikulId": 55,
-          "count": 1
-        }
-      ]
-    }
-  ],
+  "bonusesFile": "bonuses.generated.json",
+  "bonuses": [],
+  "useScriptsFile": "use-scripts.generated.json",
+  "useScripts": [],
   "skills": [
     {
       "id": "HPREG",

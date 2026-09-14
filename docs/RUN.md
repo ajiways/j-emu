@@ -24,15 +24,19 @@ npm run db:reset
 
 `db:reset` делает `DROP DATABASE` + `CREATE DATABASE` для имени в `DATABASE_URL`,
 затем migrate и publish из `CONTENT_BUNDLE_FILE` (`playable-slice.json` +
-`itemsFile` / `botsFile` / `areasFile` generated JSON). `PUB1_DIR` для этого шага не нужен.
+`itemsFile` / `botsFile` / `areasFile` / `storeTypesFile` / `storeLotsFile` /
+`reputationTracksFile` / `bonusesFile` / `useScriptsFile` generated JSON).
+`PUB1_DIR` для этого шага не нужен.
 
 Item и bot corpus обновляются отдельно, когда меняется Pub1. Atlas — когда
-меняются `content/radvei-areas.json` / hunt fixtures:
+меняются `content/radvei-areas.json` / hunt fixtures. Economy — когда
+меняются `content/stores/*.json` / reputation / bonuses / artifact-use:
 
 ```text
 PUB1_DIR=../Pub1 npm run content:decode:items
 PUB1_DIR=../Pub1 npm run content:decode:bots
 npm run content:decode:areas
+npm run content:decode:economy
 ```
 
 Повтор с тем же corpus digest не переписывает файл. Decoder не входит в

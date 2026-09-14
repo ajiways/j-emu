@@ -1,0 +1,163 @@
+{
+  "area_id": "829",
+  "title": "Магазин Нор топров",
+  "types": [{ "id": 2, "title": "Оружие и доспехи", "ord": 1 }],
+  "artikuls": [
+    {
+      "id": 5988,
+      "lot_id": 0,
+      "type_id": 2,
+      "price": 3000,
+      "badge_data": [
+        {
+          "id": "4327",
+          "data": [{ "type": "artifact", "artikul_id": 5985, "cnt": 99 }],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 5987,
+      "lot_id": 0,
+      "type_id": 2,
+      "price": 3000,
+      "badge_data": [
+        {
+          "id": "4326",
+          "data": [{ "type": "artifact", "artikul_id": 5985, "cnt": 99 }],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 5990,
+      "lot_id": 0,
+      "type_id": 2,
+      "price": 3000,
+      "badge_data": [
+        {
+          "id": "4329",
+          "data": [{ "type": "artifact", "artikul_id": 5985, "cnt": 99 }],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 5989,
+      "lot_id": 0,
+      "type_id": 2,
+      "price": 3000,
+      "badge_data": [
+        {
+          "id": "4328",
+          "data": [{ "type": "artifact", "artikul_id": 5985, "cnt": 99 }],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 5998,
+      "lot_id": 0,
+      "type_id": 2,
+      "price": 3000,
+      "badge_data": [
+        {
+          "id": "4339",
+          "data": [{ "type": "artifact", "artikul_id": 5985, "cnt": 99 }],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 5996,
+      "lot_id": 0,
+      "type_id": 2,
+      "price": 3000,
+      "badge_data": [
+        {
+          "id": "4337",
+          "data": [{ "type": "artifact", "artikul_id": 5985, "cnt": 99 }],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 5997,
+      "lot_id": 0,
+      "type_id": 2,
+      "price": 3000,
+      "badge_data": [
+        {
+          "id": "4338",
+          "data": [{ "type": "artifact", "artikul_id": 5985, "cnt": 99 }],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 5995,
+      "lot_id": 0,
+      "type_id": 2,
+      "price": 3000,
+      "badge_data": [
+        {
+          "id": "4335",
+          "data": [{ "type": "artifact", "artikul_id": 5985, "cnt": 99 }],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 5994,
+      "lot_id": 0,
+      "type_id": 2,
+      "price": 3000,
+      "badge_data": [
+        {
+          "id": "4333",
+          "data": [{ "type": "artifact", "artikul_id": 5985, "cnt": 99 }],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 5993,
+      "lot_id": 0,
+      "type_id": 2,
+      "price": 3000,
+      "badge_data": [
+        {
+          "id": "4332",
+          "data": [{ "type": "artifact", "artikul_id": 5985, "cnt": 99 }],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 5992,
+      "lot_id": 0,
+      "type_id": 2,
+      "price": 3000,
+      "badge_data": [
+        {
+          "id": "4331",
+          "data": [{ "type": "artifact", "artikul_id": 5985, "cnt": 99 }],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 5991,
+      "lot_id": 0,
+      "type_id": 2,
+      "price": 3000,
+      "badge_data": [
+        {
+          "id": "4330",
+          "data": [{ "type": "artifact", "artikul_id": 5985, "cnt": 99 }],
+          "stack_cnt": "0"
+        }
+      ]
+    }
+  ]
+}

@@ -107,9 +107,10 @@ JUMP leftover в `jgr-emu/src/quests/dialog.ts` и `scripts.ts`.
 
 - [STORE.md](../../../jgr-emu/docs/STORE.md) — ECO-01/ECO-02: лавка 504 лоты
   23/24 и Арсенал 552 lot 438/621 RANK; полный корпус `stores/*.json` —
-  DATA-05;
+  DATA-05 (`npm run content:decode:economy`);
 - [REPUTATION.md](../../../jgr-emu/docs/REPUTATION.md) — REP-01: track 5
-  Радвея и `user|stats`; полный корпус треков/киллов остаётся DATA-05;
+  Радвея и `user|stats`; 22 type-2 трека — DATA-05; `reputation_kills` не
+  импортируются;
 - [CHAT.md](../../../jgr-emu/docs/CHAT.md) — только обязательные system
   notifications.
 

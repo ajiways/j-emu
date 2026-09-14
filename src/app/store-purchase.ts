@@ -1,8 +1,15 @@
 import { findStoreLot } from "../modules/catalog/domain/find-store-lot.ts";
+import {
+  SUM_REPUTATION_OBJECT_ID,
+  SUM_REPUTATION_TITLE,
+} from "../modules/catalog/domain/reputation-ids.ts";
 import { honorRankCatalogFromConf } from "../modules/catalog/domain/honor-progress.ts";
 import { storeRequiresDeny } from "../modules/catalog/domain/eval-store-requires.ts";
 import { addStorePay, emptyStorePayTotals } from "../modules/catalog/domain/store-pay.ts";
-import type { StoreRequires } from "../modules/catalog/domain/store-requires.ts";
+import {
+  storeRequirePredicates,
+  type StoreRequires,
+} from "../modules/catalog/domain/store-requires.ts";
 import type { Catalog } from "../modules/catalog/ports/catalog.ts";
 import { goldToMinor } from "../modules/character/shared/gold-to-minor.ts";
 import type { CharacterService } from "../modules/character/application/character-service.ts";
@@ -86,9 +93,13 @@ export class StorePurchase {
     titles: Map<number, string>,
   ): Promise<void> {
     if (!requires) return;
-    for (const pred of requires.all) {
+    for (const pred of storeRequirePredicates(requires)) {
       if (pred.type !== "REPUTATION") continue;
       if (titles.has(pred.objectId)) continue;
+      if (pred.objectId === SUM_REPUTATION_OBJECT_ID) {
+        titles.set(pred.objectId, SUM_REPUTATION_TITLE);
+        continue;
+      }
       const track = await this.catalog.reputationTrack(pred.objectId);
       if (!track) throw new Error(`Reputation track ${pred.objectId} is missing`);
       if (!track.title) throw new Error(`Reputation track ${pred.objectId} title is required`);

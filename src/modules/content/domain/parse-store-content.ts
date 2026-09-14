@@ -1,4 +1,10 @@
 import { z } from "zod";
+import { isGoldCoins } from "../../catalog/domain/store-pay.ts";
+
+const goldCoinsSchema = z
+  .number()
+  .nonnegative()
+  .refine(isGoldCoins, { message: "gold coins must have at most two decimal places" });
 
 export const storeTypeDocumentSchema = z
   .object({
@@ -12,7 +18,7 @@ export const storeTypeDocumentSchema = z
 const goldPaySchema = z
   .object({
     currency: z.literal("gold"),
-    amount: z.number().int().nonnegative(),
+    amount: goldCoinsSchema,
   })
   .strict();
 
@@ -30,6 +36,41 @@ const barterPaySchema = z
     count: z.number().int().positive(),
   })
   .strict();
+
+const bundlePaySchema = z
+  .object({
+    currency: z.literal("bundle"),
+    gold: goldCoinsSchema,
+    barter: z
+      .array(
+        z
+          .object({
+            artikulId: z.number().int().positive(),
+            count: z.number().int().positive(),
+          })
+          .strict(),
+      )
+      .min(1),
+  })
+  .strict()
+  .superRefine((pay, context) => {
+    if (pay.gold === 0 && pay.barter.length < 2) {
+      context.addIssue({
+        code: "custom",
+        message: "bundle pay without gold must have at least two barter costs",
+      });
+    }
+    const seen = new Set<number>();
+    for (const cost of pay.barter) {
+      if (seen.has(cost.artikulId)) {
+        context.addIssue({
+          code: "custom",
+          message: `bundle pay has duplicate barter artikulId ${cost.artikulId}`,
+        });
+      }
+      seen.add(cost.artikulId);
+    }
+  });
 
 const rankRequireSchema = z
   .object({
@@ -53,26 +94,31 @@ const levelRequireSchema = z
   })
   .strict();
 
+const requirePredSchema = z.discriminatedUnion("type", [
+  rankRequireSchema,
+  reputationRequireSchema,
+  levelRequireSchema,
+]);
+
 export const storeLotDocumentSchema = z
   .object({
     areaId: z.string().min(1),
     lotId: z.number().int().positive(),
     artikulId: z.number().int().positive(),
     typeId: z.number().int(),
-    price: z.number().int().nonnegative(),
+    price: goldCoinsSchema,
     ord: z.number().int(),
-    pay: z.discriminatedUnion("currency", [goldPaySchema, diamondPaySchema, barterPaySchema]),
+    pay: z.discriminatedUnion("currency", [
+      goldPaySchema,
+      diamondPaySchema,
+      barterPaySchema,
+      bundlePaySchema,
+    ]),
     requires: z
-      .object({
-        all: z.array(
-          z.discriminatedUnion("type", [
-            rankRequireSchema,
-            reputationRequireSchema,
-            levelRequireSchema,
-          ]),
-        ),
-      })
-      .strict()
+      .union([
+        z.object({ all: z.array(requirePredSchema).min(1) }).strict(),
+        z.object({ any: z.array(requirePredSchema).min(1) }).strict(),
+      ])
       .optional(),
   })
   .strict();

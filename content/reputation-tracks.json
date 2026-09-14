@@ -1,0 +1,159 @@
+{
+  "note": "Live Pub1 common.amf reputation_skills. type 2 = faction track, type 3 object_id 36 = derived SUM. Do not grant 36. unlock_flag: empty = always grantable (Радвей). Else grantReputation no-ops until SET_FLAG.",
+  "tracks": [
+    {
+      "object_id": 5,
+      "type": 2,
+      "title": "Репутация Радвея",
+      "image": "rep_radvey_sm.png"
+    },
+    {
+      "object_id": 7,
+      "type": 2,
+      "title": "Репутация Ведьмака",
+      "image": "rep_vedmak_sm.png",
+      "unlock_flag": "rep_7"
+    },
+    {
+      "object_id": 11,
+      "type": 2,
+      "title": "Репутация Длинных ножей",
+      "image": "rep_dlinnojey_sm.png",
+      "unlock_flag": "rep_11"
+    },
+    {
+      "object_id": 12,
+      "type": 2,
+      "title": "Репутация Освободителя болот",
+      "image": "rep_bolota_sm.png",
+      "unlock_flag": "rep_12"
+    },
+    {
+      "object_id": 16,
+      "type": 2,
+      "title": "Репутация Охотника за древностями",
+      "image": "rep_ohotnikzadrev_sm.png",
+      "unlock_flag": "rep_16"
+    },
+    {
+      "object_id": 17,
+      "type": 2,
+      "title": "Репутация Полей битв",
+      "image": "rep_polyabitv_sm.png"
+    },
+    {
+      "object_id": 18,
+      "type": 2,
+      "title": "Репутация Драконоборца",
+      "image": "rep_drakonoborec_sm.png",
+      "unlock_flag": "rep_18"
+    },
+    {
+      "object_id": 19,
+      "type": 2,
+      "title": "Репутация Инквизиции",
+      "image": "rep_inki_sm.png"
+    },
+    {
+      "object_id": 20,
+      "type": 2,
+      "title": "Репутация Отреченных",
+      "image": "rep_otrechennyh_sm.png",
+      "unlock_flag": "rep_20"
+    },
+    {
+      "object_id": 28,
+      "type": 2,
+      "title": "Репутация Эль-Шаада",
+      "image": "rep_vostok_sm.png",
+      "unlock_flag": "rep_28"
+    },
+    {
+      "object_id": 34,
+      "type": 2,
+      "title": "Репутация острова Эйманси",
+      "image": "rep_amazon_sm.png",
+      "unlock_flag": "rep_34"
+    },
+    {
+      "object_id": 36,
+      "type": 3,
+      "title": "Суммарная репутация",
+      "image": ""
+    },
+    {
+      "object_id": 37,
+      "type": 2,
+      "title": "Репутация Побоищ",
+      "image": "rep_primorskfront_sm.png",
+      "unlock_flag": "rep_37"
+    },
+    {
+      "object_id": 38,
+      "type": 2,
+      "title": "Репутация Осквернителя тотемов",
+      "image": "rep_totem_sm.png",
+      "unlock_flag": "rep_38"
+    },
+    {
+      "object_id": 42,
+      "type": 2,
+      "title": "Репутация Ордена Дихаона",
+      "image": "rep_pozhirat_sm.png"
+    },
+    {
+      "object_id": 51,
+      "type": 2,
+      "title": "Репутация Братства щита",
+      "image": "rep_bratshit_sm.png",
+      "unlock_flag": "rep_51"
+    },
+    {
+      "object_id": 98,
+      "type": 2,
+      "title": "Репутация Дрессировщика",
+      "image": "rep_pets_sm.png",
+      "unlock_flag": "rep_98"
+    },
+    {
+      "object_id": 111,
+      "type": 2,
+      "title": "Репутация Спасителя душ",
+      "image": "rep_soul_sm.png",
+      "unlock_flag": "rep_111"
+    },
+    {
+      "object_id": 113,
+      "type": 2,
+      "title": "Репутация Карателя",
+      "image": "rep_karately_sm.png",
+      "unlock_flag": "rep_113"
+    },
+    {
+      "object_id": 117,
+      "type": 2,
+      "title": "Репутация Северных земель",
+      "image": "rep_severa_sm.png",
+      "unlock_flag": "rep_117"
+    },
+    {
+      "object_id": 119,
+      "type": 2,
+      "title": "Репутация Храма Луны",
+      "image": "repa_moon_sm.png"
+    },
+    {
+      "object_id": 121,
+      "type": 2,
+      "title": "Репутация Охотника на магов",
+      "image": "gerb_rep_mages_sm.png",
+      "unlock_flag": "rep_121"
+    },
+    {
+      "object_id": 125,
+      "type": 2,
+      "title": "Репутация «Своего человека»",
+      "image": "gerb_peolpe_sm.png"
+    }
+  ]
+}

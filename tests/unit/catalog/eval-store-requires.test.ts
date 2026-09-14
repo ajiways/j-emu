@@ -74,6 +74,60 @@ describe("storeRequiresDeny", () => {
     ).toBe("Сюда нельзя.");
   });
 
+  it("treats reputation 36 as the derived SUM of type-2 values", () => {
+    const requires = parseStoreRequires({
+      all: [{ type: "REPUTATION", object_id: 36, min: 2000 }],
+    });
+    expect(
+      storeRequiresDeny(
+        requires,
+        {
+          level: 6,
+          honor: 0,
+          reputations: new Map([
+            [5, 1500],
+            [17, 500],
+          ]),
+        },
+        catalog,
+      ),
+    ).toBeNull();
+    expect(
+      storeRequiresDeny(
+        requires,
+        { level: 6, honor: 0, reputations: new Map([[5, 1999]]) },
+        catalog,
+      ),
+    ).toBe("Нужно 2000 репутации Суммарная репутация.");
+  });
+
+  it("passes requires.any when one reputation track is enough", () => {
+    const requires = parseStoreRequires({
+      any: [
+        { type: "REPUTATION", object_id: 5, min: 2000 },
+        { type: "REPUTATION", object_id: 17, min: 500 },
+      ],
+    });
+    const anyCatalog = {
+      ranks,
+      reputationTitle: (objectId: number) => {
+        if (objectId === 5) return "Репутация Радвея";
+        if (objectId === 17) return "Репутация Полей битв";
+        throw new Error(`Reputation track ${objectId} is missing`);
+      },
+    };
+    expect(
+      storeRequiresDeny(
+        requires,
+        { level: 6, honor: 0, reputations: new Map([[17, 500]]) },
+        anyCatalog,
+      ),
+    ).toBeNull();
+    expect(
+      storeRequiresDeny(requires, { level: 6, honor: 0, reputations: new Map() }, anyCatalog),
+    ).toBe("Нужно 2000 репутации Радвея.");
+  });
+
   it("falls back to the dump-proven come-in plaque when deny_error is empty", () => {
     const requires = parseStoreRequires({ all: [{ type: "LEVEL", min: 7 }] });
     expect(

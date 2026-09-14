@@ -1,5 +1,11 @@
-import { honorProgress, honorRankTitle, type HonorRankCatalog } from "./honor-progress.ts";
-import type { StoreRequires } from "./store-requires.ts";
+import { SUM_REPUTATION_OBJECT_ID, SUM_REPUTATION_TITLE } from "./reputation-ids.ts";
+import {
+  honorProgress,
+  honorRankTitle,
+  type HonorProgress,
+  type HonorRankCatalog,
+} from "./honor-progress.ts";
+import { storeRequirePredicates, type StoreRequire, type StoreRequires } from "./store-requires.ts";
 
 export type StoreRequireHero = Readonly<{
   level: number;
@@ -17,26 +23,18 @@ export function storeRequiresDeny(
   hero: StoreRequireHero,
   catalog: StoreRequireCatalog,
 ): string | null {
-  if (!requires || requires.all.length === 0) return null;
+  if (!requires) return null;
   const progress = honorProgress(catalog.ranks, hero.honor, hero.level);
-  for (const pred of requires.all) {
-    if (pred.type === "LEVEL") {
-      if (hero.level < pred.min) return "Нельзя купить этот товар.";
-      continue;
-    }
-    if (pred.type === "RANK") {
-      if (progress.rank < pred.min) {
-        return `Нужно звание «${honorRankTitle(catalog.ranks, pred.min)}».`;
-      }
-      continue;
-    }
-    const have = hero.reputations.get(pred.objectId);
-    const value = have === undefined ? 0 : have;
-    if (value < pred.min) {
-      return `Нужно ${pred.min} репутации ${reputationShortTitle(catalog.reputationTitle(pred.objectId))}.`;
-    }
+  const preds = storeRequirePredicates(requires);
+  if (preds.length === 0) return null;
+  const denials = preds.map((pred) => denyPredicate(pred, hero, catalog, progress));
+  if ("any" in requires) {
+    if (denials.some((deny) => deny === null)) return null;
+    const first = denials[0];
+    if (!first) throw new Error("Store requires.any produced no deny text");
+    return first;
   }
-  return null;
+  return denials.find((deny) => deny !== null) ?? null;
 }
 
 export function storeEntryDeny(
@@ -50,6 +48,36 @@ export function storeEntryDeny(
   if (lotText !== "Нельзя купить этот товар.") return lotText;
   if (denyError.length > 0) return denyError;
   return "Сюда нельзя войти.";
+}
+
+function denyPredicate(
+  pred: StoreRequire,
+  hero: StoreRequireHero,
+  catalog: StoreRequireCatalog,
+  progress: HonorProgress,
+): string | null {
+  if (pred.type === "LEVEL") {
+    return hero.level < pred.min ? "Нельзя купить этот товар." : null;
+  }
+  if (pred.type === "RANK") {
+    if (progress.rank < pred.min) {
+      return `Нужно звание «${honorRankTitle(catalog.ranks, pred.min)}».`;
+    }
+    return null;
+  }
+  const have =
+    pred.objectId === SUM_REPUTATION_OBJECT_ID
+      ? [...hero.reputations.values()].reduce((sum, value) => sum + value, 0)
+      : hero.reputations.get(pred.objectId);
+  const value = have === undefined ? 0 : have;
+  if (value < pred.min) {
+    const title =
+      pred.objectId === SUM_REPUTATION_OBJECT_ID
+        ? SUM_REPUTATION_TITLE
+        : catalog.reputationTitle(pred.objectId);
+    return `Нужно ${pred.min} репутации ${reputationShortTitle(title)}.`;
+  }
+  return null;
 }
 
 function reputationShortTitle(title: string): string {

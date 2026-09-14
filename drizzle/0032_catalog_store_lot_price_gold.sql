@@ -1,0 +1,1 @@
+ALTER TABLE "catalog"."store_lots" ALTER COLUMN "price" SET DATA TYPE double precision;

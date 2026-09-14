@@ -281,7 +281,7 @@ export const storeLots = catalogSchema.table(
     lotId: integer("lot_id").notNull(),
     artikulId: integer("artikul_id").notNull(),
     typeId: integer("type_id").notNull(),
-    price: integer("price").notNull(),
+    price: doublePrecision("price").notNull(),
     ord: integer("ord").notNull(),
     pay: jsonb("pay").notNull(),
     requires: jsonb("requires"),

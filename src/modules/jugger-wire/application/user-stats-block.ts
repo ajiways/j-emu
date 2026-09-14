@@ -1,4 +1,8 @@
 import type { ReputationCatalog } from "../../catalog/ports/reputation-catalog.ts";
+import {
+  SUM_REPUTATION_OBJECT_ID,
+  SUM_REPUTATION_TITLE,
+} from "../../catalog/domain/reputation-ids.ts";
 import type { HeroReputationRow } from "../../character/ports/character-reputation.ts";
 import { ProtocolError } from "./protocol-error.ts";
 
@@ -57,7 +61,7 @@ export async function buildUserStatsBlock(
       namedStat("Количество побед в дуэлях", 0, 4, 1, ""),
       namedStat("Казни", 0, 8, 1, ""),
       ...faction,
-      namedStat("Суммарная репутация", total, 36, 3, ""),
+      namedStat(SUM_REPUTATION_TITLE, total, SUM_REPUTATION_OBJECT_ID, 3, ""),
       namedStat("Убито врагов за день", 0, 49, 1, ""),
     ],
     farm_stats: farmStats,

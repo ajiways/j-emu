@@ -1,0 +1,148 @@
+{
+  "area_id": "555",
+  "title": "Разбойничий склад",
+  "types": [
+    {
+      "id": 2,
+      "title": "Оружие и доспехи",
+      "ord": 1
+    },
+    {
+      "id": 8,
+      "title": "Свитки",
+      "ord": 0
+    },
+    {
+      "id": 10,
+      "title": "Еда",
+      "ord": 0
+    },
+    {
+      "id": 106,
+      "title": "Бальзамы",
+      "ord": 0
+    }
+  ],
+  "artikuls": [
+    {
+      "id": 14703,
+      "lot_id": 247058,
+      "type_id": 8,
+      "price": 100,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 11,
+            "min": 7000
+          }
+        ]
+      }
+    },
+    {
+      "id": 14708,
+      "lot_id": 247184,
+      "type_id": 8,
+      "price": 300,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 11,
+            "min": 7000
+          }
+        ]
+      }
+    },
+    {
+      "id": 14707,
+      "lot_id": 247183,
+      "type_id": 8,
+      "price": 200,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 11,
+            "min": 4200
+          }
+        ]
+      }
+    },
+    {
+      "id": 812,
+      "lot_id": 247244,
+      "type_id": 2,
+      "price": 20,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 11,
+            "min": 3000
+          }
+        ]
+      }
+    },
+    {
+      "id": 813,
+      "lot_id": 247245,
+      "type_id": 2,
+      "price": 20,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 11,
+            "min": 3000
+          }
+        ]
+      }
+    },
+    {
+      "id": 1055,
+      "lot_id": 247246,
+      "type_id": 2,
+      "price": 100,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 11,
+            "min": 5000
+          }
+        ]
+      }
+    },
+    {
+      "id": 14705,
+      "lot_id": 247247,
+      "type_id": 10,
+      "price": 10,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 11,
+            "min": 4000
+          }
+        ]
+      }
+    },
+    {
+      "id": 14704,
+      "lot_id": 247248,
+      "type_id": 106,
+      "price": 20,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 11,
+            "min": 6000
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "area_id": "647",
+  "title": "Склад Ведьмаков",
+  "types": [
+    {
+      "id": 7,
+      "title": "Боеприпасы",
+      "ord": 0
+    },
+    {
+      "id": 79,
+      "title": "Заготовки",
+      "ord": 0
+    }
+  ],
+  "artikuls": [
+    {
+      "id": 286,
+      "lot_id": 1274,
+      "type_id": 7,
+      "price": 1.72,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 7,
+            "min": 5000
+          }
+        ]
+      }
+    },
+    {
+      "id": 458,
+      "lot_id": 1277,
+      "type_id": 7,
+      "price": 0.86,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 7,
+            "min": 4500
+          }
+        ]
+      }
+    },
+    {
+      "id": 1401,
+      "lot_id": 1270,
+      "type_id": 79,
+      "price": 4,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 7,
+            "min": 1000
+          }
+        ]
+      }
+    },
+    {
+      "id": 1402,
+      "lot_id": 1269,
+      "type_id": 79,
+      "price": 5,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 7,
+            "min": 3000
+          }
+        ]
+      }
+    },
+    {
+      "id": 1403,
+      "lot_id": 1268,
+      "type_id": 79,
+      "price": 6,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 7,
+            "min": 4500
+          }
+        ]
+      }
+    },
+    {
+      "id": 1404,
+      "lot_id": 1267,
+      "type_id": 79,
+      "price": 8,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 7,
+            "min": 6000
+          }
+        ]
+      }
+    },
+    {
+      "id": 1405,
+      "lot_id": 1266,
+      "type_id": 79,
+      "price": 10,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 7,
+            "min": 7000
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -38,15 +38,18 @@ describe("hero reputation", () => {
 
   it("projects published track 5", async () => {
     const tracks = await catalog.catalog.reputationTracks();
-    expect(tracks).toEqual([
-      {
-        objectId: 5,
-        type: 2,
-        title: "Репутация Радвея",
-        image: "rep_radvey_sm.png",
-        unlockFlag: "",
-      },
-    ]);
+    expect(tracks).toHaveLength(22);
+    expect(tracks).toEqual(
+      expect.arrayContaining([
+        {
+          objectId: 5,
+          type: 2,
+          title: "Репутация Радвея",
+          image: "rep_radvey_sm.png",
+          unlockFlag: "",
+        },
+      ]),
+    );
     await expect(catalog.catalog.reputationTrack(5)).resolves.toMatchObject({ objectId: 5 });
     await expect(catalog.catalog.reputationTrack(36)).resolves.toBeNull();
   });
@@ -101,7 +104,7 @@ describe("hero reputation", () => {
     await expect(
       characters.service.grantReputation({
         characterId: hero.id,
-        objectId: 7,
+        objectId: 9999,
         amount: 10,
         cap: 0,
       }),

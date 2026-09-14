@@ -27,6 +27,10 @@
   areas/links/hunt decoder (`npm run content:decode:areas` →
   `content/areas.generated.json` / `area-links.generated.json` /
   `hunt-spawns.generated.json`);
+  stores/reputation/bonuses/USE decoder (`npm run content:decode:economy` →
+  `content/store-types.generated.json` / `store-lots.generated.json` /
+  `reputation-tracks.generated.json` / `bonuses.generated.json` /
+  `use-scripts.generated.json`);
   `npm run db:reset` без `PUB1_DIR` поднимает полный корпус из committed
   `playable-slice.json` + generated files;
 - typed static OA/fproxy/esrv dispatch;
@@ -363,7 +367,7 @@ EXP на stats, `level_penalty` / казнь / короны.
 
 ## После core — не перенесено
 
-Полный корпус магазинов (DATA-05).
+DATA-06 NPC/диалоги/куратские квесты (низкий приоритет, не `next`).
 
 ## Store — частично
 
@@ -375,21 +379,23 @@ pay/gate: gold / diamond / barter по `artikul_id` инстанса, RANK/REPUT
 e2e. `store|repair` instance `{ id }` чинит finite item (ghost не блокирует;
 cost 0 не зовёт `debitMoney`). QST-ENG-05: dialog `OPEN_STORE` штатный ComeIn
 в 504 + `jump:"area"`, без piggyback `store|list`. CEF лавки и мастерской не
-прогонялся.
+прогонялся. DATA-05: 23 store dumps (113 types / 2095 lots) из
+`content/store-*.generated.json`.
 
-Не перенесены остальные лоты 504, diamond JSON lots, dungeon/barter shops,
-REPUTATION lots, COME_IN LEVEL entry.
+Не перенесены diamond JSON conversion 1:900, extra badge SKUs на wire,
+COME_IN LEVEL entry, `badge_data` в `store|list`.
 
 ## Reputation — частично
 
 Есть raw-AMF и PostgreSQL: OA `user|stats` named rows (опыт/героизм, нули
 kill/duel/fatality/daily, type:2 только при value > 0, всегда SUM 36 type 3),
 `grantReputation` track **5** persist reconnect/restart. Catalog публикует
-только Радвей **5**. Квестовый consumer — `q_engine_multi` turn-in
+22 type-2 трека (Радвей **5** empty unlock; 7/11/… с `unlockFlag`). Квестовый
+consumer — `q_engine_multi` turn-in
 (`GRANT_AWARDS` → track 5 +10). CEF экрана репутации и сдачи
 `q_engine_multi` не прогонялся — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 
-Не перенесены tracks 7/11/…, kill overlay, SET_FLAG, chat notify, GRANT_REP.
+Не перенесены kill overlay, SET_FLAG unlock grant, chat notify, GRANT_REP.
 
 ## Professions — частично
 
@@ -416,7 +422,7 @@ USE 2827 failPlaque; restart GET совпадает; 422 не двигает poi
 Flash-редактора нет. Исключение «Отложенный CEF Wave 5–12» закрыто.
 
 Не перенесены SPA `/dev/content`, rollback/export, `operator_roles`,
-DATA-05…06 mass import (DATA-02…04 — готово, см. выше), новые ключи вне active
+DATA-06 mass import, новые ключи вне active
 release.
 
 ## Вне первой волны

@@ -33,13 +33,15 @@ counts/checksums и completeness gates:
 из `content/pub1-items.generated.json` (22 560 `ArtifactDocument`, bundle-ключ
 `itemsFile`) и полный bestiary/overlay bot corpus из
 `content/bots.generated.json` (164 `BotDocument`, ключи `botsFile` /
-`botLootFile` / `botSpellBooksFile`; `db:reset` читает их без `PUB1_DIR`)
-и по-прежнему минимальный набор остальных типов. Representative hunt IDs
+`botLootFile` / `botSpellBooksFile`; `db:reset` читает их без `PUB1_DIR`),
+полный atlas из `content/areas.generated.json` (74 areas / 156 links / 10 hunts)
+и DATA-05 economy из generated store/reputation/bonus/USE файлов
+(113 types / 2095 lots / 22 tracks / 5 bonuses / 7 use scripts). Representative hunt IDs
 остаются 2/4/24/32/99/106/107/108/109/353/354/373; loot/spell policy —
 overlay/`bot_spell_book.json`, не handwritten slice. Gryzl **2** nick Pub1
 «Грызл»; overlay loot NOTHING 3000 / 27 entries. Хисса **4** книга 396+397.
 bonus **601**, use script **2827**, assistant types **3/13**, farm resource **4** on area **500**, craft recipe **61**,
-12 areas (503/501/504/495/552/542/541/654/651/653/499/673) plus isolated **510**/pit **544**, BG return 500 and rooms 635/636/637, authored travel `area_links` including dungeon doors 501↔542, 541↔654, 651↔653, 499↔673, 510↔544 and Раскоп 635↔636↔637, hunt 50310 (home), 50309 (route+respawn) и 50101–50103 (zone), dungeons 1/2/11/12/14 (bots 99/106–109/354/353/373), battlegrounds Раскоп `general|2` plus dump cards, store 504 type `-131` lots 80/23 и 82/24, store 552 type 11 lot 438/621 RANK, reputation track **5**, 82 skills (DATA-01 набор плюс skill id с Pub1-артефактов), 14 levels с normalized managed skills,
+12 areas (503/501/504/495/552/542/541/654/651/653/499/673) plus isolated **510**/pit **544**, BG return 500 and rooms 635/636/637, authored travel `area_links` including dungeon doors 501↔542, 541↔654, 651↔653, 499↔673, 510↔544 and Раскоп 635↔636↔637, hunt 50310 (home), 50309 (route+respawn) и 50101–50103 (zone), dungeons 1/2/11/12/14 (bots 99/106–109/354/353/373), battlegrounds Раскоп `general|2` plus dump cards, store 504 type `-131` lots 80/23 и 82/24 внутри полного корпуса 113/2095, store 552 type 11 lot 438/621 RANK, 22 reputation tracks (Радвей **5**), 82 skills (DATA-01 набор плюс skill id с Pub1-артефактов), 14 levels с normalized managed skills,
 3 appearance presets (kind 1/2/3 gender 1), NPC **271** (503 item **4**) и
 **272** (item **8**), AREA ambush 503 item **1**, with eight engine quests
 (`q_engine_board` / `q_engine_fight` / `q_engine_area` / `q_engine_daily` /
@@ -58,8 +60,8 @@ Seed: `npm run db:publish:development` с `CONTENT_BUNDLE_FILE` и `DATABASE_URL
 из `.env` в корне пакета. Повтор с тем же checksum не создаёт новый release.
 Новый checksum на уже опубликованной БД создаёт и активирует следующую release
 через `publish` (тот же npm-скрипт).
-Полный item, bot и area/hunt corpus уже в generated-файлах. Остальные типы
-(stores/quests) из матрицы — план, кроме уже опубликованного playable subset.
+Полный item, bot, area/hunt и economy corpus уже в generated-файлах. Остальные типы
+(NPC/quests) из матрицы — план, кроме уже опубликованного playable subset.
 
 ## `playable-slice.json` — временный bootstrap, не целевой механизм
 
@@ -70,7 +72,10 @@ Bot corpus тоже не кладётся: `botsFile` / `botLootFile` / `botSpel
 указывают на generated JSON (`npm run content:decode:bots`).
 Area/hunt corpus тоже не кладётся: `areasFile` / `areaLinksFile` /
 `huntSpawnsFile` указывают на generated JSON (`npm run content:decode:areas`).
-Руками не расти `artifacts`/`bots`/`areas` до полного каталога.
+Economy corpus тоже не кладётся: `storeTypesFile` / `storeLotsFile` /
+`reputationTracksFile` / `bonusesFile` / `useScriptsFile` указывают на
+generated JSON (`npm run content:decode:economy`).
+Руками не расти `artifacts`/`bots`/`areas`/`storeLots` до полного каталога.
 
 Правило: как только для домена (`catalog` items, `catalog` bots/spells,
 `world` areas/hunt, `economy` stores, …) появляется хотя бы одна capability,
@@ -107,11 +112,13 @@ DATA-стадии (не runtime-зависимость и не копирова�
 только validator под схему:**
 
 - `seed_bot_spell_book.ts` (`bot_spell_book.json`) → DATA-03 spell definitions;
-- `seed_store.ts` (`fixtures/stores/*.json`) → DATA-05 stores;
+- `seed_store.ts` (`fixtures/stores/*.json`) → DATA-05 stores
+  (`npm run content:decode:economy`);
 - `seed_reputation.ts` (`reputation_tracks.json`, `reputation_kills.json`) →
-  DATA-05 reputation;
-- `seed_bonuses.ts` (`bonuses.json`) → DATA-05 bonuses/consumable USE;
-- `seed_artifact_use.ts` (`artifact_use.json`) → DATA-05/06 item scripts;
+  DATA-05 reputation (kills не импортируются);
+- `seed_bonuses.ts` (`bonuses.json`) → DATA-05 bonuses;
+- `seed_artifact_use.ts` (`artifact_use.json`) → DATA-05 consume/grant USE
+  (quest-aware entries — DATA-06);
 - `seed_quests.ts` (`quests_curated/*.json`, `npc_catalog.json`,
   `radvei_npcs.json`, `strangers_quest_dialogs.json`) → DATA-06 quests/NPC —
   это evidence самого низкого приоритета (content-fill, не движок);
@@ -248,8 +255,8 @@ source group ведутся только в
   `radvei-hunt-bots.json` / `bot-spell-book.json` применяются в decode.
   `db:reset` читает только committed JSON, без `PUB1_DIR`.
 - `catalog`: base loot/drop sources; validator запускается после items и bots
-  и проверяет item references, количества и веса. Quest/reputation conditions
-  являются отдельными dependent policies DATA-05/06.
+  и проверяет item references, количества и веса. Quest-conditioned loot —
+  DATA-06.
 - `quests`: `dialogs.json`, `strangers_quest_dialogs.json`,
   `npc_catalog.json`, `radvei_npcs.json`, затем `quests_curated/*.json`;
   base NPC не ссылается на dialog/quest; validator проверяет dialogs и quests
@@ -257,15 +264,15 @@ source group ведутся только в
 - `world`: `radvei_areas.json`, `hunt_spawns.json` и authored links/routes;
   validator проверяет уникальность area/point/spawn IDs, bot references и
   достижимость ссылок.
-- `catalog`: ECO-02 subset `fixtures/stores/504.json` (type `-131` + lots 23/24) и
-  `552.json` (type 11 + RANK lot 438/621) плюс Pub1/common_init artifacts 23/24/621;
-  validator проверяет area 504/552, artifact refs, gold pay=price, RANK lot и
-  «type без lots». Полный корпус `stores/*.json` —
-  DATA-05 / модуль economy, не этот срез.
-- `economy`: remaining `stores/*.json` (DATA-05); validator проверяет area,
-  item, stock/price и валюту без подстановки отсутствующего артикула.
-- `catalog`: `bonuses.json`; validator проверяет artifact/action/effect
-  references и не принимает неизвестный effect как generic JSON.
+- `catalog`: DATA-05 stores (`npm run content:decode:economy` →
+  `content/store-types.generated.json` / `store-lots.generated.json`);
+  validator проверяет area, artifact refs, gold pay=price, RANK lot 438 и
+  «type без lots». E2e pins 504 `-131` lots 80/23 и 82/24, 552 type 11.
+- `catalog`: DATA-05 bonuses (`content/bonuses.generated.json`); validator
+  проверяет artifact/action/effect references и не принимает неизвестный
+  effect как generic JSON.
+- `catalog`: DATA-05 consume/grant USE (`content/use-scripts.generated.json`);
+  omit 2006/2007/900584.
 - `catalog`: `bot_spell_book.json`, `spell_catalog_overlay.json`,
   `spell_damage.json`; validator объединяет их в полное spell definition и
   отклоняет отсутствующую формулу или presentation.
@@ -273,15 +280,10 @@ source group ведутся только в
   проверяет areas, ingredients, results и требования.
 - `instances`: `dungeons/*.json`; validator проверяет areas, encounters,
   bots, loot и checkpoint graph.
-- `catalog`: REP-01 subset `reputation_tracks.json` track **5** only; SUM 36
-  и kill overlay не публиковать. Полный корпус треков/`reputation_kills` —
-  DATA-05.
+- `catalog`: DATA-05 reputation (`content/reputation-tracks.generated.json`,
+  22 type-2; omit SUM 36; `reputation_kills` не публикуются).
 - `catalog`: PRF-01 pair `profession_info` ids **2** and **6**; publication
   replaces `common_conf.profession_info`. Full Pub1 professions — POST-02.
-- `catalog`: `reputation_tracks.json` и `reputation_kills.json` (остаток DATA-05);
-  validator проверяет track levels, thresholds/rewards и bot refs. Quest reward/gate refs
-  проверяет quest validator, поэтому authored reputation не зависит обратно от
-  quests.
 
 Имя файла не определяет порядок. Manifest объявляет типы и references, а
 validator строит и проверяет dependency graph. Decoder не импортирует старые

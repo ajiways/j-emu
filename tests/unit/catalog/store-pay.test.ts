@@ -17,6 +17,21 @@ describe("parseStorePay", () => {
       artikulId: 77,
       count: 2,
     });
+    expect(
+      parseStorePay({
+        currency: "bundle",
+        gold: 3000,
+        barter: [{ artikulId: 5823, count: 500 }],
+      }),
+    ).toEqual({
+      currency: "bundle",
+      gold: 3000,
+      barter: [{ artikulId: 5823, count: 500 }],
+    });
+    expect(parseStorePay({ currency: "gold", amount: 0.06 })).toEqual({
+      currency: "gold",
+      amount: 0.06,
+    });
   });
 
   it("fails closed on an unknown currency", () => {
@@ -34,5 +49,23 @@ describe("addStorePay", () => {
       3,
     );
     expect(totals.barter.get(77)).toBe(5);
+  });
+
+  it("adds gold and multiple barter costs from a bundle lot", () => {
+    const totals = addStorePay(
+      emptyStorePayTotals(),
+      {
+        currency: "bundle",
+        gold: 3000,
+        barter: [
+          { artikulId: 5823, count: 500 },
+          { artikulId: 3815, count: 500 },
+        ],
+      },
+      2,
+    );
+    expect(totals.gold).toBe(6000);
+    expect(totals.barter.get(5823)).toBe(1000);
+    expect(totals.barter.get(3815)).toBe(1000);
   });
 });

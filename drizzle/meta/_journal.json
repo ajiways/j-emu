@@ -225,6 +225,13 @@
       "when": 1789322100780,
       "tag": "0031_catalog_bot_spell_gates",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1789387053254,
+      "tag": "0032_catalog_store_lot_price_gold",
+      "breakpoints": true
     }
   ]
 }

@@ -19,7 +19,8 @@ product-status **готово** не ставить. Точный product-status
   **23** и **24** в деревенской лавке).
 
 Не переносить dual-write редактора, seed-фикстуру в runtime, `noteQuestBuy`,
-алмазную конвертацию 1:900 и полный каталог 23 файлов (DATA-05).
+алмазную конвертацию 1:900. Полный каталог 23 dumps уже в DATA-05
+(`npm run content:decode:economy`).
 
 ## Architecture decision
 
@@ -29,7 +30,10 @@ product-status **готово** не ставить. Точный product-status
 
 Catalog владеет authored витриной (`store_types`, `store_lots`) на active
 release. `store_lots.pay` — дискриминированный union `gold` / `diamond` /
-`barter`. `store_lots.requires` — nullable jsonb; `null` = нет гейта лота.
+`barter` / `bundle`. `bundle` — несколько бартер-артикулов и опционально
+золото на одном лоте (live `moneyFromBadge` + `artifactCostsFromBadge`
+по **первому** badge). `store_lots.requires` — nullable jsonb;
+`null` = нет гейта лота; `{all}` AND или `{any}` OR.
 World владеет area **504** и **552** с `code=store`. Inventory выдаёт
 экземпляры в bag и списывает бартер. Composition UoW (`src/app`, как
 `HuntFightSettlement`) вызывает gate → pay → `grantToBag`. Inventory не
@@ -57,8 +61,10 @@ minor — helper в character/shared kernel, то же правило, что IN
 | `gold`         | `debitMoney` (`money_minor`)                                        | `Недостаточно денег`             |
 | `diamond`      | `debitMoneyGold` (`money_gold_minor`)                               | `Недостаточно алмазов`           |
 | `barter`       | `countBagByArtifact` + `consumeFromBag` по **catalog `artikul_id`** | `Недостаточно: ${catalog.title}` |
+| `bundle`       | gold till + каждый barter cost                                      | те же статусы 2, что gold/barter |
 
-Gold `pay.amount` обязан совпадать с `price`. Бартер не смотрит на
+Gold `pay.amount` обязан совпадать с `price` (в minor через то же правило
+1.00 = 100, до двух десятичных). Бартер не смотрит на
 `items.id` инстанса. Старый runtime требовал id оригинала так, будто это
 instance id — покупка не находила стек. Здесь consume сортирует bag rows с
 тем же `artifactId` по instance `id` и списывает quantity. Missing catalog
@@ -81,23 +87,31 @@ Missing rank title — ошибка, не `TITLES[id] ?? TITLES[0]`.
 Неизвестный type — ошибка публикации/парсера, не skip. Live RANK/REPUTATION
 deny — **203**; pay shortage — **2**.
 
-## Content set (`playable-slice/v23`)
+## Content set (DATA-05)
 
-| Что              | Provenance                                                                                                        | Не публиковать                                    |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| Area 504         | уже WLD-01                                                                                                        | остальные village store-area                      |
-| Types 504        | только `-131` «Оружие и доспехи»                                                                                  | `159`/`10`/`21` и вкладки других лавок            |
-| Lots 504         | artikul **23** `lot_id` **80**; artikul **24** `lot_id` **82**; `pay: gold 1`                                     | остальные лоты `504.json`                         |
-| Artifacts 23, 24 | Pub1 `artifact_artikul_*.amf`                                                                                     | полный Pub1 catalog (DATA-02)                     |
-| Area 495         | dump «Площадь Бранендаля»; dump `parent_id` **494** нет в `radvei_areas.json` `areas` keys → slice `parentId: ""` | walk из 503                                       |
-| Area 552         | dump «Арсенал», `code=store`, parent 495                                                                          |                                                   |
-| Types 552        | **11** «Ювелирные изделия»                                                                                        | остальные вкладки 552                             |
-| Lot 552          | `lot_id` **438**, artikul **621** «Амулет громилы», gold 300, `requires.RANK min 4`                               | 587 «Сумка задиры» (нужен unpublished `CAPACITY`) |
-| Artifact 621     | `jgr-emu/fixtures/common_init_slim.json`                                                                          |                                                   |
-| Links            | dump 495 item **238** → 552; 552 item **0** exit → 495                                                            | COME_IN 552 из 503                                |
+23 authored dumps `content/stores/*.json` → `store-types.generated.json` /
+`store-lots.generated.json` (113 types, 2095 lots). E2e-representative
+rows 504 `-131` lots 80/23 и 82/24, 552 type 11 lot 438/621 RANK min 4
+сохраняются. Dump `lot_id` 0 публикуется как `lotId = artikulId`. Till —
+первый badge (live lookup по lot_id/artikul). Gold-only shelf `price`
+равна till. Leftover diamond — ошибка decode. Area-level `entries`
+не публикуются. REPUTATION object 36 на лоте — derived SUM, не catalog
+track. Пустые area 984/1102/1113 по-прежнему без store JSON.
 
-В `504.json` у вкладок `159`/`10`/`21` есть лоты — их не публикуем. Тип без
-лотов на wire даёт CEF спиннер «загрузка данных»; validator отклоняет такой
+| Что              | Provenance                                                                                                        | E2e pin / не этот контракт                     |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Area 504         | dump «Деревенская лавка», `code=store`                                                                            | COME_IN из 503 item 5                          |
+| Types 504        | `-131` «Оружие и доспехи» плюс `159`/`10`/`21`                                                                    | list содержит `-131`; остальные вкладки не pin |
+| Lots 504         | artikul **23** `lot_id` **80**; artikul **24** `lot_id` **82**; `pay: gold 1`                                     | buy обоих; полный список лотов 504 не pin      |
+| Artifacts 23, 24 | Pub1 `artifact_artikul_*.amf`                                                                                     |                                                |
+| Area 495         | dump «Площадь Бранендаля»; dump `parent_id` **494** нет в `radvei_areas.json` `areas` keys → slice `parentId: ""` | walk из 503                                    |
+| Area 552         | dump «Арсенал», `code=store`, parent 495                                                                          | `setArea` 552 в e2e                            |
+| Types 552        | **11** «Ювелирные изделия» плюс остальные вкладки dump                                                            | list содержит **11**                           |
+| Lot 552          | `lot_id` **438**, artikul **621** «Амулет громилы», gold 300, `requires.RANK min 4`                               | buy 438 → 203 «Громила»                        |
+| Artifact 621     | Pub1 catalog                                                                                                      |                                                |
+| Links            | dump 495 item **238** → 552; 552 item **0** exit → 495                                                            | COME_IN 552 из 503                             |
+
+Тип без лотов на wire даёт CEF спиннер «загрузка данных»; validator отклоняет такой
 type. Пустой `store|list` (нет types и нет artikuls, как вне лавки / area без
 витрины) — live `100`. Лота без опубликованного artifact в candidate быть не
 может.
@@ -114,9 +128,10 @@ E2E 552: `characterLocation.setArea({ areaId: "552" })` — walk из 503 в sli
   `(release_id, area_id, type_id)`;
 - `catalog.store_lots(release_id, area_id, lot_id, artikul_id, type_id, price,
 ord, pay jsonb not null, requires jsonb)` PK `(release_id, area_id, lot_id)`;
-  FK `artifacts` и `store_types` той же release; `lot_id > 0` (dump dungeon
-  `lot_id: 0` wire-illegal — такие лавки не публикуем);
-  `price` — золотые монеты, целое ≥ 0; `requires` null = нет гейта.
+  FK `artifacts` и `store_types` той же release; `lot_id > 0` (dump `lot_id: 0`
+  публикуется как `lotId = artikulId`);
+  `price` — золотые монеты, `double precision` ≥ 0, до двух десятичных;
+  `requires` null = нет гейта.
 
 Diamond / barter / RANK колонки отдельно не плодить: это jsonb `pay` /
 `requires`. `store_entries` / come-in LEVEL table нет.
@@ -200,12 +215,9 @@ Hero + items lock в одной UoW. Process restart не откатывает �
 
 ## Out of scope
 
-DATA-05 полный `stores/*.json`; DATA-02 catalog; dungeon shops 829/724/741
-(unpublished artifacts вроде 5988 и `lot_id: 0`); REPUTATION-лоты 971/576
-(unpublished 15030/1995); diamond JSON lots (dump уже 1:900→gold);
-COME_IN `assertStoreEntry` / `store_entries`; 587 CAPACITY; quest signals
-кроме QST-ENG-05 `OPEN_STORE`; economy ledger. NPC board store-строка;
-dual-badge. Пустые вкладки `159`/`10`/`21` без лотов. SQL FK
+Diamond JSON conversion 1:900; extra badge SKUs на `store|list` (`badge_data`);
+COME_IN `assertStoreEntry` / `store_entries`; quest signals кроме QST-ENG-05
+`OPEN_STORE`; economy ledger. NPC board store-строка; dual-badge. SQL FK
 `store_types` → `world.areas` нет: area проверяет publication. Ghost `203`
 несёт `GhostHeroError` message (английский `cannot storeBuy while ghosted`);
 dump-proven русский toast на buy-призрак не найден. Concurrent buy e2e нет —

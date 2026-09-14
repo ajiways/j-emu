@@ -30,7 +30,9 @@
 - Workflow-статусы: `done`, `next`, `queued`, `deferred`, `excluded`. Отдельного
   `post-core` больше нет — economy/social/instances/professions не «после
   ядра», они и есть часть ядра движков.
-- Ровно одна запись имеет статус `next`.
+- Ровно одна запись имеет статус `next`, пока в engine-треке есть следующая
+  capability. После закрытия Wave 14 decoder-трека `next` не назначается на
+  content-fill (`CONTENT-STORY-*`, DATA-06).
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
   `ARC-*`; capability надо переупорядочить.
@@ -1865,7 +1867,8 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
 импорт его Pub1-корпуса — следующая задача, не отдельная поздняя волна.
 Это generalized per-domain decoder tooling, не куратский контент —
 `CONTENT-STORY-*` ниже остаётся `queued` и не входит в `depends_on` ни
-одной записи этой волны.
+одной записи этой волны. После DATA-05 decoder-трек закрыт: `next` на
+этой волне больше нет.
 
 ### DATA-02 — Pub1 item corpus decoder
 
@@ -2104,16 +2107,17 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   evidence формата, не runtime-зависимость; текущий
   `content/playable-slice.json` store/reputation/bonus/use как evidence
   целевой типизации.
-- **Content set:** authored store dumps (`fixtures/stores/*.json`, 23
-  файла), remaining reputation tracks/kills поверх track 5, `bonuses.json`
-  и non-quest `artifact_use.json`. Wire store/lot/track/bonus/script ID
+- **Content set:** authored store dumps (`content/stores/*.json`, 23
+  файла), 22 type-2 reputation tracks (omit SUM 36; `reputation_kills`
+  не импортируется), `bonuses.json` и consume/grant `artifact-use.json`
+  (omit 2006/2007/900584). Wire store/lot/track/bonus/script ID
   без перенумерации. Provenance: live-dump затем authored overlays того
   же ключа. Не в этом срезе: DATA-06 quest-aware scripts, NPC/квесты;
-  пустой legacy shop остаётся явным контентом, не «полный магазин».
+  leftover diamond conversion 1:900; unlock-flag grant.
 - **Architecture checkpoint / decision:** ADR-0011/ADR-0017–0020
   достаточны; новый ADR/`ARC-*` не нужен — тот же generated-tooling
-  паттерн, что `DATA-02`…`DATA-04`. **Ownership.** `economy` владеет
-  store types/lots; `catalog` владеет reputation tracks, bonuses и
+  паттерн, что `DATA-02`…`DATA-04`. **Ownership.** `catalog` владеет
+  store types/lots, reputation tracks, bonuses и
   use scripts. Decoder — offline `npm run content:decode:economy` (имя
   фиксируется при реализации), не HTTP, не часть `db:reset`, не
   `import()`. **Формат вывода.** Committed generated JSON плюс manifests;
@@ -2127,7 +2131,18 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   совпадают; `db:reset` без `PUB1_DIR`; existing store/USE/reputation
   raw-AMF e2e без изменения wire значений; `check` /
   `test:integration` / `test:e2e` зелёные до `done`.
-- **Status:** `next`
+- **Boundary/contract audit (закрыт):** decode/файл/manifest в порядке.
+  23 store dumps → 113 types / 2095 lots; 22 type-2 reputation tracks
+  (omit SUM 36); 5 skill bonuses 601–605; 7 consume/grant use scripts
+  (omit 2006/2007/900584). Dump `lot_id` 0 → `lotId=artikulId`. First
+  badge is till; leftover diamond fails; gold shelf for gold-only lots
+  is badge cnt. Bundle pay covers multi-barter and mixed gold+barter.
+  Fractional gold coins (2 decimals). `requires.any` is OR. Lot
+  REPUTATION 36 is derived SUM, not a published track. Store `entries`
+  omitted (not a StoreType/Lot field). `reputation_kills` not imported.
+  `npm run content:decode:economy` без `PUB1_DIR`; `db:reset` без
+  `PUB1_DIR`; `test:integration`, `test:e2e` и `check` зелёные.
+- **Status:** `done`
 
 ## Content-fill track — сюжет, не брать сейчас
 

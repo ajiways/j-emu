@@ -229,7 +229,12 @@ export type StoreTypeDocument = Readonly<{
 type StoreLotPayDocument =
   | Readonly<{ currency: "gold"; amount: number }>
   | Readonly<{ currency: "diamond"; amount: number }>
-  | Readonly<{ currency: "barter"; artikulId: number; count: number }>;
+  | Readonly<{ currency: "barter"; artikulId: number; count: number }>
+  | Readonly<{
+      currency: "bundle";
+      gold: number;
+      barter: readonly Readonly<{ artikulId: number; count: number }>[];
+    }>;
 
 type StoreLotRequireDocument =
   | Readonly<{ type: "RANK"; min: number }>
@@ -244,7 +249,9 @@ export type StoreLotDocument = Readonly<{
   price: number;
   ord: number;
   pay: StoreLotPayDocument;
-  requires?: Readonly<{ all: readonly StoreLotRequireDocument[] }>;
+  requires?:
+    | Readonly<{ all: readonly StoreLotRequireDocument[] }>
+    | Readonly<{ any: readonly StoreLotRequireDocument[] }>;
 }>;
 
 export type ReputationTrackDocument = Readonly<{

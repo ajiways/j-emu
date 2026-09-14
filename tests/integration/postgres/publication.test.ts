@@ -136,24 +136,28 @@ describe("content publication", () => {
     await createPostgresContentPublication(database).seed(playable, playablePath);
     const catalog = new PostgresCatalog(database, new PostgresActiveContentRevision(database));
     const types = await catalog.storeTypes("504");
-    expect(types.map((row) => row.typeId)).toEqual([-131]);
+    expect(types.map((row) => row.typeId)).toEqual(expect.arrayContaining([-131]));
     const lots = await catalog.storeLots("504");
-    expect(lots.map((lot) => ({ lotId: lot.lotId, artikulId: lot.artikulId }))).toEqual([
-      { lotId: 82, artikulId: 24 },
-      { lotId: 80, artikulId: 23 },
-    ]);
+    expect(lots).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ lotId: 82, artikulId: 24 }),
+        expect.objectContaining({ lotId: 80, artikulId: 23 }),
+      ]),
+    );
     expect(await catalog.storeLots("503")).toEqual([]);
     const arsenal = await catalog.storeLots("552");
-    expect(arsenal).toEqual([
-      expect.objectContaining({
-        lotId: 438,
-        artikulId: 621,
-        typeId: 11,
-        price: 300,
-        pay: { currency: "gold", amount: 300 },
-        requires: { all: [{ type: "RANK", min: 4 }] },
-      }),
-    ]);
+    expect(arsenal).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          lotId: 438,
+          artikulId: 621,
+          typeId: 11,
+          price: 300,
+          pay: { currency: "gold", amount: 300 },
+          requires: { all: [{ type: "RANK", min: 4 }] },
+        }),
+      ]),
+    );
     expect(await catalog.artifact(621)).toMatchObject({
       id: 621,
       title: "Амулет громилы",
@@ -169,15 +173,20 @@ describe("content publication", () => {
       title: "Простой наруч",
       slotMask: 16,
     });
-    expect(await catalog.reputationTracks()).toEqual([
-      {
-        objectId: 5,
-        type: 2,
-        title: "Репутация Радвея",
-        image: "rep_radvey_sm.png",
-        unlockFlag: "",
-      },
-    ]);
+    const tracks = await catalog.reputationTracks();
+    expect(tracks).toHaveLength(22);
+    expect(tracks).toEqual(
+      expect.arrayContaining([
+        {
+          objectId: 5,
+          type: 2,
+          title: "Репутация Радвея",
+          image: "rep_radvey_sm.png",
+          unlockFlag: "",
+        },
+      ]),
+    );
+    expect(tracks.some((track) => track.objectId === 36)).toBe(false);
   });
 
   it("rejects a candidate lot whose artifact is missing", async () => {

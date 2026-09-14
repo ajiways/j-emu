@@ -18,26 +18,28 @@
   `q_1`). `GRANT_REP` op и q_4…q_9 / q_10+ — CONTENT-STORY. Live борд шлёт
   `award_rep:""`; репа не AMF-поле строки доски.
 
-Не переносить полный каталог 22 треков, орфаны 6/35, fame 125, kill overlay,
-чат «Получено: N репутации», SET_FLAG unlock, clan SUM.
+Не переносить kill overlay, чат «Получено: N репутации», SET_FLAG unlock
+grant, clan SUM как хранимый track, `reputation_kills.json`.
 
 ## Architecture decision
 
-Отдельный `ARC-CHAR` / `ARC-*` не нужен. Catalog владеет authored треком.
-Character владеет player values (`hero_reputations`) и портом `grantReputation`.
-Combat/inventory/quests не пишут эти таблицы. Derived **Суммарная** `object_id`
-**36** type **3** не хранится и не является целью гранта: SUM type:2 на чтении.
+Отдельный `ARC-CHAR` / `ARC-*` не нужен. Catalog владеет authored треками. Character владеет player values
+(`hero_reputations`) и портом `grantReputation`. Combat/inventory/quests не
+пишут эти таблицы. Derived **Суммарная** `object_id` **36** type **3** не
+хранится и не является целью гранта: SUM type:2 на чтении. Store-лот может
+гейтить object **36** как derived SUM, не как catalog track.
 
 Curated 1–8 грантит только Радвей **5** (empty `unlock_flag` = всегда можно).
-Pred `REPUTATION` в q_1…q_8 нет. `reputation_kills.json` не содержит bot **2**
-— hunt Gryzl репу не даёт. Kill-grant и quest scripts — leftover до QST/CHT.
+Pred `REPUTATION` в q_1…q_8 нет. `reputation_kills.json` не импортируется —
+hunt Gryzl репу не даёт. Kill-grant и quest scripts — leftover до QST/CHT.
+Непустой `unlockFlag` на гранте — ошибка `unlock is not implemented`, не skip.
 
 ## Content set
 
-`playable-slice/v15` (track **5** с v14): один track **5** из `reputation_tracks.json` (title
-«Репутация Радвея», image `rep_radvey_sm.png`, type 2, без unlock_flag). Track
-**36** в catalog не публиковать. Остальные треки и `reputation_kills` — DATA-05
-/ позже.
+DATA-05: 22 type-2 трека из `content/reputation-tracks.json` →
+`reputation-tracks.generated.json` (Радвей **5** empty unlock; 7/11/… с
+`unlockFlag`; **125** «Своего человека»). Track **36** в catalog не
+публиковать. `reputation_kills` не импортируется.
 
 ## Schema
 
@@ -55,8 +57,9 @@ SQL DEFAULT только для migrate; runtime пишет явные знач�
 
 `grantReputation({ characterId, objectId, amount, cap })`:
 
-- `objectId` обязан быть опубликованным type:2 (в срезе только 5);
+- `objectId` обязан быть опубликованным type:2;
 - грант на 36 — ошибка, не ignore-и-успех;
+- непустой `unlockFlag` — ошибка `unlock is not implemented`;
 - `amount` целое ≥ 1; `cap` 0 = без капа источника, иначе `current >= cap` →
   delta 0 без ошибки;
 - clamp итога 0…7000; не клампить 36 (его нет как row);
@@ -83,8 +86,9 @@ release — публикация/грант падает. Не подставл�
 
 ## Out of scope
 
-Kill overlay; SET_FLAG `rep_*`; gates `REPUTATION`; GRANT_REP scripts; chat;
-tracks 7/11/12/…; fame 125; farm_stats professions; user_info HTML.
+Kill overlay; SET_FLAG `rep_*` grant; GRANT_REP scripts; chat;
+`reputation_kills`; fame как отдельный SUM-row; farm_stats professions;
+user_info HTML.
 
 ## Acceptance
 

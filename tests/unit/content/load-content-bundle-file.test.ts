@@ -61,6 +61,21 @@ describe("loadContentBundleFile generated files", () => {
     writeBundle(dir, bundle, [["areas.json", [sample]]]);
     expect(() => loadContentBundleFile(path.join(dir, "bundle.json"))).toThrow(/Duplicate area id/);
   });
+
+  it("rejects the same store lot in both files", () => {
+    const raw = readSlice();
+    const sample = sampleStoreLot(raw);
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "store-conflict-"));
+    const bundle: Record<string, unknown> = {
+      ...raw,
+      storeLots: [sample],
+      storeLotsFile: "lots.json",
+    };
+    writeBundle(dir, bundle, [["lots.json", [sample]]]);
+    expect(() => loadContentBundleFile(path.join(dir, "bundle.json"))).toThrow(
+      /Duplicate store_lot/,
+    );
+  });
 });
 
 function readSlice(): Record<string, unknown> & {
@@ -68,12 +83,16 @@ function readSlice(): Record<string, unknown> & {
   bots: Array<{ id: number }>;
   areas?: Array<{ id: string }>;
   areasFile?: unknown;
+  storeLots?: Array<{ areaId: string; lotId: number }>;
+  storeLotsFile?: unknown;
 } {
   return JSON.parse(fs.readFileSync(slicePath, "utf8")) as Record<string, unknown> & {
     artifacts: Array<{ id: number }>;
     bots: Array<{ id: number }>;
     areas?: Array<{ id: string }>;
     areasFile?: unknown;
+    storeLots?: Array<{ areaId: string; lotId: number }>;
+    storeLotsFile?: unknown;
   };
 }
 
@@ -88,6 +107,21 @@ function sampleArtifact(raw: { artifacts: Array<{ id: number }>; itemsFile?: unk
   ) as Array<{ id: number }>;
   const row = items[0];
   if (!row) throw new Error("itemsFile has no artifacts");
+  return row;
+}
+
+function sampleStoreLot(raw: {
+  storeLots?: Array<{ areaId: string; lotId: number }>;
+  storeLotsFile?: unknown;
+}): { areaId: string; lotId: number } {
+  const fromBundle = raw.storeLots?.[0];
+  if (fromBundle) return fromBundle;
+  if (typeof raw.storeLotsFile !== "string") throw new Error("playable-slice has no store lots");
+  const lots = JSON.parse(
+    fs.readFileSync(path.resolve(process.cwd(), "content", raw.storeLotsFile), "utf8"),
+  ) as Array<{ areaId: string; lotId: number }>;
+  const row = lots[0];
+  if (!row) throw new Error("storeLotsFile has no lots");
   return row;
 }
 
@@ -148,6 +182,18 @@ function writeBundle(
   }
   if (typeof bundle.huntSpawnsFile === "string") {
     const dest = path.join(dir, bundle.huntSpawnsFile);
+    if (!fs.existsSync(dest)) fs.writeFileSync(dest, "[]\n");
+  }
+  for (const key of [
+    "storeTypesFile",
+    "storeLotsFile",
+    "reputationTracksFile",
+    "bonusesFile",
+    "useScriptsFile",
+  ] as const) {
+    const relative = bundle[key];
+    if (typeof relative !== "string") continue;
+    const dest = path.join(dir, relative);
     if (!fs.existsSync(dest)) fs.writeFileSync(dest, "[]\n");
   }
   if (typeof bundle.itemsFile === "string" && bundle.itemsFile !== "items.json") {

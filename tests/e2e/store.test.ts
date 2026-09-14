@@ -26,10 +26,15 @@ describe("store list and buy", () => {
     const listed = await client.objectAction({ object: "store", action: "list", sq: 3 });
     const block = requireRecord(listed["store|list"], "store|list");
     expect(block.status).toBe(100);
-    expect(typeIds(block.types)).toEqual([-131]);
-    expect(lotArtikuls(block.artikuls)).toEqual([24, 23]);
+    expect(typeIds(block.types)).toEqual(expect.arrayContaining([-131]));
+    expect(lotArtikuls(block.artikuls)).toEqual(expect.arrayContaining([23, 24]));
     const lots = Array.isArray(block.artikuls) ? block.artikuls : [];
-    for (const row of lots) {
+    for (const artikulId of [23, 24]) {
+      const row = lots.find((entry) => {
+        const lot = requireRecord(entry, "store lot");
+        return lot.id === artikulId;
+      });
+      if (!row) throw new Error(`store lot artikul ${artikulId} is missing`);
       const lot = requireRecord(row, "store lot");
       expect(lot.durability).toBe(30);
       expect(lot.durability_max).toBe(30);
@@ -121,8 +126,8 @@ describe("store RANK gate", () => {
     const listed = await client.objectAction({ object: "store", action: "list", sq: 2 });
     const block = requireRecord(listed["store|list"], "store|list");
     expect(block.status).toBe(100);
-    expect(typeIds(block.types)).toEqual([11]);
-    expect(lotArtikuls(block.artikuls)).toEqual([621]);
+    expect(typeIds(block.types)).toEqual(expect.arrayContaining([11]));
+    expect(lotArtikuls(block.artikuls)).toEqual(expect.arrayContaining([621]));
     const denied = await client.objectAction({
       object: "store",
       action: "buy",
@@ -135,7 +140,7 @@ describe("store RANK gate", () => {
     });
     const again = await client.objectAction({ object: "store", action: "list", sq: 4 });
     const stillListed = requireRecord(again["store|list"], "store|list");
-    expect(lotArtikuls(stillListed.artikuls)).toEqual([621]);
+    expect(lotArtikuls(stillListed.artikuls)).toEqual(expect.arrayContaining([621]));
   });
 });
 

@@ -5,20 +5,41 @@ export function mergeGeneratedBundleFiles(
   decoded: Readonly<Record<string, unknown>>,
   directory: string,
 ): Record<string, unknown> {
-  return mergeHuntSpawnsFile(
-    mergeAreaLinksFile(
-      mergeAreasFile(
-        mergeBotSpellBooksFile(
-          mergeBotLootFile(mergeBotsFile(mergeItemsFile(decoded, directory), directory), directory),
-          directory,
-        ),
-        directory,
-      ),
-      directory,
-    ),
+  let merged = mergeBotSpellBooksFile(
+    mergeBotLootFile(mergeBotsFile(mergeItemsFile(decoded, directory), directory), directory),
     directory,
   );
+  for (const spec of ARRAY_FILES) {
+    merged = mergeArrayFile(merged, directory, spec);
+  }
+  return merged;
 }
+
+const ARRAY_FILES: ReadonlyArray<{
+  fileKey: string;
+  bundleKey: string;
+  label: string;
+  keyOf: (row: unknown, label: string) => string;
+}> = [
+  { fileKey: "areasFile", bundleKey: "areas", label: "area id", keyOf: stringDocumentId },
+  { fileKey: "areaLinksFile", bundleKey: "areaLinks", label: "area_link", keyOf: areaLinkKey },
+  {
+    fileKey: "huntSpawnsFile",
+    bundleKey: "huntSpawns",
+    label: "hunt_spawn id",
+    keyOf: numericDocumentId,
+  },
+  { fileKey: "storeTypesFile", bundleKey: "storeTypes", label: "store_type", keyOf: storeTypeKey },
+  { fileKey: "storeLotsFile", bundleKey: "storeLots", label: "store_lot", keyOf: storeLotKey },
+  {
+    fileKey: "reputationTracksFile",
+    bundleKey: "reputationTracks",
+    label: "reputation track",
+    keyOf: reputationTrackKey,
+  },
+  { fileKey: "bonusesFile", bundleKey: "bonuses", label: "bonus id", keyOf: numericDocumentId },
+  { fileKey: "useScriptsFile", bundleKey: "useScripts", label: "use_script", keyOf: useScriptKey },
+];
 
 function mergeItemsFile(
   decoded: Readonly<Record<string, unknown>>,
@@ -41,42 +62,6 @@ function mergeItemsFile(
   const existing = fromBundle === undefined ? [] : fromBundle;
   if (!Array.isArray(existing)) throw new Error("Content bundle artifacts must be an array");
   return { ...rest, artifacts: concatById(existing, fromFile, "artifact artikul_id", "itemsFile") };
-}
-
-function mergeAreasFile(
-  decoded: Readonly<Record<string, unknown>>,
-  directory: string,
-): Record<string, unknown> {
-  return mergeArrayFile(decoded, directory, {
-    fileKey: "areasFile",
-    bundleKey: "areas",
-    label: "area id",
-    keyOf: stringDocumentId,
-  });
-}
-
-function mergeAreaLinksFile(
-  decoded: Readonly<Record<string, unknown>>,
-  directory: string,
-): Record<string, unknown> {
-  return mergeArrayFile(decoded, directory, {
-    fileKey: "areaLinksFile",
-    bundleKey: "areaLinks",
-    label: "area_link",
-    keyOf: areaLinkKey,
-  });
-}
-
-function mergeHuntSpawnsFile(
-  decoded: Readonly<Record<string, unknown>>,
-  directory: string,
-): Record<string, unknown> {
-  return mergeArrayFile(decoded, directory, {
-    fileKey: "huntSpawnsFile",
-    bundleKey: "huntSpawns",
-    label: "hunt_spawn id",
-    keyOf: numericDocumentId,
-  });
 }
 
 function mergeArrayFile(
@@ -223,6 +208,46 @@ function areaLinkKey(row: unknown, label: string): string {
     throw new Error(`${label} itemId is required`);
   }
   return `${fromAreaId}:${itemId}`;
+}
+
+function storeTypeKey(row: unknown, label: string): string {
+  if (!isRecord(row)) throw new Error(`${label} document must be an object`);
+  const areaId = row.areaId;
+  const typeId = row.typeId;
+  if (typeof areaId !== "string" || !areaId) throw new Error(`${label} areaId is required`);
+  if (typeof typeId !== "number" || !Number.isInteger(typeId)) {
+    throw new Error(`${label} typeId is required`);
+  }
+  return `${areaId}:${typeId}`;
+}
+
+function storeLotKey(row: unknown, label: string): string {
+  if (!isRecord(row)) throw new Error(`${label} document must be an object`);
+  const areaId = row.areaId;
+  const lotId = row.lotId;
+  if (typeof areaId !== "string" || !areaId) throw new Error(`${label} areaId is required`);
+  if (typeof lotId !== "number" || !Number.isInteger(lotId) || lotId < 1) {
+    throw new Error(`${label} lotId is required`);
+  }
+  return `${areaId}:${lotId}`;
+}
+
+function reputationTrackKey(row: unknown, label: string): string {
+  if (!isRecord(row)) throw new Error(`${label} document must be an object`);
+  const objectId = row.objectId;
+  if (typeof objectId !== "number" || !Number.isInteger(objectId) || objectId < 1) {
+    throw new Error(`${label} objectId is required`);
+  }
+  return String(objectId);
+}
+
+function useScriptKey(row: unknown, label: string): string {
+  if (!isRecord(row)) throw new Error(`${label} document must be an object`);
+  const bonusId = row.bonusId;
+  if (typeof bonusId !== "number" || !Number.isInteger(bonusId) || bonusId < 1) {
+    throw new Error(`${label} bonusId is required`);
+  }
+  return String(bonusId);
 }
 
 function attachLoot(bots: readonly unknown[], rows: readonly unknown[]): unknown[] {

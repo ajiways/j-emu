@@ -1,0 +1,134 @@
+{
+  "area_id": "504",
+  "title": "Деревенская лавка",
+  "types": [
+    {
+      "id": -131,
+      "title": "Оружие и доспехи",
+      "ord": 11000
+    },
+    {
+      "id": 159,
+      "title": "Быстрый старт",
+      "ord": 15
+    },
+    {
+      "id": 10,
+      "title": "Еда",
+      "ord": 0
+    },
+    {
+      "id": 21,
+      "title": "Разное",
+      "ord": 0
+    }
+  ],
+  "artikuls": [
+    {
+      "id": 1,
+      "lot_id": 90,
+      "type_id": -131,
+      "price": 1
+    },
+    {
+      "id": 79,
+      "lot_id": 88,
+      "type_id": -131,
+      "price": 10
+    },
+    {
+      "id": 21,
+      "lot_id": 86,
+      "type_id": -131,
+      "price": 1
+    },
+    {
+      "id": 26,
+      "lot_id": 85,
+      "type_id": -131,
+      "price": 1
+    },
+    {
+      "id": 19,
+      "lot_id": 84,
+      "type_id": -131,
+      "price": 1
+    },
+    {
+      "id": 5,
+      "lot_id": 83,
+      "type_id": -131,
+      "price": 1
+    },
+    {
+      "id": 24,
+      "lot_id": 82,
+      "type_id": -131,
+      "price": 1
+    },
+    {
+      "id": 22,
+      "lot_id": 81,
+      "type_id": -131,
+      "price": 1
+    },
+    {
+      "id": 23,
+      "lot_id": 80,
+      "type_id": -131,
+      "price": 1
+    },
+    {
+      "id": 20,
+      "lot_id": 79,
+      "type_id": -131,
+      "price": 1
+    },
+    {
+      "id": 193,
+      "lot_id": 9600,
+      "type_id": 10,
+      "price": 0.06
+    },
+    {
+      "id": 493,
+      "lot_id": 373,
+      "type_id": 21,
+      "price": 8
+    },
+    {
+      "id": 7856,
+      "lot_id": 0,
+      "type_id": 159,
+      "price": 1791,
+      "badge_data": [
+        {
+          "id": "4834",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 1791,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "lot_id": 9601,
+      "type_id": 10,
+      "price": 0.1
+    }
+  ],
+  "entries": [
+    {
+      "kind": "area_door",
+      "from_area_id": "503",
+      "from_title": "Горное поселение",
+      "item_id": 5,
+      "item_title": "Деревенская лавка"
+    }
+  ]
+}

@@ -13,7 +13,7 @@ export const reputationTrackDocumentSchema = z
     type: z.literal(2),
     title: z.string().min(1),
     image: z.string().min(1),
-    unlockFlag: z.literal(""),
+    unlockFlag: z.string(),
   })
   .strict();
 

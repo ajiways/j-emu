@@ -12,3 +12,4 @@ package-lock.json
 content/*.generated.json
 content/*.generated.manifest.json
 content/radvei-areas.json
+content/stores/*.json

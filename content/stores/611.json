@@ -1,0 +1,1150 @@
+{
+  "area_id": "611",
+  "title": "Хранилище Драконоборцев",
+  "types": [
+    {
+      "id": 67,
+      "title": "Артефакты",
+      "ord": 1
+    },
+    {
+      "id": 8,
+      "title": "Свитки",
+      "ord": 0
+    },
+    {
+      "id": 11,
+      "title": "Ювелирные изделия",
+      "ord": 0
+    },
+    {
+      "id": 71,
+      "title": "Идолы",
+      "ord": 0
+    },
+    {
+      "id": 75,
+      "title": "Книги",
+      "ord": 0
+    }
+  ],
+  "artikuls": [
+    {
+      "id": 376,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 1000,
+      "badge_data": [
+        {
+          "id": "1111",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 2000,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "906",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 20,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 3834,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "3174",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 1508,
+      "lot_id": 0,
+      "type_id": 67,
+      "price": 100,
+      "badge_data": [
+        {
+          "id": "900",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 20,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ],
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 18,
+            "min": 500
+          }
+        ]
+      }
+    },
+    {
+      "id": 1507,
+      "lot_id": 0,
+      "type_id": 67,
+      "price": 250,
+      "badge_data": [
+        {
+          "id": "901",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 40,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ],
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 18,
+            "min": 1500
+          }
+        ]
+      }
+    },
+    {
+      "id": 1506,
+      "lot_id": 0,
+      "type_id": 67,
+      "price": 500,
+      "badge_data": [
+        {
+          "id": "902",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 60,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ],
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 18,
+            "min": 3000
+          }
+        ]
+      }
+    },
+    {
+      "id": 123,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 100,
+      "badge_data": [
+        {
+          "id": "903",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 5,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "1108",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 500,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 124,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 100,
+      "badge_data": [
+        {
+          "id": "904",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 5,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "1109",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 500,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 372,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 1000,
+      "badge_data": [
+        {
+          "id": "905",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 20,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "1110",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 2000,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 1505,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "907",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 1504,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "909",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 1509,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "910",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 1614,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "922",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 1751,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "953",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 1978,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "1105",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 1977,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "1104",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 2469,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "1426",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 2510,
+      "lot_id": 0,
+      "type_id": 71,
+      "price": 50,
+      "badge_data": [
+        {
+          "id": "1430",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 10,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 2511,
+      "lot_id": 0,
+      "type_id": 71,
+      "price": 50,
+      "badge_data": [
+        {
+          "id": "1431",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 10,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 2531,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "1456",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 2654,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "1496",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 2726,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "2179",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 2860,
+      "lot_id": 0,
+      "type_id": 71,
+      "price": 1,
+      "badge_data": [
+        {
+          "id": "2364",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 1,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 2823,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "2356",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 2827,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "2358",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 3983,
+      "lot_id": 0,
+      "type_id": 67,
+      "price": 1000,
+      "badge_data": [
+        {
+          "id": "3210",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 100,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ],
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 18,
+            "min": 6000
+          }
+        ]
+      }
+    },
+    {
+      "id": 3871,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 2000,
+      "badge_data": [
+        {
+          "id": "3193",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 1500,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "3195",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 15,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 3982,
+      "lot_id": 0,
+      "type_id": 67,
+      "price": 750,
+      "badge_data": [
+        {
+          "id": "3209",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 80,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ],
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 18,
+            "min": 4500
+          }
+        ]
+      }
+    },
+    {
+      "id": 3974,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 2000,
+      "badge_data": [
+        {
+          "id": "3204",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "3202",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 3000,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 3872,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 2000,
+      "badge_data": [
+        {
+          "id": "3194",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 1500,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "3196",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 15,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 3873,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 1500,
+      "badge_data": [
+        {
+          "id": "3197",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 1000,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "3199",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 10,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 3874,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 1500,
+      "badge_data": [
+        {
+          "id": "3198",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 1000,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "3200",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 10,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 3973,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 2000,
+      "badge_data": [
+        {
+          "id": "3201",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 3000,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "3203",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 3065,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "2940",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 40,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 3662,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "2953",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 30,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 5413,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "4115",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 40,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 7428,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "4628",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 40,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 6781,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "4572",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 40,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 8066,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "4899",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 40,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 8863,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "5626",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 40,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 8953,
+      "lot_id": 0,
+      "type_id": 75,
+      "price": 0,
+      "badge_data": [
+        {
+          "id": "5708",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 40,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 9229,
+      "lot_id": 7491,
+      "type_id": 8,
+      "price": 100,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 18,
+            "min": 1000
+          }
+        ]
+      }
+    },
+    {
+      "id": 9231,
+      "lot_id": 7492,
+      "type_id": 8,
+      "price": 200,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 18,
+            "min": 1000
+          }
+        ]
+      }
+    },
+    {
+      "id": 9264,
+      "lot_id": 7493,
+      "type_id": 8,
+      "price": 250,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 18,
+            "min": 2000
+          }
+        ]
+      }
+    },
+    {
+      "id": 9265,
+      "lot_id": 7494,
+      "type_id": 8,
+      "price": 300,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 18,
+            "min": 4000
+          }
+        ]
+      }
+    },
+    {
+      "id": 9266,
+      "lot_id": 7495,
+      "type_id": 8,
+      "price": 350,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 18,
+            "min": 5000
+          }
+        ]
+      }
+    },
+    {
+      "id": 12113,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 2500,
+      "badge_data": [
+        {
+          "id": "248290",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 50,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "248293",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 5000,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 15843,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 2700,
+      "badge_data": [
+        {
+          "id": "248291",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 65,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "248292",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 6500,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 12112,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 2500,
+      "badge_data": [
+        {
+          "id": "248294",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 50,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "248295",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 5000,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 15833,
+      "lot_id": 0,
+      "type_id": 11,
+      "price": 2700,
+      "badge_data": [
+        {
+          "id": "248296",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 65,
+              "artikul_id": 1515
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "248297",
+          "data": [
+            {
+              "type": "artifact",
+              "cnt": 6500,
+              "artikul_id": 1502
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "kind": "npc_action",
+      "npc_id": 1983,
+      "title": "На что я могу обменять добытые Драконисы?"
+    }
+  ]
+}

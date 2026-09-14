@@ -5,9 +5,14 @@ type ReputationStoreRequire = Readonly<{
   min: number;
 }>;
 type LevelStoreRequire = Readonly<{ type: "LEVEL"; min: number }>;
-type StoreRequire = RankStoreRequire | ReputationStoreRequire | LevelStoreRequire;
+export type StoreRequire = RankStoreRequire | ReputationStoreRequire | LevelStoreRequire;
 
-export type StoreRequires = Readonly<{ all: readonly StoreRequire[] }>;
+export type StoreRequires =
+  Readonly<{ all: readonly StoreRequire[] }> | Readonly<{ any: readonly StoreRequire[] }>;
+
+export function storeRequirePredicates(requires: StoreRequires): readonly StoreRequire[] {
+  return "all" in requires ? requires.all : requires.any;
+}
 
 export function parseStoreRequires(raw: unknown): StoreRequires | null {
   if (raw === null || raw === undefined) return null;
@@ -15,11 +20,22 @@ export function parseStoreRequires(raw: unknown): StoreRequires | null {
     throw new Error("Store requires must be an object");
   }
   const row = raw as Record<string, unknown>;
-  if (row.any !== undefined) throw new Error("Store requires.any is not supported");
-  const all = row.all;
-  if (!Array.isArray(all)) throw new Error("Store requires.all is required");
-  if (Object.keys(row).length !== 1) throw new Error("Store requires has unknown fields");
-  return { all: all.map((entry, index) => parseStoreRequire(entry, index)) };
+  const keys = Object.keys(row);
+  if (keys.length !== 1) throw new Error("Store requires has unknown fields");
+  if (row.all !== undefined) {
+    return { all: parseRequireList(row.all, "all") };
+  }
+  if (row.any !== undefined) {
+    return { any: parseRequireList(row.any, "any") };
+  }
+  throw new Error("Store requires.all or requires.any is required");
+}
+
+function parseRequireList(raw: unknown, kind: "all" | "any"): StoreRequire[] {
+  if (!Array.isArray(raw) || raw.length < 1) {
+    throw new Error(`Store requires.${kind} must be a non-empty array`);
+  }
+  return raw.map((entry, index) => parseStoreRequire(entry, index));
 }
 
 function parseStoreRequire(raw: unknown, index: number): StoreRequire {

@@ -1,0 +1,299 @@
+{
+  "area_id": "496",
+  "title": "Магазин",
+  "types": [
+    {
+      "id": 2,
+      "title": "Оружие и доспехи",
+      "ord": 1
+    },
+    {
+      "id": 67,
+      "title": "Артефакты",
+      "ord": 1
+    },
+    {
+      "id": 7,
+      "title": "Боеприпасы",
+      "ord": 0
+    },
+    {
+      "id": 20,
+      "title": "Квестовые вещи",
+      "ord": 0
+    },
+    {
+      "id": 21,
+      "title": "Разное",
+      "ord": 0
+    },
+    {
+      "id": 48,
+      "title": "Сумки",
+      "ord": 0
+    },
+    {
+      "id": 71,
+      "title": "Идолы",
+      "ord": 0
+    },
+    {
+      "id": 92,
+      "title": "Талисманы",
+      "ord": 0
+    }
+  ],
+  "artikuls": [
+    {
+      "id": 80,
+      "lot_id": 89,
+      "type_id": 48,
+      "price": 100
+    },
+    {
+      "id": 28,
+      "lot_id": 76,
+      "type_id": 2,
+      "price": 20
+    },
+    {
+      "id": 31,
+      "lot_id": 75,
+      "type_id": 2,
+      "price": 20
+    },
+    {
+      "id": 32,
+      "lot_id": 74,
+      "type_id": 2,
+      "price": 20
+    },
+    {
+      "id": 35,
+      "lot_id": 73,
+      "type_id": 2,
+      "price": 20
+    },
+    {
+      "id": 33,
+      "lot_id": 72,
+      "type_id": 2,
+      "price": 20
+    },
+    {
+      "id": 34,
+      "lot_id": 71,
+      "type_id": 2,
+      "price": 20
+    },
+    {
+      "id": 29,
+      "lot_id": 70,
+      "type_id": 2,
+      "price": 20
+    },
+    {
+      "id": 30,
+      "lot_id": 69,
+      "type_id": 2,
+      "price": 20
+    },
+    {
+      "id": 167,
+      "lot_id": 142,
+      "type_id": 7,
+      "price": 3.41
+    },
+    {
+      "id": 172,
+      "lot_id": 141,
+      "type_id": 7,
+      "price": 10
+    },
+    {
+      "id": 165,
+      "lot_id": 140,
+      "type_id": 7,
+      "price": 1
+    },
+    {
+      "id": 163,
+      "lot_id": 139,
+      "type_id": 7,
+      "price": 1
+    },
+    {
+      "id": 509,
+      "lot_id": 376,
+      "type_id": 21,
+      "price": 5
+    },
+    {
+      "id": 347,
+      "lot_id": 187,
+      "type_id": 21,
+      "price": 200
+    },
+    {
+      "id": 385,
+      "lot_id": 193,
+      "type_id": 7,
+      "price": 5
+    },
+    {
+      "id": 387,
+      "lot_id": 194,
+      "type_id": 7,
+      "price": 9
+    },
+    {
+      "id": 386,
+      "lot_id": 195,
+      "type_id": 7,
+      "price": 7
+    },
+    {
+      "id": 388,
+      "lot_id": 196,
+      "type_id": 7,
+      "price": 11
+    },
+    {
+      "id": 494,
+      "lot_id": 372,
+      "type_id": 21,
+      "price": 8
+    },
+    {
+      "id": 27,
+      "lot_id": 782,
+      "type_id": 2,
+      "price": 20
+    },
+    {
+      "id": 3809,
+      "lot_id": 3130,
+      "type_id": 71,
+      "price": 15
+    },
+    {
+      "id": 427,
+      "lot_id": 918,
+      "type_id": 7,
+      "price": 1
+    },
+    {
+      "id": 3818,
+      "lot_id": 3109,
+      "type_id": 21,
+      "price": 5
+    },
+    {
+      "id": 2861,
+      "lot_id": 2378,
+      "type_id": 92,
+      "price": 5
+    },
+    {
+      "id": 1568,
+      "lot_id": 2377,
+      "type_id": 92,
+      "price": 5
+    },
+    {
+      "id": 2862,
+      "lot_id": 2379,
+      "type_id": 92,
+      "price": 5
+    },
+    {
+      "id": 1627,
+      "lot_id": 2380,
+      "type_id": 92,
+      "price": 5
+    },
+    {
+      "id": 2863,
+      "lot_id": 2381,
+      "type_id": 92,
+      "price": 5
+    },
+    {
+      "id": 2864,
+      "lot_id": 2382,
+      "type_id": 92,
+      "price": 5
+    },
+    {
+      "id": 3819,
+      "lot_id": 3110,
+      "type_id": 21,
+      "price": 5
+    },
+    {
+      "id": 3816,
+      "lot_id": 3111,
+      "type_id": 21,
+      "price": 5
+    },
+    {
+      "id": 4268,
+      "lot_id": 3284,
+      "type_id": 67,
+      "price": 40
+    },
+    {
+      "id": 4269,
+      "lot_id": 3285,
+      "type_id": 67,
+      "price": 100
+    },
+    {
+      "id": 17073,
+      "lot_id": 0,
+      "type_id": 20,
+      "price": 1,
+      "badge_data": [
+        {
+          "id": "249304",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 1,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    },
+    {
+      "id": 17074,
+      "lot_id": 0,
+      "type_id": 20,
+      "price": 10,
+      "badge_data": [
+        {
+          "id": "249305",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 10,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "kind": "area_door",
+      "from_area_id": "495",
+      "from_title": "Площадь Бранендаля",
+      "item_id": 3,
+      "item_title": "Магазин"
+    }
+  ]
+}

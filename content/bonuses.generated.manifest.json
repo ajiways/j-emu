@@ -1,0 +1,30 @@
+{
+  "sourceGroup": "DATA-05 / bonuses and consumable USE",
+  "decoderVersion": "bonuses/v1",
+  "documentSchema": "economy-document/playable-slice-v35",
+  "filesDigest": "ccbb769c297cfcd3902707292606fae67d2ea8dc6a2761e668fc0d73f59a3204",
+  "acceptedCount": 5,
+  "keys": [
+    {
+      "key": "601",
+      "digest": "8062f43ffb056d91e96f3c72dbdd8a2a2b2714d0bad5169977314cc9db22ac68"
+    },
+    {
+      "key": "602",
+      "digest": "2360a4b81cb3cafa300b37d0f69693b319cd903bbfd59a9171781e494d33aced"
+    },
+    {
+      "key": "603",
+      "digest": "35fbd85c2703110fec732750700df3c7c5838f9cd4e49e0a937cace1070223e9"
+    },
+    {
+      "key": "604",
+      "digest": "6edf9e2ac4ef5540390a9d100034db7dafee3832c33dda2eda1966ba58b884db"
+    },
+    {
+      "key": "605",
+      "digest": "ae65ae3f9fc0c3fe5562c2d718ac99b8af32d7ebb900499f12701aa65b6eeac2"
+    }
+  ],
+  "corpusDigest": "b55588f9b266bfeba9617cc10a096daf411a75a96e8cc8906e70c86e724afb47"
+}

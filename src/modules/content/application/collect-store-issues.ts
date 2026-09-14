@@ -1,3 +1,6 @@
+import { goldCoinsEqual } from "../../catalog/domain/store-pay.ts";
+import { storeRequirePredicates } from "../../catalog/domain/store-requires.ts";
+import { SUM_REPUTATION_OBJECT_ID } from "../../catalog/domain/reputation-ids.ts";
 import type { ContentBundle } from "../domain/content-document.ts";
 
 export function collectStoreIssues(bundle: ContentBundle): readonly string[] {
@@ -24,6 +27,7 @@ export function collectStoreIssues(bundle: ContentBundle): readonly string[] {
       issues.push(`store_type ${row.areaId}:${row.typeId} has no lots`);
     }
   }
+  const trackIds = new Set(bundle.reputationTracks.map((track) => track.objectId));
   for (const lot of bundle.storeLots) {
     if (!areaIds.has(lot.areaId)) {
       issues.push(`store_lot ${lot.areaId}:${lot.lotId} references missing area ${lot.areaId}`);
@@ -36,7 +40,7 @@ export function collectStoreIssues(bundle: ContentBundle): readonly string[] {
     if (!typeKeys.has(`${lot.areaId}:${lot.typeId}`)) {
       issues.push(`store_lot ${lot.areaId}:${lot.lotId} type ${lot.typeId} is missing`);
     }
-    if (lot.pay.currency === "gold" && lot.pay.amount !== lot.price) {
+    if (lot.pay.currency === "gold" && !goldCoinsEqual(lot.pay.amount, lot.price)) {
       issues.push(`store_lot ${lot.areaId}:${lot.lotId} gold pay must match price`);
     }
     if (lot.pay.currency === "barter" && !artifactIds.has(lot.pay.artikulId)) {
@@ -44,11 +48,24 @@ export function collectStoreIssues(bundle: ContentBundle): readonly string[] {
         `store_lot ${lot.areaId}:${lot.lotId} barter artifact ${lot.pay.artikulId} is not in the bundle`,
       );
     }
-    if (lot.requires) {
-      for (const pred of lot.requires.all) {
-        if (pred.type === "REPUTATION" && pred.objectId !== 5) {
+    if (lot.pay.currency === "bundle") {
+      for (const cost of lot.pay.barter) {
+        if (!artifactIds.has(cost.artikulId)) {
           issues.push(
-            `store_lot ${lot.areaId}:${lot.lotId} reputation track ${pred.objectId} is not in the playable slice`,
+            `store_lot ${lot.areaId}:${lot.lotId} barter artifact ${cost.artikulId} is not in the bundle`,
+          );
+        }
+      }
+    }
+    if (lot.requires) {
+      for (const pred of storeRequirePredicates(lot.requires)) {
+        if (
+          pred.type === "REPUTATION" &&
+          pred.objectId !== SUM_REPUTATION_OBJECT_ID &&
+          !trackIds.has(pred.objectId)
+        ) {
+          issues.push(
+            `store_lot ${lot.areaId}:${lot.lotId} reputation track ${pred.objectId} is not published`,
           );
         }
       }
@@ -84,7 +101,8 @@ export function collectStoreIssues(bundle: ContentBundle): readonly string[] {
         lot.lotId === 438 &&
         lot.artikulId === 621 &&
         lot.typeId === 11 &&
-        lot.requires?.all.some((pred) => pred.type === "RANK" && pred.min === 4),
+        lot.requires &&
+        storeRequirePredicates(lot.requires).some((pred) => pred.type === "RANK" && pred.min === 4),
     )
   ) {
     issues.push("store 552 is missing RANK lot 438 artikul 621");

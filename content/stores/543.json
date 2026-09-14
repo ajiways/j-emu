@@ -1,0 +1,782 @@
+{
+  "area_id": "543",
+  "title": "Магазин редких товаров",
+  "types": [
+    {
+      "id": 63,
+      "title": "Усиление",
+      "ord": 2
+    },
+    {
+      "id": 8,
+      "title": "Свитки",
+      "ord": 0
+    },
+    {
+      "id": 21,
+      "title": "Разное",
+      "ord": 0
+    },
+    {
+      "id": 73,
+      "title": "Кристаллы",
+      "ord": 0
+    },
+    {
+      "id": 79,
+      "title": "Заготовки",
+      "ord": 0
+    },
+    {
+      "id": 101,
+      "title": "Знамена",
+      "ord": 0
+    },
+    {
+      "id": 137,
+      "title": "Оберегающие сферы",
+      "ord": 0
+    },
+    {
+      "id": 197,
+      "title": "Сферы скорости",
+      "ord": 0
+    }
+  ],
+  "artikuls": [
+    {
+      "id": 5403,
+      "lot_id": 4067,
+      "type_id": 137,
+      "price": 10
+    },
+    {
+      "id": 897,
+      "lot_id": 530,
+      "type_id": 8,
+      "price": 90
+    },
+    {
+      "id": 873,
+      "lot_id": 531,
+      "type_id": 63,
+      "price": 90
+    },
+    {
+      "id": 933,
+      "lot_id": 537,
+      "type_id": 21,
+      "price": 5,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 129,
+      "lot_id": 430,
+      "type_id": 73,
+      "price": 100,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 300
+          }
+        ]
+      }
+    },
+    {
+      "id": 127,
+      "lot_id": 431,
+      "type_id": 73,
+      "price": 100,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 300
+          }
+        ]
+      }
+    },
+    {
+      "id": 126,
+      "lot_id": 432,
+      "type_id": 73,
+      "price": 100,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 300
+          }
+        ]
+      }
+    },
+    {
+      "id": 96,
+      "lot_id": 433,
+      "type_id": 73,
+      "price": 50,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 90
+          }
+        ]
+      }
+    },
+    {
+      "id": 752,
+      "lot_id": 477,
+      "type_id": 79,
+      "price": 190,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 766,
+      "lot_id": 478,
+      "type_id": 79,
+      "price": 150,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 748,
+      "lot_id": 479,
+      "type_id": 79,
+      "price": 150,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 757,
+      "lot_id": 480,
+      "type_id": 79,
+      "price": 150,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 769,
+      "lot_id": 481,
+      "type_id": 79,
+      "price": 180,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 751,
+      "lot_id": 482,
+      "type_id": 79,
+      "price": 180,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 760,
+      "lot_id": 483,
+      "type_id": 79,
+      "price": 180,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 772,
+      "lot_id": 484,
+      "type_id": 79,
+      "price": 220,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 754,
+      "lot_id": 485,
+      "type_id": 79,
+      "price": 220,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 763,
+      "lot_id": 486,
+      "type_id": 79,
+      "price": 220,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 765,
+      "lot_id": 487,
+      "type_id": 79,
+      "price": 140,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 747,
+      "lot_id": 488,
+      "type_id": 79,
+      "price": 140,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 756,
+      "lot_id": 489,
+      "type_id": 79,
+      "price": 140,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 767,
+      "lot_id": 490,
+      "type_id": 79,
+      "price": 160,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 749,
+      "lot_id": 491,
+      "type_id": 79,
+      "price": 160,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 758,
+      "lot_id": 492,
+      "type_id": 79,
+      "price": 160,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 773,
+      "lot_id": 493,
+      "type_id": 79,
+      "price": 230,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 755,
+      "lot_id": 494,
+      "type_id": 79,
+      "price": 230,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 764,
+      "lot_id": 495,
+      "type_id": 79,
+      "price": 230,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 771,
+      "lot_id": 496,
+      "type_id": 79,
+      "price": 210,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 753,
+      "lot_id": 497,
+      "type_id": 79,
+      "price": 210,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 762,
+      "lot_id": 498,
+      "type_id": 79,
+      "price": 210,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 770,
+      "lot_id": 499,
+      "type_id": 79,
+      "price": 190,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 761,
+      "lot_id": 500,
+      "type_id": 79,
+      "price": 190,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 870,
+      "lot_id": 510,
+      "type_id": 63,
+      "price": 15
+    },
+    {
+      "id": 871,
+      "lot_id": 511,
+      "type_id": 63,
+      "price": 30
+    },
+    {
+      "id": 872,
+      "lot_id": 512,
+      "type_id": 63,
+      "price": 60
+    },
+    {
+      "id": 895,
+      "lot_id": 517,
+      "type_id": 8,
+      "price": 21
+    },
+    {
+      "id": 896,
+      "lot_id": 518,
+      "type_id": 8,
+      "price": 45
+    },
+    {
+      "id": 750,
+      "lot_id": 547,
+      "type_id": 79,
+      "price": 170,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 759,
+      "lot_id": 548,
+      "type_id": 79,
+      "price": 170,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 768,
+      "lot_id": 549,
+      "type_id": 79,
+      "price": 170,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 100
+          }
+        ]
+      }
+    },
+    {
+      "id": 898,
+      "lot_id": 592,
+      "type_id": 8,
+      "price": 180
+    },
+    {
+      "id": 1094,
+      "lot_id": 600,
+      "type_id": 197,
+      "price": 5
+    },
+    {
+      "id": 1095,
+      "lot_id": 601,
+      "type_id": 197,
+      "price": 10
+    },
+    {
+      "id": 1096,
+      "lot_id": 602,
+      "type_id": 197,
+      "price": 15
+    },
+    {
+      "id": 1097,
+      "lot_id": 603,
+      "type_id": 197,
+      "price": 20
+    },
+    {
+      "id": 899,
+      "lot_id": 891,
+      "type_id": 8,
+      "price": 270
+    },
+    {
+      "id": 1857,
+      "lot_id": 0,
+      "type_id": 101,
+      "price": 600,
+      "badge_data": [
+        {
+          "id": "1000",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 600,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ],
+      "requires": {
+        "any": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 2000
+          },
+          {
+            "type": "REPUTATION",
+            "object_id": 17,
+            "min": 500
+          }
+        ]
+      }
+    },
+    {
+      "id": 1856,
+      "lot_id": 0,
+      "type_id": 101,
+      "price": 300,
+      "badge_data": [
+        {
+          "id": "999",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 300,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ],
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 5,
+            "min": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": 2147,
+      "lot_id": 1172,
+      "type_id": 8,
+      "price": 100
+    },
+    {
+      "id": 2512,
+      "lot_id": 0,
+      "type_id": 73,
+      "price": 500,
+      "badge_data": [
+        {
+          "id": "2197",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 500,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "2198",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 800,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        },
+        {
+          "id": "2199",
+          "data": [
+            {
+              "type": "money",
+              "cnt": 1000,
+              "price_type": 1
+            }
+          ],
+          "stack_cnt": "0"
+        }
+      ],
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 17,
+            "min": 2100
+          },
+          {
+            "type": "REPUTATION",
+            "object_id": 17,
+            "min": 600
+          }
+        ]
+      }
+    },
+    {
+      "id": 1806,
+      "lot_id": 2658,
+      "type_id": 21,
+      "price": 100,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 17,
+            "min": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": 3233,
+      "lot_id": 3205,
+      "type_id": 63,
+      "price": 25,
+      "requires": {
+        "all": [
+          {
+            "type": "REPUTATION",
+            "object_id": 17,
+            "min": 200
+          }
+        ]
+      }
+    },
+    {
+      "id": 5404,
+      "lot_id": 4068,
+      "type_id": 137,
+      "price": 25
+    },
+    {
+      "id": 5405,
+      "lot_id": 4069,
+      "type_id": 137,
+      "price": 45
+    },
+    {
+      "id": 5406,
+      "lot_id": 4070,
+      "type_id": 137,
+      "price": 70
+    }
+  ]
+}

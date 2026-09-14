@@ -153,9 +153,11 @@ describe("ContentValidator", () => {
   it("rejects a store type that has no lots", () => {
     const bundle: ContentBundle = {
       ...playable,
-      storeTypes: [...playable.storeTypes, { areaId: "504", typeId: 10, title: "Еда", ord: 0 }],
+      storeTypes: [...playable.storeTypes, { areaId: "504", typeId: -999, title: "Еда", ord: 0 }],
     };
-    expect(() => new ContentValidator().validate(bundle)).toThrow(/store_type 504:10 has no lots/);
+    expect(() => new ContentValidator().validate(bundle)).toThrow(
+      /store_type 504:-999 has no lots/,
+    );
   });
 
   it("rejects a store lot whose artifact is not in the bundle", () => {
@@ -180,12 +182,14 @@ describe("ContentValidator", () => {
   });
 
   it("rejects a gold lot whose pay amount does not match price", () => {
-    const lot = playable.storeLots.find((row) => row.lotId === 80);
+    const lot = playable.storeLots.find((row) => row.areaId === "504" && row.lotId === 80);
     if (!lot) throw new Error("playable bundle is missing lot 80");
     const bundle: ContentBundle = {
       ...playable,
       storeLots: playable.storeLots.map((row) =>
-        row.lotId === 80 ? { ...row, pay: { currency: "gold", amount: 2 } } : row,
+        row.areaId === "504" && row.lotId === 80
+          ? { ...row, pay: { currency: "gold", amount: 2 } }
+          : row,
       ),
     };
     expect(() => new ContentValidator().validate(bundle)).toThrow(
@@ -193,7 +197,7 @@ describe("ContentValidator", () => {
     );
   });
 
-  it("rejects SUM 36 and extra faction tracks", () => {
+  it("rejects SUM 36", () => {
     expect(() =>
       new ContentValidator().validate({
         ...playable,
@@ -209,21 +213,23 @@ describe("ContentValidator", () => {
         ],
       }),
     ).toThrow(/reputation track 36 is not in the playable slice/);
-    expect(() =>
-      new ContentValidator().validate({
-        ...playable,
-        reputationTracks: [
-          ...playable.reputationTracks,
-          {
-            objectId: 7,
-            type: 2,
-            title: "Репутация Ведьмака",
-            image: "rep_vedmak_sm.png",
-            unlockFlag: "",
-          },
-        ],
-      }),
-    ).toThrow(/reputation track 7 is not in the playable slice/);
+  });
+
+  it("accepts additional type-2 faction tracks", () => {
+    const validated = new ContentValidator().validate({
+      ...playable,
+      reputationTracks: [
+        ...playable.reputationTracks,
+        {
+          objectId: 9999,
+          type: 2,
+          title: "Репутация теста",
+          image: "rep_test_sm.png",
+          unlockFlag: "rep_9999",
+        },
+      ],
+    });
+    expect(validated.checksum).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it("rejects a bundle without Radvey track 5", () => {

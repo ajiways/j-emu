@@ -1,0 +1,308 @@
+{
+  "_note": "Composable USE pipelines. Live artikul AMF only stores empty code + bonus_id. Keyed by that bonus_id. Fail plaque uses failPlaque or catalog artifact_actions.description (do not parse item flavor text). 2371 ogre amulet part + bonus 2827 → consume 2×2371, grant 1×55.",
+  "scripts": [
+    {
+      "bonusId": 184,
+      "require": [
+        {
+          "artikulId": 200,
+          "count": 3
+        }
+      ],
+      "failPlaque": "Вам нужно три таких фрагмента для объединения",
+      "effects": [
+        {
+          "type": "consume",
+          "artikulId": 200,
+          "count": 3
+        },
+        {
+          "type": "grant",
+          "artikulId": 206,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "bonusId": 185,
+      "require": [
+        {
+          "artikulId": 205,
+          "count": 3
+        }
+      ],
+      "failPlaque": "Вам нужно три таких фрагмента для объединения",
+      "effects": [
+        {
+          "type": "consume",
+          "artikulId": 205,
+          "count": 3
+        },
+        {
+          "type": "grant",
+          "artikulId": 207,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "bonusId": 186,
+      "require": [
+        {
+          "artikulId": 202,
+          "count": 3
+        }
+      ],
+      "failPlaque": "Вам нужно три таких фрагмента для объединения",
+      "effects": [
+        {
+          "type": "consume",
+          "artikulId": 202,
+          "count": 3
+        },
+        {
+          "type": "grant",
+          "artikulId": 208,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "bonusId": 187,
+      "require": [
+        {
+          "artikulId": 203,
+          "count": 3
+        }
+      ],
+      "failPlaque": "Вам нужно три таких фрагмента для объединения",
+      "effects": [
+        {
+          "type": "consume",
+          "artikulId": 203,
+          "count": 3
+        },
+        {
+          "type": "grant",
+          "artikulId": 209,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "bonusId": 188,
+      "require": [
+        {
+          "artikulId": 201,
+          "count": 3
+        }
+      ],
+      "failPlaque": "Вам нужно три таких фрагмента для объединения",
+      "effects": [
+        {
+          "type": "consume",
+          "artikulId": 201,
+          "count": 3
+        },
+        {
+          "type": "grant",
+          "artikulId": 210,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "bonusId": 189,
+      "require": [
+        {
+          "artikulId": 204,
+          "count": 3
+        }
+      ],
+      "failPlaque": "Вам нужно три таких фрагмента для объединения",
+      "effects": [
+        {
+          "type": "consume",
+          "artikulId": 204,
+          "count": 3
+        },
+        {
+          "type": "grant",
+          "artikulId": 211,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "bonusId": 2006,
+      "require": [
+        {
+          "artikulId": 1518,
+          "count": 1
+        }
+      ],
+      "failPlaque": "С 3 уровня!",
+      "requires": {
+        "all": [
+          {
+            "min": 3,
+            "type": "LEVEL"
+          }
+        ]
+      },
+      "effects": [
+        {
+          "type": "consume",
+          "artikulId": 1518,
+          "count": 1
+        },
+        {
+          "type": "grantMany",
+          "items": [
+            {
+              "artikulId": 93,
+              "count": 15
+            },
+            {
+              "artikulId": 99,
+              "count": 50
+            },
+            {
+              "artikulId": 209,
+              "count": 1
+            },
+            {
+              "artikulId": 207,
+              "count": 1
+            },
+            {
+              "artikulId": 1519,
+              "count": 1
+            },
+            {
+              "artikulId": 159,
+              "count": 50
+            },
+            {
+              "artikulId": 169,
+              "count": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "bonusId": 2007,
+      "require": [
+        {
+          "artikulId": 1519,
+          "count": 1
+        }
+      ],
+      "failPlaque": "",
+      "requires": {
+        "all": [
+          {
+            "min": 7,
+            "type": "LEVEL"
+          }
+        ]
+      },
+      "effects": [
+        {
+          "type": "consume",
+          "artikulId": 1519,
+          "count": 1
+        },
+        {
+          "type": "grantMany",
+          "items": [
+            {
+              "artikulId": 170,
+              "count": 5
+            },
+            {
+              "artikulId": 169,
+              "count": 10
+            },
+            {
+              "artikulId": 94,
+              "count": 25
+            },
+            {
+              "artikulId": 93,
+              "count": 50
+            },
+            {
+              "artikulId": 99,
+              "count": 100
+            },
+            {
+              "artikulId": 159,
+              "count": 100
+            },
+            {
+              "artikulId": 100,
+              "count": 50
+            },
+            {
+              "artikulId": 160,
+              "count": 50
+            },
+            {
+              "artikulId": 210,
+              "count": 2
+            },
+            {
+              "artikulId": 207,
+              "count": 2
+            },
+            {
+              "artikulId": 211,
+              "count": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "bonusId": 2827,
+      "require": [
+        {
+          "artikulId": 2371,
+          "count": 2
+        }
+      ],
+      "failPlaque": "",
+      "effects": [
+        {
+          "type": "consume",
+          "artikulId": 2371,
+          "count": 2
+        },
+        {
+          "type": "grant",
+          "artikulId": 55,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "bonusId": 900584,
+      "require": [
+        {
+          "artikulId": 584,
+          "count": 1
+        }
+      ],
+      "failPlaque": "Головы нет в сумке",
+      "effects": [
+        {
+          "type": "openDialog",
+          "dialogKey": "d_271",
+          "npcId": 271
+        }
+      ]
+    }
+  ]
+}

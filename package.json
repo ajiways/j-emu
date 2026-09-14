@@ -33,6 +33,7 @@
     "content:decode:items": "tsx scripts/decode-pub1-items.ts",
     "content:decode:bots": "tsx scripts/decode-pub1-bots.ts",
     "content:decode:areas": "tsx scripts/decode-areas.ts",
+    "content:decode:economy": "tsx scripts/decode-economy.ts",
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down"
   },

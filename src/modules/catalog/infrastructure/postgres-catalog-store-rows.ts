@@ -25,17 +25,29 @@ export async function insertStoreLots(
   rows: readonly StoreLotDocument[],
 ): Promise<void> {
   if (rows.length === 0) return;
-  await session.insert(storeLots).values(
-    rows.map((row) => ({
-      releaseId,
-      areaId: row.areaId,
-      lotId: row.lotId,
-      artikulId: row.artikulId,
-      typeId: row.typeId,
-      price: row.price,
-      ord: row.ord,
-      pay: row.pay,
-      requires: row.requires === undefined ? null : row.requires,
-    })),
-  );
+  const values = rows.map((row) => ({
+    releaseId,
+    areaId: row.areaId,
+    lotId: row.lotId,
+    artikulId: row.artikulId,
+    typeId: row.typeId,
+    price: row.price,
+    ord: row.ord,
+    pay: row.pay,
+    requires: row.requires === undefined ? null : row.requires,
+  }));
+  await insertInBatches(values, async (batch) => {
+    await session.insert(storeLots).values(batch);
+  });
+}
+
+const INSERT_BATCH = 250;
+
+async function insertInBatches<T>(
+  rows: readonly T[],
+  write: (batch: T[]) => Promise<unknown>,
+): Promise<void> {
+  for (let offset = 0; offset < rows.length; offset += INSERT_BATCH) {
+    await write(rows.slice(offset, offset + INSERT_BATCH));
+  }
 }

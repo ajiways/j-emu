@@ -6,7 +6,7 @@ import type { ContentBundle } from "../domain/content-document.ts";
 
 const RADVEY_TITLE = "Репутация Радвея";
 const RADVEY_IMAGE = "rep_radvey_sm.png";
-const SLICE_EXCLUDED_OBJECT_IDS = new Set([SUM_REPUTATION_OBJECT_ID, 7, 11]);
+const SLICE_EXCLUDED_OBJECT_IDS = new Set([SUM_REPUTATION_OBJECT_ID]);
 
 export function collectReputationIssues(bundle: ContentBundle): readonly string[] {
   const issues: string[] = [];
@@ -26,9 +26,6 @@ export function collectReputationIssues(bundle: ContentBundle): readonly string[
   if (!radvey) {
     issues.push(`reputation track ${RADVEY_REPUTATION_OBJECT_ID} is required`);
     return issues;
-  }
-  if (bundle.reputationTracks.length !== 1) {
-    issues.push("playable slice must publish exactly reputation track 5");
   }
   if (radvey.type !== 2) {
     issues.push(`reputation track ${RADVEY_REPUTATION_OBJECT_ID} type must be 2`);
