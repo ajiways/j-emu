@@ -49,7 +49,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/combat/application/combat-service.ts":
     "Process-local hunt/friendly service: start/join/auth/resume/poll, CMB-02 casts, CMB-03 loot/exit take, and leave deny",
   "src/modules/combat/domain/battle.ts":
-    "Hunt/friendly Battle owns FightDuel pairing, CMB-08 shuffle/waiter handoff, melee, CMB-06 bot turns, casts, CMB-04 resume, and GEAR-01 ending-turn purge clock",
+    "Hunt/friendly Battle owns FightDuel list, CMB-12 hunt pairing, CMB-08 shuffle/waiter handoff, melee, CMB-06 bot turns, casts, CMB-04 resume, and GEAR-01 ending-turn purge clock",
   "src/modules/combat/domain/hunt-human.ts":
     "Hunt/PvP human fighter: turn clock, pocket, loadout, applied bot and human damage credits",
   "src/modules/content/application/content-validator.ts":

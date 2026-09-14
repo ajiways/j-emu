@@ -1,6 +1,6 @@
 import type { CombatLoadout } from "./combat-loadout.ts";
 import type { FightEffectSnap } from "./hunt-human-fight-effects.ts";
-import type { HuntHumanSnap } from "./hunt-human.ts";
+import type { HuntHumanAppearance, HuntHumanSnap } from "./hunt-human.ts";
 
 export type HuntBotSnap = Readonly<{
   id: number;
@@ -23,6 +23,8 @@ export type BattleEvent =
       hero: HuntHumanSnap;
       allies: readonly HuntHumanSnap[];
       bot: HuntBotSnap;
+      humanOpponent?: HuntHumanSnap;
+      humanOpponentAppearance?: HuntHumanAppearance;
       rosterBots: readonly HuntBotSnap[];
       cp: number;
       cpHits: readonly number[];

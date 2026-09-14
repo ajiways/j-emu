@@ -129,7 +129,7 @@ describe("Battle", () => {
       ],
     });
     expect(battle.tryPlayerMelee(1, "center", AUTH_NOW)).toEqual({ kind: "ignored" });
-    const bot = battle.resolveBotMelee();
+    const bot = battle.resolveBotMelee(1);
     expect(bot.events[0]).toMatchObject({
       type: "damage",
       sourceId: 1_000_000,
@@ -166,7 +166,7 @@ describe("Battle", () => {
     });
     battle.authenticate(1, AUTH_NOW);
     battle.tryPlayerMelee(1, "left", AUTH_NOW);
-    const bot = battle.resolveBotMelee();
+    const bot = battle.resolveBotMelee(1);
     expect(bot.events[0]).toMatchObject({
       type: "damage",
       animation: "magic_direct",
@@ -249,6 +249,60 @@ describe("Battle", () => {
     expect(battle.finished).toBe(false);
     expect(battle.pairedOpponent(1)).toEqual({ kind: "human", accountId: 2 });
     expect(battle.tickRosterDuels().some((event) => event.type === "finished")).toBe(false);
+  });
+
+  it("pairs a team-2 joiner with a team-1 waiter while the opener stays on the bot", () => {
+    const battle = createBattle(new SequenceRandom([8]));
+    battle.authenticate(1, AUTH_NOW);
+    battle.addHuman({
+      accountId: 2,
+      heroId: 2,
+      nick: "Waiter",
+      level: 1,
+      kind: 1,
+      hp: 27,
+      maxHp: 27,
+      mp: 10,
+      maxMp: 10,
+      strength: 80,
+      team: 1,
+      appearance: UNIT_HUNT_APPEARANCE,
+      loadout: EMPTY_COMBAT_LOADOUT,
+      startedAtMs: AUTH_NOW,
+    });
+    battle.authenticate(2, AUTH_NOW);
+    battle.addHuman({
+      accountId: 3,
+      heroId: 3,
+      nick: "Intervenor",
+      level: 1,
+      kind: 1,
+      hp: 27,
+      maxHp: 27,
+      mp: 10,
+      maxMp: 10,
+      strength: 80,
+      team: 2,
+      appearance: UNIT_HUNT_APPEARANCE,
+      loadout: EMPTY_COMBAT_LOADOUT,
+      startedAtMs: AUTH_NOW,
+    });
+    const bootstrap = battle.authenticate(3, AUTH_NOW);
+    expect(bootstrap[0]).toMatchObject({
+      type: "hunt-bootstrap",
+      waiting: false,
+      humanOpponent: { id: 2, team: 1 },
+    });
+    expect(bootstrap.some((event) => event.type === "turn-granted")).toBe(false);
+    expect(battle.pairedOpponent(1)).toEqual({ kind: "bot" });
+    expect(battle.pairedOpponent(2)).toEqual({ kind: "human", accountId: 3 });
+    expect(battle.pairedOpponent(3)).toEqual({ kind: "human", accountId: 2 });
+    const hit = battle.tryPlayerMelee(1, "left", AUTH_NOW);
+    expect(hit).toMatchObject({
+      kind: "resolved",
+      events: [{ type: "turn-wait" }, { type: "damage", sourceId: 1, targetId: 1_000_000 }],
+    });
+    expect(battle.finished).toBe(false);
   });
 
   it("resumes a paired hunter without resetting the turn deadline", () => {

@@ -28,7 +28,7 @@ export class CombatMeleeLoop {
       this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
       return;
     }
-    this.scheduler.cancel(battle.id);
+    cancelDuel(this.scheduler, battle, accountId);
     const resolved = battle.tryPlayerMelee(accountId, side, this.scheduler.now().getTime());
     if (resolved.kind === "ignored") {
       this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
@@ -56,7 +56,7 @@ export class CombatMeleeLoop {
       this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
       return;
     }
-    this.scheduler.cancel(battle.id);
+    cancelDuel(this.scheduler, battle, accountId);
     this.enqueue(accountId, [{ type: "command-accepted", sequence }, ...events]);
     if (battle.finished) {
       await this.settleFinished(battle, events, accountId);
@@ -66,9 +66,30 @@ export class CombatMeleeLoop {
   }
 
   grantAfterPair(battle: Battle, accountId: number): void {
-    this.scheduler.schedule(battle.id, battle.turnGrantDelayMs, () =>
+    const token = battle.delayTokenFor(accountId);
+    if (!token) throw new Error("Cannot grant a turn without a live duel");
+    this.scheduler.schedule(token, battle.turnGrantDelayMs, () =>
       this.runGrant(battle.id, accountId),
     );
+  }
+
+  notifyJoinedPair(battle: Battle, joinerAccountId: number): void {
+    const joiner = battle.livingHumans().find((human) => human.accountId === joinerAccountId);
+    if (!joiner || joiner.waiting) return;
+    const opponent = battle.pairedOpponent(joinerAccountId);
+    if (opponent.kind !== "human") return;
+    if (!battle.authedAccountIds().includes(opponent.accountId)) return;
+    this.enqueue(opponent.accountId, [
+      {
+        type: "opponent-new-human",
+        human: joiner.snapshot(),
+        appearance: joiner.appearance,
+      },
+    ]);
+    this.wakeAccount(opponent.accountId);
+    const opener = battle.nextActorAccountId(joinerAccountId);
+    if (!battle.authedAccountIds().includes(opener)) return;
+    this.grantAfterPair(battle, opener);
   }
 
   private async followUpAfterStrike(
@@ -82,9 +103,11 @@ export class CombatMeleeLoop {
       await this.settleFinished(battle, extra, accountId);
       return;
     }
+    const token = battle.delayTokenFor(accountId);
+    if (!token) return;
     const opponent = battle.pairedOpponent(accountId);
     if (opponent.kind === "bot") {
-      this.scheduleBotAndGrant(battle);
+      this.scheduleBotAndGrant(battle, accountId);
       return;
     }
     if (events.some((event) => event.type === "opponent-new-human")) {
@@ -99,73 +122,75 @@ export class CombatMeleeLoop {
       ]);
       this.wakeAccount(opponent.accountId);
     }
-    this.scheduler.schedule(battle.id, battle.turnGrantDelayMs, () =>
+    this.scheduler.schedule(token, battle.turnGrantDelayMs, () =>
       this.runGrant(battle.id, opponent.accountId),
     );
   }
 
-  private scheduleBotAndGrant(battle: Battle): void {
+  private scheduleBotAndGrant(battle: Battle, strikerAccountId: number): void {
+    const token = battle.delayTokenFor(strikerAccountId);
+    if (!token) throw new Error("Cannot schedule a bot follow-up without a live duel");
     const fightId = battle.id;
-    const striker = battle.pairedAccountId;
-    this.scheduler.schedule(fightId, battle.meleeBotCounterMs, () => this.runBotCounter(fightId));
-    this.scheduler.schedule(fightId, battle.turnGrantDelayMs, () =>
-      this.runGrant(fightId, striker),
+    this.scheduler.schedule(token, battle.meleeBotCounterMs, () =>
+      this.runBotCounter(fightId, strikerAccountId),
+    );
+    this.scheduler.schedule(token, battle.turnGrantDelayMs, () =>
+      this.runGrant(fightId, strikerAccountId),
     );
   }
 
-  private async runBotCounter(fightId: string): Promise<void> {
+  private async runBotCounter(fightId: string, targetAccountId: number): Promise<void> {
     const battle = this.battleByFight.get(fightId);
     if (!battle || battle.finished) return;
-    const target = battle.pairedAccountId;
-    const result = battle.resolveBotMelee();
-    this.enqueue(target, result.events);
-    this.wakeAccount(target);
+    if (!battle.accountIds().includes(targetAccountId)) return;
+    const result = battle.resolveBotMelee(targetAccountId);
+    this.enqueue(targetAccountId, result.events);
+    this.wakeAccount(targetAccountId);
     if (!result.killedPlayer) {
       const extra = battle.tickRosterDuels();
-      if (extra.length > 0) this.enqueue(target, extra);
+      if (extra.length > 0) this.enqueue(targetAccountId, extra);
       if (battle.finished) {
-        await this.settleFinished(battle, extra, target);
+        await this.settleFinished(battle, extra, targetAccountId);
         return;
       }
-      await this.applyShuffle(battle);
+      this.applyShuffle(battle, targetAccountId);
       return;
     }
     if (battle.finished) {
-      await this.settleFinished(battle, result.events, target);
+      await this.settleFinished(battle, result.events, targetAccountId);
       return;
     }
-    await this.handOffToWaiter(battle, target);
+    await this.handOffToWaiter(battle, targetAccountId);
   }
 
   private async handOffToWaiter(battle: Battle, deadAccountId: number): Promise<void> {
-    this.scheduler.cancel(battle.id);
+    cancelDuel(this.scheduler, battle, deadAccountId);
     this.enqueue(deadAccountId, [{ type: "finished", winnerTeam: 2, fightId: battle.id }]);
     await this.departHuman(battle, deadAccountId);
     this.queueExit(deadAccountId, battle.id, { fightId: battle.id, winnerTeam: 2 });
     this.byAccount.delete(deadAccountId);
     this.wakeAccount(deadAccountId);
-    const waiter = battle.pairNextWaiter();
-    if (!waiter) throw new Error("Killed hunter had no waiter to re-pair");
+    const waiter = battle.pairNextWaiter(deadAccountId);
+    if (!waiter) {
+      battle.dissolveDuelOf(deadAccountId);
+      return;
+    }
     if (!waiter.authed) return;
     this.enqueue(waiter.accountId, waiter.events);
     this.wakeAccount(waiter.accountId);
-    this.scheduler.schedule(battle.id, battle.turnGrantDelayMs, () =>
-      this.runGrant(battle.id, waiter.accountId),
-    );
+    this.grantAfterPair(battle, waiter.accountId);
   }
 
-  private applyShuffle(battle: Battle): void {
-    const shuffle = battle.tryShuffleAfterHits();
+  private applyShuffle(battle: Battle, accountId: number): void {
+    const shuffle = battle.tryShuffleAfterHits(accountId);
     if (shuffle.kind !== "waiter-handoff") return;
-    this.scheduler.cancel(battle.id);
+    cancelDuel(this.scheduler, battle, accountId);
     this.enqueue(shuffle.actorAccountId, [{ type: "opponent-wait" }]);
     this.wakeAccount(shuffle.actorAccountId);
     if (!shuffle.waiterAuthed) return;
     this.enqueue(shuffle.waiterAccountId, shuffle.events);
     this.wakeAccount(shuffle.waiterAccountId);
-    this.scheduler.schedule(battle.id, battle.turnGrantDelayMs, () =>
-      this.runGrant(battle.id, shuffle.waiterAccountId),
-    );
+    this.grantAfterPair(battle, shuffle.waiterAccountId);
   }
 
   private runGrant(fightId: string, accountId: number): void {
@@ -177,6 +202,11 @@ export class CombatMeleeLoop {
     this.enqueue(accountId, [granted]);
     this.wakeAccount(accountId);
   }
+}
+
+function cancelDuel(scheduler: HuntMeleeScheduler, battle: Battle, accountId: number): void {
+  const token = battle.delayTokenFor(accountId);
+  if (token) scheduler.cancel(token);
 }
 
 function enqueuePlayerMelee(

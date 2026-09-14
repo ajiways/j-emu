@@ -23,7 +23,7 @@ export function resolveBotTurn(
     botHp: number;
     botMaxHp: number;
     fightId: string;
-    hasWaiter: boolean;
+    keepFightOnKill: boolean;
     book: HuntBotSpellBook;
     casts: Map<number, number>;
     living: readonly HuntHuman[];
@@ -67,7 +67,7 @@ function applyKind1(
     botFightId: number;
     botStrength: number;
     fightId: string;
-    hasWaiter: boolean;
+    keepFightOnKill: boolean;
     living: readonly HuntHuman[];
     winnerTeam: 1 | 2;
   }>,
@@ -97,7 +97,7 @@ function applyKind1(
     });
     if (killed && target.accountId === human.accountId) killedPlayer = true;
   }
-  if (killedPlayer && !state.hasWaiter) {
+  if (killedPlayer && !state.keepFightOnKill) {
     events.push({ type: "finished", winnerTeam: state.winnerTeam, fightId: state.fightId });
   }
   return { events, killedPlayer };

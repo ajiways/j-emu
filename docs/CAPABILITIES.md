@@ -198,8 +198,9 @@ hunt overlay и map join: первый ATTACK_BOT **50310** ставит `fight_
 точке и в `131:`; второй клиент входит в тот же бой (`fight|conf` с тем же
 `fightId`/`akey`, свой `userId`). Raw-AMF и CEF двумя клиентами.
 
-Не перенесена вторая одновременная hunt-дуэль (N×N leftover CMB-11).
-Wander: 50310 паркуется на
+Не перенесена вторая одновременная hunt-дуэль полного jgr N×N
+(bot seekers, cross-swap двух 3↔3). CMB-12: на 50310 opener↔bot и
+team-1↔team-2 идут параллельно. Wander: 50310 паркуется на
 home (в dump нет route/zone); 50309 идёт по dump-proven route, 50101–03 —
 по zone.
 
@@ -234,11 +235,13 @@ quest roster flags 8 не прогонялся — [CEF_MANUAL.md](migration/CEF
 CMB-11: OA `FIGHT_JOIN` `{team:1|2}` и `FIGHT_HELP` входят в тот же RAM
 `fightId` на 50310; карта ATTACK_BOT на занятый spawn остаётся team 1;
 две копии 542 изолируют JOIN; после смерти бота живой team-2 продолжает
-vs team-1 без hunt EXP; restart → 204 stale. CEF join/intervene не
+vs team-1 без hunt EXP; restart → 204 stale. CMB-12: три героя на 50310 —
+JOIN `{team:2}` сразу human↔human, opener продолжает vs Грызля. CEF join/intervene не
 прогонялся.
 
-Не перенесены: вторая одновременная дуэль (N×N); BG/pvp `FIGHT_JOIN`;
-`ATTACK` challenge.
+Не перенесены: BG/pvp `FIGHT_JOIN`; `ATTACK` challenge. Hunt N×N две дуэли
+на 50310 landed (CMB-12); полный jgr N×N (bot seekers, 3↔3 cross-swap) —
+leftover.
 
 ## Quests и NPC — частично
 
@@ -331,8 +334,8 @@ same-area/same-copy team 1|2, HELP ACTION в party chat, `state.party` из memb
 init2 restore members/settings/bag. Reconnect/restart читает Postgres.
 CEF окна группы не прогонялся.
 
-Не перенесены dungeon bind warning на invite, dungeon lottery rules 1, quest personal_only,
-вторая одновременная дуэль после intervene.
+Не перенесены dungeon bind warning на invite, dungeon lottery rules 1, quest personal_only.
+Hunt parallel duels after intervene — CMB-12.
 
 ## Instance — частично
 

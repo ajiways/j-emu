@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import type { Clock } from "../../../shared/kernel/clock.ts";
 import { requirePresent } from "../../../shared/kernel/require-present.ts";
 import { parseDecimalId, requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
-import { Battle } from "../domain/battle.ts";
+import type { Battle } from "../domain/battle.ts";
 import type { BattleRules } from "../domain/battle-rules.ts";
 import { EphemeralBotFightIds } from "../domain/ephemeral-bot-fight-ids.ts";
 import { HuntJoinDenied } from "../domain/hunt-join-denied.ts";
@@ -15,8 +15,8 @@ import type { HistoryWriteObserver } from "./history-write-observer.ts";
 import { CombatMeleeLoop } from "./combat-melee-loop.ts";
 import { CombatTerminal } from "./combat-terminal.ts";
 import { createHuntBattle } from "./create-hunt-battle.ts";
-import { friendlyDuelInitFromStart } from "./friendly-duel-init-from-start.ts";
 import { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
+import { startHumanDuelBattle } from "./start-human-duel.ts";
 import type {
   CombatEvent,
   CombatPort,
@@ -186,6 +186,7 @@ export class CombatService implements CombatPort {
       if (accountId === input.accountId) continue;
       this.enqueue(accountId, [roster]);
     }
+    this.melee.notifyJoinedPair(battle, input.accountId);
     return {
       fightId: battle.id,
       accessKey: battle.accessKey,
@@ -291,7 +292,9 @@ export class CombatService implements CombatPort {
   }
 
   shutdown(): void {
-    for (const fightId of this.battleByFight.keys()) this.scheduler.cancel(fightId);
+    for (const battle of this.battleByFight.values()) {
+      for (const token of battle.delayTokens()) this.scheduler.cancel(token);
+    }
     this.byAccount.clear();
     this.battleByFight.clear();
     this.queues.clear();
@@ -338,29 +341,14 @@ export class CombatService implements CombatPort {
     requireWireIdentity(input.acceptor.accountId, "acceptor account id");
     requireWireIdentity(input.challenger.heroId, "challenger hero id");
     requireWireIdentity(input.acceptor.heroId, "acceptor hero id");
-    if (this.byAccount.has(input.challenger.accountId)) {
-      throw new Error("Challenger already has an active fight");
-    }
-    if (this.byAccount.has(input.acceptor.accountId)) {
-      throw new Error("Acceptor already has an active fight");
-    }
-    const fightId = requireFightId(input.fightId);
-    if (this.battleByFight.has(fightId)) throw new Error(`Fight ${fightId} is already active`);
-    const accessKey = randomBytes(16).toString("hex");
-    const battle = new Battle(
-      friendlyDuelInitFromStart(input, accessKey, this.scheduler.now(), kind),
-      this.rules,
-      this.random,
-    );
-    this.byAccount.set(input.challenger.accountId, battle);
-    this.byAccount.set(input.acceptor.accountId, battle);
-    this.battleByFight.set(fightId, battle);
-    return {
-      fightId,
-      accessKey,
-      participantId: input.acceptor.heroId,
-      arena: input.arena,
-    };
+    return startHumanDuelBattle(input, kind, {
+      byAccount: this.byAccount,
+      battleByFight: this.battleByFight,
+      rules: this.rules,
+      random: this.random,
+      now: this.scheduler.now(),
+      requireFightId,
+    });
   }
 
   private finishKeepTurn(

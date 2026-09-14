@@ -76,12 +76,12 @@ describe("Battle 3↔3 shuffle", () => {
     battle.authenticate(2, AUTH_NOW);
     for (let round = 0; round < 3; round += 1) {
       expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");
-      const bot = battle.resolveBotMelee();
+      const bot = battle.resolveBotMelee(1);
       expect(bot.killedPlayer).toBe(false);
       if (round < 2) battle.grantTurn(1, AUTH_NOW);
     }
     const actorHp = 24;
-    expect(battle.tryShuffleAfterHits()).toMatchObject({
+    expect(battle.tryShuffleAfterHits(1)).toMatchObject({
       kind: "waiter-handoff",
       actorAccountId: 1,
       waiterAccountId: 2,
@@ -106,10 +106,10 @@ describe("Battle 3↔3 shuffle", () => {
     battle.authenticate(1, AUTH_NOW);
     for (let round = 0; round < 3; round += 1) {
       expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");
-      battle.resolveBotMelee();
+      battle.resolveBotMelee(1);
       if (round < 2) battle.grantTurn(1, AUTH_NOW);
     }
-    expect(battle.tryShuffleAfterHits()).toEqual({ kind: "reset" });
+    expect(battle.tryShuffleAfterHits(1)).toEqual({ kind: "reset" });
     expect(battle.pairedAccountId).toBe(1);
     battle.grantTurn(1, AUTH_NOW);
     expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");

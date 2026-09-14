@@ -48,17 +48,24 @@ export class CombatTerminal {
   async leaveFight(accountId: number): Promise<void> {
     const battle = this.byAccount.get(accountId);
     if (!battle || battle.finished) return;
-    const wasPaired = battle.pairedAccountId === accountId;
+    const wasPaired = battle.delayTokenFor(accountId) !== null;
     const others = battle.livingHumans().filter((human) => human.accountId !== accountId);
     if (others.length > 0) {
-      if (wasPaired) this.scheduler.cancel(battle.id);
+      if (wasPaired) {
+        const token = battle.delayTokenFor(accountId);
+        if (token) this.scheduler.cancel(token);
+      }
       await this.departHuman(battle, accountId);
       this.queueExit(accountId, battle.id, { fightId: battle.id, winnerTeam: 2, flee: true });
       this.byAccount.delete(accountId);
       this.wakeAccount(accountId);
       if (!wasPaired) return;
-      const waiter = battle.pairNextWaiter();
-      if (!waiter || !waiter.authed) return;
+      const waiter = battle.pairNextWaiter(accountId);
+      if (!waiter) {
+        battle.dissolveDuelOf(accountId);
+        return;
+      }
+      if (!waiter.authed) return;
       this.enqueue(waiter.accountId, waiter.events);
       this.wakeAccount(waiter.accountId);
       this.melee.grantAfterPair(battle, waiter.accountId);
@@ -94,7 +101,7 @@ export class CombatTerminal {
     winnerTeam: 1 | 2,
     input: Readonly<{ strikerAccountId: number; finished?: CombatEvent }>,
   ): Promise<void> {
-    this.scheduler.cancel(battle.id);
+    for (const token of battle.delayTokens()) this.scheduler.cancel(token);
     if (this.settledFights.has(battle.id)) return;
     const settlement = this.settlement();
     const outcome = battle.outcome(kind, winnerTeam);

@@ -1,6 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { huntHumanOppNew, livingWaiterOnTeam } from "./battle-pairing.ts";
+import { dissolveDuelContaining } from "./try-pair-hunt-queues.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
@@ -49,6 +50,7 @@ export function applyHuntPlayerHit(
   input: Readonly<{
     roster: HuntRoster | null;
     duel: FightDuel;
+    duels: FightDuel[];
     opener: HuntHuman;
     humans: readonly HuntHuman[];
   }>,
@@ -69,6 +71,7 @@ export function applyHuntBotHit(
   input: Readonly<{
     roster: HuntRoster | null;
     duel: FightDuel;
+    duels: FightDuel[];
     opener: HuntHuman;
     humans: readonly HuntHuman[];
   }>,
@@ -84,7 +87,10 @@ export function applyHuntBotHit(
     return { events: [{ type: "opponent-new", bot: next.snap() }], finished: false };
   }
   const intervenor = livingWaiterOnTeam(input.humans, hitBot.team);
-  if (!intervenor) return { events: [], finished: false };
+  if (!intervenor) {
+    dissolveDuelContaining(input.duels, input.humans, hitBot.fightId);
+    return { events: [], finished: false };
+  }
   retargetDuelTo({ duel: input.duel, fromHeroId: hitBot.fightId, waiter: intervenor });
   return { events: [huntHumanOppNew(intervenor)], finished: false };
 }

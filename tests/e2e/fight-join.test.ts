@@ -88,8 +88,9 @@ describe("hunt fight join team 2", () => {
     expect(await c.fight({ rc: "auth", eid: fightId, sq: 3 })).toHaveLength(0);
     const bootstrapC = await c.pollFight();
     expect(fightPersTeam(bootstrapC, heroC)).toBe(2);
-    expect(fightEventTypes(bootstrapC)).toEqual(expect.arrayContaining(["oppwait"]));
+    expect(fightEventTypes(bootstrapC)).toEqual(expect.arrayContaining(["oppwait", "oppnew"]));
     expect(fightEventTypes(bootstrapC)).not.toContain("attacknow");
+    expect(framesIncludeHumanOppNew(bootstrapC)).toBe(true);
 
     const helped = await d.objectAction({
       object: "common",
@@ -217,6 +218,78 @@ describe("hunt fight join team 2", () => {
       status: 204,
       error: "Нельзя вмешаться в неактивный бой!",
     });
+  });
+});
+
+describe("hunt fight join parallel duels", () => {
+  let harness: ApplicationHarness;
+  let application: Application;
+
+  beforeEach(async () => {
+    harness = new ApplicationHarness(undefined, undefined, {
+      combatBotStrength: 1,
+    });
+    application = await harness.start();
+  });
+
+  afterEach(async () => {
+    await harness.stop();
+  });
+
+  it("keeps opener vs Gryzl live after JOIN team 2 pairs with the team-1 waiter", async () => {
+    const a = await createIsolatedHero(application);
+    const b = await createIsolatedHero(application);
+    const c = await createIsolatedHero(application);
+    await a.objectAction({ object: "common", action: "init", sq: 1 });
+    await b.objectAction({ object: "common", action: "init", sq: 1 });
+    await c.objectAction({ object: "common", action: "init", sq: 1 });
+    const start = await a.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 2,
+    });
+    const fightId = huntFightIdFrom(start);
+    expect(await a.fight({ rc: "auth", eid: fightId, sq: 3 })).toHaveLength(0);
+    await a.pollFight();
+    const occupied = await b.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 2,
+    });
+    expect(huntFightIdFrom(occupied)).toBe(fightId);
+    expect(await b.fight({ rc: "auth", eid: fightId, sq: 3 })).toHaveLength(0);
+    await b.pollFight();
+    const joined = await c.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "FIGHT_JOIN", fight: fightId, team: 2 },
+      sq: 2,
+    });
+    expect(joined["common|action"]).toEqual({ status: 100 });
+    expect(await c.fight({ rc: "auth", eid: fightId, sq: 3 })).toHaveLength(0);
+    const bootstrapC = await c.pollFight();
+    expect(framesIncludeHumanOppNew(bootstrapC)).toBe(true);
+    expect(fightEventTypes(bootstrapC)).not.toContain("attacknow");
+    expect(framesIncludeFightFinish(bootstrapC)).toBe(false);
+    await a.pollFight();
+    await b.pollFight();
+    expect(await a.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: 4 })).toHaveLength(0);
+    const melee = await a.pollFight();
+    expect(framesIncludeFightFinish(melee)).toBe(false);
+    expect(fightEventTypes(melee)).toEqual(expect.arrayContaining(["attackwait", "cast"]));
+    await harness.elapseCombat(1400);
+    const bot = await a.pollFight();
+    expect(framesIncludeFightFinish(bot)).toBe(false);
+    expect(fightEventTypes(bot)).toContain("cast");
+    await harness.elapseCombat(1100);
+    const grantedB = await b.pollFight();
+    expect(fightEventTypes(grantedB)).toEqual(expect.arrayContaining(["attacknow"]));
+    expect(framesIncludeFightFinish(grantedB)).toBe(false);
+    const grantedA = await a.pollFight();
+    expect(fightEventTypes(grantedA)).toEqual(expect.arrayContaining(["attacknow"]));
+    expect(framesIncludeFightFinish(grantedA)).toBe(false);
   });
 });
 

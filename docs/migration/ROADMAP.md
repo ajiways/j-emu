@@ -1598,7 +1598,8 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
 
 ## Leftover engines — механика, не сюжет
 
-Волны 0–13 закрыты. Leftover-механика закрыта: CMB-11 (`done`) → QST-ENG-04
+Волны 0–13 закрыты. Leftover-механика закрыта: CMB-11 (`done`) → CMB-12
+(`done`, hunt N×N две дуэли на 50310) → QST-ENG-04
 (`done`) → QST-ENG-05 (`done`, `OPEN_STORE`) → DNG-03 (`done`) → leftover
 TRD-02 (`done`, refund trays, не persist session).
 
@@ -1617,7 +1618,7 @@ CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
   `joinHunt` сравнивает `areaId` **и** `instanceCopyId`; dungeon
   `startHunt` проставляет copy; карта occupied spawn team 1; team-2 не
   берёт бота; после смерти бота ретаргет тот же `FightDuel`; hunt EXP
-  только opener-team. Leftover: N×N две дуэли сразу.
+  только opener-team. N×N две дуэли — CMB-12.
 - **Content set:** без новых квестов. Hunt **50310** + копия огра **542**;
   два героя same-area / same-copy. Quest `purpose:"quest"` по-прежнему
   `HuntJoinDenied` (CMB-09).
@@ -1630,7 +1631,7 @@ CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
   (opener охоты). Один `FightDuel` на `Battle` (не jgr N×N): team-2 joiner
   не берёт бота у team-1 waiter; после смерти бота при живом team-2 бой
   не заканчивается — тот же duel ретаргет team-1↔team-2. Одновременные
-  две дуэли — leftover. Hunt EXP/лут только opener-team при победе этой
+  две дуэли — CMB-12. Hunt EXP/лут только opener-team при победе этой
   стороны (jgr `rewardForHuman` team 1 + `wonByHero`).
   **Fail-fast.** Чужой area/copy → dump 204 «другой локации»; stale →
   «неактивный бой»; quest/duel join — текущие deny. Team 2 **не** маскировать
@@ -1646,6 +1647,39 @@ CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят.
   две копии 542 изолируют JOIN; quest-fight join deny как сейчас; после
   смерти бота живой team-2 продолжает vs team-1; settlement без hunt EXP
   team-2; restart → 204 stale.
+- **Status:** `done`
+
+### CMB-12 — Hunt parallel duels (N×N)
+
+- **ID:** `CMB-12`
+- **depends_on:** `CMB-11`
+- **Behavior evidence:** [FIGHT_MODEL.md](../../../jgr-emu/docs/FIGHT_MODEL.md);
+  [FIGHT_JOIN.md](../../../jgr-emu/docs/FIGHT_JOIN.md);
+  `jgr-emu/src/fight/battle.ts` `tryPairQueues` / `createCombatDuel`;
+  `jgr-emu/src/fight/botAi.ts` `notifyNewDuels`. Canon: pair after any hunt
+  join (docs/engine method), not the team-2 skip in `addHumanToBattle`.
+- **Content set:** без нового контента. Hunt **50310**, три изолированных
+  героя: opener vs bot, team-1 waiter (occupied `ATTACK_BOT`),
+  `FIGHT_JOIN` `{team:2}` сразу human↔human.
+- **Architecture checkpoint / decision:** ADR-0017–0020 достаточны; `ARC-*`
+  не нужен. Active fight RAM. Combat не импортирует party/instance tables.
+  `Battle.duels: FightDuel[]`. Unpaired living waiters team 1 vs team 2
+  после `addHuman`; T1 opens. Delay token `${fightId}:${minId}:${maxId}` —
+  `CombatDelay` как сейчас (dueAt + cancel), не `Clock.schedule`. Strike
+  cancel только свой duel. Finish cancel все duel tokens. Смерть opener vs
+  bot при живых B↔C не finish: dissolve A↔bot, бой продолжается.
+  2-hero JOIN team 2 без team-1 waiter по-прежнему ждёт бота (CMB-11).
+  **Fail-fast.** Нет duel у waiting striker → melee ignored, не throw.
+  Нет fallback «один duel на Battle».
+  **Restart.** Mid-fight RAM (ADR-0020).
+  **CEF.** Production consumer. Product **частично** до CEF; строка
+  CEF_MANUAL добавлена на close coding.
+  Контракт: [COMBAT.md](../modules/COMBAT.md).
+- **Acceptance:** raw-AMF три героя на 50310: C `FIGHT_JOIN` `{team:2}`
+  сразу `oppnew` human (не только `oppwait`); B получает human `oppnew` и
+  `attacknow`; A после C всё ещё бьёт Грызля (`cast`, нет `fightFinish`).
+  2-hero team-2 wait + retarget после смерти бота; JOIN copy isolation 542;
+  quest deny; occupied ATTACK_BOT team 1 — без регресса.
 - **Status:** `done`
 
 ### QST-ENG-04 — Quest-fight leftovers

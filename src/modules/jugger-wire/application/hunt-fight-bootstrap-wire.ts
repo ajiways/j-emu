@@ -2,6 +2,7 @@ import type { CombatEvent } from "../../combat/ports/combat-port.ts";
 import { fightPersEffEvent, fightStandingEffectUseEvent } from "./fight-effect-wire.ts";
 import { huntPersSpellsEvent } from "./hunt-fight-pers-spells.ts";
 import { huntHumanPersFields, huntPersListEvent } from "./hunt-fight-pers-wire.ts";
+import { humanOppNewEvent } from "./human-opp-new-event.ts";
 import { huntOppNewEvent } from "./hunt-opp-new-event.ts";
 
 type HuntBootstrap = Extract<CombatEvent, { type: "hunt-bootstrap" }>;
@@ -34,6 +35,12 @@ export function huntFightBootstrapEvents(
   ];
   if (!event.resumePaired) events.push({ et: "oppwait" });
   if (waiting) return events;
+  if (event.humanOpponent) {
+    const appearance = event.humanOpponentAppearance;
+    if (!appearance) throw new Error("Hunt human opponent appearance is required");
+    events.push(humanOppNewEvent(event.humanOpponent, appearance));
+    return events;
+  }
   events.push(huntOppNewEvent(bot));
   events.push(fightPersEffEvent(bot.id, []));
   return events;

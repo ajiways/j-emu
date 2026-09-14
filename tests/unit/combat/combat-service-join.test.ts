@@ -118,6 +118,55 @@ describe("CombatService hunt join", () => {
     expect(intervene.some((event) => event.type === "damage")).toBe(true);
     expect(await combat.hasFight(start.fightId)).toBe(true);
   });
+
+  it("pairs team-2 with a team-1 waiter without cancelling the opener bot delay", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const delay = new ManualCombatDelay();
+    const combat = new CombatService(
+      new MonotonicFightIdSource(1),
+      new SequenceRandom([8, 2]),
+      rules,
+      clock,
+      new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
+      new RecordingHistoryWriteObserver(),
+      delay,
+    );
+    const start = await startHuntWithIssuedId(combat, unitHuntStart());
+    await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.joinHunt(unitHuntJoin({ fightId: start.fightId, team: 1 }));
+    await combat.execute(2, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(2, { kind: "poll" });
+    await combat.joinHunt(
+      unitHuntJoin({
+        accountId: 3,
+        heroId: 3,
+        heroNick: "Intervenor",
+        fightId: start.fightId,
+        team: 2,
+      }),
+    );
+    const waiterEvents = await combat.execute(2, { kind: "poll" });
+    expect(waiterEvents.some((event) => event.type === "opponent-new-human")).toBe(true);
+    await combat.execute(3, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    const joinerEvents = await combat.execute(3, { kind: "poll" });
+    const bootstrap = joinerEvents.find((event) => event.type === "hunt-bootstrap");
+    if (!bootstrap || bootstrap.type !== "hunt-bootstrap") {
+      throw new Error("Expected team-2 hunt bootstrap");
+    }
+    expect(bootstrap.waiting).toBe(false);
+    expect(bootstrap.humanOpponent).toMatchObject({ id: 2, team: 1 });
+    expect(joinerEvents.some((event) => event.type === "turn-granted")).toBe(false);
+    await combat.execute(1, { kind: "strike", side: "left", sequence: 2 });
+    clock.advanceMs(2500);
+    await delay.fireDue(clock.now());
+    const openerEvents = await combat.execute(1, { kind: "poll" });
+    expect(openerEvents.some((event) => event.type === "damage")).toBe(true);
+    expect(openerEvents.some((event) => event.type === "finished")).toBe(false);
+    const granted = await combat.execute(2, { kind: "poll" });
+    expect(granted.some((event) => event.type === "turn-granted")).toBe(true);
+    expect(await combat.hasFight(start.fightId)).toBe(true);
+  });
 });
 
 function service(): CombatService {

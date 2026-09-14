@@ -64,4 +64,50 @@ describe("huntFightBootstrapEvents", () => {
     expect(types).toContain("oppnew");
     expect(types).not.toContain("oppwait");
   });
+
+  it("emits human oppnew when the hunter is paired with a person", () => {
+    const types = huntFightBootstrapEvents({
+      type: "hunt-bootstrap",
+      waiting: false,
+      hero,
+      allies: [],
+      bot,
+      humanOpponent: { ...hero, id: 2, nick: "Waiter", team: 1 },
+      humanOpponentAppearance: {
+        avatar: "hero_1_sm.jpg",
+        body: "m1",
+        sk: "11",
+      },
+      rosterBots: [bot],
+      cp: 0,
+      cpHits: [],
+      rage: 0,
+      aggro: 1,
+      loadout: EMPTY_COMBAT_LOADOUT,
+      heroEffects: [],
+    }).map((event) => event.et);
+    expect(types).toEqual(expect.arrayContaining(["oppwait", "oppnew"]));
+    const oppnew = huntFightBootstrapEvents({
+      type: "hunt-bootstrap",
+      waiting: false,
+      hero,
+      allies: [],
+      bot,
+      humanOpponent: { ...hero, id: 2, nick: "Waiter", team: 1 },
+      humanOpponentAppearance: {
+        avatar: "hero_1_sm.jpg",
+        body: "m1",
+        sk: "11",
+      },
+      rosterBots: [bot],
+      cp: 0,
+      cpHits: [],
+      rage: 0,
+      aggro: 1,
+      loadout: EMPTY_COMBAT_LOADOUT,
+      heroEffects: [],
+    }).find((event) => event.et === "oppnew");
+    expect(oppnew).toMatchObject({ id: 2, nick: "Waiter" });
+    expect(oppnew).not.toHaveProperty("bot");
+  });
 });

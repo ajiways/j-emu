@@ -1,22 +1,33 @@
 import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
+import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import { huntBotSnap } from "./hunt-bot-snap.ts";
 import type { HuntHuman } from "./hunt-human.ts";
+import type { HuntRoster } from "./hunt-roster.ts";
+import type { FightDuel } from "./fight-duel.ts";
+import { isHumanDuelInit } from "./battle-fighters.ts";
+import { requireBattleHuman, requireBattleHuntRoster, requireHuntInit } from "./battle-lookups.ts";
+import { requireDuelContaining } from "./try-pair-hunt-queues.ts";
 
-export function huntAuthenticateEvents(
+function huntAuthenticateEvents(
   input: Readonly<{
     human: HuntHuman;
     allies: readonly HuntHuman[];
     init: HuntBattleInit;
     botHp: number;
     rosterBots: readonly HuntBotSnap[];
+    humanOpponent: HuntHuman | null;
+    nextActorId: number;
     resume: boolean;
     timeoutSeconds: number;
     nowMs: number;
   }>,
 ): readonly BattleEvent[] {
   const { human } = input;
-  if (!human.waiting && !input.resume) human.beginTurn(input.nowMs, input.timeoutSeconds);
+  if (!human.waiting && !input.resume && human.heroId === input.nextActorId) {
+    human.beginTurn(input.nowMs, input.timeoutSeconds);
+  }
+  const opponent = input.humanOpponent;
   const events: BattleEvent[] = [
     {
       type: "hunt-bootstrap",
@@ -27,6 +38,12 @@ export function huntAuthenticateEvents(
         .filter((entry) => entry.accountId !== human.accountId)
         .map((entry) => entry.snapshot()),
       bot: huntBotSnap(input.init, input.botHp),
+      ...(opponent
+        ? {
+            humanOpponent: opponent.snapshot(),
+            humanOpponentAppearance: opponent.appearance,
+          }
+        : {}),
       rosterBots: input.rosterBots,
       cp: human.casts.cp,
       cpHits: human.casts.hits,
@@ -44,7 +61,7 @@ export function huntAuthenticateEvents(
   return events;
 }
 
-export function friendlyAuthenticateEvents(
+function friendlyAuthenticateEvents(
   input: Readonly<{
     human: HuntHuman;
     opponent: HuntHuman;
@@ -78,4 +95,50 @@ export function friendlyAuthenticateEvents(
     events.push({ type: "turn-granted", timeoutSeconds: input.timeoutSeconds });
   }
   return events;
+}
+
+export function authenticateFighter(
+  input: Readonly<{
+    finished: boolean;
+    humans: readonly HuntHuman[];
+    duels: readonly FightDuel[];
+    init: HuntBattleInit | FriendlyDuelBattleInit;
+    huntRoster: HuntRoster | null;
+    timeoutSeconds: number;
+    accountId: number;
+    opponentAccountId: (accountId: number) => number;
+    nowMs: number;
+  }>,
+): readonly BattleEvent[] {
+  if (input.finished) throw new Error("Cannot authenticate a finished battle");
+  const human = requireBattleHuman(input.humans, input.accountId);
+  if (human.authed) throw new Error("Fight session is already authenticated");
+  const resume = human.takeResume();
+  human.authed = true;
+  if (isHumanDuelInit(input.init)) {
+    return friendlyAuthenticateEvents({
+      human,
+      opponent: requireBattleHuman(input.humans, input.opponentAccountId(input.accountId)),
+      nextActorId: requireDuelContaining(input.duels, human.heroId).nextActorId,
+      timeoutSeconds: input.timeoutSeconds,
+      nowMs: input.nowMs,
+    });
+  }
+  const duel = input.duels.find((entry) => entry.has(human.heroId));
+  const otherId = duel?.otherId(human.heroId);
+  const humanOpponent =
+    otherId === undefined ? null : (input.humans.find((entry) => entry.heroId === otherId) ?? null);
+  const roster = requireBattleHuntRoster(input.huntRoster);
+  return huntAuthenticateEvents({
+    human,
+    allies: input.humans,
+    init: requireHuntInit(input.init),
+    botHp: roster.primary.hp,
+    rosterBots: roster.snaps(),
+    humanOpponent,
+    nextActorId: duel?.nextActorId ?? human.heroId,
+    resume,
+    timeoutSeconds: input.timeoutSeconds,
+    nowMs: input.nowMs,
+  });
 }

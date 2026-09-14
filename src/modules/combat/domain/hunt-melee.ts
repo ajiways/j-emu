@@ -17,7 +17,7 @@ export function resolveBotMelee(
     botFightId: number;
     botStrength: number;
     fightId: string;
-    hasWaiter: boolean;
+    keepFightOnKill: boolean;
     winnerTeam: 1 | 2;
   }>,
 ): BotMeleeResult {
@@ -39,7 +39,7 @@ export function resolveBotMelee(
       dRage,
     },
   ];
-  if (killedPlayer && !input.hasWaiter) {
+  if (killedPlayer && !input.keepFightOnKill) {
     events.push({ type: "finished", winnerTeam: input.winnerTeam, fightId: input.fightId });
   }
   return { events, killedPlayer };

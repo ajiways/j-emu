@@ -43,6 +43,9 @@
       team 1; две копии 542 изолируют JOIN; после смерти бота team-2
       бьёт team-1, loot team-2 без hunt EXP; restart процесса → JOIN
       204 stale.
+- [ ] CMB-12: три героя на 50310 — A vs Грызль, B occupied ATTACK_BOT
+      team 1, C JOIN `{team:2}` сразу vs B; A после пары всё ещё бьёт
+      бота; 2-hero JOIN team 2 без B по-прежнему ждёт смерть бота.
 
 ## Inventory
 

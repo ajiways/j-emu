@@ -154,4 +154,4 @@ Dungeon personal/coins — **каждый** team-1, не только top damage
 invite; dungeon shops (830/724/741/829) as NPC plate COME_IN; daily 06:00
 MSK wipe; outdoor 508 / hunts / NPC 510; яма spell `effect_ids` босса 106
 (книга пустая, как 353/354/373). Hunt join team 2 в копии landed (CMB-11);
-leftover этого модуля — вторая дуэль / N×N не сюда.
+параллельные hunt-дуэли — [COMBAT.md](COMBAT.md) CMB-12, не этот модуль.

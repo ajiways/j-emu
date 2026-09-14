@@ -91,7 +91,7 @@ export function applyBotTurn(
     hunt: HuntBattleInit;
     botHp: number;
     fightId: string;
-    hasWaiter: boolean;
+    keepFightOnKill: boolean;
     casts: Map<number, number>;
     living: readonly HuntHuman[];
     duel: FightDuel;
@@ -105,7 +105,7 @@ export function applyBotTurn(
     botHp: input.botHp,
     botMaxHp: input.hunt.botMaxHp,
     fightId: input.fightId,
-    hasWaiter: input.hasWaiter,
+    keepFightOnKill: input.keepFightOnKill,
     book: input.hunt.botSpellBook,
     casts: input.casts,
     living: input.living,

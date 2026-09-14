@@ -307,10 +307,15 @@ grant — composition UoW. `playable-slice/v35`. Контракт: [INSTANCE.md]
 Landed: `joinHunt.team` = `1|2`; HELP = team цели; copy gate = RAM
 `instanceCopyId` (`null` мир) со `startHunt`, сравнение на join.
 Combat не импортирует instance/party. Один `FightDuel`: team-2 не берёт
-бота; после смерти бота ретаргет team-1↔team-2. N×N две дуэли сразу —
-leftover, не этот срез. Hunt EXP/лут только opener-team. Team 2 не врать
-как «неактивный бой». ADR-0017–0020. Контракт: [COMBAT.md](../modules/COMBAT.md),
-[PARTY.md](../modules/PARTY.md), [INSTANCE.md](../modules/INSTANCE.md).
+бота; после смерти бота ретаргет team-1↔team-2. Hunt EXP/лут только
+opener-team. Team 2 не врать как «неактивный бой». N×N две дуэли сразу —
+CMB-12.
+
+**Решение CMB-12:** текущих границ достаточно; `ARC-CMB` не нужен.
+`Battle.duels[]`; pair waiters team 1 vs 2 после join; delay token
+`${fightId}:${lo}:${hi}` на существующем `CombatDelay`. Canon pair-after-join,
+не team-2 skip `addHumanToBattle`. 2-hero team-2 wait без team-1 waiter
+не режется. ADR-0017–0020. Контракт: [COMBAT.md](../modules/COMBAT.md).
 
 **Решение DAY-01:** текущих границ достаточно; отдельный `ARC-QST` не нужен.
 Daily cycle — lazy `Clock` на quests ports (UTC+3 / 06:00), не

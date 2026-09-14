@@ -8,7 +8,8 @@ settlement, CMB-04 reconnect/ghost/RESURRECT, CMB-05 STR-урон, CMB-06
 bot spell book, CMB-07 loot, CMB-08 friendly duel + hunt 3↔3 waiter
 handoff и GEAR-01 RAM kind-3 с надетой 20546 (raw-AMF). CMB-11: OA
 `FIGHT_JOIN` `{team:1|2}` / `FIGHT_HELP` входят в тот же RAM `fightId`,
-copy gate, team-2 без hunt EXP; CEF не прогонялся — product status combat
+copy gate, team-2 без hunt EXP; CMB-12: две параллельные hunt-дуэли на
+50310 (opener↔bot и team-1↔team-2). CEF не прогонялся — product status combat
 остаётся частично. CMB-09 отдаёт
 quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA
 `START_FIGHT` (quest + ambush) и hunt loot-cap — composition (`QuestDesk` /
@@ -406,16 +407,31 @@ copy; outdoor `HuntMapAttack` — `null`.
 `1`. `FightJoinCommand` не подменяет team 2 статусом «неактивный бой».
 HELP ставит joiner на team цели из того же `Battle` (не хардкод `1`).
 
-jgr — N×N `tryPairQueues`; j-emu — один `FightDuel` на hunt `Battle`.
-Срез CMB-11 не вводит вторую одновременную дуэль:
+jgr — N×N `tryPairQueues`. CMB-12: hunt `Battle.duels[]`. После join
+непарные living waiters team 1 и team 2 сразу получают `FightDuel`
+(T1 opens). Opener остаётся на боте. Delay jobs — token
+`${fightId}:${minId}:${maxId}`; strike cancel только свой duel.
+
+CMB-11 2-hero JOIN team 2 без team-1 waiter по-прежнему ждёт бота:
 
 - team **1** joiner: waiter CMB-08, может взять бота;
-- team **2** joiner: waiting, **не** в пуле `livingWaiter` бота;
-- пока бот жив, team-2 ждёт; смерть бота при живом team-2 **не** finish —
+- team **2** joiner без свободного team-1: waiting, **не** в пуле бота;
+- пока бот жив, этот team-2 ждёт; смерть бота при живом team-2 **не** finish —
   тот же `FightDuel` ретаргет живой team-1 ↔ team-2;
 - finish — `enemySideCleared` по людям **и** ботам стороны.
 
-Одновременные human↔bot и human↔human — leftover (jgr N×N).
+### CMB-12 — parallel hunt duels
+
+Срез закрыт (raw-AMF). Product-status не поднимать: CEF не прогонялся.
+Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-12 (`done`).
+
+Три героя на **50310**: A opener vs Грызль; B occupied `ATTACK_BOT` team 1;
+C `FIGHT_JOIN` `{team:2}` сразу vs B (`oppnew` human, `bot !== true`).
+A после пары B↔C продолжает melee vs bot. Смерть A vs bot при живых B↔C
+не закрывает бой: dissolve A↔bot, bot unpaired.
+
+2-hero team-2 wait (нет team-1 waiter) не режется. Wire IDs, 1v1 hunt,
+JOIN copy isolation, quest-join deny — без изменения.
 
 ### Settlement
 
@@ -439,10 +455,11 @@ stale 204, без resurrect. Reconnect до restart — тот же `fightId`/`a
 Production consumer. Product **частично** до CEF. Строка в
 [CEF_MANUAL.md](../migration/CEF_MANUAL.md) добавлена.
 
-### Out of scope (CMB-11 leftover)
+### Out of scope (CMB-12 leftover)
 
-Вторая одновременная дуэль / полный N×N; BG/pvp `FIGHT_JOIN`; quest-fight
-join; `ATTACK` challenge; CEF.
+Полный jgr N×N (bot seekers, shuffle last-foe, initiative roll, cross-swap
+двух живых 3↔3); BG/pvp `FIGHT_JOIN`; quest-fight join; `ATTACK` challenge;
+CEF.
 
 ## HERO-01 — PvP honor snapshot
 
