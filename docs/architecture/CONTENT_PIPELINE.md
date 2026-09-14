@@ -43,7 +43,7 @@ profession corpus из generated assistant/farm/recipe файлов (45 assistan
 overlay/`bot_spell_book.json`, не handwritten slice. Gryzl **2** nick Pub1
 «Грызл»; overlay loot NOTHING 3000 / 27 entries. Хисса **4** книга 396+397.
 bonus **601**, use script **2827**, assistant types **3/13**, farm resource **4** on area **500**, craft recipe **61**,
-12 areas (503/501/504/495/552/542/541/654/651/653/499/673) plus isolated **510**/pit **544**, BG return 500 and rooms 635/636/637, authored travel `area_links` including dungeon doors 501↔542, 541↔654, 651↔653, 499↔673, 510↔544 and Раскоп 635↔636↔637, hunt 50310 (home), 50309 (route+respawn) и 50101–50103 (zone), dungeons 1/2/11/12/14 (bots 99/106–109/354/353/373), battlegrounds Раскоп `general|2` plus dump cards, store 504 type `-131` lots 80/23 и 82/24 внутри полного корпуса 113/2095, store 552 type 11 lot 438/621 RANK, 22 reputation tracks (Радвей **5**), 82 skills (DATA-01 набор плюс skill id с Pub1-артефактов), 14 levels с normalized managed skills,
+12 areas (503/501/504/495/552/542/541/654/651/653/499/673) plus isolated **510**/pit **544**, BG return 500 and rooms 635/636/637, authored travel `area_links` including dungeon doors 501↔542, 541↔654, 651↔653, 499↔673, 510↔544 and Раскоп 635↔636↔637, hunt 50310 (home), 50309 (route+respawn) и 50101–50103 (zone), dungeons 1/2/4/6/7/11/12/14 (bots 99/106–109/115/205/304/354/353/373), battlegrounds Раскоп `general|2` plus dump cards, store 504 type `-131` lots 80/23 и 82/24 внутри полного корпуса 113/2095, store 552 type 11 lot 438/621 RANK, 22 reputation tracks (Радвей **5**), 82 skills (DATA-01 набор плюс skill id с Pub1-артефактов), 14 levels с normalized managed skills,
 3 appearance presets (kind 1/2/3 gender 1), NPC **271** (503 item **4**) и
 **272** (item **8**), AREA ambush 503 item **1**, with eight engine quests
 (`q_engine_board` / `q_engine_fight` / `q_engine_area` / `q_engine_daily` /
@@ -56,14 +56,17 @@ bundle. Bots 2/4/24/32 несут `spellBook` (Грызл пустая; Хисс
 
 DNG-03 landed: `playable-slice/v35` добавляет данж **2**
 (Поганая яма, 544/510, боты 106–109, монета **5986**) и огр
-`personal_guaranteed` **2371**. Не POST-03 (4/6/7 + shops + bands).
+`personal_guaranteed` **2371**. POST-03: полный корпус 8 данжей из
+`content/dungeons.generated.json` (`npm run content:decode:dungeons`),
+включая `has_clear` 4/6/7. Не shops/bands.
 
 Seed: `npm run db:publish:development` с `CONTENT_BUNDLE_FILE` и `DATABASE_URL`
 из `.env` в корне пакета. Повтор с тем же checksum не создаёт новый release.
 Новый checksum на уже опубликованной БД создаёт и активирует следующую release
 через `publish` (тот же npm-скрипт).
-Полный item, bot, area/hunt и economy corpus уже в generated-файлах. Остальные типы
-(NPC/quests) из матрицы — план, кроме уже опубликованного playable subset.
+Полный item, bot, area/hunt, economy, profession и dungeon corpus уже в
+generated-файлах. Остальные типы (NPC/quests) из матрицы — план, кроме уже
+опубликованного playable subset.
 
 ## `playable-slice.json` — временный bootstrap, не целевой механизм
 
@@ -77,6 +80,11 @@ Area/hunt corpus тоже не кладётся: `areasFile` / `areaLinksFile` /
 Economy corpus тоже не кладётся: `storeTypesFile` / `storeLotsFile` /
 `reputationTracksFile` / `bonusesFile` / `useScriptsFile` указывают на
 generated JSON (`npm run content:decode:economy`).
+Profession corpus тоже не кладётся: `assistantTypesFile` /
+`farmResourcesFile` / `areaFarmsFile` / `craftRecipesFile` указывают на
+generated JSON (`npm run content:decode:professions`).
+Dungeon corpus тоже не кладётся: `dungeonsFile` указывает на
+`content/dungeons.generated.json` (`npm run content:decode:dungeons`).
 Руками не расти `artifacts`/`bots`/`areas`/`storeLots` до полного каталога.
 
 Правило: как только для домена (`catalog` items, `catalog` bots/spells,
@@ -111,6 +119,9 @@ DATA-стадии (не runtime-зависимость и не копирова�
   (`npm run content:decode:professions` → `content/assistant-types.generated.json`
   / `farm-resources.generated.json` / `area-farms.generated.json` /
   `craft-recipes.generated.json`).
+- `jgr-emu/src/dungeon/catalog.ts` + `fixtures/dungeons/*.json` и Pub1
+  `instance.amf` (book chrome id/title) → POST-03
+  (`npm run content:decode:dungeons` → `content/dungeons.generated.json`).
 
 **Читают уже authored/curated JSON (не сырой клиентский формат) — тоже
 полезный evidence состава и связей, но decoder тут почти не нужен, нужен

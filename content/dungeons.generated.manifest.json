@@ -1,0 +1,89 @@
+{
+  "sourceGroup": "POST-03 / dungeon corpus",
+  "decoderVersion": "dungeons/v1",
+  "documentSchema": "dungeon-document/playable-slice-v35",
+  "files": [
+    {
+      "relativePath": "dungeons/bezdonnye_kopi.json",
+      "size": 2503,
+      "digest": "eb6cad346145fb74fbd25de7b03d4e64d022dc94a47c71ca37a562faf4ccda0f"
+    },
+    {
+      "relativePath": "dungeons/chrevo_hardifa.json",
+      "size": 7026,
+      "digest": "434a4ecc473c97bcb8eff62f97b9fb867c0bb07c91d00df91beb14115cdd8942"
+    },
+    {
+      "relativePath": "dungeons/nory_toprov.json",
+      "size": 6630,
+      "digest": "9c9240e25acc494a1d67c40ebea00650f707ce1364da54509221b6d5494780a6"
+    },
+    {
+      "relativePath": "dungeons/ogre_cave.json",
+      "size": 2790,
+      "digest": "f2e2babcfd3ea234bb9aba34825bd5390ffa03c5c2952ca03135df9a2ca9b556"
+    },
+    {
+      "relativePath": "dungeons/poganaya_yama.json",
+      "size": 4477,
+      "digest": "15e4578bd7f2a305a39535d618986549a06205c55606222b6f739752f7c13a76"
+    },
+    {
+      "relativePath": "dungeons/proval.json",
+      "size": 11295,
+      "digest": "e405c23c2bf2127e8310ec1f6e4f6a54adfd1d01918e8cf423088c0ff8be6d4b"
+    },
+    {
+      "relativePath": "dungeons/usypalnica_geroev.json",
+      "size": 2513,
+      "digest": "f21e09dfa46fc6a06cde497744be47835f89ac7f9a2f8bf4d1b44d4e801a6314"
+    },
+    {
+      "relativePath": "dungeons/zabroshennaya_usadba.json",
+      "size": 2438,
+      "digest": "d0df82352cb0be00d501f0ff333f80f81ac33dc40bbf887bbe9512f0f88b3f79"
+    },
+    {
+      "relativePath": "images/locale/ru/amf/instance.amf",
+      "size": 284983,
+      "digest": "1169975746e1c6277a07917fdea72b386b582ec8ba0fd6fca68baea7380d4712"
+    }
+  ],
+  "filesDigest": "835eda71053b3b1579dac4e59609704ab25e751a7c699ecd1278942ba3469583",
+  "acceptedCount": 8,
+  "keys": [
+    {
+      "key": "1",
+      "digest": "c67ab410227aafbee47e6f314482291ceb65c365141bf332c4ade332ad1ee714"
+    },
+    {
+      "key": "11",
+      "digest": "8789cb1e51408b499d7de60ea1d52e2b5b159e201158605c1bdac5a52ee1878b"
+    },
+    {
+      "key": "12",
+      "digest": "c7b9cb5dc50ec858caef642e8d508b9701557d52b3a570f1f71b65a40c39184a"
+    },
+    {
+      "key": "14",
+      "digest": "62d1c9afd6d933d734c0ee6083cea3b7a55e152bf2c96a86f35850a8833281e9"
+    },
+    {
+      "key": "2",
+      "digest": "8bbd0664869042131bcf2e3f03ced85374755f5aa435553c2124cb778cf0cd13"
+    },
+    {
+      "key": "4",
+      "digest": "0e09ae03a72e9384bff21f719ce326166abe46f903913b75ce3508dc9f12528f"
+    },
+    {
+      "key": "6",
+      "digest": "0ee6145907f16eac0992da78955107deb852e6c6343757ae232c19449cda71b9"
+    },
+    {
+      "key": "7",
+      "digest": "5c3b13f82928163eea596986ef78aae0989d2db3d6ea20c89ad25a127ea8da51"
+    }
+  ],
+  "corpusDigest": "a674925c6f1bbed310774a2d6cb7119eb46466ceca0b6b54cbad7b78b799ae21"
+}

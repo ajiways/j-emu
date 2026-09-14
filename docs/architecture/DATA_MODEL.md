@@ -175,8 +175,10 @@ create_title, create_level_min, table_id)` PK `(release_id, id)`; UNIQUE
 - `dungeons(release_id, artikul_id, title, start_area_id, parent_area_id,
 level_min, duration_sec, img_url, has_clear, progress_finish_value,
 coin_artikul_id, coin_min, coin_max, loot_boss_bot_id)` PK
-  `(release_id, artikul_id)`. Slice: `has_clear=0` artikul 1/11/12/14;
-  яма **2** `has_clear=1` finish 7, coins 5986/1/26, `loot_boss_bot_id` 106.
+  `(release_id, artikul_id)`. Slice: 8 dungeons 1/2/4/6/7/11/12/14;
+  `has_clear=0` 1/11/12/14; яма **2** finish 7 coins 5986/1/26 bot 106;
+  Провал **4** finish 9 coin 3163 bot 115; Норы **6** finish 7 coin 5985
+  bot 205; Хардиф **7** finish 12 coin 3679 bot 304.
   `dungeon_personal_guaranteed` PK `(release_id, dungeon_artikul_id, loot_artikul_id)`
   (огр **2371**). Coin trio все три или все null. Не jsonb bands.
 - `dungeon_areas` / `dungeon_spawns` / `dungeon_spawn_encounters` /

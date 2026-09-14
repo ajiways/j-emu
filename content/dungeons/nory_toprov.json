@@ -1,0 +1,301 @@
+{
+  "artikul_id": 6,
+  "title": "Норы топров",
+  "start_area_id": "586",
+  "parent_area_id": "560",
+  "level_min": 8,
+  "duration_sec": 36000,
+  "img_url": "alt_noratoprov.jpg",
+  "has_clear": true,
+  "areas": [
+    {
+      "area_id": "586",
+      "spawns": [
+        {
+          "spawn_key": "586_1",
+          "hunt_bot_id": 201,
+          "encounter": [
+            {
+              "bot_id": 201,
+              "count": 1
+            },
+            {
+              "bot_id": 207,
+              "count": 4
+            },
+            {
+              "bot_id": 206,
+              "count": 5
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 394,
+          "position_y": 580,
+          "wait_min": 2,
+          "wait_max": 6
+        }
+      ]
+    },
+    {
+      "area_id": "587",
+      "spawns": [
+        {
+          "spawn_key": "587_1",
+          "hunt_bot_id": 201,
+          "encounter": [
+            {
+              "bot_id": 201,
+              "count": 1
+            },
+            {
+              "bot_id": 207,
+              "count": 4
+            },
+            {
+              "bot_id": 206,
+              "count": 5
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 444,
+          "position_y": 648,
+          "wait_min": 2,
+          "wait_max": 6
+        }
+      ]
+    },
+    {
+      "area_id": "588",
+      "spawns": [
+        {
+          "spawn_key": "588_1",
+          "hunt_bot_id": 213,
+          "encounter": [
+            {
+              "bot_id": 213,
+              "count": 1
+            },
+            {
+              "bot_id": 202,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 329,
+          "position_y": 510,
+          "wait_min": 2,
+          "wait_max": 6
+        },
+        {
+          "spawn_key": "588_2",
+          "hunt_bot_id": 213,
+          "encounter": [
+            {
+              "bot_id": 213,
+              "count": 1
+            },
+            {
+              "bot_id": 202,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 504,
+          "position_y": 733,
+          "wait_min": 2,
+          "wait_max": 6
+        },
+        {
+          "spawn_key": "588_3",
+          "hunt_bot_id": 213,
+          "encounter": [
+            {
+              "bot_id": 213,
+              "count": 1
+            },
+            {
+              "bot_id": 202,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 437,
+          "position_y": 590,
+          "wait_min": 2,
+          "wait_max": 6
+        }
+      ]
+    },
+    {
+      "area_id": "589",
+      "spawns": [
+        {
+          "spawn_key": "589_1",
+          "hunt_bot_id": 204,
+          "encounter": [
+            {
+              "bot_id": 204,
+              "count": 1
+            },
+            {
+              "bot_id": 202,
+              "count": 3
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 461,
+          "position_y": 617,
+          "wait_min": 2,
+          "wait_max": 6
+        }
+      ]
+    },
+    {
+      "area_id": "590",
+      "spawns": [
+        {
+          "spawn_key": "emilia",
+          "hunt_bot_id": 205,
+          "encounter": [
+            {
+              "bot_id": 205,
+              "count": 1
+            }
+          ],
+          "is_boss": true,
+          "counts_for_clear": true,
+          "hunt_mask": "boss_1",
+          "position_x": 570,
+          "position_y": 720
+        },
+        {
+          "spawn_key": "590_1",
+          "hunt_bot_id": 203,
+          "encounter": [
+            {
+              "bot_id": 203,
+              "count": 1
+            },
+            {
+              "bot_id": 208,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": false,
+          "hunt_mask": "bot_1",
+          "position_x": 363,
+          "position_y": 332,
+          "wait_min": 2,
+          "wait_max": 6
+        },
+        {
+          "spawn_key": "590_2",
+          "hunt_bot_id": 203,
+          "encounter": [
+            {
+              "bot_id": 203,
+              "count": 1
+            },
+            {
+              "bot_id": 208,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": false,
+          "hunt_mask": "bot_1",
+          "position_x": 407,
+          "position_y": 459,
+          "wait_min": 2,
+          "wait_max": 6
+        },
+        {
+          "spawn_key": "590_3",
+          "hunt_bot_id": 203,
+          "encounter": [
+            {
+              "bot_id": 203,
+              "count": 1
+            },
+            {
+              "bot_id": 208,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": false,
+          "hunt_mask": "bot_1",
+          "position_x": 318,
+          "position_y": 437,
+          "wait_min": 2,
+          "wait_max": 6
+        },
+        {
+          "spawn_key": "590_4",
+          "hunt_bot_id": 203,
+          "encounter": [
+            {
+              "bot_id": 203,
+              "count": 1
+            },
+            {
+              "bot_id": 208,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": false,
+          "hunt_mask": "bot_1",
+          "position_x": 450,
+          "position_y": 365,
+          "wait_min": 2,
+          "wait_max": 6
+        },
+        {
+          "spawn_key": "590_5",
+          "hunt_bot_id": 203,
+          "encounter": [
+            {
+              "bot_id": 203,
+              "count": 1
+            },
+            {
+              "bot_id": 208,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": false,
+          "hunt_mask": "bot_1",
+          "position_x": 321,
+          "position_y": 553,
+          "wait_min": 2,
+          "wait_max": 6
+        }
+      ]
+    }
+  ],
+  "loot": {
+    "boss_bot_id": 205,
+    "personal_guaranteed": []
+  },
+  "progress_finish_value": 7,
+  "clear": {
+    "coin_artikul_id": 5985,
+    "coin_max": 33,
+    "coin_min": 2
+  }
+}

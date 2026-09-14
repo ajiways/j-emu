@@ -1,0 +1,129 @@
+{
+  "artikul_id": 1,
+  "title": "Мрачная пещера",
+  "start_area_id": "542",
+  "parent_area_id": "501",
+  "level_min": 3,
+  "duration_sec": 3600,
+  "img_url": "alt_noob_cave.jpg",
+  "has_clear": false,
+  "areas": [
+    {
+      "area_id": "542",
+      "spawns": [
+        {
+          "spawn_key": "ogre",
+          "hunt_bot_id": 99,
+          "encounter": [
+            {
+              "bot_id": 99,
+              "count": 1
+            }
+          ],
+          "is_boss": true,
+          "counts_for_clear": true,
+          "position_x": 662,
+          "position_y": 547,
+          "route": [
+            {
+              "x": 647,
+              "y": 536,
+              "wait_min": 2,
+              "wait_max": 8
+            },
+            {
+              "x": 494,
+              "y": 534,
+              "wait_min": 2,
+              "wait_max": 8
+            },
+            {
+              "x": 554,
+              "y": 666,
+              "wait_min": 2,
+              "wait_max": 8
+            },
+            {
+              "x": 547,
+              "y": 834,
+              "wait_min": 2,
+              "wait_max": 8
+            },
+            {
+              "x": 554,
+              "y": 941,
+              "wait_min": 2,
+              "wait_max": 8
+            },
+            {
+              "x": 688,
+              "y": 922,
+              "wait_min": 2,
+              "wait_max": 8
+            },
+            {
+              "x": 870,
+              "y": 831,
+              "wait_min": 2,
+              "wait_max": 8
+            },
+            {
+              "x": 1016,
+              "y": 737,
+              "wait_min": 2,
+              "wait_max": 8
+            },
+            {
+              "x": 999,
+              "y": 648,
+              "wait_min": 2,
+              "wait_max": 8
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "loot": {
+    "boss_bot_id": 99,
+    "personal_guaranteed": [2371],
+    "bands": [
+      {
+        "min_clear_pct": 0,
+        "loot": {
+          "dropCnt": 1,
+          "bonusChance": 0.1,
+          "bonusMin": 1,
+          "bonusMax": 1,
+          "nothingWeight": null,
+          "entries": [
+            {
+              "artikulId": 56,
+              "dropWeight": 10,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 58,
+              "dropWeight": 10,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 61,
+              "dropWeight": 10,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 364,
+              "dropWeight": 10,
+              "countMin": 1,
+              "countMax": 1
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

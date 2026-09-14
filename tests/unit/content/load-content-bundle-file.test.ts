@@ -194,6 +194,7 @@ function writeBundle(
     "farmResourcesFile",
     "areaFarmsFile",
     "craftRecipesFile",
+    "dungeonsFile",
   ] as const) {
     const relative = bundle[key];
     if (typeof relative !== "string") continue;

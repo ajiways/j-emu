@@ -46,7 +46,7 @@ area presence roster:
 - `instance` — `instance.copies` / `binds` / `killed_spawns`, dungeon hunt
   RAM overlay, COME_IN ogre/kopi/tomb/usadba, `copy_type` `dungeon|bg`,
   `book|instances` read model. DNG-03 landed: `has_clear` bar / coins /
-  `personal_guaranteed`; `loot.bands` leftover.
+  `personal_guaranteed`. POST-03: 8 dungeon documents. `loot.bands` leftover.
 - `battleground` — RAM queue/invite/ban/live score, typed
   `battleground.finished_*`, Раскоп `general|2` (rooms 635/636/637, return
   500), HERO-01 match honor sum. POST-04 / fairness seal leftover.

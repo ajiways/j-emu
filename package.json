@@ -35,6 +35,7 @@
     "content:decode:areas": "tsx scripts/decode-areas.ts",
     "content:decode:economy": "tsx scripts/decode-economy.ts",
     "content:decode:professions": "tsx scripts/decode-professions.ts",
+    "content:decode:dungeons": "tsx scripts/decode-dungeons.ts",
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down"
   },

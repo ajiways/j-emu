@@ -34,6 +34,8 @@
   professions decoder (`npm run content:decode:professions` →
   `content/assistant-types.generated.json` / `farm-resources.generated.json` /
   `area-farms.generated.json` / `craft-recipes.generated.json`);
+  dungeon decoder (`npm run content:decode:dungeons` →
+  `content/dungeons.generated.json`);
   `npm run db:reset` без `PUB1_DIR` поднимает полный корпус из committed
   `playable-slice.json` + generated files;
 - typed static OA/fproxy/esrv dispatch;
@@ -341,15 +343,16 @@ per-copy hunt id (route или zone), bind на exit/re-enter, presence isolatio
 двух копий, kill без respawn (ogre), TTL kick на parent, expired bind status
 `2`. Яма artikul `2`/544: `has_clear` bar `progress_finish_value:"7"`,
 `progress_value` tick, монеты **5986** с босса (итог формулы, `personal_only`),
-огр **2371** `personal_guaranteed` каждому team-1. Combat
+огр **2371** `personal_guaranteed` каждому team-1. POST-03: тот же engine на
+8 documents из `dungeons.generated.json`, включая `has_clear` Провал `4`/548
+finish 9, Норы `6`/586 finish 7, Хардиф `7`/617 finish 12. Combat
 `fight|conf.instance_id` = copy id, `can_leave:0`. Restart читает copy/bind и
 killed spawns. `book|instances` active/blocked по bind+expiry.
 `book|bestiary_info` — `hero_bot_kills` после hunt win (Грызль 2). CEF книги
 и ямы не прогонялся.
 
 Не перенесены `loot.bands`, dungeon shops, abort fight on expiry,
-`has_clear: true` fixtures (4/6/7), POST-03 mass importer, daily 06:00 MSK
-wipe.
+daily 06:00 MSK wipe.
 
 ## Battlegrounds — частично
 

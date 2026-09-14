@@ -1,5 +1,7 @@
 import type { ContentBundle } from "../domain/content-document.ts";
 
+const REQUIRED_DUNGEON_ARTIKULS = [1, 2, 4, 6, 7, 11, 12, 14] as const;
+
 export function collectDungeonIssues(bundle: ContentBundle): readonly string[] {
   const issues: string[] = [];
   const areaIds = new Set(bundle.areas.map((area) => area.id));
@@ -9,6 +11,11 @@ export function collectDungeonIssues(bundle: ContentBundle): readonly string[] {
   const huntAreas = new Set(bundle.huntSpawns.map((spawn) => spawn.areaId));
   const artikuls = new Set<number>();
   const startAreas = new Set<string>();
+  for (const artikulId of REQUIRED_DUNGEON_ARTIKULS) {
+    if (!bundle.dungeons.some((dungeon) => dungeon.artikulId === artikulId)) {
+      issues.push(`dungeon ${artikulId} is missing`);
+    }
+  }
   for (const dungeon of bundle.dungeons) {
     if (artikuls.has(dungeon.artikulId)) {
       issues.push(`dungeon artikul ${dungeon.artikulId} is duplicated`);

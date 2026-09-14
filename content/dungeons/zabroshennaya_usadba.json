@@ -1,0 +1,114 @@
+{
+  "artikul_id": 14,
+  "title": "Заброшенная усадьба",
+  "start_area_id": "673",
+  "parent_area_id": "499",
+  "level_min": 12,
+  "duration_sec": 7200,
+  "img_url": "alt_prigorod.jpg",
+  "has_clear": false,
+  "areas": [
+    {
+      "area_id": "673",
+      "spawns": [
+        {
+          "spawn_key": "boss",
+          "hunt_bot_id": 373,
+          "encounter": [
+            {
+              "bot_id": 373,
+              "count": 1
+            }
+          ],
+          "is_boss": true,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 320,
+          "position_y": 635,
+          "wait_min": 2,
+          "wait_max": 8,
+          "zone": [
+            {
+              "x": 325,
+              "y": 550
+            },
+            {
+              "x": 262,
+              "y": 588
+            },
+            {
+              "x": 244,
+              "y": 628
+            },
+            {
+              "x": 391,
+              "y": 764
+            },
+            {
+              "x": 500,
+              "y": 785
+            },
+            {
+              "x": 576,
+              "y": 716
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "loot": {
+    "boss_bot_id": 373,
+    "personal_guaranteed": [],
+    "bands": [
+      {
+        "min_clear_pct": 0,
+        "loot": {
+          "dropCnt": 3,
+          "bonusChance": 0.1,
+          "bonusMin": 1,
+          "bonusMax": 1,
+          "nothingWeight": 0,
+          "entries": [
+            {
+              "artikulId": 121,
+              "dropWeight": 12,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 122,
+              "dropWeight": 12,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 1944,
+              "dropWeight": 20,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 2551,
+              "dropWeight": 1000,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 2552,
+              "dropWeight": 800,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 2553,
+              "dropWeight": 600,
+              "countMin": 1,
+              "countMax": 1
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "artikul_id": 11,
+  "title": "Бездонные копи",
+  "start_area_id": "654",
+  "parent_area_id": "541",
+  "level_min": 7,
+  "duration_sec": 7200,
+  "img_url": "alt_inst_kopi.jpg",
+  "has_clear": false,
+  "areas": [
+    {
+      "area_id": "654",
+      "spawns": [
+        {
+          "spawn_key": "boss",
+          "hunt_bot_id": 354,
+          "encounter": [
+            {
+              "bot_id": 354,
+              "count": 1
+            }
+          ],
+          "is_boss": true,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 436,
+          "position_y": 576,
+          "wait_min": 2,
+          "wait_max": 8,
+          "zone": [
+            {
+              "x": 458,
+              "y": 470
+            },
+            {
+              "x": 326,
+              "y": 463
+            },
+            {
+              "x": 351,
+              "y": 604
+            },
+            {
+              "x": 456,
+              "y": 735
+            },
+            {
+              "x": 624,
+              "y": 835
+            },
+            {
+              "x": 700,
+              "y": 766
+            },
+            {
+              "x": 638,
+              "y": 604
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "loot": {
+    "boss_bot_id": 354,
+    "personal_guaranteed": [],
+    "bands": [
+      {
+        "min_clear_pct": 0,
+        "loot": {
+          "dropCnt": 3,
+          "bonusChance": 0.1,
+          "bonusMin": 1,
+          "bonusMax": 1,
+          "nothingWeight": 0,
+          "entries": [
+            {
+              "artikulId": 84,
+              "dropWeight": 20,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 121,
+              "dropWeight": 12,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 1944,
+              "dropWeight": 25,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 2550,
+              "dropWeight": 1000,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 2551,
+              "dropWeight": 800,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 2552,
+              "dropWeight": 600,
+              "countMin": 1,
+              "countMax": 1
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

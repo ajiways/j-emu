@@ -90,16 +90,14 @@ schema. Первая волна ограничена данными, необх�
 
 Персональные runtime-данные, bot-generated state, сессии, очереди, locks и результаты старых фоновых workers не являются authored-контентом и в этот импорт не входят.
 
-Профессии, оставшиеся данжи `has_clear: true` (**4/6/7**; яма **2** — план
-DNG-03, не POST-03), остальные battleground-карты,
-достижения и полный social/economy переносятся
-только отдельным решением после core 1–8. Clan и встроенные playerbots не
-переносятся.
+Оставшиеся battleground-карты (POST-04), DATA-06 quests/NPC, достижения и
+полный social/economy переносятся только отдельным решением после core 1–8.
+Clan и встроенные playerbots не переносятся.
 
 Текущая граница правды — [CONTENT_MATRIX.md](CONTENT_MATRIX.md) § «Текущая
-граница правды»: `DATA-02` done (22 560 artifacts), `DATA-03` bot corpus
-(164 bots из generated JSON) и `DATA-04` atlas (74 areas / 156 links / 10
-hunts); остальные типы — минимальный playable slice.
+граница правды»: `DATA-02`…`DATA-05`, POST-02 professions и POST-03
+8 dungeon documents из generated JSON; overlay professions остаются `2`/`6`;
+остальные типы — минимальный playable slice.
 
 ## Приоритет доказательств
 

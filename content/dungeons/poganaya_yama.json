@@ -1,0 +1,204 @@
+{
+  "artikul_id": 2,
+  "title": "Поганая яма",
+  "start_area_id": "544",
+  "parent_area_id": "510",
+  "level_min": 11,
+  "duration_sec": 43200,
+  "img_url": "alt_holm_proklyatyh.jpg",
+  "has_clear": true,
+  "areas": [
+    {
+      "area_id": "544",
+      "spawns": [
+        {
+          "spawn_key": "544_1",
+          "hunt_bot_id": 108,
+          "encounter": [
+            {
+              "bot_id": 108,
+              "count": 1
+            },
+            {
+              "bot_id": 109,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 460,
+          "position_y": 907,
+          "wait_min": 2,
+          "wait_max": 6
+        },
+        {
+          "spawn_key": "544_2",
+          "hunt_bot_id": 108,
+          "encounter": [
+            {
+              "bot_id": 108,
+              "count": 1
+            },
+            {
+              "bot_id": 109,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 1453,
+          "position_y": 910,
+          "wait_min": 2,
+          "wait_max": 6
+        },
+        {
+          "spawn_key": "544_3",
+          "hunt_bot_id": 108,
+          "encounter": [
+            {
+              "bot_id": 108,
+              "count": 1
+            },
+            {
+              "bot_id": 109,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 842,
+          "position_y": 428,
+          "wait_min": 2,
+          "wait_max": 6
+        },
+        {
+          "spawn_key": "544_4",
+          "hunt_bot_id": 108,
+          "encounter": [
+            {
+              "bot_id": 108,
+              "count": 1
+            },
+            {
+              "bot_id": 109,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 1249,
+          "position_y": 509,
+          "wait_min": 2,
+          "wait_max": 6
+        },
+        {
+          "spawn_key": "544_5",
+          "hunt_bot_id": 108,
+          "encounter": [
+            {
+              "bot_id": 108,
+              "count": 1
+            },
+            {
+              "bot_id": 109,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 527,
+          "position_y": 1307,
+          "wait_min": 2,
+          "wait_max": 6
+        },
+        {
+          "spawn_key": "544_6",
+          "hunt_bot_id": 108,
+          "encounter": [
+            {
+              "bot_id": 108,
+              "count": 1
+            },
+            {
+              "bot_id": 109,
+              "count": 4
+            }
+          ],
+          "is_boss": false,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 1050,
+          "position_y": 1490,
+          "wait_min": 2,
+          "wait_max": 6
+        },
+        {
+          "spawn_key": "boss",
+          "hunt_bot_id": 106,
+          "encounter": [
+            {
+              "bot_id": 106,
+              "count": 1
+            },
+            {
+              "bot_id": 107,
+              "count": 5
+            }
+          ],
+          "is_boss": true,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 944,
+          "position_y": 954,
+          "wait_min": 2,
+          "wait_max": 8,
+          "zone": [
+            {
+              "x": 952,
+              "y": 771
+            },
+            {
+              "x": 845,
+              "y": 842
+            },
+            {
+              "x": 782,
+              "y": 960
+            },
+            {
+              "x": 937,
+              "y": 1141
+            },
+            {
+              "x": 1054,
+              "y": 1084
+            },
+            {
+              "x": 1139,
+              "y": 1001
+            },
+            {
+              "x": 1105,
+              "y": 866
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "loot": {
+    "boss_bot_id": 106,
+    "personal_guaranteed": []
+  },
+  "progress_finish_value": 7,
+  "clear": {
+    "coin_artikul_id": 5986,
+    "coin_max": 26,
+    "coin_min": 1
+  }
+}

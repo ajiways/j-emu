@@ -32,7 +32,7 @@
   ядра», они и есть часть ядра движков.
 - Ровно одна запись имеет статус `next`, пока в engine-треке есть следующая
   capability. После закрытия Wave 14 decoder-трека (`DATA-02`…`DATA-05`,
-  `POST-02`) `next` не назначается на content-fill (`CONTENT-STORY-*`,
+  `POST-02`, `POST-03`) `next` не назначается на content-fill (`CONTENT-STORY-*`,
   DATA-06).
 - Architecture checkpoint заполняет architecture agent до coding. Допустимые
   итоги: действующие ADR достаточны; нужен новый ADR; нужен отдельный
@@ -1868,8 +1868,8 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
 импорт его Pub1-корпуса — следующая задача, не отдельная поздняя волна.
 Это generalized per-domain decoder tooling, не куратский контент —
 `CONTENT-STORY-*` ниже остаётся `queued` и не входит в `depends_on` ни
-одной записи этой волны. После POST-02 decoder-трек закрыт: `next` на
-этой волне больше нет.
+одной записи этой волны. После POST-03 dungeon corpus decoder-трек закрыт:
+`next` на этой волне больше нет.
 
 ### DATA-02 — Pub1 item corpus decoder
 
@@ -2187,6 +2187,52 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   types и profession-0). Dump `farm_time` 60, overlay overrides; stamina
   drain 4. XP bands 8/18/28/38/48/60 совпадают с domain constants.
   `npm run content:decode:professions` с `PUB1_DIR`; `db:reset` без
+  `PUB1_DIR`; `test:integration`, `test:e2e` и `check` зелёные.
+- **Status:** `done`
+
+### POST-03 — Dungeon corpus decoder
+
+- **ID:** `POST-03`
+- **depends_on:** `DNG-03`, `DATA-02`, `DATA-03`, `DATA-04`
+- **Precondition (уже выполнено, не проверять заново):** DNG-01…03
+  generic instance engine (copy/bind/clear bar/coins/personal) `done`.
+  `DATA-04` уже содержит этажи 548–551 / 586–590 / 617–620 и двери
+  `flags:256`. `DATA-02`/`DATA-03` закрыли coin/bot refs.
+- **Behavior evidence:** [CONTENT_MATRIX.md](CONTENT_MATRIX.md) § POST-03;
+  `jgr-emu/src/dungeon/catalog.ts` + `fixtures/dungeons/*.json` как
+  evidence формата, не runtime-зависимость; Pub1 `instance.amf` — book
+  chrome (id/title), не spawn geometry; текущий `DungeonDocument` как
+  evidence целевой типизации.
+- **Content set:** восемь authored JSON `content/dungeons/*.json` плюс
+  сверка id/title с Pub1 `instance.amf`. Wire ID already-e2e (1/542,
+  2/544, 11/654, 12/653, 14/673) без перенумерации. Добавляются
+  `has_clear: true` **4/6/7**. Omit leftover: `loot.bands` / `chance` /
+  `mob_loot`; AMF records без fixture (3/5/8…); `macroses`; AMF
+  `img_url`/`level_min` book chrome (enter gate = fixture `level_min`;
+  конфликт Норы fixture **8** vs AMF **9** — канон среза fixture, как
+  jgr `catalog.ts`). Не в этом срезе: dungeon shops / плиты NPC,
+  abort fight, daily 06:00 wipe.
+- **Architecture checkpoint / decision:** ADR-0016/0018/0020 достаточны;
+  новый ADR/`ARC-*` не нужен — тот же generated-tooling паттерн, что
+  `DATA-02`…`POST-02`. **Ownership.** `catalog` владеет dungeon
+  definition. `world` уже владеет floor areas/links (DATA-04). Decoder —
+  offline `npm run content:decode:dungeons`, не HTTP, не часть
+  `db:reset`, не `import()`. **Формат вывода.** Committed
+  `content/dungeons.generated.json` плюс manifest; bundle key
+  `dungeonsFile`. Конфликт stable key — ошибка candidate. `db:reset` без
+  `PUB1_DIR`. **Fail-fast.** Нечитаемый/неизвестный field — весь decode
+  ошибка. Fixture artikul нет в `instance.amf` — ошибка. Title mismatch —
+  ошибка. Omitted fixture `hunt_mask` → dump mesh `bot_1`; omitted spawn
+  wait → dump 2/8 (как текущий ogre slice).
+- **Acceptance:** decode производит 8 dungeon documents; wire ID
+  already-e2e совпадают; 4/6/7 публикуются с `instance_conf` progress;
+  `db:reset` без `PUB1_DIR`; existing dungeon raw-AMF e2e без изменения
+  wire значений; `check` / `test:integration` / `test:e2e` зелёные до
+  `done`.
+- **Boundary/contract audit (закрыт):** 8 fixtures; AMF 46 chrome rows,
+  лишние id omit; bands/mob_loot omit. Провал 4/548 finish 9 coin 3163;
+  Норы 6/586 finish 7 coin 5985; Хардиф 7/617 finish 12 coin 3679.
+  `npm run content:decode:dungeons` с `PUB1_DIR`; `db:reset` без
   `PUB1_DIR`; `test:integration`, `test:e2e` и `check` зелёные.
 - **Status:** `done`
 

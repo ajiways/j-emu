@@ -27,7 +27,7 @@ npm run db:reset
 `itemsFile` / `botsFile` / `areasFile` / `storeTypesFile` / `storeLotsFile` /
 `reputationTracksFile` / `bonusesFile` / `useScriptsFile` /
 `assistantTypesFile` / `farmResourcesFile` / `areaFarmsFile` /
-`craftRecipesFile` generated JSON).
+`craftRecipesFile` / `dungeonsFile` generated JSON).
 `PUB1_DIR` для этого шага не нужен.
 
 Item и bot corpus обновляются отдельно, когда меняется Pub1. Atlas — когда
@@ -41,6 +41,7 @@ PUB1_DIR=../Pub1 npm run content:decode:bots
 npm run content:decode:areas
 npm run content:decode:economy
 PUB1_DIR=../Pub1 npm run content:decode:professions
+PUB1_DIR=../Pub1 npm run content:decode:dungeons
 ```
 
 Повтор с тем же corpus digest не переписывает файл. Decoder не входит в

@@ -35,7 +35,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/world/domain/hunt-wander.ts":
     "Hunt live motion: route, zone, home park, lock freeze, and respawn hide",
   "src/modules/content/infrastructure/merge-generated-bundle-files.ts":
-    "Concatenates items/bots/loot/spells/areas/links/hunt/store/reputation/bonus/use/assistant/farm/recipe generated JSON into the playable bundle before parse",
+    "Concatenates items/bots/loot/spells/areas/links/hunt/store/reputation/bonus/use/assistant/farm/recipe/dungeon generated JSON into the playable bundle before parse",
   "src/modules/content/application/content-editor-service.ts":
     "Editor ports: saveDraft, buildCandidate, validateCandidate, activateCandidate, status, readDocument, and listKeys",
   "src/modules/content/infrastructure/postgres-content-editor-read-store.ts":

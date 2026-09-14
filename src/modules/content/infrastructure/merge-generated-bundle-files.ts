@@ -63,6 +63,12 @@ const ARRAY_FILES: ReadonlyArray<{
     label: "craft recipe",
     keyOf: numericDocumentId,
   },
+  {
+    fileKey: "dungeonsFile",
+    bundleKey: "dungeons",
+    label: "dungeon",
+    keyOf: dungeonKey,
+  },
 ];
 
 function mergeItemsFile(
@@ -274,6 +280,15 @@ function areaFarmKey(row: unknown, label: string): string {
     throw new Error(`${label} huntSpotId is required`);
   }
   return `${areaId}:${huntSpotId}`;
+}
+
+function dungeonKey(row: unknown, label: string): string {
+  if (!isRecord(row)) throw new Error(`${label} document must be an object`);
+  const artikulId = row.artikulId;
+  if (typeof artikulId !== "number" || !Number.isInteger(artikulId) || artikulId < 1) {
+    throw new Error(`${label} artikulId is required`);
+  }
+  return String(artikulId);
 }
 
 function useScriptKey(row: unknown, label: string): string {

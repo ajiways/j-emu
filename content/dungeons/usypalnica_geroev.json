@@ -1,0 +1,118 @@
+{
+  "artikul_id": 12,
+  "title": "Усыпальница героев",
+  "start_area_id": "653",
+  "parent_area_id": "651",
+  "level_min": 10,
+  "duration_sec": 7200,
+  "img_url": "alt_inst_sklep.jpg",
+  "has_clear": false,
+  "areas": [
+    {
+      "area_id": "653",
+      "spawns": [
+        {
+          "spawn_key": "boss",
+          "hunt_bot_id": 353,
+          "encounter": [
+            {
+              "bot_id": 353,
+              "count": 1
+            }
+          ],
+          "is_boss": true,
+          "counts_for_clear": true,
+          "hunt_mask": "bot_1",
+          "position_x": 506,
+          "position_y": 660,
+          "wait_min": 2,
+          "wait_max": 8,
+          "zone": [
+            {
+              "x": 493,
+              "y": 466
+            },
+            {
+              "x": 318,
+              "y": 503
+            },
+            {
+              "x": 268,
+              "y": 581
+            },
+            {
+              "x": 455,
+              "y": 777
+            },
+            {
+              "x": 524,
+              "y": 803
+            },
+            {
+              "x": 603,
+              "y": 708
+            },
+            {
+              "x": 625,
+              "y": 554
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "loot": {
+    "boss_bot_id": 353,
+    "personal_guaranteed": [],
+    "bands": [
+      {
+        "min_clear_pct": 0,
+        "loot": {
+          "dropCnt": 3,
+          "bonusChance": 0.1,
+          "bonusMin": 1,
+          "bonusMax": 1,
+          "nothingWeight": 0,
+          "entries": [
+            {
+              "artikulId": 85,
+              "dropWeight": 22,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 122,
+              "dropWeight": 12,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 1944,
+              "dropWeight": 21,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 2550,
+              "dropWeight": 1000,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 2551,
+              "dropWeight": 800,
+              "countMin": 1,
+              "countMax": 1
+            },
+            {
+              "artikulId": 2552,
+              "dropWeight": 600,
+              "countMin": 1,
+              "countMax": 1
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

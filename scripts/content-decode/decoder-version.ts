@@ -23,3 +23,6 @@ export const FARM_RESOURCES_DECODER_VERSION = "farm-resources/v1";
 export const AREA_FARMS_DECODER_VERSION = "area-farms/v1";
 export const CRAFT_RECIPES_DECODER_VERSION = "craft-recipes/v1";
 export const PROFESSIONS_DOCUMENT_SCHEMA = "profession-document/playable-slice-v35";
+
+export const DUNGEONS_DECODER_VERSION = "dungeons/v1";
+export const DUNGEONS_DOCUMENT_SCHEMA = "dungeon-document/playable-slice-v35";

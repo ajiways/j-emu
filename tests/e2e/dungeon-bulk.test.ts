@@ -11,6 +11,39 @@ import { dungeonHuntId } from "../../src/modules/instance/domain/dungeon-hunt-id
 
 const START_MS = 1_700_000_000_000;
 
+const CLEAR_DUNGEONS = [
+  {
+    title: "proval",
+    artikul: "4",
+    start: "548",
+    parent: "536",
+    exp: 1823,
+    level: 6,
+    hunts: 4,
+    finish: "9",
+  },
+  {
+    title: "nory",
+    artikul: "6",
+    start: "586",
+    parent: "560",
+    exp: 10373,
+    level: 8,
+    hunts: 1,
+    finish: "7",
+  },
+  {
+    title: "hardif",
+    artikul: "7",
+    start: "617",
+    parent: "612",
+    exp: 181373,
+    level: 13,
+    hunts: 4,
+    finish: "12",
+  },
+] as const;
+
 const DUNGEONS = [
   {
     title: "kopi",
@@ -121,6 +154,65 @@ describe("dungeon bulk has_clear false", () => {
       });
       expect(objectBlock(again.state).area_id).toBe(dungeon.start);
       expect(copyIdFrom(again)).toBe(copyId);
+    },
+  );
+
+  it.each(CLEAR_DUNGEONS)(
+    "enters $title with a clear bar, exits and rejoins the same copy",
+    async (dungeon) => {
+      const client = await AuthenticatedClient.login(application, uniqueDevelopmentSlot());
+      const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
+      const characterId = heroIdFrom(init);
+      await grantLevel(application, characterId, dungeon.exp, dungeon.level);
+      await application.characterLocation.setArea({
+        characterId,
+        areaId: dungeon.parent,
+        moveReadyAt: null,
+        instanceCopyId: null,
+      });
+      const entered = await client.objectAction({
+        object: "common",
+        action: "action",
+        form: { code: "COME_IN", area_id: Number(dungeon.start) },
+        sq: 2,
+      });
+      expect(entered["common|action"]).toEqual({ status: 100, action: "COME_IN" });
+      expect(objectBlock(entered.state).area_id).toBe(dungeon.start);
+      expect(entered["common|instance_conf"]).toEqual({
+        artikul_id: dungeon.artikul,
+        progress_finish_value: dungeon.finish,
+        progress_value: 0,
+        status: 100,
+      });
+      const copyId = copyIdFrom(entered);
+      const hunt = objectBlock(entered["common|hunt"]);
+      const bots = hunt.bots;
+      if (!Array.isArray(bots) || bots.length !== dungeon.hunts) {
+        throw new Error(`${dungeon.title} hunt list length ${String(bots)}`);
+      }
+      clock.advanceSeconds(30);
+      const left = await client.objectAction({
+        object: "common",
+        action: "action",
+        form: { code: "COME_IN", area_id: Number(dungeon.parent) },
+        sq: 3,
+      });
+      expect(objectBlock(left.state).area_id).toBe(dungeon.parent);
+      expect(left["common|instance_conf"]).toBeUndefined();
+      clock.advanceSeconds(30);
+      const again = await client.objectAction({
+        object: "common",
+        action: "action",
+        form: { code: "COME_IN", area_id: Number(dungeon.start) },
+        sq: 4,
+      });
+      expect(copyIdFrom(again)).toBe(copyId);
+      expect(again["common|instance_conf"]).toEqual({
+        artikul_id: dungeon.artikul,
+        progress_finish_value: dungeon.finish,
+        progress_value: 0,
+        status: 100,
+      });
     },
   );
 

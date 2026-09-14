@@ -9,10 +9,11 @@ document; a spawn authors either `route` or `zone`, not both.
 DNG-03 landed raw-AMF: generic `has_clear` progress bar, clear coins on boss
 kill, and dungeon `personal_guaranteed`. Product **частично** until CEF —
 [CAPABILITIES.md](../CAPABILITIES.md). Leftover: `loot.bands`, shops, abort
-fight, `has_clear: true` 4/6/7.
+fight.
 
 Published today: ogre cave `1`/542/bot 99, pit `2`/544/bots 106–109, kopi
-`11`/654/bot 354, tomb `12`/653/bot 353, usadba `14`/673/bot 373.
+`11`/654/bot 354, tomb `12`/653/bot 353, usadba `14`/673/bot 373, plus
+POST-03 `has_clear` Провал `4`/548, Норы `6`/586, Хардиф `7`/617.
 
 BG match is [BATTLEGROUND.md](BATTLEGROUND.md) (`copy_type='bg'`, no dungeon
 bind). Instance book tab is [BOOK.md](BOOK.md). Quest `personal_only` is
@@ -150,8 +151,7 @@ Dungeon personal/coins — **каждый** team-1, не только top damage
 ## Out of slice
 
 `loot.bands` / `mob_loot` overlay; abort fight mid-expire; bind warning on
-invite; dungeon shops (830/724/741/829); `has_clear: true` fixtures **4/6/7**;
-POST-03 mass importer; daily 06:00 MSK wipe; outdoor 508 / hunts / NPC 510;
-яма spell `effect_ids` босса 106 (книга пустая, как 353/354/373). Hunt join
-team 2 в копии landed (CMB-11); leftover этого модуля — вторая дуэль / N×N
-не сюда.
+invite; dungeon shops (830/724/741/829) as NPC plate COME_IN; daily 06:00
+MSK wipe; outdoor 508 / hunts / NPC 510; яма spell `effect_ids` босса 106
+(книга пустая, как 353/354/373). Hunt join team 2 в копии landed (CMB-11);
+leftover этого модуля — вторая дуэль / N×N не сюда.
