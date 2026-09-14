@@ -5,8 +5,17 @@ export function mergeGeneratedBundleFiles(
   decoded: Readonly<Record<string, unknown>>,
   directory: string,
 ): Record<string, unknown> {
-  return mergeBotSpellBooksFile(
-    mergeBotLootFile(mergeBotsFile(mergeItemsFile(decoded, directory), directory), directory),
+  return mergeHuntSpawnsFile(
+    mergeAreaLinksFile(
+      mergeAreasFile(
+        mergeBotSpellBooksFile(
+          mergeBotLootFile(mergeBotsFile(mergeItemsFile(decoded, directory), directory), directory),
+          directory,
+        ),
+        directory,
+      ),
+      directory,
+    ),
     directory,
   );
 }
@@ -32,6 +41,75 @@ function mergeItemsFile(
   const existing = fromBundle === undefined ? [] : fromBundle;
   if (!Array.isArray(existing)) throw new Error("Content bundle artifacts must be an array");
   return { ...rest, artifacts: concatById(existing, fromFile, "artifact artikul_id", "itemsFile") };
+}
+
+function mergeAreasFile(
+  decoded: Readonly<Record<string, unknown>>,
+  directory: string,
+): Record<string, unknown> {
+  return mergeArrayFile(decoded, directory, {
+    fileKey: "areasFile",
+    bundleKey: "areas",
+    label: "area id",
+    keyOf: stringDocumentId,
+  });
+}
+
+function mergeAreaLinksFile(
+  decoded: Readonly<Record<string, unknown>>,
+  directory: string,
+): Record<string, unknown> {
+  return mergeArrayFile(decoded, directory, {
+    fileKey: "areaLinksFile",
+    bundleKey: "areaLinks",
+    label: "area_link",
+    keyOf: areaLinkKey,
+  });
+}
+
+function mergeHuntSpawnsFile(
+  decoded: Readonly<Record<string, unknown>>,
+  directory: string,
+): Record<string, unknown> {
+  return mergeArrayFile(decoded, directory, {
+    fileKey: "huntSpawnsFile",
+    bundleKey: "huntSpawns",
+    label: "hunt_spawn id",
+    keyOf: numericDocumentId,
+  });
+}
+
+function mergeArrayFile(
+  decoded: Readonly<Record<string, unknown>>,
+  directory: string,
+  spec: Readonly<{
+    fileKey: string;
+    bundleKey: string;
+    label: string;
+    keyOf: (row: unknown, label: string) => string;
+  }>,
+): Record<string, unknown> {
+  const relative = decoded[spec.fileKey];
+  const rest: Record<string, unknown> = { ...decoded };
+  delete rest[spec.fileKey];
+  const fromBundle = rest[spec.bundleKey];
+  if (relative === undefined) {
+    if (!Array.isArray(fromBundle)) {
+      throw new Error(`Content bundle ${spec.bundleKey} or ${spec.fileKey} is required`);
+    }
+    return rest;
+  }
+  if (typeof relative !== "string" || !relative) {
+    throw new Error(`Content bundle ${spec.fileKey} must be a relative path`);
+  }
+  const fromFile = readJsonArray(path.resolve(directory, relative));
+  const existing = fromBundle === undefined ? [] : fromBundle;
+  if (!Array.isArray(existing))
+    throw new Error(`Content bundle ${spec.bundleKey} must be an array`);
+  return {
+    ...rest,
+    [spec.bundleKey]: concatByKey(existing, fromFile, spec.label, spec.fileKey, spec.keyOf),
+  };
 }
 
 function mergeBotsFile(
@@ -96,14 +174,24 @@ function concatById(
   label: string,
   rightSource: string,
 ): unknown[] {
-  const seen = new Map<number, "bundle" | string>();
+  return concatByKey(left, right, label, rightSource, numericDocumentId);
+}
+
+function concatByKey(
+  left: readonly unknown[],
+  right: readonly unknown[],
+  label: string,
+  rightSource: string,
+  keyOf: (row: unknown, label: string) => string,
+): unknown[] {
+  const seen = new Map<string, "bundle" | string>();
   const merged: unknown[] = [];
   for (const [source, rows] of [
     ["bundle", left],
     [rightSource, right],
   ] as const) {
     for (const row of rows) {
-      const id = documentId(row, label);
+      const id = keyOf(row, label);
       const previous = seen.get(id);
       if (previous) throw new Error(`Duplicate ${label} ${id} in ${previous} and ${source}`);
       seen.set(id, source);
@@ -111,6 +199,30 @@ function concatById(
     }
   }
   return merged;
+}
+
+function numericDocumentId(row: unknown, label: string): string {
+  return String(documentId(row, label));
+}
+
+function stringDocumentId(row: unknown, label: string): string {
+  if (!isRecord(row)) throw new Error(`${label} document must be an object`);
+  const id = row.id;
+  if (typeof id !== "string" || !id) throw new Error(`${label} is required`);
+  return id;
+}
+
+function areaLinkKey(row: unknown, label: string): string {
+  if (!isRecord(row)) throw new Error(`${label} document must be an object`);
+  const fromAreaId = row.fromAreaId;
+  const itemId = row.itemId;
+  if (typeof fromAreaId !== "string" || !fromAreaId) {
+    throw new Error(`${label} fromAreaId is required`);
+  }
+  if (typeof itemId !== "number" || !Number.isInteger(itemId) || itemId < 0) {
+    throw new Error(`${label} itemId is required`);
+  }
+  return `${fromAreaId}:${itemId}`;
 }
 
 function attachLoot(bots: readonly unknown[], rows: readonly unknown[]): unknown[] {

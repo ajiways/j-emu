@@ -1,0 +1,35 @@
+{
+  "areas": {
+    "503": {
+      "context": "4",
+      "soundIntro": "Ambience_village.mp3",
+      "soundBg": "Ambience_village.mp3",
+      "hideRunningFights": 1
+    },
+    "541": {
+      "fightBackground": "8_1"
+    },
+    "499": {
+      "ftimeMax": 0
+    },
+    "500": {
+      "fightBackground": "2_1",
+      "ftimeMax": 0
+    },
+    "635": {
+      "fightBackground": "5_1",
+      "regionMap": "radvei_map.swf",
+      "context": ""
+    },
+    "636": {
+      "fightBackground": "5_1",
+      "regionMap": "radvei_map.swf",
+      "context": ""
+    },
+    "637": {
+      "fightBackground": "5_1",
+      "regionMap": "radvei_map.swf",
+      "context": ""
+    }
+  }
+}

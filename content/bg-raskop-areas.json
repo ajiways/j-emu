@@ -1,0 +1,105 @@
+{
+  "note": "Раскоп BG id 2 rooms. Seeded after radvei_areas (not world_map). Wire: docs/BATTLEGROUNDS.md",
+  "areas": {
+    "635": {
+      "id": "635",
+      "title": "Западный лагерь",
+      "parent_id": "500",
+      "swf": "bg1_baza.swf",
+      "ftime_max": 20,
+      "inst_artikul_id": 10,
+      "context": "0",
+      "code": "",
+      "hunt_bots": [],
+      "hunt_farm": [],
+      "client_data": "",
+      "extra_json": { "bg_id": "2" },
+      "items": [
+        {
+          "id": 6,
+          "title": "К раскопу",
+          "to_id": "636",
+          "href": {
+            "object": "common",
+            "action": "action",
+            "form": { "code": "COME_IN", "area_id": 636 }
+          },
+          "direction": 3,
+          "flags": 0,
+          "confirm_question": ""
+        }
+      ]
+    },
+    "636": {
+      "id": "636",
+      "title": "Раскоп",
+      "parent_id": "500",
+      "swf": "bg1_shahta3.swf",
+      "ftime_max": 20,
+      "inst_artikul_id": 10,
+      "context": "0",
+      "code": "",
+      "hunt_bots": [],
+      "hunt_farm": [],
+      "client_data": "",
+      "extra_json": { "bg_id": "2" },
+      "items": [
+        {
+          "id": 1,
+          "title": "К западному лагерю",
+          "to_id": "635",
+          "href": {
+            "object": "common",
+            "action": "action",
+            "form": { "code": "COME_IN", "area_id": 635 }
+          },
+          "direction": 4,
+          "flags": 0,
+          "confirm_question": ""
+        },
+        {
+          "id": 6,
+          "title": "К восточному лагерю",
+          "to_id": "637",
+          "href": {
+            "object": "common",
+            "action": "action",
+            "form": { "code": "COME_IN", "area_id": 637 }
+          },
+          "direction": 3,
+          "flags": 0,
+          "confirm_question": ""
+        }
+      ]
+    },
+    "637": {
+      "id": "637",
+      "title": "Восточный лагерь",
+      "parent_id": "500",
+      "swf": "bg1_baza_2.swf",
+      "ftime_max": 20,
+      "inst_artikul_id": 10,
+      "context": "0",
+      "code": "",
+      "hunt_bots": [],
+      "hunt_farm": [],
+      "client_data": "{type:swf, src:/images/data/upl/ritualnaya_chasha.swf, x:50, y:120, mapID:199, alt:Ритуальная чаша, scale:1, enabled:1, botDirection:SE, frameRate:15}",
+      "extra_json": { "bg_id": "2" },
+      "items": [
+        {
+          "id": 1,
+          "title": "К раскопу",
+          "to_id": "636",
+          "href": {
+            "object": "common",
+            "action": "action",
+            "form": { "code": "COME_IN", "area_id": 636 }
+          },
+          "direction": 4,
+          "flags": 0,
+          "confirm_question": ""
+        }
+      ]
+    }
+  }
+}

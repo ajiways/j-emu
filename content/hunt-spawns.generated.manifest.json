@@ -1,0 +1,50 @@
+{
+  "sourceGroup": "DATA-04 / hunt definitions",
+  "decoderVersion": "hunt-spawns/v1",
+  "documentSchema": "area-document/playable-slice-v35",
+  "filesDigest": "f293953dc595a8bbb86a5c4d2cf59438033e6da54ec0d760b908099d7ca30543",
+  "acceptedCount": 10,
+  "keys": [
+    {
+      "key": "50101",
+      "digest": "8daadfd007af27c75168c7dc06535e21ba77b303448d1870b78dd08731e07237"
+    },
+    {
+      "key": "50102",
+      "digest": "aa549eeb4f6bbc418e5afc4a930f0938fcac9f7a7d354d1c531e4834313755fb"
+    },
+    {
+      "key": "50103",
+      "digest": "e8f150cddadf64b0636dbfff712a06974e3631187ac2734cf4cdf4bea20eaf05"
+    },
+    {
+      "key": "50104",
+      "digest": "866c5f83817a5f674684e2c8279b6d50d73ff410c2badf9fe7e761c0ced2e553"
+    },
+    {
+      "key": "50302",
+      "digest": "5446db61d7daafc4196ca366c813fec5cc9343a240a170521e0269301c40a09f"
+    },
+    {
+      "key": "50309",
+      "digest": "709d9d392a939ae82a163d6c249b13e97dc7ecd8d4bfffbb31cfd50074663b99"
+    },
+    {
+      "key": "50310",
+      "digest": "7d74a0b53cb8140d9006a597c50523c8ebc1de69f97323f7772e356f0d423a63"
+    },
+    {
+      "key": "50311",
+      "digest": "7d6f9c0f3bfb9535e606661a4ae00173d4a309499c12f478a147ecc775e85e19"
+    },
+    {
+      "key": "50312",
+      "digest": "e7e6b25e615cb3995d5c8e01fd40d9911e25a6fc73e4a882c8e499d99d9ac0af"
+    },
+    {
+      "key": "50313",
+      "digest": "3bb6d0a7fc3232726933b3476fd81a28c7383fc9e6fc1ffd4859d3780e46c8ff"
+    }
+  ],
+  "corpusDigest": "e27c08ce5bd48a3470feb3dc581258ca9582694bf77d2aac7f02d51c6e40ead3"
+}

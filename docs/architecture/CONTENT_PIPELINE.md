@@ -58,8 +58,8 @@ Seed: `npm run db:publish:development` с `CONTENT_BUNDLE_FILE` и `DATABASE_URL
 из `.env` в корне пакета. Повтор с тем же checksum не создаёт новый release.
 Новый checksum на уже опубликованной БД создаёт и активирует следующую release
 через `publish` (тот же npm-скрипт).
-Полный item и bot corpus уже в generated-файлах. Остальные типы (areas/stores/quests)
-из матрицы — план, кроме уже опубликованного playable subset.
+Полный item, bot и area/hunt corpus уже в generated-файлах. Остальные типы
+(stores/quests) из матрицы — план, кроме уже опубликованного playable subset.
 
 ## `playable-slice.json` — временный bootstrap, не целевой механизм
 
@@ -68,7 +68,9 @@ Seed: `npm run db:publish:development` с `CONTENT_BUNDLE_FILE` и `DATABASE_URL
 `content/pub1-items.generated.json` (`npm run content:decode:items`).
 Bot corpus тоже не кладётся: `botsFile` / `botLootFile` / `botSpellBooksFile`
 указывают на generated JSON (`npm run content:decode:bots`).
-Руками не расти `artifacts`/`bots` до полного каталога.
+Area/hunt corpus тоже не кладётся: `areasFile` / `areaLinksFile` /
+`huntSpawnsFile` указывают на generated JSON (`npm run content:decode:areas`).
+Руками не расти `artifacts`/`bots`/`areas` до полного каталога.
 
 Правило: как только для домена (`catalog` items, `catalog` bots/spells,
 `world` areas/hunt, `economy` stores, …) появляется хотя бы одна capability,
@@ -94,7 +96,9 @@ DATA-стадии (не runtime-зависимость и не копирова�
 - `jgr-emu/src/db/seed_game_config.ts` — `common_conf.bin`/`common_init2.bin`
   (реальный AMF live-дампа) → DATA-01 bootstrap-конфиги; тот же файл также
   льёт `radvei_areas.json`/`radvei_hunt_bots.json`/`hunt_spawns.json`
-  (уже authored JSON, не сырой AMF) → DATA-04 areas/hunt.
+  (уже authored JSON, не сырой AMF) → DATA-04 areas/hunt
+  (`npm run content:decode:areas` → `content/areas.generated.json` /
+  `area-links.generated.json` / `hunt-spawns.generated.json`).
 - `jgr-emu/src/db/seed_professions.ts` — `assistant_list.amf`,
   `farm_list.amf`, `farm_types.amf`, `recipes.amf` → POST-02 professions.
 

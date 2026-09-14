@@ -52,15 +52,28 @@ describe("loadContentBundleFile generated files", () => {
     writeBundle(dir, bundle, [["bots.json", [sample]]]);
     expect(() => loadContentBundleFile(path.join(dir, "bundle.json"))).toThrow(/Duplicate bot id/);
   });
+
+  it("rejects the same area id in both files", () => {
+    const raw = readSlice();
+    const sample = sampleArea(raw);
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "areas-conflict-"));
+    const bundle: Record<string, unknown> = { ...raw, areas: [sample], areasFile: "areas.json" };
+    writeBundle(dir, bundle, [["areas.json", [sample]]]);
+    expect(() => loadContentBundleFile(path.join(dir, "bundle.json"))).toThrow(/Duplicate area id/);
+  });
 });
 
 function readSlice(): Record<string, unknown> & {
   artifacts: Array<{ id: number }>;
   bots: Array<{ id: number }>;
+  areas?: Array<{ id: string }>;
+  areasFile?: unknown;
 } {
   return JSON.parse(fs.readFileSync(slicePath, "utf8")) as Record<string, unknown> & {
     artifacts: Array<{ id: number }>;
     bots: Array<{ id: number }>;
+    areas?: Array<{ id: string }>;
+    areasFile?: unknown;
   };
 }
 
@@ -75,6 +88,18 @@ function sampleArtifact(raw: { artifacts: Array<{ id: number }>; itemsFile?: unk
   ) as Array<{ id: number }>;
   const row = items[0];
   if (!row) throw new Error("itemsFile has no artifacts");
+  return row;
+}
+
+function sampleArea(raw: { areas?: Array<{ id: string }>; areasFile?: unknown }): { id: string } {
+  const fromBundle = raw.areas?.[0];
+  if (fromBundle) return fromBundle;
+  if (typeof raw.areasFile !== "string") throw new Error("playable-slice has no areas");
+  const areas = JSON.parse(
+    fs.readFileSync(path.resolve(process.cwd(), "content", raw.areasFile), "utf8"),
+  ) as Array<{ id: string }>;
+  const row = areas[0];
+  if (!row) throw new Error("areasFile has no areas");
   return row;
 }
 
@@ -111,6 +136,18 @@ function writeBundle(
   }
   if (typeof bundle.botSpellBooksFile === "string") {
     const dest = path.join(dir, bundle.botSpellBooksFile);
+    if (!fs.existsSync(dest)) fs.writeFileSync(dest, "[]\n");
+  }
+  if (typeof bundle.areasFile === "string") {
+    const dest = path.join(dir, bundle.areasFile);
+    if (!fs.existsSync(dest)) fs.writeFileSync(dest, "[]\n");
+  }
+  if (typeof bundle.areaLinksFile === "string") {
+    const dest = path.join(dir, bundle.areaLinksFile);
+    if (!fs.existsSync(dest)) fs.writeFileSync(dest, "[]\n");
+  }
+  if (typeof bundle.huntSpawnsFile === "string") {
+    const dest = path.join(dir, bundle.huntSpawnsFile);
     if (!fs.existsSync(dest)) fs.writeFileSync(dest, "[]\n");
   }
   if (typeof bundle.itemsFile === "string" && bundle.itemsFile !== "items.json") {

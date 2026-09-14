@@ -11,8 +11,8 @@ import { loadContentBundleFile } from "../../src/modules/content/infrastructure/
 const playable = loadContentBundleFile(path.resolve(process.cwd(), "content/playable-slice.json"));
 
 export function playableHuntBot(): BotDefinition {
-  const spawn = playable.huntSpawns[0];
-  if (!spawn) throw new Error("Playable slice has no hunt spawns");
+  const spawn = playable.huntSpawns.find((row) => row.id === 50310);
+  if (!spawn) throw new Error("Playable slice is missing hunt spawn 50310");
   const document = playable.bots.find((bot) => bot.id === spawn.botId);
   if (!document) throw new Error(`Playable slice is missing bot ${spawn.botId}`);
   return botDefinitionFromDocument(document);

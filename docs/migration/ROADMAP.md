@@ -248,7 +248,7 @@
 - **Content set:** `playable-slice/v10` dump-proven **503 ↔ 504** (store interior)
   and **503 ↔ 501** (outdoor `ftime_max=15`). Authored travel `area_links` only
   (503 items 5 and 7, 501 item 2, 504 item 0). No 498/502/542, no NPC/AREA-attack
-  sidebar rows, no store lots. Full L1–8 atlas stays DATA-04.
+  Full L1–8 atlas — DATA-04 (закрыт).
 - **Architecture checkpoint / decision:** complete — existing ADRs sufficient;
   no `ARC-WORLD`. Location stays `heroes.area_id`; add `heroes.move_ready_at`
   (NULL = free). World owns `areas` + `area_links` + `areas.parent_id`; no
@@ -792,7 +792,8 @@
 - **depends_on:** `WLD-02`
 - **Behavior evidence:** legacy `huntWorld.ts`, `huntWander.ts`, `SYNC.md`.
 - **Content set:** 2–3 representative spawn'а с разным route/zone/respawn —
-  массовый импорт `hunt_spawns.json` целиком — DATA-04, не эта capability.
+  массовый импорт `hunt_spawns.json` целиком — DATA-04 (закрыт), не эта
+  capability.
 - **Architecture checkpoint / decision:** действующие ADR-0017–0020
   достаточны, `ARC-*` нет. Authored route/zone/wait/respawn — колонки
   `world.hunt_spawns`. Live motion process-local (`HuntWanderRuntime`) на
@@ -1927,8 +1928,8 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   **Не в этом срезе.** Generic export/import произвольной active release
   (план `CONTENT_PIPELINE.md` § «Экспорт и восстановление» остаётся
   отдельной, не начатой задачей — не путать с этим decoder-специфичным
-  файлом); item overlays помимо `artikul_weights.json`; `DATA-04…06`
-  (areas/hunts, stores/reputation, NPC/квесты — следующие записи этой
+  файлом); item overlays помимо `artikul_weights.json`; `DATA-05…06`
+  (stores/reputation, NPC/квесты — следующие записи этой
   волны по той же схеме, после `DATA-03`).
 - **Acceptance:** decode свежего `PUB1_DIR` производит один committed
   JSON-файл с полным corpus (~22 560+ artifacts); wire ID уже
@@ -2066,7 +2067,7 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   достаточны; новый ADR/`ARC-*` не нужен — тот же generated-tooling
   паттерн, что `DATA-02`/`DATA-03`. **Ownership.** `world` владеет
   `areas`/`area_links`/`hunt_spawns`. Decoder — offline
-  `npm run content:decode:areas` (имя уточняется при реализации), не
+  `npm run content:decode:areas`, не
   HTTP, не часть `db:reset`, не `import()`. **Формат вывода.** Committed
   generated JSON плюс manifests; bundle keys как `itemsFile`/`botsFile`.
   Конфликт stable key — ошибка candidate. `db:reset` без `PUB1_DIR`.
@@ -2075,6 +2076,55 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
 - **Acceptance:** decode производит committed areas/hunt файлы; wire ID
   already-e2e (503/501/504/…, hunt 50310/50309/50101–50103, dungeon
   542/544/…) совпадают; `db:reset` без `PUB1_DIR`; existing travel/hunt
+  raw-AMF e2e без изменения wire значений; `check` /
+  `test:integration` / `test:e2e` зелёные до `done`.
+- **Boundary/contract audit (закрыт):** decode/файл/manifest в порядке.
+  74 areas (radvei 71 + BG 635/636/637), 156 COME_IN links, 10 authored
+  hunt spawns на 501/503. Missing parents `498`/`494`/`505`/`508` →
+  `parentId` `""`. Dangling COME_IN omit; NPC/action items не area links.
+  Wire `client_data` всегда `""`. Event artikul на spawn — ошибка decode.
+  Overlay upsert: 503 sounds/context/`hideRunningFights`; 541 fight bg
+  `8_1`; 499/500 `ftimeMax` 0; BG 635–637 fight bg `5_1`. E2e 501 sidebar
+  включает «В Поля»; 503 hunt list length 6 (50302/50309–13).
+  `npm run content:decode:areas` без `PUB1_DIR`; `db:reset` без `PUB1_DIR`;
+  `test:integration`, `test:e2e` и `check` зелёные.
+- **Status:** `done`
+
+### DATA-05 — Stores, bonuses and reputation corpus decoder
+
+- **ID:** `DATA-05`
+- **depends_on:** `DATA-02`, `DATA-04`
+- **Precondition (уже выполнено, не проверять заново):** store buy/RANK,
+  INV-04 USE/drink и REP-01 track 5 уже `done` на representative subset.
+  `DATA-02` закрыл item refs; `DATA-04` закрыл area refs для магазинов.
+- **Behavior evidence:** [CONTENT_MATRIX.md](CONTENT_MATRIX.md) § три
+  строки `DATA-05` (required stores; reputation core; bonuses/consumable
+  USE); `jgr-emu/src/db/seed_store.ts`, `seed_reputation.ts`,
+  `seed_bonuses.ts`, `seed_artifact_use.ts` (non-quest entries) как
+  evidence формата, не runtime-зависимость; текущий
+  `content/playable-slice.json` store/reputation/bonus/use как evidence
+  целевой типизации.
+- **Content set:** authored store dumps (`fixtures/stores/*.json`, 23
+  файла), remaining reputation tracks/kills поверх track 5, `bonuses.json`
+  и non-quest `artifact_use.json`. Wire store/lot/track/bonus/script ID
+  без перенумерации. Provenance: live-dump затем authored overlays того
+  же ключа. Не в этом срезе: DATA-06 quest-aware scripts, NPC/квесты;
+  пустой legacy shop остаётся явным контентом, не «полный магазин».
+- **Architecture checkpoint / decision:** ADR-0011/ADR-0017–0020
+  достаточны; новый ADR/`ARC-*` не нужен — тот же generated-tooling
+  паттерн, что `DATA-02`…`DATA-04`. **Ownership.** `economy` владеет
+  store types/lots; `catalog` владеет reputation tracks, bonuses и
+  use scripts. Decoder — offline `npm run content:decode:economy` (имя
+  фиксируется при реализации), не HTTP, не часть `db:reset`, не
+  `import()`. **Формат вывода.** Committed generated JSON плюс manifests;
+  bundle keys как `itemsFile`/`areasFile`. Конфликт stable key — ошибка
+  candidate. `db:reset` без `PUB1_DIR`. **Fail-fast.** Нечитаемый/
+  неизвестный record — весь decode ошибка. Ссылка lot на отсутствующий
+  item/area — ошибка `ContentValidator`.
+- **Acceptance:** decode производит committed store/reputation/bonus
+  файлы; wire ID already-e2e (store 504 lots 23/24, store 552 lot
+  438/621 RANK, reputation track 5, bonus 601, USE 640/623/2371/55/584)
+  совпадают; `db:reset` без `PUB1_DIR`; existing store/USE/reputation
   raw-AMF e2e без изменения wire значений; `check` /
   `test:integration` / `test:e2e` зелёные до `done`.
 - **Status:** `next`

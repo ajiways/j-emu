@@ -32,6 +32,7 @@
     "db:publish:development": "tsx src/infrastructure/postgres/publish-development-content.ts",
     "content:decode:items": "tsx scripts/decode-pub1-items.ts",
     "content:decode:bots": "tsx scripts/decode-pub1-bots.ts",
+    "content:decode:areas": "tsx scripts/decode-areas.ts",
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down"
   },

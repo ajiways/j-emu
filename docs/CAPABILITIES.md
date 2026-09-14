@@ -24,6 +24,9 @@
   `content/pub1-items.generated.json`); Pub1 bot corpus decoder
   (`npm run content:decode:bots` → `content/bots.generated.json` /
   `bot-loot.generated.json` / `bot-spell-books.generated.json`);
+  areas/links/hunt decoder (`npm run content:decode:areas` →
+  `content/areas.generated.json` / `area-links.generated.json` /
+  `hunt-spawns.generated.json`);
   `npm run db:reset` без `PUB1_DIR` поднимает полный корпус из committed
   `playable-slice.json` + generated files;
 - typed static OA/fproxy/esrv dispatch;
@@ -413,7 +416,7 @@ USE 2827 failPlaque; restart GET совпадает; 422 не двигает poi
 Flash-редактора нет. Исключение «Отложенный CEF Wave 5–12» закрыто.
 
 Не перенесены SPA `/dev/content`, rollback/export, `operator_roles`,
-DATA-04…06 mass import (DATA-02/DATA-03 — готово, см. выше), новые ключи вне active
+DATA-05…06 mass import (DATA-02…04 — готово, см. выше), новые ключи вне active
 release.
 
 ## Вне первой волны

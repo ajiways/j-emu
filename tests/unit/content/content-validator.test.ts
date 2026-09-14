@@ -84,13 +84,13 @@ describe("ContentValidator", () => {
       areaLinks: [
         {
           ...link,
-          toAreaId: "502",
-          toId: "502",
-          href: { object: "common", action: "action", form: { code: "COME_IN", area_id: 502 } },
+          toAreaId: "99999",
+          toId: "99999",
+          href: { object: "common", action: "action", form: { code: "COME_IN", area_id: 99999 } },
         },
       ],
     };
-    expect(() => new ContentValidator().validate(bundle)).toThrow(/to-area 502 is missing/);
+    expect(() => new ContentValidator().validate(bundle)).toThrow(/to-area 99999 is missing/);
   });
 
   it("rejects an area whose parent is not in the bundle", () => {

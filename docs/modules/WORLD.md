@@ -21,7 +21,8 @@ wander/respawn для 50310 в dump нет — не выдумывать. Melee 
 - `jgr-emu/src/travel.ts`, `areaActions.ts`, `routes/oa/commonObject.ts`
   (`COME_IN`), `routes/oa/common.ts` (`exit`), `presence.ts`, `esrvOutbox.ts`,
   `routes/esrv.ts`, `huntWorld.ts`, `huntLocks.ts`, `huntWander.ts`;
-- authored `jgr-emu/fixtures/radvei_areas.json` (areas 501, 503, 504).
+- authored `jgr-emu/fixtures/radvei_areas.json` (DATA-04 decoder
+  `content/radvei-areas.json` → `areas.generated.json`).
 
 ## Контракт мира
 
@@ -56,9 +57,11 @@ world владеет authored rooms и `bgId`.
 `status:203` `нельзя во время боя` (live `fightBusy`). Это не live-исключение
 для PUT_ON; для travel live уже режет.
 
-### Content set (`playable-slice/v23`)
+### Content set
 
-Dump-proven subset, не весь L1–8 (это DATA-04 corpus):
+DATA-04 atlas: 74 areas, 156 COME_IN links, 10 hunt spawns from
+`content/areas.generated.json` / `area-links.generated.json` /
+`hunt-spawns.generated.json`. E2e-representative rows:
 
 | Area | Title               | `ftime_max` | `code`  | SWF / fight_bg                         |
 | ---- | ------------------- | ----------- | ------- | -------------------------------------- |
@@ -345,14 +348,14 @@ Catalog `bots.hunt_speed` читается join'ом на snapshot; speed 10 →
 
 ### Content
 
-Representative dump-proven, не полный `hunt_spawns.json` (DATA-04):
+Authored `content/hunt-spawns.json` (DATA-04): 10 spawns on 501/503.
 
-- **50310** home park: пустые `zone`/`route`, respawn 0 — не выдумывать
-  маршрут 50309;
+- **50310** home park: пустые `zone`/`route`, respawn 0;
 - **50309** route + respawn 3–15s (Hissa `4` на 503);
-- **50101–50103** zone + wait 2–6s.
+- **50302 / 50311–13** authored parked/zone points from the same file;
+- **50101–50104** zone + wait 2–6s.
 
-Не публиковать 50311–13.
+Runtime не читает `hunt_spawns.json` и не запускает legacy generator.
 
 ### Acceptance
 

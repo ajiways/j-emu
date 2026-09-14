@@ -97,9 +97,9 @@ DNG-03, не POST-03), остальные battleground-карты,
 переносятся.
 
 Текущая граница правды — [CONTENT_MATRIX.md](CONTENT_MATRIX.md) § «Текущая
-граница правды»: `DATA-02` done (22 560 artifacts) и `DATA-03` bot corpus
-(164 bots из generated JSON); остальные типы — минимальный playable
-slice.
+граница правды»: `DATA-02` done (22 560 artifacts), `DATA-03` bot corpus
+(164 bots из generated JSON) и `DATA-04` atlas (74 areas / 156 links / 10
+hunts); остальные типы — минимальный playable slice.
 
 ## Приоритет доказательств
 

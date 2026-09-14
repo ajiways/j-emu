@@ -11,3 +11,4 @@ package-lock.json
 *.log
 content/*.generated.json
 content/*.generated.manifest.json
+content/radvei-areas.json
