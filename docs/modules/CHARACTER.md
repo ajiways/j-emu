@@ -475,8 +475,10 @@ Auth: тот же `CONTENT_OPERATOR_TOKEN` и `OperatorAuthPolicy`, что EDT-0
 | POST   | `/operator/hero/:id/money` | `{ minorUnits }` (≠ 0)     | тот же DTO после credit/debit |
 
 `minorUnits > 0` — `creditMoney`; `< 0` — `debitMoney` с `allowGhost: true`.
-Это `money_minor` (серебро / wire `money`), не алмазы. `ExperienceGrantService`
-не входит в этот срез.
+Это `money_minor` — золотые монеты в minor units (`1.00` монета = `100`
+`money_minor`; Flash `state.money` = `(money_minor / 100).toFixed(2)`).
+Не алмазы (`money_gold_minor` / wire `money_gold`; суффикс `_gold` — имя
+live, не золото). `ExperienceGrantService` не входит в этот срез.
 
 GET не использует AMF `HeroStateBlock` / `buildUserBag`. Сборка:
 `getById` + `list`, затем разложение по `location.kind`. DTO:

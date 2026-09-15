@@ -120,7 +120,7 @@ Wire — неотсечённый float (live 5×0.62 → `0.551298…`). Ready/
   confirm_key: string,
   my_tray / opponent_tray,   // opponent_tray: [] до confirm инвайтее
   bag: { [id]: Artifact },   // map, не массив
-  money: number              // серебро героя, gold number
+  money: number              // золотые монеты героя (money_minor / 100)
 }
 ```
 

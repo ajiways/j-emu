@@ -1627,8 +1627,9 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
   `GET /operator/hero/:id` → состояние;
   `POST /operator/hero/:id/items` `{ artifactId, quantity }`;
   `POST /operator/hero/:id/money` `{ minorUnits }` (знак: `>0` credit
-  `money_minor`, `<0` debit `money_minor`; `0` запрещён). Это серебро
-  (`money_minor` / wire `money`), не алмазы `money_gold_minor`.
+  `money_minor`, `<0` debit `money_minor`; `0` запрещён). Это золотые
+  монеты (`money_minor` / wire `money`, `1.00` = `100` minor), не алмазы
+  `money_gold_minor` (wire `money_gold`; суффикс `_gold` — имя live).
   Debit с `allowGhost: true` (operator console, не store).
   **GET DTO.** Не AMF `HeroStateBlock` / `buildUserBag`. Сборка из
   `CharacterService.getById` + `InventoryService.list` (bag / pocket /

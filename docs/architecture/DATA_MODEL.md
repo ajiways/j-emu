@@ -9,7 +9,10 @@
   диапазоны — в [ID_POLICY.md](ID_POLICY.md).
 - Время — `timestamptz`. Unix time появляется только в `jugger-wire`.
 - Деньги текущего среза — целое `money_minor` на герое (`bigint`), не
-  `double precision`. `numeric(20,2)` с кодом валюты — план для `economy`.
+  `double precision`. `money_minor` — золотые монеты (`state.money`) в
+  сотых: `1.00` монета = `100` minor. `money_gold_minor` — алмазы
+  (`state.money_gold`; суффикс `_gold` — имя live, не золото), та же
+  шкала `/100`. `numeric(20,2)` с кодом валюты — план для `economy`.
 - Счётчики и количество — integer/bigint с `CHECK`.
 - Используются FK, unique/check constraints и `ON DELETE` по смыслу.
 - `operation_id` добавляется только для команд, которые реально могут быть

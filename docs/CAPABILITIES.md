@@ -445,7 +445,8 @@ Flash-редактора нет. Исключение «Отложенный CEF
 EDT-03: HTTP JSON `/operator/hero/*` (тот же Bearer): GET bag/pocket/
 paperdoll/`moneyMinor`/`exp`; POST item (`artifactId`/`quantity`); POST
 money (знак `minorUnits` = credit/debit `money_minor`). 401/400/404/409
-без fallback. Restart сохраняет bag и серебро. Flash/OA consumer нет
+без fallback. Restart сохраняет bag и золотые монеты (`money_minor`).
+Flash/OA consumer нет
 (internal enabling, product **частично**). `ExperienceGrantService` и
 алмазы не входят.
 
