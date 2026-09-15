@@ -12,6 +12,10 @@ export class FailingFinishedFightStore implements FinishedFightStore {
     throw this.error;
   }
 
+  async listByArea(): Promise<readonly FinishedFightRecord[]> {
+    throw this.error;
+  }
+
   async deleteExpiredBatch(): Promise<number> {
     throw this.error;
   }

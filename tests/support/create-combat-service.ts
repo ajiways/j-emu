@@ -1,5 +1,6 @@
 import { CombatService } from "../../src/modules/combat/application/combat-service.ts";
 import { FinishedFightRecorder } from "../../src/modules/combat/application/finished-fight-recorder.ts";
+import { FinishedFightList } from "../../src/modules/combat/application/finished-fight-list.ts";
 import type { BattleRules } from "../../src/modules/combat/domain/battle-rules.ts";
 import { UNIT_BATTLE_RULES } from "./battle-rules.ts";
 import { ManualCombatDelay } from "./fakes/manual-combat-delay.ts";
@@ -45,5 +46,6 @@ export function createCombatService(input: {
     writes,
     delay,
   );
+  combat.bindHistoryList(new FinishedFightList(history, clock));
   return { combat, clock, delay, history, writes };
 }

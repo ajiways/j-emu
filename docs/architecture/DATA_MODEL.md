@@ -371,8 +371,8 @@ character_locations, presence_leases, spawn_leases, facts.
 ### `combat`
 
 Durable sides/turns/effects, active participants и JSONB event log не
-планируются. `arena|finished_fights` OA и `fight_info.php` в текущем срезе
-не отдаются.
+планируются. `arena|finished_fights` отдаёт 72h `combat.finished_fights`
+по текущей area. `fight_info.php` в текущем срезе не отдаётся.
 
 ### `quests` / `social` / `economy` / `professions` / `instance`
 

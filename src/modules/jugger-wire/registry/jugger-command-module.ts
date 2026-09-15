@@ -89,6 +89,7 @@ import type { DungeonHuntWorld } from "../../instance/application/dungeon-hunt-w
 import type { BattlegroundDesk } from "../../../app/battleground-desk.ts";
 import type { BookDesk } from "../../../app/book-desk.ts";
 import { AttackNickCommand } from "../commands/oa/attack-nick-command.ts";
+import { ArenaFinishedFightsCommand } from "../commands/oa/arena-finished-fights-command.ts";
 import { AssistantDesk } from "../../../app/assistant-desk.ts";
 import { CraftDesk } from "../../../app/craft-desk.ts";
 import { deskOaCommands } from "./desk-oa-commands.ts";
@@ -360,6 +361,7 @@ export class JuggerCommandModule {
         craft: new CraftDesk(craft, characters, inventory, catalog),
         quests: this.quests,
       }),
+      new ArenaFinishedFightsCommand(combat, characters),
       new AttackNickCommand(battleground),
     ]);
     this.fproxy = FproxyCommandRegistry.fromMeleeSourceIds(meleeSourceIds);

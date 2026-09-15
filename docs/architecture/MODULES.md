@@ -156,9 +156,10 @@ state и outbound packets. В PostgreSQL владеет только завер�
 `finished_fights` history с TTL 72 часа. Не начисляет награды и не меняет
 персонажа/инвентарь напрямую.
 
-**API:** `startHunt`, `joinHunt`, `hasFight`, `participantTeam`, `execute`,
-`activeFightId`,
-`resumeFight`, `accountForFight`, `takePocketConsume`, `takeExit`, `takeLoot`.
+**API:** `startHunt`, `joinHunt`, `startFriendlyDuel`, `startPvp`, `hasFight`,
+`participantTeam`, `execute`, `activeFightId`, `resumeFight`,
+`accountForFight`, `takePocketConsume`, `takeExit`, `takeLoot`,
+`listFinishedFights`.
 CMB-11 landed: `joinHunt.team` `1|2`; `startHunt`/`joinHunt` несут
 `instanceCopyId`
 (`null` = мир) — RAM на `Battle`, не FK в combat schema. CMB-16: `joinHunt`
@@ -167,9 +168,8 @@ CMB-11 landed: `joinHunt.team` `1|2`; `startHunt`/`joinHunt` несут
 собирает `jugger-wire` из inventory/catalog ports; CMB-03 settlement —
 composition UoW, не запись combat в `heroes`/`items`. CMB-04 reconnect —
 тот же `activeFightId` на init2 `fight|conf`, без persist боя.
-Mapper старого `arena|finished_fights` / info view существует в combat
-application; OA `arena|finished_fights` и `fight_info.php` в текущем срезе
-не регистрируются.
+CMB-17: OA `arena|finished_fights` через `listFinishedFights` (area board,
+72h SELECT, без request-path prune). `fight_info.php` не регистрируется.
 
 **События:** process-local turn/packet events и terminal `combat.finished.v1`.
 `combat.finished` содержит подтверждённый outcome, но не утверждает, что награда

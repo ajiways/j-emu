@@ -3,6 +3,7 @@ import type { Clock } from "../../shared/kernel/clock.ts";
 import { requirePresent } from "../../shared/kernel/require-present.ts";
 import { CombatService } from "./application/combat-service.ts";
 import { FinishedFightCleanup } from "./application/finished-fight-cleanup.ts";
+import { FinishedFightList } from "./application/finished-fight-list.ts";
 import { FinishedFightRecorder } from "./application/finished-fight-recorder.ts";
 import type { HistoryWriteObserver } from "./application/history-write-observer.ts";
 import { StructuredHistoryWriteObserver } from "./application/structured-history-write-observer.ts";
@@ -57,6 +58,7 @@ export class CombatModule {
       delay,
       input.testBotStrength,
     );
+    runtime.bindHistoryList(new FinishedFightList(history, clock));
     return new CombatModule(
       runtime,
       runtime,

@@ -83,6 +83,10 @@ class BarrierFinishedFightStore implements FinishedFightStore {
     throw new Error("Barrier store does not load");
   }
 
+  async listByArea(): Promise<readonly FinishedFightRecord[]> {
+    throw new Error("Barrier store does not list");
+  }
+
   async deleteExpiredBatch(): Promise<number> {
     this.started += 1;
     this.concurrent += 1;

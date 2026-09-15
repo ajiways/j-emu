@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, desc, eq, gt, sql } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import { FinishedFightConflictError } from "../domain/finished-fight-conflict-error.ts";
 import {
@@ -55,6 +55,17 @@ export class PostgresFinishedFightStore implements FinishedFightStore {
     const row = rows[0];
     if (!row) return null;
     return restoreFinishedFightRecord(row);
+  }
+
+  async listByArea(areaId: string, cutoff: Date): Promise<readonly FinishedFightRecord[]> {
+    if (!areaId) throw new Error("Finished fight list requires an area id");
+    const rows = await this.database
+      .session()
+      .select()
+      .from(finishedFights)
+      .where(and(eq(finishedFights.areaId, areaId), gt(finishedFights.finishedAt, cutoff)))
+      .orderBy(desc(finishedFights.finishedAt));
+    return rows.map((row) => restoreFinishedFightRecord(row));
   }
 
   async deleteExpiredBatch(cutoff: Date, limit: number): Promise<number> {

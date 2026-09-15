@@ -3,6 +3,7 @@ import type { BattleRules } from "./battle-rules.ts";
 import { authenticateFighter } from "./battle-authenticate.ts";
 import { isHumanDuelInit } from "./battle-fighters.ts";
 import { huntHistoryOf, joinBattleHuman } from "./battle-hunt-join.ts";
+import { practiceHistoryOf } from "./practice-fight-history.ts";
 import {
   applyBattleBotMelee,
   applyBattleGlove,
@@ -112,6 +113,13 @@ export class Battle {
 
   huntHistory() {
     return huntHistoryOf(battleOpener(this.humans), requireHuntInit(this.init));
+  }
+
+  practiceHistory() {
+    if (this.kind !== "friendly-duel") {
+      throw new Error("Practice history is only available for a friendly duel");
+    }
+    return practiceHistoryOf(this.humans);
   }
 
   accountIds(): readonly number[] {

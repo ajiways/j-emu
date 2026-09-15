@@ -243,11 +243,12 @@ JOIN `{team:2}` сразу human↔human, opener продолжает vs Гры�
 локация; friendly JOIN — дуэль. CEF join/intervene/Раскоп JOIN не
 прогонялся.
 
-Не перенесены: OA `arena|finished_fights` (CMB-17); outdoor `ATTACK`
+Не перенесены: outdoor `ATTACK`
 challenge (CMB-18, только после явного решения — в jgr runtime этого нет);
 kind 10 summon clone в roster. Hunt N×N две дуэли на 50310 landed
 (CMB-12). Aggro clone + 3↔3 cross-swap landed (CMB-13). Melee
 outcomes (CMB-14) и magic 15a–c landed. BG `FIGHT_JOIN` landed (CMB-16).
+OA `arena|finished_fights` и practice type 6 history landed (CMB-17).
 CEF боя не прогонялся.
 
 ## Quests и NPC — частично

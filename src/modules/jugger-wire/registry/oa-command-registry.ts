@@ -83,6 +83,7 @@ export class OaCommandRegistry {
     "arena|bg_finished",
     "arena|great_fights",
     "arena|leader_rating",
+    "arena|finished_fights",
     "trade|request",
     "trade|confirm",
     "trade|put",

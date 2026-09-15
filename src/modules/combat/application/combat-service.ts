@@ -11,6 +11,8 @@ import type { RandomSource } from "../domain/random-source.ts";
 import type { CombatDelay } from "../ports/combat-delay.ts";
 import type { CombatWake } from "../ports/combat-wake.ts";
 import type { FinishedFightRecorder } from "./finished-fight-recorder.ts";
+import type { FinishedFightList } from "./finished-fight-list.ts";
+import type { FinishedFightListQuery, FinishedFightPage } from "../domain/finished-fight-page.ts";
 import type { HistoryWriteObserver } from "./history-write-observer.ts";
 import { CombatMeleeLoop } from "./combat-melee-loop.ts";
 import { CombatTerminal } from "./combat-terminal.ts";
@@ -50,6 +52,7 @@ export class CombatService implements CombatPort {
   private terminal: FightTerminalObserver | undefined;
   private settlement: FightSettlement | undefined;
   private wakePort: CombatWake | undefined;
+  private historyList: FinishedFightList | undefined;
 
   constructor(
     private readonly ids: FightIdSource,
@@ -104,6 +107,16 @@ export class CombatService implements CombatPort {
   bindWake(wake: CombatWake): void {
     if (this.wakePort) throw new Error("Combat wake is already bound");
     this.wakePort = requirePresent(wake, "Combat wake is required");
+  }
+
+  bindHistoryList(list: FinishedFightList): void {
+    if (this.historyList) throw new Error("Finished fight list is already bound");
+    this.historyList = requirePresent(list, "Finished fight list is required");
+  }
+
+  async listFinishedFights(query: FinishedFightListQuery): Promise<FinishedFightPage> {
+    if (!this.historyList) throw new Error("Finished fight list is not bound");
+    return this.historyList.list(query);
   }
 
   async nextFightId(): Promise<string> {

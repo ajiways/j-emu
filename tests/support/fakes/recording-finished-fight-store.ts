@@ -23,6 +23,13 @@ export class RecordingFinishedFightStore implements FinishedFightStore {
     return this.records.find((row) => row.id === id) ?? null;
   }
 
+  async listByArea(areaId: string, cutoff: Date): Promise<readonly FinishedFightRecord[]> {
+    if (!areaId) throw new Error("Finished fight list requires an area id");
+    return this.records
+      .filter((row) => row.areaId === areaId && row.finishedAt.getTime() > cutoff.getTime())
+      .sort((left, right) => right.finishedAt.getTime() - left.finishedAt.getTime());
+  }
+
   async deleteExpiredBatch(cutoff: Date, limit: number): Promise<number> {
     this.deleted.push({ cutoff, limit });
     const expired = this.records.filter((row) => row.finishedAt.getTime() <= cutoff.getTime());

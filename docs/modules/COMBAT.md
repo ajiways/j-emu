@@ -460,13 +460,14 @@ Production consumer. Product **частично** до CEF. Строка в
 ### Out of scope (CMB-12 leftover)
 
 Закрыто CMB-13 (pairing), CMB-14 (melee outcomes), CMB-15a–c (magic).
-Дальше: CMB-17 practice history; CMB-18 outdoor `ATTACK` только после
+Дальше: CMB-18 outdoor `ATTACK` только после
 явного решения. Quest-fight join — deny CMB-09. BG `FIGHT_JOIN` — CMB-16.
+Practice history — CMB-17.
 
 ## CMB-13 — hunt N×N pairing
 
 Срез закрыт (unit + raw-AMF). Product-status не поднимать: CEF не
-прогонялся. Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-17.
+прогонялся. Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-18.
 
 Seekers = unpaired living humans **и** bots обеих команд. Pair loop как
 jgr: shuffle + last-foe score (`lastOpponentId`). Occupied spawn bot не
@@ -491,7 +492,7 @@ Unpublished bot initiative = `0` (нет LUCK в `BotDefinition`). Delay token
 
 Срез закрыт (unit + hunt raw-AMF без регресса). Product-status не
 поднимать: CEF не прогонялся.
-Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-17.
+Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-18.
 
 Player L/C/R и bot melee: dodge → block → crit → DEF → HP (`legacy
 behavior`, knobs на `BattleRules`: `combatSoftC=600`, cap 0.40, crit×2.35,
@@ -531,13 +532,13 @@ success. Kind 18 stun skip-turn, `duration` обязателен. Kind 10 summon
 landed (явный skip). Period deadline без удара (~20s unpaired) — не
 этот срез.
 
-Не в срезе: practice history, outdoor `ATTACK`/`FightRules`. BG JOIN —
-CMB-16.
+Не в срезе: outdoor `ATTACK`/`FightRules`. BG JOIN — CMB-16. Practice
+history — CMB-17.
 
 ## CMB-16 — BG FIGHT_JOIN
 
 Срез закрыт (raw-AMF). Product-status не поднимать: CEF не прогонялся.
-Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-17.
+Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-18.
 
 OA `FIGHT_JOIN` `{fight, team:1|2}` и `FIGHT_HELP` `{nick}` входят в
 живой PvP Раскопа (`kind:"pvp"`, `purpose:"pvp"`) при том же `areaId` и
@@ -563,9 +564,38 @@ Dump 204: другая локация/копия; stale/missing fight. Restart �
 
 ### Out of scope (CMB-16 leftover)
 
-CMB-17 practice `arena|finished_fights`; CMB-18 outdoor `ATTACK` /
-`FightRules`. Третий герой в Раскопе не член матча — test teleport в
-копию; kick orphan на restart уже BG-01.
+CMB-18 outdoor `ATTACK` / `FightRules`. Третий герой в Раскопе не член
+матча — test teleport в копию; kick orphan на restart уже BG-01.
+
+## CMB-17 — Practice fight history
+
+Срез закрыт (raw-AMF). Product-status не поднимать: CEF не прогонялся.
+Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-18.
+
+OA `arena|finished_fights` читает PostgreSQL `combat.finished_fights`
+через `CombatPort.listFinishedFights`. Не `BattlegroundDesk` и не
+`arena|bg_finished`. Клиент не шлёт `area_id`: сервер фильтрует по
+текущей локации героя. Доска локации, не только свои бои. Form:
+`nick`, `type`, `level_min`, `level_max`, `page` (1-based, default 1).
+Ответ: `status:100`, `page` 0-based, `page_count`, `total_items`,
+`fights[]`. Page size 10. `winner` и `duration` на wire — строки
+(storage integer, ADR-0015/0020). Viewer `teams.*.me`. Невалидный
+integer form — 203.
+
+Practice terminal пишет `type:6`, title `Нападение {challenger} на
+{acceptor}`, teams human↔human, `ml_title` `{challengerLevel}|{heroId}|{challengerLevel}`
+(jgr fallback без ботов). Hunt `type:1` human↔bot без изменения.
+Retention 72h в SELECT; cleanup batches вне request path. PvP в history
+не пишется. `arena|runned_fights` и `fight_info.php` — leftover.
+
+### Architecture decision
+
+ADR-0017–0020 достаточны. `ARC-CMB` не нужен. Не выделять `FightRules`.
+
+### Out of scope (CMB-17 leftover)
+
+`arena|runned_fights`; `fight_info.php`; PvP type 1 history rows;
+outdoor `ATTACK` / `FightRules` (CMB-18).
 
 ## HERO-01 — PvP honor snapshot
 

@@ -1820,8 +1820,26 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
 - **depends_on:** `CMB-16`
 - **Behavior evidence:** OA `arena|finished_fights` / type 6 practice
   history. Mapper `finished_fights` уже есть; OA нет.
-- **Architecture checkpoint / decision:** отложен до coding.
-- **Status:** `next`
+- **Architecture checkpoint / decision:** ADR-0017–0020 достаточны;
+  `ARC-CMB` не нужен. Не выделять `FightRules` (CMB-18). Combat владеет
+  `combat.finished_fights`; jugger-wire не читает таблицу напрямую.
+  OA `arena|finished_fights` — отдельная команда, не `BattlegroundDesk`
+  (`arena|bg_finished` остаётся историей матчей Раскопа). Список —
+  текущий `hero.areaId`, не только свои бои; фильтры nick / type /
+  level_min / level_max / page; PAGE_SIZE 10; `page` в ответе 0-based.
+  Retention 72h в SELECT (`finished_at > now-72h`); prune **не** на
+  request path (`FinishedFightCleanup` batches). Practice recorder пишет
+  `type:6`, teams 1v1 human↔human; hunt `type:1` human↔bot без изменений.
+  PvP/quest history как отдельный leftover не смешивать: quest уже hunt
+  kind; PvP в этом срезе не пишется. `fight_info.php` и
+  `arena|runned_fights` — leftover. Active fight RAM (ADR-0020).
+  **Fail-fast.** Невалидный form integer — 203. **Restart.** History
+  PostgreSQL переживает процесс. **CEF.** Product **частично** до CEF.
+  Контракт: [COMBAT.md](../modules/COMBAT.md).
+- **Acceptance:** raw-AMF после friendly duel в 503: `arena|finished_fights`
+  содержит `type:6` с обоими никами и `me`; фильтр `type:6`; другая
+  area — пусто; restart — строка на месте. Hunt type 1 на той же доске.
+- **Status:** `done`
 
 ### CMB-18 — Outdoor ATTACK challenge
 
@@ -1833,7 +1851,7 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   по FIGHT_MODEL. Не изобретать outdoor challenge из mapper-а.
 - **Architecture checkpoint / decision:** блокируется продуктовым
   решением, не coding.
-- **Status:** `queued`
+- **Status:** `next`
 
 ### QST-ENG-04 — Quest-fight leftovers
 

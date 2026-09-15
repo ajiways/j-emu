@@ -2,6 +2,7 @@ import type { BattleEvent } from "../domain/battle-event.ts";
 import type { CombatLoadout } from "../domain/combat-loadout.ts";
 import type { HuntBotSpellBook } from "../domain/hunt-bot-spell-book.ts";
 import type { FightLootBlock } from "../domain/fight-loot-block.ts";
+import type { FinishedFightListQuery, FinishedFightPage } from "../domain/finished-fight-page.ts";
 import type { HuntHumanAppearance } from "../domain/hunt-human.ts";
 
 type CommandSequence = string | number;
@@ -179,4 +180,5 @@ export interface CombatPort {
   peekExit(accountId: number): Promise<FightExit | null>;
   takeLoot(accountId: number): Promise<FightLootBlock | null>;
   peekLoot(accountId: number): Promise<FightLootBlock | null>;
+  listFinishedFights(query: FinishedFightListQuery): Promise<FinishedFightPage>;
 }

@@ -94,6 +94,10 @@
       JOIN `{team:1}` в тот же `fightId` (`is_pvp:1`, `can_leave:1`);
       HELP на цель team 2 сразу vs waiter; с мира — 204 другая локация;
       restart → 204 stale.
+- [ ] CMB-17: два героя в 503 friendly duel до финиша →
+      `arena|finished_fights` type 6 с обоими никами; фильтр type 6;
+      другая локация пустая; F5/рестарт сохраняет строку; hunt type 1
+      на той же доске.
 
 ## Book
 

@@ -1,11 +1,18 @@
 import { parseDecimalId, requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { fightStartedLabel } from "./fight-started-label.ts";
-import type { FinishedFightTeams } from "./finished-fight-teams.ts";
-import { huntFinishedFightTeams, parseFinishedFightTeams } from "./finished-fight-teams.ts";
+import {
+  huntFinishedFightTeams,
+  parseFinishedFightTeams,
+  type FinishedFightTeams,
+} from "./finished-fight-teams.ts";
+import { practiceFinishedFightTeams } from "./practice-finished-fight-teams.ts";
 import { huntFightTitle } from "./hunt-fight-title.ts";
 
-/** Hunt `fight.type` from live fight_info dump `type:"1"` and old `fightType`. */
+/** Hunt / BG PvP `fight.type` from live fight_info dump `type:"1"`. */
 const HUNT_FIGHT_TYPE = 1;
+
+/** Practice duel `fight.type` from old `FRIENDS_DUEL_TYPE`. */
+const PRACTICE_FIGHT_TYPE = 6;
 
 /** Old `recordFinishedFight` always stored `level: 0`. */
 const HUNT_HISTORY_LEVEL = 0;
@@ -81,6 +88,73 @@ export function huntFinishedFightRecord(input: {
       botArtikulId: input.botArtikulId,
       botNick: input.botNick,
       botLevel: input.botLevel,
+    }),
+    areaId: input.areaId,
+    finishedAt: input.finishedAt,
+  };
+}
+
+export function practiceFinishedFightRecord(input: {
+  fightId: string;
+  accountId: number;
+  heroId: number;
+  challengerId: number;
+  challengerNick: string;
+  challengerLevel: number;
+  challengerKind: number;
+  challengerDead: boolean;
+  challengerFlee: 0 | 1;
+  acceptorId: number;
+  acceptorNick: string;
+  acceptorLevel: number;
+  acceptorKind: number;
+  acceptorDead: boolean;
+  acceptorFlee: 0 | 1;
+  timeout: number;
+  areaId: string;
+  winner: 1 | 2;
+  startedAt: Date;
+  finishedAt: Date;
+}): FinishedFightRecord {
+  requireWireIdentity(input.accountId, "account id");
+  requireWireIdentity(input.heroId, "hero id");
+  if (!input.areaId) throw new Error("Finished fight requires an area id");
+  if (!Number.isInteger(input.timeout) || input.timeout < 1) {
+    throw new Error("Finished fight timeout must be a positive integer");
+  }
+  if (input.finishedAt.getTime() < input.startedAt.getTime()) {
+    throw new Error("Finished fight cannot end before it started");
+  }
+  const duration = Math.floor((input.finishedAt.getTime() - input.startedAt.getTime()) / 1000);
+  const levelMin = Math.min(input.challengerLevel, input.acceptorLevel);
+  const levelMax = Math.max(input.challengerLevel, input.acceptorLevel);
+  return {
+    id: parseDecimalId(input.fightId, "fight id"),
+    accountId: input.accountId,
+    heroId: input.heroId,
+    title: huntFightTitle(input.challengerNick, input.acceptorNick),
+    type: PRACTICE_FIGHT_TYPE,
+    timeout: input.timeout,
+    levelMin,
+    levelMax,
+    level: HUNT_HISTORY_LEVEL,
+    mlTitle: `${input.challengerLevel}|${input.heroId}|${input.challengerLevel}`,
+    winner: input.winner,
+    started: fightStartedLabel(input.startedAt),
+    duration,
+    teams: practiceFinishedFightTeams({
+      challengerId: input.challengerId,
+      challengerNick: input.challengerNick,
+      challengerLevel: input.challengerLevel,
+      challengerKind: input.challengerKind,
+      challengerDead: input.challengerDead,
+      challengerFlee: input.challengerFlee,
+      acceptorId: input.acceptorId,
+      acceptorNick: input.acceptorNick,
+      acceptorLevel: input.acceptorLevel,
+      acceptorKind: input.acceptorKind,
+      acceptorDead: input.acceptorDead,
+      acceptorFlee: input.acceptorFlee,
     }),
     areaId: input.areaId,
     finishedAt: input.finishedAt,

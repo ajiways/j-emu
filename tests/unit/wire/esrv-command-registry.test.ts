@@ -51,6 +51,9 @@ function fakeCombat(): CombatPort {
     peekExit: async () => null,
     takeLoot: async () => null,
     peekLoot: async () => null,
+    listFinishedFights: async () => {
+      throw new Error("unused");
+    },
   };
 }
 

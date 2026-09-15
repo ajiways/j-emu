@@ -35,9 +35,11 @@ type FinishedFightBot = Readonly<{
   me: 0;
 }>;
 
+type FinishedFightTeamTwo = FinishedFightHuman | FinishedFightBot;
+
 export type FinishedFightTeams = Readonly<{
   "1": readonly FinishedFightHuman[];
-  "2": readonly FinishedFightBot[];
+  "2": readonly FinishedFightTeamTwo[];
 }>;
 
 export function huntFinishedFightTeams(input: {
@@ -122,12 +124,22 @@ export function parseFinishedFightTeams(value: unknown): FinishedFightTeams {
     throw new Error("Finished fight team 1 must contain exactly one human");
   }
   if (!Array.isArray(team2) || team2.length !== 1) {
-    throw new Error("Finished fight team 2 must contain exactly one bot");
+    throw new Error("Finished fight team 2 must contain exactly one member");
   }
   return {
     "1": [parseHuman(team1[0])],
-    "2": [parseBot(team2[0])],
+    "2": [parseTeamTwo(team2[0])],
   };
+}
+
+function parseTeamTwo(value: unknown): FinishedFightTeamTwo {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Finished fight team 2 member is invalid");
+  }
+  const row = value as Record<string, unknown>;
+  if (row.bot === 1) return parseBot(row);
+  if (row.bot === 0) return parseHuman(row);
+  throw new Error("Finished fight team 2 member bot flag is invalid");
 }
 
 function parseHuman(value: unknown): FinishedFightHuman {

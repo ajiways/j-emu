@@ -334,6 +334,12 @@ area/copy; friendly остаётся deny. `startPvp` несёт `instanceCopyId
 PvP copy разрешён. ADR-0017–0020. Контракт: [COMBAT.md](../modules/COMBAT.md),
 [BATTLEGROUND.md](../modules/BATTLEGROUND.md).
 
+**Решение CMB-17:** текущих границ достаточно; `ARC-CMB` не нужен. OA
+`arena|finished_fights` читает `combat.finished_fights` через combat
+port, не battleground desk. Practice `type:6` human↔human в той же
+таблице, что hunt. Cleanup не на request path. ADR-0017–0020. Контракт:
+[COMBAT.md](../modules/COMBAT.md).
+
 **Решение DAY-01:** текущих границ достаточно; отдельный `ARC-QST` не нужен.
 Daily cycle — lazy `Clock` на quests ports (UTC+3 / 06:00), не
 `DelayScheduler` и не `Clock.schedule`. `hidden_in_journal` на том же
