@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/main.ts",
+    "dev:bootstrap-hero": "tsx scripts/bootstrap-dev-hero.ts",
     "build": "tsx scripts/clean-dist.ts && tsc -p tsconfig.json && tsc -p tsconfig.tests.json",
     "start": "node dist/main.js",
     "start:https": "tsx scripts/start-https.ts",

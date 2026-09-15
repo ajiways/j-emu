@@ -73,6 +73,10 @@ npm run dev
 
 или `npm run build` и `npm start`. Открыть `http://localhost:8080/login`.
 
+Создать тестового героя без Flash (печатает `heroId`): при запущенном
+`npm run dev` выполнить `npm run dev:bootstrap-hero`. Выдача предмета и
+серебра — модуль «Персонаж» в `j-content-editor`, не SQL.
+
 ## HTTPS :443 (Flash/CEF)
 
 Клиент `juggernautclient.exe` ходит на `https://s1.jugger.ru:443`. Нужны hosts, доверенный сертификат и сервер с legacy TLS.
