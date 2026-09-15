@@ -33,6 +33,14 @@ export class FinishedFightList {
       fights: filtered.slice(start, start + FINISHED_FIGHT_PAGE_SIZE),
     };
   }
+
+  async card(id: bigint): Promise<FinishedFightRecord | null> {
+    const row = await this.store.findById(id);
+    if (!row) return null;
+    const cutoff = new Date(this.clock.now().getTime() - FINISHED_FIGHT_RETENTION_MS);
+    if (row.finishedAt.getTime() <= cutoff.getTime()) return null;
+    return row;
+  }
 }
 
 function matchesFilters(row: FinishedFightRecord, query: FinishedFightListQuery): boolean {

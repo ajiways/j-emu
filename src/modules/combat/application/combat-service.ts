@@ -12,7 +12,12 @@ import type { CombatDelay } from "../ports/combat-delay.ts";
 import type { CombatWake } from "../ports/combat-wake.ts";
 import type { FinishedFightRecorder } from "./finished-fight-recorder.ts";
 import type { FinishedFightList } from "./finished-fight-list.ts";
+import type { FightInfoCard } from "../domain/fight-info-card.ts";
+import { fightInfoFromFinished, fightInfoFromRunned } from "../domain/fight-info-card.ts";
 import type { FinishedFightListQuery, FinishedFightPage } from "../domain/finished-fight-page.ts";
+import { runnedFightRecordOf } from "../domain/runned-fight-record.ts";
+import { paginateRunnedFights } from "./runned-fight-list.ts";
+import type { RunnedFightPage } from "../domain/runned-fight-record.ts";
 import type { HistoryWriteObserver } from "./history-write-observer.ts";
 import { CombatMeleeLoop } from "./combat-melee-loop.ts";
 import { CombatTerminal } from "./combat-terminal.ts";
@@ -117,6 +122,26 @@ export class CombatService implements CombatPort {
   async listFinishedFights(query: FinishedFightListQuery): Promise<FinishedFightPage> {
     if (!this.historyList) throw new Error("Finished fight list is not bound");
     return this.historyList.list(query);
+  }
+
+  async listRunnedFights(query: FinishedFightListQuery): Promise<RunnedFightPage> {
+    const now = this.scheduler.now();
+    const rows = [...this.battleByFight.values()]
+      .filter((battle) => !battle.finished && battle.areaId === query.areaId)
+      .map((battle) => runnedFightRecordOf(battle, now))
+      .sort((left, right) => Number(right.id) - Number(left.id));
+    return paginateRunnedFights(rows, query);
+  }
+
+  async fightInfo(fightId: string): Promise<FightInfoCard | null> {
+    const id = requireFightId(fightId);
+    const live = this.battleByFight.get(id);
+    if (live && !live.finished) {
+      return fightInfoFromRunned(runnedFightRecordOf(live, this.scheduler.now()));
+    }
+    if (!this.historyList) throw new Error("Finished fight list is not bound");
+    const finished = await this.historyList.card(parseDecimalId(id, "fight id"));
+    return finished ? fightInfoFromFinished(finished) : null;
   }
 
   async nextFightId(): Promise<string> {

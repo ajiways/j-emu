@@ -159,7 +159,7 @@ state и outbound packets. В PostgreSQL владеет только завер�
 **API:** `startHunt`, `joinHunt`, `startFriendlyDuel`, `startPvp`, `hasFight`,
 `participantTeam`, `execute`, `activeFightId`, `resumeFight`,
 `accountForFight`, `takePocketConsume`, `takeExit`, `takeLoot`,
-`listFinishedFights`.
+`listFinishedFights`, `listRunnedFights`, `fightInfo`.
 CMB-11 landed: `joinHunt.team` `1|2`; `startHunt`/`joinHunt` несут
 `instanceCopyId`
 (`null` = мир) — RAM на `Battle`, не FK в combat schema. CMB-16: `joinHunt`
@@ -169,7 +169,9 @@ CMB-11 landed: `joinHunt.team` `1|2`; `startHunt`/`joinHunt` несут
 composition UoW, не запись combat в `heroes`/`items`. CMB-04 reconnect —
 тот же `activeFightId` на init2 `fight|conf`, без persist боя.
 CMB-17: OA `arena|finished_fights` через `listFinishedFights` (area board,
-72h SELECT, без request-path prune). `fight_info.php` не регистрируется.
+72h SELECT, без request-path prune). Leftover: OA `arena|runned_fights`
+через `listRunnedFights` (RAM, та же area). Тестовый `fight_info.php`
+через `fightInfo` (RAM, иначе 72h row).
 
 **События:** process-local turn/packet events и terminal `combat.finished.v1`.
 `combat.finished` содержит подтверждённый outcome, но не утверждает, что награда

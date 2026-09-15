@@ -44,6 +44,10 @@ describe("finished fight list", () => {
 
     const empty = await list.list({ areaId: "636", page: 1 });
     expect(empty).toMatchObject({ totalItems: 0, pageCount: 0, pageIndex: 0, fights: [] });
+
+    expect(await list.card(2n)).toMatchObject({ id: 2n, type: 6 });
+    expect(await list.card(4n)).toBeNull();
+    expect(await list.card(99n)).toBeNull();
   });
 });
 

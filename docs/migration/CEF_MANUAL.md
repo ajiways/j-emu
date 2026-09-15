@@ -98,6 +98,12 @@
       `arena|finished_fights` type 6 с обоими никами; фильтр type 6;
       другая локация пустая; F5/рестарт сохраняет строку; hunt type 1
       на той же доске.
+- [ ] CMB-17 leftover: hunt 50310 → `arena|runned_fights` type 1, пока бой
+      жив; после `fight|exit` строки нет; F5 в бою строка на месте;
+      рестарт процесса очищает живую доску.
+- [ ] CMB-17 leftover: `fight_info.php?fight_id=` в активном hunt открывает
+      тестовую карточку с никами; после финиша та же id из history;
+      неизвестный id — «Бой не найден». Live chrome не этот прогон.
 
 ## Book
 

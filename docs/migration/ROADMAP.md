@@ -1831,8 +1831,10 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   request path (`FinishedFightCleanup` batches). Practice recorder пишет
   `type:6`, teams 1v1 human↔human; hunt `type:1` human↔bot без изменений.
   PvP/quest history как отдельный leftover не смешивать: quest уже hunt
-  kind; PvP в этом срезе не пишется. `fight_info.php` и
-  `arena|runned_fights` — leftover. Active fight RAM (ADR-0020).
+  kind; PvP в этом срезе не пишется. Active fight RAM (ADR-0020).
+  Landed leftover (без нового ID): OA `arena|runned_fights` из RAM;
+  тестовый GET `/fight_info.php` (RAM, иначе 72h history). Live chrome
+  карточки и PvP type 1 history — всё ещё leftover.
   **Fail-fast.** Невалидный form integer — 203. **Restart.** History
   PostgreSQL переживает процесс. **CEF.** Product **частично** до CEF.
   Контракт: [COMBAT.md](../modules/COMBAT.md).

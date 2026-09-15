@@ -586,7 +586,7 @@ Practice terminal пишет `type:6`, title `Нападение {challenger} н
 {acceptor}`, teams human↔human, `ml_title` `{challengerLevel}|{heroId}|{challengerLevel}`
 (jgr fallback без ботов). Hunt `type:1` human↔bot без изменения.
 Retention 72h в SELECT; cleanup batches вне request path. PvP в history
-не пишется. `arena|runned_fights` и `fight_info.php` — leftover.
+не пишется.
 
 ### Architecture decision
 
@@ -594,8 +594,27 @@ ADR-0017–0020 достаточны. `ARC-CMB` не нужен. Не выдел
 
 ### Out of scope (CMB-17 leftover)
 
-`arena|runned_fights`; `fight_info.php`; PvP type 1 history rows;
-outdoor `ATTACK` / `FightRules` (CMB-18).
+PvP type 1 history rows; outdoor `ATTACK` / `FightRules` (CMB-18).
+Live chrome `fight_info` (Pub1 Handlebars / archive log) — не этот срез.
+
+## CMB-17 leftover — Live board and test fight card
+
+OA `arena|runned_fights` читает **RAM** `CombatService` через
+`CombatPort.listRunnedFights`. Тот же form/page, что `finished_fights`.
+Список — текущий `hero.areaId`, незавершённые бои. Hunt `type:1`,
+practice `type:6`. `winner` на wire **нет** (бой ещё идёт). `duration` —
+прошедшие секунды строкой. Viewer `teams.*.me`. Пустая доска —
+`page_count:0`. Restart процесса очищает доску (ADR-0020). Невалидный
+form integer — 203.
+
+GET `/fight_info.php?fight_id=` — тестовая HTML-карточка, не live chrome.
+Сначала RAM, иначе `combat.finished_fights` с тем же cutoff 72h.
+Невалидный `fight_id` — 400. Нет строки — 200 HTML «Бой не найден».
+Jugger-wire не читает таблицу напрямую.
+
+### Architecture decision
+
+ADR-0017–0020 достаточны. `ARC-CMB` не нужен. Не выделять `FightRules`.
 
 ## HERO-01 — PvP honor snapshot
 

@@ -47,5 +47,9 @@ function fakeCombat(fightId: string | null): CombatPort {
     listFinishedFights: async () => {
       throw new Error("unused");
     },
+    listRunnedFights: async () => {
+      throw new Error("unused");
+    },
+    fightInfo: async () => null,
   };
 }

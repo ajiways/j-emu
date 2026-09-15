@@ -1,4 +1,4 @@
-import type { BattleEvent } from "./battle-event.ts";
+import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { authenticateFighter } from "./battle-authenticate.ts";
 import { isHumanDuelInit } from "./battle-fighters.ts";
@@ -331,6 +331,13 @@ export class Battle {
       winnerTeam,
       humans: this.humans,
     });
+  }
+
+  boardParticipants(): Readonly<{
+    humans: readonly HuntHuman[];
+    bots: readonly HuntBotSnap[];
+  }> {
+    return { humans: this.humans, bots: this.huntRoster?.snaps() ?? [] };
   }
 
   livingHumans(): readonly HuntHuman[] {

@@ -372,7 +372,8 @@ character_locations, presence_leases, spawn_leases, facts.
 
 Durable sides/turns/effects, active participants и JSONB event log не
 планируются. `arena|finished_fights` отдаёт 72h `combat.finished_fights`
-по текущей area. `fight_info.php` в текущем срезе не отдаётся.
+по текущей area. `arena|runned_fights` читает process-local active fights
+той же area. Тестовый `fight_info.php` — RAM, иначе та же 72h history.
 
 ### `quests` / `social` / `economy` / `professions` / `instance`
 

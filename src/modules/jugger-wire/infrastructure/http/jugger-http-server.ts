@@ -7,6 +7,7 @@ import type { JuggerHttpDependencies } from "./jugger-http-dependencies.ts";
 import { ObjectActionRouteRegistrar } from "./object-action-route-registrar.ts";
 import { OperatorAuthPolicy } from "../../../content/application/operator-auth-policy.ts";
 import { OperatorContentRouteRegistrar } from "./operator-content-route-registrar.ts";
+import { FightInfoRouteRegistrar } from "./fight-info-route-registrar.ts";
 import { StaticAssetRegistrar } from "./static-asset-registrar.ts";
 import { TlsCredentials } from "./tls-credentials.ts";
 
@@ -39,6 +40,7 @@ export class JuggerHttpServer {
       ).register(app);
       await new EsrvRouteRegistrar(this.dependencies).register(app);
       await new FproxyRouteRegistrar(this.dependencies).register(app);
+      await new FightInfoRouteRegistrar(this.dependencies.combat).register(app);
       await new StaticAssetRegistrar(config.pub1Dir).register(app);
       return app;
     } catch (error) {
