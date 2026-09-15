@@ -60,7 +60,7 @@ describe("arena finished fights", () => {
     const listed = await a.objectAction({
       object: "arena",
       action: "finished_fights",
-      form: { page: 1 },
+      form: { type: 6, page: 1 },
       sq: 50,
     });
     const block = requireRecord(listed["arena|finished_fights"], "arena|finished_fights");

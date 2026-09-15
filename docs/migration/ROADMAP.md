@@ -1596,6 +1596,73 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
   422 не двигает pointer; restart читает новые documents. Product **частично**.
 - **Status:** `done`
 
+### EDT-03 — Operator hero console
+
+- **ID:** `EDT-03`
+- **depends_on:** `EDT-01`, `BST-01`, `CHR-01`, `INV-02`, `ECO-01`, `CMB-03`
+- **Behavior evidence:** не legacy OA. Нужен operator HTTP для тестовой
+  консоли (`j-content-editor` CHAR-01) и для `CEF_MANUAL` без ручного
+  патча БД. ID `HERO-01` занят PvP-героизмом; это Wave 13 operator
+  tooling, как EDT-01/EDT-02. Порты уже landed: `InventoryService.grantToBag`
+  (CMB-03), `CharacterMoney.creditMoney` (INV-02) / `debitMoney` (ECO-01),
+  `CharacterService.getById` (BST-01, `exp` CHR-01).
+  `ExperienceGrantService` в этот срез **не** входит (CHAR-01 min set —
+  GET / grant item / adjust gold).
+- **Content set:** нет. Новых таблиц, ключей и slice bump нет.
+- **Architecture checkpoint / decision:** complete. ADR-0017–0020
+  достаточны; новый ADR и `ARC-*` не нужны.
+  **Владение.** Character — `heroes` (money/exp/level/nick). Inventory —
+  bag/pocket/paperdoll instances. Catalog — read `artifact(id)`. Новой
+  таблицы нет. jugger-wire — HTTP `/operator/hero/*`, не AMF, не OA.
+  Composition UoW на мутациях.
+  **Auth.** Переиспользовать `CONTENT_OPERATOR_TOKEN` (обязателен в
+  `loadConfig`, без default), тот же `OperatorAuthPolicy` (timing-safe
+  Bearer). Отдельный `HERO_OPERATOR_TOKEN` не вводить: `operator_roles`
+  нет, второй required secret без ролевой модели не изолирует
+  привилегии, `/operator/*` уже одна operator-поверхность EDT-01,
+  consumer (`JEMU_OPERATOR_TOKEN`) один. Разделение ролей — отдельное
+  решение, не этот срез.
+  **HTTP.** JSON, не AMF. Тело = существующий `*` Buffer parser →
+  `JSON.parse` + DTO; AMF parser не трогать. Пути:
+  `GET /operator/hero/:id` → состояние;
+  `POST /operator/hero/:id/items` `{ artifactId, quantity }`;
+  `POST /operator/hero/:id/money` `{ minorUnits }` (знак: `>0` credit
+  `money_minor`, `<0` debit `money_minor`; `0` запрещён). Это серебро
+  (`money_minor` / wire `money`), не алмазы `money_gold_minor`.
+  Debit с `allowGhost: true` (operator console, не store).
+  **GET DTO.** Не AMF `HeroStateBlock` / `buildUserBag`. Сборка из
+  `CharacterService.getById` + `InventoryService.list` (bag / pocket /
+  paperdoll). Поля: `id`, `nick`, `level`, `exp`, `moneyMinor`,
+  `moneyGoldMinor` (read-only в этом срезе), списки instance
+  `{ id, artifactId, quantity, durability, durabilityMax }` + `position`
+  (pocket) / `slot` (paperdoll). POST успех возвращает тот же DTO.
+  **Fail-fast.** Нет/неверный Bearer → 401. Невалидный JSON / неизвестное
+  поле / `hero id` / `artifactId` / `quantity` / `minorUnits=0` → 400.
+  Нет героя / нет артикула → 404. Bag full / недостаточно денег /
+  overflow `money_minor` → 409. 422 в этом срезе нет (это validation
+  report editor'а, не hero state). `grantToBag` бросает typed
+  `BagFullError` / `MissingArtifactError`; голый `Error` на operator
+  path не мапится по тексту, кроме already-typed character money
+  (`InsufficientMoneyError`) и доменного overflow credit. 500 только
+  непредвиденное, с логом.
+  **Transaction.** GET — read. Grant/money — одна UoW (вложенный
+  `CharacterService` UoW на том же tx). Частичный grant при bag full
+  откатывается.
+  **Restart.** Bag и `money_minor` PostgreSQL. **CEF.** Flash/OA
+  consumer нет — internal enabling `/operator/hero/*` (исключение
+  PLAYBOOK §8 «нет production wire consumer», **не** закрытое
+  исключение Wave 5–12). Product **частично**.
+  Контракт: [CHARACTER.md](../modules/CHARACTER.md).
+- **Acceptance:** raw-HTTP e2e: GET после login; POST item 77 виден в
+  bag; POST money credit/debit меняет `moneyMinor`; restart сохраняет
+  оба. 401 без/неверного Bearer; 400 невалидный ввод; 404 герой и
+  артикул; 409 bag full и insufficient money. Unit на mapping typed
+  errors.
+  Landed: HTTP `/operator/hero/:id`, `/:id/items`, `/:id/money`;
+  `BagFullError` / `MissingArtifactError`; raw-HTTP
+  `tests/e2e/operator-hero.test.ts`.
+- **Status:** `done`
+
 ## Leftover engines — механика, не сюжет
 
 Волны 0–13 закрыты. Сюжетный leftover не этот трек: CMB-11 (`done`) →
@@ -1605,7 +1672,9 @@ QST-ENG-05 (`done`, `OPEN_STORE`) → DNG-03 (`done`) → leftover TRD-02
 
 Боевой leftover после CMB-12 — отдельная очередь `CMB-13+` ниже
 (pairing → melee outcomes → magic kinds → JOIN/history/challenge).
-Ровно один `next`. `CONTENT-STORY-*` остаются queued.
+`CMB-18` — `deferred` (ждёт продуктового решения мейнтейнера).
+Engine leftover и Wave 14 закрыты. `next` на content-fill
+(`CONTENT-STORY-*`, DATA-06) не назначается.
 
 CEF Wave 0–12 и ACH-01 (`deferred`) сюда не входят. Новые production-срезы
 этого трека несут CEF в acceptance (EDT-02); product **частично** до
@@ -1853,7 +1922,8 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   по FIGHT_MODEL. Не изобретать outdoor challenge из mapper-а.
 - **Architecture checkpoint / decision:** блокируется продуктовым
   решением, не coding.
-- **Status:** `next`
+- **Status:** `deferred` — ждёт продуктового решения от мейнтейнера
+  (не coding; не изобретать outdoor ATTACK challenge).
 
 ### QST-ENG-04 — Quest-fight leftovers
 

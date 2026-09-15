@@ -7,6 +7,8 @@ import type { JuggerHttpDependencies } from "./jugger-http-dependencies.ts";
 import { ObjectActionRouteRegistrar } from "./object-action-route-registrar.ts";
 import { OperatorAuthPolicy } from "../../../content/application/operator-auth-policy.ts";
 import { OperatorContentRouteRegistrar } from "./operator-content-route-registrar.ts";
+import { OperatorHeroRouteRegistrar } from "./operator-hero-route-registrar.ts";
+import { HeroOperator } from "../../application/hero-operator.ts";
 import { FightInfoRouteRegistrar } from "./fight-info-route-registrar.ts";
 import { StaticAssetRegistrar } from "./static-asset-registrar.ts";
 import { TlsCredentials } from "./tls-credentials.ts";
@@ -26,7 +28,7 @@ export class JuggerHttpServer {
     // Flash URLRequest POST defaults to application/x-www-form-urlencoded and
     // may omit Content-Type. AMF routes must read a raw Buffer regardless.
     // Fastify's default JSON/text parsers would steal application/json from
-    // the catch-all, so operator /operator/content would see an object.
+    // the catch-all, so operator /operator/content and /operator/hero would see an object.
     app.removeContentTypeParser(["application/json", "text/plain"]);
     app.addContentTypeParser("*", { parseAs: "buffer" }, (_request, body, done) =>
       done(null, body),
@@ -34,9 +36,18 @@ export class JuggerHttpServer {
     try {
       await new AuthRouteRegistrar(this.dependencies).register(app);
       await new ObjectActionRouteRegistrar(this.dependencies).register(app);
+      const operatorAuth = new OperatorAuthPolicy(this.dependencies.config.contentOperatorToken);
       await new OperatorContentRouteRegistrar(
         this.dependencies.contentEditor,
-        new OperatorAuthPolicy(this.dependencies.config.contentOperatorToken),
+        operatorAuth,
+      ).register(app);
+      await new OperatorHeroRouteRegistrar(
+        new HeroOperator(
+          this.dependencies.unitOfWork,
+          this.dependencies.characters,
+          this.dependencies.inventory,
+        ),
+        operatorAuth,
       ).register(app);
       await new EsrvRouteRegistrar(this.dependencies).register(app);
       await new FproxyRouteRegistrar(this.dependencies).register(app);

@@ -9,8 +9,8 @@ Paperdoll `PUT_ON`/`PUT_OFF`, bag DROP 9095, pocket 93/99 и world USE 77
 [CAPABILITIES.md](../CAPABILITIES.md).
 
 Не перенесены fight cast/`persSpells` и патронташ. DRINK/ADD_MP/bonus USE —
-INV-08: workflow `done`, product **частично** без CEF (нет редактора выдачи
-предметов).
+INV-08: workflow `done`, product **частично** без CEF Flash. Operator HTTP
+выдачи в bag — [CHARACTER.md](CHARACTER.md) EDT-03.
 
 ## Источники поведения
 

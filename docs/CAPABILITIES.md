@@ -442,6 +442,13 @@ NPC 271, USE 584 `npc|info`. EDT-02: один candidate, шесть overlays
 USE 2827 failPlaque; restart GET совпадает; 422 не двигает pointer. CEF
 Flash-редактора нет. Исключение «Отложенный CEF Wave 5–12» закрыто.
 
+EDT-03: HTTP JSON `/operator/hero/*` (тот же Bearer): GET bag/pocket/
+paperdoll/`moneyMinor`/`exp`; POST item (`artifactId`/`quantity`); POST
+money (знак `minorUnits` = credit/debit `money_minor`). 401/400/404/409
+без fallback. Restart сохраняет bag и серебро. Flash/OA consumer нет
+(internal enabling, product **частично**). `ExperienceGrantService` и
+алмазы не входят.
+
 Не перенесены SPA `/dev/content`, rollback/export, `operator_roles`,
 DATA-06 mass import, новые ключи вне active
 release.

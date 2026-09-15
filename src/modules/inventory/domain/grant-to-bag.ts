@@ -2,7 +2,9 @@ import type { ArtifactDefinition } from "../../catalog/domain/artifact-definitio
 import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { InventoryItem } from "./inventory-item.ts";
 import type { InventoryRepository } from "../ports/inventory-repository.ts";
+import { BagFullError } from "./bag-full-error.ts";
 import { computeBagLoad } from "./bag-load.ts";
+import { MissingArtifactError } from "./missing-artifact-error.ts";
 
 export async function grantToBag(
   inventory: InventoryRepository,
@@ -14,7 +16,7 @@ export async function grantToBag(
     throw new Error("Bag grant quantity must be a positive integer");
   }
   const definition = await catalog.artifact(command.artifactId);
-  if (!definition) throw new Error(`Artifact catalog entry ${command.artifactId} is missing`);
+  if (!definition) throw new MissingArtifactError(command.artifactId);
   const items = [...(await inventory.lockForHero(command.characterId))];
   const definitions = await definitionsFor(catalog, items, definition);
   let remaining = command.quantity;
@@ -39,7 +41,7 @@ export async function grantToBag(
   while (remaining > 0) {
     const load = computeBagLoad(items, definitions, bagCapacity);
     if (load.amount >= load.amountMax) {
-      throw new Error(`Bag for hero ${command.characterId} is full`);
+      throw new BagFullError(command.characterId);
     }
     const take = Math.min(remaining, definition.bagStack);
     const created = await inventory.create({

@@ -454,3 +454,38 @@ revenge, hunt/friendly honor, HTML `fight|info`.
 - bootstrap **готово** в CAPABILITIES подтверждён CEF HUD/location smoke-test;
   character progression остаётся частичной. Equipment totals 9095 подтверждены
   CEF PUT_ON.
+
+## EDT-03 — Operator hero console
+
+HTTP JSON `/operator/hero/*` для тестовой консоли. Не AMF и не OA.
+Flash-клиента нет. Новых таблиц нет.
+
+Владение: character — `heroes` (`money_minor`, `exp`, `level`, `nick`);
+inventory — bag/pocket/paperdoll instances через `grantToBag` / `list`;
+catalog — `artifact(id)` на grant. jugger-wire — registrar.
+Мутации — одна Unit of Work; частичный grant при bag full откатывается.
+
+Auth: тот же `CONTENT_OPERATOR_TOKEN` и `OperatorAuthPolicy`, что EDT-01.
+Отдельный hero-token нет (`operator_roles` нет).
+
+| Method | Path                       | Body                       | Success                       |
+| ------ | -------------------------- | -------------------------- | ----------------------------- |
+| GET    | `/operator/hero/:id`       | нет                        | hero state DTO                |
+| POST   | `/operator/hero/:id/items` | `{ artifactId, quantity }` | тот же DTO после grant        |
+| POST   | `/operator/hero/:id/money` | `{ minorUnits }` (≠ 0)     | тот же DTO после credit/debit |
+
+`minorUnits > 0` — `creditMoney`; `< 0` — `debitMoney` с `allowGhost: true`.
+Это `money_minor` (серебро / wire `money`), не алмазы. `ExperienceGrantService`
+не входит в этот срез.
+
+GET не использует AMF `HeroStateBlock` / `buildUserBag`. Сборка:
+`getById` + `list`, затем разложение по `location.kind`. DTO:
+
+- герой: `id`, `nick`, `level`, `exp`, `moneyMinor`, `moneyGoldMinor`;
+- item: `id`, `artifactId`, `quantity`, `durability`, `durabilityMax`;
+- pocket + `position`; paperdoll + `slot`.
+
+Ошибки: нет/неверный Bearer → **401**; невалидный JSON / неизвестное поле /
+id / quantity / `minorUnits=0` → **400**; нет героя / нет артикула → **404**;
+bag full / недостаточно `money_minor` / overflow → **409**; прочее → **500**
+с логом. `grantToBag` бросает `BagFullError` / `MissingArtifactError`.

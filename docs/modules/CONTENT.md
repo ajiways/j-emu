@@ -28,7 +28,8 @@ Editor не пишет `catalog.*` / `world.*` / `quests.*` runtime rows, не �
 
 Именованный `OperatorAuthPolicy`: единственный секрет
 `CONTENT_OPERATOR_TOKEN` (обязателен в `loadConfig`, без default). Сравнение
-timing-safe. Нет `operator_roles`. `created_by` на черновике — литерал
+timing-safe. Нет `operator_roles`. Тот же Bearer покрывает `/operator/hero/*`
+(EDT-03, [CHARACTER.md](CHARACTER.md)). `created_by` на черновике — литерал
 `operator` после успешного Bearer.
 
 - `saveDraft({ contentType, contentKey, document, expectedVersion })` —

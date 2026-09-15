@@ -369,10 +369,12 @@ consumer.
 **Шов извлечения:** это anti-corruption layer. Ни один модуль не импортирует AMF types, live-названия (`money_gold`) или OA key. Новый REST/gRPC transport подключается к тем же application API.
 
 Внутри `jugger-wire` transport разделён по протоколам (`auth`, OA, esrv,
-fproxy, static). OA envelope после низкоуровневого decode попадает в статический
+fproxy, static, operator HTTP). OA envelope после низкоуровневого decode попадает в статический
 registry `object|action`; registry вызывает небольшой typed handler. Handler не
-работает с `AmfValue` и не загружается через dynamic import. Подробности:
-[CLIENT_COMMANDS.md](CLIENT_COMMANDS.md).
+работает с `AmfValue` и не загружается через dynamic import. Operator JSON
+`/operator/content/*` и `/operator/hero/*` — не AMF. Подробности:
+[CLIENT_COMMANDS.md](CLIENT_COMMANDS.md), [CONTENT.md](../modules/CONTENT.md),
+[CHARACTER.md](../modules/CHARACTER.md).
 
 ## Сценарии между модулями
 

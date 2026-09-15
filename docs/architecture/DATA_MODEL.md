@@ -268,7 +268,8 @@ open|validated|invalid|activated, created_by, created_at)`;
   `validation_reports(id, candidate_id, validator_version, ok 0|1, issues jsonb
 schema 1, created_at)`;
   `publication_audits(id, release_id, candidate_id, created_by, created_at)`.
-  `operator_roles` нет; секрет — env `CONTENT_OPERATOR_TOKEN`.
+  `operator_roles` нет; секрет — env `CONTENT_OPERATOR_TOKEN`
+  (`/operator/content/*` и `/operator/hero/*`).
 
 Публикация — [CONTENT_PIPELINE.md](CONTENT_PIPELINE.md). Контракт editor —
 [CONTENT.md](../modules/CONTENT.md).
