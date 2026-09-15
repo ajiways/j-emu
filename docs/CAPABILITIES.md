@@ -450,6 +450,11 @@ Flash/OA consumer нет
 (internal enabling, product **частично**). `ExperienceGrantService` и
 алмазы не входят.
 
+EDT-04: HTTP JSON `/operator/catalog/artifacts` (тот же Bearer): поиск
+`?q=` / пакет `?ids=` / GET `:id` → `{ id, title, picture, kindId, typeId }`.
+Иконки — статика Pub1 `/images/data/artifacts/{picture}`. Flavor-описание
+артикула в проекции нет. 401/400/404 без fallback.
+
 Не перенесены SPA `/dev/content`, rollback/export, `operator_roles`,
 DATA-06 mass import, новые ключи вне active
 release.

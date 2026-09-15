@@ -1664,6 +1664,35 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
   `tests/e2e/operator-hero.test.ts`.
 - **Status:** `done`
 
+### EDT-04 — Operator catalog artifact lookup
+
+- **ID:** `EDT-04`
+- **depends_on:** `EDT-03`
+- **Scope:** read-only HTTP JSON `/operator/catalog/artifacts` for the
+  content-editor character console (search-as-you-type + bag titles/icons).
+  Same `CONTENT_OPERATOR_TOKEN` as EDT-01/03. No new tables. Flavor
+  `artikuls.description` from legacy Pub1 is **not** in `ArtifactDocument`
+  and is not added here.
+- **HTTP.** JSON, not AMF. Auth = `OperatorAuthPolicy`.
+  `GET /operator/catalog/artifacts?q=` — up to 20 briefs, title ILIKE or
+  exact numeric id; empty `q` = first 20 by id.
+  `GET /operator/catalog/artifacts?ids=77,20` — preserve request order,
+  omit missing ids (caller shows a placeholder). `q` and `ids` together → 400.
+  Unknown query field → 400. `ids` > 64 → 400.
+  `GET /operator/catalog/artifacts/:id` → one brief or 404.
+  Brief: `{ id, title, picture, kindId, typeId }`. `picture` is the Pub1
+  filename under `images/data/artifacts/`; static files are already served
+  from `PUB1_DIR` without Bearer.
+- **Fail-fast.** 401 no/wrong Bearer; 400 invalid id/query; 404 missing
+  single artifact; 500 unexpected with log. Empty search is `200 { artifacts: [] }`,
+  not 404.
+- **CEF.** No Flash consumer — internal enabling for `j-content-editor`.
+  Product **частично**.
+- **Acceptance:** raw-HTTP e2e `tests/e2e/operator-catalog.test.ts`: search
+  `Кусок` includes 77 (`Кусок мяса`); `q=77` includes 77; `ids=77,20` order;
+  GET 77; 401; 404 missing; 400 combined q+ids / unknown field.
+- **Status:** `done`
+
 ## Leftover engines — механика, не сюжет
 
 Волны 0–13 закрыты. Сюжетный leftover не этот трек: CMB-11 (`done`) →

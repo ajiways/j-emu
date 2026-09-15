@@ -8,7 +8,9 @@ import { ObjectActionRouteRegistrar } from "./object-action-route-registrar.ts";
 import { OperatorAuthPolicy } from "../../../content/application/operator-auth-policy.ts";
 import { OperatorContentRouteRegistrar } from "./operator-content-route-registrar.ts";
 import { OperatorHeroRouteRegistrar } from "./operator-hero-route-registrar.ts";
+import { OperatorCatalogRouteRegistrar } from "./operator-catalog-route-registrar.ts";
 import { HeroOperator } from "../../application/hero-operator.ts";
+import { CatalogOperator } from "../../application/catalog-operator.ts";
 import { FightInfoRouteRegistrar } from "./fight-info-route-registrar.ts";
 import { StaticAssetRegistrar } from "./static-asset-registrar.ts";
 import { TlsCredentials } from "./tls-credentials.ts";
@@ -47,6 +49,10 @@ export class JuggerHttpServer {
           this.dependencies.characters,
           this.dependencies.inventory,
         ),
+        operatorAuth,
+      ).register(app);
+      await new OperatorCatalogRouteRegistrar(
+        new CatalogOperator(this.dependencies.catalog),
         operatorAuth,
       ).register(app);
       await new EsrvRouteRegistrar(this.dependencies).register(app);

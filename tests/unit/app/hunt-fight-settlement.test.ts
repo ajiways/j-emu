@@ -512,6 +512,14 @@ function fakeCatalog(): Catalog {
   );
   return {
     artifact: async (id: number) => artifacts.get(id) ?? null,
+    searchArtifacts: async () =>
+      [...artifacts.values()].map((row) => ({
+        id: row.id,
+        title: row.title,
+        picture: row.picture,
+        kindId: row.kindId,
+        typeId: row.typeId,
+      })),
     bot: async (id: number) => (id === bot.id ? bot : null),
     skill: async () => {
       throw new Error("unused");

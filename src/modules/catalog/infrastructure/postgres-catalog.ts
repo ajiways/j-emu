@@ -24,7 +24,9 @@ import type { AssistantTypeDefinition } from "../domain/assistant-type-definitio
 import type { AreaFarmDefinition } from "../domain/area-farm-definition.ts";
 import type { FarmResourceDefinition } from "../domain/farm-resource-definition.ts";
 import { loadStoreLots, loadStoreTypes } from "./postgres-catalog-store.ts";
+import type { ArtifactBrief, ArtifactSearchQuery } from "../domain/artifact-brief.ts";
 import { artifactDefinitionFromRow } from "./artifact-definition-from-row.ts";
+import { searchArtifactBriefs } from "./postgres-catalog-artifact-query.ts";
 import { loadBonus, loadUseScript } from "./postgres-catalog-use.ts";
 import { BootstrapChrome } from "../domain/bootstrap-chrome.ts";
 import { BotDefinition } from "../domain/bot-definition.ts";
@@ -61,6 +63,10 @@ export class PostgresCatalog implements Catalog {
     if (rows.length > 1) throw new Error(`Multiple artifact definitions found for ${id}`);
     const row = rows[0];
     return row ? artifactDefinitionFromRow(row) : null;
+  }
+
+  async searchArtifacts(query: ArtifactSearchQuery): Promise<readonly ArtifactBrief[]> {
+    return searchArtifactBriefs(this.database, await this.revision.requireId(), query);
   }
 
   async bonus(id: number): Promise<ArtifactBonus | null> {
