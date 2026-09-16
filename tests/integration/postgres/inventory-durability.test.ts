@@ -70,12 +70,21 @@ describe("inventory durability persistence", () => {
     const glove = requireArtikul(await inventory.service.list(hero.id), 9095);
     const definition = await requireDefinition(9095);
     await database.run(async () => inventory.service.putOn(hero, glove.id, definition));
-    await database.run(async () =>
+    const death = await database.run(async () =>
       inventory.service.applyDeathDurability({
         characterId: hero.id,
         random: new SequenceRandom([0, 0, 0, 0, 0, 0, 0, 0]),
       }),
     );
+    expect(death.breaks).toEqual([
+      {
+        itemId: glove.id,
+        artifactId: 9095,
+        durability: 2,
+        durabilityMax: 3,
+        slot: 32,
+      },
+    ]);
     const afterDeath = requireArtikul(await inventory.service.list(hero.id), 9095);
     expect(afterDeath).toMatchObject({ durability: 2, durabilityMax: 3 });
     expect(afterDeath.location).toEqual({ kind: "equipment", slot: 32 });

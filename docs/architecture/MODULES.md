@@ -253,7 +253,8 @@ composition + trade escrow + inventory grant. Контракт:
 **Владеет:** expand macros и fan-out policy. Не пишет `heroes` / combat /
 inventory. Таблиц нет.
 
-**API:** `add`, `deliverSystem`, `notifyHuntStarted`, `notifyFightEnded`.
+**API:** `add`, `deliverSystem`, `notifyHuntStarted`, `notifyFightEnded`,
+`notifyDeathBreaks`.
 Delivery — composition `ChatDesk` + esrv outbox. Combat не импортирует chat;
 post-commit обёртка `ChatFightSettlement`. Контракт:
 [CHAT.md](../modules/CHAT.md).

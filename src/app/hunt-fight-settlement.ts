@@ -36,6 +36,7 @@ import { bestiaryCreditHeroIds } from "../modules/character/domain/bestiary-kill
 import type { HeroBestiary } from "../modules/character/ports/hero-bestiary.ts";
 import { splitMinorUnits } from "../modules/combat/domain/split-minor-units.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
+import type { DeathDurabilityBreak } from "../modules/inventory/domain/apply-death-durability.ts";
 import type { QuestLootNeeded } from "../modules/quests/ports/quest-loot-needed.ts";
 import type { PartyBagDeposit } from "../modules/party/ports/party-bag-deposit.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
@@ -56,6 +57,7 @@ type SettlementCharacters = CharacterResources &
 export class HuntFightSettlement implements FightSettlement {
   private readonly finished = new Map<string, Map<number, FightLootBlock>>();
   private readonly left = new Set<string>();
+  private readonly deathBreaks = new Map<string, Map<number, readonly DeathDurabilityBreak[]>>();
 
   constructor(
     private readonly unitOfWork: UnitOfWork,
@@ -79,7 +81,12 @@ export class HuntFightSettlement implements FightSettlement {
     this.left.add(key);
     return this.unitOfWork.run(async () => {
       await persistFightHp(this.characters, snapshot.characterId, snapshot.hp);
-      await this.applyDeathIfDefeated(snapshot.characterId, snapshot.hp);
+      await this.applyDeathIfDefeated(
+        snapshot.fightId,
+        snapshot.accountId,
+        snapshot.characterId,
+        snapshot.hp,
+      );
       await this.inventory.refillPocketAfterFight({
         characterId: snapshot.characterId,
         cells: snapshot.pocket,
@@ -179,7 +186,12 @@ export class HuntFightSettlement implements FightSettlement {
         const extra = mine === undefined ? [] : mine.items;
         if (!human.leftLive) {
           await persistFightHp(this.characters, human.characterId, human.hp);
-          await this.applyDeathIfDefeated(human.characterId, human.hp);
+          await this.applyDeathIfDefeated(
+            outcome.fightId,
+            human.accountId,
+            human.characterId,
+            human.hp,
+          );
           await this.inventory.refillPocketAfterFight({
             characterId: human.characterId,
             cells: human.pocket,
@@ -290,7 +302,12 @@ export class HuntFightSettlement implements FightSettlement {
           characterId: human.characterId,
           cells: human.pocket,
         });
-        await this.applyDeathIfDefeated(human.characterId, human.hp);
+        await this.applyDeathIfDefeated(
+          outcome.fightId,
+          human.accountId,
+          human.characterId,
+          human.hp,
+        );
       }
       return persistPvpHonor({
         outcome,
@@ -304,17 +321,52 @@ export class HuntFightSettlement implements FightSettlement {
     return lootByAccount;
   }
 
-  private async applyDeathIfDefeated(characterId: number, hp: number): Promise<void> {
+  takeDeathBreaks(fightId: string): ReadonlyMap<number, readonly DeathDurabilityBreak[]> {
+    const row = this.deathBreaks.get(fightId) ?? new Map();
+    this.deathBreaks.delete(fightId);
+    return row;
+  }
+
+  takeAccountDeathBreaks(fightId: string, accountId: number): readonly DeathDurabilityBreak[] {
+    const row = this.deathBreaks.get(fightId);
+    if (!row) return [];
+    const breaks = row.get(accountId) ?? [];
+    row.delete(accountId);
+    if (row.size === 0) this.deathBreaks.delete(fightId);
+    return breaks;
+  }
+
+  private async applyDeathIfDefeated(
+    fightId: string,
+    accountId: number,
+    characterId: number,
+    hp: number,
+  ): Promise<void> {
     if (hp !== 0) return;
     const result = await this.inventory.applyDeathDurability({
       characterId,
       random: this.random,
     });
+    this.rememberDeathBreaks(fightId, accountId, result.breaks);
     if (!result.paperdollChanged) return;
     const hero = await this.characters.lockById(characterId);
     await this.characters.applyEquipmentVitals(
       hero,
       await this.inventory.equippedSkillBonuses(characterId),
     );
+  }
+
+  private rememberDeathBreaks(
+    fightId: string,
+    accountId: number,
+    breaks: readonly DeathDurabilityBreak[],
+  ): void {
+    if (breaks.length === 0) return;
+    const row = this.deathBreaks.get(fightId) ?? new Map();
+    if (row.has(accountId)) {
+      throw new Error(`Death breaks for fight ${fightId} account ${accountId} already recorded`);
+    }
+    row.set(accountId, breaks);
+    this.deathBreaks.set(fightId, row);
   }
 }

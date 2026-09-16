@@ -37,9 +37,8 @@
       «Горное поселение», не в локации смерти. Ghost `resurrect_zones` =
       `{503:{title}}`, пока призрак ещё стоит в 501. Хардкод 503 временный
       ([WORLD.md](../modules/WORLD.md) leftover dest).
-- [ ] INV-05 leftover: system chat `Вещи потеряли прочность: [[ARTIFACT]] (-1).`
-      после death/win break (старый `durabilityApply`); сейчас ломает
-      прочность, в чат не пишет.
+- [ ] INV-05 leftover: system chat `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1).`
+      после death/win break (raw-AMF есть; CEF 2026-09-16 не подтверждён).
 - [ ] CMB-03 leftover: после боя кнопка инфо/экрана результата не открывает
       карточку — клик no-op.
 - [ ] CMB-05 leftover: `hpChange` больше оставшегося HP (3 HP, удар 7).

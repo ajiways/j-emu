@@ -489,7 +489,7 @@ function recordingInventory() {
     },
     async applyDeathDurability(command: unknown) {
       inventory.deaths.push(command);
-      return { paperdollChanged: false };
+      return { paperdollChanged: false, breaks: [] };
     },
     async equippedSkillBonuses() {
       return [];

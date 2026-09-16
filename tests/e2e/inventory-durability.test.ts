@@ -39,7 +39,20 @@ describe("inventory durability death and repair", () => {
     for (let death = 0; death < 3; death += 1) {
       await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms), sq, { equipGlove: false });
       sq += 20;
-      await client.pollEsrv();
+      const packets = await client.pollEsrv();
+      if (death === 0) {
+        const breakLine = chatMessages(packets).find((row) =>
+          String(row.msg).startsWith("Вещи потеряли прочность:"),
+        );
+        if (!breakLine) throw new Error("death durability chat is missing");
+        expect(String(breakLine.msg)).toMatch(/\[\[ARTIFACT_ITEM /);
+        expect(String(breakLine.msg)).toContain("(-1)");
+        const macroses = requireRecord(breakLine.macroses, "death break macroses");
+        expect(Object.values(macroses).length).toBeGreaterThanOrEqual(4);
+        for (const value of Object.values(macroses)) {
+          expect(requireRecord(value, "ARTIFACT_ITEM").macro_type).toBe("ARTIFACT_ITEM");
+        }
+      }
       if (death < 2) {
         const living = await client.objectAction({
           object: "common",
@@ -148,6 +161,33 @@ function equippedByArtikul(
     if (row.artikul_id === artikulId) return row;
   }
   throw new Error(`equipped artikul ${artikulId} is missing`);
+}
+
+function chatMessages(packets: readonly AmfValue[]): Array<Record<string, AmfValue>> {
+  const rows: Array<Record<string, AmfValue>> = [];
+  for (const packet of packets) {
+    if (!packet || typeof packet !== "object" || Array.isArray(packet)) continue;
+    if (typeof packet.channel !== "string" || !packet.channel.startsWith("2:")) continue;
+    if (!packet.object || typeof packet.object !== "object" || Array.isArray(packet.object)) {
+      continue;
+    }
+    const object = packet.object as Record<string, AmfValue>;
+    const block = object["chat|message"];
+    if (!block || typeof block !== "object" || Array.isArray(block)) continue;
+    const message = (block as Record<string, AmfValue>).message;
+    if (!message || typeof message !== "object" || Array.isArray(message)) {
+      throw new Error("chat|message.message is missing");
+    }
+    rows.push(message as Record<string, AmfValue>);
+  }
+  return rows;
+}
+
+function requireRecord(value: AmfValue | undefined, label: string): Record<string, AmfValue> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${label} must be an object`);
+  }
+  return value;
 }
 
 function requireNumber(value: AmfValue | undefined): number {

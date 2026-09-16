@@ -157,9 +157,10 @@ catalog `f_body`) пересобирается на PUT_ON/OFF (raw-AMF); CEF 3D
 
 Есть raw-AMF и PostgreSQL: instance `durability`/`durability_max`, смерть на
 hunt −1 по 4–5 надетым tracking, `0/N` auto PUT_OFF, PUT_ON broken **204**,
+system chat `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1)` (raw-AMF),
 `store|repair` finite `(max−1)/(max−1)` (9095 бесплатно 2/2, кираса 20 за
 0.02g), persist reconnect/restart, concurrent repair — один победитель.
-CEF мастерской не прогонялся.
+CEF мастерской и чата поломки не прогонялся.
 
 Заточка (INV-06) workflow `done`, product **частично**: OA `UPGRADE`, overlay
 на том же `items.id`, кристаллы **553 / 1310 / 4603 / 11408 / 13224**, шесть
@@ -243,7 +244,7 @@ restart снимает бой, перчатка остаётся в paperdoll. C
 оставляет book 5 started; mid-fight restart рвёт RAM. CEF экрана результата,
 F5 в бою, видимого урона, плевка Хиссы, дуэли, gear-spell и
 quest roster flags 8 не прогонялся. Outdoor `RESURRECT` dest 503 —
-CEF 2026-09-16. CEF leftovers (поломка без чата, экран результата,
+CEF 2026-09-16. CEF leftovers (чат поломки CEF, экран результата,
 overkill, aggro/спеллы, shuffle, орб/дебаффы, dealtDamage, skip-turn,
 F5 img) — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 CMB-11: OA `FIGHT_JOIN` `{team:1|2}` и `FIGHT_HELP` входят в тот же RAM
@@ -340,7 +341,9 @@ persist. CEF окна обмена не прогонялся.
 
 Есть raw-AMF: `chat|add` area/private/system, dump stub echo + `state`, fan-out
 соседям на `2:` отдельными `chat|message` кадрами. Hunt start/end и loot/money
-system-строки после UoW settlement; сбой enqueue не откатывает награды.
+system-строки после UoW settlement; death/win break —
+`Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1)` до «Окончен бой».
+Сбой enqueue не откатывает награды.
 `trade|confirm` шлёт «согласился торговать». Party type — на `4:` при
 membership (SOC-02). CEF чата не прогонялся.
 

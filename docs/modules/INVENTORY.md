@@ -499,7 +499,8 @@ Death: composition `HuntFightSettlement`, та же UoW что `noteDefeat`, п�
 ECO-01 buy (inventory mutation + `debitMoney`). Economy-модуля нет.
 `flags_ext` не добавлять: infinite = `flags & 1` (NON_BREAK) и
 `flags & 536870912` (COLLECTS_EPICNESS). Chat notify — `SOC-01`
-(`Вещи потеряли прочность: [[ARTIFACT]] (-1).`); CEF leftover.
+`Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1).` после death/win break
+(raw-AMF). CEF leftover.
 
 ### Правила
 
@@ -566,7 +567,7 @@ Starter bag: 9095, 20, 21, 26, 93×2, 99×10, 77×4. Не надевать се�
 
 ### Public ports
 
-- `applyDeathDurability({ characterId, random })` → `{ paperdollChanged }`;
+- `applyDeathDurability({ characterId, random })` → `{ paperdollChanged, breaks }`;
 - `repair({ characterId, itemId })` → `{ costMinor }` (0 = free, no debit);
 - catalog template durability on `ArtifactDefinition`;
 - composition `StoreRepair` debit + repair в одной UoW.
@@ -586,7 +587,7 @@ columns — runtime 204. Concurrent death/repair — hero+items lock, один
 ### Out of scope
 
 set-bonus INV-07; 103 expire; BAG slots; flags_ext /
-draconis infinite; chat macros; workshop tab client filter (client-side
+draconis infinite; workshop tab client filter (client-side
 `dur < max`).
 
 ### INV-05 acceptance
@@ -595,7 +596,8 @@ draconis infinite; chat macros; workshop tab client filter (client-side
 - integration: persist death −1 and repair `(max-1)/(max-1)`; concurrent
   repair one winner;
 - raw-AMF: four L1 durables equipped, hunt loss, 4 broken, 0/N in bag,
-  PUT_ON 204; repair 9095 cost 0 → 2/2; repair 20 cost 0.02g; restart;
+  PUT_ON 204; system chat `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1)`;
+  repair 9095 cost 0 → 2/2; repair 20 cost 0.02g; restart;
 - CEF мастерской не прогонялся — product **частично**, пока нет CEF
   20/21/26/9095 → смерть о Грызля → снятие 0/N → починка в 504.
 

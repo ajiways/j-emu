@@ -8,6 +8,8 @@ import { expandEmoFlavor } from "../../../src/modules/chat/domain/expand-emo.ts"
 import { EMO_TEMPLATES } from "../../../src/modules/chat/domain/emo-templates.ts";
 import { expandSmileTags } from "../../../src/modules/chat/domain/expand-smiles.ts";
 import { buildFightMacro, huntFightTitle } from "../../../src/modules/chat/domain/fight-macro.ts";
+import { buildArtifactItemMacro } from "../../../src/modules/chat/domain/artifact-item-macro.ts";
+import { deathDurabilityMessage } from "../../../src/modules/chat/domain/death-durability-message.ts";
 import { buildMoneyMacro } from "../../../src/modules/chat/domain/money-macro.ts";
 import { parseEmoCommand } from "../../../src/modules/chat/domain/parse-emo-command.ts";
 import { isChatOnlyFragment } from "../../../src/modules/jugger-wire/application/esrv-chat-only-fragment.ts";
@@ -66,6 +68,35 @@ describe("chat macros", () => {
     const money = buildMoneyMacro(0.2, "1");
     expect(money.macro.amount).toBe("0.2");
     expect(money.token).toMatch(/^\[\[MONEY /);
+  });
+
+  it("formats death durability ARTIFACT_ITEM chat after −1", () => {
+    const token = buildArtifactItemMacro({
+      itemId: 100_001,
+      artifactId: 9095,
+      title: "Перчатка",
+      picture: "glove.png",
+      typeId: "32",
+      kindId: 0,
+      flags: 0,
+      flagsExt: 0,
+      priceMinor: 0,
+      levelMin: 1,
+      levelMax: 1,
+      durability: 2,
+      durabilityMax: 3,
+      slot: 32,
+      slotMask: 32,
+      skills: [],
+    });
+    expect(token.token).toMatch(/^\[\[ARTIFACT_ITEM /);
+    expect(token.macro.macro_type).toBe("ARTIFACT_ITEM");
+    expect(token.macro.id).toBe(100_001);
+    expect(token.macro.artikul_id).toBe(9095);
+    expect(token.macro.durability).toBe(2);
+    const line = deathDurabilityMessage([token]);
+    expect(line.msg).toBe(`Вещи потеряли прочность: ${token.token} (-1).`);
+    expect(line.macroses[token.key]).toEqual(token.macro);
   });
 
   it("expands /emo with USER macros and reports a missing target", () => {

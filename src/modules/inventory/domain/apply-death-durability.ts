@@ -9,8 +9,17 @@ export type ApplyDeathDurabilityCommand = Readonly<{
   random: Readonly<{ unit(): number }>;
 }>;
 
+export type DeathDurabilityBreak = Readonly<{
+  itemId: number;
+  artifactId: number;
+  durability: number;
+  durabilityMax: number;
+  slot: number;
+}>;
+
 export type DeathDurabilityResult = Readonly<{
   paperdollChanged: boolean;
+  breaks: readonly DeathDurabilityBreak[];
 }>;
 
 export async function applyDeathDurability(
@@ -33,11 +42,23 @@ export async function applyDeathDurability(
   }
   const picked = pickDeathBreaks(pool, command.random);
   let paperdollChanged = false;
+  const breaks: DeathDurabilityBreak[] = [];
   for (const item of picked) {
+    if (item.location.kind !== "equipment") {
+      throw new Error(`Death-break item ${item.id} is not equipped`);
+    }
     const flags = flagsByItem.get(item.id);
     if (flags === undefined) throw new Error(`Death-break flags for item ${item.id} are missing`);
     const before = instanceDurability(item.durability, item.durabilityMax, flags);
     const next = applyBreak(before.current, before.max, before.infinite);
+    const chatCurrent = next.destroy ? 0 : next.current;
+    breaks.push({
+      itemId: item.id,
+      artifactId: item.artifactId,
+      durability: chatCurrent,
+      durabilityMax: next.max,
+      slot: next.destroy || chatCurrent <= 0 ? 0 : item.location.slot,
+    });
     if (next.destroy) {
       await inventory.delete(item);
       paperdollChanged = true;
@@ -50,5 +71,5 @@ export async function applyDeathDurability(
     }
     await inventory.save(updated);
   }
-  return { paperdollChanged };
+  return { paperdollChanged, breaks };
 }

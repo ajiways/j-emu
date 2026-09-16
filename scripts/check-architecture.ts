@@ -75,7 +75,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/professions/domain/farm-jobs.ts":
     "Dump-proven farm assignment, cycle finish, stock decrement/respawn, and FREE sentinel insert",
   "src/app/chat-desk.ts":
-    "Player chat add plus area/private/party fan-out and hunt/loot system lines",
+    "Player chat add plus area/private/party fan-out and hunt/loot/death-break system lines",
   "src/app/instance-desk.ts":
     "Dungeon enter/leave/expiry kick plus auto-party chrome and location push",
   "src/app/party-desk.ts":
@@ -85,7 +85,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/app/party-bag-ops.ts":
     "Party bag give/drop/dump plus lottery rounds under the party UoW lock",
   "src/app/hunt-fight-settlement.ts":
-    "Hunt finish UoW: EXP/money/loot plus party money split, deferred bag deposit, bestiary kill credit, and HERO-01 PvP honor grant",
+    "Hunt finish UoW: EXP/money/loot plus party money split, deferred bag deposit, bestiary kill credit, HERO-01 PvP honor grant, and death-break ledger",
   "src/modules/character/infrastructure/schema.ts":
     "Character tables including heroes, experience_grants, honor_grants, skills, reputations, professions, and bestiary",
   "src/app/party-join-ops.ts":

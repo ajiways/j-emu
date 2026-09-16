@@ -3,9 +3,15 @@ import type { CharacterService } from "../modules/character/application/characte
 import type { CombatPort } from "../modules/combat/ports/combat-port.ts";
 import type { FightLootBlock } from "../modules/combat/domain/fight-loot-block.ts";
 import type { FightOutcomeSnapshot } from "../modules/combat/domain/fight-outcome-snapshot.ts";
+import type { DeathDurabilityBreak } from "../modules/inventory/domain/apply-death-durability.ts";
 import { ChatDeniedError } from "../modules/chat/domain/chat-denied-error.ts";
 import { chatChannelType, isAreaScopedChat } from "../modules/chat/domain/chat-channels.ts";
 import { buildArtifactMacro } from "../modules/chat/domain/artifact-macro.ts";
+import {
+  buildArtifactItemMacro,
+  type ArtifactItemMacroToken,
+} from "../modules/chat/domain/artifact-item-macro.ts";
+import { deathDurabilityMessage } from "../modules/chat/domain/death-durability-message.ts";
 import {
   buildChatMessage,
   type ChatMessageBlock,
@@ -188,7 +194,11 @@ export class ChatDesk {
   async notifyFightEnded(
     outcome: FightOutcomeSnapshot,
     lootByAccount: ReadonlyMap<number, FightLootBlock>,
+    breaksByAccount: ReadonlyMap<number, readonly DeathDurabilityBreak[]>,
   ): Promise<void> {
+    for (const human of outcome.humans) {
+      await this.notifyDeathBreaks(human.accountId, breaksByAccount.get(human.accountId) ?? []);
+    }
     if (outcome.mode !== "hunt") return;
     const lead = outcome.humans[0];
     if (!lead) throw new Error(`Hunt ${outcome.fightId} has no humans`);
@@ -211,6 +221,42 @@ export class ChatDesk {
       await this.notifyLootItems(human.accountId, loot);
       await this.notifyLootMoney(human.accountId, loot);
     }
+  }
+
+  async notifyDeathBreaks(
+    accountId: number,
+    breaks: readonly DeathDurabilityBreak[],
+  ): Promise<void> {
+    if (breaks.length === 0) return;
+    const tokens: ArtifactItemMacroToken[] = [];
+    for (const row of breaks) {
+      const definition = await this.deps.catalog.artifact(row.artifactId);
+      if (!definition) {
+        throw new Error(`Artifact catalog entry ${row.artifactId} is missing`);
+      }
+      tokens.push(
+        buildArtifactItemMacro({
+          itemId: row.itemId,
+          artifactId: definition.id,
+          title: definition.title,
+          picture: definition.picture,
+          typeId: definition.typeId,
+          kindId: definition.kindId,
+          flags: definition.flags,
+          flagsExt: definition.extra.flagsExt,
+          priceMinor: definition.priceMinor,
+          levelMin: definition.levelMin,
+          levelMax: definition.levelMax,
+          durability: row.durability,
+          durabilityMax: row.durabilityMax,
+          slot: row.slot,
+          slotMask: definition.slotMask,
+          skills: definition.skills,
+        }),
+      );
+    }
+    const line = deathDurabilityMessage(tokens);
+    await this.deliverSystem(accountId, line.msg, line.macroses);
   }
 
   private async notifyLootItems(accountId: number, loot: FightLootBlock): Promise<void> {
