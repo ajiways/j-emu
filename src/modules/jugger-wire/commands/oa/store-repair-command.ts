@@ -3,7 +3,6 @@ import { StoreDeniedError } from "../../../../app/store-denied-error.ts";
 import type { CharacterService } from "../../../character/application/character-service.ts";
 import { RepairDeniedError } from "../../../inventory/domain/repair-denied-error.ts";
 import type { BootstrapReadModel } from "../../application/bootstrap-read-model.ts";
-import type { HeroSheetReadModel } from "../../application/hero-sheet-read-model.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
 import { storeRepairMutation } from "../../application/store-repair-mutation.ts";
 import { bagDiffChanged, bagDiffRemoved } from "../../application/user-bag-diff.ts";
@@ -17,7 +16,6 @@ export class StoreRepairCommand implements OaCommand {
 
   constructor(
     private readonly bootstrap: BootstrapReadModel,
-    private readonly sheet: HeroSheetReadModel,
     private readonly characters: CharacterService,
     private readonly repair: StoreRepair,
     private readonly outbox: EsrvOutbox,
@@ -54,7 +52,7 @@ export class StoreRepairCommand implements OaCommand {
     return storeRepairMutation(
       bag,
       await this.bootstrap.view(context.accountId),
-      this.sheet.magic(),
+      await this.bootstrap.magic(context.accountId),
       await this.bootstrap.state(context.accountId),
     );
   }

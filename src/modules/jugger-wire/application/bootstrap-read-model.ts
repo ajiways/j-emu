@@ -23,7 +23,8 @@ import { buildChatConf, type ChatConfPolicy } from "./chat-conf-block.ts";
 import { buildUserBag, type UserBagBlock } from "./user-bag-block.ts";
 import { buildUserPocket } from "./user-pocket-block.ts";
 import { buildUserConf } from "./user-conf-block.ts";
-import { emptyUserMagic } from "./user-magic-block.ts";
+import { userMagicFromEquipped, type UserMagicBlock } from "./user-magic-block.ts";
+import { gloveInstanceFromCatalog } from "./glove-instance-wire.ts";
 import { liveHonorProgress } from "./live-honor-progress.ts";
 import { fightResumeConfiguration } from "./fight-resume-configuration.ts";
 import { buildUserSkills, skillsExpireBlock, type UserSkillsBlock } from "./user-skills-block.ts";
@@ -31,6 +32,7 @@ import { userProfessionsWire } from "../../character/domain/profession-wire.ts";
 import { buildUserUnitframe, type UserUnitframeBlock } from "./user-unitframe-block.ts";
 import { wornSetPortrait } from "./worn-set-portrait.ts";
 import { buildUserView, type UserViewBlock } from "./user-view-block.ts";
+import { equipmentMutationBlocks } from "./equipment-mutation.ts";
 import { buildWelcomeMessage } from "./welcome-message-block.ts";
 import { buildUseMutation } from "./use-mutation-block.ts";
 import { buildTravelMutation } from "./travel-mutation-block.ts";
@@ -178,6 +180,7 @@ export class BootstrapReadModel {
           definition,
           await artifactSkillWireMap(overlay.skills, this.catalog, overlay.upgradeBySkill),
           overlay,
+          await gloveInstanceFromCatalog(definition, this.catalog),
         ),
       );
     }
@@ -191,23 +194,23 @@ export class BootstrapReadModel {
     );
   }
 
+  async magic(accountId: number): Promise<UserMagicBlock> {
+    return userMagicFromEquipped((await this.view(accountId)).artifacts);
+  }
+
   async equipmentMutation(accountId: number): Promise<Readonly<Record<string, unknown>>> {
     const hero = await this.requireHero(accountId);
-    return {
-      "common|action": { status: 100 },
-      "user|bag": await buildUserBag(hero, this.inventory, this.catalog),
-      "user|view": await this.view(accountId),
-      "user|pocket": await buildUserPocket(
-        this.inventory,
-        this.catalog,
-        hero.id,
-        this.policy.pocketCapacity,
-      ),
-      "user|skills": await this.skills(accountId),
-      "user|unitframe": await this.unitframe(accountId),
-      "user|conf": buildUserConf(hero, await liveHonorProgress(this.catalog, hero)),
-      state: await this.heroState(hero, accountId),
-    };
+    const view = await this.view(accountId);
+    return equipmentMutationBlocks(
+      await buildUserBag(hero, this.inventory, this.catalog),
+      view,
+      userMagicFromEquipped(view.artifacts),
+      await buildUserPocket(this.inventory, this.catalog, hero.id, this.policy.pocketCapacity),
+      await this.skills(accountId),
+      await this.unitframe(accountId),
+      buildUserConf(hero, await liveHonorProgress(this.catalog, hero)),
+      await this.heroState(hero, accountId),
+    );
   }
 
   async useMutation(
@@ -294,7 +297,7 @@ export class BootstrapReadModel {
         hero.id,
         this.policy.pocketCapacity,
       ),
-      "user|magic": emptyUserMagic(),
+      "user|magic": await this.magic(accountId),
       "user|conf": buildUserConf(hero, await liveHonorProgress(this.catalog, hero)),
       "user|personal_details": {
         status: 100,

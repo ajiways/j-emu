@@ -30,6 +30,12 @@ describe("inventory equipment", () => {
     expect(glove.artikul_id).toBe(9095);
     expect(glove.picture).toBe("greyset5_lhand.png");
     expect(glove.slot).toBe(0);
+    expect(glove.hits).toEqual([2, 3, 2, 3, 1, 2, 3, 1]);
+    expect(glove.spells).toEqual([
+      gloveSpellCard(9098, "Разряд молнии", "electro_ball1.png", 2),
+      gloveSpellCard(9100, "Жажда крови", "kaban_magic_mosch.png", 3),
+      gloveSpellCard(9099, "Волна света", "ludoed_magic_light.png", 4),
+    ]);
     expect(objectBlock(glove.artifact_skills).VIT).toMatchObject({
       title: "Здоровье",
       skill_id: "VIT",
@@ -53,6 +59,12 @@ describe("inventory equipment", () => {
       slot: 32,
       cnt: 0,
       actions: 16,
+      hits: [2, 3, 2, 3, 1, 2, 3, 1],
+    });
+    expect(equipped.spells).toEqual(glove.spells);
+    expect(putOn["user|magic"]).toMatchObject({
+      status: 100,
+      gloves: [{ id: itemId, artikul_id: 9095, spells: glove.spells }],
     });
     expect(objectBlock(equipped.artifact_skills).STR).toMatchObject({
       title: "Сила",
@@ -80,6 +92,10 @@ describe("inventory equipment", () => {
     const afterRestart = await again.objectAction({ object: "common", action: "init", sq: 20 });
     expect(objectBlock(afterRestart["user|bag"]).amount).toBe(6);
     expect(skillValue(afterRestart["user|skills"], "VIT")).toBe(15);
+    expect(afterRestart["user|magic"]).toMatchObject({
+      status: 100,
+      gloves: [{ id: itemId, artikul_id: 9095 }],
+    });
     const viewAfter = await again.objectAction({ object: "user", action: "view", sq: 21 });
     expect(firstArtifact(viewAfter["user|view"])).toMatchObject({
       id: itemId,
@@ -98,6 +114,7 @@ describe("inventory equipment", () => {
     });
     expect(putOff["common|action"]).toEqual({ status: 100 });
     expect(bagItemByArtikulId(putOff, 9095).id).toBe(itemId);
+    expect(putOff["user|magic"]).toEqual({ status: 100, gloves: [] });
     expect(objectBlock(putOff["user|view"]).artifacts).toEqual([]);
     expect(objectBlock(putOff["user|view"]).body).toBe(NAKED_HERO_BODY);
     expect(skillValue(putOff["user|skills"], "VIT")).toBe(10);
@@ -217,4 +234,22 @@ function firstArtifact(block: AmfValue | undefined): Record<string, AmfValue> {
 function requireNumber(value: AmfValue | undefined): number {
   if (typeof value !== "number") throw new Error("expected a number");
   return value;
+}
+
+function gloveSpellCard(
+  artikulId: number,
+  title: string,
+  picture: string,
+  cost: number,
+): Record<string, unknown> {
+  return {
+    id: artikulId,
+    artikul_id: artikulId,
+    title,
+    picture,
+    description: "",
+    quality: 0,
+    row: 1,
+    cost,
+  };
 }

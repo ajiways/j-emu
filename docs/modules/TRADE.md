@@ -129,4 +129,6 @@ Wire — неотсечённый float (live 5×0.62 → `0.551298…`). Ready/
 `{ status: 100 }`. Settle дополнительно `user|magic` + `user|bag` (HTTP и esrv
 партнёру).
 
-`user|magic` в текущем срезе — пустые gloves (как bootstrap).
+`user|magic` — надетые catalog-socket перчатки (9095 `hits`/`spells`); без
+надетой перчатки `gloves: []`. Instance MAGRES/пул спеллов при выдаче —
+[INVENTORY.md](INVENTORY.md).

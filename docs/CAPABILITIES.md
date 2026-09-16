@@ -250,8 +250,9 @@ restart снимает бой, перчатка остаётся в paperdoll. C
 результата 2026-09-16. F5 в бою, видимый урон, плевок Хиссы, дуэль,
 gear-spell и quest roster flags 8 не прогонялись. Outdoor `RESURRECT` dest 503 —
 CEF 2026-09-16. CEF leftovers (чат поломки CEF 2026-09-16, экран результата CEF 2026-09-16,
-overkill raw-AMF clamp без CEF, aggro/спеллы, shuffle, орб/дебаффы, dealtDamage, skip-turn,
-F5 img) — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
+overkill raw-AMF clamp без CEF, перчатка 9095 raw-AMF spells/`user|magic` без
+CEF, instance MAGRES/купленные перчатки, aggro/спеллы, shuffle, орб/дебаффы,
+dealtDamage, skip-turn, F5 img) — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 CMB-11: OA `FIGHT_JOIN` `{team:1|2}` и `FIGHT_HELP` входят в тот же RAM
 `fightId` на 50310; карта ATTACK_BOT на занятый spawn остаётся team 1;
 две копии 542 изолируют JOIN; после смерти бота живой team-2 продолжает

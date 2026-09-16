@@ -51,6 +51,12 @@
 - [ ] CMB-05 leftover: `hpChange` больше оставшегося HP (3 HP, удар 7).
       raw-AMF: wire `hpChange` = −min(raw, currentHP) на melee/kind-1/glove/DoT.
       CEF не подтверждён.
+- [ ] INV leftover: в инвентаре и на надетой перчатке нет спеллов (и в бою
+      панель пустая). raw-AMF: 9095 bag/view/`user|magic` несут catalog
+      `hits` + expanded `spells`; PUT_ON отдаёт `user|magic`. CEF не
+      подтверждён. Покупаемые/лутовые перчатки без catalog sockets и
+      MAGRES/MAGSTR roll при grant — instance extra не персистится
+      (`items.data_json` нет); см. [INVENTORY.md](../modules/INVENTORY.md).
 - [ ] CMB-02 leftover: после «Разозлить» пропадает список спеллов перчатки
       (`persSpells`).
 - [ ] CMB-08 leftover: после убийства текущего противника shuffle не даёт

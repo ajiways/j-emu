@@ -61,9 +61,9 @@ Bag item обязан иметь подтверждённые `type_id`, `kind_i
 - waiting/openBoard/bumpGoal/LEARN_RECIPE.
 
 Успешная equip mutation возвращает полный flat response: `common|action`,
-`user|bag`, `user|view`, `user|pocket`, `user|skills`, `user|unitframe`,
-`user|conf`, `state` и `sq`. Один пустой success block недостаточен. Equipped
-wire `cnt` is `0`; instance quantity remains `1`.
+`user|bag`, `user|view`, `user|magic`, `user|pocket`, `user|skills`,
+`user|unitframe`, `user|conf`, `state` и `sq`. Один пустой success block
+недостаточен. Equipped wire `cnt` is `0`; instance quantity remains `1`.
 
 Paperdoll `PUT_ON`/`PUT_OFF` пересобирает `heroes.body` из `artikuls.f_body`
 надетых equipment+tempeffect (карман не входит) и отдаёт строку в
@@ -97,8 +97,22 @@ Live `jgr-emu` `commonObject.ts` эти коды **не** блокирует; в
 
 Pocket layout (INV-03) принадлежит inventory; active count/effects во время боя
 — combat (`INV-04`/`CMB-02`). `persSpells.srcId` не должен столкнуться с
-`items.id`. Packet ordering `rs`/strike задаётся [COMBAT.md](COMBAT.md). World
-`user|magic` glove spells не входят в этот срез.
+`items.id`. Packet ordering `rs`/strike задаётся [COMBAT.md](COMBAT.md).
+
+`user|magic.gloves` — массив надетых magic-glove AMF (slot 32 / kind 44) с
+top-level `hits` (8 шагов L/C/R) и `spells` (карточки `id`/`artikul_id`/
+`title`/`picture`/`row`/`cost`). Источник для 9095 — catalog
+`extra.spells`/`extra.hits`, те же поля на bag/view. Пустой `gloves: []`, пока
+перчатка в сумке. PUT_ON/PUT_OFF, init, `user|magic`, repair, fight|finish и
+trade settle отдают актуальный блок.
+
+Instance-generation leftover: `items` не хранит `data_json`. `grantToBag`
+копирует только durability. Decoder публикует sockets+hits только на 9095;
+покупаемые/лутовые перчатки (23 и пул `artikul_id1..6`) приходят без спеллов —
+тот же баг, что в старом эмуляторе до `ensureItemInstance`. MAGRES/MAGSTR
+school roll (`generator_flags` / `param1`) при выдаче тоже не пишется;
+combat snapshot берёт catalog blob как есть. Полный instance extra — отдельный
+INV срез, не этот leftover.
 
 CEF 2026-09-08: новый герой, 93 и 99 на пояс, `status:100`, иконки приняты,
 строки в PostgreSQL. Restart/reconnect покрыт raw-AMF e2e.

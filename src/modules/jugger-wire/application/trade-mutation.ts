@@ -11,7 +11,6 @@ import type { BootstrapReadModel } from "./bootstrap-read-model.ts";
 import { ProtocolError } from "./protocol-error.ts";
 import { tradeInviteWindow } from "./trade-invite-window.ts";
 import { buildTradeSessionBlock, closedTradeSession } from "./trade-session-block.ts";
-import { emptyUserMagic } from "./user-magic-block.ts";
 import { buildUserMacro } from "./user-macro.ts";
 import type { OaEncodedResponse } from "../commands/oa/oa-command.ts";
 
@@ -89,7 +88,7 @@ export class TradeMutation {
       return {
         [oaKey]: { status: 100 },
         "trade|session": session,
-        "user|magic": emptyUserMagic(),
+        "user|magic": await this.bootstrap.magic(result.viewerAccountId),
         "user|bag": await this.bootstrap.bag(result.viewerAccountId),
         state,
       };
@@ -118,7 +117,7 @@ export class TradeMutation {
     if (result.settled) {
       return {
         "trade|session": closedTradeSession(),
-        "user|magic": emptyUserMagic(),
+        "user|magic": await this.bootstrap.magic(hero.accountId),
         "user|bag": await this.bootstrap.bag(hero.accountId),
         state: await this.bootstrap.state(hero.accountId),
       };

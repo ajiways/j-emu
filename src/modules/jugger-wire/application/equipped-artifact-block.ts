@@ -3,6 +3,7 @@ import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
 import { SLOT_TEMPEFFECT } from "../../inventory/domain/gear-sets.ts";
 import type { ArtifactInstanceOverlay } from "./artifact-instance-overlay.ts";
 import type { ArtifactSkillWireBlock } from "./artifact-skill-wire.ts";
+import type { GloveInstanceWire } from "./glove-instance-wire.ts";
 import { FLAG_PUT_OFF } from "./item-action-flags.ts";
 
 export type EquippedArtifactBlock = Readonly<{
@@ -29,13 +30,15 @@ export type EquippedArtifactBlock = Readonly<{
   upgrade_add: number;
   artifact_skills: Readonly<Record<string, ArtifactSkillWireBlock>>;
   artifact_actions: Readonly<Record<string, never>>;
-}>;
+}> &
+  Partial<GloveInstanceWire>;
 
 export function buildEquippedArtifact(
   item: InventoryItem,
   definition: ArtifactDefinition,
   artifactSkills: Readonly<Record<string, ArtifactSkillWireBlock>>,
   overlay: ArtifactInstanceOverlay,
+  glove: GloveInstanceWire | null = null,
 ): EquippedArtifactBlock {
   if (item.location.kind !== "equipment" && item.location.kind !== "tempeffect") {
     throw new Error(`Item ${item.id} is not equipped`);
@@ -70,5 +73,6 @@ export function buildEquippedArtifact(
     upgrade_add: overlay.upgrade_add,
     artifact_skills: artifactSkills,
     artifact_actions: {},
+    ...(glove ?? {}),
   };
 }

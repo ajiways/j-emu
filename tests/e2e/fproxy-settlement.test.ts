@@ -107,7 +107,10 @@ describe("fproxy settlement", () => {
     expect(finish["user|unitframe"]).toMatchObject({ status: 100, exp: 16 });
     expect(finish["user|bag"]).toMatchObject({ status: 100 });
     expect(finish["user|view"]).toMatchObject({ status: 100 });
-    expect(finish["user|magic"]).toEqual({ status: 100, gloves: [] });
+    expect(finish["user|magic"]).toMatchObject({
+      status: 100,
+      gloves: [{ artikul_id: 9095 }],
+    });
     expect(finish["user|skills"]).toMatchObject({ status: 100 });
     expect(stateMoney(finish)).toBe("25.20");
 

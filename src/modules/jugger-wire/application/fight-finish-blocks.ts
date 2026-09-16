@@ -1,4 +1,3 @@
-import { emptyUserMagic } from "./user-magic-block.ts";
 import type { BootstrapReadModel } from "./bootstrap-read-model.ts";
 import { fightInfoBlock } from "./fight-info-block.ts";
 import type { FightResultInfo } from "../../combat/domain/fight-result-info.ts";
@@ -15,7 +14,7 @@ export async function buildFightFinishBlocks(
     "user|unitframe": await bootstrap.unitframe(accountId),
     "user|bag": await bootstrap.bag(accountId),
     "user|view": await bootstrap.view(accountId),
-    "user|magic": emptyUserMagic(),
+    "user|magic": await bootstrap.magic(accountId),
     "user|skills": await bootstrap.skills(accountId),
     state: await bootstrap.state(accountId),
   };

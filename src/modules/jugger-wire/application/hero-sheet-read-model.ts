@@ -4,7 +4,6 @@ import type { BookTrioBlocks } from "./book-quest-blocks.ts";
 import { emptyBookTrio } from "./book-quest-blocks.ts";
 import type { MenuLinkStatusBlock } from "./menu-link-status-block.ts";
 import { buildMenuLinkStatus } from "./menu-link-status-block.ts";
-import { emptyUserMagic, type UserMagicBlock } from "./user-magic-block.ts";
 
 type HeroSheetPolicy = Readonly<{
   chat: ChatConfPolicy;
@@ -20,10 +19,6 @@ export class HeroSheetReadModel {
 
   chatConf(accountId: number): ChatConfBlock {
     return buildChatConf(accountId, this.policy.chat);
-  }
-
-  magic(): UserMagicBlock {
-    return emptyUserMagic();
   }
 
   bookTrio(filterType: string): BookTrioBlocks {
