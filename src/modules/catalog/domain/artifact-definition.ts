@@ -22,6 +22,7 @@ export class ArtifactDefinition {
     readonly extra: ArtifactExtra,
     readonly durability: number,
     readonly durabilityMax: number,
+    readonly fBody: string,
   ) {
     if (!Number.isInteger(id) || id <= 0) throw new Error("Invalid artifact id");
     if (typeof title !== "string") throw new Error(`Artifact ${id} title is required`);
@@ -65,6 +66,7 @@ export class ArtifactDefinition {
     if (!Number.isInteger(durabilityMax) || durabilityMax < 0) {
       throw new Error(`Artifact ${id} durabilityMax is invalid`);
     }
+    if (typeof fBody !== "string") throw new Error(`Artifact ${id} fBody is required`);
     const ids = new Set<string>();
     for (const skill of skills) {
       if (ids.has(skill.id)) throw new Error(`Artifact ${id} has duplicate skill ${skill.id}`);

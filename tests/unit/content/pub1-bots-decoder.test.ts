@@ -175,5 +175,6 @@ function sampleArtifact(id: number): Record<string, unknown> {
             },
           }
         : {},
+    fBody: "",
   };
 }

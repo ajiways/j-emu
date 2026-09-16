@@ -84,6 +84,10 @@ bootstrap. Internal `grantExperience` атомарно применяет DATA-0
 - CEF ghost/injury/RESURRECT (raw-AMF CMB-04 есть);
 - клиентский EXP grant через квест.
 
+CEF leftover (2026-09-16, **частично**): HUD HP/`hp_time` и деньги обновляются
+с esrv loot/exit и operator grant без лишнего OA. Это не закрывает CMB-03
+экран результата.
+
 Equipment-derived `user|skills` / `hpMax` считаются из naked skills + надетых
 предметов (перчатка 9095 даёт VIT+5). Без экипа HUD показывает naked L1.
 
@@ -91,7 +95,8 @@ Equipment-derived `user|skills` / `hpMax` считаются из naked skills +
 
 Есть raw-AMF E2E и подтверждённый CEF-прогон: перчатка 9095 надевается,
 иконка/статы карточки видны, paperdoll slot 32, bag освобождается, HUD stats
-меняются.
+меняются. Unity-модель (`user|view.body` из catalog `f_body`) пересобирается
+на PUT_ON/OFF (raw-AMF); CEF 3D leftover.
 
 - catalog projection и stable item instance IDs;
 - starter 9095 в bag (`greyset5_lhand.png`, `artifact_skills`); v15 также

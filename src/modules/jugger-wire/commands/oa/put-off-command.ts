@@ -7,6 +7,7 @@ import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
 import type { BootstrapReadModel } from "../../application/bootstrap-read-model.ts";
 import { equippedSkillBonuses } from "../../application/equipped-skill-bonuses.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
+import { syncWornBody } from "../../application/sync-worn-body.ts";
 import { artifactInstanceIdFrom } from "./artifact-instance-id.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
@@ -44,6 +45,7 @@ export class PutOffCommand implements OaCommand {
             hero,
             await equippedSkillBonuses(this.inventory, this.catalog, hero.id),
           );
+          await syncWornBody(this.characters, this.inventory, this.catalog, hero);
         }
         return this.bootstrap.equipmentMutation(context.accountId);
       });

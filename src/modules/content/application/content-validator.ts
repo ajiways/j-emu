@@ -150,6 +150,9 @@ export class ContentValidator {
       if (!Number.isInteger(artifact.durabilityMax) || artifact.durabilityMax < 0) {
         issues.push(`artifact ${artifact.id} durabilityMax is invalid`);
       }
+      if (typeof artifact.fBody !== "string") {
+        issues.push(`artifact ${artifact.id} fBody is required`);
+      }
       const artifactSkills = new Set<string>();
       for (const skill of artifact.skills) {
         if (!skillIds.has(skill.id)) {

@@ -72,6 +72,9 @@
 - [ ] INV-08: выдать и кликнуть USE **640** (хлеб/DRINK), **623** (книга),
       **2371**×2 → **55**, **584** → отказ NPC. Выдать: j-content-editor
       «Персонаж».
+- [ ] Leftover Unity body: надеть стартовую 9095 — персонаж не голый;
+      снять — снова `armor();head(0,0,8,152);skin()`. Иконки paperdoll
+      уже закрыты CEF.
 
 ## Instance
 
@@ -156,6 +159,10 @@
 - [ ] Репутация: экран `user|stats`, Радвей track 5, SUM 36.
 - [ ] CMB-01 leftover: кнопки L/C/R после паузы, скрытие на свой удар.
 - [ ] CMB-02 leftover: счётчики пояса 93/99, перчатки 9095, ярости.
+- [x] Leftover HUD auto-refresh (CEF 2026-09-16, частично): после hunt
+      HP/`hp_time` и деньги приходят на esrv вместе с `fight|loot`/`exit`;
+      operator grant/money тоже пушит HUD. Полный CMB-03 экран результата —
+      строка выше, не закрыта.
 
 ## Internal ports (нет production OA)
 

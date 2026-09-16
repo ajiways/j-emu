@@ -95,6 +95,7 @@ export type ArtifactDocument = Readonly<{
   skills: readonly ArtifactSkillDocument[];
   artifact_actions: Readonly<Record<string, ArtifactActionDocument>>;
   extra: ArtifactExtraDocument;
+  fBody: string;
 }>;
 
 type HuntLookDocument = Readonly<{

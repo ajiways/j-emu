@@ -1,4 +1,10 @@
-import { amfGoldMinor, amfInteger, amfString, isRecord } from "./amf-fields.ts";
+import {
+  amfGoldMinor,
+  amfInteger,
+  amfOmittedEmptyString,
+  amfString,
+  isRecord,
+} from "./amf-fields.ts";
 import {
   decodeArtifactActions,
   decodeArtifactExtra,
@@ -26,6 +32,7 @@ export type DecodedArtifactDocument = Readonly<{
   skills: readonly Readonly<{ id: string; value: number; flags: number }>[];
   artifact_actions: Readonly<Record<string, unknown>>;
   extra: Readonly<Record<string, unknown>>;
+  fBody: string;
 }>;
 
 export function artifactFromAmf(
@@ -70,6 +77,7 @@ export function artifactFromAmf(
       skills,
       artifact_actions: decodeArtifactActions(raw.artifact_actions, id),
       extra: decodeArtifactExtra(raw, id),
+      fBody: amfOmittedEmptyString(raw.f_body, `artifact ${id} f_body`),
     },
     skillHints: hints,
   };

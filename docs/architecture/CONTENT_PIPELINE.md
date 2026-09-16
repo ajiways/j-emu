@@ -262,7 +262,8 @@ source group ведутся только в
   запрещены.
 - `catalog`: Pub1 artifact/artikul AMF (`npm run content:decode:items` →
   `content/pub1-items.generated.json` + manifest). Decoder сохраняет wire ID
-  без перенумерации; `artikul-weights.json` применяется в decode как authored
+  без перенумерации; Pub1 `f_body` (опущенный = пустая строка) публикуется как
+  `fBody`. `artikul-weights.json` применяется в decode как authored
   слой того же файла. Validator проверяет type/kind, skill refs и duplicate
   `artikul_id`. `db:reset` читает только committed JSON, без `PUB1_DIR`.
 - `catalog`: Pub1 bestiary AMF (`npm run content:decode:bots` →

@@ -13,6 +13,7 @@ describe("Pub1 generated item corpus", () => {
   ) as Array<{
     id: number;
     title: string;
+    fBody: string;
     extra: { spell?: { groupId?: number }; spells?: unknown; hits?: unknown };
   }>;
   const byId = new Map(artifacts.map((row) => [row.id, row]));
@@ -28,6 +29,7 @@ describe("Pub1 generated item corpus", () => {
     const glove = byId.get(9095);
     const tyrant = byId.get(20546);
     expect(glove?.title).toBe("Ветхая магическая перчатка");
+    expect(glove?.fBody.length).toBeGreaterThan(0);
     expect(glove?.extra.hits).toEqual([2, 3, 2, 3, 1, 2, 3, 1]);
     expect(Array.isArray(glove?.extra.spells)).toBe(true);
     expect(tyrant?.title).toBe("Изначальная мифическая перчатка тирана VI");

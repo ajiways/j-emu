@@ -120,7 +120,7 @@ state
 sq
 ```
 
-Фактический состав конкретной мутации фиксируется fixture-тестом; нельзя вкладывать эти блоки внутрь `common|action`. Старый клиент не гарантирует самостоятельную полную пересборку UI по одному `{status:100}`. Источники: [`docs/PROTOCOL.md`](../../../jgr-emu/docs/PROTOCOL.md), [`docs/ARCHITECTURE.md`](../../../jgr-emu/docs/ARCHITECTURE.md).
+Фактический состав конкретной мутации фиксируется fixture-тестом; нельзя вкладывать эти блоки внутрь `common|action`. Старый клиент не гарантирует самостоятельную полную пересборку UI по одному `{status:100}`. `user|view.body` — строка Unity-оверлея (`armor(<f_body tokens>);head(...);skin()`), не набор иконок; Flash локально рисует 3D из этого поля. Источники: [`docs/PROTOCOL.md`](../../../jgr-emu/docs/PROTOCOL.md), [`docs/ARCHITECTURE.md`](../../../jgr-emu/docs/ARCHITECTURE.md).
 
 ## Status и текст ошибок
 

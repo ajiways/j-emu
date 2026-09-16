@@ -23,13 +23,11 @@ const result = decodePub1Items({
   weightsFile,
 });
 
-if (fs.existsSync(manifestFile) && fs.existsSync(outputFile)) {
-  const previous = JSON.parse(fs.readFileSync(manifestFile, "utf8")) as {
-    corpusDigest?: string;
-  };
-  if (previous.corpusDigest === result.manifest.corpusDigest) {
+if (fs.existsSync(outputFile)) {
+  const expected = `${JSON.stringify(result.artifacts)}\n`;
+  if (fs.readFileSync(outputFile, "utf8") === expected) {
     process.stdout.write(
-      `Unchanged corpus digest ${result.manifest.corpusDigest}; left ${path.relative(root, outputFile)}\n`,
+      `Unchanged artifacts digest ${result.outputDigest}; left ${path.relative(root, outputFile)}\n`,
     );
     process.exit(0);
   }

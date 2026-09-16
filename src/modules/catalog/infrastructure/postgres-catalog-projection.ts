@@ -153,6 +153,7 @@ async function insertArtifacts(
     skills: artifact.skills,
     artifactActions: artifact.artifact_actions,
     extra: artifact.extra,
+    fBody: artifact.fBody,
   }));
   await insertInBatches(values, async (batch) => {
     await session.insert(artifacts).values(batch);

@@ -136,5 +136,6 @@ export const artifactDocumentSchema = z
     skills: z.array(artifactSkillSchema),
     artifact_actions: z.record(z.string().min(1), artifactActionSchema),
     extra: artifactExtraSchema,
+    fBody: z.string(),
   })
   .strict();

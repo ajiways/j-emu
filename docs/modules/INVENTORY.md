@@ -65,6 +65,13 @@ Bag item обязан иметь подтверждённые `type_id`, `kind_i
 `user|conf`, `state` и `sq`. Один пустой success block недостаточен. Equipped
 wire `cnt` is `0`; instance quantity remains `1`.
 
+Paperdoll `PUT_ON`/`PUT_OFF` пересобирает `heroes.body` из `artikuls.f_body`
+надетых equipment+tempeffect (карман не входит) и отдаёт строку в
+`user|view.body`. Это Unity-оверлей `armor(<tokens>);head(...);skin()`, не
+иконки paperdoll. Пустой `f_body` (кольца) на модель не влияет; отсутствие
+каталожной записи — ошибка, не голый `armor()`. Head/skin берутся из текущего
+body героя.
+
 Glove 9095 occupies paperdoll slot `32` from catalog `slot_mask`. Live starter
 armor 20/26/103 is not invented in this playable slice.
 
@@ -185,7 +192,9 @@ wire = `flags & 8 ? 1 : 0`. Стартовая 9095: `flags: 40`
 
 - `priceMinor` — целое ≥ 0, центы золота; `0` валиден (unsellable);
 - `flags` — целое ≥ 0;
-- `bagStack` — целое ≥ 1.
+- `bagStack` — целое ≥ 1;
+- `fBody` — строка Unity-оверлея; `""` валиден (нет визуала). Pub1 опускает
+  `f_body`, когда токена нет.
 
 Отсутствующее поле — ошибка candidate/runtime, не `?? 0` и не `bagStack || 9999`.
 Unique paperdoll/bag: `bagStack = 1`, стакать нельзя. `priceMinor` missing ≠ 0.
@@ -742,6 +751,7 @@ Containers, reservations не спроектированы.
 - malformed/missing catalog data дают explicit error;
 - raw-AMF response сохраняет legacy flat shape;
 - paperdoll 9095 **готово** подтверждён CEF PUT_ON (статы и bag);
+  Unity-модель `user|view.body` — leftover CEF после импорта `f_body`;
 - DROP throw-away 9095 **готово** подтверждён CEF из bag;
 - pocket 93/99 **готово** подтверждён CEF PUT_ON на пояс;
 - world USE 77 **готово** подтверждён CEF из bag;

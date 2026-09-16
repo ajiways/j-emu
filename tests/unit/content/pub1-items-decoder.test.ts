@@ -15,6 +15,17 @@ describe("Pub1 item decoder", () => {
     expect(artifact.levelMax).toBe(0);
     expect(artifact.bagStack).toBe(1);
     expect(artifact.skills).toEqual([{ id: "STR", value: 6, flags: 0 }]);
+    expect(artifact.fBody).toBe("");
+  });
+
+  it("maps Pub1 f_body and treats omitted overlay as empty string", () => {
+    const withOverlay = sampleRecord(20);
+    if (!withOverlay || typeof withOverlay !== "object" || Array.isArray(withOverlay)) {
+      throw new Error("sample record must be an object");
+    }
+    withOverlay.f_body = "110_1#4097";
+    expect(artifactFromAmf(20, withOverlay).artifact.fBody).toBe("110_1#4097");
+    expect(artifactFromAmf(20, sampleRecord(20)).artifact.fBody).toBe("");
   });
 
   it("treats omitted skill_flags as AMF zero", () => {

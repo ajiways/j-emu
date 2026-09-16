@@ -25,7 +25,7 @@ Playerbot-таблиц и признаков `is_bot` нет.
 
 Источник истины — Drizzle schema files в `src/modules/*/infrastructure/schema.ts`
 и pre-baseline миграции `drizzle/0000_foundation_init.sql` плюс последующие
-`drizzle/0001`…`0031`. Поля ниже совпадают с runtime.
+`drizzle/0001`…`0034`. Поля ниже совпадают с runtime.
 
 ### `identity`
 
@@ -104,14 +104,15 @@ Versioned projection активной content release:
 
 - `artifacts(release_id, id, title, picture, type_id, kind_id, slot_mask, weight,
 level_min, level_max, gender, price_minor, flags, bag_stack, durability,
-durability_max, skills jsonb, artifact_actions jsonb, extra jsonb)`
+durability_max, skills jsonb, artifact_actions jsonb, extra jsonb, f_body)`
   PK `(release_id, id)`. `price_minor` — integer cents ≥ 0 (`0` валиден);
   `flags` integer ≥ 0; `bag_stack` integer ≥ 1; `durability` /
   `durability_max` integer ≥ 0 каждый, без cross-field CHECK (`0`/`0` =
   не tracking; `current > max` допустим для 37 legacy artifacts —
   `INVENTORY.md` § INV-05 «Коррекция»). `artifact_actions` — typed map
   (пустой объект = нет USE). `extra` — dump-proven fight blobs (`spell`,
-  `spells`/`hits` на 9095); пустой объект валиден (еда 77).
+  `spells`/`hits` на 9095); пустой объект валиден (еда 77). `f_body` — text
+  NOT NULL, Unity overlay tokens; пустая строка валидна (нет визуала).
 - `bots(release_id, id, title, level, max_hp, strength, hunt_nick, hunt_swf,
 hunt_scale, hunt_fps, hunt_speed, hunt_avatar, hunt_kind, hunt_hide_on_map,
 hunt_sk, hunt_body, base_exp, money_min, money_max, loot_drop_cnt,

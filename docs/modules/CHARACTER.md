@@ -42,6 +42,9 @@ Hero identity:
   из transaction-pinned progression snapshot;
 - equipment totals (`user|skills`, `hpMax`) считаются из naked + надетых
   `artifact_skills` на PUT_ON/OFF и при чтении skills;
+- `heroes.body` / `user|view.body` пересобирается на paperdoll PUT_ON/OFF из
+  catalog `fBody` надетого экипа (старый `rebuildHeroBody`); без экипа —
+  `armor();head(...);skin()` из `HeroCreationPolicy`;
 - tutorial flags пишутся в `hero_personal_details` при создании и больше не
   overlay-ятся на чтении;
 - `use_fproxy: 1` форсируется на каждом wire-чтении `user|personal_details.info`

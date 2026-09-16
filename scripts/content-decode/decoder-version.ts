@@ -1,4 +1,4 @@
-export const PUB1_ITEMS_DECODER_VERSION = "pub1-items/v1";
+export const PUB1_ITEMS_DECODER_VERSION = "pub1-items/v2";
 export const PUB1_ITEMS_DOCUMENT_SCHEMA = "artifact-document/playable-slice-v35";
 
 export const PUB1_BOTS_DECODER_VERSION = "pub1-bots/v1";

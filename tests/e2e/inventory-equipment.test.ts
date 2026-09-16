@@ -1,10 +1,16 @@
+import fs from "node:fs";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Application } from "../../src/app/application.ts";
+import { composeHeroBody, parseFBodyTokens } from "../../src/modules/character/domain/hero-body.ts";
 import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { bagItemByArtikulId } from "../support/harness/wire-payload.ts";
+
+const NAKED_BODY = "armor();head(0,0,8,152);skin()";
+const GLOVE_BODY = wornBodyFromGenerated(9095);
 
 describe("inventory equipment", () => {
   let harness: ApplicationHarness;
@@ -58,6 +64,7 @@ describe("inventory equipment", () => {
     });
     expect(skillValue(putOn["user|skills"], "VIT")).toBe(15);
     expect(skillValue(putOn["user|skills"], "STR")).toBe(18);
+    expect(objectBlock(putOn["user|view"]).body).toBe(GLOVE_BODY);
     expect(objectBlock(putOn["user|unitframe"])).toMatchObject({
       hp: 15,
       hpMax: 15,
@@ -82,6 +89,7 @@ describe("inventory equipment", () => {
       artikul_id: 9095,
       slot: 32,
     });
+    expect(objectBlock(viewAfter["user|view"]).body).toBe(GLOVE_BODY);
     const frame = await again.objectAction({ object: "user", action: "unitframe", sq: 22 });
     expect(objectBlock(frame["user|unitframe"])).toMatchObject({ hp: 15, hpMax: 15 });
 
@@ -94,6 +102,7 @@ describe("inventory equipment", () => {
     expect(putOff["common|action"]).toEqual({ status: 100 });
     expect(bagItemByArtikulId(putOff, 9095).id).toBe(itemId);
     expect(objectBlock(putOff["user|view"]).artifacts).toEqual([]);
+    expect(objectBlock(putOff["user|view"]).body).toBe(NAKED_BODY);
     expect(skillValue(putOff["user|skills"], "VIT")).toBe(10);
     expect(objectBlock(putOff["user|unitframe"])).toMatchObject({ hp: 10, hpMax: 10 });
   });
@@ -211,4 +220,16 @@ function firstArtifact(block: AmfValue | undefined): Record<string, AmfValue> {
 function requireNumber(value: AmfValue | undefined): number {
   if (typeof value !== "number") throw new Error("expected a number");
   return value;
+}
+
+function wornBodyFromGenerated(artikulId: number): string {
+  const artifacts = JSON.parse(
+    fs.readFileSync(path.resolve(process.cwd(), "content/pub1-items.generated.json"), "utf8"),
+  ) as Array<{ id: number; fBody?: unknown }>;
+  const artifact = artifacts.find((row) => row.id === artikulId);
+  if (!artifact) throw new Error(`generated artifact ${artikulId} is missing`);
+  if (typeof artifact.fBody !== "string" || artifact.fBody === "") {
+    throw new Error(`generated artifact ${artikulId} fBody overlay is required`);
+  }
+  return composeHeroBody(NAKED_BODY, parseFBodyTokens(artifact.fBody));
 }

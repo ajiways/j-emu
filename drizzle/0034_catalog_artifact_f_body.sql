@@ -1,0 +1,1 @@
+ALTER TABLE "catalog"."artifacts" ADD COLUMN "f_body" text NOT NULL;

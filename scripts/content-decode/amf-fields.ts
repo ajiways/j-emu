@@ -83,6 +83,13 @@ export function amfString(value: unknown, label: string): string {
   return value;
 }
 
+/** Pub1 omits `f_body` when the artikul has no Unity overlay. Empty string is authored. */
+export function amfOmittedEmptyString(value: unknown, label: string): string {
+  if (value === undefined || value === null) return "";
+  if (typeof value !== "string") throw new Error(`${label} must be a string`);
+  return value;
+}
+
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }

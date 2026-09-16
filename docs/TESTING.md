@@ -22,7 +22,7 @@
 - `character-bootstrap` — полный flat init/init2 inventory, skills, HUD
   HP/MP/EXP, welcome `{nick}`, reconnect/restart character state;
 - `inventory-equipment` — raw-AMF `PUT_ON`/`PUT_OFF` glove 9095, paperdoll
-  slot/view/stats, same instance back to bag, restart, `203`/`204`;
+  slot/view/stats, `user|view.body` overlay, same instance back to bag, restart, `203`/`204`;
 - `inventory-drop` — raw-AMF `DROP` throw-away 9095, empty bag `amount=0`
   `total=0`, money `"25.00"`, equipped DROP `204`, SELL alias `204`, DROP/SELL
   during hunt fight → `203`, reconnect;

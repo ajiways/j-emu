@@ -23,6 +23,7 @@ export function testArtifact(
     skills?: readonly ArtifactSkillBonus[];
     useActions?: Readonly<Record<string, ArtifactUseAction>>;
     extra?: ArtifactExtra;
+    fBody?: string;
   } = {},
 ): ArtifactDefinition {
   const id = overrides.id ?? 9095;
@@ -47,5 +48,6 @@ export function testArtifact(
     overrides.extra ?? new ArtifactExtra(null, [], null, null, 0, 0, 0),
     durability,
     durabilityMax,
+    overrides.fBody ?? "",
   );
 }

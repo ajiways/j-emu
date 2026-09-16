@@ -22,6 +22,7 @@ export function artifactDefinitionFromRow(row: {
   extra: unknown;
   durability: number;
   durabilityMax: number;
+  fBody: string;
 }): ArtifactDefinition {
   return new ArtifactDefinition(
     row.id,
@@ -42,5 +43,6 @@ export function artifactDefinitionFromRow(row: {
     artifactExtraFromJson(row.id, row.extra),
     row.durability,
     row.durabilityMax,
+    row.fBody,
   );
 }
