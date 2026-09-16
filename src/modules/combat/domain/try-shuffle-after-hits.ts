@@ -2,11 +2,10 @@ import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
 
 export const PAIR_HITS_TO_SWITCH = 3;
 
-export type ShufflePlan = "none" | "reset" | "waiter-handoff" | "cross-swap" | "reserve-swap";
+export type ShufflePlan = "none" | "waiter-handoff" | "cross-swap" | "reserve-swap";
 
 export type ShuffleOutcome =
   | Readonly<{ kind: "none" }>
-  | Readonly<{ kind: "reset" }>
   | Readonly<{
       kind: "waiter-handoff";
       actorAccountId: number;
@@ -34,7 +33,6 @@ export function planHuntShuffle(
     hasLivingWaiter: boolean;
     hasSwappableOther: boolean;
     hasLivingReserve: boolean;
-    hasPartnerDuel: boolean;
     finished: boolean;
   }>,
 ): ShufflePlan {
@@ -51,6 +49,5 @@ export function planHuntShuffle(
   if (input.hasLivingWaiter) return "waiter-handoff";
   if (input.hasSwappableOther) return "cross-swap";
   if (input.hasLivingReserve) return "reserve-swap";
-  if (input.hasPartnerDuel) return "none";
-  return "reset";
+  return "none";
 }

@@ -202,6 +202,68 @@ describe("fproxy hunt 3↔3 aggro reserve", () => {
   });
 });
 
+describe("fproxy hunt 3↔3 late waiter", () => {
+  let harness: ApplicationHarness;
+  let application: Application;
+
+  beforeEach(async () => {
+    harness = new ApplicationHarness(undefined, undefined, {
+      combatRandom: lowDamageRandom,
+      combatRules: { strPerDamagePoint: 1000 },
+    });
+    application = await harness.start();
+  });
+
+  afterEach(async () => {
+    await harness.stop();
+  });
+
+  it("hands the bot to a joiner after the next player hit", async () => {
+    const a = await createIsolatedHero(application);
+    const b = await createIsolatedHero(application);
+    await a.objectAction({ object: "common", action: "init", sq: 1 });
+    await b.objectAction({ object: "common", action: "init", sq: 1 });
+    const start = await a.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 4,
+    });
+    const opened = huntFightConfFrom(start);
+    expect(await a.fight({ rc: "auth", eid: opened.fightId, sq: 5 })).toHaveLength(0);
+    await a.pollFight();
+    for (let round = 0; round < 3; round += 1) {
+      expect(await a.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: 20 + round })).toHaveLength(
+        0,
+      );
+      const melee = await a.pollFight();
+      expect(fightEventTypes(melee)).not.toContain("fightFinish");
+      expect(fightEventTypes(melee)).not.toContain("oppwait");
+      await harness.elapseCombat(1400);
+      const bot = await a.pollFight();
+      expect(fightEventTypes(bot)).not.toContain("fightFinish");
+      expect(fightEventTypes(bot)).not.toContain("oppwait");
+      await harness.elapseCombat(1100);
+      await a.pollFight();
+    }
+    const join = await b.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 4,
+    });
+    expect(huntFightConfFrom(join).fightId).toBe(opened.fightId);
+    expect(await b.fight({ rc: "auth", eid: opened.fightId, sq: 5 })).toHaveLength(0);
+    await b.pollFight();
+    expect(await a.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: 30 })).toHaveLength(0);
+    const handed = await a.pollFight();
+    expect(fightEventTypes(handed)).toContain("oppwait");
+    expect(fightEventTypes(handed)).not.toContain("fightFinish");
+    const taken = await b.pollFight();
+    expect(fightEventTypes(taken)).toContain("oppnew");
+  });
+});
+
 function persListBotIds(events: readonly AmfValue[]): number[] {
   for (const event of events) {
     if (!event || typeof event !== "object" || Array.isArray(event)) continue;

@@ -111,7 +111,8 @@ Join/waiter WLD-02 не ломается: пока A в дуэли, B без `at
 
 Player melee и ending glove бьют `FightDuel.otherId`, а не `Battle.kind`.
 Цель — живой human в паре или hunt bot; иначе fail-fast. После удара
-bot-counter ставится только если opponent — бот, иначе grant этому human.
+сначала 3↔3 shuffle; bot-counter ставится только если противник всё ещё
+бот, иначе grant этому human.
 `Battle.kind` остаётся для bootstrap, join, practice settlement и history,
 не для формулы удара. Hybrid (люди и боты в обеих командах) ещё не playable
 slice; finish — когда на стороне цели не осталось живых.
@@ -387,11 +388,11 @@ friendly human↔human. Melee не ветвится hunt/PvP: удар идёт 
 `user|friendly_duel_request` и `fight|conf` challenger-у. Invites
 process-local, TTL 60s, fail-fast `203`. Practice settlement возвращает
 HP/MP/pocket, без лута/EXP/травмы; `fight|conf.is_pvp=1`, `type:"6"`.
-После 3↔3 melee hits в hunt с waiter: бот уходит waiter-у, актор
-`oppwait`, HP/loadout без сброса. Outdoor «Разозлить»: waiting clone на
-3↔3 даёт `oppnew` (jgr `shuffle_force_reserve`), текущий бот уходит в
-очередь. No-rotate — reset hits. bot↔bot и cross-swap двух 3↔3 пар —
-leftover (в playable slice один бот на точку).
+После 3↔3 melee hits каждый удар (игрок и бот) проверяет, можно ли
+сменить противника: живой waiter на своей команде → бот уходит waiter-у,
+актор `oppwait`; waiting enemy (клон «Разозлить») → `oppnew` клона;
+вторая human↔bot дуэль тоже 3↔3 → cross-swap. 3↔3 не сбрасывается, пока
+менять некого. HP/loadout без сброса. bot↔bot leftover.
 OA `FIGHT_JOIN` / `FIGHT_HELP` landed raw-AMF (CMB-11). CEF не прогонялся.
 
 ### Architecture decision
@@ -401,8 +402,8 @@ ADR-0017–0020 достаточны. Invites как active fight: RAM, restart 
 
 ### Out of scope (CMB-08 leftover)
 
-Cross-swap двух живых 3↔3 дуэлей; bot↔bot; charging/DoT на shuffle hits;
-practice finished_fights type 6. Hunt join team 2 landed in CMB-11. Real PvP assault —
+bot↔bot; charging/DoT на shuffle hits; practice finished_fights type 6.
+Hunt join team 2 landed in CMB-11. Real PvP assault —
 BG-01, контракт [BATTLEGROUND.md](BATTLEGROUND.md). HERO-01 читает PvP
 snapshot (ниже), не hunt loot.
 
@@ -507,9 +508,9 @@ Quest/copy/friendly deny: fury + полный абсолютный `persSpells`,
 если заряд 0. После смерти текущего бота `takeNextEnemyForHuman` отдаёт
 клон (`oppnew`), бой не finish, пока жив хотя бы один enemy.
 
-Shuffle: solo reset hits; waiting aggro clone на 3↔3 — `oppnew` клона;
-2v1 waiter-handoff (CMB-08); partner duel ниже 3↔3 **держит** hits;
-**cross-swap** только если **оба** дуэля уже 3↔3.
+Shuffle: после каждого удара, если дуэль уже 3↔3. Waiter на команде —
+`oppwait` актору и бот waiter-у; waiting enemy — `oppnew`; обе дуэли
+3↔3 — **cross-swap**. Пока менять некого, hits **держатся**.
 HP без сброса.
 
 Новая пара из `tryPairQueues` — `rollOpensFirst` (LUCK, `INITIATIVE_SOFT_C=80`,

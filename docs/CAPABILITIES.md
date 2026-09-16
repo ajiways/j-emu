@@ -251,8 +251,8 @@ restart снимает бой, перчатка остаётся в paperdoll. C
 gear-spell и quest roster flags 8 не прогонялись. Outdoor `RESURRECT` dest 503 —
 CEF 2026-09-16. CEF leftovers (чат поломки CEF 2026-09-16, экран результата CEF 2026-09-16,
 overkill raw-AMF clamp без CEF, перчатка 23 CEF 2026-09-16 instance spells,
-MAGRES leftover, aggro persSpells/kill-clone CEF 2026-09-16, 3↔3 reserve
-shuffle и loot ARTIFACT skills raw-AMF без CEF, орб/дебаффы,
+MAGRES leftover, aggro persSpells/kill-clone CEF 2026-09-16, 3↔3 shuffle
+и loot ARTIFACT skills raw-AMF без CEF, орб/дебаффы,
 dealtDamage, skip-turn, F5 img) — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 CMB-11: OA `FIGHT_JOIN` `{team:1|2}` и `FIGHT_HELP` входят в тот же RAM
 `fightId` на 50310; карта ATTACK_BOT на занятый spawn остаётся team 1;

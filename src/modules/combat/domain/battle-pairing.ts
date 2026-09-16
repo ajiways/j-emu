@@ -64,16 +64,11 @@ export function shuffleHuntAfterHits(
     hasLivingWaiter: livingWaiterOnTeam(input.pairing.humans, openerTeam) !== undefined,
     hasSwappableOther: swappable !== null,
     hasLivingReserve: input.roster.peekWaitingEnemy() !== null,
-    hasPartnerDuel: partner !== null,
     finished: input.finished || foeBot.hp === 0,
   });
   if (plan === "none") return { kind: "none" };
   actor.markFought(foeBot.fightId);
   foeBot.markFought(actor.heroId);
-  if (plan === "reset") {
-    input.pairing.duel.resetHits();
-    return { kind: "reset" };
-  }
   if (plan === "cross-swap") {
     if (!swappable) throw new Error("Shuffle cross-swap requires another 3↔3 duel");
     return applyCrossSwap(

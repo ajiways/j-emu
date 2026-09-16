@@ -5,7 +5,7 @@ import {
 } from "../../../src/modules/combat/domain/try-shuffle-after-hits.ts";
 
 describe("planHuntShuffle", () => {
-  it("hands the bot to a waiter at 3↔3 and resets when nobody waits", () => {
+  it("rotates at 3↔3 when a waiter, other 3↔3 pair, or reserve exists", () => {
     expect(PAIR_HITS_TO_SWITCH).toBe(3);
     expect(
       planHuntShuffle({
@@ -14,7 +14,6 @@ describe("planHuntShuffle", () => {
         hasLivingWaiter: true,
         hasSwappableOther: false,
         hasLivingReserve: false,
-        hasPartnerDuel: false,
         finished: false,
       }),
     ).toBe("waiter-handoff");
@@ -25,10 +24,9 @@ describe("planHuntShuffle", () => {
         hasLivingWaiter: false,
         hasSwappableOther: false,
         hasLivingReserve: false,
-        hasPartnerDuel: false,
         finished: false,
       }),
-    ).toBe("reset");
+    ).toBe("none");
     expect(
       planHuntShuffle({
         humanHits: 3,
@@ -36,7 +34,6 @@ describe("planHuntShuffle", () => {
         hasLivingWaiter: false,
         hasSwappableOther: true,
         hasLivingReserve: false,
-        hasPartnerDuel: true,
         finished: false,
       }),
     ).toBe("cross-swap");
@@ -46,19 +43,7 @@ describe("planHuntShuffle", () => {
         botHits: 3,
         hasLivingWaiter: false,
         hasSwappableOther: false,
-        hasLivingReserve: false,
-        hasPartnerDuel: true,
-        finished: false,
-      }),
-    ).toBe("none");
-    expect(
-      planHuntShuffle({
-        humanHits: 3,
-        botHits: 3,
-        hasLivingWaiter: false,
-        hasSwappableOther: false,
         hasLivingReserve: true,
-        hasPartnerDuel: false,
         finished: false,
       }),
     ).toBe("reserve-swap");
@@ -69,7 +54,6 @@ describe("planHuntShuffle", () => {
         hasLivingWaiter: true,
         hasSwappableOther: false,
         hasLivingReserve: false,
-        hasPartnerDuel: false,
         finished: false,
       }),
     ).toBe("none");
@@ -80,7 +64,6 @@ describe("planHuntShuffle", () => {
         hasLivingWaiter: true,
         hasSwappableOther: false,
         hasLivingReserve: false,
-        hasPartnerDuel: false,
         finished: true,
       }),
     ).toBe("none");

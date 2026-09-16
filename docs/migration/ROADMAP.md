@@ -717,8 +717,8 @@
   реорганизация pairing, не новая сущность: `PAIR_HITS_TO_SWITCH = 3`.
   Playable slice — 1 бот; representative path — 2 hunters × 1 bot, waiter
   получает бота, актор `oppwait`, HP/loadout без сброса. Cross-swap двух
-  живых 3↔3 пар — leftover (нет второго dump-бота в одной точке). No-rotate
-  — reset hits на месте. Invites process-local, TTL 60s через `Clock`, ключ
+  живых 3↔3 пар (клон «Разозлить») landed. 3↔3 держится, пока менять некого;
+  проверка после каждого удара. Invites process-local, TTL 60s через `Clock`, ключ
   target accountId; restart/TTL → `203` «вызов устарел». OA
   `user|friendly_duel_propose` / `accept`; esrv `user|friendly_duel_request`
   и `fight|conf` challenger-у. Practice settlement восстанавливает HP/MP/

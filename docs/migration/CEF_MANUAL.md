@@ -59,9 +59,10 @@
       (`persSpells`). CEF 2026-09-16: полный `persSpells` с перчаткой.
 - [x] CMB-08 leftover: после убийства текущего противника shuffle не даёт
       следующего. CEF 2026-09-16: outdoor клон `oppnew` после kill.
-- [ ] CMB-08 leftover: нет 3↔3 shuffle на waiting clone после «Разозлить».
-      raw-AMF: 3 обмена → `oppnew` клона, текущий бот в очередь. CEF не
-      подтверждён.
+- [ ] CMB-08 leftover: 3↔3 shuffle не «после Разозлить», а после каждого
+      удара, пока 3↔3 и есть кому меняться (waiter / waiting enemy /
+      другая 3↔3 дуэль). raw-AMF: поздний вход второго охотника на ходе
+      первого → после удара `oppwait`/`oppnew`. CEF не подтверждён.
 - [ ] SOC-01 leftover: «Вами получено» tooltip без статов. raw-AMF: loot
       `[[ARTIFACT]]` несёт catalog `artifact_skills` как bag. CEF не
       подтверждён.

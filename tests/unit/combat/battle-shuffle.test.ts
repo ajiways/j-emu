@@ -100,7 +100,7 @@ describe("Battle 3↔3 shuffle", () => {
     expect(waiter.hp).toBe(27);
   });
 
-  it("resets hits in place when nobody can rotate", () => {
+  it("keeps 3↔3 until a waiter joins and hands the bot after the next player hit", () => {
     const battle = new Battle(
       huntInit(),
       UNIT_BATTLE_RULES,
@@ -112,10 +112,34 @@ describe("Battle 3↔3 shuffle", () => {
       battle.resolveBotMelee(1);
       if (round < 2) battle.grantTurn(1, AUTH_NOW);
     }
-    expect(battle.tryShuffleAfterHits(1)).toEqual({ kind: "reset" });
+    expect(battle.tryShuffleAfterHits(1)).toEqual({ kind: "none" });
     expect(battle.pairedAccountId).toBe(1);
+    battle.addHuman({
+      accountId: 2,
+      heroId: 2,
+      nick: "Joiner",
+      level: 1,
+      kind: 1,
+      hp: 27,
+      maxHp: 27,
+      mp: 10,
+      maxMp: 10,
+      ...unitHuntHumanStats(10),
+      team: 1,
+      appearance: UNIT_HUNT_APPEARANCE,
+      loadout: EMPTY_COMBAT_LOADOUT,
+      startedAtMs: AUTH_NOW,
+    });
+    battle.authenticate(2, AUTH_NOW);
     battle.grantTurn(1, AUTH_NOW);
     expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");
+    expect(battle.tryShuffleAfterHits(1)).toMatchObject({
+      kind: "waiter-handoff",
+      actorAccountId: 1,
+      waiterAccountId: 2,
+    });
+    expect(battle.pairedAccountId).toBe(2);
+    expect(battle.tryPlayerMelee(1, "center", AUTH_NOW)).toEqual({ kind: "ignored" });
   });
 
   it("cross-swaps two 3↔3 human↔bot duels without changing HP", () => {

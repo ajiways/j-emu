@@ -126,6 +126,7 @@ export class CombatMeleeLoop {
       await this.settleFinished(battle, extra, accountId);
       return;
     }
+    if (this.applyShuffle(battle, accountId)) return;
     const token = battle.delayTokenFor(accountId);
     if (!token) return;
     const opponent = battle.pairedOpponent(accountId);
@@ -204,26 +205,26 @@ export class CombatMeleeLoop {
     this.grantAfterPair(battle, waiter.accountId);
   }
 
-  private applyShuffle(battle: Battle, accountId: number): void {
+  private applyShuffle(battle: Battle, accountId: number): boolean {
     const shuffle = battle.tryShuffleAfterHits(accountId);
+    if (shuffle.kind === "none") return false;
     if (shuffle.kind === "waiter-handoff") {
       cancelDuel(this.scheduler, battle, accountId);
       this.enqueue(shuffle.actorAccountId, [{ type: "opponent-wait" }]);
       this.wakeAccount(shuffle.actorAccountId);
-      if (!shuffle.waiterAuthed) return;
+      if (!shuffle.waiterAuthed) return true;
       this.enqueue(shuffle.waiterAccountId, shuffle.events);
       this.wakeAccount(shuffle.waiterAccountId);
       this.grantAfterPair(battle, shuffle.waiterAccountId);
-      return;
+      return true;
     }
     if (shuffle.kind === "reserve-swap") {
       cancelDuel(this.scheduler, battle, shuffle.accountId);
       this.enqueue(shuffle.accountId, [{ type: "opponent-new", bot: shuffle.bot }]);
       this.wakeAccount(shuffle.accountId);
       this.grantPairedBot(battle, shuffle.accountId);
-      return;
+      return true;
     }
-    if (shuffle.kind !== "cross-swap") return;
     cancelDuel(this.scheduler, battle, shuffle.leftAccountId);
     cancelDuel(this.scheduler, battle, shuffle.rightAccountId);
     this.enqueue(shuffle.leftAccountId, [{ type: "opponent-new", bot: shuffle.leftBot }]);
@@ -232,6 +233,7 @@ export class CombatMeleeLoop {
     this.wakeAccount(shuffle.rightAccountId);
     this.grantPairedBot(battle, shuffle.leftAccountId);
     this.grantPairedBot(battle, shuffle.rightAccountId);
+    return true;
   }
 
   private grantPairedBot(battle: Battle, accountId: number): void {
