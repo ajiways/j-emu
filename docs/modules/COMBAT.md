@@ -162,8 +162,9 @@ grant не катится. 77 без fight blob. Pub1 AMF у 93/99
 часто опускает `extra.spell.flags` (ноль). Live fproxy pocket `persSpells` /
 `effUse` всё равно шлёт `flags:"262144"` — `POCKET_SPELL_WIRE_FLAGS`, не
 catalog fallback. Нет `srcId:5` в
-fproxy, нет 77 в бою, нет generic effect engine. AOE ending (`targetCount===2`)
-урон `16` — `legacy behavior`, не `FIGHT_DAMAGE`. Kind 11 HTTP
+fproxy, нет 77 в бою, нет generic effect engine. AOE ending
+(`targetCount>=2`, «Волна света» 9099) в catalog есть, combat бьёт только
+текущего `FightDuel.otherId` — leftover. Kind 11 HTTP
 `{rs:false, restriction:18}` — только если опубликованный spell kind 11
 (в текущем slice нет). CEF счётчиков пояса/перчатки/ярости не прогонялся.
 
@@ -332,8 +333,9 @@ CMB-15. Weapon DPS aparte от STR.
 снапшотится на ATTACK_BOT (`HuntStartInput.botSpellBook`); combat не
 читает catalog mid-fight. Пустая книга не зовёт `random.unit()` — Gryzl
 остаётся melee-only. Kind-1 урон =
-`max(1, round(STR/10 × (1+pcSTR/100) × [0.85…1.15]))`. Kind-2 heal и
-AOE `targetCount>=2` есть в движке; огр **99** книга в каталоге DATA-03
+`max(1, round(STR/10 × (1+pcSTR/100) × [0.85…1.15]))`. Kind-2 heal есть;
+AOE `targetCount>=2` только в catalog blob — glove/bot kind-1 бьёт одну
+цель пары. Огр **99** книга в каталоге DATA-03
 (kind-2 heal на 40% HP). Charging/self-buff, DoT ticks, MAGSTR/MAGRES, virus, summon —
 вне боя: карточки живут в каталоге DATA-03, `pickBotSpell` не выбирает
 kind 3/10 и gate `foe_has_dispel_groups`. Полный `bot_spell_book.json`
@@ -457,7 +459,11 @@ CMB-11 2-hero JOIN team 2 без team-1 waiter по-прежнему ждёт б
 
 Три героя на **50310**: A opener vs Грызль; B occupied `ATTACK_BOT` team 1;
 C `FIGHT_JOIN` `{team:2}` сразу vs B (`oppnew` human, `bot !== true`).
-A после пары B↔C продолжает melee vs bot. Смерть A vs bot при живых B↔C
+A после пары B↔C продолжает melee vs bot. Параллельные `FightDuel` не
+делят ход, цель и delay token: удар/каст/bot-counter только
+`otherId` своей пары. Общий `Battle` — roster HP, `persList`/`persChangeInfo`,
+finish стороны, 3↔3 cross-swap. Связь «чужой удар сбил мой ход» — leftover
+таймера после swap, не общая очередь ходов. Смерть A vs bot при живых B↔C
 не закрывает бой: dissolve A↔bot, bot unpaired.
 
 2-hero team-2 wait (нет team-1 waiter) не режется. Wire IDs, 1v1 hunt,
@@ -571,7 +577,8 @@ jgr default 20s), sibling `hpChange` на carrier melee. Kind 8 dispel
 success. Kind 18 stun skip-turn, `duration` обязателен. Kind 10 summon
 632: `fight_start` сжигается без каста; clone цели в roster **не**
 landed (явный skip). Period deadline без удара (~20s unpaired) — не
-этот срез.
+этот срез. AOE `targetCount>=2` — leftover: поле в spell, урон только
+текущему сопернику пары.
 
 Не в срезе: outdoor `ATTACK`/`FightRules`. BG JOIN — CMB-16. Practice
 history — CMB-17.

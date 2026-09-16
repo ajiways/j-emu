@@ -666,8 +666,8 @@
   Red gryzl **24** / 50103 (394); Gryzl **2** empty book. Full
   `bot_spell_book.json` — DATA-03 (закрыт), не эта capability. Heal+AOE
   dump-бот (Пещерный огр 99) в каталоге DATA-03; CMB-06 не добавлял его
-  в playable 503/501/504. Движок принимает kind-2 heal и `targetCount>=2`
-  AOE.
+  в playable 503/501/504. Kind-2 heal landed; AOE `targetCount>=2` в
+  catalog, combat бьёт одну цель пары (leftover).
 - **Architecture checkpoint / decision:** complete. Выбор AI — чистая
   функция `pickBotSpell` в combat domain, не scheduler/process. Книга
   снапшотится на ATTACK_BOT (`HuntStartInput.botSpellBook`); combat не
