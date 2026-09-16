@@ -101,6 +101,9 @@ describe("fproxy settlement", () => {
     );
     expect(Object.values(users).some((row) => requireRecord(row, "user").bot === true)).toBe(true);
     expect(Object.values(users).some((row) => requireRecord(row, "user").bot === false)).toBe(true);
+    const info = requireRecord(finish["fight|info"], "fight|info");
+    expect(typeof info.share).toBe("string");
+    expect(String(info.share)).toMatch(/^\[\[SHARE /);
     expect(finish["user|unitframe"]).toMatchObject({ status: 100, exp: 16 });
     expect(finish["user|bag"]).toMatchObject({ status: 100 });
     expect(finish["user|view"]).toMatchObject({ status: 100 });

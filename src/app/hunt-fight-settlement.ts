@@ -321,6 +321,10 @@ export class HuntFightSettlement implements FightSettlement {
     return lootByAccount;
   }
 
+  async publishEnded(fightId: string): Promise<void> {
+    if (!fightId) throw new Error("Fight id is required");
+  }
+
   takeDeathBreaks(fightId: string): ReadonlyMap<number, readonly DeathDurabilityBreak[]> {
     const row = this.deathBreaks.get(fightId) ?? new Map();
     this.deathBreaks.delete(fightId);

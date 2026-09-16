@@ -79,7 +79,7 @@ party_search рисуют `Nick[level]`).
 FIGHT start/end: `area_id` = numeric area, `area_title` из world (обязателен),
 `fight_title` = `Нападение <nick> на <bot>`. Friendly practice — без этих строк.
 
-Лут после UoW: `Окончен бой [[FIGHT]]`, затем `Вами получено: [[ARTIFACT]] N шт.`,
+Лут после UoW, но на wire после fproxy `fightFinish`: `Окончен бой [[FIGHT]]`, затем `Вами получено: [[ARTIFACT]] N шт.`,
 затем `Вы получили: [[MONEY]]. ` (пробел после точки). `fight|loot` по-прежнему
 ставит combat pendingLoot, не chat. Death/win break (до «Окончен бой»):
 `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1), …` — instance snapshot,

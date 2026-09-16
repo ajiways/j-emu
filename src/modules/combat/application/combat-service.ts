@@ -241,6 +241,9 @@ export class CombatService implements CombatPort {
       const queue = this.queues.get(accountId);
       if (!queue) return [];
       this.queues.delete(accountId);
+      if (queue.some((event) => event.type === "finished")) {
+        await this.finish.deliverFinishedWire(accountId);
+      }
       return queue;
     }
     if (command.kind === "authenticate") {
@@ -350,6 +353,7 @@ export class CombatService implements CombatPort {
     this.pendingExits.clear();
     this.pendingLoot.clear();
     this.pendingFightInfo.clear();
+    this.finish.discardHeldWire();
     this.pendingPocketConsume.clear();
     this.settledFights.clear();
     this.exitSent.clear();

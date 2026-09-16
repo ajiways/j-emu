@@ -1,3 +1,4 @@
+import { macroKeyId } from "../../../shared/kernel/macro-key-id.ts";
 import type { FightResultInfo } from "../../combat/domain/fight-result-info.ts";
 
 export function fightInfoBlock(
@@ -5,6 +6,7 @@ export function fightInfoBlock(
   areaTitle: string,
 ): Readonly<Record<string, unknown>> {
   if (!areaTitle) throw new Error(`Fight ${info.fightId} area title is required`);
+  const shareKey = macroKeyId("SHARE", info.fightId);
   const users: Record<string, unknown> = {};
   for (const user of info.users) {
     users[String(user.participantId)] = {
@@ -47,5 +49,18 @@ export function fightInfoBlock(
       timeout: info.timeout,
     },
     users,
+    share: `[[SHARE ${shareKey}]]`,
+    macroses: {
+      [shareKey]: {
+        link: `/fight_info.php?fight_id=${info.fightId}`,
+        title: "файт_инфо",
+        text: "Завершился бой!",
+        image: "/images/data/soc_img/alt_arena.jpg",
+        image_vk: "",
+        link_title: "/",
+        key_id: shareKey,
+        macro_type: "SHARE",
+      },
+    },
   };
 }

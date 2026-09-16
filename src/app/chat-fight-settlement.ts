@@ -1,5 +1,6 @@
 import type { FightLootBlock } from "../modules/combat/domain/fight-loot-block.ts";
 import type { FightOutcomeSnapshot } from "../modules/combat/domain/fight-outcome-snapshot.ts";
+import type { DeathDurabilityBreak } from "../modules/inventory/domain/apply-death-durability.ts";
 import type {
   FightSettlement,
   HumanLeftSnapshot,
@@ -11,7 +12,15 @@ export type FightChatFailureSink = Readonly<{
   failed(fightId: string, error: Error): void;
 }>;
 
+type PendingEnded = Readonly<{
+  outcome: FightOutcomeSnapshot;
+  loot: ReadonlyMap<number, FightLootBlock>;
+  breaks: ReadonlyMap<number, readonly DeathDurabilityBreak[]>;
+}>;
+
 export class ChatFightSettlement implements FightSettlement {
+  private readonly pendingEnded = new Map<string, PendingEnded>();
+
   constructor(
     private readonly inner: HuntFightSettlement,
     private readonly chat: ChatDesk,
@@ -35,12 +44,23 @@ export class ChatFightSettlement implements FightSettlement {
     outcome: FightOutcomeSnapshot,
   ): Promise<ReadonlyMap<number, FightLootBlock>> {
     const loot = await this.inner.persistFinished(outcome);
+    this.pendingEnded.set(outcome.fightId, {
+      outcome,
+      loot,
+      breaks: this.inner.takeDeathBreaks(outcome.fightId),
+    });
+    return loot;
+  }
+
+  async publishEnded(fightId: string): Promise<void> {
+    const pending = this.pendingEnded.get(fightId);
+    if (!pending) return;
+    this.pendingEnded.delete(fightId);
     try {
-      await this.chat.notifyFightEnded(outcome, loot, this.inner.takeDeathBreaks(outcome.fightId));
+      await this.chat.notifyFightEnded(pending.outcome, pending.loot, pending.breaks);
     } catch (error) {
       const failure = error instanceof Error ? error : new Error(String(error));
-      this.failures.failed(outcome.fightId, failure);
+      this.failures.failed(fightId, failure);
     }
-    return loot;
   }
 }

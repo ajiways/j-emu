@@ -15,6 +15,9 @@ import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 type FinishKind = "win" | "loss" | "last-leave";
 
 export class CombatTerminal {
+  private readonly heldLoot = new Map<number, FightLootBlock>();
+  private readonly heldExits = new Map<number, FightExit>();
+
   constructor(
     private readonly byAccount: Map<number, Battle>,
     private readonly battleByFight: Map<string, Battle>,
@@ -96,6 +99,34 @@ export class CombatTerminal {
     return this.pendingFightInfo.get(accountId) ?? null;
   }
 
+  async deliverFinishedWire(accountId: number): Promise<void> {
+    const mine = this.heldExits.get(accountId);
+    if (!mine) return;
+    const fightId = mine.fightId;
+    const accountIds = [...this.heldExits.entries()]
+      .filter(([, exit]) => exit.fightId === fightId)
+      .map(([id]) => id);
+    for (const id of accountIds) {
+      const exit = this.heldExits.get(id);
+      if (!exit) continue;
+      this.heldExits.delete(id);
+      const loot = this.heldLoot.get(id);
+      if (loot) {
+        this.pendingLoot.set(id, loot);
+        this.heldLoot.delete(id);
+      }
+      this.queueExit(id, exit.fightId, exit);
+      this.wakeAccount(id);
+    }
+    const settlement = this.settlement();
+    if (settlement) await settlement.publishEnded(fightId);
+  }
+
+  discardHeldWire(): void {
+    this.heldLoot.clear();
+    this.heldExits.clear();
+  }
+
   queueExit(accountId: number, fightId: string, exit: FightExit): void {
     const key = `${fightId}:${accountId}`;
     if (this.exitSent.has(key)) return;
@@ -128,11 +159,16 @@ export class CombatTerminal {
         this.enqueue(accountId, [input.finished]);
       }
       const loot = lootByAccount.get(accountId);
-      if (loot && kind !== "last-leave") this.pendingLoot.set(accountId, loot);
       this.pendingFightInfo.set(accountId, info);
-      this.queueExit(accountId, battle.id, exit);
+      if (kind === "last-leave") {
+        this.queueExit(accountId, battle.id, exit);
+      } else {
+        if (loot) this.heldLoot.set(accountId, loot);
+        this.heldExits.set(accountId, exit);
+      }
       this.wakeAccount(accountId);
     }
+    if (kind === "last-leave" && settlement) await settlement.publishEnded(battle.id);
     for (const accountId of battle.accountIds()) this.byAccount.delete(accountId);
     this.battleByFight.delete(battle.id);
     await this.notifyFinished(battle, kind, winnerTeam);

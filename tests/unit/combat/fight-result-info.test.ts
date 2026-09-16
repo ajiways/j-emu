@@ -88,6 +88,12 @@ describe("fight result info", () => {
     });
     expect((wire.users as Record<string, { nick: string }>)["100"]?.nick).toBe("Ann");
     expect((wire.users as Record<string, { nick: string }>)["1000000"]?.nick).toBe("Грызль");
+    expect(typeof wire.share).toBe("string");
+    expect(String(wire.share)).toMatch(/^\[\[SHARE /);
+    const macroses = requireRecord(wire.macroses, "macroses");
+    const shareKey = String(wire.share).slice("[[SHARE ".length, -2);
+    expect(requireRecord(macroses[shareKey], "SHARE").macro_type).toBe("SHARE");
+    expect(requireRecord(macroses[shareKey], "SHARE").link).toBe("/fight_info.php?fight_id=12");
   });
 
   it("marks a last-leave snapshot unfinished and without a kill", () => {
@@ -138,3 +144,10 @@ describe("fight result info", () => {
     expect(info.users[0]).toMatchObject({ flee: true, killCount: 0, exp: 0 });
   });
 });
+
+function requireRecord(value: unknown, label: string): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${label} must be an object`);
+  }
+  return value as Record<string, unknown>;
+}

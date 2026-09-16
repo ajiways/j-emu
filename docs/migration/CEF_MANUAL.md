@@ -45,8 +45,9 @@
       `user|bag_diff` `removed` затем `changed` с PUT_ON=8. CEF 2026-09-16.
       Сумки (SLOT_BAG / CAPACITY wear) не в срезе.
 - [ ] CMB-03 leftover: после боя кнопка инфо/экрана результата не открывает
-      карточку — клик no-op. raw-AMF: OA `fight|finish` отдаёт `fight|info`.
-      CEF не подтверждён.
+      карточку — клик no-op. raw-AMF: OA `fight|finish` отдаёт `fight|info`
+      с `share`/`macroses` SHARE (Flash SocialComponent). Лут/чат/exit после
+      fproxy `fightFinish`. CEF не подтверждён.
 - [ ] CMB-05 leftover: `hpChange` больше оставшегося HP (3 HP, удар 7).
 - [ ] CMB-02 leftover: после «Разозлить» пропадает список спеллов перчатки
       (`persSpells`).

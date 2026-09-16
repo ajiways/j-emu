@@ -67,8 +67,9 @@ account-keyed `CombatPort.activeFightId`. `CombatService` держит один 
    позже; standalone `attacknow` ~2500 ms только кастеру.
 4. Pocket/glove/rage: HTTP `castSpell` пустой; poll `{rs,sq}` **до** FX для
    `srcType` 2/3 и native 6/7. Melee L/C/R остаётся strike-then-rs.
-5. Terminal: `fightFinish` на fproxy; CMB-03 добавляет esrv `fight|loot` затем
-   `fight|exit` в одном `2:` object после composition UoW (HP/EXP/money/loot).
+5. Terminal: fproxy `fightFinish`; после того как клиент забрал этот кадр —
+   esrv `fight|loot` затем `fight|exit` в одном `2:` object, плюс system chat
+   «Окончен бой» / лут (не на killing blow). HUD в том же object.
 
 Inventory layout lock (`PUT_ON`/`PUT_OFF`/`DROP`/`SELL` → `203` в бою) —
 именованное `FightRules` в [INVENTORY.md](INVENTORY.md), не live. Live
@@ -222,7 +223,9 @@ personal object: сначала `fight|loot`, потом `fight|exit`, плюс 
 fight заканчивается. `chat|add` «Вами получено» / «Окончен бой» — [CHAT.md](CHAT.md) (SOC-01), не
 этой capability. OA `fight|finish` — flat: `{status:100}`, `fight|info`
 (RAM last snapshot: `fight.id` строка = `fight|loot.fight_id`, `started`
-`DD.MM HH:MM`, `users` по participant id, `status:100`), `fight|conf.expire=0`,
+`DD.MM HH:MM`, `users` по participant id, `status:100`, обязательные
+`share` + `macroses` SHARE — без них Flash `SocialComponent` падает до
+`window.Show`), `fight|conf.expire=0`,
 unitframe, bag, view, magic, skills, `state`; без самовольного `common|area_conf`.
 Лут на `fight|info` не класть — AS3 ShowData уже отработал с esrv `fight|loot`.
 Restart стирает RAM info (ADR-0020): finish без карточки.

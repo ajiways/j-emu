@@ -12,4 +12,6 @@ export type HumanLeftSnapshot = Readonly<{
 export interface FightSettlement {
   persistHumanLeft(snapshot: HumanLeftSnapshot): Promise<void>;
   persistFinished(outcome: FightOutcomeSnapshot): Promise<ReadonlyMap<number, FightLootBlock>>;
+  /** System chat after fproxy `fightFinish` is delivered, not on the killing blow. */
+  publishEnded(fightId: string): Promise<void>;
 }
