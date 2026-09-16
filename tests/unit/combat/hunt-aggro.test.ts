@@ -94,6 +94,24 @@ describe("hunt aggro clone", () => {
     expect(battle.foeBotSnap(2).id).toBe(1_000_001);
   });
 
+  it("bootstraps the clone as the joiner foe when fight-auth is after pairing", () => {
+    const battle = new Battle(huntInit(), UNIT_BATTLE_RULES, new SequenceRandom([0.4]));
+    battle.authenticate(1, AUTH_NOW);
+    battle.addHuman(joinTeam1());
+    expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
+    const boot = battle.authenticate(2, AUTH_NOW);
+    expect(boot).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: "hunt-bootstrap",
+          waiting: false,
+          bot: expect.objectContaining({ id: 1_000_001 }),
+        }),
+        expect.objectContaining({ type: "turn-granted", timeoutSeconds: 20 }),
+      ]),
+    );
+  });
+
   it("hands the clone after the current outdoor bot dies", () => {
     const battle = new Battle(
       huntInit({ botMaxHp: 8 }),

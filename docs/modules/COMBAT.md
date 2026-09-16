@@ -503,7 +503,10 @@ seeker (CMB-12: lone team-2 не крадёт бота).
 
 «Разозлить»: outdoor hunt, цель — enemy bot; ephemeral clone в
 `waitingEnemies` (jgr `waitingBots`); `pairHuntQueues` снимает клон с
-очереди, если сразу спарили waiter-а. Заряд `1+AGRILKA_MOBOV` из snapshot.
+очереди, если сразу спарили waiter-а. Grant/bot-counter новой пары
+ставится сразу, даже если joiner ещё не fight-auth; `oppnew` на poll —
+только authed, иначе первый auth. Auth bootstrap `oppnew` — текущий
+duel foe, не primary spawn. Заряд `1+AGRILKA_MOBOV` из snapshot.
 Quest/copy/friendly deny: fury + полный абсолютный `persSpells`, без −1
 если заряд 0. После смерти текущего бота `takeNextEnemyForHuman` отдаёт
 клон (`oppnew`), бой не finish, пока жив хотя бы один enemy.

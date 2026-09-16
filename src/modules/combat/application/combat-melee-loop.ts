@@ -108,9 +108,11 @@ export class CombatMeleeLoop {
     }
     for (const accountId of pairedAccountIds) {
       const human = battle.livingHumans().find((entry) => entry.accountId === accountId);
-      if (!human || human.waiting || !human.authed) continue;
-      this.enqueue(accountId, [{ type: "opponent-new", bot: battle.foeBotSnap(accountId) }]);
-      this.wakeAccount(accountId);
+      if (!human || human.waiting) continue;
+      if (human.authed) {
+        this.enqueue(accountId, [{ type: "opponent-new", bot: battle.foeBotSnap(accountId) }]);
+        this.wakeAccount(accountId);
+      }
       this.grantPairedBot(battle, accountId);
     }
   }
@@ -237,7 +239,6 @@ export class CombatMeleeLoop {
   }
 
   private grantPairedBot(battle: Battle, accountId: number): void {
-    if (!battle.authedAccountIds().includes(accountId)) return;
     if (battle.humanOpensDuel(accountId)) {
       this.grantAfterPair(battle, accountId);
       return;

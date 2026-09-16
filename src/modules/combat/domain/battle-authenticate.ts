@@ -12,8 +12,7 @@ function huntAuthenticateEvents(
   input: Readonly<{
     human: HuntHuman;
     allies: readonly HuntHuman[];
-    init: HuntBattleInit;
-    botHp: number;
+    bot: HuntBotSnap;
     rosterBots: readonly HuntBotSnap[];
     humanOpponent: HuntHuman | null;
     nextActorId: number;
@@ -23,7 +22,7 @@ function huntAuthenticateEvents(
   }>,
 ): readonly BattleEvent[] {
   const { human } = input;
-  if (!human.waiting && !input.resume && human.heroId === input.nextActorId) {
+  if (!human.waiting && !input.resume && human.heroId === input.nextActorId && !human.turnActive) {
     human.beginTurn(input.nowMs, input.timeoutSeconds);
   }
   const opponent = input.humanOpponent;
@@ -36,7 +35,7 @@ function huntAuthenticateEvents(
       allies: input.allies
         .filter((entry) => entry.accountId !== human.accountId)
         .map((entry) => entry.snapshot()),
-      bot: huntBotSnap(input.init, input.botHp),
+      bot: input.bot,
       ...(opponent
         ? {
             humanOpponent: opponent.snapshot(),
@@ -150,11 +149,15 @@ export function authenticateFighter(
   const humanOpponent =
     otherId === undefined ? null : (input.humans.find((entry) => entry.heroId === otherId) ?? null);
   const roster = requireBattleHuntRoster(input.huntRoster);
+  const hunt = requireHuntInit(input.init);
+  const bot =
+    otherId !== undefined && humanOpponent === null
+      ? roster.bot(otherId).snap()
+      : huntBotSnap(hunt, roster.primary.hp);
   return huntAuthenticateEvents({
     human,
     allies: input.humans,
-    init: requireHuntInit(input.init),
-    botHp: roster.primary.hp,
+    bot,
     rosterBots: roster.snaps(),
     humanOpponent,
     nextActorId: duel?.nextActorId ?? human.heroId,

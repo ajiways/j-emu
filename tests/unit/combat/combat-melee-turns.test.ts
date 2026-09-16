@@ -128,6 +128,50 @@ describe("CombatService melee turns", () => {
     expect(await combat.execute(1, { kind: "poll" })).toEqual([]);
   });
 
+  it("starts the aggro clone duel when the joiner authenticates after pairing", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat, delay } = createCombatService({
+      clock,
+      random: {
+        integer(minInclusive) {
+          return minInclusive;
+        },
+        unit() {
+          return 0.99;
+        },
+      },
+    });
+    const start = await startHuntWithIssuedId(combat, unitHuntStart({ botHp: 50 }));
+    await combat.joinHunt(unitHuntJoin({ fightId: start.fightId }));
+    await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(1, { kind: "aggro", sequence: 2 });
+    await combat.execute(1, { kind: "poll" });
+
+    await combat.execute(2, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    const boot = await combat.execute(2, { kind: "poll" });
+    const bootstrap = boot.find((event) => event.type === "hunt-bootstrap");
+    if (!bootstrap || bootstrap.type !== "hunt-bootstrap") {
+      throw new Error("joiner hunt-bootstrap is missing");
+    }
+    expect(bootstrap.waiting).toBe(false);
+    expect(bootstrap.bot.id).toBe(1_000_001);
+    expect(boot.some((event) => event.type === "turn-granted")).toBe(false);
+
+    clock.advanceMs(1400);
+    await delay.fireDue(clock.now());
+    const bot = await combat.execute(2, { kind: "poll" });
+    expect(bot).toEqual([
+      expect.objectContaining({ type: "damage", sourceId: 1_000_001, animation: "attack_center" }),
+    ]);
+
+    clock.advanceMs(1100);
+    await delay.fireDue(clock.now());
+    expect(await combat.execute(2, { kind: "poll" })).toEqual([
+      { type: "turn-granted", timeoutSeconds: 20 },
+    ]);
+  });
+
   it("grants the paired human after a duel strike without a bot counter", async () => {
     const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const { combat, delay } = createCombatService({

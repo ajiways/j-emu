@@ -102,6 +102,41 @@ describe("fproxy hunt aggro clone pairing", () => {
     expect(swapped).toBe(true);
   });
 
+  it("grants the joiner after aggro even if fight-auth is late", async () => {
+    const a = await createIsolatedHero(application);
+    const b = await createIsolatedHero(application);
+    await a.objectAction({ object: "common", action: "init", sq: 1 });
+    await b.objectAction({ object: "common", action: "init", sq: 1 });
+    const start = await a.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 4,
+    });
+    const opened = huntFightConfFrom(start);
+    expect(await a.fight({ rc: "auth", eid: opened.fightId, sq: 5 })).toHaveLength(0);
+    const aBoot = await a.pollFight();
+    const spawnId = huntOppNewFrom(aBoot).id;
+    if (typeof spawnId !== "number") throw new Error("spawn oppnew id is missing");
+    const join = await b.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 4,
+    });
+    expect(huntFightConfFrom(join).fightId).toBe(opened.fightId);
+    expect(await a.fight({ rc: "castSpell", srcType: 1, srcId: 7, sq: 6 })).toHaveLength(0);
+    await a.pollFight();
+    expect(await b.fight({ rc: "auth", eid: opened.fightId, sq: 5 })).toHaveLength(0);
+    const bBoot = await b.pollFight();
+    expect(persListBotIds(bBoot)).toHaveLength(2);
+    const clone = huntOppNewFrom(bBoot);
+    expect(clone.id).not.toBe(spawnId);
+    if (fightEventTypes(bBoot).includes("attacknow")) return;
+    await harness.elapseCombat(2500);
+    expect(fightEventTypes(await b.pollFight())).toContain("attacknow");
+  });
+
   it("switches to the aggro clone after the spawn dies", async () => {
     const hero = await createIsolatedHero(application);
     await hero.objectAction({ object: "common", action: "init", sq: 1 });
