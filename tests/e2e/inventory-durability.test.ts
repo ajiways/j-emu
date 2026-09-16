@@ -94,8 +94,14 @@ describe("inventory durability death and repair", () => {
       durability_max: 2,
       actions: 523,
     });
-    const bagDiff = bagDiffChangedFrom(await client.pollEsrv(), requireNumber(glove.id));
-    expect(bagDiff).toMatchObject({ durability: 2, durability_max: 2, actions: 523 });
+    const gloveId = requireNumber(glove.id);
+    const diffs = bagDiffFrames(await client.pollEsrv());
+    expect(diffs[0]).toMatchObject({ removed: [gloveId], changed: {} });
+    expect(diffs[1]?.changed?.[String(gloveId)]).toMatchObject({
+      durability: 2,
+      durability_max: 2,
+      actions: 523,
+    });
     expect(stateMoney(repairedGlove)).toBe("25.00");
     expect(repairedGlove["user|view"]).toBeTypeOf("object");
     expect(repairedGlove["user|magic"]).toEqual({ status: 100, gloves: [] });
@@ -166,10 +172,8 @@ function equippedByArtikul(
   throw new Error(`equipped artikul ${artikulId} is missing`);
 }
 
-function bagDiffChangedFrom(
-  packets: readonly AmfValue[],
-  itemId: number,
-): Record<string, AmfValue> {
+function bagDiffFrames(packets: readonly AmfValue[]): Array<Record<string, AmfValue>> {
+  const rows: Array<Record<string, AmfValue>> = [];
   for (const packet of packets) {
     if (!packet || typeof packet !== "object" || Array.isArray(packet)) continue;
     if (typeof packet.channel !== "string" || !packet.channel.startsWith("2:")) continue;
@@ -178,12 +182,10 @@ function bagDiffChangedFrom(
     }
     const diff = (packet.object as Record<string, AmfValue>)["user|bag_diff"];
     if (!diff || typeof diff !== "object" || Array.isArray(diff)) continue;
-    const changed = (diff as Record<string, AmfValue>).changed;
-    if (!changed || typeof changed !== "object" || Array.isArray(changed)) continue;
-    const item = (changed as Record<string, AmfValue>)[String(itemId)];
-    if (item && typeof item === "object" && !Array.isArray(item)) return item;
+    rows.push(diff as Record<string, AmfValue>);
   }
-  throw new Error(`user|bag_diff.changed[${itemId}] is missing`);
+  if (rows.length < 2) throw new Error("user|bag_diff removed-then-changed frames are missing");
+  return rows;
 }
 
 function chatMessages(packets: readonly AmfValue[]): Array<Record<string, AmfValue>> {

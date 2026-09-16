@@ -237,8 +237,8 @@ dump-proven русский toast на buy-призрак не найден. Conc
   setArea 552 → list type 11 artikul 621, buy 438 → 203 `Нужно звание
 «Громила».`, лот остаётся в list;
 - raw-AMF `store|repair`: 9095 0/3 → 2/2 без списания; 20 → 29/29 и `24.98`;
-  already-full 203; ghost не блокирует; esrv `user|bag_diff.changed` ставит
-  `actions` с PUT_ON;
+  already-full 203; ghost не блокирует; esrv `user|bag_diff` сначала
+  `removed:[id]`, затем `changed` с PUT_ON;
 - CEF: лавка, купить перчатку и наруч, иконки в bag; Арсенал RANK plaque —
   обязательно для product **готово**; до CEF store остаётся частичным.
   Мастерская INV-05 тоже без CEF.

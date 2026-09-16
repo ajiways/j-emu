@@ -6,7 +6,7 @@ import type { BootstrapReadModel } from "../../application/bootstrap-read-model.
 import type { HeroSheetReadModel } from "../../application/hero-sheet-read-model.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
 import { storeRepairMutation } from "../../application/store-repair-mutation.ts";
-import { bagDiffChanged } from "../../application/user-bag-diff.ts";
+import { bagDiffChanged, bagDiffRemoved } from "../../application/user-bag-diff.ts";
 import type { EsrvOutbox } from "../../application/esrv-outbox.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
@@ -47,6 +47,7 @@ export class StoreRepairCommand implements OaCommand {
     const bag = await this.bootstrap.bag(context.accountId);
     const repaired = bag.bag[String(itemId)];
     if (repaired) {
+      this.outbox.enqueue(context.accountId, bagDiffRemoved(itemId));
       this.outbox.enqueue(context.accountId, bagDiffChanged(repaired));
       this.wake.wake(context.accountId);
     }

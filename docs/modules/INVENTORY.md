@@ -577,8 +577,10 @@ Starter bag: 9095, 20, 21, 26, 93×2, 99×10, 77×4. Не надевать се�
 Bag/view/store-lot несут instance или catalog `durability` /
 `durability_max`. `store|repair` success **flat**: `store|repair`
 `{status:100}`, `user|bag`, `user|view`, `user|magic`, `state`. Live dump
-не кладёт `user|bag` на OA; Flash рюкзак обновляет с esrv `user|bag_diff`
-`{status:100, changed:{[id]: item}}` (в т.ч. `actions` с PUT_ON=8).
+не кладёт `user|bag` на OA. Flash `BagModel.deserializeBagDiff` мержит
+`changed` в тот же Artifact, а `ArtifactRendererLite` не пересобирает
+PUT_ON, пока instance тот же. После `store|repair` esrv шлёт два кадра
+`user|bag_diff`: `removed:[id]`, затем `changed:{[id]:item}` с PUT_ON=8.
 
 ### Fail-fast / restart
 
