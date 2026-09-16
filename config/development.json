@@ -128,8 +128,6 @@
     }
   },
   "fightWire": {
-    "heroSkill": 1,
-    "heroBody": "m1",
     "autoFight": 0,
     "canLeave": 1,
     "companionEnabled": 0,

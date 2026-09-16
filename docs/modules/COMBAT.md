@@ -56,6 +56,8 @@ account-keyed `CombatPort.activeFightId`. `CombatService` держит один 
 
 1. ATTACK_BOT сначала `syncResources` (боя ещё нет), затем создаёт battle и
    возвращает `fight|conf` и unitframe с overlay `hp_time=0`.
+   `persSelf_body` / `persSelf_sk` — текущие `heroes.body` / `heroes.sk`, не
+   статичный policy stub.
 2. `fight|conf.proxy` — live URL `https://s1.jugger.ru/fproxy//;`. CEF шлёт
    poll и `auth` на HTTPS `/fproxy//;`. Процесс также слушает TCP `:33120`
    (policy + length-prefixed AMF) как запасной путь. HTTP `auth` паркует

@@ -95,8 +95,8 @@ Equipment-derived `user|skills` / `hpMax` считаются из naked skills +
 
 Есть raw-AMF E2E и подтверждённый CEF-прогон: перчатка 9095 надевается,
 иконка/статы карточки видны, paperdoll slot 32, bag освобождается, HUD stats
-меняются. Unity-модель (`user|view.body` из catalog `f_body`) пересобирается
-на PUT_ON/OFF (raw-AMF); CEF 3D leftover.
+меняются. Unity-модель (`user|view.body` и `fight|conf.persSelf_body` из
+catalog `f_body`) пересобирается на PUT_ON/OFF (raw-AMF); CEF 3D leftover.
 
 - catalog projection и stable item instance IDs;
 - starter 9095 в bag (`greyset5_lhand.png`, `artifact_skills`); v15 также

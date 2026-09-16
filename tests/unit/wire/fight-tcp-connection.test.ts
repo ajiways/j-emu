@@ -34,8 +34,6 @@ describe("FightTcpConnection", () => {
     const wire = new FightWireMapper(
       { host: "s1.jugger.ru", port: 33120, proxyPath: "https://s1.jugger.ru/fproxy//;" },
       {
-        heroSkill: 1,
-        heroBody: "m1",
         autoFight: 0,
         canLeave: 1,
         companionEnabled: 0,

@@ -587,8 +587,6 @@ describe("module factories", () => {
           menuLinks: { "3": "1465239232" },
         },
         fightWire: {
-          heroSkill: 1,
-          heroBody: "m1",
           autoFight: 0,
           canLeave: 1,
           companionEnabled: 0,

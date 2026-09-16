@@ -44,7 +44,8 @@ Hero identity:
   `artifact_skills` на PUT_ON/OFF и при чтении skills;
 - `heroes.body` / `user|view.body` пересобирается на paperdoll PUT_ON/OFF из
   catalog `fBody` надетого экипа (старый `rebuildHeroBody`); без экипа —
-  `armor();head(...);skin()` из `HeroCreationPolicy`;
+  `armor();head(...);skin()` из `HeroCreationPolicy`. Тот же `heroes.body`
+  уходит в `fight|conf.persSelf_body`;
 - tutorial flags пишутся в `hero_personal_details` при создании и больше не
   overlay-ятся на чтении;
 - `use_fproxy: 1` форсируется на каждом wire-чтении `user|personal_details.info`

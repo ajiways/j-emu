@@ -67,10 +67,11 @@ wire `cnt` is `0`; instance quantity remains `1`.
 
 Paperdoll `PUT_ON`/`PUT_OFF` пересобирает `heroes.body` из `artikuls.f_body`
 надетых equipment+tempeffect (карман не входит) и отдаёт строку в
-`user|view.body`. Это Unity-оверлей `armor(<tokens>);head(...);skin()`, не
-иконки paperdoll. Пустой `f_body` (кольца) на модель не влияет; отсутствие
-каталожной записи — ошибка, не голый `armor()`. Head/skin берутся из текущего
-body героя.
+`user|view.body` и в `fight|conf.persSelf_body` / `persSelf_sk` на старте боя
+(старый `buildFightConf` берёт `hero.body` / `hero.sk`, не stub). Это
+Unity-оверлей `armor(<tokens>);head(...);skin()`, не иконки paperdoll. Пустой
+`f_body` (кольца) на модель не влияет; отсутствие каталожной записи — ошибка,
+не голый `armor()`. Head/skin берутся из текущего body героя.
 
 Glove 9095 occupies paperdoll slot `32` from catalog `slot_mask`. Live starter
 armor 20/26/103 is not invented in this playable slice.

@@ -13,6 +13,8 @@ import { friendlyFightBootstrapEvents } from "./friendly-fight-bootstrap-wire.ts
 import { huntOppNewEvent } from "./hunt-opp-new-event.ts";
 import { humanOppNewEvent } from "./human-opp-new-event.ts";
 
+export type FightConfHeroLook = Readonly<{ heroSkill: number; heroBody: string }>;
+
 export type FightConfigurationBlock = Readonly<{
   status: 100;
   conf: Readonly<{
@@ -62,8 +64,6 @@ export class FightWireMapper {
       proxyPath: string;
     }>,
     private readonly policy: Readonly<{
-      heroSkill: number;
-      heroBody: string;
       autoFight: number;
       canLeave: 0 | 1;
       companionEnabled: 0 | 1;
@@ -77,23 +77,26 @@ export class FightWireMapper {
 
   fightConfiguration(
     start: FightStart,
-    overlay: Readonly<{ canLeave?: 0 | 1; instanceId?: string; flags?: string }> = {},
+    overlay: FightConfHeroLook &
+      Readonly<{ canLeave?: 0 | 1; instanceId?: string; flags?: string }>,
   ): FightConfigurationBlock {
     return this.configuration(start, this.policy.isPvp, this.policy.type, overlay);
   }
 
-  friendlyDuelConfiguration(start: FightStart): FightConfigurationBlock {
-    return this.configuration(start, 1, "6");
+  friendlyDuelConfiguration(start: FightStart, look: FightConfHeroLook): FightConfigurationBlock {
+    return this.configuration(start, 1, "6", look);
   }
 
   pvpConfiguration(
     start: FightStart,
-    overlay: Readonly<{ instanceId: string; flags: string }>,
+    overlay: FightConfHeroLook & Readonly<{ instanceId: string; flags: string }>,
   ): FightConfigurationBlock {
     return this.configuration(start, 1, "1", {
       canLeave: 1,
       instanceId: overlay.instanceId,
       flags: overlay.flags,
+      heroSkill: overlay.heroSkill,
+      heroBody: overlay.heroBody,
     });
   }
 
@@ -101,8 +104,10 @@ export class FightWireMapper {
     start: FightStart,
     isPvp: 0 | 1,
     type: string,
-    overlay: Readonly<{ canLeave?: 0 | 1; instanceId?: string; flags?: string }> = {},
+    overlay: FightConfHeroLook &
+      Readonly<{ canLeave?: 0 | 1; instanceId?: string; flags?: string }>,
   ): FightConfigurationBlock {
+    if (!overlay.heroBody) throw new Error("Fight conf heroBody is required");
     return {
       status: 100,
       conf: {
@@ -113,8 +118,8 @@ export class FightWireMapper {
         userId: String(start.participantId),
         fightAkey: start.accessKey,
         bg: start.arena,
-        persSelf_sk: this.policy.heroSkill,
-        persSelf_body: this.policy.heroBody,
+        persSelf_sk: overlay.heroSkill,
+        persSelf_body: overlay.heroBody,
         auto_fight: this.policy.autoFight,
         can_leave: overlay.canLeave !== undefined ? overlay.canLeave : this.policy.canLeave,
         companion_enabled: this.policy.companionEnabled,

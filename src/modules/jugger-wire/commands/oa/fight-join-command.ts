@@ -15,7 +15,7 @@ import type {
   FightWireMapper,
 } from "../../application/fight-wire-mapper.ts";
 import type { HuntAreaFanout } from "../../application/hunt-area-fanout.ts";
-import { heroFightAppearance } from "../../application/hero-fight-appearance.ts";
+import { heroFightAppearance, heroFightConfLook } from "../../application/hero-fight-appearance.ts";
 import { HuntCombatLoadout } from "../../application/hunt-combat-loadout.ts";
 import { asHelpFightError } from "../../application/help-fight-error.ts";
 import { pvpFightWireOverlay } from "../../application/pvp-fight-wire-overlay.ts";
@@ -111,12 +111,19 @@ export class FightJoinCommand implements OaCommand {
         "common|action": { status: 100 },
         "fight|conf":
           fight.purpose === "pvp"
-            ? this.fightWire.pvpConfiguration(fight, pvpFightWireOverlay(fight))
+            ? this.fightWire.pvpConfiguration(fight, {
+                ...pvpFightWireOverlay(fight),
+                ...heroFightConfLook(hero),
+              })
             : this.fightWire.fightConfiguration(
                 fight,
                 hero.instanceCopyId === null
-                  ? {}
-                  : { canLeave: 0, instanceId: String(hero.instanceCopyId) },
+                  ? heroFightConfLook(hero)
+                  : {
+                      ...heroFightConfLook(hero),
+                      canLeave: 0,
+                      instanceId: String(hero.instanceCopyId),
+                    },
               ),
         "common|hunt": await this.bootstrap.hunt(context.accountId),
         "user|unitframe": await this.bootstrap.unitframe(context.accountId),

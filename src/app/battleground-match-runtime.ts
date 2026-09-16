@@ -15,6 +15,7 @@ import {
 import { bgStatsPayload } from "../modules/battleground/domain/battleground-wire.ts";
 import type { BattlegroundHistory } from "../modules/battleground/ports/battleground-history.ts";
 import { ProtocolError } from "../modules/jugger-wire/application/protocol-error.ts";
+import { heroFightConfLook } from "../modules/jugger-wire/application/hero-fight-appearance.ts";
 import type { FightWireMapper } from "../modules/jugger-wire/application/fight-wire-mapper.ts";
 import type { DelayScheduler } from "../shared/kernel/delay-scheduler.ts";
 import type { ChatDesk } from "./chat-desk.ts";
@@ -138,7 +139,7 @@ export class BattlegroundMatchRuntime {
     this.deps.outbox.enqueue(defender.accountId, {
       "fight|conf": this.deps.fightWire.pvpConfiguration(
         { ...started, participantId: defender.id },
-        overlay,
+        { ...overlay, ...heroFightConfLook(defender) },
       ),
     });
     this.deps.wake.wake(defender.accountId);
@@ -146,7 +147,7 @@ export class BattlegroundMatchRuntime {
       "common|action": { status: 100, action: "ATTACK" },
       "fight|conf": this.deps.fightWire.pvpConfiguration(
         { ...started, participantId: attacker.id },
-        overlay,
+        { ...overlay, ...heroFightConfLook(attacker) },
       ),
       "user|unitframe": await this.deps.bootstrap.unitframe(accountId),
       state: await this.deps.bootstrap.state(accountId),

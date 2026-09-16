@@ -25,7 +25,7 @@ import { buildUserPocket } from "./user-pocket-block.ts";
 import { buildUserConf } from "./user-conf-block.ts";
 import { emptyUserMagic } from "./user-magic-block.ts";
 import { liveHonorProgress } from "./live-honor-progress.ts";
-import { pvpFightWireOverlay } from "./pvp-fight-wire-overlay.ts";
+import { fightResumeConfiguration } from "./fight-resume-configuration.ts";
 import { buildUserSkills, skillsExpireBlock, type UserSkillsBlock } from "./user-skills-block.ts";
 import { userProfessionsWire } from "../../character/domain/profession-wire.ts";
 import { buildUserUnitframe, type UserUnitframeBlock } from "./user-unitframe-block.ts";
@@ -354,15 +354,7 @@ export class BootstrapReadModel {
       "common|farm_agregate": chrome.block("common|farm_agregate"),
       ...(resume
         ? {
-            "fight|conf":
-              resume.purpose === "pvp"
-                ? this.fightWire.pvpConfiguration(resume, pvpFightWireOverlay(resume))
-                : this.fightWire.fightConfiguration(
-                    resume,
-                    hero.instanceCopyId === null
-                      ? {}
-                      : { canLeave: 0, instanceId: String(hero.instanceCopyId) },
-                  ),
+            "fight|conf": fightResumeConfiguration(this.fightWire, resume, hero),
           }
         : {}),
       ...(partyBlocks !== null ? partyBlocks : {}),

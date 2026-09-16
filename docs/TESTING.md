@@ -52,7 +52,7 @@
 - `https-startup` — Fastify listen с legacy TLS и GET `/login`;
 - `unsupported` — `clan|info` → `status:203`;
 - `hunt-attack` — `ATTACK_BOT` → flat `fight|conf` с decimal `fightId`/`userId`
-  и `instance_id:"0"`;
+  и `instance_id:"0"`; `persSelf_body` = `heroes.body` (naked L1 или overlay 9095);
 - `fproxy` — auth / poll; L/C/R poll `attackwait`+`cast` затем `{rs}` без
   `attacknow`; bot `cast` после 1400 ms; standalone `attacknow` после 2500 ms;
   bootstrap `ev.oppnew.id` ≥ 1000000;

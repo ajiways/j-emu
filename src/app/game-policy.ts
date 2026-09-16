@@ -78,8 +78,6 @@ const schema = z.object({
     }),
   }),
   fightWire: z.object({
-    heroSkill: z.number().int().positive(),
-    heroBody: z.string().min(1),
     autoFight: z.number().int().nonnegative(),
     canLeave: z.union([z.literal(0), z.literal(1)]),
     companionEnabled: z.union([z.literal(0), z.literal(1)]),

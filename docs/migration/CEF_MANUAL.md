@@ -72,9 +72,9 @@
 - [ ] INV-08: выдать и кликнуть USE **640** (хлеб/DRINK), **623** (книга),
       **2371**×2 → **55**, **584** → отказ NPC. Выдать: j-content-editor
       «Персонаж».
-- [ ] Leftover Unity body: надеть стартовую 9095 — персонаж не голый;
-      снять — снова `armor();head(0,0,8,152);skin()`. Иконки paperdoll
-      уже закрыты CEF.
+- [ ] Leftover Unity body: надеть стартовую 9095 — персонаж не голый в мире
+      и в бою (`fight|conf.persSelf_body`); снять — снова
+      `armor();head(0,0,8,152);skin()`. Иконки paperdoll уже закрыты CEF.
 
 ## Instance
 

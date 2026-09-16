@@ -21,7 +21,7 @@ import { DungeonHuntMapAttack } from "../../../../app/dungeon-hunt-map-attack.ts
 import type { PartyNotify } from "../../../../app/party-notify.ts";
 import type { PartyService } from "../../../party/application/party-service.ts";
 import { HuntCombatLoadout } from "../../application/hunt-combat-loadout.ts";
-import { heroFightAppearance } from "../../application/hero-fight-appearance.ts";
+import { heroFightAppearance, heroFightConfLook } from "../../application/hero-fight-appearance.ts";
 import { huntBotSpellBookFromCatalog } from "../../application/hunt-bot-spell-book-from-catalog.ts";
 import { huntFightTitle } from "../../../chat/domain/fight-macro.ts";
 import { HuntMapAttack } from "../../application/hunt-map-attack.ts";
@@ -179,8 +179,8 @@ export class AttackBotCommand implements OaCommand {
       "fight|conf": this.fightWire.fightConfiguration(
         fight,
         hero.instanceCopyId === null
-          ? {}
-          : { canLeave: 0, instanceId: String(hero.instanceCopyId) },
+          ? heroFightConfLook(hero)
+          : { ...heroFightConfLook(hero), canLeave: 0, instanceId: String(hero.instanceCopyId) },
       ),
       "common|hunt": await this.bootstrap.hunt(context.accountId),
       "user|unitframe": await this.bootstrap.unitframe(context.accountId),

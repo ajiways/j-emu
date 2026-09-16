@@ -44,8 +44,6 @@ describe("FightTcpServer", () => {
           proxyPath: "https://s1.jugger.ru/fproxy//;",
         },
         {
-          heroSkill: 1,
-          heroBody: "m1",
           autoFight: 0,
           canLeave: 1,
           companionEnabled: 0,

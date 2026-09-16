@@ -12,6 +12,7 @@ import {
 } from "../modules/quests/domain/quest-start-fight.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import { startAmbushHunt, startQuestFight } from "./quest-fight-start.ts";
+import { heroFightConfLook } from "../modules/jugger-wire/application/hero-fight-appearance.ts";
 
 export async function piggybackQuestFight(
   accountId: number,
@@ -44,11 +45,15 @@ export async function piggybackQuestFight(
       await deps.chat.deliverSystem(accountId, fight.chatStart);
     }
     return {
-      "fight|conf": deps.fightWire.fightConfiguration(started, { flags: "8", canLeave: 0 }),
+      "fight|conf": deps.fightWire.fightConfiguration(started, {
+        ...heroFightConfLook(hero),
+        flags: "8",
+        canLeave: 0,
+      }),
     };
   }
   if (!isAmbushStartFight(fight)) throw new Error("START_FIGHT variant is not supported");
   if (!ambushHits(fight, deps.random)) return {};
   const started = await startAmbushHunt(hero, fight.artikulId, startDeps);
-  return { "fight|conf": deps.fightWire.fightConfiguration(started) };
+  return { "fight|conf": deps.fightWire.fightConfiguration(started, heroFightConfLook(hero)) };
 }

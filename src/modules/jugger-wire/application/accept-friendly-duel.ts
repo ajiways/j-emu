@@ -13,6 +13,7 @@ import type { FightWireMapper } from "./fight-wire-mapper.ts";
 import type { FriendlyDuelInvites } from "./friendly-duel-invites.ts";
 import { huntHeroStatFields } from "../../combat/domain/combatant-fight-stats.ts";
 import { HuntCombatLoadout } from "./hunt-combat-loadout.ts";
+import { heroFightConfLook } from "./hero-fight-appearance.ts";
 
 export type FriendlyDuelAcceptBlocks = Readonly<{
   "user|friendly_duel_accept": Readonly<{ status: 100 }>;
@@ -75,11 +76,17 @@ export class AcceptFriendlyDuel {
       challenger: challengerStart,
       acceptor: acceptorStart,
     });
-    const acceptorConf = this.fightWire.friendlyDuelConfiguration(started);
-    const challengerConf = this.fightWire.friendlyDuelConfiguration({
-      ...started,
-      participantId: challenger.id,
-    });
+    const acceptorConf = this.fightWire.friendlyDuelConfiguration(
+      started,
+      heroFightConfLook(acceptor),
+    );
+    const challengerConf = this.fightWire.friendlyDuelConfiguration(
+      {
+        ...started,
+        participantId: challenger.id,
+      },
+      heroFightConfLook(challenger),
+    );
     this.outbox.enqueue(challenger.accountId, {
       "fight|conf": challengerConf,
       "user|unitframe": await this.bootstrap.unitframe(challenger.accountId),

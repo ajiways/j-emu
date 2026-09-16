@@ -8,8 +8,6 @@ export type JuggerWireBootstrapPolicy = Readonly<{
 }>;
 
 export type JuggerWireFightPolicy = Readonly<{
-  heroSkill: number;
-  heroBody: string;
   autoFight: number;
   canLeave: 0 | 1;
   companionEnabled: 0 | 1;
