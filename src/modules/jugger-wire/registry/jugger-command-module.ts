@@ -307,7 +307,7 @@ export class JuggerCommandModule {
       new ResurrectCommand(bootstrap, characters, combat, instanceDesk, presence),
       new StoreListCommand(characters, catalog),
       new StoreBuyCommand(bootstrap, characters, storePurchase, this.quests),
-      new StoreRepairCommand(bootstrap, sheet, characters, storeRepair),
+      new StoreRepairCommand(bootstrap, sheet, characters, storeRepair, outbox, wake),
       new PostListCommand(characters, mail, catalog),
       new PostListSentCommand(characters, mail, catalog),
       new PostSendCommand(bootstrap, characters, mailSend),

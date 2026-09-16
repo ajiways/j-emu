@@ -31,7 +31,8 @@
 - `inventory-use` — raw-AMF bag USE 77 ADD_HP, consume at full HP, fight `203`,
   empty actions `203`, reconnect;
 - `inventory-durability` — death −1 on four equipped L1, 0/N PUT_ON 204,
-  repair 9095/20, system chat `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1)`;
+  repair 9095/20, system chat `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1)`,
+  esrv `user|bag_diff` restores PUT_ON `actions`;
 - `world-travel` — raw-AMF COME_IN 503→504/`exit`, 503→501 15s lock, overload
   21/20, fight/missing-link/outdoor-exit denies, reconnect sidebar;
 - `store` — COME_IN 504 `store|list` types + lots 23/24; buy both `25.00`→`23.00`

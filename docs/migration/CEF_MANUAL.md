@@ -39,6 +39,9 @@
       ([WORLD.md](../modules/WORLD.md) leftover dest).
 - [ ] INV-05 leftover: system chat `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1).`
       после death/win break (raw-AMF есть; CEF 2026-09-16 не подтверждён).
+- [ ] INV-05 leftover: после `store|repair` нельзя надеть, пока не открыть
+      рюкзак — live esrv `user|bag_diff.changed` с `actions` PUT_ON=8.
+      raw-AMF есть. Сумки (SLOT_BAG / CAPACITY wear) не в срезе.
 - [ ] CMB-03 leftover: после боя кнопка инфо/экрана результата не открывает
       карточку — клик no-op.
 - [ ] CMB-05 leftover: `hpChange` больше оставшегося HP (3 HP, удар 7).

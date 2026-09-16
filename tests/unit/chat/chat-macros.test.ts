@@ -12,7 +12,7 @@ import { buildArtifactItemMacro } from "../../../src/modules/chat/domain/artifac
 import { deathDurabilityMessage } from "../../../src/modules/chat/domain/death-durability-message.ts";
 import { buildMoneyMacro } from "../../../src/modules/chat/domain/money-macro.ts";
 import { parseEmoCommand } from "../../../src/modules/chat/domain/parse-emo-command.ts";
-import { isChatOnlyFragment } from "../../../src/modules/jugger-wire/application/esrv-chat-only-fragment.ts";
+import { isUnmergedEsrvFragment } from "../../../src/modules/jugger-wire/application/esrv-chat-only-fragment.ts";
 import { buildUserMacro } from "../../../src/modules/jugger-wire/application/user-macro.ts";
 
 describe("chat macros", () => {
@@ -114,8 +114,9 @@ describe("chat macros", () => {
     expect(EMO_TEMPLATES.бой?.all).toContain("{self}");
   });
 
-  it("keeps lone chat|message fragments unmerged", () => {
-    expect(isChatOnlyFragment({ "chat|message": { status: 100 } })).toBe(true);
-    expect(isChatOnlyFragment({ "chat|message": { status: 100 }, state: {} })).toBe(false);
+  it("keeps lone chat|message and bag_diff fragments unmerged", () => {
+    expect(isUnmergedEsrvFragment({ "chat|message": { status: 100 } })).toBe(true);
+    expect(isUnmergedEsrvFragment({ "user|bag_diff": { status: 100 } })).toBe(true);
+    expect(isUnmergedEsrvFragment({ "chat|message": { status: 100 }, state: {} })).toBe(false);
   });
 });

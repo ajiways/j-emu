@@ -7,7 +7,7 @@ import { areaEsrvChannel, personalEsrvChannel } from "./esrv-channel.ts";
 import type { EsrvOutbox, EsrvOutboxEntry } from "./esrv-outbox.ts";
 import type { FightWireMapper } from "./fight-wire-mapper.ts";
 import type { HeroHudPush } from "./hero-hud-push.ts";
-import { isChatOnlyFragment } from "./esrv-chat-only-fragment.ts";
+import { isUnmergedEsrvFragment } from "./esrv-chat-only-fragment.ts";
 import type { InstanceHuntWorld } from "../../instance/ports/instance-hunt.ts";
 import type { QuestCatalog } from "../../quests/ports/quest-catalog.ts";
 import { locationAreaBlocks } from "./location-area-read.ts";
@@ -85,7 +85,7 @@ function appendOutboxEntry(
   ctime: number,
 ): void {
   const channel = entry.channel ?? personal;
-  if (isChatOnlyFragment(entry.fragment)) {
+  if (isUnmergedEsrvFragment(entry.fragment)) {
     flushChannel(frames, pending, channel, ctime);
     frames.push({ channel, ctime, object: entry.fragment });
     return;

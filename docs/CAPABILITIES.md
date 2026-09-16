@@ -158,6 +158,7 @@ catalog `f_body`) пересобирается на PUT_ON/OFF (raw-AMF); CEF 3D
 Есть raw-AMF и PostgreSQL: instance `durability`/`durability_max`, смерть на
 hunt −1 по 4–5 надетым tracking, `0/N` auto PUT_OFF, PUT_ON broken **204**,
 system chat `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1)` (raw-AMF),
+esrv `user|bag_diff` после `store|repair` возвращает PUT_ON в `actions`,
 `store|repair` finite `(max−1)/(max−1)` (9095 бесплатно 2/2, кираса 20 за
 0.02g), persist reconnect/restart, concurrent repair — один победитель.
 CEF мастерской и чата поломки не прогонялся.

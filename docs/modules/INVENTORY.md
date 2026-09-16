@@ -576,7 +576,9 @@ Starter bag: 9095, 20, 21, 26, 93×2, 99×10, 77×4. Не надевать се�
 
 Bag/view/store-lot несут instance или catalog `durability` /
 `durability_max`. `store|repair` success **flat**: `store|repair`
-`{status:100}`, `user|bag`, `user|view`, `user|magic`, `state`.
+`{status:100}`, `user|bag`, `user|view`, `user|magic`, `state`. Live dump
+не кладёт `user|bag` на OA; Flash рюкзак обновляет с esrv `user|bag_diff`
+`{status:100, changed:{[id]: item}}` (в т.ч. `actions` с PUT_ON=8).
 
 ### Fail-fast / restart
 
@@ -586,7 +588,8 @@ columns — runtime 204. Concurrent death/repair — hero+items lock, один
 
 ### Out of scope
 
-set-bonus INV-07; 103 expire; BAG slots; flags_ext /
+set-bonus INV-07; 103 expire; BAG slots (SLOT_BAG bits 20–25, CAPACITY
+wear, `bagCntForLevel`); flags_ext /
 draconis infinite; workshop tab client filter (client-side
 `dur < max`).
 

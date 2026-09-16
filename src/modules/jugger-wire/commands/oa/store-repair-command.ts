@@ -6,6 +6,8 @@ import type { BootstrapReadModel } from "../../application/bootstrap-read-model.
 import type { HeroSheetReadModel } from "../../application/hero-sheet-read-model.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
 import { storeRepairMutation } from "../../application/store-repair-mutation.ts";
+import { bagDiffChanged } from "../../application/user-bag-diff.ts";
+import type { EsrvOutbox } from "../../application/esrv-outbox.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
 import type { ObjectActionEnvelope } from "./object-action-envelope.ts";
 
@@ -18,6 +20,8 @@ export class StoreRepairCommand implements OaCommand {
     private readonly sheet: HeroSheetReadModel,
     private readonly characters: CharacterService,
     private readonly repair: StoreRepair,
+    private readonly outbox: EsrvOutbox,
+    private readonly wake: Readonly<{ wake(accountId: number): void }>,
   ) {}
 
   async execute(accountId: number, envelope: ObjectActionEnvelope): Promise<OaEncodedResponse> {
@@ -35,12 +39,19 @@ export class StoreRepairCommand implements OaCommand {
   private async handle(context: OaCommandContext, envelope: ObjectActionEnvelope): Promise<object> {
     const hero = await this.characters.getByAccountId(context.accountId);
     if (!hero) throw new Error(`Hero for account ${context.accountId} is missing`);
+    const itemId = repairItemIdFrom(envelope);
     await this.repair.repair({
       characterId: hero.id,
-      itemId: repairItemIdFrom(envelope),
+      itemId,
     });
+    const bag = await this.bootstrap.bag(context.accountId);
+    const repaired = bag.bag[String(itemId)];
+    if (repaired) {
+      this.outbox.enqueue(context.accountId, bagDiffChanged(repaired));
+      this.wake.wake(context.accountId);
+    }
     return storeRepairMutation(
-      await this.bootstrap.bag(context.accountId),
+      bag,
       await this.bootstrap.view(context.accountId),
       this.sheet.magic(),
       await this.bootstrap.state(context.accountId),
