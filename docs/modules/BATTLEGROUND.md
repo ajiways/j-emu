@@ -67,4 +67,7 @@ start / strip на kick) **не** в этом срезе.
 
 Fairness seal, other BG maps (POST-04), slaughter / fortress / companion,
 `arena|leader_rating` fill, 637 ritual `client_data` overlay, PvP EXP
-overlay on stats.
+overlay on stats. RESURRECT dest inside a live copy: `spawnAreaForKind`
+(kind 2 → 637, kind 3 → 635); `ensureResurrectArea` currently no-ops for
+`copy_type='bg'`. Outdoor 503 is not a BG dest. Graph:
+[WORLD.md](WORLD.md) leftover.

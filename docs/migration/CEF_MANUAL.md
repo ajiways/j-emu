@@ -22,8 +22,10 @@
 - [ ] CMB-03: экран результата hunt 50310 — HP/EXP/деньги/лут после
       `fight|exit`, HUD совпадает с PostgreSQL.
 - [ ] CMB-04: F5 в активном hunt — тот же `fightId`/`akey`, без `oppwait`.
-- [ ] CMB-04: смерть → призрак, блок регена, OA `RESURRECT` снимает ghost
+- [x] CMB-04: смерть → призрак, блок регена, OA `RESURRECT` снимает ghost
       и ставит HP `max(2, floor(hpMax*0.05))` в храме 503 (не в area смерти).
+      CEF 2026-09-16. Dest 503 — временный outdoor stub
+      ([WORLD.md](../modules/WORLD.md)).
 
 ## CEF 2026-09-16 leftovers (live Flash)
 
@@ -31,10 +33,10 @@
 Идём сверху вниз. После фикса — raw-AMF, затем повторный CEF; галочку
 ставить только с CEF-фактом в `CAPABILITIES.md`.
 
-- [ ] CMB-04 leftover: outdoor `RESURRECT` в храм 503 «Горное поселение»,
-      не в локации смерти. Ghost `resurrect_zones` = `{503:{title}}`, пока
-      призрак ещё стоит в 501. Смерть в 503 выглядит как «та же локация» —
-      это храм. Копия данжа — start area той же copy ([INSTANCE.md](../modules/INSTANCE.md)).
+- [x] CMB-04 leftover (CEF 2026-09-16): outdoor `RESURRECT` в храм 503
+      «Горное поселение», не в локации смерти. Ghost `resurrect_zones` =
+      `{503:{title}}`, пока призрак ещё стоит в 501. Хардкод 503 временный
+      ([WORLD.md](../modules/WORLD.md) leftover dest).
 - [ ] INV-05 leftover: system chat `Вещи потеряли прочность: [[ARTIFACT]] (-1).`
       после death/win break (старый `durabilityApply`); сейчас ломает
       прочность, в чат не пишет.

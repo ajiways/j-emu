@@ -81,12 +81,14 @@ bootstrap. Internal `grantExperience` атомарно применяет DATA-0
 Не перенесено:
 
 - CEF confirmation of CMB-03 result screen / HP-EXP-bag after exit;
-- CEF ghost/injury/RESURRECT (raw-AMF CMB-04 есть);
+- CEF F5 mid-fight (raw-AMF CMB-04 есть; outdoor `RESURRECT` dest 503 —
+  CEF 2026-09-16, dest пока хардкод);
 - клиентский EXP grant через квест.
 
 CEF leftover (2026-09-16, **частично**): HUD HP/`hp_time` и деньги обновляются
-с esrv loot/exit и operator grant без лишнего OA. Это не закрывает CMB-03
-экран результата.
+с esrv loot/exit и operator grant без лишнего OA. Outdoor `RESURRECT` dest
+503 подтверждён (хардкод, [WORLD.md](modules/WORLD.md)). Это не закрывает
+CMB-03 экран результата.
 
 Equipment-derived `user|skills` / `hpMax` считаются из naked skills + надетых
 предметов (перчатка 9095 даёт VIT+5). Без экипа HUD показывает naked L1.
@@ -227,7 +229,8 @@ object `fight|loot` затем `fight|exit`. Melee damage = `STR/10 ±15%`
 и hunts 50310/50309/50101–50103. F5 mid-hunt: init2 `fight|conf` с тем же
 `fightId`/`akey`, resume без `oppwait`, `attacknow` с остатком restTime.
 Ghost блокирует regen; OA `RESURRECT` снимает ghost и outdoor уносит в
-храм 503. Duplicate settlement
+храм 503 (CEF 2026-09-16; dest — временный stub,
+[WORLD.md](modules/WORLD.md)). Duplicate settlement
 no-op. Restart посреди боя без награды. CMB-08: OA
 `user|friendly_duel_propose`/`accept` между двумя героями в 503 (esrv
 request, `fight|conf` `is_pvp:1` `type:6`, practice restore); hunt 3↔3
@@ -238,11 +241,11 @@ restart снимает бой, перчатка остаётся в paperdoll. C
 `q_engine_roster` поднимает quest-бой flags `"8"` (герой+Хисса vs Грызль и
 дух), `chat_*`, `win_fight` без bump kill на `q_engine_fight`; проигрыш
 оставляет book 5 started; mid-fight restart рвёт RAM. CEF экрана результата,
-F5 в бою, призрака, видимого урона, плевка Хиссы, дуэли, gear-spell и
-quest roster flags 8 не прогонялся. CEF 2026-09-16 leftovers (воскрешение
-не в храме, поломка без чата, экран результата, overkill, aggro/спеллы,
-shuffle, орб/дебаффы, dealtDamage, skip-turn, F5 img) —
-[CEF_MANUAL.md](migration/CEF_MANUAL.md).
+F5 в бою, видимого урона, плевка Хиссы, дуэли, gear-spell и
+quest roster flags 8 не прогонялся. Outdoor `RESURRECT` dest 503 —
+CEF 2026-09-16. CEF leftovers (поломка без чата, экран результата,
+overkill, aggro/спеллы, shuffle, орб/дебаффы, dealtDamage, skip-turn,
+F5 img) — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 CMB-11: OA `FIGHT_JOIN` `{team:1|2}` и `FIGHT_HELP` входят в тот же RAM
 `fightId` на 50310; карта ATTACK_BOT на занятый spawn остаётся team 1;
 две копии 542 изолируют JOIN; после смерти бота живой team-2 продолжает

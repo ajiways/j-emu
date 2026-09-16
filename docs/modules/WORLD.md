@@ -36,6 +36,18 @@ response.
 Отсутствующая area/link/spawn/bot reference является ошибкой. Gryzl или
 другой historical bot не подставляется как travel dest.
 
+## Leftover — resurrect dest
+
+Outdoor dest сейчас хардкод **503** (`OUTDOOR_TEMPLE_AREA_ID`) — временный
+stub текущего среза (kind 1 / region 1 = Радвей). CEF 2026-09-16: смерть в
+501 → `RESURRECT` в храм 503. Канон мира, когда срез выйдет за Радвей:
+`common-conf.kind_info[kind].resurrect_teleport[region]` (kind 1: `1`→503,
+`6`→495; фракции 2/3 добавляют 15/26). Данж: start area живой копии
+([INSTANCE.md](INSTANCE.md)) — уже landed. BG: spawn фракции
+`spawnAreaForKind` (Лига 637 / Когорта 635), не 503; `ensureResurrectArea`
+для `copy_type='bg'` сейчас no-op ([BATTLEGROUND.md](BATTLEGROUND.md)).
+Резолвер `kind_info` / BG spawn не писать в этом срезе.
+
 ## WLD-01 — area transitions
 
 ### Architecture decision

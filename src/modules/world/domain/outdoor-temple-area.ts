@@ -1,2 +1,5 @@
-/** Outdoor CMB-04 resurrect dest. Old `resurrectHero` hardcodes this temple. */
+/**
+ * Temporary outdoor resurrect dest (Radvei / kind 1, region 1).
+ * Canonical dest graph: WORLD leftover — `kind_info.resurrect_teleport`.
+ */
 export const OUTDOOR_TEMPLE_AREA_ID = "503";

@@ -136,7 +136,8 @@ OA `FIGHT_JOIN` / `FIGHT_HELP` в копии landed (CMB-11): тот же RAM
 Карта ATTACK_BOT в копии остаётся team 1.
 
 Death/RESURRECT in a copy → start area of the same live copy. Outdoor temple
-503 is not applied inside the dungeon.
+503 (temporary world stub) is not applied inside the dungeon. World/BG dest
+graph — [WORLD.md](WORLD.md) leftover.
 
 Composition hunt-win: peek dungeon fight→spawn **до** `releaseFight` (mapping
 ещё жив). Combat snapshot spawn key не обязан; combat instance не импортирует.

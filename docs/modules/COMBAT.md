@@ -257,11 +257,12 @@ Ghost/injury принадлежат character (`heroes.ghost`, `injury_time`,
 `HuntFightSettlement` вызывает `noteDefeat` в той же UoW. Ghost блокирует
 CHR-02 regen. Roster `dead:4`. Injury id **875**, `injury_time` = unix now+600;
 артефакт 875 не публиковать. OA `RESURRECT`: не в бою; HP
-`max(2, floor(hpMax*0.05))`; снять ghost/injury; outdoor dest — храм **503**
-«Горное поселение», не area смерти (старый `resurrectHero`). Ghost
-`resurrect_zones` outdoor = `{503:{title}}` с каталожным title, пока
-`state.area_id` ещё смерть. Копия данжа — start area той же copy.
-CEF F5/призрака не прогонялся.
+`max(2, floor(hpMax*0.05))`; снять ghost/injury. Outdoor dest — временный
+хардкод храма **503** (CEF 2026-09-16: смерть в 501 → воскрес в 503).
+Канон dest — [WORLD.md](WORLD.md) leftover (`kind_info.resurrect_teleport`,
+данж start area, BG spawn). Ghost `resurrect_zones` outdoor =
+`{503:{title}}` с каталожным title, пока `state.area_id` ещё смерть.
+Копия данжа — start area той же copy. CEF F5 mid-fight не прогонялся.
 
 ### Architecture decision
 
@@ -274,9 +275,10 @@ layout/travel/USE/ATTACK уже есть; CMB-04 их не расширяет н
 
 ### Out of scope (CMB-04 leftover)
 
-OA FIGHT_JOIN/HELP (CMB-11); persist боя; `arena|finished_fights`; BG
-resurrect dest; artifact 875; `Clock.schedule`. F5 `persEff.img`. CEF
-очередь 2026-09-16 — [CEF_MANUAL.md](../migration/CEF_MANUAL.md).
+OA FIGHT_JOIN/HELP (CMB-11); persist боя; `arena|finished_fights`;
+artifact 875; `Clock.schedule`. F5 `persEff.img`. Outdoor dest 503 —
+временный stub ([WORLD.md](WORLD.md)). CEF очередь 2026-09-16 —
+[CEF_MANUAL.md](../migration/CEF_MANUAL.md).
 
 ## CMB-05 — generic melee damage
 
