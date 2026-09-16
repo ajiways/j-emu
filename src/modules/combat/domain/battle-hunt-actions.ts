@@ -164,17 +164,26 @@ function settleGloveHits(
     if (extra.events.length === 0) return notify;
     return { ...notify, events: [...notify.events, ...extra.events] };
   });
-  let events = [...ending.events, ...primary.events];
-  if (ending.hitTargetIds.length > 1) {
-    const damage = ending.events.find((event) => event.type === "damage");
-    if (!damage || damage.type !== "damage") {
-      throw new Error("Glove ending is missing a damage event");
-    }
-    const bots = input.roster === null ? [] : input.roster.snaps();
-    events = [
-      persChangeForParticipants(input.humans, bots, [damage.sourceId, ...ending.hitTargetIds]),
-      ...events,
-    ];
+  const events = [...ending.events, ...primary.events];
+  if (ending.hitTargetIds.length <= 1) {
+    return { ...ending, events, finished: primary.finished, sideNotifies };
   }
-  return { ...ending, events, finished: primary.finished, sideNotifies };
+  const damage = ending.events.find((event) => event.type === "damage");
+  if (!damage || damage.type !== "damage") {
+    throw new Error("Glove ending is missing a damage event");
+  }
+  const bots = input.roster === null ? [] : input.roster.snaps();
+  const patch = persChangeForParticipants(input.humans, bots, [
+    damage.sourceId,
+    ...ending.hitTargetIds,
+  ]);
+  return {
+    ...ending,
+    events: [patch, ...events],
+    finished: primary.finished,
+    sideNotifies: sideNotifies.map((notify) => ({
+      ...notify,
+      events: [patch, ...notify.events],
+    })),
+  };
 }

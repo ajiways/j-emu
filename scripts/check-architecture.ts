@@ -51,7 +51,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/combat/domain/battle.ts":
     "Hunt/friendly Battle owns FightDuel list, CMB-12 hunt pairing, CMB-08 shuffle/waiter handoff, melee, CMB-06 bot turns, casts, CMB-04 resume, and GEAR-01 ending-turn purge clock",
   "src/modules/combat/application/combat-melee-loop.ts":
-    "Hunt melee scheduler: player strike, 3↔3 shuffle, bot counter, turn grant, waiter handoff, reserve-swap, delay tokens, and glove AOE side notify",
+    "Hunt melee scheduler: player strike, 3↔3 shuffle, bot counter, turn grant, waiter handoff, reserve-swap, delay tokens, and glove AOE HP fan-out / side notify",
   "src/modules/combat/application/combat-terminal.ts":
     "Hunt finish: hold loot until fproxy takes fightFinish, delayed persist handshake, leave/flee, and history",
   "src/modules/combat/domain/hunt-human-fight-effects.ts":

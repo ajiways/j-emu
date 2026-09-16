@@ -1,12 +1,8 @@
 import type { CombatEvent, FightExit, FightStart } from "../../combat/ports/combat-port.ts";
 import { fightCastEvent } from "./fight-cast-wire.ts";
-import {
-  fightBuffCastEvent,
-  fightEffectPurgeEvent,
-  fightEffectUseEvent,
-  fightPersCpEvent,
-} from "./fight-effect-wire.ts";
+import { fightBuffCastEvent, fightEffectUseEvent, fightPersCpEvent } from "./fight-effect-wire.ts";
 import { fightEventMap } from "./fight-event-map.ts";
+import { consumePurges, mergePersChangeStrike, strikePackets } from "./fight-strike-packets.ts";
 import { encodeFightWireEvent, type FightWireFrame } from "./fight-wire-event.ts";
 
 export type FightConfHeroLook = Readonly<{ heroSkill: number; heroBody: string }>;
@@ -128,27 +124,25 @@ export class FightWireMapper {
     for (let index = 0; index < events.length; index += 1) {
       const event = events[index];
       if (!event) throw new Error("Fight wire event is missing");
+      if (event.type === "pers-change") {
+        const merged = mergePersChangeStrike(event, events, index);
+        if (merged) {
+          frames.push(merged.frame);
+          index += merged.consumed;
+          continue;
+        }
+      }
       if (event.type === "turn-wait") {
         const damage = events[index + 1];
         if (!damage || damage.type !== "damage") {
           throw new Error("turn-wait must precede damage");
         }
         const packets = [
-          { et: "attackwait", restTime: event.timeoutSeconds },
-          fightCastEvent(damage),
-          ...(damage.comboCp !== undefined ? [fightPersCpEvent(damage.comboCp)] : []),
+          ...strikePackets(event, damage, null),
+          ...consumePurges(events, index + 2),
         ];
-        let consumed = 1;
-        while (events[index + 1 + consumed]?.type === "effect-purge") {
-          const purge = events[index + 1 + consumed];
-          if (!purge || purge.type !== "effect-purge") {
-            throw new Error("effect-purge is missing after melee damage");
-          }
-          packets.push(fightEffectPurgeEvent(purge));
-          consumed += 1;
-        }
         frames.push(fightEventMap(packets));
-        index += consumed;
+        index += 1 + consumePurges(events, index + 2).length;
         continue;
       }
       if (event.type === "effect-use") {

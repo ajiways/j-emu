@@ -167,11 +167,12 @@ catalog fallback. Нет `srcId:5` в
 fproxy, нет 77 в бою, нет generic effect engine. Glove ending AOE
 (`targetCount>=2` или `targetRestr.randTarget`, «Волна света» 9099): живые
 враги hunt-боя, primary = текущая пара, остальное Fisher-Yates через
-injected RNG, урон `max(1, round(full/2))`. Caster: `persChangeInfo` по
-всем hit id **до** ST `cast` (`magic_aoe_*` стопит CombatQueue — список
-полосок иначе не доезжает); ally, чей фо — secondary, получает тот
-же `animData` и `targetId` своего фо. Kill secondary — `attackwait` +
-`react=KILL` + `oppwait`/swap на той дуэли. Click `targetId` нет в glove
+injected RNG, урон `max(1, round(full/2))`. Caster и остальные authed:
+`persChangeInfo` по hit id в том же `ev` map **до** ST `cast` (`magic_aoe_*`
+стопит CombatQueue — список полосок иначе не доезжает). Ally, чей фо —
+secondary, получает тот же кадр: roster patch + `animData` и `targetId`
+своего фо. Kill secondary — `attackwait` + `react=KILL` + `oppwait`/swap
+на той дуэли. Click `targetId` нет в glove
 command — не изобретаем. Bot kind-1 AOE — leftover. Орб 99 drink вешает RAM standing
 kind-3 (`charging` ходов, `groupId` 842, без bake STR — melee бонус остаётся
 `takeOrbPcStr`); consuming L/C/R melee шлёт `effPurge`; glove/kind-1 орб не

@@ -98,6 +98,13 @@ describe("fproxy glove AOE 9099", () => {
     if (!cloneAfter) throw new Error("AOE persChangeInfo is missing the clone");
     expect(cloneAfter.hp).toBeLessThan(cloneAfter.maxHp);
     const ally = await b.pollFight();
+    const allyTypes = fightEventTypes(ally);
+    expect(allyTypes.indexOf("persChangeInfo")).toBeGreaterThanOrEqual(0);
+    expect(allyTypes.indexOf("persChangeInfo")).toBeLessThan(allyTypes.indexOf("cast"));
+    const allyBots = persChangeBots(ally);
+    const allyClone = allyBots.find((bot) => bot.id === cloneId);
+    if (!allyClone) throw new Error("ally persChangeInfo is missing the clone");
+    expect(allyClone.hp).toBeLessThan(allyClone.maxHp);
     const allyCast = castPacket(ally);
     expect(allyCast).toMatchObject({
       et: "cast",

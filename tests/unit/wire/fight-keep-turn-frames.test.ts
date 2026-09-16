@@ -298,12 +298,85 @@ describe("FightWireMapper keep-turn frames", () => {
       },
     ]);
     expect(frames[0]).toEqual({ rs: true, sq: 7 });
-    expect(evTypes(frames[1])).toEqual(["persChangeInfo", "persChangeInfo", "persChangeInfo"]);
-    expect(evTypes(frames[2])).toEqual(["attackwait", "cast", "persCP"]);
-    expect(castPacket(frames[2])).toMatchObject({
+    expect(evTypes(frames[1])).toEqual([
+      "attackwait",
+      "persChangeInfo",
+      "persChangeInfo",
+      "persChangeInfo",
+      "cast",
+      "persCP",
+    ]);
+    expect(castPacket(frames[1])).toMatchObject({
       et: "cast",
       animData: "magic_aoe_light",
       targetId: 1_000_000,
+    });
+  });
+
+  it("puts ally persChangeInfo in the same map before magic_aoe cast", () => {
+    const frames = mapper.frames([
+      {
+        type: "pers-change",
+        humans: [
+          {
+            id: 1,
+            nick: "Hero",
+            level: 1,
+            kind: 1,
+            hp: 27,
+            maxHp: 27,
+            mp: 10,
+            maxMp: 10,
+            team: 1,
+          },
+        ],
+        bots: [
+          {
+            id: 1_000_000,
+            nick: "Грызль",
+            level: 1,
+            hp: 164,
+            maxHp: 200,
+            artikulId: 2,
+            avatar: "avatar_gryzl1_sm.jpg",
+            sk: "11",
+            body: "",
+            team: 2,
+          },
+          {
+            id: 1_000_001,
+            nick: "Грызль",
+            level: 1,
+            hp: 196,
+            maxHp: 200,
+            artikulId: 2,
+            avatar: "avatar_gryzl1_sm.jpg",
+            sk: "11",
+            body: "",
+            team: 2,
+          },
+        ],
+      },
+      {
+        type: "damage",
+        sourceId: 1,
+        targetId: 1_000_001,
+        animation: "magic_aoe_light",
+        hpChange: -4,
+        targetMaxHp: 200,
+        killed: false,
+      },
+    ]);
+    expect(evTypes(frames[0])).toEqual([
+      "persChangeInfo",
+      "persChangeInfo",
+      "persChangeInfo",
+      "cast",
+    ]);
+    expect(castPacket(frames[0])).toMatchObject({
+      et: "cast",
+      animData: "magic_aoe_light",
+      targetId: 1_000_001,
     });
   });
 });

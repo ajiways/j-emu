@@ -76,7 +76,7 @@ export class CombatService implements CombatPort {
       this.byAccount,
       this.battleByFight,
       this.scheduler,
-      (accountId, events) => this.enqueue(accountId, events),
+      (accountId, events, at) => this.enqueue(accountId, events, at),
       (accountId) => this.wakeAccount(accountId),
       (battle, events, strikerAccountId) =>
         this.finish.settleFinished(battle, events, strikerAccountId),
@@ -373,13 +373,13 @@ export class CombatService implements CombatPort {
     });
   }
 
-  private enqueue(accountId: number, events: readonly CombatEvent[]): void {
-    const queue = this.queues.get(accountId);
-    if (queue) {
-      queue.push(...events);
-      return;
-    }
-    this.queues.set(accountId, [...events]);
+  private enqueue(
+    accountId: number,
+    events: readonly CombatEvent[],
+    at: "head" | "tail" = "tail",
+  ): void {
+    const queued = this.queues.get(accountId) ?? [];
+    this.queues.set(accountId, at === "head" ? [...events, ...queued] : [...queued, ...events]);
   }
 
   private wakeAccount(accountId: number): void {

@@ -180,6 +180,7 @@ describe("glove AOE leftover", () => {
     expect(patch.bots.find((bot) => bot.id === 1_000_001)?.hp).toBe(196);
     expect(ending.sideNotifies).toHaveLength(1);
     expect(ending.sideNotifies[0]).toMatchObject({ accountId: 2 });
+    expect(ending.sideNotifies[0]?.events.map((event) => event.type)[0]).toBe("pers-change");
     expect(ending.sideNotifies[0]?.events.find((event) => event.type === "damage")).toMatchObject({
       type: "damage",
       sourceId: 1,
@@ -234,6 +235,9 @@ describe("glove AOE leftover", () => {
       expect.arrayContaining(["command-accepted", "turn-wait", "damage", "pers-change"]),
     );
     const ally = await combat.execute(2, { kind: "poll" });
+    expect(ally.map((event) => event.type).indexOf("pers-change")).toBeLessThan(
+      ally.map((event) => event.type).indexOf("damage"),
+    );
     expect(ally.find((event) => event.type === "damage")).toMatchObject({
       type: "damage",
       sourceId: 1,

@@ -9,7 +9,11 @@ export class CombatMeleeLoop {
     private readonly byAccount: Map<number, Battle>,
     private readonly battleByFight: Map<string, Battle>,
     private readonly scheduler: HuntMeleeScheduler,
-    private readonly enqueue: (accountId: number, events: readonly CombatEvent[]) => void,
+    private readonly enqueue: (
+      accountId: number,
+      events: readonly CombatEvent[],
+      at?: "head" | "tail",
+    ) => void,
     private readonly wakeAccount: (accountId: number) => void,
     private readonly settleFinished: (
       battle: Battle,
@@ -64,8 +68,10 @@ export class CombatMeleeLoop {
     }
     cancelDuel(this.scheduler, battle, accountId);
     this.enqueue(accountId, [{ type: "command-accepted", sequence }, ...ending.events]);
-    fanoutPersChange(battle, accountId, ending.events, this.enqueue, this.wakeAccount);
+    const sideIds = new Set(ending.sideNotifies.map((notify) => notify.accountId));
+    fanoutPersChange(battle, accountId, ending.events, this.enqueue, this.wakeAccount, sideIds);
     fanoutRosterEffects(battle, accountId, ending.events, this.enqueue, this.wakeAccount);
+    await Promise.resolve();
     this.deliverGloveSides(battle, ending);
     if (battle.finished) {
       await this.settleFinished(battle, ending.events, accountId);
@@ -272,7 +278,7 @@ export class CombatMeleeLoop {
         (event) => event.type === "opponent-new" || event.type === "opponent-new-human",
       );
       if (wait || next) cancelDuel(this.scheduler, battle, notify.accountId);
-      this.enqueue(notify.accountId, notify.events);
+      this.enqueue(notify.accountId, notify.events, "head");
       this.wakeAccount(notify.accountId);
       if (next) this.grantPairedBot(battle, notify.accountId);
     }
@@ -283,7 +289,7 @@ function fanoutRosterEffects(
   battle: Battle,
   actorAccountId: number,
   events: readonly CombatEvent[],
-  enqueue: (accountId: number, events: readonly CombatEvent[]) => void,
+  enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void,
   wakeAccount: (accountId: number) => void,
 ): void {
   const fx = events.filter((event) => event.type === "effect-use" || event.type === "effect-purge");
@@ -301,7 +307,7 @@ function cancelDuel(scheduler: HuntMeleeScheduler, battle: Battle, accountId: nu
 }
 
 function enqueuePlayerMelee(
-  enqueue: (accountId: number, events: readonly CombatEvent[]) => void,
+  enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void,
   accountId: number,
   sequence: string | number,
   events: readonly CombatEvent[],
@@ -332,8 +338,9 @@ function fanoutPersChange(
   battle: Battle,
   actorAccountId: number,
   events: readonly CombatEvent[],
-  enqueue: (accountId: number, events: readonly CombatEvent[]) => void,
+  enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void,
   wakeAccount: (accountId: number) => void,
+  skipAccountIds: ReadonlySet<number> = new Set(),
 ): void {
   const patch =
     events.find((event) => event.type === "pers-change") ??
@@ -343,8 +350,8 @@ function fanoutPersChange(
     );
   if (!patch) return;
   for (const accountId of battle.authedAccountIds()) {
-    if (accountId === actorAccountId) continue;
-    enqueue(accountId, [patch]);
+    if (accountId === actorAccountId || skipAccountIds.has(accountId)) continue;
+    enqueue(accountId, [patch], "head");
     wakeAccount(accountId);
   }
 }
