@@ -155,6 +155,10 @@ describe("quest multi-board", () => {
       sq: 70,
     });
     expect(finished["fight|finish"]).toEqual({ status: 100 });
+    expect(finished["fight|info"]).toMatchObject({
+      status: 100,
+      fight: { type: "1", finished: 1, area: "Горное поселение" },
+    });
     expect(finished["common|area_conf"]).toBeUndefined();
     expect(finished["user|unitframe"]).toMatchObject({ status: 100 });
     expect(finished.state).toBeTypeOf("object");

@@ -87,8 +87,8 @@ bootstrap. Internal `grantExperience` атомарно применяет DATA-0
 
 CEF leftover (2026-09-16, **частично**): HUD HP/`hp_time` и деньги обновляются
 с esrv loot/exit и operator grant без лишнего OA. Outdoor `RESURRECT` dest
-503 подтверждён (хардкод, [WORLD.md](modules/WORLD.md)). Это не закрывает
-CMB-03 экран результата.
+503 подтверждён (хардкод, [WORLD.md](modules/WORLD.md)). OA `fight|finish`
+отдаёт `fight|info` (raw-AMF); CEF карточки результата не прогонялся.
 
 Equipment-derived `user|skills` / `hpMax` считаются из naked skills + надетых
 предметов (перчатка 9095 даёт VIT+5). Без экипа HUD показывает naked L1.
@@ -162,7 +162,8 @@ esrv `user|bag_diff` после `store|repair` снимает слот и воз
 PUT_ON в `actions` новым instance,
 `store|repair` finite `(max−1)/(max−1)` (9095 бесплатно 2/2, кираса 20 за
 0.02g), persist reconnect/restart, concurrent repair — один победитель.
-CEF мастерской и чата поломки не прогонялся.
+CEF мастерской не прогонялся. Чат поломки и PUT_ON после repair —
+CEF 2026-09-16.
 
 Заточка (INV-06) workflow `done`, product **частично**: OA `UPGRADE`, overlay
 на том же `items.id`, кристаллы **553 / 1310 / 4603 / 11408 / 13224**, шесть
@@ -246,7 +247,8 @@ restart снимает бой, перчатка остаётся в paperdoll. C
 оставляет book 5 started; mid-fight restart рвёт RAM. CEF экрана результата,
 F5 в бою, видимого урона, плевка Хиссы, дуэли, gear-spell и
 quest roster flags 8 не прогонялся. Outdoor `RESURRECT` dest 503 —
-CEF 2026-09-16. CEF leftovers (чат поломки CEF, экран результата,
+CEF 2026-09-16. CEF leftovers (чат поломки CEF 2026-09-16, экран результата raw-AMF
+`fight|info` без CEF,
 overkill, aggro/спеллы, shuffle, орб/дебаффы, dealtDamage, skip-turn,
 F5 img) — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 CMB-11: OA `FIGHT_JOIN` `{team:1|2}` и `FIGHT_HELP` входят в тот же RAM

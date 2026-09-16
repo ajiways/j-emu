@@ -37,14 +37,16 @@
       «Горное поселение», не в локации смерти. Ghost `resurrect_zones` =
       `{503:{title}}`, пока призрак ещё стоит в 501. Хардкод 503 временный
       ([WORLD.md](../modules/WORLD.md) leftover dest).
-- [ ] INV-05 leftover: system chat `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1).`
-      после death/win break (raw-AMF есть; CEF 2026-09-16 не подтверждён).
-- [ ] INV-05 leftover: после `store|repair` нельзя надеть, пока не открыть
+- [x] INV-05 leftover: system chat `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1).`
+      после death/win break. CEF 2026-09-16: строка есть; цвет имени рисует
+      клиент (`0` красный, `1–2` оранжевый); extra «полностью сломалась» в dump нет.
+- [x] INV-05 leftover: после `store|repair` нельзя надеть, пока не открыть
       рюкзак — Flash не пересобирает PUT_ON на том же Artifact; esrv
-      `user|bag_diff` `removed` затем `changed` с PUT_ON=8. raw-AMF есть.
+      `user|bag_diff` `removed` затем `changed` с PUT_ON=8. CEF 2026-09-16.
       Сумки (SLOT_BAG / CAPACITY wear) не в срезе.
 - [ ] CMB-03 leftover: после боя кнопка инфо/экрана результата не открывает
-      карточку — клик no-op.
+      карточку — клик no-op. raw-AMF: OA `fight|finish` отдаёт `fight|info`.
+      CEF не подтверждён.
 - [ ] CMB-05 leftover: `hpChange` больше оставшегося HP (3 HP, удар 7).
 - [ ] CMB-02 leftover: после «Разозлить» пропадает список спеллов перчатки
       (`persSpells`).

@@ -220,8 +220,12 @@ personal object: сначала `fight|loot`, потом `fight|exit`, плюс 
 `{flee:true,status:100,type:2}` и тот же HUD (без loot). Если в бою ещё живой союзник — leaver
 получает только flee-exit, бой продолжается; полный loot/EXP — когда RAM
 fight заканчивается. `chat|add` «Вами получено» / «Окончен бой» — [CHAT.md](CHAT.md) (SOC-01), не
-этой capability. OA `fight|finish` — flat: `{status:100}`, `fight|conf.expire=0`,
+этой capability. OA `fight|finish` — flat: `{status:100}`, `fight|info`
+(RAM last snapshot: `fight.id` строка = `fight|loot.fight_id`, `started`
+`DD.MM HH:MM`, `users` по participant id, `status:100`), `fight|conf.expire=0`,
 unitframe, bag, view, magic, skills, `state`; без самовольного `common|area_conf`.
+Лут на `fight|info` не класть — AS3 ShowData уже отработал с esrv `fight|loot`.
+Restart стирает RAM info (ADR-0020): finish без карточки.
 
 Outdoor hunt `can_leave:1`. Quest/dungeon `leaveFight` deny
 `{rs:false, err:"нельзя выйти из боя", sq}` — QST-ENG-04.

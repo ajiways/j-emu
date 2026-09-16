@@ -31,7 +31,8 @@
 - `inventory-use` — raw-AMF bag USE 77 ADD_HP, consume at full HP, fight `203`,
   empty actions `203`, reconnect;
 - `inventory-durability` — death −1 on four equipped L1, 0/N PUT_ON 204,
-  repair 9095/20, system chat `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1)`,
+  repair 9095/20, system chat `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1)`
+  with 9095 `durability` 2→1→0,
   esrv `user|bag_diff` removed-then-changed restores PUT_ON `actions`;
 - `world-travel` — raw-AMF COME_IN 503→504/`exit`, 503→501 15s lock, overload
   21/20, fight/missing-link/outdoor-exit denies, reconnect sidebar;
@@ -63,7 +64,8 @@
   без restriction, consume кармана после init, rage/aggro rs-then-FX, glove
   9095 `persCP` и ending rs-then-strike;
 - `fproxy-settlement` — win 50310 esrv loot-then-exit, EXP/money persist
-  reconnect/restart; loss HP 0 + ghost, clock не лечит, RESURRECT в 503;
+  reconnect/restart; OA `fight|finish` отдаёт `fight|info` (`fight.id` =
+  loot `fight_id`, `started` `DD.MM HH:MM`); loss HP 0 + ghost, clock не лечит, RESURRECT в 503;
   смерть в 501 → ghost `resurrect_zones.503`, RESURRECT в храм; `leaveFight`
   flee `type:2`; two-hunter EXP top damager; pocket 93 refill from bag;
 - `combat-reconnect` — mid-hunt F5: init2 `fight|conf` same fightId/akey,

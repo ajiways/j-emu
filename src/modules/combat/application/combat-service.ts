@@ -40,6 +40,7 @@ import type { FightIdSource } from "../ports/fight-id-source.ts";
 import type { FightSettlement } from "../ports/fight-settlement.ts";
 import type { FightTerminalObserver } from "../ports/fight-terminal-observer.ts";
 import type { FightLootBlock } from "../domain/fight-loot-block.ts";
+import type { FightResultInfo } from "../domain/fight-result-info.ts";
 
 export class CombatService implements CombatPort {
   private readonly byAccount = new Map<number, Battle>();
@@ -47,6 +48,7 @@ export class CombatService implements CombatPort {
   private readonly queues = new Map<number, CombatEvent[]>();
   private readonly pendingExits = new Map<number, FightExit>();
   private readonly pendingLoot = new Map<number, FightLootBlock>();
+  private readonly pendingFightInfo = new Map<number, FightResultInfo>();
   private readonly pendingPocketConsume = new Map<number, number>();
   private readonly settledFights = new Set<string>();
   private readonly exitSent = new Set<string>();
@@ -86,6 +88,7 @@ export class CombatService implements CombatPort {
       this.battleByFight,
       this.pendingExits,
       this.pendingLoot,
+      this.pendingFightInfo,
       this.settledFights,
       this.exitSent,
       this.scheduler,
@@ -333,6 +336,10 @@ export class CombatService implements CombatPort {
     return this.pendingLoot.get(accountId) ?? null;
   }
 
+  async lastFightInfo(accountId: number) {
+    return this.finish.lastFightInfo(accountId);
+  }
+
   shutdown(): void {
     for (const battle of this.battleByFight.values()) {
       for (const token of battle.delayTokens()) this.scheduler.cancel(token);
@@ -342,6 +349,7 @@ export class CombatService implements CombatPort {
     this.queues.clear();
     this.pendingExits.clear();
     this.pendingLoot.clear();
+    this.pendingFightInfo.clear();
     this.pendingPocketConsume.clear();
     this.settledFights.clear();
     this.exitSent.clear();

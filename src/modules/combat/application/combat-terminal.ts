@@ -1,6 +1,9 @@
 import type { Battle } from "../domain/battle.ts";
 import type { FightLootBlock } from "../domain/fight-loot-block.ts";
 import { FinishedFightConflictError } from "../domain/finished-fight-conflict-error.ts";
+import { buildFightResultInfo } from "../domain/fight-result-info.ts";
+import type { FightResultInfo } from "../domain/fight-result-info.ts";
+import { huntFightTitle } from "../domain/hunt-fight-title.ts";
 import type { CombatEvent, FightExit } from "../ports/combat-port.ts";
 import type { FightSettlement } from "../ports/fight-settlement.ts";
 import type { FightTerminalObserver } from "../ports/fight-terminal-observer.ts";
@@ -17,6 +20,7 @@ export class CombatTerminal {
     private readonly battleByFight: Map<string, Battle>,
     private readonly pendingExits: Map<number, FightExit>,
     private readonly pendingLoot: Map<number, FightLootBlock>,
+    private readonly pendingFightInfo: Map<number, FightResultInfo>,
     private readonly settledFights: Set<string>,
     private readonly exitSent: Set<string>,
     private readonly scheduler: HuntMeleeScheduler,
@@ -88,6 +92,10 @@ export class CombatTerminal {
     });
   }
 
+  lastFightInfo(accountId: number): FightResultInfo | null {
+    return this.pendingFightInfo.get(accountId) ?? null;
+  }
+
   queueExit(accountId: number, fightId: string, exit: FightExit): void {
     const key = `${fightId}:${accountId}`;
     if (this.exitSent.has(key)) return;
@@ -110,6 +118,7 @@ export class CombatTerminal {
       : new Map<number, FightLootBlock>();
     this.settledFights.add(battle.id);
     await this.recordHistory(battle, winnerTeam);
+    const info = this.resultInfo(battle, winnerTeam, lootByAccount);
     const flee = kind === "last-leave";
     const exit: FightExit = flee
       ? { fightId: battle.id, winnerTeam, flee: true }
@@ -120,12 +129,45 @@ export class CombatTerminal {
       }
       const loot = lootByAccount.get(accountId);
       if (loot && kind !== "last-leave") this.pendingLoot.set(accountId, loot);
+      this.pendingFightInfo.set(accountId, info);
       this.queueExit(accountId, battle.id, exit);
       this.wakeAccount(accountId);
     }
     for (const accountId of battle.accountIds()) this.byAccount.delete(accountId);
     this.battleByFight.delete(battle.id);
     await this.notifyFinished(battle, kind, winnerTeam);
+  }
+
+  private resultInfo(
+    battle: Battle,
+    winnerTeam: 1 | 2,
+    lootByAccount: ReadonlyMap<number, FightLootBlock>,
+  ): FightResultInfo {
+    const { humans, bots } = battle.boardParticipants();
+    return buildFightResultInfo({
+      fightId: battle.id,
+      title: this.resultTitle(battle, humans),
+      type: battle.kind === "friendly-duel" ? "6" : "1",
+      areaId: battle.areaId,
+      timeout: battle.turnTimeoutSeconds,
+      startedAt: battle.startedAt,
+      now: this.scheduler.now(),
+      winnerTeam,
+      humans,
+      bots,
+      lootByAccount,
+    });
+  }
+
+  private resultTitle(battle: Battle, humans: readonly { nick: string; team: 1 | 2 }[]): string {
+    if (battle.kind === "hunt") {
+      const history = battle.huntHistory();
+      return huntFightTitle(history.heroNick, history.botNick);
+    }
+    const team1 = humans.find((human) => human.team === 1);
+    const team2 = humans.find((human) => human.team === 2);
+    if (!team1 || !team2) throw new Error(`Fight ${battle.id} is missing a team`);
+    return huntFightTitle(team1.nick, team2.nick);
   }
 
   private async notifyFinished(

@@ -2,6 +2,7 @@ import type { BattleEvent } from "../domain/battle-event.ts";
 import type { CombatLoadout } from "../domain/combat-loadout.ts";
 import type { HuntBotSpellBook } from "../domain/hunt-bot-spell-book.ts";
 import type { FightInfoCard } from "../domain/fight-info-card.ts";
+import type { FightResultInfo } from "../domain/fight-result-info.ts";
 import type { FightLootBlock } from "../domain/fight-loot-block.ts";
 import type { FinishedFightListQuery, FinishedFightPage } from "../domain/finished-fight-page.ts";
 import type { HuntHumanAppearance } from "../domain/hunt-human.ts";
@@ -185,4 +186,5 @@ export interface CombatPort {
   listFinishedFights(query: FinishedFightListQuery): Promise<FinishedFightPage>;
   listRunnedFights(query: FinishedFightListQuery): Promise<RunnedFightPage>;
   fightInfo(fightId: string): Promise<FightInfoCard | null>;
+  lastFightInfo(accountId: number): Promise<FightResultInfo | null>;
 }

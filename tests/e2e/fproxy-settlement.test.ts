@@ -77,6 +77,30 @@ describe("fproxy settlement", () => {
     expect(finish["fight|finish"]).toEqual({ status: 100 });
     expect(finish["fight|conf"]).toEqual({ expire: 0 });
     expect(finish["common|area_conf"]).toBeUndefined();
+    const loot = requireRecord(esrv["fight|loot"], "fight|loot");
+    expect(finish["fight|info"]).toMatchObject({
+      status: 100,
+      winner_team: "1",
+      fight: {
+        id: String(loot.fight_id),
+        type: "1",
+        finished: 1,
+        area: "Горное поселение",
+      },
+    });
+    const infoFight = requireRecord(
+      requireRecord(finish["fight|info"], "fight|info").fight,
+      "fight|info.fight",
+    );
+    expect(typeof infoFight.started).toBe("string");
+    expect(String(infoFight.started)).toMatch(/^\d{2}\.\d{2} \d{2}:\d{2}$/);
+    expect(infoFight.title).toMatch(/^Нападение .+ на /);
+    const users = requireRecord(
+      requireRecord(finish["fight|info"], "fight|info").users,
+      "fight|info.users",
+    );
+    expect(Object.values(users).some((row) => requireRecord(row, "user").bot === true)).toBe(true);
+    expect(Object.values(users).some((row) => requireRecord(row, "user").bot === false)).toBe(true);
     expect(finish["user|unitframe"]).toMatchObject({ status: 100, exp: 16 });
     expect(finish["user|bag"]).toMatchObject({ status: 100 });
     expect(finish["user|view"]).toMatchObject({ status: 100 });
@@ -442,6 +466,13 @@ function pocketItems(value: AmfValue | undefined): Record<string, AmfValue>[] {
     }
     return row;
   });
+}
+
+function requireRecord(value: AmfValue | undefined, label: string): Record<string, AmfValue> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${label} must be an object`);
+  }
+  return value;
 }
 
 function requireId(item: Record<string, AmfValue>): number {

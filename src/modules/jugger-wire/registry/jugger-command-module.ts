@@ -234,7 +234,7 @@ export class JuggerCommandModule {
       new UserProfessionsCommand(characters),
       new UserUnitframeCommand(unitOfWork, characters, bootstrap),
       new UserViewCommand(bootstrap),
-      new FightFinishCommand(unitOfWork, characters, bootstrap),
+      new FightFinishCommand(unitOfWork, characters, bootstrap, combat, world),
       new UserMagicCommand(bootstrap, sheet),
       new UserFlashMessageCommand(bootstrap),
       new FriendlyDuelProposeCommand(propose),
