@@ -4,7 +4,6 @@ import type { FightEffectSnap } from "../../combat/domain/hunt-human-fight-effec
 type EffectUse = Extract<CombatEvent, { type: "effect-use" }>;
 type EffectPurge = Extract<CombatEvent, { type: "effect-purge" }>;
 type BuffCast = Extract<CombatEvent, { type: "buff-cast" }>;
-type NativeCount = Extract<CombatEvent, { type: "native-count" }>;
 
 export function fightPersEffEvent(
   persId: number,
@@ -87,18 +86,4 @@ export function fightBuffCastEvent(event: BuffCast): Readonly<Record<string, unk
 
 export function fightPersCpEvent(cp: number): Readonly<Record<string, unknown>> {
   return { et: "persCP", cp };
-}
-
-export function fightNativeCountEvent(event: NativeCount): Readonly<Record<string, unknown>> {
-  return {
-    et: "persSpells",
-    "1": {
-      count: event.count,
-      persRestr: { dead: false },
-      srcId: event.srcId,
-      srcType: 1,
-      targetRestr: { dead: false, oppTeam: true },
-      title: event.title,
-    },
-  };
 }

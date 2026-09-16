@@ -94,6 +94,31 @@ describe("hunt aggro clone", () => {
     expect(battle.foeBotSnap(2).id).toBe(1_000_001);
   });
 
+  it("hands the clone after the current outdoor bot dies", () => {
+    const battle = new Battle(
+      huntInit({ botMaxHp: 8 }),
+      UNIT_BATTLE_RULES,
+      new SequenceRandom([8]),
+    );
+    battle.authenticate(1, AUTH_NOW);
+    expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
+    expect(battle.foeBotSnap(1).id).toBe(1_000_000);
+    const melee = battle.tryPlayerMelee(1, "center", AUTH_NOW);
+    expect(melee.kind).toBe("resolved");
+    if (melee.kind !== "resolved") throw new Error("expected resolved melee");
+    expect(melee.events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "damage", killed: true, targetId: 1_000_000 }),
+        expect.objectContaining({
+          type: "opponent-new",
+          bot: expect.objectContaining({ id: 1_000_001, hp: 8, maxHp: 8 }),
+        }),
+      ]),
+    );
+    expect(battle.finished).toBe(false);
+    expect(battle.foeBotSnap(1).id).toBe(1_000_001);
+  });
+
   it("denies quest, copy, and zero-charge outdoor without spending", () => {
     const quest = new Battle(
       huntInit({ purpose: "quest" }),

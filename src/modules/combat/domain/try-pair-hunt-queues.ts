@@ -108,6 +108,7 @@ function pairOneHuntQueue(
     : team2.id;
   pairSeeker(input.humans, a);
   pairSeeker(input.humans, b);
+  occupyPairedBots(input.roster, a, b);
   if (a.kind === "bot" && b.kind === "bot") {
     if (!input.roster) throw new Error("Bot-bot pairing requires a hunt roster");
     input.roster.addExtraDuel(new FightDuel(a.id, b.id, openerId));
@@ -116,6 +117,13 @@ function pairOneHuntQueue(
   const duel = new FightDuel(a.id, b.id, openerId);
   input.duels.push(duel);
   return duel;
+}
+
+function occupyPairedBots(roster: HuntRoster | null, a: HuntSeeker, b: HuntSeeker): void {
+  if (a.kind !== "bot" && b.kind !== "bot") return;
+  if (!roster) throw new Error("Bot pairing requires a hunt roster");
+  if (a.kind === "bot") roster.occupy(a.id);
+  if (b.kind === "bot") roster.occupy(b.id);
 }
 
 function huntSeekers(

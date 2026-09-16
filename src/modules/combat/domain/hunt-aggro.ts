@@ -43,7 +43,13 @@ export function tryHuntAggro(
         targetId: human.heroId,
         maxHp: human.maxHp,
       },
-      { type: "native-count", srcId: 7, count: human.casts.aggro, title: "Разозлить" },
+      {
+        type: "native-count",
+        srcId: 7,
+        count: human.casts.aggro,
+        title: "Разозлить",
+        loadout: human.casts.loadout,
+      },
     ],
   });
   if (
@@ -75,7 +81,13 @@ export function tryHuntAggro(
     kind: "resolved",
     pairedAccountIds,
     events: [
-      { type: "native-count", srcId: 7, count, title: "Разозлить" },
+      {
+        type: "native-count",
+        srcId: 7,
+        count,
+        title: "Разозлить",
+        loadout: human.casts.loadout,
+      },
       {
         type: "roster-updated",
         humans: input.humans.map((entry) => entry.snapshot()),

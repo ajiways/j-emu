@@ -92,11 +92,43 @@ describe("FightWireMapper keep-turn frames", () => {
 
     const aggro = mapper.frames([
       { type: "command-accepted", sequence: 5 },
-      { type: "native-count", srcId: 7, count: 0, title: "Разозлить" },
+      {
+        type: "native-count",
+        srcId: 7,
+        count: 0,
+        title: "Разозлить",
+        loadout: {
+          pocket: [],
+          gearSpells: [],
+          glove: {
+            hits: [2, 3, 2],
+            spells: [
+              {
+                artikulId: 9098,
+                cost: 2,
+                row: 1,
+                title: "Разряд молнии",
+                picture: "electro_ball1.png",
+                spell: {
+                  persRestr: { active: true, dead: false },
+                  targetRestr: { opp: true, dead: false },
+                  effects: [{ kind: 1, dmgType: 128 }],
+                },
+              },
+            ],
+          },
+        },
+      },
     ]);
     expect(aggro[0]).toEqual({ rs: true, sq: 5 });
     expect(aggro[1]).toMatchObject({
-      ev: { "1": { et: "persSpells", "1": { srcId: 7, count: 0 } } },
+      ev: {
+        "1": {
+          et: "persSpells",
+          "6": { srcId: 7, count: 0 },
+          "7": { srcType: 3, srcId: 9098, artikulId: 9098 },
+        },
+      },
     });
   });
 

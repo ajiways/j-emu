@@ -4,11 +4,11 @@ import {
   fightBuffCastEvent,
   fightEffectPurgeEvent,
   fightEffectUseEvent,
-  fightNativeCountEvent,
   fightPersCpEvent,
 } from "./fight-effect-wire.ts";
 import { fightEventMap } from "./fight-event-map.ts";
 import { huntFightBootstrapEvents, huntFightRosterEvents } from "./hunt-fight-bootstrap-wire.ts";
+import { huntPersSpellsEvent } from "./hunt-fight-pers-spells.ts";
 import { friendlyFightBootstrapEvents } from "./friendly-fight-bootstrap-wire.ts";
 import { huntOppNewEvent } from "./hunt-opp-new-event.ts";
 import { humanOppNewEvent } from "./human-opp-new-event.ts";
@@ -212,7 +212,10 @@ export class FightWireMapper {
       case "pers-cp":
         return fightEventMap([fightPersCpEvent(event.cp)]);
       case "native-count":
-        return fightEventMap([fightNativeCountEvent(event)]);
+        if (event.srcId !== 7) {
+          throw new Error(`native-count srcId must be 7, got ${event.srcId}`);
+        }
+        return fightEventMap([huntPersSpellsEvent(event.loadout, event.count)]);
       case "turn-granted":
         return fightEventMap([{ et: "attacknow", restTime: event.timeoutSeconds }]);
       case "turn-wait":

@@ -51,17 +51,16 @@
 - [ ] CMB-05 leftover: `hpChange` больше оставшегося HP (3 HP, удар 7).
       raw-AMF: wire `hpChange` = −min(raw, currentHP) на melee/kind-1/glove/DoT.
       CEF не подтверждён.
-- [ ] INV leftover: в инвентаре и на надетой перчатке нет спеллов (и в бою
-      панель пустая). raw-AMF: grant 23 роллит пул `artikul_id1..6` в
-      `items.data_json`; bag/view/`user|magic` несут instance `hits` +
-      expanded `spells` и тот же набор в `extra`. 9095 по-прежнему catalog
-      sockets `artikul_id0`. CEF не подтверждён. MAGRES/MAGSTR roll и copy
-      instance в mail/auction/trade snapshot — отдельный leftover; см.
-      [INVENTORY.md](../modules/INVENTORY.md).
+- [x] INV leftover: лавка `artikul_id=23` — спеллы на вещи и в бою.
+      CEF 2026-09-16: пул `artikul_id1..6` роллится в `items.data_json`.
+      MAGRES/MAGSTR roll и copy instance в mail/auction/trade snapshot —
+      leftover; см. [INVENTORY.md](../modules/INVENTORY.md).
 - [ ] CMB-02 leftover: после «Разозлить» пропадает список спеллов перчатки
-      (`persSpells`).
+      (`persSpells`). raw-AMF: aggro шлёт полный `persSpells` (natives +
+      карман + перчатка) с абсолютным `count` у srcId 7. CEF не подтверждён.
 - [ ] CMB-08 leftover: после убийства текущего противника shuffle не даёт
-      следующего (переключения нет).
+      следующего. raw-AMF: outdoor «Разозлить» кладёт клон в waiting и
+      `oppnew` после kill текущего. CEF не подтверждён.
 - [ ] CMB-02 leftover: орб 99 — иконка не снимается после удара, висит
       мёртвым эффектом и блокирует похожие.
 - [ ] CMB-06/15 leftover: плевок Хиссы — разовый урон, дебафф не вешается.

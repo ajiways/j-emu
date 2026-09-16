@@ -4,7 +4,11 @@ import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import { createIsolatedHero } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
-import { fightEventTypes, huntFightConfFrom } from "../support/harness/wire-payload.ts";
+import {
+  fightEventTypes,
+  huntFightConfFrom,
+  huntOppNewFrom,
+} from "../support/harness/wire-payload.ts";
 
 describe("fproxy hunt aggro clone pairing", () => {
   let harness: ApplicationHarness;
@@ -86,6 +90,49 @@ describe("fproxy hunt aggro clone pairing", () => {
       await b.pollFight();
     }
     expect(swapped).toBe(true);
+  });
+
+  it("switches to the aggro clone after the spawn dies", async () => {
+    const hero = await createIsolatedHero(application);
+    await hero.objectAction({ object: "common", action: "init", sq: 1 });
+    const start = await hero.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 4,
+    });
+    const opened = huntFightConfFrom(start);
+    expect(await hero.fight({ rc: "auth", eid: opened.fightId, sq: 5 })).toHaveLength(0);
+    const boot = await hero.pollFight();
+    const spawnId = huntOppNewFrom(boot).id;
+    if (typeof spawnId !== "number") throw new Error("spawn oppnew id is missing");
+    expect(await hero.fight({ rc: "castSpell", srcType: 1, srcId: 7, sq: 6 })).toHaveLength(0);
+    const aggro = await hero.pollFight();
+    expect(persListBotIds(aggro)).toHaveLength(2);
+    let switched = false;
+    for (let strike = 0; strike < 40; strike += 1) {
+      expect(
+        await hero.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: 20 + strike }),
+      ).toHaveLength(0);
+      const melee = await hero.pollFight();
+      if (oppNewBots(melee).some((bot) => bot.id !== spawnId)) {
+        switched = true;
+        break;
+      }
+      await harness.elapseCombat(1400);
+      const bot = await hero.pollFight();
+      if (oppNewBots(bot).some((entry) => entry.id !== spawnId)) {
+        switched = true;
+        break;
+      }
+      await harness.elapseCombat(1100);
+      const granted = await hero.pollFight();
+      if (oppNewBots(granted).some((entry) => entry.id !== spawnId)) {
+        switched = true;
+        break;
+      }
+    }
+    expect(switched).toBe(true);
   });
 });
 

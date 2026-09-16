@@ -190,18 +190,18 @@ Map hunt ID равен `area × 100 + index`; dungeon hunt ID уникален �
 
 `rs=true` — не нейтральный ack: клиент сам уменьшает pocket count, glove combo points и native aggro/rage. Поэтому порядок пакетов внутри одного poll является частью состояния, а не косметикой.
 
-| Действие                           | Обязательный порядок в poll | Клиентский side effect                                                   |
-| ---------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
-| Melee / ending native, `srcType:1` | **strike → `{rs,sq}`**      | Ранний голый `rs` может неверно вспыхнуть панель хода                    |
-| Ярость, `srcType:1, srcId:6`       | **`{rs,sq}` → strike**      | `ProcessNative` сбрасывает клиентскую rage до абсолютного события        |
-| Разозлить, `srcType:1, srcId:7`    | **`{rs,sq}` → strike**      | Клиент делает `aggro - 1`; последующий `persSpells.count` задаёт абсолют |
-| Pocket, `srcType:2`                | **`{rs,sq}` → strike**      | `SpellCountDecById(-1)`                                                  |
-| Glove, `srcType:3`                 | **`{rs,sq}` → strike**      | `ProcessGauntlet(-cpCost)`, затем абсолютный `persCP`                    |
+| Действие                           | Обязательный порядок в poll | Клиентский side effect                                                                                        |
+| ---------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Melee / ending native, `srcType:1` | **strike → `{rs,sq}`**      | Ранний голый `rs` может неверно вспыхнуть панель хода                                                         |
+| Ярость, `srcType:1, srcId:6`       | **`{rs,sq}` → strike**      | `ProcessNative` сбрасывает клиентскую rage до абсолютного события                                             |
+| Разозлить, `srcType:1, srcId:7`    | **`{rs,sq}` → strike**      | Клиент делает `aggro - 1`; последующий полный `persSpells` (не один слот) задаёт абсолютный `count` у srcId 7 |
+| Pocket, `srcType:2`                | **`{rs,sq}` → strike**      | `SpellCountDecById(-1)`                                                                                       |
+| Glove, `srcType:3`                 | **`{rs,sq}` → strike**      | `ProcessGauntlet(-cpCost)`, затем абсолютный `persCP`                                                         |
 
 Дополнительные инварианты:
 
 - Успешный pocket use серверно списывает одну единицу и обычно не шлёт `persSpells` в том же strike: клиент уже сделал `-1` на `rs`.
-- При deny, который всё же требует `rs`, абсолютный `persSpells.count` идёт **после** `rs` и восстанавливает UI.
+- При deny, который всё же требует `rs`, полный абсолютный `persSpells` идёт **после** `rs` и восстанавливает UI (MagicsModel подменяет весь бар).
 - Cooldown deny: HTTP `{rs:false}` без poll и без `persSpells` resync, чтобы не списать заряд и не сбросить клиентский cooldown overlay.
 - Glove списывает `cp - cost`, не обнуляет cp; абсолютный `persCP` идёт после `rs`.
 - Kind 11 без подходящей цели/эффекта: HTTP `{rs:false, restriction:18, sq}`, не poll `rs:true`.

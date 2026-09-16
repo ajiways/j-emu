@@ -148,7 +148,9 @@ HTTP `castSpell` на успех пустой. Карман 93/99, ярость 
 перчатка: `{rs,sq}` первым в том же poll, потом FX. Ending glove: rs затем
 strike с leading `attackwait`. Off-turn ending: `{rs:true}` + абсолютный
 `persCP`. 93 CD deny: HTTP `{rs:false}` без `restriction`. 99: `cast ev:[]`,
-без `persSpells` в FX. 6: rs затем fury. 7: rs затем абсолютный `count`.
+без `persSpells` в FX. 6: rs затем fury. 7: rs затем полный `persSpells`
+(MagicsModel replace) с абсолютным `count` у srcId 7, включая карман и
+перчатку. Partial packet только с «Разозлить» стирает бар.
 Melee L/C/R остаётся strike-then-rs.
 
 Content: dump-proven `spell` у **93** (хил, CD 20) и **99** (орб `ev:[]`);
@@ -496,9 +498,12 @@ Seekers = unpaired living humans **и** bots обеих команд. Pair loop 
 jgr: shuffle + last-foe score (`lastOpponentId`). Occupied spawn bot не
 seeker (CMB-12: lone team-2 не крадёт бота).
 
-«Разозлить»: outdoor hunt, цель — enemy bot; ephemeral clone; enqueue +
-`tryPairQueues`; заряд `1+AGRILKA_MOBOV` из snapshot. Quest/copy/friendly
-deny: fury + абсолютный `persSpells`, без −1 если заряд 0.
+«Разозлить»: outdoor hunt, цель — enemy bot; ephemeral clone в
+`waitingEnemies` (jgr `waitingBots`); `pairHuntQueues` снимает клон с
+очереди, если сразу спарили waiter-а. Заряд `1+AGRILKA_MOBOV` из snapshot.
+Quest/copy/friendly deny: fury + полный абсолютный `persSpells`, без −1
+если заряд 0. После смерти текущего бота `takeNextEnemyForHuman` отдаёт
+клон (`oppnew`), бой не finish, пока жив хотя бы один enemy.
 
 Shuffle: solo reset hits; 2v1 waiter-handoff (CMB-08); partner duel ниже
 3↔3 **держит** hits; **cross-swap** только если **оба** дуэля уже 3↔3.

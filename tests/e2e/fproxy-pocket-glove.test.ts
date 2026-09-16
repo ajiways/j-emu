@@ -60,7 +60,8 @@ describe("fproxy pocket glove rage", () => {
 
   it("casts rage and aggro as rs then FX", async () => {
     const client = await AuthenticatedClient.login(application);
-    await startHunt(client, 2);
+    await putOnArtikul(client, 9095, 2);
+    await startHunt(client, 3);
     expect(await client.fight({ rc: "castSpell", srcType: 1, srcId: 1, sq: 6 })).toHaveLength(0);
     await client.pollFight();
     await harness.elapseCombat(1400);
@@ -74,6 +75,7 @@ describe("fproxy pocket glove rage", () => {
     expect(aggro[0]).toEqual({ rs: true, sq: 8 });
     expect(fightEventTypes(aggro)).toEqual(["persSpells", "persList", "persChangeInfo"]);
     expect(nativeCount(aggro, 7)).toBe(0);
+    expect(persSpellSrcTypes(aggro)).toEqual(expect.arrayContaining([1, 3]));
   });
 
   it("builds 9095 combo, off-turn persCP, and rs-first finisher", async () => {
@@ -198,4 +200,24 @@ function nativeCount(frames: readonly AmfValue[], srcId: number): number {
     }
   }
   throw new Error(`native srcId ${srcId} count is missing`);
+}
+
+function persSpellSrcTypes(frames: readonly AmfValue[]): number[] {
+  for (const frame of frames) {
+    if (!frame || typeof frame !== "object" || Array.isArray(frame)) continue;
+    const ev = frame.ev;
+    if (!ev || typeof ev !== "object" || Array.isArray(ev)) continue;
+    for (const packet of Object.values(ev)) {
+      if (!packet || typeof packet !== "object" || Array.isArray(packet)) continue;
+      if (packet.et !== "persSpells") continue;
+      const types: number[] = [];
+      for (const [key, spell] of Object.entries(packet)) {
+        if (key === "et") continue;
+        if (!spell || typeof spell !== "object" || Array.isArray(spell)) continue;
+        if (typeof spell.srcType === "number") types.push(spell.srcType);
+      }
+      if (types.length > 0) return types;
+    }
+  }
+  throw new Error("persSpells srcType list is missing");
 }

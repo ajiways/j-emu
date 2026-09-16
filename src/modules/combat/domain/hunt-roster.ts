@@ -131,7 +131,15 @@ export class HuntRoster {
       throw new Error(`Roster bot fight id ${clone.fightId} collides`);
     }
     this.bots.push(clone);
+    this.waitingEnemies.push(clone);
     return clone;
+  }
+
+  occupy(fightId: number): void {
+    this.requireBot(fightId);
+    const index = this.waitingEnemies.findIndex((bot) => bot.fightId === fightId);
+    if (index < 0) return;
+    this.waitingEnemies.splice(index, 1);
   }
 
   tick(rules: BattleRules, random: RandomSource, fightId: string): readonly BattleEvent[] {

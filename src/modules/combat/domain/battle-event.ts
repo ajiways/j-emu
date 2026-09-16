@@ -116,4 +116,5 @@ export type BattleEvent =
       srcId: number;
       count: number;
       title: string;
+      loadout: CombatLoadout;
     }>;
