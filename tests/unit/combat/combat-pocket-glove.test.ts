@@ -150,6 +150,25 @@ describe("CombatService pocket glove rage", () => {
     });
   });
 
+  it("does not purge pocket 99 on ending glove magic", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat, delay } = createCombatService({
+      clock,
+      random: new SequenceRandom([8, 2, 8, 2, 8]),
+    });
+    await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
+    await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await strikeAndLoop(combat, delay, clock, "center", 2);
+    await strikeAndLoop(combat, delay, clock, "right", 3);
+    await combat.execute(1, { kind: "pocket", itemId: 100_002, sequence: 4 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(1, { kind: "glove", spellId: 9098, sequence: 5 });
+    const ending = await combat.execute(1, { kind: "poll" });
+    expect(ending.map((event) => event.type)).toEqual(["command-accepted", "turn-wait", "damage"]);
+    expect(ending.some((event) => event.type === "effect-purge")).toBe(false);
+  });
+
   it("fails fast when pocket kind-3 charging is missing", async () => {
     const { combat } = createCombatService({});
     await startHuntWithIssuedId(

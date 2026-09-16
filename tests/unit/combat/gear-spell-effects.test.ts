@@ -77,7 +77,7 @@ describe("HuntHumanFightEffects", () => {
     expect(effects.snapshot()).toEqual([]);
   });
 
-  it("attaches pocket charging kind-3 without STR bake and purges on first ending turn", () => {
+  it("attaches pocket charging kind-3 without STR bake and purges on a physical hit, not an ending turn", () => {
     const effects = new HuntHumanFightEffects({
       heroId: 1,
       strength: 53,
@@ -103,7 +103,9 @@ describe("HuntHumanFightEffects", () => {
       skills: {},
     });
     expect(effects.standingStrength()).toBe(0);
-    expect(effects.onActorEndingTurn(0)).toEqual([1]);
+    expect(effects.onActorEndingTurn(0)).toEqual([]);
+    expect(effects.snapshot()).toHaveLength(1);
+    expect(effects.consumeChargingHit()).toEqual([1]);
     expect(effects.snapshot()).toEqual([]);
   });
 });

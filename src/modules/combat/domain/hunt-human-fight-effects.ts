@@ -50,6 +50,7 @@ type StandingEffect = {
   casterStrength?: number;
   casterMagPower?: number;
   casterMagResist?: number;
+  charging?: boolean;
 };
 
 export class HuntHumanFightEffects {
@@ -106,12 +107,32 @@ export class HuntHumanFightEffects {
     const purged: number[] = [];
     const keep: StandingEffect[] = [];
     for (const fx of this.standing) {
-      if (fx.kind === 4 || fx.kind === 5) {
+      if (fx.kind === 4 || fx.kind === 5 || fx.charging) {
         keep.push(fx);
         continue;
       }
       if (nowMs >= fx.expiresAtMs) {
         purged.push(fx.id);
+        continue;
+      }
+      fx.remainTurns -= 1;
+      if (fx.remainTurns <= 0) {
+        purged.push(fx.id);
+        continue;
+      }
+      keep.push(fx);
+    }
+    this.standing.length = 0;
+    this.standing.push(...keep);
+    return purged;
+  }
+
+  consumeChargingHit(): readonly number[] {
+    const purged: number[] = [];
+    const keep: StandingEffect[] = [];
+    for (const fx of this.standing) {
+      if (!fx.charging) {
+        keep.push(fx);
         continue;
       }
       fx.remainTurns -= 1;
@@ -230,6 +251,7 @@ export class HuntHumanFightEffects {
       skills: {},
       remainTurns: input.remainTurns,
       expiresAtMs: Number.MAX_SAFE_INTEGER,
+      charging: true,
     });
     this.nextId += 1;
     const snap = this.snapshot().find((fx) => fx.id === id);

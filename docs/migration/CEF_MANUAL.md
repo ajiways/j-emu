@@ -71,7 +71,8 @@
       подтверждён.
 - [ ] CMB-02 leftover: орб 99 — иконка не снимается после удара, висит
       мёртвым эффектом и блокирует похожие. raw-AMF: standing kind-3 на
-      drink, `effPurge` после consuming melee. CEF не подтверждён.
+      drink, `effPurge` после consuming L/C/R melee, не glove. CEF не
+      подтверждён.
 - [ ] CMB-02 leftover: AOE (`targetCount>=2`, «Волна света») бьёт только
       текущего противника пары, остальных врагов не задевает.
 - [ ] CMB-06/15 leftover: плевок Хиссы — разовый урон, дебафф не вешается.

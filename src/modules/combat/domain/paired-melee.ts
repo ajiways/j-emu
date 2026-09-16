@@ -126,6 +126,11 @@ export function tryPairedMelee(
   for (const effectId of attacker.effects.onActorEndingTurn(input.nowMs)) {
     events.push({ type: "effect-purge", effectId });
   }
+  if (orb > 0) {
+    for (const effectId of attacker.effects.consumeChargingHit()) {
+      events.push({ type: "effect-purge", effectId });
+    }
+  }
   events.push(...applyCarrierTicks(attacker, input.random, input.rules));
   if (finished) {
     events.push({ type: "finished", winnerTeam: attacker.team, fightId: input.fightId });
