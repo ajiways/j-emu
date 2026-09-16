@@ -321,6 +321,8 @@ authority.
   `injury_time` = unix now+600, `injury_artikul_id` = 875, `hp_time=0`.
 - `resurrect({ characterId })` — OA `RESURRECT`: не ghost → ошибка; иначе
   HP `max(2, floor(hpMax*0.05))`, снять ghost/injury, пересчитать `hp_time`.
+  Outdoor teleport в храм 503 делает wire `ResurrectCommand` + `setArea`,
+  не этот port.
 - `setArea({ characterId, areaId, moveReadyAt })` — WLD-01: lock hero, записать
   dest и `move_ready_at` (`Date | null`). Граф переходов валидирует world
   `requireLink`, не character. Контракт: [WORLD.md](WORLD.md).

@@ -8,6 +8,7 @@ import {
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import {
   completeMeleeHunt,
+  finishStartedMeleeHunt,
   putOnStarterGloveIfInBag,
   strikeUntilHuntFinish,
 } from "../support/harness/complete-melee-hunt.ts";
@@ -187,6 +188,8 @@ describe("fproxy settlement loss", () => {
     expect(unitframe(after).injury_artikul_id).toBe(875);
     expect(unitframe(after).injury_time).toBeGreaterThan(0);
     expect(stateGhost(after)).toBe(1);
+    expect(stateArea(after)).toBe("503");
+    expect(resurrectZones(after)).toEqual({ "503": { title: "Горное поселение" } });
     expect(populationDead(after, client.accountId)).toBe(4);
     expect(stateMoney(after)).toBe(stateMoney(before));
 
@@ -206,6 +209,7 @@ describe("fproxy settlement loss", () => {
     expect(unitframe(living).injury_time).toBe(0);
     expect(unitframe(living).injury_artikul_id).toBe(0);
     expect(stateGhost(living)).toBeUndefined();
+    expect(stateArea(living)).toBe("503");
     expect(populationDead(living, client.accountId)).toBe(0);
     expect(living["common|area_conf"]).toBeTypeOf("object");
     expect(living["common|hunt"]).toBeTypeOf("object");
@@ -216,6 +220,54 @@ describe("fproxy settlement loss", () => {
       action: "object",
       form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
       sq: 23,
+    });
+    expect(hunt["common|action"]).toEqual({ status: 100 });
+  });
+
+  it("moves an outdoor ghost from 501 to temple 503", async () => {
+    const client = await AuthenticatedClient.login(application);
+    await client.objectAction({ object: "common", action: "init", sq: 1 });
+    const gorge = await client.objectAction({
+      object: "common",
+      action: "action",
+      form: { code: "COME_IN", area_id: 501 },
+      sq: 2,
+    });
+    expect(gorge["common|action"]).toEqual({ status: 100, action: "COME_IN" });
+    const start = await client.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: 50101 },
+      sq: 3,
+    });
+    expect(start["common|action"]).toEqual({ status: 100 });
+    await finishStartedMeleeHunt(
+      client,
+      huntFightIdFrom(start),
+      (ms) => harness.elapseCombat(ms),
+      4,
+    );
+    await client.pollEsrv();
+    const ghosted = await client.objectAction({ object: "common", action: "init2", sq: 20 });
+    expect(stateGhost(ghosted)).toBe(1);
+    expect(stateArea(ghosted)).toBe("501");
+    expect(resurrectZones(ghosted)).toEqual({ "503": { title: "Горное поселение" } });
+    const living = await client.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "RESURRECT" },
+      sq: 21,
+    });
+    expect(living["common|action"]).toEqual({ status: 100 });
+    expect(stateGhost(living)).toBeUndefined();
+    expect(stateArea(living)).toBe("503");
+    expect(living["common|area_conf"]).toBeTypeOf("object");
+    expect(living["common|hunt"]).toBeTypeOf("object");
+    const hunt = await client.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 22,
     });
     expect(hunt["common|action"]).toEqual({ status: 100 });
   });
@@ -335,6 +387,29 @@ function stateGhost(payload: Record<string, AmfValue>): number | undefined {
     throw new Error("state is missing");
   }
   return typeof state.ghost === "number" ? state.ghost : undefined;
+}
+
+function stateArea(payload: Record<string, AmfValue>): string {
+  const state = payload.state;
+  if (!state || typeof state !== "object" || Array.isArray(state)) {
+    throw new Error("state is missing");
+  }
+  if (typeof state.area_id !== "string" || !state.area_id) {
+    throw new Error("state.area_id is missing");
+  }
+  return state.area_id;
+}
+
+function resurrectZones(payload: Record<string, AmfValue>): Record<string, AmfValue> {
+  const state = payload.state;
+  if (!state || typeof state !== "object" || Array.isArray(state)) {
+    throw new Error("state is missing");
+  }
+  const zones = state.resurrect_zones;
+  if (!zones || typeof zones !== "object" || Array.isArray(zones)) {
+    throw new Error("state.resurrect_zones is missing");
+  }
+  return zones;
 }
 
 function populationDead(payload: Record<string, AmfValue>, accountId: number): number {

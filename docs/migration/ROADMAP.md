@@ -444,8 +444,8 @@
   settlement calls a character port from the same composition UoW as
   `noteDefeat`. Ghost blocks CHR-02 regen. Roster `dead:4` when ghost
   (live presence). `RESURRECT` is existing `common|object` code: HP
-  `max(2, floor(hpMax*0.05))`, clear ghost/injury, outdoor dest stays
-  current area 503 (no dungeon/BG). Injury id **875** is a dump-proven
+  `max(2, floor(hpMax*0.05))`, clear ghost/injury, outdoor dest is temple
+  **503** (not the death area). Injury id **875** is a dump-proven
   wire integer; do not publish artifact 875. OA `FIGHT_JOIN`/`HELP` stay
   out. Full contract: [COMBAT.md](../modules/COMBAT.md).
 - **Acceptance:** raw-AMF F5 mid-hunt: init2 has same `fightId`/`akey`,

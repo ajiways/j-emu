@@ -11,14 +11,12 @@ describe("buildHeroState", () => {
     const clock = new FakeClock(START_MS);
     const idle = buildHeroState(testHero(), clock, {
       fightId: null,
-      resurrectZoneTitle: "Горное поселение",
       newMessage: 0,
       inParty: false,
     });
     expect(idle).not.toHaveProperty("fight_id");
     const fighting = buildHeroState(testHero(), clock, {
       fightId: 9,
-      resurrectZoneTitle: "Горное поселение",
       newMessage: 0,
       inParty: false,
     });
@@ -31,6 +29,7 @@ describe("buildHeroState", () => {
     hero.applyDefeat(Math.floor(START_MS / 1000) + 600, new Date(START_MS));
     const state = buildHeroState(hero, clock, {
       fightId: null,
+      resurrectZoneId: "503",
       resurrectZoneTitle: "Горное поселение",
       newMessage: 0,
       inParty: false,
@@ -42,5 +41,20 @@ describe("buildHeroState", () => {
       resurrect_zones: { "503": { title: "Горное поселение" } },
     });
     expect(hero.injuryArtikulId).toBe(FIGHT_INJURY_ARTIKUL_ID);
+  });
+
+  it("offers outdoor temple 503 while the ghost still stands in 501", () => {
+    const clock = new FakeClock(START_MS);
+    const hero = testHero({ hp: 0, maxHp: 10, areaId: "501" });
+    hero.applyDefeat(Math.floor(START_MS / 1000) + 600, new Date(START_MS));
+    const state = buildHeroState(hero, clock, {
+      fightId: null,
+      resurrectZoneId: "503",
+      resurrectZoneTitle: "Горное поселение",
+      newMessage: 0,
+      inParty: false,
+    });
+    expect(state.area_id).toBe("501");
+    expect(state.resurrect_zones).toEqual({ "503": { title: "Горное поселение" } });
   });
 });

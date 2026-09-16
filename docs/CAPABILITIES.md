@@ -226,7 +226,8 @@ object `fight|loot` затем `fight|exit`. Melee damage = `STR/10 ±15%`
 `leaveFight` HTTP `{rs:true}` и flee `type:2`. Representative боты 2/4/24/32
 и hunts 50310/50309/50101–50103. F5 mid-hunt: init2 `fight|conf` с тем же
 `fightId`/`akey`, resume без `oppwait`, `attacknow` с остатком restTime.
-Ghost блокирует regen; OA `RESURRECT` снимает ghost. Duplicate settlement
+Ghost блокирует regen; OA `RESURRECT` снимает ghost и outdoor уносит в
+храм 503. Duplicate settlement
 no-op. Restart посреди боя без награды. CMB-08: OA
 `user|friendly_duel_propose`/`accept` между двумя героями в 503 (esrv
 request, `fight|conf` `is_pvp:1` `type:6`, practice restore); hunt 3↔3
@@ -238,7 +239,10 @@ restart снимает бой, перчатка остаётся в paperdoll. C
 дух), `chat_*`, `win_fight` без bump kill на `q_engine_fight`; проигрыш
 оставляет book 5 started; mid-fight restart рвёт RAM. CEF экрана результата,
 F5 в бою, призрака, видимого урона, плевка Хиссы, дуэли, gear-spell и
-quest roster flags 8 не прогонялся — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
+quest roster flags 8 не прогонялся. CEF 2026-09-16 leftovers (воскрешение
+не в храме, поломка без чата, экран результата, overkill, aggro/спеллы,
+shuffle, орб/дебаффы, dealtDamage, skip-turn, F5 img) —
+[CEF_MANUAL.md](migration/CEF_MANUAL.md).
 CMB-11: OA `FIGHT_JOIN` `{team:1|2}` и `FIGHT_HELP` входят в тот же RAM
 `fightId` на 50310; карта ATTACK_BOT на занятый spawn остаётся team 1;
 две копии 542 изолируют JOIN; после смерти бота живой team-2 продолжает

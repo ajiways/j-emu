@@ -26,7 +26,8 @@ export type HeroStateBlock = Readonly<{
 
 export type HeroStateOverlay = Readonly<{
   fightId: number | null;
-  resurrectZoneTitle: string;
+  resurrectZoneId?: string;
+  resurrectZoneTitle?: string;
   newMessage: 0 | 1;
   inParty: boolean;
 }>;
@@ -63,13 +64,16 @@ function ghostFields(
   hero: Hero,
   overlay: HeroStateOverlay,
 ): Pick<HeroStateBlock, "ghost" | "resurrect_time" | "resurrect_zones" | "injury"> {
+  if (!overlay.resurrectZoneId) {
+    throw new Error(`Ghost hero ${hero.id} requires a resurrect zone id`);
+  }
   if (!overlay.resurrectZoneTitle) {
     throw new Error(`Ghost hero ${hero.id} requires a resurrect zone title`);
   }
   return {
     ghost: 1,
     resurrect_time: 0,
-    resurrect_zones: { [hero.areaId]: { title: overlay.resurrectZoneTitle } },
+    resurrect_zones: { [overlay.resurrectZoneId]: { title: overlay.resurrectZoneTitle } },
     injury: "1",
   };
 }

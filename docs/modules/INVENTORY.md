@@ -498,7 +498,8 @@ Death: composition `HuntFightSettlement`, та же UoW что `noteDefeat`, п�
 `applyDeathDurability`. Repair: composition `StoreRepair`, та же схема что
 ECO-01 buy (inventory mutation + `debitMoney`). Economy-модуля нет.
 `flags_ext` не добавлять: infinite = `flags & 1` (NON_BREAK) и
-`flags & 536870912` (COLLECTS_EPICNESS). Chat notify — `SOC-01`.
+`flags & 536870912` (COLLECTS_EPICNESS). Chat notify — `SOC-01`
+(`Вещи потеряли прочность: [[ARTIFACT]] (-1).`); CEF leftover.
 
 ### Правила
 

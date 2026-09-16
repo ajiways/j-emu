@@ -81,7 +81,8 @@ FIGHT start/end: `area_id` = numeric area, `area_title` из world (обязат
 
 Лут после UoW: `Окончен бой [[FIGHT]]`, затем `Вами получено: [[ARTIFACT]] N шт.`,
 затем `Вы получили: [[MONEY]]. ` (пробел после точки). `fight|loot` по-прежнему
-ставит combat pendingLoot, не chat.
+ставит combat pendingLoot, не chat. Death/win break `Вещи потеряли прочность:
+[[ARTIFACT]] (-1).` — leftover INV-05 / CEF 2026-09-16.
 
 Trade confirm: инициатору system `Пользователь [[USER]] согласился торговать с Вами.`
 
