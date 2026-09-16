@@ -7,6 +7,7 @@ import type { DeathDurabilityBreak } from "../modules/inventory/domain/apply-dea
 import { ChatDeniedError } from "../modules/chat/domain/chat-denied-error.ts";
 import { chatChannelType, isAreaScopedChat } from "../modules/chat/domain/chat-channels.ts";
 import { buildArtifactMacro } from "../modules/chat/domain/artifact-macro.ts";
+import { artifactSkillWireMap } from "../modules/jugger-wire/application/artifact-skill-wire.ts";
 import {
   buildArtifactItemMacro,
   type ArtifactItemMacroToken,
@@ -262,25 +263,7 @@ export class ChatDesk {
   private async notifyLootItems(accountId: number, loot: FightLootBlock): Promise<void> {
     if (Array.isArray(loot.loot)) return;
     for (const entry of Object.values(loot.loot)) {
-      const definition = await this.deps.catalog.artifact(entry.artikul_id);
-      if (!definition) {
-        throw new Error(`Artifact catalog entry ${entry.artikul_id} is missing`);
-      }
-      const token = buildArtifactMacro({
-        id: definition.id,
-        title: definition.title,
-        picture: definition.picture,
-        typeId: definition.typeId,
-        kindId: definition.kindId,
-        priceMinor: definition.priceMinor,
-        levelMin: definition.levelMin,
-        levelMax: definition.levelMax,
-        durability: definition.durability,
-        durabilityMax: definition.durabilityMax,
-        flags: definition.flags,
-        slotMask: definition.slotMask,
-        trend: definition.extra.trend,
-      });
+      const token = await this.artifactMacro(entry.artikul_id);
       await this.deliverSystem(accountId, `Вами получено: ${token.token} ${entry.amount} шт.`, {
         [token.key]: token.macro,
       });
@@ -294,6 +277,30 @@ export class ChatDesk {
     const token = buildMoneyMacro(gold, "1");
     return this.deliverSystem(accountId, `Вы получили: ${token.token}. `, {
       [token.key]: token.macro,
+    });
+  }
+
+  async artifactMacro(artikulId: number) {
+    const definition = await this.deps.catalog.artifact(artikulId);
+    if (!definition) {
+      throw new Error(`Artifact catalog entry ${artikulId} is missing`);
+    }
+    const skillBlocks = await artifactSkillWireMap(definition.skills, this.deps.catalog);
+    return buildArtifactMacro({
+      id: definition.id,
+      title: definition.title,
+      picture: definition.picture,
+      typeId: definition.typeId,
+      kindId: definition.kindId,
+      priceMinor: definition.priceMinor,
+      levelMin: definition.levelMin,
+      levelMax: definition.levelMax,
+      durability: definition.durability,
+      durabilityMax: definition.durabilityMax,
+      flags: definition.flags,
+      slotMask: definition.slotMask,
+      trend: definition.extra.trend,
+      skillBlocks,
     });
   }
 

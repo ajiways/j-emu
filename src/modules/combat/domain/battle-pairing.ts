@@ -63,6 +63,7 @@ export function shuffleHuntAfterHits(
     botHits: input.pairing.duel.hitsFor(foeBot.fightId),
     hasLivingWaiter: livingWaiterOnTeam(input.pairing.humans, openerTeam) !== undefined,
     hasSwappableOther: swappable !== null,
+    hasLivingReserve: input.roster.peekWaitingEnemy() !== null,
     hasPartnerDuel: partner !== null,
     finished: input.finished || foeBot.hp === 0,
   });
@@ -83,6 +84,9 @@ export function shuffleHuntAfterHits(
       actor,
       foeBot,
     );
+  }
+  if (plan === "reserve-swap") {
+    return applyReserveSwap(input.pairing, input.roster, actor, foeBot);
   }
   const waiter = livingWaiterOnTeam(input.pairing.humans, openerTeam);
   if (!waiter) throw new Error("Shuffle waiter-handoff requires a living waiter");
@@ -138,6 +142,31 @@ export function pairNextHuntWaiter(
     authed: true,
     events: [huntHumanOppNew(opponent)],
   };
+}
+
+function applyReserveSwap(
+  pairing: HuntPairing,
+  roster: HuntRoster,
+  actor: HuntHuman,
+  foeBot: ReturnType<HuntRoster["bot"]>,
+): ShuffleOutcome {
+  const reserve = roster.peekWaitingEnemy();
+  if (!reserve) throw new Error("Shuffle reserve-swap requires a waiting enemy");
+  const next = roster.takeNextEnemyForHuman(foeBot.fightId);
+  if (!next || next.fightId !== reserve.fightId) {
+    throw new Error("Shuffle reserve-swap did not take the waiting enemy");
+  }
+  const actorHp = actor.hp;
+  const foeHp = foeBot.hp;
+  const nextHp = next.hp;
+  roster.enqueueWaiting(foeBot.fightId);
+  pairing.duel.replace(foeBot.fightId, next.fightId);
+  pairing.duel.resetHits();
+  pairing.duel.setNextActor(actor.heroId);
+  if (actor.hp !== actorHp || foeBot.hp !== foeHp || next.hp !== nextHp) {
+    throw new Error("Shuffle must not change participant HP");
+  }
+  return { kind: "reserve-swap", accountId: actor.accountId, bot: next.snap() };
 }
 
 function applyCrossSwap(

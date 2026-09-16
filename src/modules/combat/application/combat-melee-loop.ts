@@ -216,6 +216,13 @@ export class CombatMeleeLoop {
       this.grantAfterPair(battle, shuffle.waiterAccountId);
       return;
     }
+    if (shuffle.kind === "reserve-swap") {
+      cancelDuel(this.scheduler, battle, shuffle.accountId);
+      this.enqueue(shuffle.accountId, [{ type: "opponent-new", bot: shuffle.bot }]);
+      this.wakeAccount(shuffle.accountId);
+      this.grantPairedBot(battle, shuffle.accountId);
+      return;
+    }
     if (shuffle.kind !== "cross-swap") return;
     cancelDuel(this.scheduler, battle, shuffle.leftAccountId);
     cancelDuel(this.scheduler, battle, shuffle.rightAccountId);

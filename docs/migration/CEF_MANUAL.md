@@ -55,12 +55,16 @@
       CEF 2026-09-16: пул `artikul_id1..6` роллится в `items.data_json`.
       MAGRES/MAGSTR roll и copy instance в mail/auction/trade snapshot —
       leftover; см. [INVENTORY.md](../modules/INVENTORY.md).
-- [ ] CMB-02 leftover: после «Разозлить» пропадает список спеллов перчатки
-      (`persSpells`). raw-AMF: aggro шлёт полный `persSpells` (natives +
-      карман + перчатка) с абсолютным `count` у srcId 7. CEF не подтверждён.
-- [ ] CMB-08 leftover: после убийства текущего противника shuffle не даёт
-      следующего. raw-AMF: outdoor «Разозлить» кладёт клон в waiting и
-      `oppnew` после kill текущего. CEF не подтверждён.
+- [x] CMB-02 leftover: после «Разозлить» пропадает список спеллов перчатки
+      (`persSpells`). CEF 2026-09-16: полный `persSpells` с перчаткой.
+- [x] CMB-08 leftover: после убийства текущего противника shuffle не даёт
+      следующего. CEF 2026-09-16: outdoor клон `oppnew` после kill.
+- [ ] CMB-08 leftover: нет 3↔3 shuffle на waiting clone после «Разозлить».
+      raw-AMF: 3 обмена → `oppnew` клона, текущий бот в очередь. CEF не
+      подтверждён.
+- [ ] SOC-01 leftover: «Вами получено» tooltip без статов. raw-AMF: loot
+      `[[ARTIFACT]]` несёт catalog `artifact_skills` как bag. CEF не
+      подтверждён.
 - [ ] CMB-02 leftover: орб 99 — иконка не снимается после удара, висит
       мёртвым эффектом и блокирует похожие.
 - [ ] CMB-06/15 leftover: плевок Хиссы — разовый урон, дебафф не вешается.

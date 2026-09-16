@@ -9,6 +9,7 @@ import { EMO_TEMPLATES } from "../../../src/modules/chat/domain/emo-templates.ts
 import { expandSmileTags } from "../../../src/modules/chat/domain/expand-smiles.ts";
 import { buildFightMacro, huntFightTitle } from "../../../src/modules/chat/domain/fight-macro.ts";
 import { buildArtifactItemMacro } from "../../../src/modules/chat/domain/artifact-item-macro.ts";
+import { buildArtifactMacro } from "../../../src/modules/chat/domain/artifact-macro.ts";
 import { deathDurabilityMessage } from "../../../src/modules/chat/domain/death-durability-message.ts";
 import { buildMoneyMacro } from "../../../src/modules/chat/domain/money-macro.ts";
 import { parseEmoCommand } from "../../../src/modules/chat/domain/parse-emo-command.ts";
@@ -68,6 +69,55 @@ describe("chat macros", () => {
     const money = buildMoneyMacro(0.2, "1");
     expect(money.macro.amount).toBe("0.2");
     expect(money.token).toMatch(/^\[\[MONEY /);
+  });
+
+  it("puts catalog skills on loot ARTIFACT macros", () => {
+    const empty = buildArtifactMacro({
+      id: 77,
+      title: "Мясо",
+      picture: "meat.png",
+      typeId: "1",
+      kindId: 0,
+      priceMinor: 20,
+      levelMin: 1,
+      levelMax: 1,
+      durability: 0,
+      durabilityMax: 0,
+      flags: 0,
+      slotMask: 0,
+      trend: 0,
+      skillBlocks: {},
+    });
+    expect(empty.macro.artifact_skills).toEqual([]);
+    const armed = buildArtifactMacro({
+      id: 56,
+      title: "Клинок",
+      picture: "sword.png",
+      typeId: "4",
+      kindId: 0,
+      priceMinor: 100,
+      levelMin: 1,
+      levelMax: 5,
+      durability: 20,
+      durabilityMax: 20,
+      flags: 0,
+      slotMask: 4,
+      trend: 0,
+      skillBlocks: {
+        STR: {
+          title: "Сила",
+          skill_id: "STR",
+          value: 5,
+          skill_flags: 0,
+          context_id: [{ context: "0", value: "5", value2: "5" }],
+        },
+      },
+    });
+    expect(armed.macro.artifact_skills).toEqual(
+      expect.objectContaining({
+        STR: expect.objectContaining({ skill_id: "STR", value: 5, title: "Сила" }),
+      }),
+    );
   });
 
   it("formats death durability ARTIFACT_ITEM chat after −1", () => {

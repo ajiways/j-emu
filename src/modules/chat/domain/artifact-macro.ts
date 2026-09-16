@@ -14,6 +14,7 @@ export type ArtifactMacroSource = Readonly<{
   flags: number;
   slotMask: number;
   trend: number;
+  skillBlocks: Readonly<Record<string, unknown>>;
 }>;
 
 export type ArtifactMacroToken = Readonly<{
@@ -55,7 +56,7 @@ export function buildArtifactMacro(source: ArtifactMacroSource): ArtifactMacroTo
       slot_mask: source.slotMask,
       slot2_mask: 0,
       companion_type: 0,
-      artifact_skills: [],
+      artifact_skills: Object.keys(source.skillBlocks).length === 0 ? [] : source.skillBlocks,
       macro_text: source.title,
       creator_nick: "",
       engraved_note: "",

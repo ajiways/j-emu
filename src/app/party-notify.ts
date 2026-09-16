@@ -1,10 +1,8 @@
-import type { Catalog } from "../modules/catalog/ports/catalog.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import type { Clock } from "../shared/kernel/clock.ts";
 import type { Hero } from "../modules/character/domain/hero.ts";
 import { lootRulesLabel } from "../modules/party/domain/loot-rules-label.ts";
 import { partyChannel } from "../modules/party/domain/party-channel.ts";
-import { buildArtifactMacro } from "../modules/chat/domain/artifact-macro.ts";
 import { buildFightJoinActionMacro } from "../modules/chat/domain/action-macro.ts";
 import { buildMoneyMacro } from "../modules/chat/domain/money-macro.ts";
 import { goldWireString } from "../modules/combat/domain/fight-money.ts";
@@ -18,7 +16,6 @@ export type PartyNotifyDeps = Readonly<{
   wake: Readonly<{ wake(accountId: number): void }>;
   chat: ChatDesk;
   clock: Clock;
-  catalog: Catalog;
   memberAccountIds(partyId: number): Promise<readonly number[]>;
 }>;
 
@@ -223,23 +220,7 @@ export class PartyNotify {
   }
 
   private async artifactToken(artikulId: number) {
-    const definition = await this.deps.catalog.artifact(artikulId);
-    if (!definition) throw new Error(`Artifact catalog entry ${artikulId} is missing`);
-    return buildArtifactMacro({
-      id: definition.id,
-      title: definition.title,
-      picture: definition.picture,
-      typeId: definition.typeId,
-      kindId: definition.kindId,
-      priceMinor: definition.priceMinor,
-      levelMin: definition.levelMin,
-      levelMax: definition.levelMax,
-      durability: definition.durability,
-      durabilityMax: definition.durabilityMax,
-      flags: definition.flags,
-      slotMask: definition.slotMask,
-      trend: definition.extra.trend,
-    });
+    return this.deps.chat.artifactMacro(artikulId);
   }
 
   private async partySystem(

@@ -119,6 +119,29 @@ describe("hunt aggro clone", () => {
     expect(battle.foeBotSnap(1).id).toBe(1_000_001);
   });
 
+  it("swaps to the waiting clone after 3↔3 hits", () => {
+    const battle = new Battle(
+      huntInit({ heroStrength: 10, botStrength: 10, botMaxHp: 50 }),
+      UNIT_BATTLE_RULES,
+      new SequenceRandom([1, 1, 1, 1, 1, 1]),
+    );
+    battle.authenticate(1, AUTH_NOW);
+    expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
+    for (let round = 0; round < 3; round += 1) {
+      expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");
+      expect(battle.resolveBotMelee(1).killedPlayer).toBe(false);
+      if (round < 2) battle.grantTurn(1, AUTH_NOW);
+    }
+    expect(battle.tryShuffleAfterHits(1)).toMatchObject({
+      kind: "reserve-swap",
+      accountId: 1,
+      bot: { id: 1_000_001 },
+    });
+    expect(battle.finished).toBe(false);
+    expect(battle.foeBotSnap(1).id).toBe(1_000_001);
+    expect(battle.foeBotSnap(1).hp).toBe(50);
+  });
+
   it("denies quest, copy, and zero-charge outdoor without spending", () => {
     const quest = new Battle(
       huntInit({ purpose: "quest" }),

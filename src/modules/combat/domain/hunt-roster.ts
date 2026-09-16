@@ -142,6 +142,17 @@ export class HuntRoster {
     this.waitingEnemies.splice(index, 1);
   }
 
+  peekWaitingEnemy(): HuntRosterBot | null {
+    return this.waitingEnemies.find((bot) => bot.hp > 0) ?? null;
+  }
+
+  enqueueWaiting(fightId: number): void {
+    const bot = this.requireBot(fightId);
+    if (bot.hp < 1) throw new Error("Dead roster bot cannot wait");
+    if (this.waitingEnemies.some((entry) => entry.fightId === fightId)) return;
+    this.waitingEnemies.push(bot);
+  }
+
   tick(rules: BattleRules, random: RandomSource, fightId: string): readonly BattleEvent[] {
     void fightId;
     const events: BattleEvent[] = [];

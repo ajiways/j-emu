@@ -195,7 +195,6 @@ export class CompositionRoot {
         wake: longPoll,
         chat: chatDesk,
         clock,
-        catalog: catalog.catalog,
         memberAccountIds: (partyId) => party.service.memberAccountIds(partyId),
       });
       const partyBagOps = new PartyBagOps({

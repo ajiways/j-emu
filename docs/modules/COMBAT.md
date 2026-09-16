@@ -388,8 +388,10 @@ friendly human↔human. Melee не ветвится hunt/PvP: удар идёт 
 process-local, TTL 60s, fail-fast `203`. Practice settlement возвращает
 HP/MP/pocket, без лута/EXP/травмы; `fight|conf.is_pvp=1`, `type:"6"`.
 После 3↔3 melee hits в hunt с waiter: бот уходит waiter-у, актор
-`oppwait`, HP/loadout без сброса. No-rotate — reset hits. bot↔bot и
-cross-swap двух 3↔3 пар — leftover (в playable slice один бот на точку).
+`oppwait`, HP/loadout без сброса. Outdoor «Разозлить»: waiting clone на
+3↔3 даёт `oppnew` (jgr `shuffle_force_reserve`), текущий бот уходит в
+очередь. No-rotate — reset hits. bot↔bot и cross-swap двух 3↔3 пар —
+leftover (в playable slice один бот на точку).
 OA `FIGHT_JOIN` / `FIGHT_HELP` landed raw-AMF (CMB-11). CEF не прогонялся.
 
 ### Architecture decision
@@ -505,8 +507,9 @@ Quest/copy/friendly deny: fury + полный абсолютный `persSpells`,
 если заряд 0. После смерти текущего бота `takeNextEnemyForHuman` отдаёт
 клон (`oppnew`), бой не finish, пока жив хотя бы один enemy.
 
-Shuffle: solo reset hits; 2v1 waiter-handoff (CMB-08); partner duel ниже
-3↔3 **держит** hits; **cross-swap** только если **оба** дуэля уже 3↔3.
+Shuffle: solo reset hits; waiting aggro clone на 3↔3 — `oppnew` клона;
+2v1 waiter-handoff (CMB-08); partner duel ниже 3↔3 **держит** hits;
+**cross-swap** только если **оба** дуэля уже 3↔3.
 HP без сброса.
 
 Новая пара из `tryPairQueues` — `rollOpensFirst` (LUCK, `INITIATIVE_SOFT_C=80`,

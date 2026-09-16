@@ -19,11 +19,19 @@ export function playableHuntBot(): BotDefinition {
 }
 
 export function playableHuntMeatLootDraw(): number[] {
-  return lootDrawPastBonus(playableHuntBot().reward, 77);
+  return playableHuntLootDraw(77);
+}
+
+function playableHuntLootDraw(artikulId: number): number[] {
+  return lootDrawPastBonus(playableHuntBot().reward, artikulId);
 }
 
 export function playableHuntMeatSettlementDraw(): number[] {
-  return [0, ...playableHuntMeatLootDraw()];
+  return playableHuntLootSettlementDraw(77);
+}
+
+export function playableHuntLootSettlementDraw(artikulId: number): number[] {
+  return [0, ...playableHuntLootDraw(artikulId)];
 }
 
 function lootDrawPastBonus(reward: BotReward, artikulId: number): number[] {

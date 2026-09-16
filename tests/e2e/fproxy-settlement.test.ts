@@ -14,7 +14,10 @@ import {
 } from "../support/harness/complete-melee-hunt.ts";
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
 import { SequenceRandom } from "../support/fakes/sequence-random.ts";
-import { playableHuntMeatSettlementDraw } from "../support/playable-bot.ts";
+import {
+  playableHuntLootSettlementDraw,
+  playableHuntMeatSettlementDraw,
+} from "../support/playable-bot.ts";
 import {
   bagItemByArtikulId,
   heroIdFrom,
@@ -179,6 +182,36 @@ describe("fproxy settlement weighted loot", () => {
     });
     const after = await client.objectAction({ object: "common", action: "init", sq: 20 });
     expect(bagItemByArtikulId(after, 77).cnt).toBe(5);
+  });
+});
+
+describe("fproxy settlement loot chat skills", () => {
+  let harness: ApplicationHarness;
+  let application: Application;
+
+  beforeEach(async () => {
+    harness = new ApplicationHarness(undefined, undefined, {
+      lootRandom: new SequenceRandom(playableHuntLootSettlementDraw(56)),
+    });
+    application = await harness.start();
+  });
+
+  afterEach(async () => {
+    await harness.stop();
+  });
+
+  it("puts catalog artifact_skills on Вами получено ARTIFACT", async () => {
+    const client = await AuthenticatedClient.login(application);
+    await client.objectAction({ object: "common", action: "init", sq: 1 });
+    await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms));
+    const packets = await client.pollEsrv();
+    const loot = personalEsrvObject(packets);
+    expect(loot["fight|loot"]).toMatchObject({
+      status: 100,
+      loot: { "56": { artikul_id: 56, amount: 1 } },
+    });
+    const skills = lootChatArtifactSkills(packets, 56);
+    expect(Object.keys(skills).length).toBeGreaterThan(0);
   });
 });
 
@@ -484,4 +517,36 @@ function requireRecord(value: AmfValue | undefined, label: string): Record<strin
 function requireId(item: Record<string, AmfValue>): number {
   if (typeof item.id !== "number") throw new Error("item id is missing");
   return item.id;
+}
+
+function lootChatArtifactSkills(
+  packets: readonly AmfValue[],
+  artikulId: number,
+): Record<string, AmfValue> {
+  for (const packet of packets) {
+    if (!packet || typeof packet !== "object" || Array.isArray(packet)) continue;
+    if (!packet.object || typeof packet.object !== "object" || Array.isArray(packet.object)) {
+      continue;
+    }
+    const object = packet.object as Record<string, AmfValue>;
+    const block = object["chat|message"];
+    if (!block || typeof block !== "object" || Array.isArray(block)) continue;
+    const message = block.message;
+    if (!message || typeof message !== "object" || Array.isArray(message)) continue;
+    if (typeof message.msg !== "string" || !message.msg.startsWith("Вами получено: ")) continue;
+    const macroses = message.macroses;
+    if (!macroses || typeof macroses !== "object" || Array.isArray(macroses)) {
+      throw new Error("loot ARTIFACT macroses are missing");
+    }
+    for (const row of Object.values(macroses)) {
+      if (!row || typeof row !== "object" || Array.isArray(row)) continue;
+      if (row.macro_type !== "ARTIFACT" || row.id !== artikulId) continue;
+      const skills = row.artifact_skills;
+      if (!skills || typeof skills !== "object" || Array.isArray(skills)) {
+        throw new Error(`ARTIFACT ${artikulId} artifact_skills are missing`);
+      }
+      return skills;
+    }
+  }
+  throw new Error(`Вами получено ARTIFACT ${artikulId} is missing`);
 }
