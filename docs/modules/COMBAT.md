@@ -301,7 +301,8 @@ Glove ending (не AOE 16) крутит ту же STR-формулу; crit пе�
 
 Content: Грызль **2** STR 8 / 50310; Хисса **4** STR 15 / 50101; дух **32**
 STR 35 / 50102; рыжий грызль **24** STR 45 / 50103. Overlay-луты 4/24/32
-не пустые. CEF урона не прогонялся.
+не пустые. CEF урона не прогонялся. Wire `hpChange` — −min(raw, currentHP):
+добивание 3 HP ударом 7 даёт `-3`, не `-7`. То же на kind-1/glove/DoT.
 
 ### Architecture decision
 
@@ -312,8 +313,8 @@ e2e смерти; production path его не передаёт.
 
 ### Out of scope (CMB-05 leftover)
 
-`rollMeleeOutcome` dodge/block/crit/DEF; kind-1 overlay; FIGHT_MAGIC;
-weapon DPS aparte от STR.
+CEF добивания на полоске HP. dodge/block/crit — CMB-14. kind-1 overlay —
+CMB-15. Weapon DPS aparte от STR.
 
 ## CMB-06 — bot spell book
 

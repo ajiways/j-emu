@@ -1,3 +1,4 @@
+import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HuntHuman } from "./hunt-human.ts";
@@ -32,17 +33,28 @@ export function applyCarrierTicks(
       if (pulse.last) events.push({ type: "effect-purge", effectId: pulse.effectId });
       continue;
     }
-    const damage = rollMagicHit({
-      caster: { power: pulse.casterMagPower, resist: pulse.casterMagResist },
-      target: human.mag,
-      casterStrength: pulse.casterStrength,
-      dmgType: pulse.dmgType,
-      ...(typeof pulse.amount === "number" ? { catalogAmount: pulse.amount } : {}),
-      catalogStr: pulse.catalogStr,
-      catalogPcStr: pulse.catalogPcStr,
-      random,
-      rules,
-    });
+    if (human.hp < 1) {
+      if (pulse.last) events.push({ type: "effect-purge", effectId: pulse.effectId });
+      continue;
+    }
+    const damage = appliedHpLoss(
+      rollMagicHit({
+        caster: { power: pulse.casterMagPower, resist: pulse.casterMagResist },
+        target: human.mag,
+        casterStrength: pulse.casterStrength,
+        dmgType: pulse.dmgType,
+        ...(typeof pulse.amount === "number" ? { catalogAmount: pulse.amount } : {}),
+        catalogStr: pulse.catalogStr,
+        catalogPcStr: pulse.catalogPcStr,
+        random,
+        rules,
+      }),
+      human.hp,
+    );
+    if (damage < 1) {
+      if (pulse.last) events.push({ type: "effect-purge", effectId: pulse.effectId });
+      continue;
+    }
     const killed = human.applyDamage(damage);
     events.push({
       type: "damage",

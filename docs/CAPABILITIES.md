@@ -80,7 +80,8 @@ bootstrap. Internal `grantExperience` атомарно применяет DATA-0
 
 Не перенесено:
 
-- CEF confirmation of CMB-03 result screen / HP-EXP-bag after exit;
+- CEF confirmation of CMB-03 HUD HP-EXP-bag after `fight|exit` (карточка
+  результата CEF 2026-09-16);
 - CEF F5 mid-fight (raw-AMF CMB-04 есть; outdoor `RESURRECT` dest 503 —
   CEF 2026-09-16, dest пока хардкод);
 - клиентский EXP grant через квест.
@@ -88,7 +89,8 @@ bootstrap. Internal `grantExperience` атомарно применяет DATA-0
 CEF leftover (2026-09-16, **частично**): HUD HP/`hp_time` и деньги обновляются
 с esrv loot/exit и operator grant без лишнего OA. Outdoor `RESURRECT` dest
 503 подтверждён (хардкод, [WORLD.md](modules/WORLD.md)). OA `fight|finish`
-отдаёт `fight|info` (raw-AMF); CEF карточки результата не прогонялся.
+отдаёт `fight|info` (raw-AMF); CEF 2026-09-16: карточка результата открывается
+(`share`/`macroses` SHARE). HUD HP-EXP-bag после `fight|exit` — ещё CEF.
 
 Equipment-derived `user|skills` / `hpMax` считаются из naked skills + надетых
 предметов (перчатка 9095 даёт VIT+5). Без экипа HUD показывает naked L1.
@@ -244,12 +246,11 @@ waiter-handoff без сброса HP. GEAR-01: надетая **20546** на с
 restart снимает бой, перчатка остаётся в paperdoll. CMB-10: dialog
 `q_engine_roster` поднимает quest-бой flags `"8"` (герой+Хисса vs Грызль и
 дух), `chat_*`, `win_fight` без bump kill на `q_engine_fight`; проигрыш
-оставляет book 5 started; mid-fight restart рвёт RAM. CEF экрана результата,
-F5 в бою, видимого урона, плевка Хиссы, дуэли, gear-spell и
-quest roster flags 8 не прогонялся. Outdoor `RESURRECT` dest 503 —
-CEF 2026-09-16. CEF leftovers (чат поломки CEF 2026-09-16, экран результата raw-AMF
-`fight|info` без CEF,
-overkill, aggro/спеллы, shuffle, орб/дебаффы, dealtDamage, skip-turn,
+оставляет book 5 started; mid-fight restart рвёт RAM. CEF карточки
+результата 2026-09-16. F5 в бою, видимый урон, плевок Хиссы, дуэль,
+gear-spell и quest roster flags 8 не прогонялись. Outdoor `RESURRECT` dest 503 —
+CEF 2026-09-16. CEF leftovers (чат поломки CEF 2026-09-16, экран результата CEF 2026-09-16,
+overkill raw-AMF clamp без CEF, aggro/спеллы, shuffle, орб/дебаффы, dealtDamage, skip-turn,
 F5 img) — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 CMB-11: OA `FIGHT_JOIN` `{team:1|2}` и `FIGHT_HELP` входят в тот же RAM
 `fightId` на 50310; карта ATTACK_BOT на занятый spawn остаётся team 1;

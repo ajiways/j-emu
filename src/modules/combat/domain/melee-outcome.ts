@@ -1,3 +1,4 @@
+import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -85,7 +86,7 @@ export function rollMeleeOutcome(
   if (defense === "block") {
     return { applied: 0, raw, react: MELEE_REACT.hit, blocked: raw };
   }
-  const applied = Math.min(raw, input.targetHp);
+  const applied = appliedHpLoss(raw, input.targetHp);
   if (applied > 0 && applied >= input.targetHp) {
     return {
       applied,

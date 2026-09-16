@@ -1,3 +1,4 @@
+import { appliedHpLoss } from "./applied-hp-loss.ts";
 import { applyCarrierTicks } from "./apply-carrier-ticks.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
@@ -98,7 +99,7 @@ export function tryPairedMelee(
       killed = extraHit.killed || hit.killed;
     } else if (hitBot) {
       const remaining = hitBot.hp;
-      const applied = Math.min(remaining, extraApplied);
+      const applied = appliedHpLoss(extraApplied, remaining);
       attacker.creditDamageToBot(applied);
       const updated: BotMeleePresence = { ...hitBot, hp: remaining - applied };
       hitBot = updated;
@@ -152,9 +153,9 @@ export function applyDamageToMeleeTarget(
   }
   requireLivingMeleeTarget(target);
   if (target.kind === "human") {
-    const applied = Math.min(target.human.hp, damage);
+    const applied = appliedHpLoss(damage, target.human.hp);
     attacker.creditDamageToHumans(applied);
-    const killed = target.human.applyDamage(damage);
+    const killed = target.human.applyDamage(applied);
     return {
       killed,
       hitBot: null,
@@ -163,7 +164,7 @@ export function applyDamageToMeleeTarget(
       targetMaxHp: target.human.maxHp,
     };
   }
-  const applied = Math.min(target.hp, damage);
+  const applied = appliedHpLoss(damage, target.hp);
   attacker.creditDamageToBot(applied);
   const hitBot: BotMeleePresence = {
     fightId: target.id,

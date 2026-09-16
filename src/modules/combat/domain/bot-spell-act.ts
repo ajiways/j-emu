@@ -1,3 +1,4 @@
+import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { botSpellAnimation, botSpellKind1DmgType, rollBotSpellDamage } from "./bot-spell-damage.ts";
@@ -113,14 +114,18 @@ function instantKind1(
   state: BotKindActState,
 ): readonly BattleEvent[] {
   if (!isHuman(target)) {
-    const damage = rollBotSpellDamage(
-      actor.strength,
-      card.spell,
-      state.random,
-      state.rules,
-      actor.mag,
-      target.mag,
+    const damage = appliedHpLoss(
+      rollBotSpellDamage(
+        actor.strength,
+        card.spell,
+        state.random,
+        state.rules,
+        actor.mag,
+        target.mag,
+      ),
+      target.hp,
     );
+    if (damage < 1) throw new Error("Bot kind-1 hit the living target for no HP");
     const killed = target.applyDamage(damage);
     return [
       {
@@ -136,14 +141,18 @@ function instantKind1(
       },
     ];
   }
-  const damage = rollBotSpellDamage(
-    actor.strength,
-    card.spell,
-    state.random,
-    state.rules,
-    actor.mag,
-    target.mag,
+  const damage = appliedHpLoss(
+    rollBotSpellDamage(
+      actor.strength,
+      card.spell,
+      state.random,
+      state.rules,
+      actor.mag,
+      target.mag,
+    ),
+    target.hp,
   );
+  if (damage < 1) throw new Error("Bot kind-1 hit the living target for no HP");
   const killed = target.applyDamage(damage);
   const dRage = target.casts.awardIncomingRage(damage, target.maxHp);
   if (spellKind(card.spell, 4) || spellKind(card.spell, 5)) {

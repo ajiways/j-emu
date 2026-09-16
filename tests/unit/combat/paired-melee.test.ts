@@ -9,7 +9,7 @@ import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { UNIT_HUNT_APPEARANCE, unitHuntHumanStats } from "../../support/hunt-start-input.ts";
 
-function fighter(heroId: number, team: 1 | 2, hp: number): HuntHuman {
+function fighter(heroId: number, team: 1 | 2, hp: number, strength = 10): HuntHuman {
   const human = new HuntHuman({
     accountId: heroId,
     heroId,
@@ -22,7 +22,7 @@ function fighter(heroId: number, team: 1 | 2, hp: number): HuntHuman {
     maxMp: 10,
     team,
     waiting: false,
-    ...unitHuntHumanStats(10),
+    ...unitHuntHumanStats(strength),
     startedAtMs: 0,
     loadout: EMPTY_COMBAT_LOADOUT,
     appearance: UNIT_HUNT_APPEARANCE,
@@ -87,6 +87,32 @@ describe("tryPairedMelee", () => {
     });
     expect(attacker.damageToHumans).toBe(3);
     expect(defender.hp).toBe(0);
+  });
+
+  it("sends hpChange equal to remaining HP on a killing blow", () => {
+    const attacker = fighter(1, 1, 27, 80);
+    attacker.beginTurn(0, 20);
+    const defender = fighter(2, 2, 3, 80);
+    const resolved = tryPairedMelee(attacker, { kind: "human", human: defender }, "center", {
+      finished: false,
+      rules: UNIT_BATTLE_RULES,
+      random: new SequenceRandom([8]),
+      fightId: "8",
+      humans: [attacker, defender],
+      bots: [],
+      nowMs: 0,
+    });
+    expect(resolved.finished).toBe(true);
+    expect(resolved.result).toMatchObject({
+      kind: "resolved",
+      events: [
+        { type: "turn-wait" },
+        { type: "damage", sourceId: 1, targetId: 2, hpChange: -3, killed: true },
+        { type: "finished", winnerTeam: 1 },
+      ],
+    });
+    expect(defender.hp).toBe(0);
+    expect(attacker.damageToHumans).toBe(3);
   });
 
   it("fails before ending the turn when the pair target is dead", () => {

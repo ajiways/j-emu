@@ -1,3 +1,4 @@
+import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { ExtraHit } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { MagStats } from "./mag-stats.ts";
@@ -29,7 +30,7 @@ export function rollOverlayExtra(
     random,
     rules,
   });
-  const applied = Math.min(raw, targetHp);
+  const applied = appliedHpLoss(raw, targetHp);
   if (applied < 1) return null;
   const killed = applied >= targetHp;
   return {

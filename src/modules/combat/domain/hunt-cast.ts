@@ -1,6 +1,7 @@
+import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
-import type { CombatPocketRow, CombatSpell } from "./combat-loadout.ts";
+import type { CombatSpell } from "./combat-loadout.ts";
 import { kind1OverlayCharges, magicHitFromKind1, magicReact } from "./magic-hit.ts";
 import { schoolOverlayFromKind1 } from "./school-overlay.ts";
 import { FightCastDenied } from "./fight-cast-denied.ts";
@@ -9,7 +10,7 @@ import type { HuntHuman } from "./hunt-human.ts";
 import { pocketHealAmount, spellCharging, spellKind, spellPcStr } from "./hunt-human-cast-state.ts";
 import { resolveMeleeTarget, type BotMeleePresence } from "./melee-target.ts";
 import { applyDamageToMeleeTarget } from "./paired-melee.ts";
-import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
+import { pocketEffectUse } from "./pocket-effect-use.ts";
 import type { RandomSource } from "./random-source.ts";
 
 export type KeepTurnResult =
@@ -183,13 +184,18 @@ export function resolveGloveFinisher(
   });
   human.endTurn();
   const cp = human.casts.spendCombo(glove.cost);
-  const damage = magicHitFromKind1(
-    glove.spell,
-    human.meleeStrength(),
-    human.mag,
-    target.kind === "human" ? target.human.mag : target.mag,
-    input.random,
-    input.rules,
+  const foeMag = target.kind === "human" ? target.human.mag : target.mag;
+  const foeHp = target.kind === "human" ? target.human.hp : target.hp;
+  const damage = appliedHpLoss(
+    magicHitFromKind1(
+      glove.spell,
+      human.meleeStrength(),
+      human.mag,
+      foeMag,
+      input.random,
+      input.rules,
+    ),
+    foeHp,
   );
   const hit = applyDamageToMeleeTarget(human, target, damage, {
     humans: input.humans,
@@ -223,24 +229,4 @@ export function resolveGloveFinisher(
 function isEndingGlove(spell: CombatSpell): boolean {
   if (kind1OverlayCharges(spell) > 0) return false;
   return spell.endTurn === true || spellKind(spell, 1);
-}
-
-function pocketEffectUse(
-  row: CombatPocketRow,
-  persId: number,
-  kind: number,
-  dmgType?: number,
-): BattleEvent {
-  return {
-    type: "effect-use",
-    artikulId: row.artifactId,
-    animation: row.spell.animData ?? "",
-    kind,
-    flags: pocketSpellWireFlags(row.spell.flags),
-    img: row.picture,
-    title: row.title,
-    persId,
-    ...(row.spell.groupId !== undefined ? { groupId: row.spell.groupId } : {}),
-    ...(dmgType !== undefined ? { dmgType } : {}),
-  };
 }

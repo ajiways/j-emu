@@ -76,4 +76,18 @@ describe("rollMeleeOutcome", () => {
     });
     expect(kill).toMatchObject({ applied: 19, react: MELEE_REACT.critKill });
   });
+
+  it("clamps applied loss to remaining HP and stamps kill react", () => {
+    expect(
+      rollMeleeOutcome({
+        baseDamage: 7,
+        attacker,
+        defender: naked,
+        targetHp: 3,
+        forceCrit: false,
+        random: new SequenceRandom([0.1]),
+        rules: UNIT_BATTLE_RULES,
+      }),
+    ).toEqual({ applied: 3, raw: 7, react: MELEE_REACT.kill, blocked: 0 });
+  });
 });
