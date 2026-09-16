@@ -190,6 +190,8 @@ function applyCrossSwap(
   other.replace(otherBot.fightId, actorBot.fightId);
   leftPairing.duel.resetHits();
   other.resetHits();
+  leftPairing.duel.setNextActor(actor.heroId);
+  other.setNextActor(otherHuman.heroId);
   if (
     actor.hp !== leftHp ||
     otherHuman.hp !== rightHp ||

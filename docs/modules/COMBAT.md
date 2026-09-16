@@ -518,7 +518,9 @@ finish и не throw на shuffle без пары. После melee `persChangeI
 Shuffle: после каждого удара, если дуэль уже 3↔3. Waiter на команде —
 `oppwait` актору и бот waiter-у; waiting enemy — `oppnew`; обе дуэли
 3↔3 — **cross-swap**. Пока менять некого, hits **держатся**.
-HP без сброса.
+HP без сброса. Cross-swap отменяет таймеры старых пар (токен
+`${fightId}:{min}:{max}` меняется вместе с id) и отдаёт ход каждому
+охотнику против нового бота — без второго bot-counter сразу после смены.
 
 Новая пара из `tryPairQueues` — `rollOpensFirst` (LUCK, `INITIATIVE_SOFT_C=80`,
 `legacy behavior`). Стартовая opener↔spawn-bot пара открывает opener.

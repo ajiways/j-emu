@@ -97,4 +97,73 @@ describe("CombatService 3↔3 shuffle", () => {
     expect(finished).toBe(true);
     expect(await combat.hasFight(start.fightId)).toBe(false);
   });
+
+  it("does not let a leftover bot-counter hit after 3↔3 cross-swap", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat, delay } = createCombatService({
+      clock,
+      random: {
+        integer(minInclusive) {
+          return minInclusive;
+        },
+        unit() {
+          return 0.99;
+        },
+      },
+    });
+    const start = await startHuntWithIssuedId(
+      combat,
+      unitHuntStart({ heroStrength: 10, botStrength: 10, botHp: 50 }),
+    );
+    await combat.joinHunt(
+      unitHuntJoin({ fightId: start.fightId, heroStrength: 10, heroHp: 27, heroMaxHp: 27 }),
+    );
+    await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(2, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(2, { kind: "poll" });
+    await combat.execute(1, { kind: "aggro", sequence: 2 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(2, { kind: "poll" });
+    clock.advanceMs(2500);
+    await delay.fireDue(clock.now());
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(2, { kind: "poll" });
+    for (let round = 0; round < 2; round += 1) {
+      await combat.execute(1, { kind: "strike", side: "center", sequence: 10 + round });
+      await combat.execute(1, { kind: "poll" });
+      await combat.execute(2, { kind: "strike", side: "center", sequence: 10 + round });
+      await combat.execute(2, { kind: "poll" });
+      clock.advanceMs(1400);
+      await delay.fireDue(clock.now());
+      await combat.execute(1, { kind: "poll" });
+      await combat.execute(2, { kind: "poll" });
+      clock.advanceMs(1100);
+      await delay.fireDue(clock.now());
+      await combat.execute(1, { kind: "poll" });
+      await combat.execute(2, { kind: "poll" });
+    }
+    await combat.execute(1, { kind: "strike", side: "center", sequence: 12 });
+    await combat.execute(1, { kind: "poll" });
+    clock.advanceMs(1400);
+    await delay.fireDue(clock.now());
+    await combat.execute(1, { kind: "poll" });
+    clock.advanceMs(1100);
+    await delay.fireDue(clock.now());
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(1, { kind: "strike", side: "center", sequence: 13 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(2, { kind: "strike", side: "center", sequence: 12 });
+    const swapped = await combat.execute(2, { kind: "poll" });
+    expect(swapped.some((event) => event.type === "opponent-new")).toBe(true);
+    await combat.execute(1, { kind: "poll" });
+    clock.advanceMs(1400);
+    await delay.fireDue(clock.now());
+    expect(await combat.execute(1, { kind: "poll" })).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ type: "damage" })]),
+    );
+    expect(await combat.execute(2, { kind: "poll" })).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ type: "damage" })]),
+    );
+  });
 });

@@ -63,6 +63,9 @@
       удара, пока 3↔3 и есть кому меняться (waiter / waiting enemy /
       другая 3↔3 дуэль). raw-AMF: поздний вход второго охотника на ходе
       первого → после удара `oppwait`/`oppnew`. CEF не подтверждён.
+- [ ] CMB-08 leftover: после 3↔3 cross-swap бот бьёт два раза подряд.
+      raw-AMF: cancel старых delay token до смены пары, ход охотникам.
+      CEF не подтверждён.
 - [ ] SOC-01 leftover: «Вами получено» tooltip без статов. raw-AMF: loot
       `[[ARTIFACT]]` несёт catalog `artifact_skills` как bag. CEF не
       подтверждён.

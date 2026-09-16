@@ -100,6 +100,9 @@ describe("fproxy hunt aggro clone pairing", () => {
       await b.pollFight();
     }
     expect(swapped).toBe(true);
+    await harness.elapseCombat(1400);
+    expect(fightEventTypes(await a.pollFight())).not.toContain("cast");
+    expect(fightEventTypes(await b.pollFight())).not.toContain("cast");
   });
 
   it("grants the joiner after aggro even if fight-auth is late", async () => {

@@ -212,10 +212,11 @@ export class CombatMeleeLoop {
   }
 
   private applyShuffle(battle: Battle, accountId: number): boolean {
+    const previousTokens = battle.delayTokens();
     const shuffle = battle.tryShuffleAfterHits(accountId);
     if (shuffle.kind === "none") return false;
+    for (const token of previousTokens) this.scheduler.cancel(token);
     if (shuffle.kind === "waiter-handoff") {
-      cancelDuel(this.scheduler, battle, accountId);
       this.enqueue(shuffle.actorAccountId, [{ type: "opponent-wait" }]);
       this.wakeAccount(shuffle.actorAccountId);
       if (!shuffle.waiterAuthed) return true;
@@ -225,14 +226,11 @@ export class CombatMeleeLoop {
       return true;
     }
     if (shuffle.kind === "reserve-swap") {
-      cancelDuel(this.scheduler, battle, shuffle.accountId);
       this.enqueue(shuffle.accountId, [{ type: "opponent-new", bot: shuffle.bot }]);
       this.wakeAccount(shuffle.accountId);
       this.grantPairedBot(battle, shuffle.accountId);
       return true;
     }
-    cancelDuel(this.scheduler, battle, shuffle.leftAccountId);
-    cancelDuel(this.scheduler, battle, shuffle.rightAccountId);
     this.enqueue(shuffle.leftAccountId, [{ type: "opponent-new", bot: shuffle.leftBot }]);
     this.enqueue(shuffle.rightAccountId, [{ type: "opponent-new", bot: shuffle.rightBot }]);
     this.wakeAccount(shuffle.leftAccountId);
