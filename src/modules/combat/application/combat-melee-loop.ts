@@ -1,4 +1,5 @@
 import type { Battle } from "../domain/battle.ts";
+import type { EndingGloveResult } from "../domain/glove-ending-cast.ts";
 import { persChangeForHit } from "../domain/melee-pers-change.ts";
 import type { CombatEvent, FightExit } from "../ports/combat-port.ts";
 import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
@@ -54,7 +55,7 @@ export class CombatMeleeLoop {
   async endingGlove(
     accountId: number,
     sequence: string | number,
-    events: readonly CombatEvent[],
+    ending: EndingGloveResult,
   ): Promise<void> {
     const battle = this.byAccount.get(accountId);
     if (!battle) {
@@ -62,14 +63,15 @@ export class CombatMeleeLoop {
       return;
     }
     cancelDuel(this.scheduler, battle, accountId);
-    this.enqueue(accountId, [{ type: "command-accepted", sequence }, ...events]);
-    fanoutPersChange(battle, accountId, events, this.enqueue, this.wakeAccount);
-    fanoutRosterEffects(battle, accountId, events, this.enqueue, this.wakeAccount);
+    this.enqueue(accountId, [{ type: "command-accepted", sequence }, ...ending.events]);
+    fanoutPersChange(battle, accountId, ending.events, this.enqueue, this.wakeAccount);
+    fanoutRosterEffects(battle, accountId, ending.events, this.enqueue, this.wakeAccount);
+    this.deliverGloveSides(battle, ending);
     if (battle.finished) {
-      await this.settleFinished(battle, events, accountId);
+      await this.settleFinished(battle, ending.events, accountId);
       return;
     }
-    await this.followUpAfterStrike(battle, accountId, events);
+    await this.followUpAfterStrike(battle, accountId, ending.events);
   }
 
   grantAfterPair(battle: Battle, accountId: number): void {
@@ -262,6 +264,19 @@ export class CombatMeleeLoop {
     this.enqueue(accountId, [granted]);
     this.wakeAccount(accountId);
   }
+
+  private deliverGloveSides(battle: Battle, ending: EndingGloveResult): void {
+    for (const notify of ending.sideNotifies) {
+      const wait = notify.events.some((event) => event.type === "opponent-wait");
+      const next = notify.events.some(
+        (event) => event.type === "opponent-new" || event.type === "opponent-new-human",
+      );
+      if (wait || next) cancelDuel(this.scheduler, battle, notify.accountId);
+      this.enqueue(notify.accountId, notify.events);
+      this.wakeAccount(notify.accountId);
+      if (next) this.grantPairedBot(battle, notify.accountId);
+    }
+  }
 }
 
 function fanoutRosterEffects(
@@ -320,13 +335,25 @@ function fanoutPersChange(
   enqueue: (accountId: number, events: readonly CombatEvent[]) => void,
   wakeAccount: (accountId: number) => void,
 ): void {
-  const damage = events.find((event) => event.type === "damage");
-  if (!damage || damage.type !== "damage") return;
-  const roster = battle.boardParticipants();
-  const patch = persChangeForHit(roster.humans, roster.bots, damage.sourceId, damage.targetId);
+  const patch =
+    events.find((event) => event.type === "pers-change") ??
+    persChangeFromDamage(
+      battle,
+      events.find((event) => event.type === "damage"),
+    );
+  if (!patch) return;
   for (const accountId of battle.authedAccountIds()) {
     if (accountId === actorAccountId) continue;
     enqueue(accountId, [patch]);
     wakeAccount(accountId);
   }
+}
+
+function persChangeFromDamage(
+  battle: Battle,
+  damage: CombatEvent | undefined,
+): Extract<CombatEvent, { type: "pers-change" }> | null {
+  if (!damage || damage.type !== "damage") return null;
+  const roster = battle.boardParticipants();
+  return persChangeForHit(roster.humans, roster.bots, damage.sourceId, damage.targetId);
 }

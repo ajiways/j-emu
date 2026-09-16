@@ -27,12 +27,8 @@ import type { HuntRoster } from "./hunt-roster.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { grantTurn as grantHumanTurn, type BotMeleeResult } from "./hunt-melee.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
-import {
-  tryPocketCast,
-  tryRageCast,
-  type EndingGloveResult,
-  type KeepTurnResult,
-} from "./hunt-cast.ts";
+import { tryPocketCast, tryRageCast, type KeepTurnResult } from "./hunt-cast.ts";
+import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import { tryHuntAggro, type HuntAggroResult } from "./hunt-aggro.ts";
 import { tickHuntRosterDuels } from "./battle-hunt-runtime.ts";
 import type { HuntJoinHuman } from "./hunt-join-human.ts";

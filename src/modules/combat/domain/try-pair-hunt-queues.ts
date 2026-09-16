@@ -3,6 +3,7 @@ import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
 import type { RandomSource } from "./random-source.ts";
 import { rollOpensFirst } from "./roll-opens-first.ts";
+import { shuffleInPlace } from "./shuffle-in-place.ts";
 
 export type HuntSeeker = Readonly<{
   id: number;
@@ -182,17 +183,4 @@ function requireSeeker(seekers: readonly HuntSeeker[], id: number): HuntSeeker {
   const seeker = seekers.find((entry) => entry.id === id);
   if (!seeker) throw new Error(`Hunt seeker ${id} is missing`);
   return seeker;
-}
-
-function shuffleInPlace<T>(items: T[], random: RandomSource): void {
-  for (let index = items.length - 1; index > 0; index -= 1) {
-    const swap = random.integer(0, index);
-    const current = items[index];
-    const other = items[swap];
-    if (current === undefined || other === undefined) {
-      throw new Error("Hunt pair shuffle is missing an item");
-    }
-    items[index] = other;
-    items[swap] = current;
-  }
 }

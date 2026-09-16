@@ -7,13 +7,21 @@ export function persChangeForHit(
   sourceId: number,
   targetId: number,
 ): Extract<BattleEvent, { type: "pers-change" }> {
-  const ids = new Set([sourceId, targetId]);
+  return persChangeForParticipants(humans, bots, [sourceId, targetId]);
+}
+
+export function persChangeForParticipants(
+  humans: readonly HuntHuman[],
+  bots: readonly HuntBotSnap[],
+  ids: readonly number[],
+): Extract<BattleEvent, { type: "pers-change" }> {
+  const wanted = new Set(ids);
   const humanSnaps = humans
-    .filter((human) => ids.has(human.heroId))
+    .filter((human) => wanted.has(human.heroId))
     .map((human) => human.snapshot());
-  const botSnaps = bots.filter((bot) => ids.has(bot.id));
+  const botSnaps = bots.filter((bot) => wanted.has(bot.id));
   if (humanSnaps.length === 0 && botSnaps.length === 0) {
-    throw new Error(`Melee pers-change is missing source ${sourceId} and target ${targetId}`);
+    throw new Error(`Pers-change is missing participants ${ids.join(",")}`);
   }
   return { type: "pers-change", humans: humanSnaps, bots: botSnaps };
 }

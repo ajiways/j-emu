@@ -1,3 +1,4 @@
+import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { applyHuntBotHit, applyHuntPlayerHit } from "./battle-hunt-runtime.ts";
 import {
@@ -12,12 +13,14 @@ import { applyBotTurn, applyPairedGloveEnding, applyPairedMelee } from "./battle
 import type { FightDuel } from "./fight-duel.ts";
 import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
-import type { EndingGloveResult, KeepTurnResult } from "./hunt-cast.ts";
+import type { EndingGloveResult } from "./glove-ending-cast.ts";
+import type { KeepTurnResult } from "./hunt-cast.ts";
 import { tryGloveKeepTurn } from "./hunt-cast.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { huntFightEnemyTeam } from "./hunt-fight-teams.ts";
 import type { BotMeleeResult } from "./hunt-melee.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
+import { persChangeForParticipants } from "./melee-pers-change.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
 import { requireDuelContaining } from "./try-pair-hunt-queues.ts";
@@ -88,21 +91,18 @@ export function applyBattleGlove(
     humans: state.humans,
     bots: huntRosterBots(state.huntRoster),
     duel,
+    duels: state.duels,
     nowMs,
   });
   if (ending.kind !== "ending") return { result: ending, finished: state.finished };
-  const extra = applyHuntBotHit(ending.hitBot, ending.finished, {
+  const settle = settleGloveHits(ending, {
     roster: state.huntRoster,
     duel,
     duels: state.duels,
-    opener: battleOpener(state.humans),
+    opener: human,
     humans: state.humans,
   });
-  if (extra.events.length === 0) return { result: ending, finished: extra.finished };
-  return {
-    result: { ...ending, events: [...ending.events, ...extra.events] },
-    finished: extra.finished,
-  };
+  return { result: settle, finished: settle.finished };
 }
 
 export function applyBattleBotMelee(
@@ -139,4 +139,49 @@ export function applyBattleBotMelee(
     ...result,
     finished: result.events.some((event) => event.type === "finished"),
   };
+}
+
+function settleGloveHits(
+  ending: EndingGloveResult,
+  input: Readonly<{
+    roster: HuntRoster | null;
+    duel: FightDuel;
+    duels: FightDuel[];
+    opener: HuntHuman;
+    humans: readonly HuntHuman[];
+  }>,
+): EndingGloveResult {
+  const primary = applyHuntBotHit(ending.hitBot, ending.finished, input);
+  const sideNotifies = ending.sideNotifies.map((notify) => {
+    if (!notify.hitBot) return notify;
+    const duel = requireDuelContaining(input.duels, notify.hitBot.fightId);
+    const owner = input.humans.find((human) => duel.has(human.heroId));
+    if (!owner) throw new Error(`AOE extra bot ${notify.hitBot.fightId} has no paired human`);
+    const extra = applyHuntBotHit(notify.hitBot, primary.finished, {
+      ...input,
+      duel,
+      opener: owner,
+    });
+    if (extra.events.length === 0) return notify;
+    return { ...notify, events: [...notify.events, ...extra.events] };
+  });
+  let events = [...ending.events, ...primary.events];
+  if (ending.hitTargetIds.length > 1) {
+    const damage = ending.events.find((event) => event.type === "damage");
+    if (!damage || damage.type !== "damage") {
+      throw new Error("Glove ending is missing a damage event");
+    }
+    const bots = input.roster === null ? [] : input.roster.snaps();
+    events = insertAfterDamage(
+      events,
+      persChangeForParticipants(input.humans, bots, [damage.sourceId, ...ending.hitTargetIds]),
+    );
+  }
+  return { ...ending, events, finished: primary.finished, sideNotifies };
+}
+
+function insertAfterDamage(events: readonly BattleEvent[], extra: BattleEvent): BattleEvent[] {
+  const index = events.findIndex((event) => event.type === "damage");
+  if (index < 0) throw new Error("Glove ending is missing a damage event");
+  return [...events.slice(0, index + 1), extra, ...events.slice(index + 1)];
 }

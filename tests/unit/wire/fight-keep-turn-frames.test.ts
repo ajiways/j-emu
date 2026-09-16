@@ -239,6 +239,73 @@ describe("FightWireMapper keep-turn frames", () => {
       dead: false,
     });
   });
+
+  it("keeps caster ST then persChangeInfo for AOE extra targets", () => {
+    const frames = mapper.frames([
+      { type: "command-accepted", sequence: 7 },
+      { type: "turn-wait", timeoutSeconds: 20 },
+      {
+        type: "damage",
+        sourceId: 1,
+        targetId: 1_000_000,
+        animation: "magic_aoe_light",
+        hpChange: -4,
+        targetMaxHp: 200,
+        killed: false,
+        comboCp: 0,
+      },
+      {
+        type: "pers-change",
+        humans: [
+          {
+            id: 1,
+            nick: "Hero",
+            level: 1,
+            kind: 1,
+            hp: 27,
+            maxHp: 27,
+            mp: 10,
+            maxMp: 10,
+            team: 1,
+          },
+        ],
+        bots: [
+          {
+            id: 1_000_000,
+            nick: "Грызль",
+            level: 1,
+            hp: 164,
+            maxHp: 200,
+            artikulId: 2,
+            avatar: "avatar_gryzl1_sm.jpg",
+            sk: "11",
+            body: "",
+            team: 2,
+          },
+          {
+            id: 1_000_001,
+            nick: "Грызль",
+            level: 1,
+            hp: 196,
+            maxHp: 200,
+            artikulId: 2,
+            avatar: "avatar_gryzl1_sm.jpg",
+            sk: "11",
+            body: "",
+            team: 2,
+          },
+        ],
+      },
+    ]);
+    expect(frames[0]).toEqual({ rs: true, sq: 7 });
+    expect(evTypes(frames[1])).toEqual(["attackwait", "cast", "persCP"]);
+    expect(castPacket(frames[1])).toMatchObject({
+      et: "cast",
+      animData: "magic_aoe_light",
+      targetId: 1_000_000,
+    });
+    expect(evTypes(frames[2])).toEqual(["persChangeInfo", "persChangeInfo", "persChangeInfo"]);
+  });
 });
 
 function evMap(frame: unknown): Record<string, { et?: string; ev?: unknown }> {

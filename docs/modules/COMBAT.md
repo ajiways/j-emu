@@ -11,7 +11,7 @@ handoff и GEAR-01 RAM kind-3 с надетой 20546 (raw-AMF). CMB-11: OA
 copy gate, team-2 без hunt EXP; CMB-12: две параллельные hunt-дуэли на
 50310 (opener↔bot и team-1↔team-2). CEF 2026-09-17: hunt 3↔3 / F5 /
 overkill / орб 99 / сайдбар / loot tooltip. Product status combat остаётся
-частично (AOE, MAGRES, skip-turn, Hissa spit, F5 img, friendly duel).
+частично (bot AOE, MAGRES, skip-turn, Hissa spit, F5 img, friendly duel).
 CMB-09 отдаёт
 quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA
 `START_FIGHT` (quest + ambush) и hunt loot-cap — composition (`QuestDesk` /
@@ -164,13 +164,19 @@ grant не катится. 77 без fight blob. Pub1 AMF у 93/99
 часто опускает `extra.spell.flags` (ноль). Live fproxy pocket `persSpells` /
 `effUse` всё равно шлёт `flags:"262144"` — `POCKET_SPELL_WIRE_FLAGS`, не
 catalog fallback. Нет `srcId:5` в
-fproxy, нет 77 в бою, нет generic effect engine. AOE ending
-(`targetCount>=2`, «Волна света» 9099) в catalog есть, combat бьёт только
-текущего `FightDuel.otherId` — leftover. Орб 99 drink вешает RAM standing
+fproxy, нет 77 в бою, нет generic effect engine. Glove ending AOE
+(`targetCount>=2` или `targetRestr.randTarget`, «Волна света» 9099): живые
+враги hunt-боя, primary = текущая пара, остальное Fisher-Yates через
+injected RNG, урон `max(1, round(full/2))`. Caster ST на primary +
+`persChangeInfo` по всем hit id; ally, чей фо — secondary, получает тот
+же `animData` и `targetId` своего фо. Kill secondary — `attackwait` +
+`react=KILL` + `oppwait`/swap на той дуэли. Click `targetId` нет в glove
+command — не изобретаем. Bot kind-1 AOE — leftover. Орб 99 drink вешает RAM standing
 kind-3 (`charging` ходов, `groupId` 842, без bake STR — melee бонус остаётся
 `takeOrbPcStr`); consuming L/C/R melee шлёт `effPurge`; glove/kind-1 орб не
 тратит. Повторный drink той же group снимает предыдущий standing.
-CEF 2026-09-17: орб 99 standing + `effPurge` на физ L/C/R. AOE leftover:
+CEF 2026-09-17: орб 99 standing + `effPurge` на физ L/C/R. Glove AOE
+raw-AMF landed, CEF не подтверждён:
 [CEF_MANUAL.md](../migration/CEF_MANUAL.md). Kind 11 HTTP
 `{rs:false, restriction:18}` — только если опубликованный spell kind 11
 (в текущем slice нет). CEF счётчиков пояса/перчатки/ярости не прогонялся.
@@ -345,8 +351,8 @@ dodge/block/crit — CMB-14. kind-1 overlay — CMB-15. Weapon DPS aparte от S
 читает catalog mid-fight. Пустая книга не зовёт `random.unit()` — Gryzl
 остаётся melee-only. Kind-1 урон =
 `max(1, round(STR/10 × (1+pcSTR/100) × [0.85…1.15]))`. Kind-2 heal есть;
-AOE `targetCount>=2` только в catalog blob — glove/bot kind-1 бьёт одну
-цель пары. Огр **99** книга в каталоге DATA-03
+Glove kind-1 AOE landed (CMB-02). Bot kind-1 с `targetCount>=2` в catalog
+всё ещё бьёт одну цель пары — leftover. Огр **99** книга в каталоге DATA-03
 (kind-2 heal на 40% HP). Charging/self-buff, DoT ticks, MAGSTR/MAGRES, virus, summon —
 вне боя: карточки живут в каталоге DATA-03, `pickBotSpell` не выбирает
 kind 3/10 и gate `foe_has_dispel_groups`. Полный `bot_spell_book.json`
@@ -518,7 +524,7 @@ Practice history — CMB-17.
 
 Срез закрыт (unit + raw-AMF). CEF 2026-09-17: сайдбар HP/`oppwait`, pair
 grant до fight-auth, hunt N×N «Разозлить» + 3↔3. Product-status не
-поднимать (AOE/MAGRES/skip-turn leftover). Очередь:
+поднимать (bot AOE/MAGRES/skip-turn leftover). Очередь:
 [ROADMAP.md](../migration/ROADMAP.md) CMB-18.
 
 Seekers = unpaired living humans **и** bots обеих команд. Pair loop как
@@ -595,8 +601,8 @@ jgr default 20s), sibling `hpChange` на carrier melee. Kind 8 dispel
 success. Kind 18 stun skip-turn, `duration` обязателен. Kind 10 summon
 632: `fight_start` сжигается без каста; clone цели в roster **не**
 landed (явный skip). Period deadline без удара (~20s unpaired) — не
-этот срез. AOE `targetCount>=2` — leftover: поле в spell, урон только
-текущему сопернику пары.
+этот срез. Glove kind-1 AOE landed (CMB-02). Bot kind-1 `targetCount>=2` —
+leftover: поле в spell, урон только текущему сопернику пары.
 
 Не в срезе: outdoor `ATTACK`/`FightRules`. BG JOIN — CMB-16. Practice
 history — CMB-17.

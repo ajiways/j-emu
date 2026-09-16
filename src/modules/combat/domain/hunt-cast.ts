@@ -1,29 +1,16 @@
-import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { BattleEvent } from "./battle-event.ts";
-import type { BattleRules } from "./battle-rules.ts";
 import type { CombatSpell } from "./combat-loadout.ts";
-import { kind1OverlayCharges, magicHitFromKind1, magicReact } from "./magic-hit.ts";
-import { schoolOverlayFromKind1 } from "./school-overlay.ts";
 import { FightCastDenied } from "./fight-cast-denied.ts";
-import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { pocketHealAmount, spellCharging, spellKind } from "./hunt-human-cast-state.ts";
-import { resolveMeleeTarget, type BotMeleePresence } from "./melee-target.ts";
-import { applyDamageToMeleeTarget } from "./paired-melee.ts";
 import { applyPocketKind3, requirePocketOrb } from "./pocket-kind3-cast.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
-import type { RandomSource } from "./random-source.ts";
+import { kind1OverlayCharges } from "./magic-hit.ts";
+import { schoolOverlayFromKind1 } from "./school-overlay.ts";
 
 export type KeepTurnResult =
   | Readonly<{ kind: "ignored" }>
   | Readonly<{ kind: "resolved"; events: readonly BattleEvent[]; consumePocketItemId?: number }>;
-
-export type EndingGloveResult = Readonly<{
-  kind: "ending";
-  events: readonly BattleEvent[];
-  hitBot: BotMeleePresence | null;
-  finished: boolean;
-}>;
 
 export function tryPocketCast(
   human: HuntHuman,
@@ -143,82 +130,7 @@ export function tryGloveKeepTurn(
   };
 }
 
-export function resolveGloveFinisher(
-  human: HuntHuman,
-  spellId: number,
-  sequence: string | number,
-  input: Readonly<{
-    finished: boolean;
-    rules: BattleRules;
-    random: RandomSource;
-    fightId: string;
-    humans: readonly HuntHuman[];
-    bots: readonly BotMeleePresence[];
-    duel: FightDuel;
-    nowMs: number;
-  }>,
-): KeepTurnResult | EndingGloveResult {
-  if (!human.authed || input.finished) return { kind: "ignored" };
-  const glove = human.casts.gloveSpell(spellId);
-  if (!glove || !isEndingGlove(glove.spell)) return { kind: "ignored" };
-  if (spellKind(glove.spell, 11)) throw new FightCastDenied("kind11", sequence);
-  if (human.waiting || !human.turnActive) {
-    return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };
-  }
-  if (human.casts.cp < glove.cost) {
-    return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };
-  }
-  const target = resolveMeleeTarget({
-    attackerHeroId: human.heroId,
-    duel: input.duel,
-    humans: input.humans,
-    bots: input.bots,
-  });
-  human.endTurn();
-  const cp = human.casts.spendCombo(glove.cost);
-  const foeMag = target.kind === "human" ? target.human.mag : target.mag;
-  const foeHp = target.kind === "human" ? target.human.hp : target.hp;
-  const damage = appliedHpLoss(
-    magicHitFromKind1(
-      glove.spell,
-      human.meleeStrength(),
-      human.mag,
-      foeMag,
-      input.random,
-      input.rules,
-    ),
-    foeHp,
-  );
-  const hit = applyDamageToMeleeTarget(human, target, damage, {
-    humans: input.humans,
-    bots: input.bots,
-  });
-  const dmgType = glove.spell.effects.find((effect) => effect.kind === 1)?.dmgType;
-  const events: BattleEvent[] = [
-    { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },
-    {
-      type: "damage",
-      sourceId: human.heroId,
-      targetId: hit.targetId,
-      animation: glove.spell.animData ?? "magic_electroball",
-      hpChange: -damage,
-      targetMaxHp: hit.targetMaxHp,
-      killed: hit.killed,
-      comboCp: cp,
-      ...(dmgType !== undefined ? { dmgType } : {}),
-      react: magicReact(hit.killed),
-    },
-  ];
-  for (const effectId of human.effects.onActorEndingTurn(input.nowMs)) {
-    events.push({ type: "effect-purge", effectId });
-  }
-  if (hit.finished) {
-    events.push({ type: "finished", winnerTeam: human.team, fightId: input.fightId });
-  }
-  return { kind: "ending", events, hitBot: hit.hitBot, finished: hit.finished };
-}
-
-function isEndingGlove(spell: CombatSpell): boolean {
+export function isEndingGlove(spell: CombatSpell): boolean {
   if (kind1OverlayCharges(spell) > 0) return false;
   return spell.endTurn === true || spellKind(spell, 1);
 }

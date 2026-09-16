@@ -77,7 +77,7 @@ async function castFightSpecial(
   }
   const resolved = battle.tryGlove(accountId, command.spellId, command.sequence, input.nowMs);
   if (resolved.kind === "ending") {
-    await input.melee.endingGlove(accountId, command.sequence, resolved.events);
+    await input.melee.endingGlove(accountId, command.sequence, resolved);
     return;
   }
   finishKeepTurn(input, resolved);
