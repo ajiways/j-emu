@@ -232,7 +232,7 @@ Map hunt ID равен `area × 100 + index`; dungeon hunt ID уникален �
 
 ## Завершение боя
 
-После fproxy `fightFinish` клиент ожидает `fight|exit` через realtime; без него result flow может ждать около 60 секунд. `fight|exit` идёт внутри esrv personal packet (`2:<accountId>`). Ответ `fight|finish` не должен без подтверждённого fixture самовольно включать `common|area_conf`, поскольку это ломало ResultWaiting в просмотренном контракте.
+После fproxy `fightFinish` клиент ожидает `fight|exit` через realtime; без него result flow может ждать около 60 секунд. `fight|exit` идёт внутри esrv personal packet (`2:<accountId>`). Когда `fight|loot` и `fight|exit` готовы вместе, в тот же object входят synced HUD (`user|unitframe`, `user|conf`, `user|bag`, `state`), чтобы Flash обновил HP/`hp_time` и деньги без дополнительного OA. Ответ `fight|finish` не должен без подтверждённого fixture самовольно включать `common|area_conf`, поскольку это ломало ResultWaiting в просмотренном контракте. `fight|finish` отдаёт finish, `fight|conf.expire=0`, unitframe, bag, view, magic, skills и `state`.
 
 `fight|conf` сохраняет клиентские имена полей (`host`, `port`, `proxy`, `fightId`, `userId`, `fightAkey`, `bg`, `persSelf_sk`, `persSelf_body`, `can_leave`, `instance_id`, `flags`); не переименовывать их ради внутренней модели. Старый builder: [`src/fight/wire.ts`](../../../jgr-emu/src/fight/wire.ts). Исследовательское основание finish/exit: [`_research/02_protocol.md`](../../../_research/02_protocol.md).
 

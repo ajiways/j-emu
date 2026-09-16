@@ -2,12 +2,14 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { OperatorAuthPolicy } from "../../../content/application/operator-auth-policy.ts";
 import { HeroOperatorError } from "../../application/hero-operator-error.ts";
 import type { HeroOperator } from "../../application/hero-operator.ts";
+import type { HeroHudPush } from "../../application/hero-hud-push.ts";
 import { parseAdjustMoneyBody, parseGrantItemBody, parseHeroId } from "./operator-hero-body.ts";
 
 export class OperatorHeroRouteRegistrar {
   constructor(
     private readonly operator: HeroOperator,
     private readonly auth: OperatorAuthPolicy,
+    private readonly hud: HeroHudPush,
   ) {}
 
   async register(app: FastifyInstance): Promise<void> {
@@ -23,14 +25,20 @@ export class OperatorHeroRouteRegistrar {
         });
         scope.post("/:id/items", async (request, reply) => {
           return send(reply, request, async () => {
+            const heroId = paramHeroId(request);
             const body = parseGrantItemBody(request.body);
-            return this.operator.grantItem(paramHeroId(request), body.artifactId, body.quantity);
+            const state = await this.operator.grantItem(heroId, body.artifactId, body.quantity);
+            await this.hud.enqueueHero(heroId);
+            return state;
           });
         });
         scope.post("/:id/money", async (request, reply) => {
           return send(reply, request, async () => {
+            const heroId = paramHeroId(request);
             const body = parseAdjustMoneyBody(request.body);
-            return this.operator.adjustMoney(paramHeroId(request), body.minorUnits);
+            const state = await this.operator.adjustMoney(heroId, body.minorUnits);
+            await this.hud.enqueueHero(heroId);
+            return state;
           });
         });
       },

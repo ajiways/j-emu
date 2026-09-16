@@ -66,6 +66,22 @@ describe("fproxy settlement", () => {
       artikul_list: [],
     });
     expect(esrv["fight|exit"]).toMatchObject({ status: 100, type: 0, winner: 1 });
+    expect(esrv["user|unitframe"]).toMatchObject({ status: 100, exp: 16 });
+    expect(esrv["user|conf"]).toMatchObject({ status: 100, money: 25.2 });
+    expect(esrv["user|bag"]).toMatchObject({ status: 100 });
+    expect(stateMoney(esrv)).toBe("25.20");
+    expect(unitframe(esrv).hp).toBeGreaterThan(0);
+
+    const finish = await client.objectAction({ object: "fight", action: "finish", sq: 19 });
+    expect(finish["fight|finish"]).toEqual({ status: 100 });
+    expect(finish["fight|conf"]).toEqual({ expire: 0 });
+    expect(finish["common|area_conf"]).toBeUndefined();
+    expect(finish["user|unitframe"]).toMatchObject({ status: 100, exp: 16 });
+    expect(finish["user|bag"]).toMatchObject({ status: 100 });
+    expect(finish["user|view"]).toMatchObject({ status: 100 });
+    expect(finish["user|magic"]).toEqual({ status: 100, gloves: [] });
+    expect(finish["user|skills"]).toMatchObject({ status: 100 });
+    expect(stateMoney(finish)).toBe("25.20");
 
     const after = await client.objectAction({ object: "common", action: "init2", sq: 20 });
     expect(stateMoney(after)).toBe("25.20");
@@ -97,6 +113,8 @@ describe("fproxy settlement", () => {
     const esrv = personalEsrvObject(await client.pollEsrv());
     expect(esrv["fight|loot"]).toBeUndefined();
     expect(esrv["fight|exit"]).toEqual({ flee: true, status: 100, type: 2 });
+    expect(esrv["user|unitframe"]).toMatchObject({ status: 100 });
+    expect(stateMoney(esrv)).toBe(stateMoney(before));
     const after = await client.objectAction({ object: "common", action: "init2", sq: 20 });
     expect(unitframe(after).exp).toBe(1);
     expect(stateMoney(after)).toBe(stateMoney(before));
@@ -161,6 +179,8 @@ describe("fproxy settlement loss", () => {
       artikul_list: [],
     });
     expect(esrv["fight|exit"]).toMatchObject({ status: 100, type: 0, winner: 2 });
+    expect(unitframe(esrv).hp).toBe(0);
+    expect(stateMoney(esrv)).toBe(stateMoney(before));
     const after = await client.objectAction({ object: "common", action: "init2", sq: 20 });
     expect(unitframe(after).hp).toBe(0);
     expect(unitframe(after).exp).toBe(1);

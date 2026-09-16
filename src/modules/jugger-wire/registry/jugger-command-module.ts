@@ -32,6 +32,7 @@ import { BagDropCommand } from "../commands/oa/bag-drop-command.ts";
 import { ChatAddCommand } from "../commands/oa/chat-add-command.ts";
 import { ChatConfCommand } from "../commands/oa/chat-conf-command.ts";
 import { CommonConfCommand } from "../commands/oa/common-conf-command.ts";
+import { CommonDummyCommand } from "../commands/oa/common-dummy-command.ts";
 import { CommonInitCommand } from "../commands/oa/common-init-command.ts";
 import { CommonInit2Command } from "../commands/oa/common-init2-command.ts";
 import { CommonMenuLinkStatusCommand } from "../commands/oa/common-menu-link-status-command.ts";
@@ -223,6 +224,7 @@ export class JuggerCommandModule {
       new CommonInitCommand(unitOfWork, characters, bootstrap, battleground),
       new CommonInit2Command(unitOfWork, characters, bootstrap, battleground),
       new CommonConfCommand(bootstrap),
+      new CommonDummyCommand(),
       new CommonMenuLinkStatusCommand(sheet),
       new UserBagCommand(bootstrap),
       new UserPersonalDetailsCommand(bootstrap),
@@ -232,7 +234,7 @@ export class JuggerCommandModule {
       new UserProfessionsCommand(characters),
       new UserUnitframeCommand(unitOfWork, characters, bootstrap),
       new UserViewCommand(bootstrap),
-      new FightFinishCommand(bootstrap),
+      new FightFinishCommand(unitOfWork, characters, bootstrap),
       new UserMagicCommand(bootstrap, sheet),
       new UserFlashMessageCommand(bootstrap),
       new FriendlyDuelProposeCommand(propose),

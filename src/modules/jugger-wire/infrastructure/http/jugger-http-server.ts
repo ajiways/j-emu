@@ -50,6 +50,7 @@ export class JuggerHttpServer {
           this.dependencies.inventory,
         ),
         operatorAuth,
+        this.dependencies.heroHud,
       ).register(app);
       await new OperatorCatalogRouteRegistrar(
         new CatalogOperator(this.dependencies.catalog),

@@ -212,13 +212,14 @@ RNG — injected `RandomSource` (тесты без `Math.random` / `sleep`).
 `fight|loot` ключи live `buildFightLootBlock`: `status:100`, numeric
 `fight_id`, `experience`, `money` строка (`"0"` если нет), `honor:0`,
 `revenge:0`, `loot` и `artikul_list` — `[]` если пусто, не `{}`. Один esrv
-personal object: сначала `fight|loot`, потом `fight|exit`. Win/loss exit
+personal object: сначала `fight|loot`, потом `fight|exit`, плюс synced HUD
+(`user|unitframe`, `user|conf`, `user|bag`, `state`). Win/loss exit
 `type:0` + `winner`. `leaveFight`: HTTP `{rs:true,sq}`; `fight|exit`
-`{flee:true,status:100,type:2}`. Если в бою ещё живой союзник — leaver
+`{flee:true,status:100,type:2}` и тот же HUD (без loot). Если в бою ещё живой союзник — leaver
 получает только flee-exit, бой продолжается; полный loot/EXP — когда RAM
 fight заканчивается. `chat|add` «Вами получено» / «Окончен бой» — [CHAT.md](CHAT.md) (SOC-01), не
-этой capability. `fight|finish`
-без самовольного `common|area_conf`.
+этой capability. OA `fight|finish` — flat: `{status:100}`, `fight|conf.expire=0`,
+unitframe, bag, view, magic, skills, `state`; без самовольного `common|area_conf`.
 
 Outdoor hunt `can_leave:1`. Quest/dungeon `leaveFight` deny
 `{rs:false, err:"нельзя выйти из боя", sq}` — QST-ENG-04.

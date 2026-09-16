@@ -1,5 +1,5 @@
 import type { BootstrapReadModel } from "../../application/bootstrap-read-model.ts";
-import { requireBootstrapBlock } from "../../application/require-bootstrap-block.ts";
+import { flatBlockWithState } from "./flat-block-with-state.ts";
 import type { OaCommand, OaEncodedResponse } from "./oa-command.ts";
 
 export class UserBagCommand implements OaCommand {
@@ -9,7 +9,11 @@ export class UserBagCommand implements OaCommand {
   constructor(private readonly bootstrap: BootstrapReadModel) {}
 
   async execute(accountId: number): Promise<OaEncodedResponse> {
-    const init = await this.bootstrap.init(accountId);
-    return { kind: "nested", value: requireBootstrapBlock(init, "user|bag") };
+    return flatBlockWithState(
+      this.bootstrap,
+      accountId,
+      this.key,
+      await this.bootstrap.bag(accountId),
+    );
   }
 }

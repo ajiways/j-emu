@@ -380,6 +380,7 @@ export class JuggerWireModule {
         questCatalog,
         fproxy: commands.fproxy,
         fightWire,
+        bootstrap,
       });
       return new JuggerWireModule(http, longPoll, fightTcp, battleground, commands.quests);
     } catch (error) {

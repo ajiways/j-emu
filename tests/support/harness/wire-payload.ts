@@ -153,6 +153,26 @@ export function personalEsrvObject(packets: readonly AmfValue[]): Record<string,
   throw new Error("personal esrv fight object is missing");
 }
 
+export function esrvObjectWith(
+  packets: readonly AmfValue[],
+  key: string,
+): Record<string, AmfValue> {
+  if (!key) throw new Error("esrv object key is required");
+  for (const packet of packets) {
+    if (!packet || typeof packet !== "object" || Array.isArray(packet)) continue;
+    if (
+      packet.object === null ||
+      typeof packet.object !== "object" ||
+      Array.isArray(packet.object)
+    ) {
+      continue;
+    }
+    const object = packet.object as Record<string, AmfValue>;
+    if (key in object) return object;
+  }
+  throw new Error(`esrv object with ${key} is missing`);
+}
+
 function requireRecord(value: AmfValue | undefined, label: string): Record<string, AmfValue> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error(`${label} is missing`);

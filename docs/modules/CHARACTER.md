@@ -336,9 +336,18 @@ CHR-02.
 CombatPort.activeFightId`. Account↔hero 1:1; второй RAM index по heroId не
 нужен. Отсутствующий port — ошибка сборки модуля.
 
-Read model не пишет domain state. OA `init`/`init2`/`user|unitframe`/PUT_ON/OFF
+Read model не пишет domain state. OA `init`/`init2`/`user|unitframe`/`fight|finish`/PUT_ON/OFF
 и ATTACK_BOT оборачивают lock + `syncResources` в Unit of Work, затем
-BootstrapReadModel только читает.
+BootstrapReadModel только читает. Тот же sync на esrv HUD при `fight|loot` /
+`fight|exit` и после operator grant/money.
+
+Клиентский HUD без нового OA живёт от последнего `user|unitframe.hp_time`
+(интерполяция раз в секунду) и от `state` / `user|conf.money`. После боя
+personal esrv object несёт loot/exit **и** synced unitframe+conf+bag+state —
+деньги и `hp_time` не ждут клика `fight|finish`. `fight|finish` — полный dump
+как в старом entry_point: finish, `fight|conf.expire=0`, unitframe, bag, view,
+magic, skills, state; без `common|area_conf`. OA `user|bag` отдаёт bag+`state`.
+`common|dummy` — keepalive `{status:100}` без `state` (farm sweeper, не dummy).
 
 ATTACK_BOT: `syncResources` при ещё отсутствующем fight (`inFight=false`),
 затем `startHunt`, затем unitframe с overlay `hp_time=0`. Sync после
@@ -354,7 +363,9 @@ PUT_ON/grant: сначала `syncResources`, потом мутация maxima/H
 `money_minor`. Public operation `creditMoney({ characterId, minorUnits })`:
 положительное целое; итог в `[0, 2_147_483_647]`; та же hero-row lock и Unit
 of Work, что DROP. Inventory не пишет `heroes`. Wire: строка в `state`, число
-в `user|conf`. Полный DROP-контракт: [INVENTORY.md](INVENTORY.md).
+в `user|conf`. После охоты те же поля приходят на esrv вместе с loot/exit;
+operator `POST /operator/hero/:id/money` ставит их в personal outbox и будит
+long-poll. Полный DROP-контракт: [INVENTORY.md](INVENTORY.md).
 `debitMoney` / `debitMoneyGold` (обратные операции, fail если не хватает) —
 реализовано ECO-01/ECO-02, [STORE.md](STORE.md). `grantReputation` — REP-01,
 [REPUTATION.md](REPUTATION.md).
@@ -492,3 +503,7 @@ GET не использует AMF `HeroStateBlock` / `buildUserBag`. Сборк�
 id / quantity / `minorUnits=0` → **400**; нет героя / нет артикула → **404**;
 bag full / недостаточно `money_minor` / overflow → **409**; прочее → **500**
 с логом. `grantToBag` бросает `BagFullError` / `MissingArtifactError`.
+
+Успешные `POST .../items` и `POST .../money` после commit ставят в personal
+esrv outbox synced `user|unitframe` + `user|conf` + `user|bag` + `state` и
+будят long-poll. GET не пушит. Flash без этого OA не видит operator-выдачу.

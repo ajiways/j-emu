@@ -6,6 +6,7 @@ import type { WorldService } from "../../world/domain/world-service.ts";
 import { areaEsrvChannel, personalEsrvChannel } from "./esrv-channel.ts";
 import type { EsrvOutbox, EsrvOutboxEntry } from "./esrv-outbox.ts";
 import type { FightWireMapper } from "./fight-wire-mapper.ts";
+import type { HeroHudPush } from "./hero-hud-push.ts";
 import { isChatOnlyFragment } from "./esrv-chat-only-fragment.ts";
 import type { InstanceHuntWorld } from "../../instance/ports/instance-hunt.ts";
 import type { QuestCatalog } from "../../quests/ports/quest-catalog.ts";
@@ -28,6 +29,7 @@ export class EsrvPollAssembler {
     private readonly clock: Clock,
     private readonly instanceHunt: InstanceHuntWorld,
     private readonly quests: QuestCatalog,
+    private readonly hud: HeroHudPush,
   ) {}
 
   async hasImmediateWork(accountId: number): Promise<boolean> {
@@ -66,6 +68,7 @@ export class EsrvPollAssembler {
     if (loot) mergeChannel(pending, personal, { "fight|loot": loot });
     const exit = await this.combat.takeExit(accountId);
     if (exit) mergeChannel(pending, personal, { "fight|exit": this.fightWire.exit(exit) });
+    if (loot || exit) mergeChannel(pending, personal, await this.hud.fragment(accountId));
     flushChannel(frames, pending, personal, ctime);
     for (const channel of pending.keys()) {
       flushChannel(frames, pending, channel, ctime);

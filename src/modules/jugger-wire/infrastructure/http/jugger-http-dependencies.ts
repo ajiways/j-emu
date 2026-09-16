@@ -9,6 +9,7 @@ import type { IdentityService } from "../../../identity/application/identity-ser
 import type { InventoryService } from "../../../inventory/domain/inventory-service.ts";
 import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
 import type { EsrvPollAssembler } from "../../application/esrv-poll-assembler.ts";
+import type { HeroHudPush } from "../../application/hero-hud-push.ts";
 import type { LongPollCoordinator } from "../../application/long-poll-coordinator.ts";
 import type { PresenceFanout } from "../../application/presence-fanout.ts";
 import type { JuggerCommandModule } from "../../registry/jugger-command-module.ts";
@@ -24,6 +25,7 @@ export type JuggerHttpDependencies = Readonly<{
   combat: CombatPort;
   longPoll: LongPollCoordinator;
   esrvPoll: EsrvPollAssembler;
+  heroHud: HeroHudPush;
   presence: PresenceFanout;
   unitOfWork: UnitOfWork;
   contentEditor: ContentEditor;

@@ -156,6 +156,8 @@ describe("quest multi-board", () => {
     });
     expect(finished["fight|finish"]).toEqual({ status: 100 });
     expect(finished["common|area_conf"]).toBeUndefined();
+    expect(finished["user|unitframe"]).toMatchObject({ status: 100 });
+    expect(finished.state).toBeTypeOf("object");
     expect(viewHasArtikul(finished["user|view"], 23)).toBe(false);
 
     await turnIn(restarted, MULTI_POINT, 71);

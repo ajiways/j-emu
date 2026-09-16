@@ -37,6 +37,10 @@ describe("auth and init", () => {
     const bagOnly = await client.objectAction({ object: "user", action: "bag", sq: 11 });
     expect(bagOnly["user|bag"]).toMatchObject({ status: 100, amount: 6, total: 12 });
     expect(bagOnly["common|init"]).toBeUndefined();
+    expect(bagOnly.state).toMatchObject({ money: "25.00" });
+
+    const dummy = await client.objectAction({ object: "common", action: "dummy", sq: 12 });
+    expect(dummy).toEqual({ "common|dummy": { status: 100 }, sq: 12 });
 
     const init2 = await client.objectAction({ object: "common", action: "init2", sq: 2 });
     expect(init2["common|hunt"]).toMatchObject({ status: 100 });

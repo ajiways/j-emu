@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Application } from "../../src/app/application.ts";
+import { moneyFromMinorUnits } from "../../src/modules/jugger-wire/application/money-from-minor-units.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
-import { heroIdFrom } from "../support/harness/wire-payload.ts";
+import { bagItemByArtikulId, esrvObjectWith, heroIdFrom } from "../support/harness/wire-payload.ts";
 
 const TOKEN = "test-operator-token";
 const MISSING_ARTIFACT = 2_147_483_647;
@@ -90,6 +91,12 @@ describe("operator hero HTTP", () => {
     });
     expect(credited.statusCode, JSON.stringify(credited.json())).toBe(200);
     expect(jsonRecord(credited.json()).moneyMinor).toBe(moneyBefore + 250);
+
+    const hud = esrvObjectWith(await client.pollEsrv(), "state");
+    expect(hud.state).toMatchObject({ money: moneyFromMinorUnits(moneyBefore + 250) });
+    expect(hud["user|conf"]).toMatchObject({ money: (moneyBefore + 250) / 100 });
+    expect(hud["user|unitframe"]).toMatchObject({ status: 100 });
+    expect(bagItemByArtikulId(hud, 77).cnt).toBe(5);
 
     const debited = await operator(application, "POST", `/operator/hero/${heroId}/money`, {
       minorUnits: -250,

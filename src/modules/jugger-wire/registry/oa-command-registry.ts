@@ -15,6 +15,7 @@ export class OaCommandRegistry {
     "npc|info",
     "npc|answer",
     "common|conf",
+    "common|dummy",
     "common|init",
     "common|init2",
     "common|menu_link_status",
