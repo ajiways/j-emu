@@ -97,6 +97,27 @@ describe("chat macros", () => {
     const line = deathDurabilityMessage([token]);
     expect(line.msg).toBe(`Вещи потеряли прочность: ${token.token} (-1).`);
     expect(line.macroses[token.key]).toEqual(token.macro);
+    const broken = buildArtifactItemMacro({
+      itemId: 100_001,
+      artifactId: 9095,
+      title: "Перчатка",
+      picture: "glove.png",
+      typeId: "32",
+      kindId: 0,
+      flags: 0,
+      flagsExt: 0,
+      priceMinor: 0,
+      levelMin: 1,
+      levelMax: 1,
+      durability: 0,
+      durabilityMax: 3,
+      slot: 0,
+      slotMask: 32,
+      skills: [],
+    });
+    expect(broken.macro.durability).toBe(0);
+    expect(broken.macro.durability_max).toBe(3);
+    expect(deathDurabilityMessage([broken]).msg).toContain("(-1)");
   });
 
   it("expands /emo with USER macros and reports a missing target", () => {

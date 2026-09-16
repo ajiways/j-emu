@@ -127,6 +127,35 @@ describe("inventory durability persistence", () => {
     });
   });
 
+  it("reports durability 0 and moves 0/N to bag after the last break", async () => {
+    const hero = await createHero();
+    const glove = requireArtikul(await inventory.service.list(hero.id), 9095);
+    const definition = await requireDefinition(9095);
+    await database.run(async () => inventory.service.putOn(hero, glove.id, definition));
+    for (const expected of [2, 1, 0]) {
+      const death = await database.run(async () =>
+        inventory.service.applyDeathDurability({
+          characterId: hero.id,
+          random: new SequenceRandom([0, 0, 0, 0, 0, 0, 0, 0]),
+        }),
+      );
+      expect(death.breaks).toEqual([
+        {
+          itemId: glove.id,
+          artifactId: 9095,
+          durability: expected,
+          durabilityMax: 3,
+          slot: expected === 0 ? 0 : 32,
+        },
+      ]);
+    }
+    expect(requireArtikul(await inventory.service.list(hero.id), 9095)).toMatchObject({
+      durability: 0,
+      durabilityMax: 3,
+      location: { kind: "bag" },
+    });
+  });
+
   async function createHero() {
     const slot = uniqueDevelopmentSlot();
     const account = await identity.service.register(`u${slot}`, `N${slot}`, "secret1");

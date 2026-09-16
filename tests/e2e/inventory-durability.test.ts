@@ -40,19 +40,18 @@ describe("inventory durability death and repair", () => {
       await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms), sq, { equipGlove: false });
       sq += 20;
       const packets = await client.pollEsrv();
-      if (death === 0) {
-        const breakLine = chatMessages(packets).find((row) =>
-          String(row.msg).startsWith("Вещи потеряли прочность:"),
-        );
-        if (!breakLine) throw new Error("death durability chat is missing");
-        expect(String(breakLine.msg)).toMatch(/\[\[ARTIFACT_ITEM /);
-        expect(String(breakLine.msg)).toContain("(-1)");
-        const macroses = requireRecord(breakLine.macroses, "death break macroses");
-        expect(Object.values(macroses).length).toBeGreaterThanOrEqual(4);
-        for (const value of Object.values(macroses)) {
-          expect(requireRecord(value, "ARTIFACT_ITEM").macro_type).toBe("ARTIFACT_ITEM");
-        }
+      const breakLine = chatMessages(packets).find((row) =>
+        String(row.msg).startsWith("Вещи потеряли прочность:"),
+      );
+      if (!breakLine) throw new Error(`death ${death} durability chat is missing`);
+      expect(String(breakLine.msg)).toMatch(/\[\[ARTIFACT_ITEM /);
+      expect(String(breakLine.msg)).toContain("(-1)");
+      const macroses = requireRecord(breakLine.macroses, "death break macroses");
+      expect(Object.values(macroses).length).toBeGreaterThanOrEqual(4);
+      for (const value of Object.values(macroses)) {
+        expect(requireRecord(value, "ARTIFACT_ITEM").macro_type).toBe("ARTIFACT_ITEM");
       }
+      expect(artifactMacroByArtikul(macroses, 9095).durability).toBe(2 - death);
       if (death < 2) {
         const living = await client.objectAction({
           object: "common",
@@ -97,7 +96,12 @@ describe("inventory durability death and repair", () => {
     const gloveId = requireNumber(glove.id);
     const diffs = bagDiffFrames(await client.pollEsrv());
     expect(diffs[0]).toMatchObject({ removed: [gloveId], changed: {} });
-    expect(diffs[1]?.changed?.[String(gloveId)]).toMatchObject({
+    expect(
+      requireRecord(
+        requireRecord(diffs[1]?.changed, "bag_diff changed")[String(gloveId)],
+        "repaired glove diff",
+      ),
+    ).toMatchObject({
       durability: 2,
       durability_max: 2,
       actions: 523,
@@ -206,6 +210,17 @@ function chatMessages(packets: readonly AmfValue[]): Array<Record<string, AmfVal
     rows.push(message as Record<string, AmfValue>);
   }
   return rows;
+}
+
+function artifactMacroByArtikul(
+  macroses: Record<string, AmfValue>,
+  artikulId: number,
+): Record<string, AmfValue> {
+  for (const value of Object.values(macroses)) {
+    const row = requireRecord(value, "ARTIFACT_ITEM");
+    if (row.artikul_id === artikulId) return row;
+  }
+  throw new Error(`ARTIFACT_ITEM ${artikulId} is missing`);
 }
 
 function requireRecord(value: AmfValue | undefined, label: string): Record<string, AmfValue> {

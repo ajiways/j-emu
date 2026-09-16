@@ -500,7 +500,8 @@ ECO-01 buy (inventory mutation + `debitMoney`). Economy-модуля нет.
 `flags_ext` не добавлять: infinite = `flags & 1` (NON_BREAK) и
 `flags & 536870912` (COLLECTS_EPICNESS). Chat notify — `SOC-01`
 `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1).` после death/win break
-(raw-AMF). CEF leftover.
+(raw-AMF). Цвет имени — клиент по `durability` макроса: `0` красный, `1–2`
+оранжевый. Extra-строки про полный излом в dump нет. CEF leftover.
 
 ### Правила
 

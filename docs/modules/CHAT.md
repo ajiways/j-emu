@@ -83,7 +83,11 @@ FIGHT start/end: `area_id` = numeric area, `area_title` из world (обязат
 затем `Вы получили: [[MONEY]]. ` (пробел после точки). `fight|loot` по-прежнему
 ставит combat pendingLoot, не chat. Death/win break (до «Окончен бой»):
 `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1), …` — instance snapshot,
-прочность уже после −1. CEF leftover.
+прочность уже после −1. Отдельной строки «вещь полностью сломалась» в dump
+нет: `0/N` остаётся в той же строке с `durability: 0`; finite `1/1` удаляется
+с тем же `(-1)`, текст destroy-чата в dump не пойман. Цвет ссылки рисует
+клиент (`OldMacroArtifact`): `0` красный, `1–2` оранжевый, иначе коричневый.
+CEF leftover.
 
 Trade confirm: инициатору system `Пользователь [[USER]] согласился торговать с Вами.`
 
