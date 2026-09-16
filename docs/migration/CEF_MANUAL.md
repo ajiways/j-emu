@@ -19,9 +19,11 @@
 
 ## Character / бой
 
-- [ ] CMB-03: экран результата hunt 50310 — HP/EXP/деньги/лут после
-      `fight|exit`, HUD совпадает с PostgreSQL.
-- [ ] CMB-04: F5 в активном hunt — тот же `fightId`/`akey`, без `oppwait`.
+- [x] CMB-03: экран результата hunt 50310 после `fight|exit`.
+      CEF 2026-09-17: карточка открывается. Leftover: HUD EXP в момент
+      добивания, деньги на `fight|exit`.
+- [x] CMB-04: F5 в активном hunt — тот же `fightId`/`akey`, без `oppwait`.
+      CEF 2026-09-17.
 - [x] CMB-04: смерть → призрак, блок регена, OA `RESURRECT` снимает ghost
       и ставит HP `max(2, floor(hpMax*0.05))` в храме 503 (не в area смерти).
       CEF 2026-09-16. Dest 503 — временный outdoor stub
@@ -48,9 +50,9 @@
       карточку — клик no-op. raw-AMF: OA `fight|finish` отдаёт `fight|info`
       с `share`/`macroses` SHARE (Flash SocialComponent). Лут/чат/exit после
       fproxy `fightFinish`. CEF 2026-09-16: карточка открывается.
-- [ ] CMB-05 leftover: `hpChange` больше оставшегося HP (3 HP, удар 7).
+- [x] CMB-05 leftover: `hpChange` больше оставшегося HP (3 HP, удар 7).
       raw-AMF: wire `hpChange` = −min(raw, currentHP) на melee/kind-1/glove/DoT.
-      CEF не подтверждён.
+      CEF 2026-09-17: добивание на полоске HP.
 - [x] INV leftover: лавка `artikul_id=23` — спеллы на вещи и в бою.
       CEF 2026-09-16: пул `artikul_id1..6` роллится в `items.data_json`.
       MAGRES/MAGSTR roll и copy instance в mail/auction/trade snapshot —
@@ -59,40 +61,45 @@
       (`persSpells`). CEF 2026-09-16: полный `persSpells` с перчаткой.
 - [x] CMB-08 leftover: после убийства текущего противника shuffle не даёт
       следующего. CEF 2026-09-16: outdoor клон `oppnew` после kill.
-- [ ] CMB-08 leftover: 3↔3 shuffle не «после Разозлить», а после каждого
+- [x] CMB-08 leftover: 3↔3 shuffle не «после Разозлить», а после каждого
       удара, пока 3↔3 и есть кому меняться (waiter / waiting enemy /
       другая 3↔3 дуэль). raw-AMF: поздний вход второго охотника на ходе
-      первого → после удара `oppwait`/`oppnew`. CEF не подтверждён.
-- [ ] CMB-08 leftover: после 3↔3 cross-swap бот бьёт два раза подряд.
+      первого → после удара `oppwait`/`oppnew`. CEF 2026-09-17.
+- [x] CMB-08 leftover: после 3↔3 cross-swap бот бьёт два раза подряд.
       raw-AMF: cancel старых delay token до смены пары, ход охотникам.
-      CEF не подтверждён.
-- [ ] SOC-01 leftover: «Вами получено» tooltip без статов. raw-AMF: loot
-      `[[ARTIFACT]]` несёт catalog `artifact_skills` как bag. CEF не
-      подтверждён.
-- [ ] CMB-02 leftover: орб 99 — иконка не снимается после удара, висит
+      CEF 2026-09-17.
+- [x] SOC-01 leftover: «Вами получено» tooltip без статов. raw-AMF: loot
+      `[[ARTIFACT]]` несёт catalog `artifact_skills` как bag.
+      CEF 2026-09-17.
+- [x] CMB-02 leftover: орб 99 — иконка не снимается после удара, висит
       мёртвым эффектом и блокирует похожие. raw-AMF: standing kind-3 на
-      drink, `effPurge` после consuming L/C/R melee, не glove. CEF не
-      подтверждён.
+      drink, `effPurge` после consuming L/C/R melee, не glove.
+      CEF 2026-09-17.
 - [ ] CMB-02 leftover: AOE (`targetCount>=2`, «Волна света») бьёт только
       текущего противника пары, остальных врагов не задевает.
 - [ ] CMB-06/15 leftover: плевок Хиссы — разовый урон, дебафф не вешается.
-- [ ] CMB-13 leftover: сайдбар HP тиммейтов/чужих врагов и `oppwait` после
+- [x] CMB-13 leftover: сайдбар HP тиммейтов/чужих врагов и `oppwait` после
       добивания, пока жив бот напарника. raw-AMF: `persChangeInfo` fan-out
-      и `oppwait` без shuffle throw. CEF не подтверждён.
-- [ ] CMB-13 leftover: второй охотник без fight-auth в момент «Разозлить»
+      и `oppwait` без shuffle throw. CEF 2026-09-17.
+- [x] CMB-13 leftover: второй охотник без fight-auth в момент «Разозлить»
       видит клон, но без ходов. raw-AMF: grant/bot-counter до auth;
-      bootstrap `oppnew` — duel foe. CEF не подтверждён.
+      bootstrap `oppnew` — duel foe. CEF 2026-09-17.
 - [ ] leftover: список участников — бафы/дебафы чужих и моба. raw-AMF:
       fproxy `persEff`+`persInfo`, bootstrap other humans, fan-out
-      `effUse`/`effPurge`. Моб пустой, пока нет bot standing (CMB-06/15).
-      CEF не подтверждён.
+      `effUse`/`effPurge`. CEF 2026-09-17: иконки других охотников.
+      Моб пустой, пока нет bot standing (CMB-06/15).
 - [ ] CMB-01 leftover: в бою нет счётчика нанесённого урона (`dealtDamage`).
 - [ ] CMB-01 leftover: пропуск хода вешает бой (нет таймера/`attacknow`).
 - [ ] CMB-04 leftover: F5 в бою — иконки баффов/дебаффов без картинки
       (`persEff.img`).
+- [ ] CMB-03 leftover: HUD EXP в момент добивания, деньги — на
+      `fight|exit`. Persist — одна UoW (`grantExperience`+`creditMoney`)
+      на RAM finish; HUD `user|conf` едет с esrv loot/exit.
+      CEF 2026-09-17.
 
-- [ ] CMB-05: голый L1 vs Грызль **50310** — урон на полоске HP не
+- [x] CMB-05: голый L1 vs Грызль **50310** — урон на полоске HP не
       константа 8–12; с перчаткой 9095 бой выигрывается.
+      CEF 2026-09-17.
 - [ ] CMB-05: Ущелье 501, три dump-hunt — Хисса **50101** (STR 15), дух
       **50102** (STR 35), рыжий грызль **50103** (STR 45); разные удары,
       не копия Грызля.
@@ -100,8 +107,9 @@
       `attack_center`; Грызль **50310** по-прежнему melee-only.
 - [ ] CMB-08: два героя в 503 — propose/accept friendly duel, экран боя
       `is_pvp`, после выхода HP как до дуэли.
-- [ ] CMB-08: второй охотник на Грызля 50310 — после трёх обменов ударов
+- [x] CMB-08: второй охотник на Грызля 50310 — после трёх обменов ударов
       первый уходит в ожидание, второй получает бота, полоски HP те же.
+      CEF 2026-09-17.
 - [ ] GEAR-01: герой L7, выдать и надеть 20546 «Изначальная мифическая
       перчатка тирана VI», ATTACK_BOT Грызль 50310 — иконка kind-3 на 8
       ходов, без прока на удар; F5 в бою сохраняет remaining; рестарт
@@ -118,9 +126,10 @@
 - [ ] CMB-12: три героя на 50310 — A vs Грызль, B occupied ATTACK_BOT
       team 1, C JOIN `{team:2}` сразу vs B; A после пары всё ещё бьёт
       бота; 2-hero JOIN team 2 без B по-прежнему ждёт смерть бота.
-- [ ] CMB-13: два героя team 1 на 50310 — A vs Грызль, B occupied
+- [x] CMB-13: два героя team 1 на 50310 — A vs Грызль, B occupied
       ATTACK_BOT, «Разозлить» → две human↔bot дуэли; после трёх обменов
       на обеих парах cross-swap, полоски HP те же.
+      CEF 2026-09-17.
 - [ ] CMB-14: голый L1 vs Грызль 50310 — на полоске видны dodge/block/crit
       (`react` 1/6/14), не только hit.
 - [ ] CMB-15a: Хисса 50101 — instant kind-1 с MAGRES, не копия STR/10.
@@ -228,8 +237,9 @@
 - [ ] CMB-02 leftover: счётчики пояса 93/99, перчатки 9095, ярости.
 - [x] Leftover HUD auto-refresh (CEF 2026-09-16, частично): после hunt
       HP/`hp_time` и деньги приходят на esrv вместе с `fight|loot`/`exit`;
-      operator grant/money тоже пушит HUD. Полный CMB-03 экран результата —
-      строка выше, не закрыта.
+      operator grant/money тоже пушит HUD. CEF 2026-09-17: экран результата
+      открывается; HUD EXP в момент добивания, деньги на `fight|exit` —
+      leftover CMB-03.
 
 ## Internal ports (нет production OA)
 

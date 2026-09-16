@@ -10,7 +10,7 @@ Hunt overlay и map join **готово**: первый ATTACK_BOT 50310 ста�
 `fight_id`, второй входит в тот же бой (`joinHunt` team 1). Authored
 wander/respawn для 50310 в dump нет — не выдумывать. Melee loop — CMB-01
 (raw-AMF). Pocket fight cast — CMB-02 (raw-AMF). Terminal loot/HP — CMB-03
-(raw-AMF). Mid-fight F5 `fight|conf` — CMB-04 (raw-AMF; CEF не прогонялся).
+(raw-AMF). Mid-fight F5 `fight|conf` — CMB-04 (CEF 2026-09-17).
 
 ## Источники поведения
 

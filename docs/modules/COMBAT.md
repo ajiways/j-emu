@@ -9,8 +9,10 @@ bot spell book, CMB-07 loot, CMB-08 friendly duel + hunt 3↔3 waiter
 handoff и GEAR-01 RAM kind-3 с надетой 20546 (raw-AMF). CMB-11: OA
 `FIGHT_JOIN` `{team:1|2}` / `FIGHT_HELP` входят в тот же RAM `fightId`,
 copy gate, team-2 без hunt EXP; CMB-12: две параллельные hunt-дуэли на
-50310 (opener↔bot и team-1↔team-2). CEF не прогонялся — product status combat
-остаётся частично. CMB-09 отдаёт
+50310 (opener↔bot и team-1↔team-2). CEF 2026-09-17: hunt 3↔3 / F5 /
+overkill / орб 99 / сайдбар / loot tooltip. Product status combat остаётся
+частично (AOE, MAGRES, skip-turn, Hissa spit, F5 img, friendly duel).
+CMB-09 отдаёт
 quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA
 `START_FIGHT` (quest + ambush) и hunt loot-cap — composition (`QuestDesk` /
 `HuntFightSettlement`), не combat domain. Roster/flags квестового боя
@@ -167,7 +169,8 @@ fproxy, нет 77 в бою, нет generic effect engine. AOE ending
 текущего `FightDuel.otherId` — leftover. Орб 99 drink вешает RAM standing
 kind-3 (`charging` ходов, `groupId` 842, без bake STR — melee бонус остаётся
 `takeOrbPcStr`); consuming L/C/R melee шлёт `effPurge`; glove/kind-1 орб не
-тратит. Повторный drink той же group снимает предыдущий standing. CEF leftover:
+тратит. Повторный drink той же group снимает предыдущий standing.
+CEF 2026-09-17: орб 99 standing + `effPurge` на физ L/C/R. AOE leftover:
 [CEF_MANUAL.md](../migration/CEF_MANUAL.md). Kind 11 HTTP
 `{rs:false, restriction:18}` — только если опубликованный spell kind 11
 (в текущем slice нет). CEF счётчиков пояса/перчатки/ярости не прогонялся.
@@ -182,7 +185,8 @@ kind-3 (`charging` ходов, `groupId` 842, без bake STR — melee бону
 entries overlay 27 штук (включая **77 / 93 / 99**). `leaveFight` HTTP
 `{rs:true}`; last human — flee `type:2` без лута; союзник жив — только
 flee-exit, бой продолжается. Loss: HP 0, loot-блок с нулями, ghost/injury через character `noteDefeat`.
-CEF экрана результата не прогонялся.
+CEF 2026-09-17: экран результата hunt открывается. Leftover: HUD EXP в
+момент добивания, деньги на `fight|exit` (persist — одна UoW на RAM finish).
 
 ### Architecture decision
 
@@ -260,7 +264,8 @@ version bump. Combat не читает fixtures.
 
 Quest loot tables в combat (QST-ENG-02 clip — composition `needed`);
 party split; dungeon bands leftover (personal/coins — DNG-03 landed); system chat; `Clock.schedule`;
-OA FIGHT_JOIN/HELP (CMB-11); live `10_000_000+hero.id`.
+OA FIGHT_JOIN/HELP (CMB-11); live `10_000_000+hero.id`. HUD EXP в момент
+добивания vs деньги на `fight|exit` — leftover CEF 2026-09-17.
 
 ## CMB-04 — reconnect, locks, ghost
 
@@ -283,7 +288,8 @@ CHR-02 regen. Roster `dead:4`. Injury id **875**, `injury_time` = unix now+600;
 Канон dest — [WORLD.md](WORLD.md) leftover (`kind_info.resurrect_teleport`,
 данж start area, BG spawn). Ghost `resurrect_zones` outdoor =
 `{503:{title}}` с каталожным title, пока `state.area_id` ещё смерть.
-Копия данжа — start area той же copy. CEF F5 mid-fight не прогонялся.
+Копия данжа — start area той же copy. CEF 2026-09-17: F5 mid-hunt тот же
+`fightId`/`akey`, без `oppwait`. F5 `persEff.img` — leftover.
 
 ### Architecture decision
 
@@ -315,8 +321,9 @@ Glove ending (не AOE 16) крутит ту же STR-формулу; crit пе�
 
 Content: Грызль **2** STR 8 / 50310; Хисса **4** STR 15 / 50101; дух **32**
 STR 35 / 50102; рыжий грызль **24** STR 45 / 50103. Overlay-луты 4/24/32
-не пустые. CEF урона не прогонялся. Wire `hpChange` — −min(raw, currentHP):
-добивание 3 HP ударом 7 даёт `-3`, не `-7`. То же на kind-1/glove/DoT.
+не пустые. CEF 2026-09-17: STR-урон на полоске Грызль 50310; leftover
+overkill clamp. Wire `hpChange` — −min(raw, currentHP): добивание 3 HP
+ударом 7 даёт `-3`, не `-7`. То же на kind-1/glove/DoT.
 
 ### Architecture decision
 
@@ -327,8 +334,8 @@ e2e смерти; production path его не передаёт.
 
 ### Out of scope (CMB-05 leftover)
 
-CEF добивания на полоске HP. dodge/block/crit — CMB-14. kind-1 overlay —
-CMB-15. Weapon DPS aparte от STR.
+dodge/block/crit — CMB-14. kind-1 overlay — CMB-15. Weapon DPS aparte от STR.
+Ущелье 501 три dump-hunt — ещё CEF.
 
 ## CMB-06 — bot spell book
 
@@ -399,7 +406,9 @@ HP/MP/pocket, без лута/EXP/травмы; `fight|conf.is_pvp=1`, `type:"6"
 актор `oppwait`; waiting enemy (клон «Разозлить») → `oppnew` клона;
 вторая human↔bot дуэль тоже 3↔3 → cross-swap. 3↔3 не сбрасывается, пока
 менять некого. HP/loadout без сброса. bot↔bot leftover.
-OA `FIGHT_JOIN` / `FIGHT_HELP` landed raw-AMF (CMB-11). CEF не прогонялся.
+OA `FIGHT_JOIN` / `FIGHT_HELP` landed raw-AMF (CMB-11). CEF 2026-09-17:
+hunt 3↔3 shuffle и без второго удара бота после cross-swap. Friendly
+duel — ещё CEF.
 
 ### Architecture decision
 
@@ -507,8 +516,10 @@ Practice history — CMB-17.
 
 ## CMB-13 — hunt N×N pairing
 
-Срез закрыт (unit + raw-AMF). Product-status не поднимать: CEF не
-прогонялся. Очередь: [ROADMAP.md](../migration/ROADMAP.md) CMB-18.
+Срез закрыт (unit + raw-AMF). CEF 2026-09-17: сайдбар HP/`oppwait`, pair
+grant до fight-auth, hunt N×N «Разозлить» + 3↔3. Product-status не
+поднимать (AOE/MAGRES/skip-turn leftover). Очередь:
+[ROADMAP.md](../migration/ROADMAP.md) CMB-18.
 
 Seekers = unpaired living humans **и** bots обеих команд. Pair loop как
 jgr: shuffle + last-foe score (`lastOpponentId`). Occupied spawn bot не

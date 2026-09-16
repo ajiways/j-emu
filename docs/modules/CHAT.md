@@ -88,7 +88,7 @@ FIGHT start/end: `area_id` = numeric area, `area_title` из world (обязат
 нет: `0/N` остаётся в той же строке с `durability: 0`; finite `1/1` удаляется
 с тем же `(-1)`, текст destroy-чата в dump не пойман. Цвет ссылки рисует
 клиент (`OldMacroArtifact`): `0` красный, `1–2` оранжевый, иначе коричневый.
-CEF leftover.
+CEF 2026-09-17: tooltip «Вами получено» со статами.
 
 Trade confirm: инициатору system `Пользователь [[USER]] согласился торговать с Вами.`
 

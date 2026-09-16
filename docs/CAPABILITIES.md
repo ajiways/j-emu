@@ -80,17 +80,16 @@ bootstrap. Internal `grantExperience` атомарно применяет DATA-0
 
 Не перенесено:
 
-- CEF confirmation of CMB-03 HUD HP-EXP-bag after `fight|exit` (карточка
-  результата CEF 2026-09-16);
-- CEF F5 mid-fight (raw-AMF CMB-04 есть; outdoor `RESURRECT` dest 503 —
-  CEF 2026-09-16, dest пока хардкод);
+- leftover CMB-03: HUD EXP в момент добивания, деньги на `fight|exit`;
 - клиентский EXP grant через квест.
 
 CEF leftover (2026-09-16, **частично**): HUD HP/`hp_time` и деньги обновляются
 с esrv loot/exit и operator grant без лишнего OA. Outdoor `RESURRECT` dest
 503 подтверждён (хардкод, [WORLD.md](modules/WORLD.md)). OA `fight|finish`
 отдаёт `fight|info` (raw-AMF); CEF 2026-09-16: карточка результата открывается
-(`share`/`macroses` SHARE). HUD HP-EXP-bag после `fight|exit` — ещё CEF.
+(`share`/`macroses` SHARE). CEF 2026-09-17: экран результата hunt; F5 mid-fight
+тот же `fightId`/`akey`. Leftover: HUD EXP в момент добивания, деньги на
+`fight|exit`.
 
 Equipment-derived `user|skills` / `hpMax` считаются из naked skills + надетых
 предметов (перчатка 9095 даёт VIT+5). Без экипа HUD показывает naked L1.
@@ -247,15 +246,19 @@ restart снимает бой, перчатка остаётся в paperdoll. C
 `q_engine_roster` поднимает quest-бой flags `"8"` (герой+Хисса vs Грызль и
 дух), `chat_*`, `win_fight` без bump kill на `q_engine_fight`; проигрыш
 оставляет book 5 started; mid-fight restart рвёт RAM. CEF карточки
-результата 2026-09-16. F5 в бою, видимый урон, плевок Хиссы, дуэль,
-gear-spell и quest roster flags 8 не прогонялись. Outdoor `RESURRECT` dest 503 —
+результата 2026-09-16. CEF 2026-09-17: F5 mid-hunt, STR-урон/overkill 50310,
+hunt 3↔3 shuffle без двойного удара бота, loot tooltip skills, орб 99,
+сайдбар HP/`oppwait`, pair grant до fight-auth. Outdoor `RESURRECT` dest 503 —
 CEF 2026-09-16. CEF leftovers (чат поломки CEF 2026-09-16, экран результата CEF 2026-09-16,
-overkill raw-AMF clamp без CEF, перчатка 23 CEF 2026-09-16 instance spells,
+overkill CEF 2026-09-17, перчатка 23 CEF 2026-09-16 instance spells,
 MAGRES leftover, aggro persSpells/kill-clone CEF 2026-09-16, 3↔3 shuffle
-и loot ARTIFACT skills raw-AMF без CEF, aggro pair grant до fight-auth, sidebar HP/`oppwait`
-и 3↔3 без второго удара бота после swap raw-AMF без CEF, орб 99 standing+effPurge
-raw-AMF без CEF, список участников persEff/fan-out raw-AMF без CEF, дебаффы, AOE только в свою пару,
-dealtDamage, skip-turn, F5 img) — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
+и loot ARTIFACT skills CEF 2026-09-17, aggro pair grant до fight-auth CEF
+2026-09-17, sidebar HP/`oppwait` и 3↔3 без второго удара бота после swap
+CEF 2026-09-17, орб 99 standing+effPurge CEF 2026-09-17, список участников
+persEff/fan-out CEF 2026-09-17 кроме моба, HUD EXP в момент добивания /
+деньги на `fight|exit`, friendly duel, gorge hunts, Hissa spit, GEAR-01,
+quest roster flags 8, дебаффы, AOE только в свою пару, dealtDamage,
+skip-turn, F5 img) — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 CMB-11: OA `FIGHT_JOIN` `{team:1|2}` и `FIGHT_HELP` входят в тот же RAM
 `fightId` на 50310; карта ATTACK_BOT на занятый spawn остаётся team 1;
 две копии 542 изолируют JOIN; после смерти бота живой team-2 продолжает
@@ -354,7 +357,8 @@ system-строки после UoW settlement; death/win break —
 `Вещи потеряли прочность: [[ARTIFACT_ITEM]] (-1)` до «Окончен бой».
 Сбой enqueue не откатывает награды.
 `trade|confirm` шлёт «согласился торговать». Party type — на `4:` при
-membership (SOC-02). CEF чата не прогонялся.
+membership (SOC-02). CEF 2026-09-16: чат поломки. CEF 2026-09-17: tooltip
+«Вами получено» со статами. Area/private chat — ещё CEF.
 
 Не перенесены кланы, one-fight TEMPEFFECT expiry chat, quest announce.
 

@@ -408,7 +408,8 @@ startup `hpTime`. Колонки `updated_at` нет.
   fake clock advances; harness restart передаёт тот же clock; `mp_time`
   остаётся HUD `0`; ATTACK_BOT sync-before-start; clock regression on
   init/unitframe is `204`;
-- нет ticker, нет fake OA. CEF экрана результата после CMB-03 не прогонялся.
+- нет ticker, нет fake OA. CEF 2026-09-17: экран результата hunt. Leftover:
+  HUD EXP в момент добивания, деньги на `fight|exit`.
 
 CMB-03 пишет HP с боя (raw-AMF). CEF confirmation регена после боя нет.
 
