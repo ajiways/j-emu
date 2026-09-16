@@ -458,7 +458,8 @@ revenge, hunt/friendly honor, HTML `fight|info`.
 ## EDT-03 — Operator hero console
 
 HTTP JSON `/operator/hero/*` для тестовой консоли. Не AMF и не OA.
-Flash-клиента нет. Новых таблиц нет.
+Flash-клиента нет. Новых таблиц нет. Consumer — модуль «Персонаж» в
+`j-content-editor` (CHAR-01); браузер в эти пути не ходит.
 
 Владение: character — `heroes` (`money_minor`, `exp`, `level`, `nick`);
 inventory — bag/pocket/paperdoll instances через `grantToBag` / `list`;

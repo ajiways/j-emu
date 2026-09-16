@@ -1,12 +1,26 @@
 import { randomInt } from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+import tls from "node:tls";
+import { loadConfig } from "../src/app/config.ts";
 import { loadPackageEnv } from "../src/infrastructure/load-package-env.ts";
 import { decodeAmf3, encodeAmf3 } from "../src/modules/jugger-wire/amf/amf3.ts";
 
-loadPackageEnv(import.meta.url);
+const root = loadPackageEnv(import.meta.url);
+const config = loadConfig(process.env, root);
+const baseUrl = config.httpOnly
+  ? `http://127.0.0.1:${config.port}`
+  : `https://s1.jugger.ru:${config.port}`;
 
-const port = process.env.PORT;
-if (!port) throw new Error("PORT is required");
-const baseUrl = `http://127.0.0.1:${port}`;
+if (!config.httpOnly) {
+  const certPath = path.join(config.certsDir, "cert.pem");
+  const pem = fs.readFileSync(certPath, "utf8");
+  if (!pem.includes("BEGIN CERTIFICATE")) {
+    throw new Error(`TLS certificate is not a PEM file: ${certPath}`);
+  }
+  tls.setDefaultCACertificates([...tls.getCACertificates("default"), pem]);
+}
+
 const slot = randomInt(1, 2_147_483_647);
 
 const auth = await fetch(`${baseUrl}/soc_auth.php?slot=${slot}`, { redirect: "manual" });

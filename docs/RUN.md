@@ -74,8 +74,22 @@ npm run dev
 или `npm run build` и `npm start`. Открыть `http://localhost:8080/login`.
 
 Создать тестового героя без Flash (печатает `heroId`): при запущенном
-`npm run dev` выполнить `npm run dev:bootstrap-hero`. Выдача предмета и
-серебра — модуль «Персонаж» в `j-content-editor`, не SQL.
+`npm run dev` выполнить `npm run dev:bootstrap-hero`. Скрипт берёт origin
+из `HTTP_ONLY`/`PORT` (`http://127.0.0.1:8080` или `https://s1.jugger.ru:443`)
+и для HTTPS доверяет `certs/cert.pem`. Выдача предмета и серебра — модуль
+«Персонаж» в `j-content-editor`, не SQL.
+
+## j-content-editor
+
+Отдельный репозиторий `../j-content-editor`. Браузер в j-emu не ходит:
+cookie-сессия editor'а → backend `:4000` → Bearer на `/operator/hero/*`.
+
+`JEMU_OPERATOR_TOKEN` editor'а обязан совпадать с `CONTENT_OPERATOR_TOKEN`
+этого инстанса. Origin: при `HTTP_ONLY=1` — `http://127.0.0.1:8080`; при
+`HTTP_ONLY=0` — `https://s1.jugger.ru` и `JEMU_OPERATOR_CA_FILE` на
+`certs/cert.pem` (Node не доверяет самоподписанный сертификат сам).
+Запуск Postgres `:5433`, backend и frontend —
+[README редактора](../../j-content-editor/README.md).
 
 ## HTTPS :443 (Flash/CEF)
 

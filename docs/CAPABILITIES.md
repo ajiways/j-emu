@@ -448,7 +448,8 @@ money (знак `minorUnits` = credit/debit `money_minor`). 401/400/404/409
 без fallback. Restart сохраняет bag и золотые монеты (`money_minor`).
 Flash/OA consumer нет
 (internal enabling, product **частично**). `ExperienceGrantService` и
-алмазы не входят.
+алмазы не входят. Визуальная консоль — соседний репозиторий
+`j-content-editor` (CHAR-01), не SPA внутри j-emu.
 
 EDT-04: HTTP JSON `/operator/catalog/artifacts` (тот же Bearer): поиск
 `?q=` / пакет `?ids=` / GET `:id` → `{ id, title, picture, kindId, typeId }`.
