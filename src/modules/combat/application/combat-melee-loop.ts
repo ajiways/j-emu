@@ -37,6 +37,7 @@ export class CombatMeleeLoop {
     }
     enqueuePlayerMelee(this.enqueue, accountId, sequence, resolved.events);
     fanoutPersChange(battle, accountId, resolved.events, this.enqueue, this.wakeAccount);
+    fanoutRosterEffects(battle, accountId, resolved.events, this.enqueue, this.wakeAccount);
     if (battle.finished) {
       await this.settleFinished(battle, resolved.events, accountId);
       return;
@@ -46,6 +47,8 @@ export class CombatMeleeLoop {
 
   keepTurn(accountId: number, sequence: string | number, events: readonly CombatEvent[]): void {
     this.enqueue(accountId, [{ type: "command-accepted", sequence }, ...events]);
+    const battle = this.byAccount.get(accountId);
+    if (battle) fanoutRosterEffects(battle, accountId, events, this.enqueue, this.wakeAccount);
   }
 
   async endingGlove(
@@ -61,6 +64,7 @@ export class CombatMeleeLoop {
     cancelDuel(this.scheduler, battle, accountId);
     this.enqueue(accountId, [{ type: "command-accepted", sequence }, ...events]);
     fanoutPersChange(battle, accountId, events, this.enqueue, this.wakeAccount);
+    fanoutRosterEffects(battle, accountId, events, this.enqueue, this.wakeAccount);
     if (battle.finished) {
       await this.settleFinished(battle, events, accountId);
       return;
@@ -175,6 +179,7 @@ export class CombatMeleeLoop {
     const result = battle.resolveBotMelee(targetAccountId);
     this.enqueue(targetAccountId, result.events);
     fanoutPersChange(battle, targetAccountId, result.events, this.enqueue, this.wakeAccount);
+    fanoutRosterEffects(battle, targetAccountId, result.events, this.enqueue, this.wakeAccount);
     this.wakeAccount(targetAccountId);
     if (!result.killedPlayer) {
       const extra = battle.tickRosterDuels();
@@ -256,6 +261,22 @@ export class CombatMeleeLoop {
     if (!granted) return;
     this.enqueue(accountId, [granted]);
     this.wakeAccount(accountId);
+  }
+}
+
+function fanoutRosterEffects(
+  battle: Battle,
+  actorAccountId: number,
+  events: readonly CombatEvent[],
+  enqueue: (accountId: number, events: readonly CombatEvent[]) => void,
+  wakeAccount: (accountId: number) => void,
+): void {
+  const fx = events.filter((event) => event.type === "effect-use" || event.type === "effect-purge");
+  if (fx.length === 0) return;
+  for (const accountId of battle.authedAccountIds()) {
+    if (accountId === actorAccountId) continue;
+    enqueue(accountId, fx);
+    wakeAccount(accountId);
   }
 }
 

@@ -112,6 +112,7 @@ describe("Battle", () => {
         aggro: 1,
         loadout: EMPTY_COMBAT_LOADOUT,
         heroEffects: [],
+        otherEffects: [],
       },
       { type: "turn-granted", timeoutSeconds: 20 },
     ]);

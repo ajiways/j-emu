@@ -2,6 +2,7 @@ import { FightDuel } from "./fight-duel.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { friendlyHuman, huntOpener, isHumanDuelInit } from "./battle-fighters.ts";
 import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
+import { FightEffectIds } from "./fight-effect-ids.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { HuntRoster } from "./hunt-roster.ts";
@@ -22,23 +23,25 @@ export function seedBattleParticipants(
 ): BattleSeed {
   if (isHumanDuelInit(init)) {
     requireFriendlyDuelBattleInit(init, rules);
+    const effectIds = new FightEffectIds();
     return {
       kind: init.kind,
       huntRoster: null,
       pairedAccountId: init.challenger.accountId,
       humans: [
-        friendlyHuman(init.challenger, 1, false, init.startedAt.getTime()),
-        friendlyHuman(init.acceptor, 2, false, init.startedAt.getTime()),
+        friendlyHuman(init.challenger, 1, false, init.startedAt.getTime(), effectIds),
+        friendlyHuman(init.acceptor, 2, false, init.startedAt.getTime(), effectIds),
       ],
       duels: [new FightDuel(init.challenger.heroId, init.acceptor.heroId, init.challenger.heroId)],
     };
   }
   requireHuntBattleInit(init, rules);
+  const effectIds = new FightEffectIds();
   return {
     kind: "hunt",
     huntRoster: new HuntRoster(init),
     pairedAccountId: init.accountId,
-    humans: [huntOpener(init)],
+    humans: [huntOpener(init, effectIds)],
     duels: [new FightDuel(init.heroId, init.botFightId, init.heroId)],
   };
 }

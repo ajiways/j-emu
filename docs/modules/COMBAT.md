@@ -466,7 +466,10 @@ C `FIGHT_JOIN` `{team:2}` сразу vs B (`oppnew` human, `bot !== true`).
 A после пары B↔C продолжает melee vs bot. Параллельные `FightDuel` не
 делят ход, цель и delay token: удар/каст/bot-counter только
 `otherId` своей пары. Общий `Battle` — roster HP, `persList`/`persChangeInfo`,
-finish стороны, 3↔3 cross-swap. Связь «чужой удар сбил мой ход» — leftover
+finish стороны, 3↔3 cross-swap. Список участников: fproxy `persEff`/`persInfo`
+(клик и таймер 5 с), bootstrap `persEff`+`effUse` чужих людей, live fan-out
+`effUse`/`effPurge` всем authed. Id эффектов общие на бой. Моб в списке —
+пустой `persEff`, пока нет bot standing (CMB-06/15 leftover). Связь «чужой удар сбил мой ход» — leftover
 таймера после swap, не общая очередь ходов. Смерть A vs bot при живых B↔C
 не закрывает бой: dissolve A↔bot, bot unpaired.
 

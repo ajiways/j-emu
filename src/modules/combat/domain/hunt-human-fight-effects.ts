@@ -1,6 +1,7 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { bakeTimedStatPercents } from "./bake-timed-stat-percents.ts";
 import type { CombatGearSpell } from "./combat-loadout.ts";
+import type { FightEffectIds } from "./fight-effect-ids.ts";
 
 const TURN_SECONDS = 40;
 
@@ -54,7 +55,7 @@ type StandingEffect = {
 };
 
 export class HuntHumanFightEffects {
-  private nextId = 1;
+  readonly effectIds: FightEffectIds;
   private readonly standing: StandingEffect[] = [];
 
   constructor(
@@ -63,12 +64,14 @@ export class HuntHumanFightEffects {
       strength: number;
       startedAtMs: number;
       gearSpells: readonly CombatGearSpell[];
+      effectIds: FightEffectIds;
     }>,
   ) {
     requireWireIdentity(input.heroId, "hero id");
     if (!Number.isInteger(input.startedAtMs) || input.startedAtMs < 0) {
       throw new Error("Gear-spell attach clock must be a non-negative integer");
     }
+    this.effectIds = input.effectIds;
     for (const gear of input.gearSpells) {
       for (const effect of gear.spell.effects) {
         this.attach(input, gear, effect);
@@ -238,7 +241,7 @@ export class HuntHumanFightEffects {
     if (!Number.isInteger(input.remainTurns) || input.remainTurns < 1) {
       throw new Error("Charging kind-3 remainTurns must be a positive integer");
     }
-    const id = this.nextId;
+    const id = this.effectIds.take();
     this.standing.push({
       id,
       kind: 3,
@@ -253,7 +256,6 @@ export class HuntHumanFightEffects {
       expiresAtMs: Number.MAX_SAFE_INTEGER,
       charging: true,
     });
-    this.nextId += 1;
     const snap = this.snapshot().find((fx) => fx.id === id);
     if (!snap) throw new Error(`Charging kind-3 ${id} did not snapshot`);
     return snap;
@@ -280,7 +282,7 @@ export class HuntHumanFightEffects {
   ): void {
     const ticks = Math.max(1, Math.round(input.duration / input.period));
     this.standing.push({
-      id: this.nextId,
+      id: this.effectIds.take(),
       kind: input.kind,
       sourceId: input.sourceId,
       artikulId: input.artikulId,
@@ -299,7 +301,6 @@ export class HuntHumanFightEffects {
       casterMagPower: input.casterMagPower,
       casterMagResist: input.casterMagResist,
     });
-    this.nextId += 1;
   }
 
   private attach(
@@ -320,7 +321,7 @@ export class HuntHumanFightEffects {
       throw new Error(`Gear spell ${gear.artikulId} must not have onlyPvP`);
     }
     this.standing.push({
-      id: this.nextId,
+      id: this.effectIds.take(),
       kind: 3,
       sourceId: input.heroId,
       artikulId: gear.artikulId,
@@ -332,6 +333,5 @@ export class HuntHumanFightEffects {
       remainTurns: Math.max(1, Math.round(effect.duration / TURN_SECONDS)),
       expiresAtMs: input.startedAtMs + effect.duration * 1000,
     });
-    this.nextId += 1;
   }
 }

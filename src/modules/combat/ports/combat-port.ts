@@ -22,6 +22,8 @@ export type FightCommand =
   | Readonly<{ kind: "rage"; sequence: CommandSequence }>
   | Readonly<{ kind: "aggro"; sequence: CommandSequence }>
   | Readonly<{ kind: "leave"; sequence: CommandSequence }>
+  | Readonly<{ kind: "pers-info"; sequence: CommandSequence }>
+  | Readonly<{ kind: "pers-effects"; persId: number; sequence: CommandSequence }>
   | Readonly<{ kind: "poll" }>;
 
 export type FightStart = Readonly<{

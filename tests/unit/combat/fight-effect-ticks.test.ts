@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { HuntHumanFightEffects } from "../../../src/modules/combat/domain/hunt-human-fight-effects.ts";
 
 describe("HuntHumanFightEffects ticks", () => {
@@ -8,6 +9,7 @@ describe("HuntHumanFightEffects ticks", () => {
       strength: 10,
       startedAtMs: 0,
       gearSpells: [],
+      effectIds: new FightEffectIds(),
     });
     effects.attachTick({
       kind: 4,

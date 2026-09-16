@@ -82,6 +82,10 @@
 - [ ] CMB-13 leftover: второй охотник без fight-auth в момент «Разозлить»
       видит клон, но без ходов. raw-AMF: grant/bot-counter до auth;
       bootstrap `oppnew` — duel foe. CEF не подтверждён.
+- [ ] leftover: список участников — бафы/дебафы чужих и моба. raw-AMF:
+      fproxy `persEff`+`persInfo`, bootstrap other humans, fan-out
+      `effUse`/`effPurge`. Моб пустой, пока нет bot standing (CMB-06/15).
+      CEF не подтверждён.
 - [ ] CMB-01 leftover: в бою нет счётчика нанесённого урона (`dealtDamage`).
 - [ ] CMB-01 leftover: пропуск хода вешает бой (нет таймера/`attacknow`).
 - [ ] CMB-04 leftover: F5 в бою — иконки баффов/дебаффов без картинки

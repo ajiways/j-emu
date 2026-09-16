@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
+import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { actBotSpellCard } from "../../../src/modules/combat/domain/bot-spell-act.ts";
 import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
 import { HuntRosterBot } from "../../../src/modules/combat/domain/hunt-roster-bot.ts";
@@ -47,6 +48,7 @@ describe("actBotSpellCard overkill", () => {
       startedAtMs: 0,
       loadout: EMPTY_COMBAT_LOADOUT,
       appearance: UNIT_HUNT_APPEARANCE,
+      effectIds: new FightEffectIds(),
     });
     const events = actBotSpellCard(
       actor,

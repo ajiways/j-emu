@@ -197,6 +197,7 @@ export class Battle {
       hasHuman: (accountId, heroId) => this.hasHuman(accountId, heroId),
       duels: this.duels,
       random: this.random,
+      effectIds: battleOpener(this.humans).effects.effectIds,
     });
   }
 

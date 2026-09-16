@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
+import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { FightDuel } from "../../../src/modules/combat/domain/fight-duel.ts";
 import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
 import { UNIT_HUNT_APPEARANCE, unitHuntHumanStats } from "../../support/hunt-start-input.ts";
@@ -25,6 +26,7 @@ function human(heroId: number, team: 1 | 2, waiting = false): HuntHuman {
     startedAtMs: 0,
     loadout: EMPTY_COMBAT_LOADOUT,
     appearance: UNIT_HUNT_APPEARANCE,
+    effectIds: new FightEffectIds(),
   });
 }
 

@@ -49,6 +49,9 @@ function huntAuthenticateEvents(
       aggro: human.casts.aggro,
       loadout: human.casts.loadout,
       heroEffects: human.effects.snapshot(),
+      otherEffects: standingEffectsOf(
+        input.allies.filter((entry) => entry.accountId !== human.accountId),
+      ),
     },
   ];
   if (!human.waiting && human.turnActive) {
@@ -99,6 +102,7 @@ function friendlyAuthenticateEvents(
       aggro: human.casts.aggro,
       loadout: human.casts.loadout,
       heroEffects: human.effects.snapshot(),
+      otherEffects: standingEffectsOf(input.allies),
     },
   ];
   if (human.turnActive) {
@@ -165,4 +169,11 @@ export function authenticateFighter(
     timeoutSeconds: input.timeoutSeconds,
     nowMs: input.nowMs,
   });
+}
+
+function standingEffectsOf(humans: readonly HuntHuman[]) {
+  return humans.map((entry) => ({
+    persId: entry.heroId,
+    effects: entry.effects.snapshot(),
+  }));
 }

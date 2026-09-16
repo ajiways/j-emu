@@ -5,7 +5,7 @@ type EffectUse = Extract<CombatEvent, { type: "effect-use" }>;
 type EffectPurge = Extract<CombatEvent, { type: "effect-purge" }>;
 type BuffCast = Extract<CombatEvent, { type: "buff-cast" }>;
 
-export function fightPersEffEvent(
+function fightPersEffEvent(
   persId: number,
   effects: readonly FightEffectSnap[],
 ): Readonly<Record<string, unknown>> {
@@ -27,7 +27,17 @@ export function fightPersEffEvent(
   return out;
 }
 
-export function fightStandingEffectUseEvent(
+export function fightPersEffSnapshotEvents(
+  persId: number,
+  effects: readonly FightEffectSnap[],
+): readonly Readonly<Record<string, unknown>>[] {
+  return [
+    fightPersEffEvent(persId, effects),
+    ...effects.map((fx) => fightStandingEffectUseEvent(fx, persId)),
+  ];
+}
+
+function fightStandingEffectUseEvent(
   fx: FightEffectSnap,
   persId: number,
 ): Readonly<Record<string, unknown>> {

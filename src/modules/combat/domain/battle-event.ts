@@ -39,6 +39,10 @@ export type BattleEvent =
       aggro: number;
       loadout: CombatLoadout;
       heroEffects: readonly FightEffectSnap[];
+      otherEffects: readonly Readonly<{
+        persId: number;
+        effects: readonly FightEffectSnap[];
+      }>[];
     }>
   | Readonly<{
       type: "roster-updated";
@@ -88,6 +92,10 @@ export type BattleEvent =
       aggro: number;
       loadout: CombatLoadout;
       heroEffects: readonly FightEffectSnap[];
+      otherEffects: readonly Readonly<{
+        persId: number;
+        effects: readonly FightEffectSnap[];
+      }>[];
       opponentEffects?: readonly FightEffectSnap[];
     }>
   | Readonly<{ type: "finished"; winnerTeam: 1 | 2; fightId: string }>
@@ -108,6 +116,11 @@ export type BattleEvent =
       skills?: Readonly<Record<string, number>>;
     }>
   | Readonly<{ type: "effect-purge"; effectId: number }>
+  | Readonly<{
+      type: "pers-effects";
+      persId: number;
+      effects: readonly FightEffectSnap[];
+    }>
   | Readonly<{
       type: "buff-cast";
       animation: string;

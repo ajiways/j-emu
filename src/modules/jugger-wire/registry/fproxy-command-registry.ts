@@ -6,11 +6,20 @@ import type { FproxyCommand } from "../commands/fproxy/fproxy-command.ts";
 import { FproxyAuthCommand } from "../commands/fproxy/fproxy-auth-command.ts";
 import { FproxyCastSpellCommand } from "../commands/fproxy/fproxy-cast-spell-command.ts";
 import { FproxyLeaveFightCommand } from "../commands/fproxy/fproxy-leave-fight-command.ts";
+import { FproxyPersEffCommand } from "../commands/fproxy/fproxy-pers-eff-command.ts";
+import { FproxyPersInfoCommand } from "../commands/fproxy/fproxy-pers-info-command.ts";
 import { FproxyPollCommand } from "../commands/fproxy/fproxy-poll-command.ts";
 import { fproxyCommandKey } from "../commands/fproxy/fproxy-frame.ts";
 
 export class FproxyCommandRegistry {
-  static readonly requiredKeys = ["auth", "castSpell", "leaveFight", "poll"] as const;
+  static readonly requiredKeys = [
+    "auth",
+    "castSpell",
+    "leaveFight",
+    "persEff",
+    "persInfo",
+    "poll",
+  ] as const;
 
   private readonly commands: ReadonlyMap<string, FproxyCommand>;
 
@@ -38,6 +47,8 @@ export class FproxyCommandRegistry {
       new FproxyAuthCommand(),
       new FproxyCastSpellCommand(meleeSourceIds),
       new FproxyLeaveFightCommand(),
+      new FproxyPersEffCommand(),
+      new FproxyPersInfoCommand(),
       new FproxyPollCommand(),
     ]);
   }

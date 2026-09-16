@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { FightDuel } from "../../../src/modules/combat/domain/fight-duel.ts";
 import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
+import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import {
   pairHuntHumanQueues,
   pickHuntPair,
@@ -28,6 +29,7 @@ function human(
     startedAtMs: 0,
     loadout: EMPTY_COMBAT_LOADOUT,
     appearance: UNIT_HUNT_APPEARANCE,
+    effectIds: new FightEffectIds(),
   });
 }
 

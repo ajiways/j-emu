@@ -41,6 +41,7 @@ describe("huntFightBootstrapEvents", () => {
       aggro: 1,
       loadout: EMPTY_COMBAT_LOADOUT,
       heroEffects: [],
+      otherEffects: [],
     }).map((event) => event.et);
     expect(types).toEqual(expect.arrayContaining(["fightState", "persList", "oppwait", "oppnew"]));
   });
@@ -60,6 +61,7 @@ describe("huntFightBootstrapEvents", () => {
       aggro: 1,
       loadout: EMPTY_COMBAT_LOADOUT,
       heroEffects: [],
+      otherEffects: [],
     }).map((event) => event.et);
     expect(types).toContain("oppnew");
     expect(types).not.toContain("oppwait");
@@ -85,6 +87,7 @@ describe("huntFightBootstrapEvents", () => {
       aggro: 1,
       loadout: EMPTY_COMBAT_LOADOUT,
       heroEffects: [],
+      otherEffects: [],
     }).map((event) => event.et);
     expect(types).toEqual(expect.arrayContaining(["oppwait", "oppnew"]));
     const oppnew = huntFightBootstrapEvents({
@@ -106,6 +109,7 @@ describe("huntFightBootstrapEvents", () => {
       aggro: 1,
       loadout: EMPTY_COMBAT_LOADOUT,
       heroEffects: [],
+      otherEffects: [],
     }).find((event) => event.et === "oppnew");
     expect(oppnew).toMatchObject({ id: 2, nick: "Waiter" });
     expect(oppnew).not.toHaveProperty("bot");
@@ -146,6 +150,7 @@ describe("huntFightBootstrapEvents", () => {
         },
       },
       heroEffects: [],
+      otherEffects: [],
     });
     expect(events.find((event) => event.et === "persSelf")).toMatchObject({ cpHits: [...hits] });
     const persSpells = events.find((event) => event.et === "persSpells");
@@ -160,5 +165,47 @@ describe("huntFightBootstrapEvents", () => {
         }),
       }),
     );
+  });
+
+  it("emits persEff then standing effUse for other humans before oppnew", () => {
+    const fx = {
+      id: 2,
+      kind: 3,
+      sourceId: 2,
+      artikulId: 99,
+      title: "Малый усиливающий орб",
+      img: "bottles_sila1.png",
+      dmgType: 1,
+      remainTime: 40,
+      groupId: 842,
+      skills: {},
+    };
+    const types = huntFightBootstrapEvents({
+      type: "hunt-bootstrap",
+      waiting: false,
+      hero,
+      allies: [{ ...hero, id: 2, nick: "Waiter" }],
+      bot,
+      rosterBots: [bot],
+      cp: 0,
+      cpHits: [],
+      rage: 0,
+      aggro: 1,
+      loadout: EMPTY_COMBAT_LOADOUT,
+      heroEffects: [],
+      otherEffects: [{ persId: 2, effects: [fx] }],
+    }).map((event) => event.et);
+    expect(types).toEqual([
+      "fightState",
+      "persList",
+      "persSelf",
+      "persSpells",
+      "persEff",
+      "persEff",
+      "effUse",
+      "oppwait",
+      "oppnew",
+      "persEff",
+    ]);
   });
 });

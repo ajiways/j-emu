@@ -2,8 +2,36 @@ import type { Battle } from "../domain/battle.ts";
 import type { EphemeralBotFightIds } from "../domain/ephemeral-bot-fight-ids.ts";
 import type { CombatEvent, FightCommand } from "../ports/combat-port.ts";
 import type { CombatMeleeLoop } from "./combat-melee-loop.ts";
+import { handlePersFightQuery } from "./combat-pers-query.ts";
 
-export async function castFightSpecial(
+export async function finishFightCommand(
+  input: Readonly<{
+    accountId: number;
+    command: Extract<
+      FightCommand,
+      { kind: "pocket" | "glove" | "rage" | "aggro" | "pers-info" | "pers-effects" }
+    >;
+    battle: Battle | undefined;
+    nowMs: number;
+    botFightIds: EphemeralBotFightIds;
+    melee: CombatMeleeLoop;
+    pendingPocketConsume: Map<number, number>;
+    enqueue: (accountId: number, events: readonly CombatEvent[]) => void;
+  }>,
+): Promise<readonly CombatEvent[]> {
+  if (input.command.kind === "pers-info" || input.command.kind === "pers-effects") {
+    return handlePersFightQuery({
+      accountId: input.accountId,
+      command: input.command,
+      battle: input.battle,
+      enqueue: input.enqueue,
+    });
+  }
+  await castFightSpecial({ ...input, command: input.command });
+  return [];
+}
+
+async function castFightSpecial(
   input: Readonly<{
     accountId: number;
     command: Extract<FightCommand, { kind: "pocket" | "glove" | "rage" | "aggro" }>;

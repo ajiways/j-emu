@@ -1,5 +1,6 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { CombatLoadout } from "./combat-loadout.ts";
+import type { FightEffectIds } from "./fight-effect-ids.ts";
 import { HuntHumanCastState } from "./hunt-human-cast-state.ts";
 import type { PocketCellSnapshot } from "./fight-outcome-snapshot.ts";
 import { HuntHumanFightEffects } from "./hunt-human-fight-effects.ts";
@@ -47,6 +48,7 @@ type HuntHumanInit = Readonly<{
   startedAtMs: number;
   loadout: CombatLoadout;
   appearance: HuntHumanAppearance;
+  effectIds: FightEffectIds;
 }>;
 
 export class HuntHuman {
@@ -74,6 +76,7 @@ export class HuntHuman {
       strength: init.strength,
       startedAtMs: init.startedAtMs,
       gearSpells: init.loadout.gearSpells,
+      effectIds: init.effectIds,
     });
   }
 

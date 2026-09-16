@@ -2,6 +2,7 @@ import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { HuntJoinHuman } from "./hunt-join-human.ts";
 import { huntFightOpenerTeam } from "./hunt-fight-teams.ts";
+import type { FightEffectIds } from "./fight-effect-ids.ts";
 import { HuntHuman } from "./hunt-human.ts";
 import type { PracticeRestore } from "./fight-outcome-snapshot.ts";
 
@@ -17,7 +18,7 @@ export function isHumanDuelInit(
   return "kind" in init && (init.kind === "friendly-duel" || init.kind === "pvp");
 }
 
-export function huntOpener(init: HuntBattleInit): HuntHuman {
+export function huntOpener(init: HuntBattleInit, effectIds: FightEffectIds): HuntHuman {
   return new HuntHuman({
     accountId: init.accountId,
     heroId: init.heroId,
@@ -42,10 +43,11 @@ export function huntOpener(init: HuntBattleInit): HuntHuman {
     startedAtMs: init.startedAt.getTime(),
     loadout: init.loadout,
     appearance: init.appearance,
+    effectIds,
   });
 }
 
-export function huntJoiner(join: HuntJoinHuman): HuntHuman {
+export function huntJoiner(join: HuntJoinHuman, effectIds: FightEffectIds): HuntHuman {
   return new HuntHuman({
     accountId: join.accountId,
     heroId: join.heroId,
@@ -70,6 +72,7 @@ export function huntJoiner(join: HuntJoinHuman): HuntHuman {
     startedAtMs: join.startedAtMs,
     loadout: join.loadout,
     appearance: join.appearance,
+    effectIds,
   });
 }
 
@@ -78,6 +81,7 @@ export function friendlyHuman(
   team: 1 | 2,
   waiting: boolean,
   startedAtMs: number,
+  effectIds: FightEffectIds,
 ): HuntHuman {
   return new HuntHuman({
     accountId: fighter.accountId,
@@ -103,6 +107,7 @@ export function friendlyHuman(
     startedAtMs,
     loadout: fighter.loadout,
     appearance: { avatar: fighter.avatar, body: fighter.body, sk: fighter.sk },
+    effectIds,
   });
 }
 

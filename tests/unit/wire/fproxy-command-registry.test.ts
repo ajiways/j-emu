@@ -66,6 +66,15 @@ describe("fproxy command registry", () => {
       kind: "leave",
       sequence: 7,
     });
+    expect(registry.decodePayload(encodeAmf3({ rc: "persInfo", sq: 8 }))).toEqual({
+      kind: "pers-info",
+      sequence: 8,
+    });
+    expect(registry.decodePayload(encodeAmf3({ rc: "persEff", persId: 2, sq: 9 }))).toEqual({
+      kind: "pers-effects",
+      persId: 2,
+      sequence: 9,
+    });
     expect(new FproxyLeaveFightCommand().decode({ rc: "leaveFight", sq: "8" })).toEqual({
       kind: "leave",
       sequence: "8",
@@ -91,6 +100,9 @@ describe("fproxy command registry", () => {
     expect(() =>
       registry.decodePayload(encodeAmf3({ rc: "castSpell", srcType: 1, srcId: 99, sq: 1 })),
     ).toThrow(/Fight source id 99 is unsupported/);
+    expect(() => registry.decodePayload(encodeAmf3({ rc: "persEff", sq: 1 }))).toThrow(
+      /Fight persEff requires persId/,
+    );
     expect(() => new FproxyCastSpellCommand(meleeSourceIds).decode(null)).toThrow(
       /Fight command must be an object/,
     );

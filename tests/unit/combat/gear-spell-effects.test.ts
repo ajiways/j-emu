@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { bakeTimedStatPercents } from "../../../src/modules/combat/domain/bake-timed-stat-percents.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
+import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
 import { HuntHumanFightEffects } from "../../../src/modules/combat/domain/hunt-human-fight-effects.ts";
 import { tryPairedMelee } from "../../../src/modules/combat/domain/paired-melee.ts";
@@ -42,6 +43,7 @@ describe("HuntHumanFightEffects", () => {
       strength: 53,
       startedAtMs: 0,
       gearSpells: [GEAR],
+      effectIds: new FightEffectIds(),
     });
     expect(effects.snapshot()).toEqual([
       {
@@ -72,6 +74,7 @@ describe("HuntHumanFightEffects", () => {
       strength: 53,
       startedAtMs: 0,
       gearSpells: [GEAR],
+      effectIds: new FightEffectIds(),
     });
     expect(effects.onActorEndingTurn(320_000)).toEqual([1]);
     expect(effects.snapshot()).toEqual([]);
@@ -83,6 +86,7 @@ describe("HuntHumanFightEffects", () => {
       strength: 53,
       startedAtMs: 0,
       gearSpells: [],
+      effectIds: new FightEffectIds(),
     });
     expect(
       effects.attachChargingKind3({
@@ -128,6 +132,7 @@ describe("gear-spell melee STR", () => {
       startedAtMs: 0,
       loadout: { ...EMPTY_COMBAT_LOADOUT, gearSpells: [GEAR] },
       appearance: UNIT_HUNT_APPEARANCE,
+      effectIds: new FightEffectIds(),
     });
     attacker.authed = true;
     attacker.beginTurn(0, 20);
@@ -148,6 +153,7 @@ describe("gear-spell melee STR", () => {
       startedAtMs: 0,
       loadout: EMPTY_COMBAT_LOADOUT,
       appearance: UNIT_HUNT_APPEARANCE,
+      effectIds: new FightEffectIds(),
     });
     const resolved = tryPairedMelee(attacker, { kind: "human", human: defender }, "center", {
       finished: false,

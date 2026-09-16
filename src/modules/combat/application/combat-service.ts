@@ -25,7 +25,7 @@ import { createHuntBattle } from "./create-hunt-battle.ts";
 import { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 import { startHumanDuelBattle } from "./start-human-duel.ts";
 import { fightStartOf } from "./fight-start-of.ts";
-import { castFightSpecial } from "./combat-special-casts.ts";
+import { finishFightCommand } from "./combat-special-casts.ts";
 import type {
   CombatEvent,
   CombatPort,
@@ -270,7 +270,7 @@ export class CombatService implements CombatPort {
       await this.finish.leaveFight(accountId);
       return [{ type: "command-accepted" as const, sequence: command.sequence }];
     }
-    await castFightSpecial({
+    return finishFightCommand({
       accountId,
       command,
       battle: this.byAccount.get(accountId),
@@ -280,7 +280,6 @@ export class CombatService implements CombatPort {
       pendingPocketConsume: this.pendingPocketConsume,
       enqueue: (id, events) => this.enqueue(id, events),
     });
-    return [];
   }
 
   takePocketConsume(accountId: number): number | null {

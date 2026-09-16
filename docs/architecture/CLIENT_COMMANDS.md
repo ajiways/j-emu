@@ -90,7 +90,10 @@ fproxy registry использует проверенный discriminator (`rc` 
 
 - auth;
 - poll;
-- castSpell.
+- castSpell;
+- leaveFight;
+- persEff;
+- persInfo.
 
 `castSpell` дополнительно декодируется в точный variant по `srcType/srcId`, когда
 wire-команды имеют разные обязательные поля. Нельзя передавать raw map в combat.

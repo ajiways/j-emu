@@ -1,5 +1,5 @@
 import type { CombatEvent } from "../../combat/ports/combat-port.ts";
-import { fightPersEffEvent, fightStandingEffectUseEvent } from "./fight-effect-wire.ts";
+import { fightPersEffSnapshotEvents } from "./fight-effect-wire.ts";
 import { huntPersSpellsEvent } from "./hunt-fight-pers-spells.ts";
 import { huntPersListEvent } from "./hunt-fight-pers-wire.ts";
 import { humanOppNewEvent } from "./human-opp-new-event.ts";
@@ -30,8 +30,10 @@ export function friendlyFightBootstrapEvents(
       team: hero.team,
     },
     huntPersSpellsEvent(event.loadout, event.aggro),
-    fightPersEffEvent(hero.id, event.heroEffects),
-    ...event.heroEffects.map((fx) => fightStandingEffectUseEvent(fx, hero.id)),
+    ...fightPersEffSnapshotEvents(hero.id, event.heroEffects),
+    ...event.otherEffects.flatMap((entry) =>
+      fightPersEffSnapshotEvents(entry.persId, entry.effects),
+    ),
   ];
   if (event.waiting || !opponent) {
     events.push({ et: "oppwait" });
@@ -42,8 +44,7 @@ export function friendlyFightBootstrapEvents(
   }
   events.push(humanOppNewEvent(opponent, event.opponentAppearance));
   if (event.opponentEffects) {
-    events.push(fightPersEffEvent(opponent.id, event.opponentEffects));
-    events.push(...event.opponentEffects.map((fx) => fightStandingEffectUseEvent(fx, opponent.id)));
+    events.push(...fightPersEffSnapshotEvents(opponent.id, event.opponentEffects));
   }
   return events;
 }
