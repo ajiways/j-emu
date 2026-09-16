@@ -103,18 +103,15 @@ Pocket layout (INV-03) принадлежит inventory; active count/effects в
 top-level `hits` (8 шагов L/C/R) и `spells` (карточки `id`/`artikul_id`/
 `artikul_id0`/`title`/`picture`/`row`/`cost`). Тот же набор лежит в
 `extra.hits`/`extra.spells` — Flash Artifact tooltip и MagicsModel читают
-вложенный `extra`, не только top-level. Источник для 9095 — catalog sockets
-`artikul_id0` 9098/9100/9099. Пустой `gloves: []`, пока перчатка в сумке.
-PUT_ON/PUT_OFF, init, `user|magic`, repair, fight|finish и trade settle отдают
-актуальный блок.
-
-Instance-generation leftover: `items` не хранит `data_json`. `grantToBag`
-копирует только durability. Decoder публикует sockets+hits только на 9095;
-покупаемые/лутовые перчатки (23 и пул `artikul_id1..6`) приходят без спеллов —
-тот же баг, что в старом эмуляторе до `ensureItemInstance`. MAGRES/MAGSTR
-school roll (`generator_flags` / `param1`) при выдаче тоже не пишется;
-combat snapshot берёт catalog blob как есть. Полный instance extra — отдельный
-INV срез, не этот leftover.
+вложенный `extra`, не только top-level. Источник карточек — `items.data_json`
+после grant: catalog `artikul_id0` (9095) или roll из пула `artikul_id1..6`
+(лавковая 23). Catalog `extra.hits` остаётся только у 9095; у пуловых перчаток
+8 шагов пишутся в instance. PUT_ON/PUT_OFF, init, `user|magic`, repair,
+fight|finish и trade settle отдают актуальный блок. Уже купленная 23 без
+instance дочитывается лениво при `InventoryService.list` (как old
+`ensureItemInstance`). Mail/auction/trade snapshot `data_json` ещё не копируют
+— повторный grant перекатится. MAGRES/MAGSTR school roll при выдаче не
+пишется; combat snapshot берёт catalog blob как есть.
 
 CEF 2026-09-08: новый герой, 93 и 99 на пояс, `status:100`, иконки приняты,
 строки в PostgreSQL. Restart/reconnect покрыт raw-AMF e2e.

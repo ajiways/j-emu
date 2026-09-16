@@ -5,6 +5,7 @@ import { computeBagLoad } from "./bag-load.ts";
 import type { InventoryItem } from "./inventory-item.ts";
 import { MailBagFullError } from "./mail-bag-full-error.ts";
 import type { MailItemSnapshot } from "./mail-item-snapshot.ts";
+import { EMPTY_ITEM_INSTANCE } from "./item-instance-data.ts";
 import { isPaperdollSlotMask } from "./paperdoll-slot.ts";
 
 export async function grantMailSnapshots(
@@ -52,6 +53,7 @@ async function grantOne(
       durabilityMax: snap.durabilityMax,
       expire: 0,
       upgrade: snap.upgrade,
+      data: EMPTY_ITEM_INSTANCE,
     });
     items.push(created);
     remaining -= take;

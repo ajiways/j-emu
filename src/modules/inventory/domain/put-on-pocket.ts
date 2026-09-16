@@ -121,6 +121,7 @@ function placeIntoSlot(item: InventoryItem, slot: number, maxCnt: number): Pocke
           durability: item.durability,
           durabilityMax: item.durabilityMax,
           expire: item.expire,
+          data: item.data,
         },
       ],
       delete: [],

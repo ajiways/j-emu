@@ -169,8 +169,30 @@ function socketsFromJson(artifactId: number, value: unknown): readonly ArtifactG
     if (typeof row.artikul_id0 !== "number") {
       throw new Error(`Artifact ${artifactId} glove socket ${index} artikul_id0 is required`);
     }
-    return { cost: row.cost, row: row.row, artikulId0: row.artikul_id0 };
+    return {
+      cost: row.cost,
+      row: row.row,
+      artikulId0: row.artikul_id0,
+      pool: poolFromJson(artifactId, row, index),
+    };
   });
+}
+
+function poolFromJson(
+  artifactId: number,
+  row: Record<string, unknown>,
+  index: number,
+): readonly number[] {
+  const pool: number[] = [];
+  for (let slot = 1; slot <= 6; slot += 1) {
+    const value = row[`artikul_id${slot}`];
+    if (value === undefined) continue;
+    if (typeof value !== "number" || !Number.isInteger(value) || value < 1) {
+      throw new Error(`Artifact ${artifactId} glove socket ${index} artikul_id${slot} is invalid`);
+    }
+    pool.push(value);
+  }
+  return pool;
 }
 
 function hitsFromJson(artifactId: number, value: unknown): readonly number[] | null {

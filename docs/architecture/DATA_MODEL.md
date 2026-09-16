@@ -79,7 +79,7 @@ artikul; инкремент в hunt finish UoW. PRF-01:
 ### `inventory`
 
 - `item_id_seq`: `MIN 100_000` `MAX 2_147_483_647` `NO CYCLE` (не пересекаться с native/glove `persSpells.srcId`). [ID_POLICY.md](ID_POLICY.md), [ID_RANGES.md](../../../jgr-emu/docs/ID_RANGES.md).
-- `items(id bigint DEFAULT nextval, hero_id integer, artifact_id, quantity, location_kind, pocket_position, equipment_slot, durability, durability_max, upgrade_id, upgrade_level, upgrade_skill_id, upgrade_bound, expire, version)`.
+- `items(id bigint DEFAULT nextval, hero_id integer, artifact_id, quantity, location_kind, pocket_position, equipment_slot, durability, durability_max, upgrade_id, upgrade_level, upgrade_skill_id, upgrade_bound, expire, data_json, version)`.
   Instance `durability`/`durability_max` — INV-05, целые `>= 0` каждый;
   `current` может превышать `max` для отдельных legacy-предметов
   (`DATA-02` full-corpus audit нашёл 37/22 560 таких artifacts,
@@ -87,9 +87,12 @@ artikul; инкремент в hunt finish UoW. PRF-01:
   `durability <= durability_max`. Overlay заточки — INV-06: `upgrade_id` ≥ 0,
   `upgrade_level` 0..6, `upgrade_bound` 0/1, `upgrade_skill_id` text; unupgraded
   xor upgraded CHECK. `expire` — INV-08 unix seconds ≥ 0, `NOT NULL` без SQL
-  DEFAULT; drinks пишут `now+duration`, прочие create — `0`. Колонки `NOT NULL`
-  без SQL DEFAULT; runtime пишет явные
-  значения (unupgraded `0/0/''/0`, durability с catalog template) при create.
+  DEFAULT; drinks пишут `now+duration`, прочие create — `0`. `data_json` —
+  jsonb NOT NULL без SQL DEFAULT; пустой объект = нет instance extra (еда,
+  напитки). Magic glove grant пишет `{hits, spells:[{artikul_id,cost,row}]}`.
+  Колонки `NOT NULL` без SQL DEFAULT; runtime пишет явные
+  значения (unupgraded `0/0/''/0`, durability с catalog template, `data_json`
+  `{}` или rolled glove) при create.
 
 `location_kind` ∈ `bag|pocket|equipment|tempeffect` с CHECK взаимоисключения slot-колонок.
 `tempeffect` — INV-07 kind-139 set bonus и INV-08 drinks: `quantity = 0`, оба slot-столбца NULL,
@@ -111,7 +114,7 @@ durability_max, skills jsonb, artifact_actions jsonb, extra jsonb, f_body)`
   не tracking; `current > max` допустим для 37 legacy artifacts —
   `INVENTORY.md` § INV-05 «Коррекция»). `artifact_actions` — typed map
   (пустой объект = нет USE). `extra` — dump-proven fight blobs (`spell`,
-  `spells`/`hits` на 9095); пустой объект валиден (еда 77). `f_body` — text
+  `spells`/`hits` на 9095, pool sockets на 23); пустой объект валиден (еда 77). `f_body` — text
   NOT NULL, Unity overlay tokens; пустая строка валидна (нет визуала).
 - `bots(release_id, id, title, level, max_hp, strength, hunt_nick, hunt_swf,
 hunt_scale, hunt_fps, hunt_speed, hunt_avatar, hunt_kind, hunt_hide_on_map,

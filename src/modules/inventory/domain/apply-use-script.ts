@@ -9,6 +9,7 @@ export async function applyUseScript(
   inventory: InventoryRepository,
   catalog: Catalog,
   bagCapacity: number,
+  random: Readonly<{ unit(): number }>,
   command: Readonly<{
     characterId: number;
     script: UseScript;
@@ -34,7 +35,7 @@ export async function applyUseScript(
   }
   for (const effect of command.script.effects) {
     if (effect.type !== "grant") continue;
-    await grantToBag(inventory, catalog, bagCapacity, {
+    await grantToBag(inventory, catalog, bagCapacity, random, {
       characterId: command.characterId,
       artifactId: effect.artikulId,
       quantity: effect.count,

@@ -48,6 +48,12 @@ type ArtifactGloveSocketDocument = Readonly<{
   cost: number;
   row: number;
   artikul_id0: number;
+  artikul_id1?: number;
+  artikul_id2?: number;
+  artikul_id3?: number;
+  artikul_id4?: number;
+  artikul_id5?: number;
+  artikul_id6?: number;
 }>;
 
 type ArtifactExtraDocument = Readonly<{

@@ -57,6 +57,8 @@ import {
   type UseFromBagResult,
 } from "./use-from-bag.ts";
 import { purgeExpiredDrinks } from "./purge-expired-drinks.ts";
+import { ensureGloveInstances } from "./ensure-glove-instances.ts";
+import { grantStarterInventory } from "./ensure-starter-inventory.ts";
 
 export type StarterItemSpec = Readonly<{
   artifactId: number;
@@ -96,32 +98,30 @@ export class InventoryService {
     if (typeof random.unit !== "function") throw new Error("Inventory random source is required");
   }
 
-  list(heroId: number): Promise<readonly InventoryItem[]> {
-    return this.inventory.listForHero(heroId);
+  async list(heroId: number): Promise<readonly InventoryItem[]> {
+    return ensureGloveInstances(
+      this.inventory,
+      this.catalog,
+      this.random,
+      await this.inventory.listForHero(heroId),
+    );
   }
 
   async listPocket(command: { characterId: number }): Promise<readonly InventoryItem[]> {
-    const items = await this.inventory.listForHero(command.characterId);
+    const items = await this.list(command.characterId);
     return items
       .filter((item) => item.location.kind === "pocket")
       .sort((left, right) => pocketPosition(left) - pocketPosition(right));
   }
 
   async ensureStarterInventory(heroId: number): Promise<void> {
-    if ((await this.inventory.listForHero(heroId)).length > 0) return;
-    for (const spec of this.starterItems) {
-      const definition = await this.catalog.artifact(spec.artifactId);
-      if (!definition) throw new Error(`Artifact catalog entry ${spec.artifactId} is missing`);
-      await this.inventory.create({
-        heroId,
-        artifactId: spec.artifactId,
-        quantity: spec.quantity,
-        location: spec.location,
-        durability: definition.durability,
-        durabilityMax: definition.durabilityMax,
-        expire: 0,
-      });
-    }
+    await grantStarterInventory(
+      this.inventory,
+      this.catalog,
+      this.random,
+      this.starterItems,
+      heroId,
+    );
   }
 
   async putOn(
@@ -214,10 +214,13 @@ export class InventoryService {
     return { take, creditMinor: voidSell ? unit * take : 0 };
   }
 
-  useFromBag(command: Omit<UseFromBagCommand, "bagCapacity">): Promise<UseFromBagResult> {
+  useFromBag(
+    command: Omit<UseFromBagCommand, "bagCapacity" | "random">,
+  ): Promise<UseFromBagResult> {
     return useFromBag(this.inventory, this.catalog, {
       ...command,
       bagCapacity: this.bagCapacity,
+      random: this.random,
     });
   }
 
@@ -234,7 +237,7 @@ export class InventoryService {
     artifactId: number;
     quantity: number;
   }): Promise<void> {
-    return grantToBag(this.inventory, this.catalog, this.bagCapacity, command);
+    return grantToBag(this.inventory, this.catalog, this.bagCapacity, this.random, command);
   }
 
   canFitBag(command: {

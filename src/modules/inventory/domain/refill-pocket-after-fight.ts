@@ -2,6 +2,7 @@ import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { InventoryItem } from "./inventory-item.ts";
 import type { InventoryRepository } from "../ports/inventory-repository.ts";
 import { pocketCntMax } from "./pocket-slot.ts";
+import { EMPTY_ITEM_INSTANCE } from "./item-instance-data.ts";
 
 export type PocketRefillCell = Readonly<{
   itemId: number;
@@ -42,6 +43,7 @@ export async function refillPocketAfterFight(
         durability: definition.durability,
         durabilityMax: definition.durabilityMax,
         expire: 0,
+        data: EMPTY_ITEM_INSTANCE,
       }),
     );
   }

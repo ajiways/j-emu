@@ -3,6 +3,7 @@ import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { InventoryRepository } from "../ports/inventory-repository.ts";
 import { drinkDisplaceIds, drinkExpireAt, isTempEffectMask } from "./drink-displace.ts";
 import type { InventoryItem } from "./inventory-item.ts";
+import { EMPTY_ITEM_INSTANCE } from "./item-instance-data.ts";
 import { UseDeniedError } from "./use-denied-error.ts";
 
 export async function applyDrink(
@@ -58,5 +59,6 @@ export async function applyDrink(
     durability: definition.durability,
     durabilityMax: definition.durabilityMax,
     expire,
+    data: EMPTY_ITEM_INSTANCE,
   });
 }

@@ -14,7 +14,11 @@ describe("Pub1 generated item corpus", () => {
     id: number;
     title: string;
     fBody: string;
-    extra: { spell?: { groupId?: number }; spells?: unknown; hits?: unknown };
+    extra: {
+      spell?: { groupId?: number };
+      spells?: readonly { artikul_id0: number; artikul_id1?: number }[];
+      hits?: unknown;
+    };
   }>;
   const byId = new Map(artifacts.map((row) => [row.id, row]));
 
@@ -36,5 +40,24 @@ describe("Pub1 generated item corpus", () => {
     expect(tyrant?.extra.spell?.groupId).toBe(936);
     expect(tyrant?.extra.spells).toBeUndefined();
     expect(tyrant?.extra.hits).toBeUndefined();
+  });
+
+  it("publishes shop glove 23 pool sockets without catalog hits", () => {
+    const glove = byId.get(23);
+    expect(glove?.title).toBe("Простая магическая перчатка");
+    expect(glove?.extra.hits).toBeUndefined();
+    expect(glove?.extra.spells).toEqual([
+      expect.objectContaining({
+        cost: 6,
+        row: 1,
+        artikul_id0: 0,
+        artikul_id1: 497,
+        artikul_id2: 179,
+        artikul_id3: 499,
+        artikul_id4: 177,
+        artikul_id5: 175,
+        artikul_id6: 498,
+      }),
+    ]);
   });
 });

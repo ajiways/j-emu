@@ -246,6 +246,13 @@
       "when": 1789569914242,
       "tag": "0034_catalog_artifact_f_body",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1789583564293,
+      "tag": "0035_inventory_item_data_json",
+      "breakpoints": true
     }
   ]
 }

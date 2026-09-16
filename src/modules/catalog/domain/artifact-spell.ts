@@ -36,4 +36,5 @@ export type ArtifactGloveSocket = Readonly<{
   cost: number;
   row: number;
   artikulId0: number;
+  pool: readonly number[];
 }>;

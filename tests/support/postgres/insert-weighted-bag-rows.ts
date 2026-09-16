@@ -22,6 +22,7 @@ export async function insertWeightedBagRows(heroId: number, extraRows: number): 
         upgradeSkillId: "",
         upgradeBound: 0,
         expire: 0,
+        dataJson: {},
         version: 1,
       });
     }

@@ -1,4 +1,5 @@
 import type { InventoryItem, ItemLocation } from "../domain/inventory-item.ts";
+import type { ItemInstanceData } from "../domain/item-instance-data.ts";
 import type { ItemUpgrade } from "../domain/item-upgrade.ts";
 
 export type NewInventoryItem = Readonly<{
@@ -10,6 +11,7 @@ export type NewInventoryItem = Readonly<{
   durabilityMax: number;
   expire: number;
   upgrade?: ItemUpgrade;
+  data: ItemInstanceData;
 }>;
 
 export interface InventoryRepository {

@@ -2,6 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import { requireFightSafeItemId } from "../../../shared/kernel/decimal-id.ts";
 import { InventoryItem, type ItemLocation } from "../domain/inventory-item.ts";
+import { requireItemInstanceData } from "../domain/item-instance-data.ts";
 import { UNUPGRADED, type ItemUpgrade } from "../domain/item-upgrade.ts";
 import type { InventoryRepository, NewInventoryItem } from "../ports/inventory-repository.ts";
 import { items } from "./schema.ts";
@@ -34,6 +35,7 @@ export class PostgresInventoryRepository implements InventoryRepository {
         durabilityMax: item.durabilityMax,
         ...upgradeColumns(item.upgrade === undefined ? UNUPGRADED : item.upgrade),
         expire: item.expire,
+        dataJson: item.data,
         version: 1,
       })
       .returning();
@@ -60,6 +62,7 @@ export class PostgresInventoryRepository implements InventoryRepository {
         durabilityMax: item.durabilityMax,
         ...upgradeColumns(item.upgrade),
         expire: item.expire,
+        dataJson: item.data,
         version: 1,
       })
       .onConflictDoUpdate({
@@ -73,6 +76,7 @@ export class PostgresInventoryRepository implements InventoryRepository {
           durabilityMax: item.durabilityMax,
           ...upgradeColumns(item.upgrade),
           expire: item.expire,
+          dataJson: item.data,
           version: sql`${items.version} + 1`,
         },
       });
@@ -101,22 +105,7 @@ export class PostgresInventoryRepository implements InventoryRepository {
   }
 }
 
-function toItem(row: {
-  id: bigint;
-  heroId: number;
-  artifactId: number;
-  quantity: number;
-  locationKind: string;
-  pocketPosition: number | null;
-  equipmentSlot: number | null;
-  durability: number;
-  durabilityMax: number;
-  upgradeId: number;
-  upgradeLevel: number;
-  upgradeSkillId: string;
-  upgradeBound: number;
-  expire: number;
-}): InventoryItem {
+function toItem(row: typeof items.$inferSelect): InventoryItem {
   return new InventoryItem(
     requireFightSafeItemId(row.id),
     row.heroId,
@@ -132,6 +121,7 @@ function toItem(row: {
       bound: row.upgradeBound === 1,
     },
     row.expire,
+    requireItemInstanceData(row.dataJson, `item ${row.id} data_json`),
   );
 }
 

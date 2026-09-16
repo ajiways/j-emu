@@ -7,6 +7,7 @@ import type {
 } from "../../combat/domain/combat-loadout.ts";
 import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
+import { isRolledGloveInstance } from "../../inventory/domain/item-instance-data.ts";
 import { toCombatSpell } from "./to-combat-spell.ts";
 
 const GLOVE_SLOT = 32;
@@ -76,17 +77,38 @@ export class HuntCombatLoadout {
     if (!glove) return null;
     const definition = await this.requireArtifact(glove.artifactId);
     if (definition.extra.sockets.length < 1) return null;
+    if (isRolledGloveInstance(glove.data, definition.extra.sockets.length)) {
+      return this.gloveLoadout(glove.data.hits, glove.data.spells);
+    }
     if (!definition.extra.hits) {
       throw new Error(`Glove artifact ${glove.artifactId} is missing extra.hits`);
     }
-    const spells = [];
+    const catalogSpells = [];
     for (const socket of definition.extra.sockets) {
-      const spellArt = await this.requireArtifact(socket.artikulId0);
-      if (!spellArt.extra.spell) {
-        throw new Error(`Glove spell ${socket.artikulId0} is missing extra.spell`);
+      if (socket.artikulId0 < 1) {
+        throw new Error(`Glove item ${glove.id} is missing rolled hits/spells`);
       }
-      spells.push({
-        artikulId: socket.artikulId0,
+      catalogSpells.push({
+        artikul_id: socket.artikulId0,
+        cost: socket.cost,
+        row: socket.row,
+      });
+    }
+    return this.gloveLoadout(definition.extra.hits, catalogSpells);
+  }
+
+  private async gloveLoadout(
+    hits: readonly number[],
+    spells: readonly { artikul_id: number; cost: number; row: number }[],
+  ): Promise<CombatGloveLoadout> {
+    const cards = [];
+    for (const socket of spells) {
+      const spellArt = await this.requireArtifact(socket.artikul_id);
+      if (!spellArt.extra.spell) {
+        throw new Error(`Glove spell ${socket.artikul_id} is missing extra.spell`);
+      }
+      cards.push({
+        artikulId: socket.artikul_id,
         cost: socket.cost,
         row: socket.row,
         title: spellArt.title,
@@ -94,7 +116,7 @@ export class HuntCombatLoadout {
         spell: toCombatSpell(spellArt.extra.spell),
       });
     }
-    return { hits: definition.extra.hits, spells };
+    return { hits, spells: cards };
   }
 
   private async requireArtifact(id: number): Promise<ArtifactDefinition> {

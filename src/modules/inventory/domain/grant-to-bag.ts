@@ -5,11 +5,13 @@ import type { InventoryRepository } from "../ports/inventory-repository.ts";
 import { BagFullError } from "./bag-full-error.ts";
 import { computeBagLoad } from "./bag-load.ts";
 import { MissingArtifactError } from "./missing-artifact-error.ts";
+import { itemInstanceDataForGrant } from "./roll-glove-instance.ts";
 
 export async function grantToBag(
   inventory: InventoryRepository,
   catalog: Catalog,
   bagCapacity: number,
+  random: Readonly<{ unit(): number }>,
   command: Readonly<{ characterId: number; artifactId: number; quantity: number }>,
 ): Promise<void> {
   if (!Number.isInteger(command.quantity) || command.quantity < 1) {
@@ -52,6 +54,7 @@ export async function grantToBag(
       durability: definition.durability,
       durabilityMax: definition.durabilityMax,
       expire: 0,
+      data: itemInstanceDataForGrant(definition, random),
     });
     items.push(created);
     remaining -= take;

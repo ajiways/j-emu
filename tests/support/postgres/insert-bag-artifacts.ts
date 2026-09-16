@@ -32,6 +32,7 @@ export async function insertBagArtifacts(
         upgradeSkillId: "",
         upgradeBound: 0,
         expire: 0,
+        dataJson: {},
         version: 1,
       });
     }

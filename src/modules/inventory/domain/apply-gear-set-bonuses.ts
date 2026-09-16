@@ -2,6 +2,7 @@ import type { Catalog } from "../../catalog/ports/catalog.ts";
 import { ARTIFACT_KIND_SET_BONUS } from "../../catalog/domain/artifact-kind.ts";
 import type { InventoryRepository } from "../ports/inventory-repository.ts";
 import type { InventoryItem } from "./inventory-item.ts";
+import { EMPTY_ITEM_INSTANCE } from "./item-instance-data.ts";
 import {
   collectWornSets,
   KIND_SET,
@@ -59,6 +60,7 @@ export async function syncGearSetBonuses(
       durability: definition.durability,
       durabilityMax: definition.durabilityMax,
       expire: 0,
+      data: EMPTY_ITEM_INSTANCE,
     });
   }
 }

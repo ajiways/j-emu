@@ -1,5 +1,15 @@
 import { sql } from "drizzle-orm";
-import { bigint, check, index, integer, pgSchema, text, uniqueIndex } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  check,
+  index,
+  integer,
+  jsonb,
+  pgSchema,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
+import type { ItemInstanceData } from "../domain/item-instance-data.ts";
 
 export const inventorySchema = pgSchema("inventory");
 
@@ -29,6 +39,7 @@ export const items = inventorySchema.table(
     upgradeSkillId: text("upgrade_skill_id").notNull(),
     upgradeBound: integer("upgrade_bound").notNull(),
     expire: integer("expire").notNull(),
+    dataJson: jsonb("data_json").$type<ItemInstanceData>().notNull(),
     version: integer("version").notNull(),
   },
   (table) => [

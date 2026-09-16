@@ -18,6 +18,40 @@ describe("Pub1 item decoder", () => {
     expect(artifact.fBody).toBe("");
   });
 
+  it("keeps pool extra.spells when artikul_id0 is 0", () => {
+    const record = sampleRecord(23);
+    if (!record || typeof record !== "object" || Array.isArray(record)) {
+      throw new Error("sample record must be an object");
+    }
+    record.spells = [
+      {
+        cost: "6",
+        row: "1",
+        artikul_id0: "0",
+        artikul_id1: "497",
+        artikul_id2: "179",
+        artikul_id3: "499",
+        artikul_id4: "177",
+        artikul_id5: "175",
+        artikul_id6: "498",
+      },
+    ];
+    expect(artifactFromAmf(23, record).artifact.extra.spells).toEqual([
+      {
+        cost: 6,
+        row: 1,
+        artikul_id0: 0,
+        artikul_id1: 497,
+        artikul_id2: 179,
+        artikul_id3: 499,
+        artikul_id4: 177,
+        artikul_id5: 175,
+        artikul_id6: 498,
+      },
+    ]);
+    expect(artifactFromAmf(23, record).artifact.extra.hits).toBeUndefined();
+  });
+
   it("maps Pub1 f_body and treats omitted overlay as empty string", () => {
     const withOverlay = sampleRecord(20);
     if (!withOverlay || typeof withOverlay !== "object" || Array.isArray(withOverlay)) {

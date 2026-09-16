@@ -4,10 +4,16 @@ import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
-import { bagItemByArtikulId } from "../support/harness/wire-payload.ts";
+import {
+  bagItemByArtikulId,
+  fightEventTypes,
+  heroIdFrom,
+  huntFightIdFrom,
+} from "../support/harness/wire-payload.ts";
 import { NAKED_HERO_BODY, wornHeroBodyFromGenerated } from "../support/worn-hero-body.ts";
 
 const GLOVE_BODY = wornHeroBodyFromGenerated(9095);
+const SHOP_GLOVE_POOL = [497, 179, 499, 177, 175, 498];
 
 describe("inventory equipment", () => {
   let harness: ApplicationHarness;
@@ -203,6 +209,66 @@ describe("inventory equipment", () => {
     const view = await client.objectAction({ object: "user", action: "view", sq: 6 });
     expect(firstArtifact(view["user|view"])).toMatchObject({ id: itemId, slot: 32 });
   });
+
+  it("rolls shop glove 23 spells into bag, user|magic, and hunt persSpells", async () => {
+    const client = await AuthenticatedClient.login(application);
+    const init = await client.objectAction({ object: "common", action: "init", sq: 1 });
+    await application.characterProgression.grantExperience({
+      characterId: heroIdFrom(init),
+      operationId: `test:${heroIdFrom(init)}:glove-23-l2`,
+      amount: 472,
+    });
+    const shop = await client.objectAction({
+      object: "common",
+      action: "action",
+      form: { code: "COME_IN", area_id: 504 },
+      sq: 2,
+    });
+    expect(shop["common|action"]).toEqual({ status: 100, action: "COME_IN" });
+    const bought = await client.objectAction({
+      object: "store",
+      action: "buy",
+      form: { basket: { "80": 1 } },
+      sq: 3,
+    });
+    expect(bought["store|buy"]).toEqual({ status: 100 });
+    const glove = bagItemByArtikulId(bought, 23);
+    const itemId = requireNumber(glove.id);
+    expect(glove.spells).toEqual([
+      expect.objectContaining({
+        artikul_id0: expect.any(Number),
+        cost: 6,
+        row: 1,
+      }),
+    ]);
+    const spellId = requireNumber(objectBlock(asFirst(glove.spells)).artikul_id0);
+    expect(SHOP_GLOVE_POOL).toContain(spellId);
+    const putOn = await client.objectAction({
+      object: "common",
+      action: "action",
+      form: { code: "PUT_ON", artifact_id: itemId },
+      sq: 4,
+    });
+    expect(putOn["common|action"]).toEqual({ status: 100 });
+    expect(putOn["user|magic"]).toMatchObject({
+      status: 100,
+      gloves: [{ id: itemId, artikul_id: 23, spells: glove.spells }],
+    });
+    const back = await client.objectAction({ object: "common", action: "exit", sq: 5 });
+    expect(back["common|exit"]).toEqual({ status: 100 });
+    const start = await client.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 6,
+    });
+    expect(start["common|action"]).toEqual({ status: 100 });
+    const fightId = huntFightIdFrom(start);
+    expect(await client.fight({ rc: "auth", eid: fightId, sq: 7 })).toHaveLength(0);
+    const authenticated = await client.pollFight();
+    expect(fightEventTypes(authenticated)).toEqual(expect.arrayContaining(["persSpells"]));
+    expect(JSON.stringify(authenticated)).toContain(`"srcId":${spellId}`);
+  });
 });
 
 function objectBlock(value: AmfValue | undefined): Record<string, AmfValue> {
@@ -236,6 +302,11 @@ function firstArtifact(block: AmfValue | undefined): Record<string, AmfValue> {
 function requireNumber(value: AmfValue | undefined): number {
   if (typeof value !== "number") throw new Error("expected a number");
   return value;
+}
+
+function asFirst(value: AmfValue | undefined): AmfValue {
+  if (!Array.isArray(value) || value[0] === undefined) throw new Error("expected a nonempty array");
+  return value[0];
 }
 
 function gloveSpellCard(

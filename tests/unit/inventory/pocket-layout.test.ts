@@ -84,6 +84,7 @@ describe("planPutOnPocket", () => {
         durability: 0,
         durabilityMax: 0,
         expire: 0,
+        data: {},
       },
     ]);
     expect(mutation.delete).toEqual([]);
@@ -123,6 +124,7 @@ describe("planPutOnPocket", () => {
         durability: 0,
         durabilityMax: 0,
         expire: 0,
+        data: {},
       },
     ]);
   });

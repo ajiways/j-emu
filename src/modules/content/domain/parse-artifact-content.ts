@@ -73,9 +73,26 @@ const artifactGloveSocketSchema = z
     id: z.number().int().positive().optional(),
     cost: z.number().int().positive(),
     row: z.number().int().positive(),
-    artikul_id0: z.number().int().positive(),
+    artikul_id0: z.number().int().nonnegative(),
+    artikul_id1: z.number().int().positive().optional(),
+    artikul_id2: z.number().int().positive().optional(),
+    artikul_id3: z.number().int().positive().optional(),
+    artikul_id4: z.number().int().positive().optional(),
+    artikul_id5: z.number().int().positive().optional(),
+    artikul_id6: z.number().int().positive().optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (socket) =>
+      socket.artikul_id0 >= 1 ||
+      socket.artikul_id1 !== undefined ||
+      socket.artikul_id2 !== undefined ||
+      socket.artikul_id3 !== undefined ||
+      socket.artikul_id4 !== undefined ||
+      socket.artikul_id5 !== undefined ||
+      socket.artikul_id6 !== undefined,
+    { message: "glove socket requires artikul_id0 or pool artikul_id1..6" },
+  );
 
 const artifactSetSchema = z
   .object({

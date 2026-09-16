@@ -32,8 +32,19 @@ export class ArtifactExtra {
       if (!Number.isInteger(socket.cost) || socket.cost < 1) {
         throw new Error("Glove socket cost must be a positive integer");
       }
-      if (!Number.isInteger(socket.artikulId0) || socket.artikulId0 < 1) {
-        throw new Error("Glove socket artikul_id0 is required");
+      if (!Number.isInteger(socket.row) || socket.row < 1) {
+        throw new Error("Glove socket row must be a positive integer");
+      }
+      if (!Number.isInteger(socket.artikulId0) || socket.artikulId0 < 0) {
+        throw new Error("Glove socket artikul_id0 is invalid");
+      }
+      for (const poolId of socket.pool) {
+        if (!Number.isInteger(poolId) || poolId < 1) {
+          throw new Error("Glove socket pool id must be a positive integer");
+        }
+      }
+      if (socket.artikulId0 < 1 && socket.pool.length < 1) {
+        throw new Error("Glove socket requires artikul_id0 or a spell pool");
       }
     }
   }

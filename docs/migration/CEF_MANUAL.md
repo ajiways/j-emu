@@ -52,11 +52,11 @@
       raw-AMF: wire `hpChange` = −min(raw, currentHP) на melee/kind-1/glove/DoT.
       CEF не подтверждён.
 - [ ] INV leftover: в инвентаре и на надетой перчатке нет спеллов (и в бою
-      панель пустая). raw-AMF: 9095 bag/view/`user|magic` несут catalog
-      `hits` + expanded `spells` и тот же набор в `extra.hits`/`extra.spells`
-      (`artikul_id0`). PUT_ON отдаёт `user|magic`. CEF не подтверждён.
-      Покупаемые/лутовые перчатки без catalog sockets и MAGRES/MAGSTR roll
-      при grant — instance extra не персистится (`items.data_json` нет); см.
+      панель пустая). raw-AMF: grant 23 роллит пул `artikul_id1..6` в
+      `items.data_json`; bag/view/`user|magic` несут instance `hits` +
+      expanded `spells` и тот же набор в `extra`. 9095 по-прежнему catalog
+      sockets `artikul_id0`. CEF не подтверждён. MAGRES/MAGSTR roll и copy
+      instance в mail/auction/trade snapshot — отдельный leftover; см.
       [INVENTORY.md](../modules/INVENTORY.md).
 - [ ] CMB-02 leftover: после «Разозлить» пропадает список спеллов перчатки
       (`persSpells`).

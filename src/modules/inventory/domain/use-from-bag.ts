@@ -17,6 +17,7 @@ export type UseFromBagCommand = Readonly<{
   heroLevel: number;
   nowSec: number;
   bagCapacity: number;
+  random: Readonly<{ unit(): number }>;
 }>;
 
 export type UseFromBagResult =
@@ -95,7 +96,7 @@ export async function useFromBag(
   if (action.bonusId < 1) throw new UseDeniedError("у предмета нет бонуса");
   const script = await catalog.useScript(action.bonusId);
   if (script) {
-    await applyUseScript(inventory, catalog, command.bagCapacity, {
+    await applyUseScript(inventory, catalog, command.bagCapacity, command.random, {
       characterId: command.characterId,
       script,
       description: action.description,

@@ -11,7 +11,7 @@ describe("glove instance wire", () => {
     const glove = testArtifact({
       extra: new ArtifactExtra(
         null,
-        [{ cost: 2, row: 1, artikulId0: 9098 }],
+        [{ cost: 2, row: 1, artikulId0: 9098, pool: [] }],
         [...HITS],
         null,
         0,
@@ -76,7 +76,15 @@ describe("glove instance wire", () => {
 
   it("fails fast when sockets exist without extra.hits", async () => {
     const glove = testArtifact({
-      extra: new ArtifactExtra(null, [{ cost: 2, row: 1, artikulId0: 9098 }], null, null, 0, 0, 0),
+      extra: new ArtifactExtra(
+        null,
+        [{ cost: 2, row: 1, artikulId0: 9098, pool: [] }],
+        null,
+        null,
+        0,
+        0,
+        0,
+      ),
     });
     await expect(gloveInstanceFromCatalog(glove, { artifact: async () => null })).rejects.toThrow(
       "Glove artifact 9095 is missing extra.hits",
@@ -87,7 +95,7 @@ describe("glove instance wire", () => {
     const glove = testArtifact({
       extra: new ArtifactExtra(
         null,
-        [{ cost: 2, row: 1, artikulId0: 9098 }],
+        [{ cost: 2, row: 1, artikulId0: 9098, pool: [] }],
         [...HITS],
         null,
         0,

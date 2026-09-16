@@ -6,7 +6,11 @@ import {
   amfString,
   isRecord,
 } from "./amf-fields.ts";
-import { GLOVE_CATALOG_HITS, GLOVE_CATALOG_HITS_ARTIKUL_ID } from "./glove-hits-policy.ts";
+import {
+  GEAR_COMBO_GLOVE_ARTIKUL_ID,
+  GLOVE_CATALOG_HITS,
+  GLOVE_CATALOG_HITS_ARTIKUL_ID,
+} from "./glove-hits-policy.ts";
 
 export type DecodedArtifactSkill = Readonly<{ id: string; value: number; flags: number }>;
 export type DecodedArtifactAction = Readonly<{
@@ -130,6 +134,8 @@ export function decodeArtifactExtra(
     }
     extra.spells = sockets;
     extra.hits = [...GLOVE_CATALOG_HITS];
+  } else if (sockets.length > 0 && artifactId !== GEAR_COMBO_GLOVE_ARTIKUL_ID) {
+    extra.spells = sockets;
   }
   const set = decodeSet(record.set, artifactId);
   if (set) extra.set = set;
@@ -273,11 +279,19 @@ function decodeSockets(raw: unknown, artifactId: number): Array<Record<string, u
   const sockets: Array<Record<string, unknown>> = [];
   for (const [index, value] of raw.entries()) {
     const row = requireRow(value, `artifact ${artifactId} socket ${index}`);
-    const artikulId0 = amfInteger(
+    const artikulId0 = amfOmittedZeroInteger(
       row.artikul_id0,
       `artifact ${artifactId} socket ${index} artikul_id0`,
     );
-    if (artikulId0 < 1) continue;
+    const pool: Record<string, number> = {};
+    for (let slot = 1; slot <= 6; slot += 1) {
+      const poolId = amfOmittedZeroInteger(
+        row[`artikul_id${slot}`],
+        `artifact ${artifactId} socket ${index} artikul_id${slot}`,
+      );
+      if (poolId >= 1) pool[`artikul_id${slot}`] = poolId;
+    }
+    if (artikulId0 < 1 && Object.keys(pool).length < 1) continue;
     const socket: Record<string, unknown> = {
       cost: requirePositive(
         amfInteger(row.cost, `artifact ${artifactId} socket ${index} cost`),
@@ -288,6 +302,7 @@ function decodeSockets(raw: unknown, artifactId: number): Array<Record<string, u
         `artifact ${artifactId} socket ${index} row`,
       ),
       artikul_id0: artikulId0,
+      ...pool,
     };
     if (row.id !== undefined) {
       const id = amfInteger(row.id, `artifact ${artifactId} socket ${index} id`);

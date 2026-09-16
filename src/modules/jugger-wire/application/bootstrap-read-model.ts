@@ -24,7 +24,7 @@ import { buildUserBag, type UserBagBlock } from "./user-bag-block.ts";
 import { buildUserPocket } from "./user-pocket-block.ts";
 import { buildUserConf } from "./user-conf-block.ts";
 import { userMagicFromEquipped, type UserMagicBlock } from "./user-magic-block.ts";
-import { gloveInstanceFromCatalog } from "./glove-instance-wire.ts";
+import { gloveInstanceFromItem } from "./glove-instance-wire.ts";
 import { liveHonorProgress } from "./live-honor-progress.ts";
 import { fightResumeConfiguration } from "./fight-resume-configuration.ts";
 import { buildUserSkills, skillsExpireBlock, type UserSkillsBlock } from "./user-skills-block.ts";
@@ -180,7 +180,7 @@ export class BootstrapReadModel {
           definition,
           await artifactSkillWireMap(overlay.skills, this.catalog, overlay.upgradeBySkill),
           overlay,
-          await gloveInstanceFromCatalog(definition, this.catalog),
+          await gloveInstanceFromItem(definition, item, this.catalog),
         ),
       );
     }

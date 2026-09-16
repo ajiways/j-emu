@@ -72,6 +72,7 @@ describe("inventory pocket persistence", () => {
       durability: 0,
       durabilityMax: 0,
       expire: 0,
+      data: {},
     });
     await expect(
       repository.create({
@@ -82,6 +83,7 @@ describe("inventory pocket persistence", () => {
         durability: 0,
         durabilityMax: 0,
         expire: 0,
+        data: {},
       }),
     ).rejects.toSatisfy(isUniqueViolation);
   });
@@ -148,6 +150,7 @@ describe("inventory pocket persistence", () => {
       durability: 0,
       durabilityMax: 0,
       expire: 0,
+      data: {},
     });
     const bag = await repository.create({
       heroId: hero.id,
@@ -157,6 +160,7 @@ describe("inventory pocket persistence", () => {
       durability: 0,
       durabilityMax: 0,
       expire: 0,
+      data: {},
     });
     const definition = await requireDefinition(99);
     await database.run(async () => inventory.service.putOn(hero, bag.id, definition, 1));

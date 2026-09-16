@@ -6,6 +6,8 @@ import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { completeMeleeHunt } from "../support/harness/complete-melee-hunt.ts";
 import { bagItemByArtikulId, heroIdFrom } from "../support/harness/wire-payload.ts";
 
+const SHOP_GLOVE_POOL = [497, 179, 499, 177, 175, 498];
+
 describe("store list and buy", () => {
   let harness: ApplicationHarness;
   let application: Application;
@@ -54,6 +56,15 @@ describe("store list and buy", () => {
     expect(bought["store|buy"]).toEqual({ status: 100 });
     expect(stateMoney(bought)).toBe("23.00");
     expect(bagItemByArtikulId(bought, 23).title).toBe("Простая магическая перчатка");
+    const shopGlove = bagItemByArtikulId(bought, 23);
+    expect(asArray(shopGlove.hits)).toHaveLength(8);
+    for (const hit of asArray(shopGlove.hits)) {
+      expect([1, 2, 3]).toContain(hit);
+    }
+    expect(asArray(shopGlove.spells)).toHaveLength(1);
+    const rolled = requireRecord(asArray(shopGlove.spells)[0], "shop glove spell");
+    expect(SHOP_GLOVE_POOL).toContain(rolled.artikul_id0);
+    expect(shopGlove.extra).toEqual({ hits: shopGlove.hits, spells: shopGlove.spells });
     expect(bagItemByArtikulId(bought, 24).title).toBe("Простой наруч");
     expect(bought["book|quest_list"]).toBeUndefined();
 
@@ -62,6 +73,7 @@ describe("store list and buy", () => {
     const again = await restarted.objectAction({ object: "common", action: "init", sq: 20 });
     expect(stateMoney(again)).toBe("23.00");
     expect(bagItemByArtikulId(again, 23).artikul_id).toBe(23);
+    expect(bagItemByArtikulId(again, 23).extra).toEqual(shopGlove.extra);
     expect(bagItemByArtikulId(again, 24).artikul_id).toBe(24);
   });
 
@@ -224,6 +236,11 @@ function stateMoney(payload: Record<string, AmfValue>): string {
   }
   if (typeof state.money !== "string") throw new Error("state.money is missing");
   return state.money;
+}
+
+function asArray(value: AmfValue | undefined): AmfValue[] {
+  if (!Array.isArray(value)) throw new Error("expected an array");
+  return value;
 }
 
 function requireRecord(value: AmfValue | undefined, label: string): Record<string, AmfValue> {

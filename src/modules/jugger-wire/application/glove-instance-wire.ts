@@ -1,5 +1,10 @@
 import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
 import type { Catalog } from "../../catalog/ports/catalog.ts";
+import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
+import {
+  isRolledGloveInstance,
+  type GloveInstanceSpell,
+} from "../../inventory/domain/item-instance-data.ts";
 
 type GloveSpellCard = Readonly<{
   id: number;
@@ -22,6 +27,18 @@ export type GloveInstanceWire = Readonly<{
   }>;
 }>;
 
+export async function gloveInstanceFromItem(
+  definition: ArtifactDefinition,
+  item: InventoryItem,
+  catalog: Pick<Catalog, "artifact">,
+): Promise<GloveInstanceWire | null> {
+  if (definition.extra.sockets.length < 1) return null;
+  if (isRolledGloveInstance(item.data, definition.extra.sockets.length)) {
+    return expandGloveCards(item.data.hits, item.data.spells, catalog);
+  }
+  return gloveInstanceFromCatalog(definition, catalog);
+}
+
 export async function gloveInstanceFromCatalog(
   definition: ArtifactDefinition,
   catalog: Pick<Catalog, "artifact">,
@@ -30,14 +47,29 @@ export async function gloveInstanceFromCatalog(
   if (!definition.extra.hits) {
     throw new Error(`Glove artifact ${definition.id} is missing extra.hits`);
   }
-  const spells: GloveSpellCard[] = [];
+  const spells: GloveInstanceSpell[] = [];
   for (const socket of definition.extra.sockets) {
-    const spell = await catalog.artifact(socket.artikulId0);
-    if (!spell) throw new Error(`Glove spell ${socket.artikulId0} is missing`);
-    spells.push({
+    if (socket.artikulId0 < 1) {
+      throw new Error(`Glove item is missing rolled hits/spells for artifact ${definition.id}`);
+    }
+    spells.push({ artikul_id: socket.artikulId0, cost: socket.cost, row: socket.row });
+  }
+  return expandGloveCards(definition.extra.hits, spells, catalog);
+}
+
+async function expandGloveCards(
+  hits: readonly number[],
+  spells: readonly GloveInstanceSpell[],
+  catalog: Pick<Catalog, "artifact">,
+): Promise<GloveInstanceWire> {
+  const cards: GloveSpellCard[] = [];
+  for (const socket of spells) {
+    const spell = await catalog.artifact(socket.artikul_id);
+    if (!spell) throw new Error(`Glove spell ${socket.artikul_id} is missing`);
+    cards.push({
       id: spell.id,
       artikul_id: spell.id,
-      artikul_id0: socket.artikulId0,
+      artikul_id0: socket.artikul_id,
       title: spell.title,
       picture: spell.picture,
       description: "",
@@ -46,6 +78,5 @@ export async function gloveInstanceFromCatalog(
       cost: socket.cost,
     });
   }
-  const hits = definition.extra.hits;
-  return { hits, spells, extra: { hits, spells } };
+  return { hits, spells: cards, extra: { hits, spells: cards } };
 }

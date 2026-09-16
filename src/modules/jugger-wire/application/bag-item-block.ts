@@ -9,7 +9,7 @@ import { sellPriceMinor } from "../../inventory/domain/sell-price.ts";
 import { artifactActionsWire, type ArtifactActionWireBlock } from "./artifact-actions-wire.ts";
 import { artifactInstanceOverlay } from "./artifact-instance-overlay.ts";
 import { artifactSkillWireMap, type ArtifactSkillWireBlock } from "./artifact-skill-wire.ts";
-import { gloveInstanceFromCatalog, type GloveInstanceWire } from "./glove-instance-wire.ts";
+import { gloveInstanceFromItem, type GloveInstanceWire } from "./glove-instance-wire.ts";
 import { moneyNumberFromMinorUnits } from "./money-from-minor-units.ts";
 
 export type BagItemBlock = Readonly<{
@@ -48,7 +48,7 @@ export async function buildBagItemBlock(
   catalog: Catalog,
 ): Promise<BagItemBlock> {
   const overlay = artifactInstanceOverlay(definition, item);
-  const glove = await gloveInstanceFromCatalog(definition, catalog);
+  const glove = await gloveInstanceFromItem(definition, item, catalog);
   return {
     id: item.id,
     artikul_id: definition.id,
