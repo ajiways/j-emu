@@ -173,6 +173,9 @@ describe("glove AOE leftover", () => {
     const patch = ending.events.find((event) => event.type === "pers-change");
     expect(patch).toMatchObject({ type: "pers-change" });
     if (!patch || patch.type !== "pers-change") throw new Error("expected pers-change");
+    expect(ending.events.map((event) => event.type).indexOf("pers-change")).toBeLessThan(
+      ending.events.map((event) => event.type).indexOf("damage"),
+    );
     expect(patch.bots.map((bot) => bot.id).sort((a, b) => a - b)).toEqual([1_000_000, 1_000_001]);
     expect(patch.bots.find((bot) => bot.id === 1_000_001)?.hp).toBe(196);
     expect(ending.sideNotifies).toHaveLength(1);

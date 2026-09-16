@@ -1,4 +1,3 @@
-import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { applyHuntBotHit, applyHuntPlayerHit } from "./battle-hunt-runtime.ts";
 import {
@@ -172,16 +171,10 @@ function settleGloveHits(
       throw new Error("Glove ending is missing a damage event");
     }
     const bots = input.roster === null ? [] : input.roster.snaps();
-    events = insertAfterDamage(
-      events,
+    events = [
       persChangeForParticipants(input.humans, bots, [damage.sourceId, ...ending.hitTargetIds]),
-    );
+      ...events,
+    ];
   }
   return { ...ending, events, finished: primary.finished, sideNotifies };
-}
-
-function insertAfterDamage(events: readonly BattleEvent[], extra: BattleEvent): BattleEvent[] {
-  const index = events.findIndex((event) => event.type === "damage");
-  if (index < 0) throw new Error("Glove ending is missing a damage event");
-  return [...events.slice(0, index + 1), extra, ...events.slice(index + 1)];
 }

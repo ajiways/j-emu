@@ -243,17 +243,6 @@ describe("FightWireMapper keep-turn frames", () => {
   it("keeps caster ST then persChangeInfo for AOE extra targets", () => {
     const frames = mapper.frames([
       { type: "command-accepted", sequence: 7 },
-      { type: "turn-wait", timeoutSeconds: 20 },
-      {
-        type: "damage",
-        sourceId: 1,
-        targetId: 1_000_000,
-        animation: "magic_aoe_light",
-        hpChange: -4,
-        targetMaxHp: 200,
-        killed: false,
-        comboCp: 0,
-      },
       {
         type: "pers-change",
         humans: [
@@ -296,15 +285,26 @@ describe("FightWireMapper keep-turn frames", () => {
           },
         ],
       },
+      { type: "turn-wait", timeoutSeconds: 20 },
+      {
+        type: "damage",
+        sourceId: 1,
+        targetId: 1_000_000,
+        animation: "magic_aoe_light",
+        hpChange: -4,
+        targetMaxHp: 200,
+        killed: false,
+        comboCp: 0,
+      },
     ]);
     expect(frames[0]).toEqual({ rs: true, sq: 7 });
-    expect(evTypes(frames[1])).toEqual(["attackwait", "cast", "persCP"]);
-    expect(castPacket(frames[1])).toMatchObject({
+    expect(evTypes(frames[1])).toEqual(["persChangeInfo", "persChangeInfo", "persChangeInfo"]);
+    expect(evTypes(frames[2])).toEqual(["attackwait", "cast", "persCP"]);
+    expect(castPacket(frames[2])).toMatchObject({
       et: "cast",
       animData: "magic_aoe_light",
       targetId: 1_000_000,
     });
-    expect(evTypes(frames[2])).toEqual(["persChangeInfo", "persChangeInfo", "persChangeInfo"]);
   });
 });
 

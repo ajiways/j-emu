@@ -76,9 +76,10 @@
       drink, `effPurge` после consuming L/C/R melee, не glove.
       CEF 2026-09-17.
 - [ ] CMB-02 leftover: AOE (`targetCount>=2`, «Волна света»). raw-AMF
-      landed: kind-1 glove с `targetCount>=2` бьёт других живых врагов
-      hunt-боя (не только `FightDuel.otherId`); ally poll — тот же
-      `animData`, `targetId` своего фо. CEF не подтверждён. Bot kind-1
+      landed: kind-1 glove бьёт других живых врагов hunt-боя; ally poll —
+      тот же `animData` на своего фо; `persChangeInfo` по hit id **до**
+      ST `cast` (список полосок). CEF 2026-09-17: урон по двум мобам ок,
+      полоска чужого в списке — нет, повторно не подтверждён. Bot kind-1
       AOE — не этот leftover.
 - [ ] CMB-06/15 leftover: плевок Хиссы — разовый урон, дебафф не вешается.
 - [x] CMB-13 leftover: сайдбар HP тиммейтов/чужих врагов и `oppwait` после

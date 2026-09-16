@@ -87,9 +87,9 @@ describe("fproxy glove AOE 9099", () => {
     expect(await a.fight({ rc: "castSpell", srcType: 3, srcId: 9099, sq })).toHaveLength(0);
     const caster = await a.pollFight();
     expect(caster[0]).toEqual({ rs: true, sq });
-    expect(fightEventTypes(caster)).toEqual(
-      expect.arrayContaining(["attackwait", "cast", "persChangeInfo"]),
-    );
+    const casterTypes = fightEventTypes(caster);
+    expect(casterTypes).toEqual(expect.arrayContaining(["attackwait", "cast", "persChangeInfo"]));
+    expect(casterTypes.indexOf("persChangeInfo")).toBeLessThan(casterTypes.indexOf("cast"));
     const casterBots = persChangeBots(caster);
     expect(casterBots.map((bot) => bot.id).sort((left, right) => left - right)).toEqual(
       [spawnId, cloneId].sort((left, right) => left - right),
