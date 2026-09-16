@@ -7,9 +7,10 @@ import { schoolOverlayFromKind1 } from "./school-overlay.ts";
 import { FightCastDenied } from "./fight-cast-denied.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
-import { pocketHealAmount, spellCharging, spellKind, spellPcStr } from "./hunt-human-cast-state.ts";
+import { pocketHealAmount, spellCharging, spellKind } from "./hunt-human-cast-state.ts";
 import { resolveMeleeTarget, type BotMeleePresence } from "./melee-target.ts";
 import { applyDamageToMeleeTarget } from "./paired-melee.ts";
+import { applyPocketKind3, requirePocketOrb } from "./pocket-kind3-cast.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
 import type { RandomSource } from "./random-source.ts";
 
@@ -37,6 +38,7 @@ export function tryPocketCast(
     throw new FightCastDenied("cooldown", sequence);
   }
   if (spellKind(row.spell, 11)) throw new FightCastDenied("kind11", sequence);
+  if (spellKind(row.spell, 3)) requirePocketOrb(row);
   const consumed = human.casts.consumePocket(itemId, nowMs);
   if (spellKind(consumed.spell, 2)) {
     const healed = human.applyHeal(pocketHealAmount(consumed.spell, human.maxHp));
@@ -58,20 +60,10 @@ export function tryPocketCast(
     };
   }
   if (spellKind(consumed.spell, 3)) {
-    human.casts.armOrb(spellPcStr(consumed.spell), spellCharging(consumed.spell) || 1);
     return {
       kind: "resolved",
       consumePocketItemId: itemId,
-      events: [
-        pocketEffectUse(consumed, human.heroId, 3, 1),
-        {
-          type: "buff-cast",
-          animation: consumed.spell.animData ?? "botles_strenght_grey",
-          sourceId: human.heroId,
-          targetId: human.heroId,
-          maxHp: human.maxHp,
-        },
-      ],
+      events: applyPocketKind3(human, consumed),
     };
   }
   throw new Error(`Pocket artifact ${consumed.artifactId} has no supported fight effect`);

@@ -253,8 +253,8 @@ CEF 2026-09-16. CEF leftovers (чат поломки CEF 2026-09-16, экран 
 overkill raw-AMF clamp без CEF, перчатка 23 CEF 2026-09-16 instance spells,
 MAGRES leftover, aggro persSpells/kill-clone CEF 2026-09-16, 3↔3 shuffle
 и loot ARTIFACT skills raw-AMF без CEF, aggro pair grant до fight-auth, sidebar HP/`oppwait`
-и 3↔3 без второго удара бота после swap raw-AMF без CEF, орб/дебаффы, AOE
-только в свою пару,
+и 3↔3 без второго удара бота после swap raw-AMF без CEF, орб 99 standing+effPurge
+raw-AMF без CEF, дебаффы, AOE только в свою пару,
 dealtDamage, skip-turn, F5 img) — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 CMB-11: OA `FIGHT_JOIN` `{team:1|2}` и `FIGHT_HELP` входят в тот же RAM
 `fightId` на 50310; карта ATTACK_BOT на занятый spawn остаётся team 1;

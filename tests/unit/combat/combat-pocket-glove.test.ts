@@ -118,6 +118,66 @@ describe("CombatService pocket glove rage", () => {
     const orb = await combat.execute(1, { kind: "poll" });
     expect(orb.map((event) => event.type)).toEqual(["command-accepted", "effect-use", "buff-cast"]);
     expect(orb.some((event) => event.type === "native-count")).toBe(false);
+    expect(orb.find((event) => event.type === "effect-use")).toMatchObject({
+      artikulId: 99,
+      id: 1,
+      remainTime: 40,
+      sourceId: 1,
+    });
+  });
+
+  it("purges pocket 99 standing kind-3 on the consuming melee", async () => {
+    const { combat } = createCombatService({
+      random: new SequenceRandom([8, 2]),
+      rules: battleRules(),
+    });
+    await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
+    await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(1, { kind: "pocket", itemId: 100_002, sequence: 2 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(1, { kind: "strike", side: "center", sequence: 3 });
+    const melee = await combat.execute(1, { kind: "poll" });
+    expect(melee.map((event) => event.type)).toEqual([
+      "turn-wait",
+      "damage",
+      "effect-purge",
+      "command-accepted",
+    ]);
+    expect(melee.find((event) => event.type === "effect-purge")).toEqual({
+      type: "effect-purge",
+      effectId: 1,
+    });
+  });
+
+  it("fails fast when pocket kind-3 charging is missing", async () => {
+    const { combat } = createCombatService({});
+    await startHuntWithIssuedId(
+      combat,
+      unitHuntStart({
+        loadout: dumpLoadout({
+          pocket: [
+            {
+              itemId: 100_002,
+              artifactId: 99,
+              position: 1,
+              count: 1,
+              title: "Малый усиливающий орб",
+              picture: "bottles_sila1.png",
+              spell: {
+                ...orbSpell,
+                effects: [{ kind: 3, skills: [{ skillId: "pcSTR", value: 10 }] }],
+              },
+            },
+          ],
+        }),
+      }),
+    );
+    await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await expect(
+      combat.execute(1, { kind: "pocket", itemId: 100_002, sequence: 2 }),
+    ).rejects.toThrow("Pocket artifact 99 kind-3 charging is required");
   });
 
   it("denies elixir 93 cooldown without poll events", async () => {

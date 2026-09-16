@@ -164,7 +164,11 @@ grant не катится. 77 без fight blob. Pub1 AMF у 93/99
 catalog fallback. Нет `srcId:5` в
 fproxy, нет 77 в бою, нет generic effect engine. AOE ending
 (`targetCount>=2`, «Волна света» 9099) в catalog есть, combat бьёт только
-текущего `FightDuel.otherId` — leftover. Kind 11 HTTP
+текущего `FightDuel.otherId` — leftover. Орб 99 drink вешает RAM standing
+kind-3 (`charging` ходов, `groupId` 842, без bake STR — melee бонус остаётся
+`takeOrbPcStr`); consuming melee шлёт `effPurge`; повторный drink той же
+group снимает предыдущий standing. CEF leftover:
+[CEF_MANUAL.md](../migration/CEF_MANUAL.md). Kind 11 HTTP
 `{rs:false, restriction:18}` — только если опубликованный spell kind 11
 (в текущем slice нет). CEF счётчиков пояса/перчатки/ярости не прогонялся.
 

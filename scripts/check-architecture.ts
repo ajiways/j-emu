@@ -55,7 +55,7 @@ const lineJustifications: Readonly<Record<string, string>> = {
   "src/modules/combat/application/combat-terminal.ts":
     "Hunt finish: hold loot until fproxy takes fightFinish, delayed persist handshake, leave/flee, and history",
   "src/modules/combat/domain/hunt-human-fight-effects.ts":
-    "Standing gear kind-3 plus CMB-15c tick attach/pulse/dispel and ending-turn purge",
+    "Standing gear kind-3, pocket charging kind-3, CMB-15c tick attach/pulse/dispel and ending-turn purge",
   "src/modules/combat/domain/hunt-human.ts":
     "Hunt/PvP human fighter: turn clock, pocket, loadout, applied bot and human damage credits",
   "src/modules/content/application/content-validator.ts":

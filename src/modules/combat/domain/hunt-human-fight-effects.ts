@@ -196,6 +196,47 @@ export class HuntHumanFightEffects {
     return pulses;
   }
 
+  attachChargingKind3(
+    input: Readonly<{
+      sourceId: number;
+      artikulId: number;
+      title: string;
+      img: string;
+      dmgType: number;
+      remainTurns: number;
+      groupId?: number;
+    }>,
+  ): FightEffectSnap {
+    requireWireIdentity(input.sourceId, "charging kind-3 source id");
+    requireWireIdentity(input.artikulId, "charging kind-3 artikul id");
+    if (!input.title) throw new Error("Charging kind-3 title is required");
+    if (!input.img) throw new Error("Charging kind-3 img is required");
+    if (!Number.isInteger(input.dmgType) || input.dmgType < 0) {
+      throw new Error("Charging kind-3 dmgType must be a non-negative integer");
+    }
+    if (!Number.isInteger(input.remainTurns) || input.remainTurns < 1) {
+      throw new Error("Charging kind-3 remainTurns must be a positive integer");
+    }
+    const id = this.nextId;
+    this.standing.push({
+      id,
+      kind: 3,
+      sourceId: input.sourceId,
+      artikulId: input.artikulId,
+      title: input.title,
+      img: input.img,
+      dmgType: input.dmgType,
+      ...(input.groupId !== undefined ? { groupId: input.groupId } : {}),
+      skills: {},
+      remainTurns: input.remainTurns,
+      expiresAtMs: Number.MAX_SAFE_INTEGER,
+    });
+    this.nextId += 1;
+    const snap = this.snapshot().find((fx) => fx.id === id);
+    if (!snap) throw new Error(`Charging kind-3 ${id} did not snapshot`);
+    return snap;
+  }
+
   attachTick(
     input: Readonly<{
       kind: 4 | 5;

@@ -58,6 +58,21 @@ describe("fproxy pocket glove rage", () => {
     expect(JSON.stringify(poll)).not.toContain("persSpells");
   });
 
+  it("purges orb 99 on the consuming melee", async () => {
+    const client = await AuthenticatedClient.login(application);
+    const orbId = await putOnArtikul(client, 99, 2);
+    await startHunt(client, 3);
+    expect(await client.fight({ rc: "castSpell", srcType: 2, srcId: orbId, sq: 6 })).toHaveLength(
+      0,
+    );
+    await client.pollFight();
+    expect(await client.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: 7 })).toHaveLength(0);
+    const melee = await client.pollFight();
+    const meleeFrame = melee[0];
+    if (meleeFrame === undefined) throw new Error("Melee poll did not return a frame");
+    expect(fightEventTypes([meleeFrame])).toEqual(["attackwait", "cast", "effPurge"]);
+  });
+
   it("casts rage and aggro as rs then FX", async () => {
     const client = await AuthenticatedClient.login(application);
     await putOnArtikul(client, 9095, 2);

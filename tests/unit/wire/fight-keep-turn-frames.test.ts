@@ -56,6 +56,9 @@ describe("FightWireMapper keep-turn frames", () => {
         title: "Малый усиливающий орб",
         persId: 1,
         dmgType: 1,
+        id: 1,
+        remainTime: 40,
+        sourceId: 1,
       },
       {
         type: "buff-cast",
@@ -67,6 +70,13 @@ describe("FightWireMapper keep-turn frames", () => {
     ]);
     expect(orb[0]).toEqual({ rs: true, sq: 3 });
     expect(castPacket(orb[1])).toMatchObject({ et: "cast", ev: [] });
+    expect(Object.values(evMap(orb[1])).find((packet) => packet.et === "effUse")).toMatchObject({
+      et: "effUse",
+      id: 1,
+      remainTime: 40,
+      sourceId: 1,
+      artikulId: 99,
+    });
     expect(JSON.stringify(orb)).not.toContain("persSpells");
   });
 

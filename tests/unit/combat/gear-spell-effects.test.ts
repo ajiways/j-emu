@@ -76,6 +76,36 @@ describe("HuntHumanFightEffects", () => {
     expect(effects.onActorEndingTurn(320_000)).toEqual([1]);
     expect(effects.snapshot()).toEqual([]);
   });
+
+  it("attaches pocket charging kind-3 without STR bake and purges on first ending turn", () => {
+    const effects = new HuntHumanFightEffects({
+      heroId: 1,
+      strength: 53,
+      startedAtMs: 0,
+      gearSpells: [],
+    });
+    expect(
+      effects.attachChargingKind3({
+        sourceId: 1,
+        artikulId: 99,
+        title: "Малый усиливающий орб",
+        img: "bottles_sila1.png",
+        dmgType: 1,
+        remainTurns: 1,
+        groupId: 842,
+      }),
+    ).toMatchObject({
+      id: 1,
+      kind: 3,
+      artikulId: 99,
+      remainTime: 40,
+      groupId: 842,
+      skills: {},
+    });
+    expect(effects.standingStrength()).toBe(0);
+    expect(effects.onActorEndingTurn(0)).toEqual([1]);
+    expect(effects.snapshot()).toEqual([]);
+  });
 });
 
 describe("gear-spell melee STR", () => {
