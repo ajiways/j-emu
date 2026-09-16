@@ -1,4 +1,4 @@
-import type { HuntBotSnap } from "../../combat/domain/battle-event.ts";
+import type { BattleEvent, HuntBotSnap } from "../../combat/domain/battle-event.ts";
 import type { HuntHumanSnap } from "../../combat/domain/hunt-human.ts";
 
 export function huntPersListEvent(
@@ -15,12 +15,23 @@ export function huntPersListEvent(
   return event;
 }
 
+export function huntPersChangeEvents(
+  event: Extract<BattleEvent, { type: "pers-change" }>,
+): readonly Readonly<Record<string, unknown>>[] {
+  const events = [
+    ...event.humans.map((human) => ({ ...huntHumanPersFields(human), et: "persChangeInfo" })),
+    ...event.bots.map((bot) => ({ ...huntBotPersFields(bot), et: "persChangeInfo" })),
+  ];
+  if (events.length === 0) throw new Error("pers-change has no fighters");
+  return events;
+}
+
 export function huntHumanPersFields(human: HuntHumanSnap): Readonly<Record<string, unknown>> {
   return {
     aggressive: false,
     berserk: 0,
     clanInfo: { id: 0 },
-    dead: false,
+    dead: human.hp <= 0,
     dealtDamage: 0,
     faction: String(human.kind),
     hp: human.hp,
@@ -44,7 +55,7 @@ function huntBotPersFields(bot: HuntBotSnap): Readonly<Record<string, unknown>> 
     body: bot.body,
     bot: true,
     clanInfo: [],
-    dead: false,
+    dead: bot.hp <= 0,
     dealtDamage: 0,
     faction: 0,
     hp: bot.hp,

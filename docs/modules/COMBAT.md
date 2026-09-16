@@ -510,6 +510,10 @@ duel foe, не primary spawn. Заряд `1+AGRILKA_MOBOV` из snapshot.
 Quest/copy/friendly deny: fury + полный абсолютный `persSpells`, без −1
 если заряд 0. После смерти текущего бота `takeNextEnemyForHuman` отдаёт
 клон (`oppnew`), бой не finish, пока жив хотя бы один enemy.
+Убийство текущего бота при живой чужой дуэли — `oppwait` кастеру, не
+finish и не throw на shuffle без пары. После melee `persChangeInfo`
+(HP/`dead`) уходит остальным authed — сайдбар тиммейтов и чужих врагов,
+не только текущий opp/`persSelf`.
 
 Shuffle: после каждого удара, если дуэль уже 3↔3. Waiter на команде —
 `oppwait` актору и бот waiter-у; waiting enemy — `oppnew`; обе дуэли

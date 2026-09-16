@@ -89,7 +89,7 @@ export function applyHuntBotHit(
   const intervenor = livingWaiterOnTeam(input.humans, hitBot.team);
   if (!intervenor) {
     dissolveDuelContaining(input.duels, input.humans, hitBot.fightId);
-    return { events: [], finished: false };
+    return { events: [{ type: "opponent-wait" }], finished: false };
   }
   retargetDuelTo({ duel: input.duel, fromHeroId: hitBot.fightId, waiter: intervenor });
   return { events: [huntHumanOppNew(intervenor)], finished: false };

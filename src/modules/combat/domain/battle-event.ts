@@ -66,6 +66,11 @@ export type BattleEvent =
   | Readonly<{ type: "opponent-new"; bot: HuntBotSnap }>
   | Readonly<{ type: "opponent-wait" }>
   | Readonly<{
+      type: "pers-change";
+      humans: readonly HuntHumanSnap[];
+      bots: readonly HuntBotSnap[];
+    }>
+  | Readonly<{
       type: "opponent-new-human";
       human: HuntHumanSnap;
       appearance: Readonly<{ avatar: string; body: string; sk: string }>;

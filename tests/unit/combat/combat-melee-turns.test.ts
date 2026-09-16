@@ -110,7 +110,9 @@ describe("CombatService melee turns", () => {
 
     await combat.execute(1, { kind: "strike", side: "center", sequence: 2 });
     await combat.execute(1, { kind: "poll" });
-    expect(await combat.execute(2, { kind: "poll" })).toEqual([]);
+    expect(await combat.execute(2, { kind: "poll" })).toEqual([
+      expect.objectContaining({ type: "pers-change" }),
+    ]);
 
     clock.advanceMs(1400);
     await delay.fireDue(clock.now());
@@ -172,6 +174,43 @@ describe("CombatService melee turns", () => {
     ]);
   });
 
+  it("fans roster HP to the other hunter and waits after a kill while a clone lives", async () => {
+    const { combat } = createCombatService({
+      random: {
+        integer(minInclusive) {
+          return minInclusive;
+        },
+        unit() {
+          return 0.4;
+        },
+      },
+    });
+    const start = await startHuntWithIssuedId(
+      combat,
+      unitHuntStart({ heroStrength: 200, botHp: 8 }),
+    );
+    await combat.joinHunt(unitHuntJoin({ fightId: start.fightId }));
+    await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(2, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(2, { kind: "poll" });
+    await combat.execute(1, { kind: "aggro", sequence: 2 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(2, { kind: "poll" });
+    await combat.execute(1, { kind: "strike", side: "center", sequence: 3 });
+    const killer = await combat.execute(1, { kind: "poll" });
+    expect(killer.some((event) => event.type === "damage" && event.killed)).toBe(true);
+    expect(killer.some((event) => event.type === "opponent-wait")).toBe(true);
+    expect(killer.some((event) => event.type === "finished")).toBe(false);
+    const other = await combat.execute(2, { kind: "poll" });
+    expect(other).toEqual([
+      expect.objectContaining({
+        type: "pers-change",
+        bots: [expect.objectContaining({ id: 1_000_000, hp: 0 })],
+      }),
+    ]);
+  });
+
   it("grants the paired human after a duel strike without a bot counter", async () => {
     const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const { combat, delay } = createCombatService({
@@ -196,6 +235,15 @@ describe("CombatService melee turns", () => {
     const melee = await combat.execute(1, { kind: "poll" });
     expect(melee.map((event) => event.type)).toEqual(["turn-wait", "damage", "command-accepted"]);
     expect(melee.some((event) => event.type === "damage" && event.targetId === 2)).toBe(true);
+    expect(await combat.execute(2, { kind: "poll" })).toEqual([
+      expect.objectContaining({
+        type: "pers-change",
+        humans: expect.arrayContaining([
+          expect.objectContaining({ id: 1 }),
+          expect.objectContaining({ id: 2 }),
+        ]),
+      }),
+    ]);
 
     clock.advanceMs(1400);
     await delay.fireDue(clock.now());

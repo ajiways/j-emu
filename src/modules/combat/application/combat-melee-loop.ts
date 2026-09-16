@@ -1,4 +1,5 @@
 import type { Battle } from "../domain/battle.ts";
+import { persChangeForHit } from "../domain/melee-pers-change.ts";
 import type { CombatEvent, FightExit } from "../ports/combat-port.ts";
 import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 
@@ -35,6 +36,7 @@ export class CombatMeleeLoop {
       return;
     }
     enqueuePlayerMelee(this.enqueue, accountId, sequence, resolved.events);
+    fanoutPersChange(battle, accountId, resolved.events, this.enqueue, this.wakeAccount);
     if (battle.finished) {
       await this.settleFinished(battle, resolved.events, accountId);
       return;
@@ -58,6 +60,7 @@ export class CombatMeleeLoop {
     }
     cancelDuel(this.scheduler, battle, accountId);
     this.enqueue(accountId, [{ type: "command-accepted", sequence }, ...events]);
+    fanoutPersChange(battle, accountId, events, this.enqueue, this.wakeAccount);
     if (battle.finished) {
       await this.settleFinished(battle, events, accountId);
       return;
@@ -171,6 +174,7 @@ export class CombatMeleeLoop {
     if (!battle.accountIds().includes(targetAccountId)) return;
     const result = battle.resolveBotMelee(targetAccountId);
     this.enqueue(targetAccountId, result.events);
+    fanoutPersChange(battle, targetAccountId, result.events, this.enqueue, this.wakeAccount);
     this.wakeAccount(targetAccountId);
     if (!result.killedPlayer) {
       const extra = battle.tickRosterDuels();
@@ -275,7 +279,8 @@ function enqueuePlayerMelee(
     (event) =>
       event.type === "effect-purge" ||
       event.type === "opponent-new" ||
-      event.type === "opponent-new-human",
+      event.type === "opponent-new-human" ||
+      event.type === "opponent-wait",
   );
   if (!wait || wait.type !== "turn-wait" || !damage || damage.type !== "damage") {
     throw new Error("Player melee must emit turn-wait then damage");
@@ -287,4 +292,22 @@ function enqueuePlayerMelee(
     { type: "command-accepted", sequence },
     ...(finished ? [finished] : []),
   ]);
+}
+
+function fanoutPersChange(
+  battle: Battle,
+  actorAccountId: number,
+  events: readonly CombatEvent[],
+  enqueue: (accountId: number, events: readonly CombatEvent[]) => void,
+  wakeAccount: (accountId: number) => void,
+): void {
+  const damage = events.find((event) => event.type === "damage");
+  if (!damage || damage.type !== "damage") return;
+  const roster = battle.boardParticipants();
+  const patch = persChangeForHit(roster.humans, roster.bots, damage.sourceId, damage.targetId);
+  for (const accountId of battle.authedAccountIds()) {
+    if (accountId === actorAccountId) continue;
+    enqueue(accountId, [patch]);
+    wakeAccount(accountId);
+  }
 }

@@ -298,11 +298,10 @@ export class Battle {
     if (this.kind !== "hunt") return { kind: "none" };
     const hunt = requireHuntInit(this.init);
     if (hunt.purpose === "quest") return { kind: "none" };
-    const pairing = huntPairingOf(
-      requireDuelContaining(this.duels, requireBattleHuman(this.humans, accountId).heroId),
-      this.humans,
-      accountId,
-    );
+    const human = requireBattleHuman(this.humans, accountId);
+    const duel = this.duels.find((entry) => entry.has(human.heroId));
+    if (!duel) return { kind: "none" };
+    const pairing = huntPairingOf(duel, this.humans, accountId);
     const result = shuffleHuntAfterHits({
       pairing,
       hunt,

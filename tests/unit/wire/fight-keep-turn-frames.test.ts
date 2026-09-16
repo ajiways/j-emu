@@ -184,6 +184,51 @@ describe("FightWireMapper keep-turn frames", () => {
     expect(purged[1]).toEqual({ rs: true, sq: 3 });
     expect(JSON.stringify(purged)).not.toContain("timeAdvance");
   });
+
+  it("maps pers-change to persChangeInfo for the sidebar", () => {
+    const frames = mapper.frames([
+      {
+        type: "pers-change",
+        humans: [
+          {
+            id: 1,
+            nick: "Hero",
+            level: 1,
+            kind: 1,
+            hp: 20,
+            maxHp: 27,
+            mp: 10,
+            maxMp: 10,
+            team: 1,
+          },
+        ],
+        bots: [
+          {
+            id: 1_000_000,
+            nick: "Грызль",
+            level: 1,
+            hp: 8,
+            maxHp: 20,
+            artikulId: 2,
+            avatar: "avatar_gryzl1_sm.jpg",
+            sk: "11",
+            body: "",
+            team: 2,
+          },
+        ],
+      },
+    ]);
+    expect(evTypes(frames[0])).toEqual(["persChangeInfo", "persChangeInfo"]);
+    const packets = Object.values(evMap(frames[0]));
+    expect(packets[0]).toMatchObject({ et: "persChangeInfo", id: 1, hp: 20, dead: false });
+    expect(packets[1]).toMatchObject({
+      et: "persChangeInfo",
+      id: 1_000_000,
+      hp: 8,
+      bot: true,
+      dead: false,
+    });
+  });
 });
 
 function evMap(frame: unknown): Record<string, { et?: string; ev?: unknown }> {

@@ -8,6 +8,7 @@ import {
 } from "./fight-effect-wire.ts";
 import { fightEventMap } from "./fight-event-map.ts";
 import { huntFightBootstrapEvents, huntFightRosterEvents } from "./hunt-fight-bootstrap-wire.ts";
+import { huntPersChangeEvents } from "./hunt-fight-pers-wire.ts";
 import { huntPersSpellsEvent } from "./hunt-fight-pers-spells.ts";
 import { friendlyFightBootstrapEvents } from "./friendly-fight-bootstrap-wire.ts";
 import { huntOppNewEvent } from "./hunt-opp-new-event.ts";
@@ -226,6 +227,8 @@ export class FightWireMapper {
         return fightEventMap([humanOppNewEvent(event.human, event.appearance)]);
       case "opponent-wait":
         return fightEventMap([{ et: "oppwait" }]);
+      case "pers-change":
+        return fightEventMap(huntPersChangeEvents(event));
       case "finished":
         return fightEventMap([{ et: "fightFinish", winner: event.winnerTeam }]);
     }

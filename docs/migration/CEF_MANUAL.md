@@ -69,6 +69,9 @@
 - [ ] CMB-02 leftover: орб 99 — иконка не снимается после удара, висит
       мёртвым эффектом и блокирует похожие.
 - [ ] CMB-06/15 leftover: плевок Хиссы — разовый урон, дебафф не вешается.
+- [ ] CMB-13 leftover: сайдбар HP тиммейтов/чужих врагов и `oppwait` после
+      добивания, пока жив бот напарника. raw-AMF: `persChangeInfo` fan-out
+      и `oppwait` без shuffle throw. CEF не подтверждён.
 - [ ] CMB-13 leftover: второй охотник без fight-auth в момент «Разозлить»
       видит клон, но без ходов. raw-AMF: grant/bot-counter до auth;
       bootstrap `oppnew` — duel foe. CEF не подтверждён.

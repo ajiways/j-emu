@@ -94,6 +94,31 @@ describe("hunt aggro clone", () => {
     expect(battle.foeBotSnap(2).id).toBe(1_000_001);
   });
 
+  it("puts the killer in oppwait when the other hunter still has a live bot", () => {
+    const battle = new Battle(
+      huntInit({ botMaxHp: 8 }),
+      UNIT_BATTLE_RULES,
+      new SequenceRandom([0.4, 8]),
+    );
+    battle.authenticate(1, AUTH_NOW);
+    battle.addHuman(joinTeam1());
+    battle.authenticate(2, AUTH_NOW);
+    expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
+    const melee = battle.tryPlayerMelee(1, "center", AUTH_NOW);
+    expect(melee.kind).toBe("resolved");
+    if (melee.kind !== "resolved") throw new Error("expected resolved melee");
+    expect(melee.events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "damage", killed: true, targetId: 1_000_000 }),
+        { type: "opponent-wait" },
+      ]),
+    );
+    expect(melee.events.some((event) => event.type === "finished")).toBe(false);
+    expect(battle.finished).toBe(false);
+    expect(battle.livingHumans().find((human) => human.accountId === 1)?.waiting).toBe(true);
+    expect(battle.pairedOpponent(2)).toEqual({ kind: "bot" });
+  });
+
   it("bootstraps the clone as the joiner foe when fight-auth is after pairing", () => {
     const battle = new Battle(huntInit(), UNIT_BATTLE_RULES, new SequenceRandom([0.4]));
     battle.authenticate(1, AUTH_NOW);
