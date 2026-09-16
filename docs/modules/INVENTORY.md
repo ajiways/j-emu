@@ -101,10 +101,12 @@ Pocket layout (INV-03) принадлежит inventory; active count/effects в
 
 `user|magic.gloves` — массив надетых magic-glove AMF (slot 32 / kind 44) с
 top-level `hits` (8 шагов L/C/R) и `spells` (карточки `id`/`artikul_id`/
-`title`/`picture`/`row`/`cost`). Источник для 9095 — catalog
-`extra.spells`/`extra.hits`, те же поля на bag/view. Пустой `gloves: []`, пока
-перчатка в сумке. PUT_ON/PUT_OFF, init, `user|magic`, repair, fight|finish и
-trade settle отдают актуальный блок.
+`artikul_id0`/`title`/`picture`/`row`/`cost`). Тот же набор лежит в
+`extra.hits`/`extra.spells` — Flash Artifact tooltip и MagicsModel читают
+вложенный `extra`, не только top-level. Источник для 9095 — catalog sockets
+`artikul_id0` 9098/9100/9099. Пустой `gloves: []`, пока перчатка в сумке.
+PUT_ON/PUT_OFF, init, `user|magic`, repair, fight|finish и trade settle отдают
+актуальный блок.
 
 Instance-generation leftover: `items` не хранит `data_json`. `grantToBag`
 копирует только durability. Decoder публикует sockets+hits только на 9095;

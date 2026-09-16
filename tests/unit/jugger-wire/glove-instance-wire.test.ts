@@ -40,6 +40,7 @@ describe("glove instance wire", () => {
         {
           id: 9098,
           artikul_id: 9098,
+          artikul_id0: 9098,
           title: "Разряд молнии",
           picture: "electro_ball1.png",
           description: "",
@@ -48,6 +49,22 @@ describe("glove instance wire", () => {
           cost: 2,
         },
       ],
+      extra: {
+        hits: [...HITS],
+        spells: [
+          {
+            id: 9098,
+            artikul_id: 9098,
+            artikul_id0: 9098,
+            title: "Разряд молнии",
+            picture: "electro_ball1.png",
+            description: "",
+            quality: 0,
+            row: 1,
+            cost: 2,
+          },
+        ],
+      },
     });
   });
 

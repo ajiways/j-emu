@@ -70,6 +70,9 @@ account-keyed `CombatPort.activeFightId`. `CombatService` держит один 
 5. Terminal: fproxy `fightFinish`; после того как клиент забрал этот кадр —
    esrv `fight|loot` затем `fight|exit` в одном `2:` object, плюс system chat
    «Окончен бой» / лут (не на killing blow). HUD в том же object.
+   Если poll забрал `finished` раньше, чем `persistFinished` вернул loot,
+   held loot/exit выпускаются сразу после persist (CEF 2026-09-16: окно
+   «завершение боя» ~60 с без `fight|exit`).
 
 Inventory layout lock (`PUT_ON`/`PUT_OFF`/`DROP`/`SELL` → `203` в бою) —
 именованное `FightRules` в [INVENTORY.md](INVENTORY.md), не live. Live

@@ -8,6 +8,7 @@ import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { RecordingFinishedFightStore } from "../../support/fakes/recording-finished-fight-store.ts";
 import { RecordingHistoryWriteObserver } from "../../support/fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
+import { fightLootBlock } from "../../../src/modules/combat/domain/fight-loot-block.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { battleRules } from "../../support/create-combat-service.ts";
 import { unitHuntStart } from "../../support/hunt-start-input.ts";
@@ -52,6 +53,65 @@ describe("CombatService history", () => {
     expect(history.records).toHaveLength(1);
     expect(history.deleted).toEqual([]);
     expect(writes.events).toEqual([]);
+  });
+
+  it("releases esrv loot if poll takes fightFinish before persistFinished returns", async () => {
+    let enteredPersist: () => void = () => {
+      throw new Error("persistFinished was not entered");
+    };
+    const persistEntered = new Promise<void>((resolve) => {
+      enteredPersist = resolve;
+    });
+    let resumePersist: () => void = () => {
+      throw new Error("persistFinished gate is missing");
+    };
+    const persistGate = new Promise<void>((resolve) => {
+      resumePersist = resolve;
+    });
+    const combat = service(
+      new RecordingFinishedFightStore(),
+      new RecordingHistoryWriteObserver(),
+      new SequenceRandom([20]),
+    );
+    combat.bindSettlement({
+      persistHumanLeft: async () => {
+        throw new Error("persistHumanLeft must not run on a hunt win");
+      },
+      persistFinished: async (outcome) => {
+        enteredPersist();
+        await persistGate;
+        return new Map([
+          [
+            1,
+            fightLootBlock({
+              fightId: outcome.fightId,
+              experience: 15,
+              money: "0.2",
+              items: [],
+              artikulList: [],
+            }),
+          ],
+        ]);
+      },
+      publishEnded: async () => {},
+    });
+    const start = await startHuntWithIssuedId(combat, huntInput({ heroStrength: 200 }));
+    await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    const striking = combat.execute(1, { kind: "strike", side: "left", sequence: 2 });
+    await persistEntered;
+    const events = await combat.execute(1, { kind: "poll" });
+    expect(events.some((event) => event.type === "finished")).toBe(true);
+    expect(await combat.peekExit(1)).toBeNull();
+    expect(await combat.peekLoot(1)).toBeNull();
+    resumePersist();
+    await striking;
+    expect(await combat.takeExit(1)).toEqual({ fightId: start.fightId, winnerTeam: 1 });
+    expect(await combat.takeLoot(1)).toMatchObject({
+      status: 100,
+      fight_id: Number(start.fightId),
+      experience: 15,
+    });
   });
 
   it("still emits terminal packets when history storage is unavailable", async () => {

@@ -36,6 +36,7 @@ describe("inventory equipment", () => {
       gloveSpellCard(9100, "Жажда крови", "kaban_magic_mosch.png", 3),
       gloveSpellCard(9099, "Волна света", "ludoed_magic_light.png", 4),
     ]);
+    expect(glove.extra).toEqual({ hits: glove.hits, spells: glove.spells });
     expect(objectBlock(glove.artifact_skills).VIT).toMatchObject({
       title: "Здоровье",
       skill_id: "VIT",
@@ -62,6 +63,7 @@ describe("inventory equipment", () => {
       hits: [2, 3, 2, 3, 1, 2, 3, 1],
     });
     expect(equipped.spells).toEqual(glove.spells);
+    expect(equipped.extra).toEqual({ hits: glove.hits, spells: glove.spells });
     expect(putOn["user|magic"]).toMatchObject({
       status: 100,
       gloves: [{ id: itemId, artikul_id: 9095, spells: glove.spells }],
@@ -245,6 +247,7 @@ function gloveSpellCard(
   return {
     id: artikulId,
     artikul_id: artikulId,
+    artikul_id0: artikulId,
     title,
     picture,
     description: "",

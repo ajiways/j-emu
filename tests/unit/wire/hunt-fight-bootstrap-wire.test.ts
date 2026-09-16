@@ -110,4 +110,55 @@ describe("huntFightBootstrapEvents", () => {
     expect(oppnew).toMatchObject({ id: 2, nick: "Waiter" });
     expect(oppnew).not.toHaveProperty("bot");
   });
+
+  it("includes srcType 3 glove spells and cpHits from the loadout", () => {
+    const hits = [2, 3, 2, 3, 1, 2, 3, 1] as const;
+    const events = huntFightBootstrapEvents({
+      type: "hunt-bootstrap",
+      waiting: false,
+      hero,
+      allies: [],
+      bot,
+      rosterBots: [bot],
+      cp: 0,
+      cpHits: hits,
+      rage: 0,
+      aggro: 1,
+      loadout: {
+        pocket: [],
+        gearSpells: [],
+        glove: {
+          hits,
+          spells: [
+            {
+              artikulId: 9098,
+              cost: 2,
+              row: 1,
+              title: "Разряд молнии",
+              picture: "electro_ball1.png",
+              spell: {
+                persRestr: { active: true, dead: false },
+                targetRestr: { opp: true, dead: false },
+                effects: [{ kind: 1, dmgType: 128 }],
+              },
+            },
+          ],
+        },
+      },
+      heroEffects: [],
+    });
+    expect(events.find((event) => event.et === "persSelf")).toMatchObject({ cpHits: [...hits] });
+    const persSpells = events.find((event) => event.et === "persSpells");
+    expect(persSpells).toEqual(
+      expect.objectContaining({
+        "7": expect.objectContaining({
+          srcType: 3,
+          srcId: 9098,
+          artikulId: 9098,
+          cpCost: 2,
+          img: "electro_ball1.png",
+        }),
+      }),
+    );
+  });
 });

@@ -4,6 +4,7 @@ import type { Catalog } from "../../catalog/ports/catalog.ts";
 type GloveSpellCard = Readonly<{
   id: number;
   artikul_id: number;
+  artikul_id0: number;
   title: string;
   picture: string;
   description: "";
@@ -15,6 +16,10 @@ type GloveSpellCard = Readonly<{
 export type GloveInstanceWire = Readonly<{
   hits: readonly number[];
   spells: readonly GloveSpellCard[];
+  extra: Readonly<{
+    hits: readonly number[];
+    spells: readonly GloveSpellCard[];
+  }>;
 }>;
 
 export async function gloveInstanceFromCatalog(
@@ -32,6 +37,7 @@ export async function gloveInstanceFromCatalog(
     spells.push({
       id: spell.id,
       artikul_id: spell.id,
+      artikul_id0: socket.artikulId0,
       title: spell.title,
       picture: spell.picture,
       description: "",
@@ -40,5 +46,6 @@ export async function gloveInstanceFromCatalog(
       cost: socket.cost,
     });
   }
-  return { hits: definition.extra.hits, spells };
+  const hits = definition.extra.hits;
+  return { hits, spells, extra: { hits, spells } };
 }

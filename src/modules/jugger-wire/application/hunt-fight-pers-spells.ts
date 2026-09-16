@@ -54,6 +54,7 @@ function gloveSpells(loadout: CombatLoadout): readonly Readonly<Record<string, u
       artikulId: spell.artikulId,
       cpCost: spell.cost,
       cpRow: spell.row,
+      ...(spell.spell.groupId !== undefined ? { groupId: spell.spell.groupId } : {}),
       img: spell.picture,
       persRestr: spell.spell.persRestr,
       srcId: spell.artikulId,

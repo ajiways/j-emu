@@ -17,6 +17,7 @@ type FinishKind = "win" | "loss" | "last-leave";
 export class CombatTerminal {
   private readonly heldLoot = new Map<number, FightLootBlock>();
   private readonly heldExits = new Map<number, FightExit>();
+  private readonly finishedTaken = new Set<number>();
 
   constructor(
     private readonly byAccount: Map<number, Battle>,
@@ -101,12 +102,25 @@ export class CombatTerminal {
 
   async deliverFinishedWire(accountId: number): Promise<void> {
     const mine = this.heldExits.get(accountId);
-    if (!mine) return;
-    const fightId = mine.fightId;
+    if (!mine) {
+      this.finishedTaken.add(accountId);
+      return;
+    }
+    await this.releaseHeldForFight(mine.fightId);
+  }
+
+  discardHeldWire(): void {
+    this.heldLoot.clear();
+    this.heldExits.clear();
+    this.finishedTaken.clear();
+  }
+
+  private async releaseHeldForFight(fightId: string): Promise<void> {
     const accountIds = [...this.heldExits.entries()]
       .filter(([, exit]) => exit.fightId === fightId)
       .map(([id]) => id);
     for (const id of accountIds) {
+      this.finishedTaken.delete(id);
       const exit = this.heldExits.get(id);
       if (!exit) continue;
       this.heldExits.delete(id);
@@ -120,11 +134,6 @@ export class CombatTerminal {
     }
     const settlement = this.settlement();
     if (settlement) await settlement.publishEnded(fightId);
-  }
-
-  discardHeldWire(): void {
-    this.heldLoot.clear();
-    this.heldExits.clear();
   }
 
   queueExit(accountId: number, fightId: string, exit: FightExit): void {
@@ -169,6 +178,9 @@ export class CombatTerminal {
       this.wakeAccount(accountId);
     }
     if (kind === "last-leave" && settlement) await settlement.publishEnded(battle.id);
+    else if (battle.accountIds().some((id) => this.finishedTaken.has(id))) {
+      await this.releaseHeldForFight(battle.id);
+    }
     for (const accountId of battle.accountIds()) this.byAccount.delete(accountId);
     this.battleByFight.delete(battle.id);
     await this.notifyFinished(battle, kind, winnerTeam);
