@@ -114,6 +114,13 @@ grant восстанавливает те же hits/spells, не перекат�
 school roll при выдаче не пишется; combat snapshot берёт instance
 `data_json`, catalog hits — только 9095.
 
+**Известный пробел: party bag.** `party_bag_items` хранит только
+`artikul_id` и количество, поэтому забор из сумки группы идёт через
+`grantToBag` и **перекатывает** карты: перчатка возвращается владельцу с
+другими hits/spells. Это тот же дефект, что был у mail/auction/trade, но
+тестами не покрыт. Лечится тем же способом — снапшотом `data_json` в
+`party_bag_items`, а не повторным roll.
+
 CEF 2026-09-08: новый герой, 93 и 99 на пояс, `status:100`, иконки приняты,
 строки в PostgreSQL. Restart/reconnect покрыт raw-AMF e2e.
 

@@ -268,7 +268,12 @@ object, что `fight|loot`/`fight|exit`, а не отрывается в отд
 7. Persisted wire ID после restart продолжает DB sequence и не повторяется.
 8. Порядок melee, pocket, glove, rage и aggro пакетов проверяется как упорядоченная последовательность.
 9. esrv payload находится в `packet.object` и использует правильный `2:`/`4:`/`131:` channel.
-10. `fightFinish → fight|exit → finish/loot` не оставляет клиент в ResultWaiting.
-11. `money` и `money_gold` сериализуются в правильные валюты.
+10. Сборка esrv-кадров: одиночный `chat|message` / `user|bag_diff` /
+    `user|unitframe` не закрывает накопленные merge своего канала, а merged
+    фрагменты выходят одним object в конце. **Такого теста ещё нет** — правило
+    задевает только dungeon clear-tick e2e, порядок кадров для остальных
+    каналов не проверяется.
+11. `fightFinish → fight|exit → finish/loot` не оставляет клиент в ResultWaiting.
+12. `money` и `money_gold` сериализуются в правильные валюты.
 
 Прохождение этих тестов означает соответствие только перечисленным инвариантам, а не полный wire parity.
