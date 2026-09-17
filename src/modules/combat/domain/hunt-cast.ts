@@ -6,6 +6,7 @@ import { pocketHealAmount, spellCharging, spellKind } from "./hunt-human-cast-st
 import { applyPocketKind3, requirePocketOrb } from "./pocket-kind3-cast.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
+import { rageBonusPctFromFill } from "./rage-bonus.ts";
 import { schoolOverlayFromKind1 } from "./school-overlay.ts";
 
 export type KeepTurnResult =
@@ -58,7 +59,29 @@ export function tryPocketCast(
 
 export function tryRageCast(human: HuntHuman): KeepTurnResult {
   if (!human.authed || human.waiting || human.hp === 0) return { kind: "ignored" };
-  human.casts.spendRage();
+  const fury = {
+    type: "buff-cast" as const,
+    animation: "fury",
+    sourceId: human.heroId,
+    targetId: human.heroId,
+    maxHp: human.maxHp,
+  };
+  if (human.casts.hasRageBuff() || human.effects.snapshot().some((fx) => fx.artikulId === 212)) {
+    return { kind: "resolved", events: [fury] };
+  }
+  const fill = human.casts.spendRage();
+  const pcSTR = rageBonusPctFromFill(fill);
+  if (pcSTR <= 0) return { kind: "resolved", events: [fury] };
+  human.casts.armRage(pcSTR);
+  const standing = human.effects.attachChargingKind3({
+    sourceId: human.heroId,
+    artikulId: 212,
+    title: "Ярость",
+    img: "rageeffect_2702.png",
+    dmgType: 1,
+    remainTurns: 1,
+    groupId: 844,
+  });
   return {
     kind: "resolved",
     events: [
@@ -69,18 +92,16 @@ export function tryRageCast(human: HuntHuman): KeepTurnResult {
         kind: 3,
         groupId: 844,
         flags: "0",
-        img: "rageeffect_2702.png",
-        title: "Ярость",
+        img: standing.img,
+        title: standing.title,
         persId: human.heroId,
         dmgType: 1,
+        id: standing.id,
+        sourceId: standing.sourceId,
+        remainTime: 0,
+        skills: { pcSTR },
       },
-      {
-        type: "buff-cast",
-        animation: "fury",
-        sourceId: human.heroId,
-        targetId: human.heroId,
-        maxHp: human.maxHp,
-      },
+      fury,
     ],
   };
 }

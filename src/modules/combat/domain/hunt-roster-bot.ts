@@ -1,7 +1,9 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { HuntBotSnap } from "./battle-event.ts";
+import type { FightEffectIds } from "./fight-effect-ids.ts";
 import type { HuntBotSpellBook } from "./hunt-bot-spell-book.ts";
 import { requireHuntBotSpellBook } from "./hunt-bot-spell-book.ts";
+import { HuntHumanFightEffects } from "./hunt-human-fight-effects.ts";
 import type { MagStats } from "./mag-stats.ts";
 import type { SchoolOverlay } from "./school-overlay.ts";
 import type { BotMeleePresence } from "./melee-target.ts";
@@ -29,6 +31,7 @@ export class HuntRosterBot {
   readonly casts = new Map<number, number>();
   schoolOverlay: SchoolOverlay | null = null;
   stunnedTurns = 0;
+  readonly effects: HuntHumanFightEffects;
 
   constructor(
     readonly fightId: number,
@@ -46,6 +49,7 @@ export class HuntRosterBot {
     readonly maxHp: number,
     readonly spellBook: HuntBotSpellBook,
     hp: number,
+    effectIds: FightEffectIds,
   ) {
     requireWireIdentity(fightId, "roster bot fight id");
     requireWireIdentity(artikulId, "roster bot artikul id");
@@ -73,9 +77,16 @@ export class HuntRosterBot {
     }
     requireHuntBotSpellBook(spellBook);
     this.hpValue = hp;
+    this.effects = new HuntHumanFightEffects({
+      heroId: fightId,
+      strength,
+      startedAtMs: 0,
+      gearSpells: [],
+      effectIds,
+    });
   }
 
-  static fromSeed(seed: HuntRosterBotSeed, team: 1 | 2): HuntRosterBot {
+  static fromSeed(seed: HuntRosterBotSeed, team: 1 | 2, effectIds: FightEffectIds): HuntRosterBot {
     return new HuntRosterBot(
       seed.fightId,
       seed.artikulId,
@@ -92,6 +103,7 @@ export class HuntRosterBot {
       seed.hp,
       seed.spellBook,
       seed.hp,
+      effectIds,
     );
   }
 
@@ -135,6 +147,7 @@ export class HuntRosterBot {
       this.maxHp,
       this.spellBook,
       this.maxHp,
+      this.effects.effectIds,
     );
   }
 

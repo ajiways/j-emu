@@ -39,7 +39,7 @@ export function seedBattleParticipants(
   const effectIds = new FightEffectIds();
   return {
     kind: "hunt",
-    huntRoster: new HuntRoster(init),
+    huntRoster: new HuntRoster(init, effectIds),
     pairedAccountId: init.accountId,
     humans: [huntOpener(init, effectIds)],
     duels: [new FightDuel(init.heroId, init.botFightId, init.heroId)],

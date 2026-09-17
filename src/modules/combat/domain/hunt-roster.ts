@@ -4,6 +4,7 @@ import { FightDuel } from "./fight-duel.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import { resolveRosterBotTurn } from "./hunt-bot-vs-bot.ts";
 import { huntFightEnemyTeam, huntFightOpenerTeam } from "./hunt-fight-teams.ts";
+import type { FightEffectIds } from "./fight-effect-ids.ts";
 import { HuntRosterBot } from "./hunt-roster-bot.ts";
 import type { BotMeleePresence } from "./melee-target.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -16,7 +17,7 @@ export class HuntRoster {
   private readonly extraDuels: FightDuel[] = [];
   private readonly waitingEnemies: HuntRosterBot[] = [];
 
-  constructor(init: HuntBattleInit) {
+  constructor(init: HuntBattleInit, effectIds: FightEffectIds) {
     this.openerTeam = huntFightOpenerTeam(init.purpose);
     this.enemyTeam = huntFightEnemyTeam(init.purpose);
     this.primary = HuntRosterBot.fromSeed(
@@ -36,11 +37,14 @@ export class HuntRoster {
         spellBook: init.botSpellBook,
       },
       this.enemyTeam,
+      effectIds,
     );
     const extraEnemies = init.extraEnemies.map((seed) =>
-      HuntRosterBot.fromSeed(seed, this.enemyTeam),
+      HuntRosterBot.fromSeed(seed, this.enemyTeam, effectIds),
     );
-    const allies = init.allies.map((seed) => HuntRosterBot.fromSeed(seed, this.openerTeam));
+    const allies = init.allies.map((seed) =>
+      HuntRosterBot.fromSeed(seed, this.openerTeam, effectIds),
+    );
     this.bots = [this.primary, ...extraEnemies, ...allies];
     const seen = new Set<number>([init.heroId]);
     for (const bot of this.bots) {

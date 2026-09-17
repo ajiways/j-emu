@@ -163,6 +163,12 @@ export class FightWireMapper {
         index += consumed;
         continue;
       }
+      if (event.type === "damage") {
+        const followers = consumeMeleeFollowers(events, index + 1);
+        frames.push(fightEventMap([...strikePackets(null, event, null), ...followers]));
+        index += followers.length;
+        continue;
+      }
       frames.push(encodeFightWireEvent(event));
     }
     return frames;

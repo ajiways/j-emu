@@ -2,6 +2,7 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import { consumeOverlayCharge } from "./consume-overlay-charge.ts";
 import { rollMeleeDamage } from "./melee-damage.ts";
 import {
   rollMeleeOutcome,
@@ -41,6 +42,7 @@ export function resolveBotMelee(
     rules: input.rules,
   });
   const killedPlayer = outcome.applied < 1 ? false : human.applyDamage(outcome.applied);
+  const overlayBefore = input.bot.schoolOverlay;
   const extra = rollOverlayExtra(
     input.bot,
     input.bot.mag,
@@ -70,6 +72,7 @@ export function resolveBotMelee(
       dRage,
       ...(extra ? { extraHits: [extra] } : {}),
     },
+    ...consumeOverlayCharge(input.bot, overlayBefore),
   ];
   if (dead && !input.keepFightOnKill) {
     events.push({ type: "finished", winnerTeam: input.winnerTeam, fightId: input.fightId });

@@ -41,7 +41,9 @@ export function tryPairedMelee(
   attacker.endTurn();
   let baseDamage = rollMeleeDamage(attacker.meleeStrength(), input.random, input.rules);
   const orb = attacker.casts.takeOrbPcStr();
+  const rage = attacker.casts.takeRagePcStr();
   if (orb > 0) baseDamage = Math.max(1, Math.round(baseDamage * (1 + orb / 100)));
+  if (rage > 0) baseDamage = Math.max(1, Math.round(baseDamage * (1 + rage / 100)));
   const outcome = rollMeleeOutcome({
     baseDamage,
     attacker: strikeStatsFromHuman(attacker),
@@ -126,7 +128,7 @@ export function tryPairedMelee(
   for (const effectId of attacker.effects.onActorEndingTurn(input.nowMs)) {
     events.push({ type: "effect-purge", effectId });
   }
-  if (orb > 0) {
+  if (orb > 0 || rage > 0) {
     for (const effectId of attacker.effects.consumeChargingHit()) {
       events.push({ type: "effect-purge", effectId });
     }

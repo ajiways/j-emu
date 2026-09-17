@@ -31,6 +31,7 @@ describe("actBotSpellCard overkill", () => {
         spellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
       },
       2,
+      new FightEffectIds(),
     );
     const human = new HuntHuman({
       accountId: 1,
@@ -97,6 +98,7 @@ describe("actBotSpellCard overkill", () => {
         spellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
       },
       2,
+      new FightEffectIds(),
     );
     const human = new HuntHuman({
       accountId: 1,
@@ -162,5 +164,89 @@ describe("actBotSpellCard overkill", () => {
     ]);
     expect(events.some((event) => event.type === "damage" && event.animation === "")).toBe(false);
     expect(human.effects.snapshot()).toHaveLength(1);
+  });
+
+  it("hangs Hissa 397 charging overlay as bot effUse before magic_baf", () => {
+    const ids = new FightEffectIds();
+    const actor = HuntRosterBot.fromSeed(
+      {
+        fightId: 1_000_000,
+        artikulId: 4,
+        nick: "Хисса",
+        level: 2,
+        hp: 30,
+        strength: 15,
+        initiative: 0,
+        magPower: 0,
+        magResist: 0,
+        avatar: "avatar_hissa1_sm.jpg",
+        sk: "16",
+        body: "",
+        spellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
+      },
+      2,
+      ids,
+    );
+    const human = new HuntHuman({
+      accountId: 1,
+      heroId: 1,
+      nick: "H1",
+      level: 1,
+      kind: 1,
+      hp: 27,
+      maxHp: 27,
+      mp: 10,
+      maxMp: 10,
+      team: 1,
+      waiting: false,
+      ...unitHuntHumanStats(80),
+      startedAtMs: 0,
+      loadout: EMPTY_COMBAT_LOADOUT,
+      appearance: UNIT_HUNT_APPEARANCE,
+      effectIds: ids,
+    });
+    const events = actBotSpellCard(
+      actor,
+      human,
+      {
+        artikulId: 397,
+        title: "Смертельное прикосновение",
+        picture: "hissa_magic1.png",
+        slot: "turn_roulette",
+        weight: 8,
+        maxCasts: null,
+        gate: null,
+        hpPct: null,
+        spell: {
+          animData: "magic_baf",
+          groupId: 845,
+          effects: [
+            { kind: 1, dmgType: 64, charging: 1, skills: [{ skillId: "pcSTR", value: -84 }] },
+          ],
+        },
+      },
+      {
+        rules: UNIT_BATTLE_RULES,
+        random: new SequenceRandom([1]),
+        fightId: "8",
+        keepFightOnKill: true,
+        living: [human],
+        winnerTeam: 2,
+      },
+    );
+    expect(events).toMatchObject([
+      {
+        type: "effect-use",
+        artikulId: 397,
+        kind: 3,
+        img: "hissa_magic1.png",
+        title: "Смертельное прикосновение",
+        persId: 1_000_000,
+        groupId: 845,
+      },
+      { type: "buff-cast", animation: "magic_baf", sourceId: 1_000_000, targetId: 1_000_000 },
+    ]);
+    expect(actor.effects.snapshot()).toMatchObject([{ artikulId: 397, kind: 3 }]);
+    expect(actor.schoolOverlay?.charges).toBe(1);
   });
 });

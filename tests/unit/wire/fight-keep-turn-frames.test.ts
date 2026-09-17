@@ -239,6 +239,23 @@ describe("FightWireMapper keep-turn frames", () => {
     expect(frames[1]).toEqual({ rs: true, sq: 4 });
   });
 
+  it("packs bot overlay purge on the melee map", () => {
+    const frames = mapper.frames([
+      {
+        type: "damage",
+        sourceId: 1_000_000,
+        targetId: 1,
+        animation: "attack_center",
+        hpChange: -2,
+        targetMaxHp: 24,
+        killed: false,
+        extraHits: [{ hpChange: -1, dmgType: 64, react: 2, killed: false }],
+      },
+      { type: "effect-purge", effectId: 2 },
+    ]);
+    expect(evTypes(frames[0])).toEqual(["cast", "effPurge"]);
+  });
+
   it("maps pers-change to persChangeInfo for the sidebar", () => {
     const frames = mapper.frames([
       {

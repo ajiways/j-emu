@@ -27,16 +27,7 @@ export function actBotSpellCard(
   state: BotKindActState,
 ): readonly BattleEvent[] {
   if (kind1OverlayCharges(card.spell) > 0) {
-    actor.schoolOverlay = schoolOverlayFromKind1(card.spell, actor.strength);
-    return [
-      {
-        type: "buff-cast",
-        animation: botSpellAnimation(card.spell, card.artikulId),
-        sourceId: actor.fightId,
-        targetId: actor.fightId,
-        maxHp: actor.maxHp,
-      },
-    ];
+    return attachKind1Overlay(actor, card);
   }
   if (spellKind(card.spell, 1)) {
     return instantKind1(actor, target, card, state);
@@ -106,6 +97,46 @@ export function actBotSpellCard(
     return [];
   }
   throw new Error(`Bot spell ${card.artikulId} has no supported CMB-15 effect`);
+}
+
+function attachKind1Overlay(actor: HuntRosterBot, card: HuntBotSpellCard): readonly BattleEvent[] {
+  const overlay = schoolOverlayFromKind1(card.spell, actor.strength);
+  if (!overlay) throw new Error(`Bot spell ${card.artikulId} overlay charges are required`);
+  actor.schoolOverlay = overlay;
+  const standing = actor.effects.attachChargingKind3({
+    sourceId: actor.fightId,
+    artikulId: card.artikulId,
+    title: card.title,
+    img: card.picture,
+    dmgType: overlay.dmgType,
+    remainTurns: overlay.charges,
+    ...(card.spell.groupId !== undefined ? { groupId: card.spell.groupId } : {}),
+  });
+  const animation = botSpellAnimation(card.spell, card.artikulId);
+  return [
+    {
+      type: "effect-use",
+      artikulId: card.artikulId,
+      animation,
+      kind: 3,
+      flags: 0,
+      img: standing.img,
+      title: standing.title,
+      persId: actor.fightId,
+      dmgType: standing.dmgType,
+      id: standing.id,
+      sourceId: standing.sourceId,
+      remainTime: standing.remainTime,
+      ...(standing.groupId !== undefined ? { groupId: standing.groupId } : {}),
+    },
+    {
+      type: "buff-cast",
+      animation,
+      sourceId: actor.fightId,
+      targetId: actor.fightId,
+      maxHp: actor.maxHp,
+    },
+  ];
 }
 
 function instantKind1(

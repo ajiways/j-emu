@@ -21,6 +21,8 @@ export class HuntHumanCastState {
   private orbHits = 0;
   private orbPcStr = 0;
   private gloveCritHits = 0;
+  private rageHits = 0;
+  private ragePcStr = 0;
   schoolOverlay: SchoolOverlay | null = null;
   private readonly pockets = new Map<number, PocketRuntime>();
   private readonly groupLastUseAt = new Map<number, number>();
@@ -130,6 +132,24 @@ export class HuntHumanCastState {
     if (this.gloveCritHits < 1) return false;
     this.gloveCritHits -= 1;
     return true;
+  }
+
+  hasRageBuff(): boolean {
+    return this.rageHits > 0;
+  }
+
+  armRage(pcStr: number): void {
+    if (!(pcStr > 0)) throw new Error("Rage pcSTR must be positive");
+    this.ragePcStr = pcStr;
+    this.rageHits = 1;
+  }
+
+  takeRagePcStr(): number {
+    if (this.rageHits < 1) return 0;
+    this.rageHits -= 1;
+    const value = this.ragePcStr;
+    if (this.rageHits === 0) this.ragePcStr = 0;
+    return value;
   }
 
   awardIncomingRage(damage: number, maxHp: number): number {

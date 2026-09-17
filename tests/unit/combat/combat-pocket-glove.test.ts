@@ -243,6 +243,36 @@ describe("CombatService pocket glove rage", () => {
     expect(aggro[1]).toMatchObject({ type: "native-count", srcId: 7, count: 0 });
   });
 
+  it("purges rage standing on the next melee", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat, delay } = createCombatService({
+      clock,
+      random: new SequenceRandom([8, 2, 8]),
+    });
+    await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
+    await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(1, { kind: "strike", side: "left", sequence: 2 });
+    await combat.execute(1, { kind: "poll" });
+    clock.advanceMs(1400);
+    await delay.fireDue(clock.now());
+    await combat.execute(1, { kind: "poll" });
+    clock.advanceMs(1100);
+    await delay.fireDue(clock.now());
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(1, { kind: "rage", sequence: 3 });
+    const rage = await combat.execute(1, { kind: "poll" });
+    expect(rage).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "effect-use", artikulId: 212, id: 1, groupId: 844 }),
+        expect.objectContaining({ type: "buff-cast", animation: "fury" }),
+      ]),
+    );
+    await combat.execute(1, { kind: "strike", side: "center", sequence: 4 });
+    const melee = await combat.execute(1, { kind: "poll" });
+    expect(melee).toEqual(expect.arrayContaining([{ type: "effect-purge", effectId: 1 }]));
+  });
+
   it("keeps unspent cp on off-turn ending glove", async () => {
     const { combat } = createCombatService({
       random: new SequenceRandom([8, 2]),

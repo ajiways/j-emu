@@ -7,6 +7,7 @@ import { kind1OverlayCharges } from "./magic-hit.ts";
 import { rollMeleeDamage } from "./melee-damage.ts";
 import { rollMeleeOutcome, unpublishedBotStrikeStats } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
+import { consumeOverlayCharge } from "./consume-overlay-charge.ts";
 import { noteCast, pickBotSpell } from "./pick-bot-spell.ts";
 import type { RandomSource } from "./random-source.ts";
 
@@ -29,7 +30,7 @@ export function resolveRosterBotTurn(
     { botHp: actor.hp, botMaxHp: actor.maxHp, casts: actor.casts },
     input.random,
   );
-  if (!card) return [meleeHit(actor, target, input)];
+  if (!card) return [...meleeHit(actor, target, input)];
   noteCast(actor.casts, card.artikulId);
   const events = [
     ...actBotSpellCard(actor, target, card, {
@@ -42,7 +43,7 @@ export function resolveRosterBotTurn(
     }),
   ];
   if (target.hp > 0 && (kind1OverlayCharges(card.spell) > 0 || !botSpellEndsTurn(card.spell))) {
-    events.push(meleeHit(actor, target, input));
+    events.push(...meleeHit(actor, target, input));
   }
   return events;
 }
@@ -51,7 +52,7 @@ function meleeHit(
   actor: HuntRosterBot,
   target: HuntRosterBot,
   input: Readonly<{ rules: BattleRules; random: RandomSource }>,
-): BattleEvent {
+): readonly BattleEvent[] {
   const baseDamage = rollMeleeDamage(actor.strength, input.random, input.rules);
   const outcome = rollMeleeOutcome({
     baseDamage,
@@ -62,6 +63,7 @@ function meleeHit(
     random: input.random,
     rules: input.rules,
   });
+  const overlayBefore = actor.schoolOverlay;
   const extra = rollOverlayExtra(
     actor,
     actor.mag,
@@ -74,15 +76,18 @@ function meleeHit(
   if (extra) target.applyDamage(-extra.hpChange);
   actor.creditDealtDamage(outcome.applied + (extra ? -extra.hpChange : 0));
   const killed = target.hp === 0;
-  return {
-    type: "damage",
-    sourceId: actor.fightId,
-    targetId: target.fightId,
-    animation: "attack_center",
-    hpChange: -outcome.applied,
-    targetMaxHp: target.maxHp,
-    killed,
-    react: outcome.react,
-    ...(extra ? { extraHits: [extra] } : {}),
-  };
+  return [
+    {
+      type: "damage",
+      sourceId: actor.fightId,
+      targetId: target.fightId,
+      animation: "attack_center",
+      hpChange: -outcome.applied,
+      targetMaxHp: target.maxHp,
+      killed,
+      react: outcome.react,
+      ...(extra ? { extraHits: [extra] } : {}),
+    },
+    ...consumeOverlayCharge(actor, overlayBefore),
+  ];
 }

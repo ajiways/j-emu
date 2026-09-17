@@ -158,7 +158,10 @@ strike с leading `attackwait`. Off-turn ending: `{rs:true}` + абсолютн�
 без `persSpells` в FX. 6: rs затем fury. 7: rs затем полный `persSpells`
 (MagicsModel replace) с абсолютным `count` у srcId 7, включая карман и
 перчатку. Partial packet только с «Разозлить» стирает бар.
-Melee L/C/R остаётся strike-then-rs.
+Melee L/C/R остаётся strike-then-rs. Ярость 6: standing kind-3 `artikul` 212 /
+group 844 / `rageeffect_2702.png`, `remainTime` 0, `skills.pcSTR` с fill
+(50%→+18, 100%→+50). Consuming L/C/R шлёт `effPurge`. Повтор и пустая шкала —
+только `fury` `ev:[]`, без второй иконки.
 
 Content: dump-proven `spell` у **93** (хил, CD 20) и **99** (орб `ev:[]`);
 **9095** сокеты **9098/9100/9099**. World-карточка и `user|magic` —
@@ -385,7 +388,8 @@ Content: Грызл **2** пустая книга / 50310; Хисса **4** spel
 Charging overlay 397/428/395 как эффект, не как отсутствие карточки;
 MAGSTR/MAGRES; virus 631; summon; gate `foe_has_dispel_groups`. Kind-4
 attach+`effUse` для 396 landed (unit/raw-AMF); sibling tick `hpChange` на
-melee охотника landed (unit); CEF — leftover.
+melee охотника landed (unit); kind-1 charging 397 `effUse` на мобе landed
+(unit); CEF — leftover.
 
 ## CMB-07 — weighted loot table
 
@@ -608,7 +612,9 @@ Hissa 396 / 50101 `magic_direct` остаётся kind-1; Грызль melee-onl
 не бьёт сразу: keep-turn, `schoolOverlay`, затем melee физика + второе
 `hpChange` школы (`extraHits`), в том числе после dodge/block (`applied`
 0, HP без изменения). Убийство физикой не жжёт заряд overlay.
-Representative: Hissa 397, перчатка 181.
+Representative: Hissa 397, перчатка 181. Bot 397: `effUse` kind-3 на мобе
+(catalog title/img) до `magic_baf`; overlay charges; `effPurge` после
+последнего consuming melee.
 
 ## CMB-15c — remaining magic kinds
 

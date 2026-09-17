@@ -86,7 +86,8 @@
       group 845, 3 тика) до `cast`; тик не в пакете плевка. CEF 2026-09-17:
       иконка есть; тики в RAM, но melee poll отбрасывал tick `hpChange`
       (смерть при клиентских 6 HP). Sibling `hpChange` на ударе охотника —
-      этот leftover, CEF не подтверждён.
+      этот leftover, CEF не подтверждён. Ярость 212: standing + `effPurge`
+      на L/C/R (unit). Self-buff 397: `effUse` на мобе до `magic_baf` (unit).
 - [x] CMB-13 leftover: сайдбар HP тиммейтов/чужих врагов и `oppwait` после
       добивания, пока жив бот напарника. raw-AMF: `persChangeInfo` fan-out
       и `oppwait` без shuffle throw. CEF 2026-09-17.
