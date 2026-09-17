@@ -254,6 +254,7 @@ export class CombatService implements CombatPort {
         { type: "command-accepted", sequence: command.sequence, accessKey: battle.accessKey },
         ...battle.authenticate(accountId, this.scheduler.now().getTime()),
       ]);
+      this.melee.armTurnTimeout(battle, accountId);
       return [];
     }
     if (command.kind === "strike") {

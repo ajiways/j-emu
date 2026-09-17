@@ -67,6 +67,7 @@ export type BattleEvent =
       extraHits?: readonly ExtraHit[];
     }>
   | Readonly<{ type: "turn-granted"; timeoutSeconds: number }>
+  | Readonly<{ type: "turn-timeout" }>
   | Readonly<{ type: "turn-wait"; timeoutSeconds: number }>
   | Readonly<{ type: "opponent-new"; bot: HuntBotSnap }>
   | Readonly<{ type: "opponent-wait" }>

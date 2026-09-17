@@ -162,11 +162,3 @@ jq 'select(.msg=="oa") | .oa' logs
 ```
 
 или в stdout процесса `npm run start` / `npm run start:https`.
-
-Временный leftover CMB-02: fproxy пишет `fight_trace` (decoded request,
-CombatEvent, wire frames, `hp` из `persChangeInfo`/`cast`/`hpChange`).
-Пустой poll — `{empty:true}`. Поиск:
-
-```text
-jq 'select(.msg=="fight_trace")'
-```

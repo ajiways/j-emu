@@ -44,7 +44,7 @@ describe("FightTcpConnection", () => {
         flags: "0",
       },
     );
-    const connection = new FightTcpConnection(combat, commands, wire, { info() {} });
+    const connection = new FightTcpConnection(combat, commands, wire);
     await expect(connection.poll()).resolves.toEqual(Buffer.alloc(0));
     await expect(
       connection.receive(encodeAmf3({ rc: "auth", eid: started.fightId, sq: 1 })),

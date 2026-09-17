@@ -2,7 +2,6 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { CombatEvent, FightCommand } from "../../../combat/ports/combat-port.ts";
 import { FightCastDenied } from "../../../combat/domain/fight-cast-denied.ts";
 import { encodePlainFrames } from "../../amf/framing.ts";
-import { FightTraceLog } from "../../application/fight-trace-log.ts";
 import type { JuggerHttpDependencies } from "./jugger-http-dependencies.ts";
 import { waitForLongPoll } from "./long-poll-request.ts";
 
@@ -34,14 +33,6 @@ export class FproxyRouteRegistrar {
           }
         }
         const frames = this.dependencies.commands.fightWire.frames(events);
-        FightTraceLog.write(request.log, {
-          channel: "http",
-          accountId: account.id,
-          command,
-          request: FightTraceLog.requestOf(request.body),
-          events,
-          frames,
-        });
         return reply.type("application/octet-stream").send(encodePlainFrames(frames));
       } catch (error) {
         request.log.error({ err: error }, "fight_command_failed");

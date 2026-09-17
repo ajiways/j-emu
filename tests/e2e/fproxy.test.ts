@@ -79,6 +79,30 @@ describe("fproxy", () => {
     }
     expect(finished).toBe(true);
   });
+
+  it("skips an AFK hunt turn with attacktimeout then bot cast and attacknow", async () => {
+    const client = await AuthenticatedClient.login(application);
+    const start = await client.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 4,
+    });
+    const fightId = huntFightIdFrom(start);
+    expect(await client.fight({ rc: "auth", eid: fightId, sq: 5 })).toHaveLength(0);
+    expect(fightEventTypes(await client.pollFight())).toEqual(
+      expect.arrayContaining(["fightState", "oppnew", "attacknow"]),
+    );
+
+    await harness.elapseCombat(20_000);
+    const skipped = await client.pollFight();
+    expect(fightEventTypes(skipped)).toContain("attacktimeout");
+    expect(fightEventTypes(skipped)).toContain("cast");
+    expect(fightEventTypes(skipped)).not.toContain("attacknow");
+
+    await harness.elapseCombat(2500);
+    expect(fightEventTypes(await client.pollFight())).toEqual(["attacknow"]);
+  });
 });
 
 function castAnimation(frame: unknown): string {

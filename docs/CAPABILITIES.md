@@ -255,10 +255,9 @@ MAGRES leftover, aggro persSpells/kill-clone CEF 2026-09-16, 3↔3 shuffle
 и loot ARTIFACT skills CEF 2026-09-17, aggro pair grant до fight-auth CEF
 2026-09-17, sidebar HP/`oppwait` и 3↔3 без второго удара бота после swap
 CEF 2026-09-17, орб 99 standing+effPurge CEF 2026-09-17, dealtDamage
-CEF 2026-09-17, glove AOE raw-AMF
-CEF не подтверждён, список участников
-persEff/fan-out CEF 2026-09-17 кроме моба, HUD EXP в момент добивания /
-деньги на `fight|exit`, friendly duel, gorge hunts, Hissa spit, GEAR-01,
+CEF 2026-09-17, glove AOE CEF 2026-09-17, список участников
+persEff/fan-out CEF 2026-09-17, HUD EXP в момент добивания /
+деньги на `fight|exit`, friendly duel, gorge hunts, GEAR-01,
 quest roster flags 8, дебаффы, bot AOE,
 skip-turn, F5 img) — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 CMB-11: OA `FIGHT_JOIN` `{team:1|2}` и `FIGHT_HELP` входят в тот же RAM

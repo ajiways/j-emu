@@ -16,6 +16,11 @@ const mapper = new FightWireMapper(
 );
 
 describe("FightWireMapper keep-turn frames", () => {
+  it("encodes skip-turn as standalone attacktimeout", () => {
+    expect(mapper.frames([{ type: "turn-timeout" }])).toEqual([
+      { ev: { "1": { et: "attacktimeout" } } },
+    ]);
+  });
   it("puts rs before pocket 93 FX and 99 ev:[]", () => {
     const elixir = mapper.frames([
       { type: "command-accepted", sequence: 2 },

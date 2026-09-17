@@ -77,7 +77,7 @@ export class FproxyCommandRegistry {
   }
 }
 
-export function decodeFightRequest(payload: Buffer): unknown {
+function decodeFightRequest(payload: Buffer): unknown {
   try {
     const value = decodeAmf3(payload);
     if (value !== null && typeof value === "object") return value;

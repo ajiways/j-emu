@@ -75,33 +75,31 @@
       мёртвым эффектом и блокирует похожие. raw-AMF: standing kind-3 на
       drink, `effPurge` после consuming L/C/R melee, не glove.
       CEF 2026-09-17.
-- [ ] CMB-02 leftover: AOE (`targetCount>=2`, «Волна света»). raw-AMF
+- [x] CMB-02 leftover: AOE (`targetCount>=2`, «Волна света»). raw-AMF
       landed: kind-1 glove бьёт других живых врагов hunt-боя; ally poll —
       тот же `animData` на своего фо; `persChangeInfo` по hit id **после**
       ST `cast` отдельным `ev` map (jgr). CEF 2026-09-17: урон по двум мобам
-      ок; same-map `persChangeInfo hp=5` + `hpChange -2` давал 5 vs 3 / 0
-      на живом. Временный лог: `fight_trace`. Bot kind-1 AOE — не этот leftover.
-- [ ] CMB-06/15 leftover: плевок Хиссы — разовый урон, дебафф не вешается.
+      и same-map HP.
+- [x] CMB-06/15 leftover: плевок Хиссы — разовый урон, дебафф не вешается.
       raw-AMF: kind-1+DoT 396 вешает `effUse` kind-4 (`hissa_magic1.png`,
       group 845, 3 тика) до `cast`; тик не в пакете плевка. CEF 2026-09-17:
-      иконка есть; тики в RAM, но melee poll отбрасывал tick `hpChange`
-      (смерть при клиентских 6 HP). Sibling `hpChange` на ударе охотника —
-      этот leftover, CEF не подтверждён. Ярость 212: standing + `effPurge`
-      на L/C/R (unit). Self-buff 397: `effUse` на мобе до `magic_baf` (unit).
+      иконка, sibling `hpChange` на ударе охотника, ярость 212 standing +
+      `effPurge` на L/C/R, self-buff 397 `effUse` на мобе.
 - [x] CMB-13 leftover: сайдбар HP тиммейтов/чужих врагов и `oppwait` после
       добивания, пока жив бот напарника. raw-AMF: `persChangeInfo` fan-out
       и `oppwait` без shuffle throw. CEF 2026-09-17.
 - [x] CMB-13 leftover: второй охотник без fight-auth в момент «Разозлить»
       видит клон, но без ходов. raw-AMF: grant/bot-counter до auth;
       bootstrap `oppnew` — duel foe. CEF 2026-09-17.
-- [ ] leftover: список участников — бафы/дебафы чужих и моба. raw-AMF:
+- [x] leftover: список участников — бафы/дебафы чужих и моба. raw-AMF:
       fproxy `persEff`+`persInfo`, bootstrap other humans, fan-out
-      `effUse`/`effPurge`. CEF 2026-09-17: иконки других охотников.
-      Моб пустой, пока нет bot standing (CMB-06/15).
+      `effUse`/`effPurge`. CEF 2026-09-17: иконки других охотников и
+      standing моба (397).
 - [x] CMB-01 leftover: в бою нет счётчика нанесённого урона (`dealtDamage`).
       `persList`/`persChangeInfo` и `fight|info.users[].dmg` — applied HP
       loss, боты кредитуют свои удары. CEF 2026-09-17.
 - [ ] CMB-01 leftover: пропуск хода вешает бой (нет таймера/`attacknow`).
+      raw-AMF: wall-clock `attacktimeout` + bot/foe grant; CEF не подтверждён.
 - [ ] CMB-04 leftover: F5 в бою — иконки баффов/дебаффов без картинки
       (`persEff.img`).
 - [ ] CMB-03 leftover: HUD EXP в момент добивания, деньги — на

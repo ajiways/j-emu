@@ -56,6 +56,8 @@ export function encodeFightWireEvent(event: CombatEvent): FightWireFrame {
       return fightEventMap([huntPersSpellsEvent(event.loadout, event.count)]);
     case "turn-granted":
       return fightEventMap([{ et: "attacknow", restTime: event.timeoutSeconds }]);
+    case "turn-timeout":
+      return fightEventMap([{ et: "attacktimeout" }]);
     case "turn-wait":
       throw new Error("turn-wait must be encoded with the following damage event");
     case "opponent-new":

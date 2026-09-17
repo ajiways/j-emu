@@ -11,7 +11,7 @@ handoff и GEAR-01 RAM kind-3 с надетой 20546 (raw-AMF). CMB-11: OA
 copy gate, team-2 без hunt EXP; CMB-12: две параллельные hunt-дуэли на
 50310 (opener↔bot и team-1↔team-2). CEF 2026-09-17: hunt 3↔3 / F5 /
 overkill / орб 99 / сайдбар / loot tooltip. Product status combat остаётся
-частично (bot AOE, MAGRES, skip-turn, Hissa spit CEF, F5 img, friendly duel).
+частично (bot AOE, MAGRES, skip-turn CEF, F5 img, HUD EXP, friendly duel).
 CMB-09 отдаёт
 quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA
 `START_FIGHT` (quest + ambush) и hunt loot-cap — composition (`QuestDesk` /
@@ -141,6 +141,11 @@ Kill: `cancel(fightId)` **до** resolve; poll `attackwait`+`cast` `react=10`
 Off-turn / waiter / already-ended: пустой HTTP + poll `{rs:true}` без HP.
 Не `restriction:18` и не fproxy `error`.
 
+Пропуск хода: после `attacknow` wall-clock `turnTimeoutSeconds` шлёт кастеру
+отдельный `{et:attacktimeout}`, сдаёт ход (GEAR-01 remaining), сразу bot
+`cast` в hunt или grant фою в PvP, затем standalone `attacknow`. Strike /
+ending cancel'ит таймер. CEF — leftover.
+
 ## CMB-02 — pocket / glove / rage
 
 Срез закрыт (raw-AMF). `startHunt`/`joinHunt` принимают immutable loadout
@@ -186,11 +191,9 @@ kind-3 (`charging` ходов, `groupId` 842, без bake STR — melee бону
 `takeOrbPcStr`); consuming L/C/R melee шлёт `effPurge`; glove/kind-1 орб не
 тратит. Повторный drink той же group снимает предыдущий standing.
 CEF 2026-09-17: орб 99 standing + `effPurge` на физ L/C/R. Glove AOE
-raw-AMF landed, CEF не подтверждён:
-[CEF_MANUAL.md](../migration/CEF_MANUAL.md).
-Временный leftover-лог: HTTP/TCP fproxy пишет `fight_trace` — decoded request
-AMF, CombatEvent, wire frames и `hp` (`persChangeInfo` / `cast` / `hpChange`).
-Пустой poll — `{empty:true}` без тел. Kind 11 HTTP
+(`targetCount>=2`, «Волна света»): CEF 2026-09-17 урон по двум мобам и
+same-map HP. Bot kind-1 AOE — leftover.
+Kind 11 HTTP
 `{rs:false, restriction:18}` — только если опубликованный spell kind 11
 (в текущем slice нет). CEF счётчиков пояса/перчатки/ярости не прогонялся.
 
@@ -389,7 +392,8 @@ Charging overlay 397/428/395 как эффект, не как отсутстви
 MAGSTR/MAGRES; virus 631; summon; gate `foe_has_dispel_groups`. Kind-4
 attach+`effUse` для 396 landed (unit/raw-AMF); sibling tick `hpChange` на
 melee охотника landed (unit); kind-1 charging 397 `effUse` на мобе landed
-(unit); CEF — leftover.
+(unit). CEF 2026-09-17: иконка 396, тики HP, ярость 212 `effPurge`,
+self-buff 397 на мобе.
 
 ## CMB-07 — weighted loot table
 
@@ -499,8 +503,8 @@ A после пары B↔C продолжает melee vs bot. Параллел�
 `otherId` своей пары. Общий `Battle` — roster HP, `persList`/`persChangeInfo`,
 finish стороны, 3↔3 cross-swap. Список участников: fproxy `persEff`/`persInfo`
 (клик и таймер 5 с), bootstrap `persEff`+`effUse` чужих людей, live fan-out
-`effUse`/`effPurge` всем authed. Id эффектов общие на бой. Моб в списке —
-пустой `persEff`, пока нет bot standing (CMB-06/15 leftover). Связь «чужой удар сбил мой ход» — leftover
+`effUse`/`effPurge` всем authed. Id эффектов общие на бой. Моб — standing
+kind-3/4 (`effUse`, CEF 2026-09-17: ярость 212 и self-buff 397). Связь «чужой удар сбил мой ход» — leftover
 таймера после swap, не общая очередь ходов. Смерть A vs bot при живых B↔C
 не закрывает бой: dissolve A↔bot, bot unpaired.
 
@@ -614,7 +618,7 @@ Hissa 396 / 50101 `magic_direct` остаётся kind-1; Грызль melee-onl
 0, HP без изменения). Убийство физикой не жжёт заряд overlay.
 Representative: Hissa 397, перчатка 181. Bot 397: `effUse` kind-3 на мобе
 (catalog title/img) до `magic_baf`; overlay charges; `effPurge` после
-последнего consuming melee.
+последнего consuming melee. CEF 2026-09-17: иконка 397 на Хиссе.
 
 ## CMB-15c — remaining magic kinds
 

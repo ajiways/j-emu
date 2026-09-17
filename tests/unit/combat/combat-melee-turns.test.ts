@@ -43,6 +43,32 @@ describe("CombatService melee turns", () => {
     expect(grant).toEqual([{ type: "turn-granted", timeoutSeconds: 20 }]);
   });
 
+  it("skips an AFK hunt turn with attacktimeout then bot melee", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat, delay } = createCombatService({
+      clock,
+      random: new SequenceRandom([2]),
+    });
+    await startHuntWithIssuedId(combat, unitHuntStart());
+    await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+
+    clock.advanceMs(20_000);
+    await delay.fireDue(clock.now());
+    const skipped = await combat.execute(1, { kind: "poll" });
+    expect(skipped[0]).toEqual({ type: "turn-timeout" });
+    expect(skipped.some((event) => event.type === "damage" && event.sourceId === 1_000_000)).toBe(
+      true,
+    );
+    expect(skipped.some((event) => event.type === "turn-granted")).toBe(false);
+
+    clock.advanceMs(2500);
+    await delay.fireDue(clock.now());
+    expect(await combat.execute(1, { kind: "poll" })).toEqual([
+      { type: "turn-granted", timeoutSeconds: 20 },
+    ]);
+  });
+
   it("forwards empty-anim DoT ticks on the hunter melee poll", async () => {
     const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const { combat, delay } = createCombatService({
@@ -344,6 +370,40 @@ describe("CombatService melee turns", () => {
     expect(await combat.execute(2, { kind: "poll" })).toEqual([]);
 
     clock.advanceMs(1100);
+    await delay.fireDue(clock.now());
+    expect(await combat.execute(2, { kind: "poll" })).toEqual([
+      { type: "turn-granted", timeoutSeconds: 20 },
+    ]);
+    expect(await combat.execute(1, { kind: "poll" })).toEqual([]);
+  });
+
+  it("skips an AFK friendly-duel turn and grants the foe", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat, delay } = createCombatService({
+      clock,
+      random: new SequenceRandom([1]),
+    });
+    const fightId = await combat.nextFightId();
+    await combat.startFriendlyDuel({
+      fightId,
+      arena: "1_1",
+      areaId: "503",
+      instanceCopyId: null,
+      fightFlags: null,
+      challenger: duelFighter(1, 1),
+      acceptor: duelFighter(2, 2),
+    });
+    await combat.execute(1, { kind: "authenticate", fightId, sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(2, { kind: "authenticate", fightId, sequence: 1 });
+    await combat.execute(2, { kind: "poll" });
+
+    clock.advanceMs(20_000);
+    await delay.fireDue(clock.now());
+    expect(await combat.execute(1, { kind: "poll" })).toEqual([{ type: "turn-timeout" }]);
+    expect(await combat.execute(2, { kind: "poll" })).toEqual([]);
+
+    clock.advanceMs(2500);
     await delay.fireDue(clock.now());
     expect(await combat.execute(2, { kind: "poll" })).toEqual([
       { type: "turn-granted", timeoutSeconds: 20 },
