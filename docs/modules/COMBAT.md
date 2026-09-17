@@ -11,7 +11,7 @@ handoff и GEAR-01 RAM kind-3 с надетой 20546 (raw-AMF). CMB-11: OA
 copy gate, team-2 без hunt EXP; CMB-12: две параллельные hunt-дуэли на
 50310 (opener↔bot и team-1↔team-2). CEF 2026-09-17: hunt 3↔3 / F5 /
 overkill / орб 99 / сайдбар / loot tooltip. Product status combat остаётся
-частично (bot AOE, MAGRES, skip-turn CEF, F5 img, HUD EXP, friendly duel).
+частично (bot AOE, MAGRES, F5 img, HUD EXP, friendly duel).
 CMB-09 отдаёт
 quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA
 `START_FIGHT` (quest + ambush) и hunt loot-cap — composition (`QuestDesk` /
@@ -145,7 +145,7 @@ Off-turn / waiter / already-ended: пустой HTTP + poll `{rs:true}` без H
 отдельный `{et:attacktimeout}`, сдаёт ход (GEAR-01 remaining) и **считается
 ходом пары** — `FightDuel.addHit` как melee, затем тот же 3↔3 shuffle.
 Сразу bot `cast` в hunt (если пара ещё bot) или grant фою в PvP, затем
-standalone `attacknow`. Strike / ending cancel'ит таймер. CEF — leftover.
+standalone `attacknow`. Strike / ending cancel'ит таймер. CEF 2026-09-17.
 
 ## CMB-02 — pocket / glove / rage
 
@@ -312,7 +312,8 @@ CHR-02 regen. Roster `dead:4`. Injury id **875**, `injury_time` = unix now+600;
 данж start area, BG spawn). Ghost `resurrect_zones` outdoor =
 `{503:{title}}` с каталожным title, пока `state.area_id` ещё смерть.
 Копия данжа — start area той же copy. CEF 2026-09-17: F5 mid-hunt тот же
-`fightId`/`akey`, без `oppwait`. F5 `persEff.img` — leftover.
+`fightId`/`akey`, без `oppwait`. F5 `persEff.img` на standing hero/bot
+(bootstrap + `persEff` inspect) — raw-AMF; CEF leftover.
 
 ### Architecture decision
 
@@ -326,7 +327,7 @@ layout/travel/USE/ATTACK уже есть; CMB-04 их не расширяет н
 ### Out of scope (CMB-04 leftover)
 
 OA FIGHT_JOIN/HELP (CMB-11); persist боя; `arena|finished_fights`;
-artifact 875; `Clock.schedule`. F5 `persEff.img`. Outdoor dest 503 —
+artifact 875; `Clock.schedule`. F5 `persEff.img` CEF. Outdoor dest 503 —
 временный stub ([WORLD.md](WORLD.md)). CEF очередь 2026-09-16 —
 [CEF_MANUAL.md](../migration/CEF_MANUAL.md).
 
@@ -546,7 +547,7 @@ Practice history — CMB-17.
 
 Срез закрыт (unit + raw-AMF). CEF 2026-09-17: сайдбар HP/`oppwait`, pair
 grant до fight-auth, hunt N×N «Разозлить» + 3↔3. Product-status не
-поднимать (bot AOE/MAGRES/skip-turn leftover). Очередь:
+поднимать (bot AOE/MAGRES leftover). Очередь:
 [ROADMAP.md](../migration/ROADMAP.md) CMB-18.
 
 Seekers = unpaired living humans **и** bots обеих команд. Pair loop как

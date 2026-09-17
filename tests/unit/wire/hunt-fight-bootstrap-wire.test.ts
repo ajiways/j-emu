@@ -44,6 +44,7 @@ describe("huntFightBootstrapEvents", () => {
       loadout: EMPTY_COMBAT_LOADOUT,
       heroEffects: [],
       otherEffects: [],
+      botEffects: [],
     }).map((event) => event.et);
     expect(types).toEqual(expect.arrayContaining(["fightState", "persList", "oppwait", "oppnew"]));
   });
@@ -64,6 +65,7 @@ describe("huntFightBootstrapEvents", () => {
       loadout: EMPTY_COMBAT_LOADOUT,
       heroEffects: [],
       otherEffects: [],
+      botEffects: [],
     }).map((event) => event.et);
     expect(types).toContain("oppnew");
     expect(types).not.toContain("oppwait");
@@ -90,6 +92,7 @@ describe("huntFightBootstrapEvents", () => {
       loadout: EMPTY_COMBAT_LOADOUT,
       heroEffects: [],
       otherEffects: [],
+      botEffects: [],
     }).map((event) => event.et);
     expect(types).toEqual(expect.arrayContaining(["oppwait", "oppnew"]));
     const oppnew = huntFightBootstrapEvents({
@@ -112,6 +115,7 @@ describe("huntFightBootstrapEvents", () => {
       loadout: EMPTY_COMBAT_LOADOUT,
       heroEffects: [],
       otherEffects: [],
+      botEffects: [],
     }).find((event) => event.et === "oppnew");
     expect(oppnew).toMatchObject({ id: 2, nick: "Waiter" });
     expect(oppnew).not.toHaveProperty("bot");
@@ -153,6 +157,7 @@ describe("huntFightBootstrapEvents", () => {
       },
       heroEffects: [],
       otherEffects: [],
+      botEffects: [],
     });
     expect(events.find((event) => event.et === "persSelf")).toMatchObject({ cpHits: [...hits] });
     const persSpells = events.find((event) => event.et === "persSpells");
@@ -196,6 +201,7 @@ describe("huntFightBootstrapEvents", () => {
       loadout: EMPTY_COMBAT_LOADOUT,
       heroEffects: [],
       otherEffects: [{ persId: 2, effects: [fx] }],
+      botEffects: [],
     }).map((event) => event.et);
     expect(types).toEqual([
       "fightState",
@@ -209,5 +215,48 @@ describe("huntFightBootstrapEvents", () => {
       "oppnew",
       "persEff",
     ]);
+  });
+
+  it("nests img on the foe persEff after oppnew", () => {
+    const fx = {
+      id: 3,
+      kind: 3,
+      sourceId: 1_000_000,
+      artikulId: 397,
+      title: "Смертельное прикосновение",
+      img: "hissa_magic1.png",
+      dmgType: 64,
+      remainTime: 40,
+      groupId: 845,
+      skills: {},
+    };
+    const events = huntFightBootstrapEvents({
+      type: "hunt-bootstrap",
+      waiting: false,
+      hero,
+      allies: [],
+      bot,
+      rosterBots: [bot],
+      cp: 0,
+      cpHits: [],
+      rage: 0,
+      aggro: 1,
+      loadout: EMPTY_COMBAT_LOADOUT,
+      heroEffects: [],
+      otherEffects: [],
+      botEffects: [fx],
+    });
+    const oppAt = events.findIndex((event) => event.et === "oppnew");
+    expect(events[oppAt + 1]).toMatchObject({
+      et: "persEff",
+      persId: bot.id,
+      "1": expect.objectContaining({ img: "hissa_magic1.png", artikulId: 397 }),
+    });
+    expect(events[oppAt + 2]).toMatchObject({
+      et: "effUse",
+      img: "hissa_magic1.png",
+      artikulId: 397,
+      persId: bot.id,
+    });
   });
 });

@@ -40,6 +40,7 @@ export type BattleEvent =
       aggro: number;
       loadout: CombatLoadout;
       heroEffects: readonly FightEffectSnap[];
+      botEffects: readonly FightEffectSnap[];
       otherEffects: readonly Readonly<{
         persId: number;
         effects: readonly FightEffectSnap[];

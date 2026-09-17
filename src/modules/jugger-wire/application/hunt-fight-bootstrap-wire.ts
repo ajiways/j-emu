@@ -45,7 +45,7 @@ export function huntFightBootstrapEvents(
     return events;
   }
   events.push(huntOppNewEvent(bot));
-  events.push(...fightPersEffSnapshotEvents(bot.id, []));
+  events.push(...fightPersEffSnapshotEvents(bot.id, event.botEffects));
   return events;
 }
 

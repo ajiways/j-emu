@@ -98,11 +98,12 @@
 - [x] CMB-01 leftover: в бою нет счётчика нанесённого урона (`dealtDamage`).
       `persList`/`persChangeInfo` и `fight|info.users[].dmg` — applied HP
       loss, боты кредитуют свои удары. CEF 2026-09-17.
-- [ ] CMB-01 leftover: пропуск хода вешает бой (нет таймера/`attacknow`).
+- [x] CMB-01 leftover: пропуск хода вешает бой (нет таймера/`attacknow`).
       raw-AMF: wall-clock `attacktimeout`, skip = ход пары (3↔3 `addHit` +
-      shuffle), затем bot/foe grant; CEF не подтверждён.
+      shuffle), затем bot/foe grant. CEF 2026-09-17.
 - [ ] CMB-04 leftover: F5 в бою — иконки баффов/дебаффов без картинки
-      (`persEff.img`).
+      (`persEff.img`). raw-AMF: bootstrap/inspect шлёт nested `img` для
+      standing hero и моба; CEF не подтверждён.
 - [ ] CMB-03 leftover: HUD EXP в момент добивания, деньги — на
       `fight|exit`. Persist — одна UoW (`grantExperience`+`creditMoney`)
       на RAM finish; HUD `user|conf` едет с esrv loot/exit.

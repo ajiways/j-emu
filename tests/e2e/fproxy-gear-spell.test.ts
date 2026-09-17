@@ -125,10 +125,12 @@ describe("fproxy gear spell 20546", () => {
       expect(nestedPersEff(again, equipped.heroId)).toMatchObject({
         remainTime: 280,
         artikulId: TYRANT_GLOVE,
+        img: PICTURE,
       });
       expect(standingEffUse(again, equipped.heroId)).toMatchObject({
         remainTime: 280,
         skills: { STR: 5 },
+        img: PICTURE,
       });
     });
 

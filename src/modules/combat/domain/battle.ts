@@ -56,7 +56,7 @@ export class Battle {
   private pairedAccountIdValue: number;
   private readonly humans: HuntHuman[] = [];
   private readonly duels: FightDuel[] = [];
-  private readonly huntRoster: HuntRoster | null;
+  readonly huntRoster: HuntRoster | null;
 
   constructor(
     readonly init: HuntBattleInit | FriendlyDuelBattleInit,

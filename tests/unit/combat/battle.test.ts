@@ -116,6 +116,7 @@ describe("Battle", () => {
         aggro: 1,
         loadout: EMPTY_COMBAT_LOADOUT,
         heroEffects: [],
+        botEffects: [],
         otherEffects: [],
       },
       { type: "turn-granted", timeoutSeconds: 20 },
@@ -360,6 +361,29 @@ describe("Battle", () => {
       resumePaired: true,
     });
     expect(events).toContainEqual({ type: "turn-granted", timeoutSeconds: 17 });
+  });
+
+  it("resumes bot standing persEff with img", () => {
+    const battle = createBattle(new SequenceRandom([8]));
+    battle.authenticate(1, AUTH_NOW);
+    const roster = battle.huntRoster;
+    if (!roster) throw new Error("Hunt roster is required");
+    roster.bot(1_000_000).effects.attachChargingKind3({
+      sourceId: 1_000_000,
+      artikulId: 397,
+      title: "Смертельное прикосновение",
+      img: "hissa_magic1.png",
+      dmgType: 64,
+      remainTurns: 1,
+      groupId: 845,
+    });
+    battle.prepareResume(1);
+    const events = battle.authenticate(1, AUTH_NOW + 1_000);
+    expect(events[0]).toMatchObject({
+      type: "hunt-bootstrap",
+      resumePaired: true,
+      botEffects: [expect.objectContaining({ artikulId: 397, img: "hissa_magic1.png" })],
+    });
   });
 
   it("gives the joiner the waiting clone after they kill their foe", () => {

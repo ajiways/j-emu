@@ -68,6 +68,10 @@ export class HuntRoster {
     return this.bots.map((bot) => bot.snap());
   }
 
+  allBots(): readonly HuntRosterBot[] {
+    return this.bots;
+  }
+
   presences(): readonly BotMeleePresence[] {
     return this.bots.map((bot) => bot.presence());
   }

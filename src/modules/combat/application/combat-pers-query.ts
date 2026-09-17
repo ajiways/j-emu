@@ -15,12 +15,16 @@ export function handlePersFightQuery(
   }
   if (!input.battle) throw new Error("Active fight not found");
   const board = input.battle.boardParticipants();
+  const bots = (input.battle.huntRoster?.allBots() ?? []).map((bot) => ({
+    id: bot.fightId,
+    effects: bot.effects,
+  }));
   input.enqueue(input.accountId, [
     { type: "command-accepted", sequence: input.command.sequence },
     {
       type: "pers-effects",
       persId: input.command.persId,
-      effects: snapshotFightEffects(board.humans, board.bots, input.command.persId),
+      effects: snapshotFightEffects(board.humans, bots, input.command.persId),
     },
   ]);
   return [];

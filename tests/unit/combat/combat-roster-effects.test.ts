@@ -67,7 +67,7 @@ describe("CombatService roster effects", () => {
     expect(inspect[1]).toMatchObject({
       type: "pers-effects",
       persId: 1,
-      effects: [expect.objectContaining({ artikulId: 99, kind: 3 })],
+      effects: [expect.objectContaining({ artikulId: 99, kind: 3, img: "bottles_sila1.png" })],
     });
 
     await combat.execute(2, { kind: "pers-effects", persId: 1_000_000, sequence: 5 });
