@@ -29,6 +29,7 @@ export async function canFitMailSnapshots(
         durability: item.durability,
         durabilityMax: item.durabilityMax,
         upgrade: item.upgrade,
+        data: item.data,
       }),
       quantity: item.quantity,
     });
@@ -70,7 +71,7 @@ function applySnapshot(
 }
 
 function stackKey(
-  snap: Pick<MailItemSnapshot, "artifactId" | "durability" | "durabilityMax" | "upgrade">,
+  snap: Pick<MailItemSnapshot, "artifactId" | "durability" | "durabilityMax" | "upgrade" | "data">,
 ): StackKey {
   return [
     snap.artifactId,
@@ -80,6 +81,7 @@ function stackKey(
     snap.upgrade.level,
     snap.upgrade.skillId,
     snap.upgrade.bound ? 1 : 0,
+    JSON.stringify(snap.data),
   ].join(":");
 }
 

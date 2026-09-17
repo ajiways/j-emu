@@ -4,12 +4,14 @@ import {
   check,
   index,
   integer,
+  jsonb,
   pgSchema,
   primaryKey,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
 import { heroes } from "../../character/infrastructure/schema.ts";
+import type { ItemInstanceData } from "../../inventory/domain/item-instance-data.ts";
 
 export const mailSchema = pgSchema("mail");
 
@@ -73,6 +75,7 @@ export const letterAttachments = mailSchema.table(
     upgradeLevel: integer("upgrade_level").notNull(),
     upgradeSkillId: text("upgrade_skill_id").notNull(),
     upgradeBound: integer("upgrade_bound").notNull(),
+    dataJson: jsonb("data_json").$type<ItemInstanceData>().notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.letterId, table.ord] }),

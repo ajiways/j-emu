@@ -3,6 +3,7 @@ import type { CharacterService } from "../modules/character/application/characte
 import { InsufficientMoneyError } from "../modules/character/domain/insufficient-money-error.ts";
 import type { Catalog } from "../modules/catalog/ports/catalog.ts";
 import { isClanThingFlags, isNogiveFlags } from "../modules/inventory/domain/artifact-flags.ts";
+import { EMPTY_ITEM_INSTANCE } from "../modules/inventory/domain/item-instance-data.ts";
 import type { AuctionService } from "../modules/auction/application/auction-service.ts";
 import { AuctionDeniedError } from "../modules/auction/domain/auction-denied-error.ts";
 import {
@@ -88,6 +89,7 @@ export class AuctionTenderAdd {
             upgradeLevel: 0,
             upgradeSkillId: "",
             upgradeBound: 0,
+            data: EMPTY_ITEM_INSTANCE,
           },
           wholeStackOnly: command.wholeStackOnly,
           requiredDurability: command.requiredDurability,

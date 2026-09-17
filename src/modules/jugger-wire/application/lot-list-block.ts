@@ -135,5 +135,6 @@ function itemFromAttachment(ownerHeroId: number, attachment: ListingAttachment):
       bound: attachment.upgradeBound === 1,
     },
     0,
+    attachment.data,
   );
 }

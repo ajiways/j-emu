@@ -1,3 +1,5 @@
+import type { ItemInstanceData } from "../../inventory/domain/item-instance-data.ts";
+
 export type ListingAttachment = Readonly<{
   originalItemId: number;
   artifactId: number;
@@ -8,4 +10,5 @@ export type ListingAttachment = Readonly<{
   upgradeLevel: number;
   upgradeSkillId: string;
   upgradeBound: 0 | 1;
+  data: ItemInstanceData;
 }>;

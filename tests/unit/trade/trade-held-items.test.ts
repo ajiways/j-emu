@@ -3,6 +3,7 @@ import type { TradeDeskDeps } from "../../../src/app/trade-desk.ts";
 import { refundTradeHeldItems } from "../../../src/app/trade-held-refund.ts";
 import { withdrawTradeItem } from "../../../src/app/trade-withdraw.ts";
 import { MailBagFullError } from "../../../src/modules/inventory/domain/mail-bag-full-error.ts";
+import { EMPTY_ITEM_INSTANCE } from "../../../src/modules/inventory/domain/item-instance-data.ts";
 import { UNUPGRADED } from "../../../src/modules/inventory/domain/item-upgrade.ts";
 import { TradeSessions } from "../../../src/modules/trade/application/trade-sessions.ts";
 import { TradeDeniedError } from "../../../src/modules/trade/domain/trade-denied-error.ts";
@@ -17,6 +18,7 @@ const SNAP: TradeItemSnapshot = {
   durability: 0,
   durabilityMax: 0,
   upgrade: UNUPGRADED,
+  data: EMPTY_ITEM_INSTANCE,
 };
 
 describe("trade held items", () => {

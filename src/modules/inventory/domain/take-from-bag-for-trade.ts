@@ -1,7 +1,7 @@
 import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { InventoryRepository } from "../ports/inventory-repository.ts";
 import { isClanThingFlags, isNogiveFlags } from "./artifact-flags.ts";
-import type { MailItemSnapshot } from "./mail-item-snapshot.ts";
+import { mailItemSnapshotFromItem, type MailItemSnapshot } from "./mail-item-snapshot.ts";
 import { TradeBagTakeError } from "./trade-bag-take-error.ts";
 
 export async function takeFromBagForTrade(
@@ -25,14 +25,7 @@ export async function takeFromBagForTrade(
   if (isNogiveFlags(definition.flags) || isClanThingFlags(definition.flags) || item.upgrade.bound) {
     throw new TradeBagTakeError("непередаваемый предмет нельзя положить в обмен");
   }
-  const snapshot: MailItemSnapshot = {
-    originalItemId: item.id,
-    artifactId: item.artifactId,
-    quantity: command.quantity,
-    durability: item.durability,
-    durabilityMax: item.durabilityMax,
-    upgrade: item.upgrade,
-  };
+  const snapshot = mailItemSnapshotFromItem(item, command.quantity);
   if (command.quantity === item.quantity) await inventory.delete(item);
   else await inventory.save(item.withQuantity(item.quantity - command.quantity));
   return snapshot;

@@ -109,9 +109,10 @@ top-level `hits` (8 шагов L/C/R) и `spells` (карточки `id`/`artiku
 8 шагов пишутся в instance. PUT_ON/PUT_OFF, init, `user|magic`, repair,
 fight|finish и trade settle отдают актуальный блок. Уже купленная 23 без
 instance дочитывается лениво при `InventoryService.list` (как old
-`ensureItemInstance`). Mail/auction/trade snapshot `data_json` ещё не копируют
-— повторный grant перекатится. MAGRES/MAGSTR school roll при выдаче не
-пишется; combat snapshot берёт catalog blob как есть.
+`ensureItemInstance`). Mail/auction/trade snapshot копирует `data_json`;
+grant восстанавливает те же hits/spells, не перекатывает. MAGRES/MAGSTR
+school roll при выдаче не пишется; combat snapshot берёт instance
+`data_json`, catalog hits — только 9095.
 
 CEF 2026-09-08: новый герой, 93 и 99 на пояс, `status:100`, иконки приняты,
 строки в PostgreSQL. Restart/reconnect покрыт raw-AMF e2e.

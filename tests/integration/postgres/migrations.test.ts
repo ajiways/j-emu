@@ -380,6 +380,8 @@ describe("Drizzle migrations", () => {
       "0032_catalog_store_lot_price_gold.sql",
       "0033_catalog_farm_profession_zero.sql",
       "0034_catalog_artifact_f_body.sql",
+      "0035_inventory_item_data_json.sql",
+      "0036_mail_auction_trade_item_data_json.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -420,8 +422,10 @@ describe("Drizzle migrations", () => {
       "0032_catalog_store_lot_price_gold",
       "0033_catalog_farm_profession_zero",
       "0034_catalog_artifact_f_body",
+      "0035_inventory_item_data_json",
+      "0036_mail_auction_trade_item_data_json",
     ]);
-    expect(await appliedCount()).toBe(35);
+    expect(await appliedCount()).toBe(37);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
@@ -463,6 +467,66 @@ describe("Drizzle migrations", () => {
           WHERE table_schema = 'inventory' AND table_name = 'items' AND column_name = 'expire'`,
     );
     expect([...expireColumn]).toEqual([{ is_nullable: "NO", column_default: null }]);
+    const itemDataJson = await database.session().execute<{
+      is_nullable: string;
+      column_default: string | null;
+      data_type: string;
+    }>(
+      sql`SELECT is_nullable, column_default, data_type
+          FROM information_schema.columns
+          WHERE table_schema = 'inventory' AND table_name = 'items' AND column_name = 'data_json'`,
+    );
+    expect([...itemDataJson]).toEqual([
+      { is_nullable: "NO", column_default: null, data_type: "jsonb" },
+    ]);
+    const snapshotDataJson = await database.session().execute<{
+      table_schema: string;
+      table_name: string;
+      is_nullable: string;
+      column_default: string | null;
+      data_type: string;
+    }>(
+      sql`SELECT table_schema, table_name, is_nullable, column_default, data_type
+          FROM information_schema.columns
+          WHERE column_name = 'data_json'
+            AND (
+              (table_schema = 'mail' AND table_name = 'letter_attachments')
+              OR (table_schema = 'auction' AND table_name = 'listings')
+              OR (table_schema = 'trade' AND table_name = 'held_items')
+            )
+          ORDER BY table_schema, table_name`,
+    );
+    expect(
+      [...snapshotDataJson].map((row) => ({
+        table_schema: row.table_schema,
+        table_name: row.table_name,
+        is_nullable: row.is_nullable,
+        column_default: row.column_default,
+        data_type: row.data_type,
+      })),
+    ).toEqual([
+      {
+        table_schema: "auction",
+        table_name: "listings",
+        is_nullable: "NO",
+        column_default: null,
+        data_type: "jsonb",
+      },
+      {
+        table_schema: "mail",
+        table_name: "letter_attachments",
+        is_nullable: "NO",
+        column_default: null,
+        data_type: "jsonb",
+      },
+      {
+        table_schema: "trade",
+        table_name: "held_items",
+        is_nullable: "NO",
+        column_default: null,
+        data_type: "jsonb",
+      },
+    ]);
     const durabilityRangeChecks = await database.session().execute<{ constraint_name: string }>(
       sql`SELECT constraint_name
           FROM information_schema.check_constraints

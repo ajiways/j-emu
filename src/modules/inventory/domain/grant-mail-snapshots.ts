@@ -5,7 +5,6 @@ import { computeBagLoad } from "./bag-load.ts";
 import type { InventoryItem } from "./inventory-item.ts";
 import { MailBagFullError } from "./mail-bag-full-error.ts";
 import type { MailItemSnapshot } from "./mail-item-snapshot.ts";
-import { EMPTY_ITEM_INSTANCE } from "./item-instance-data.ts";
 import { isPaperdollSlotMask } from "./paperdoll-slot.ts";
 
 export async function grantMailSnapshots(
@@ -53,7 +52,7 @@ async function grantOne(
       durabilityMax: snap.durabilityMax,
       expire: 0,
       upgrade: snap.upgrade,
-      data: EMPTY_ITEM_INSTANCE,
+      data: snap.data,
     });
     items.push(created);
     remaining -= take;
@@ -93,7 +92,8 @@ function sameStack(item: InventoryItem, snap: MailItemSnapshot): boolean {
     item.upgrade.id === snap.upgrade.id &&
     item.upgrade.level === snap.upgrade.level &&
     item.upgrade.skillId === snap.upgrade.skillId &&
-    item.upgrade.bound === snap.upgrade.bound
+    item.upgrade.bound === snap.upgrade.bound &&
+    JSON.stringify(item.data) === JSON.stringify(snap.data)
   );
 }
 

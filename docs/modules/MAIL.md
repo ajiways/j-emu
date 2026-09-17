@@ -48,15 +48,17 @@ Dump хранит AMF JSONB `artifacts_json` и уничтожает bag-стр�
 `social` «reservation/reference» — план, не runtime.
 
 **Решение MAIL-02:** дочерняя таблица `mail.letter_attachments` — снимок
-`original_item_id`, `artifact_id`, qty, durability, upgrade. JSONB нет.
-Живой `items` row в письме не держим и `location_kind: mail` не добавляем.
+`original_item_id`, `artifact_id`, qty, durability, upgrade и instance
+`data_json` (как `inventory.items.data_json`: `{}` или rolled glove).
+Dump AMF `artifacts_json` нет. Живой `items` row в письме не держим и
+`location_kind: mail` не добавляем.
 
 Send берёт bag **по `items.id`** (клиентский map id→qty), не по catalog
 `artikul_id` (это ECO-02 barter). Max **5**. Только bag. NOGIVE (`flags &
 32` каталога или bound upgrade) → 203 `непередаваемый предмет нельзя
 отправить почтой`.
 
-Pick восстанавливает снимок через inventory grant: durability/upgrade
+Pick восстанавливает снимок через inventory grant: durability/upgrade/`data_json`
 снимка обязательны, молча подставлять каталожный шаблон нельзя. Новые
 instance id — dump-совместимо.
 
@@ -123,7 +125,8 @@ Postage 1g нет. Отправитель платит `mailTax(itemValue, true)
 outbox 30, pending COD 1 сутки.
 
 `mail.letter_attachments`: PK `(letter_id, ord)`; FK letter ON DELETE
-CASCADE; нет FK на `inventory.items` (инстанс уже уничтожен) и нет JSONB.
+CASCADE; нет FK на `inventory.items` (инстанс уже уничтожен);
+`data_json` jsonb NOT NULL — копия instance extra.
 
 Unix time только в jugger-wire mapper.
 

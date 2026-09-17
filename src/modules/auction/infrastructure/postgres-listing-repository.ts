@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gt, gte, ilike, inArray, lte, sql, type SQL } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
+import { requireItemInstanceData } from "../../inventory/domain/item-instance-data.ts";
 import type { ListingAttachment } from "../domain/listing-attachment.ts";
 import { LISTING_KIND_LOT, LISTING_KIND_TENDER, type ListingKind } from "../domain/listing-kind.ts";
 import type { ListingSearch } from "../domain/listing-search.ts";
@@ -216,6 +217,7 @@ function toRow(row: NewListing) {
     upgradeLevel: row.attachment.upgradeLevel,
     upgradeSkillId: row.attachment.upgradeSkillId,
     upgradeBound: row.attachment.upgradeBound,
+    dataJson: row.attachment.data,
     wholeStackOnly: row.wholeStackOnly,
     requiredDurability: row.requiredDurability,
     requiredDurabilityMax: row.requiredDurabilityMax,
@@ -254,6 +256,7 @@ function toListing(row: typeof listings.$inferSelect): Listing {
     upgradeLevel: row.upgradeLevel,
     upgradeSkillId: row.upgradeSkillId,
     upgradeBound,
+    data: requireItemInstanceData(row.dataJson, `listing ${row.id} data_json`),
   };
   return {
     id: requireWireIdentity(row.id, "lot id"),

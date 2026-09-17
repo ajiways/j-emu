@@ -2,7 +2,7 @@ import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { InventoryRepository } from "../ports/inventory-repository.ts";
 import { isNogiveFlags } from "./artifact-flags.ts";
 import { MailBagTakeError } from "./mail-bag-take-error.ts";
-import type { MailItemSnapshot } from "./mail-item-snapshot.ts";
+import { mailItemSnapshotFromItem, type MailItemSnapshot } from "./mail-item-snapshot.ts";
 
 export async function takeFromBagForMail(
   inventory: InventoryRepository,
@@ -23,14 +23,7 @@ export async function takeFromBagForMail(
   if (isNogiveFlags(definition.flags) || item.upgrade.bound) {
     throw new MailBagTakeError("непередаваемый предмет нельзя отправить почтой");
   }
-  const snapshot: MailItemSnapshot = {
-    originalItemId: item.id,
-    artifactId: item.artifactId,
-    quantity: command.quantity,
-    durability: item.durability,
-    durabilityMax: item.durabilityMax,
-    upgrade: item.upgrade,
-  };
+  const snapshot = mailItemSnapshotFromItem(item, command.quantity);
   if (command.quantity === item.quantity) await inventory.delete(item);
   else await inventory.save(item.withQuantity(item.quantity - command.quantity));
   return snapshot;

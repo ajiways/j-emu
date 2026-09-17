@@ -129,7 +129,7 @@ Wire — неотсечённый float (live 5×0.62 → `0.551298…`). Ready/
 `{ status: 100 }`. Settle дополнительно `user|magic` + `user|bag` (HTTP и esrv
 партнёру).
 
-`user|magic` — надетые перчатки с instance/catalog `hits`/`spells`; без
-надетой перчатки `gloves: []`. Mail/auction/trade snapshot пока не копирует
-`data_json` (повторный grant пуловой перчатки перекатится). MAGRES/MAGSTR
+`user|magic` — надетые перчатки с instance `hits`/`spells`; без
+надетой перчатки `gloves: []`. Mail/auction/trade snapshot копирует
+`data_json` (grant восстанавливает те же карты пула 23). MAGRES/MAGSTR
 roll — [INVENTORY.md](INVENTORY.md).

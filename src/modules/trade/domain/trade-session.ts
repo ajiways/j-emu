@@ -1,3 +1,5 @@
+import type { ItemInstanceData } from "../../inventory/domain/item-instance-data.ts";
+
 export type TradeItemSnapshot = Readonly<{
   originalItemId: number;
   artifactId: number;
@@ -5,6 +7,7 @@ export type TradeItemSnapshot = Readonly<{
   durability: number;
   durabilityMax: number;
   upgrade: Readonly<{ id: number; level: number; skillId: string; bound: boolean }>;
+  data: ItemInstanceData;
 }>;
 
 export type TradeTray = {

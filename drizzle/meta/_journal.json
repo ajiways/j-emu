@@ -253,6 +253,13 @@
       "when": 1789583564293,
       "tag": "0035_inventory_item_data_json",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1789667726707,
+      "tag": "0036_mail_auction_trade_item_data_json",
+      "breakpoints": true
     }
   ]
 }

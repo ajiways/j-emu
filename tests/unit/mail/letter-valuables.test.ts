@@ -22,6 +22,7 @@ describe("letterHasValuables", () => {
             upgradeLevel: 0,
             upgradeSkillId: "",
             upgradeBound: 0,
+            data: {},
           },
         ],
       }),

@@ -289,7 +289,8 @@ peer_nick, subject, body, sent_at timestamptz, expires_at timestamptz, flags,
 money_come_minor, payment_minor, tax_minor, money_type 0|1, pair_id, system
 0|1)`.
 
-Unix `stime`/`rtime` только в jugger-wire. JSONB вложений нет (MAIL-02).
+Unix `stime`/`rtime` только в jugger-wire. Dump AMF `artifacts_json` нет;
+instance `data_json` на `letter_attachments` копирует `inventory.items`.
 
 ### `auction`
 
@@ -299,17 +300,18 @@ owner_kind, artikul_id, title, kind_id, quality, level_min, amount,
 start_price_minor, buyout_minor, current_bid_minor, bidder_hero_id FK heroes
 NULL, cancel_fee_minor, expires_at timestamptz, created_at timestamptz,
 original_item_id (лот > 0; заказ 0), durability, durability_max, upgrade_*,
+data_json (как `inventory.items`; заказ `{}`),
 whole_stack_only, required_durability, required_durability_max, magic_id,
 required_upgrade_id)`.
 
-JSONB снимка dump нет. Unix `rtime` только в jugger-wire.
+Dump AMF JSONB нет. Unix `rtime` только в jugger-wire.
 
 ### `trade`
 
 Сессия process-local (TRD-01); settle пишет `heroes.money_minor` и
 `inventory.items` через composition UoW (wave TRD-02). `trade.held_items`
-(identity id с 1, hero_id FK, колонки снимка как mail attachments, UNIQUE
-hero+original_item_id). Не persist tray / confirm_key.
+(identity id с 1, hero_id FK, колонки снимка как mail attachments включая
+`data_json`, UNIQUE hero+original_item_id). Не persist tray / confirm_key.
 
 ### `chat`
 
@@ -386,7 +388,7 @@ Durable sides/turns/effects, active participants и JSONB event log не
 ### `quests` / `social` / `economy` / `professions` / `instance`
 
 `social` / `economy` модулей в runtime нет. Mailbox MAIL-02 живёт в `mail`
-(`letters` + `letter_attachments`), не в `social` и без JSONB снимка dump.
+(`letters` + `letter_attachments`), не в `social` и без dump AMF JSONB.
 Лоты и заказы AUC-01/AUC-02 живут в `auction.listings`, не в `economy`.
 P2P обмен TRD-01 / wave TRD-02 / leftover TRD-02 живёт в `trade` (сессия RAM;
 escrow `held_items`), не в `economy`.

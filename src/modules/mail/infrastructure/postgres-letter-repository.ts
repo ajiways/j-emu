@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray, lte, sql } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
+import { requireItemInstanceData } from "../../inventory/domain/item-instance-data.ts";
 import type { LetterAttachment } from "../domain/letter-attachment.ts";
 import type { Letter, NewLetter } from "../domain/letter.ts";
 import { MAIL_FOLDER_INBOX, type MailFolder } from "../domain/mail-folder.ts";
@@ -180,6 +181,7 @@ export class PostgresLetterRepository implements LetterRepository {
           upgradeLevel: attachment.upgradeLevel,
           upgradeSkillId: attachment.upgradeSkillId,
           upgradeBound: attachment.upgradeBound,
+          dataJson: attachment.data,
         })),
       );
   }
@@ -256,6 +258,10 @@ function toAttachment(row: typeof letterAttachments.$inferSelect): LetterAttachm
     upgradeLevel: row.upgradeLevel,
     upgradeSkillId: row.upgradeSkillId,
     upgradeBound,
+    data: requireItemInstanceData(
+      row.dataJson,
+      `letter ${row.letterId} attachment ${row.originalItemId} data_json`,
+    ),
   };
 }
 

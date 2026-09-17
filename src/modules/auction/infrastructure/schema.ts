@@ -1,6 +1,16 @@
 import { sql } from "drizzle-orm";
-import { bigint, check, index, integer, pgSchema, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  check,
+  index,
+  integer,
+  jsonb,
+  pgSchema,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { heroes } from "../../character/infrastructure/schema.ts";
+import type { ItemInstanceData } from "../../inventory/domain/item-instance-data.ts";
 
 export const auctionSchema = pgSchema("auction");
 
@@ -41,6 +51,7 @@ export const listings = auctionSchema.table(
     upgradeLevel: integer("upgrade_level").notNull(),
     upgradeSkillId: text("upgrade_skill_id").notNull(),
     upgradeBound: integer("upgrade_bound").notNull(),
+    dataJson: jsonb("data_json").$type<ItemInstanceData>().notNull(),
     wholeStackOnly: integer("whole_stack_only").notNull(),
     requiredDurability: integer("required_durability").notNull(),
     requiredDurabilityMax: integer("required_durability_max").notNull(),

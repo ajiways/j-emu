@@ -174,8 +174,9 @@ group 844 / `rageeffect_2702.png`, `remainTime` 0, `skills.pcSTR` с fill
 
 Content: dump-proven `spell` у **93** (хил, CD 20) и **99** (орб `ev:[]`);
 **9095** сокеты **9098/9100/9099**. World-карточка и `user|magic` —
-[INVENTORY.md](INVENTORY.md); бой читает instance `data_json` (пул 23) или
-catalog sockets (9095) в `HuntCombatLoadout`. MAGRES/MAGSTR school roll при
+[INVENTORY.md](INVENTORY.md); бой читает instance `data_json` (пул 23 и 9095
+после grant) в `HuntCombatLoadout`. Catalog `extra.hits` у 9095 остаётся
+для unrolled backfill. MAGRES/MAGSTR school roll при
 grant не катится. 77 без fight blob. Pub1 AMF у 93/99
 часто опускает `extra.spell.flags` (ноль). Live fproxy pocket `persSpells` /
 `effUse` всё равно шлёт `flags:"262144"` — `POCKET_SPELL_WIRE_FLAGS`, не

@@ -38,6 +38,7 @@ function listing(overrides: Partial<Listing> = {}): Listing {
       upgradeLevel: 0,
       upgradeSkillId: "",
       upgradeBound: 0,
+      data: {},
     },
     wholeStackOnly: 0,
     requiredDurability: 0,

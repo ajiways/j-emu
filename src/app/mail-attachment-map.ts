@@ -12,6 +12,7 @@ export function letterAttachmentFromSnapshot(snap: MailItemSnapshot): LetterAtta
     upgradeLevel: snap.upgrade.level,
     upgradeSkillId: snap.upgrade.skillId,
     upgradeBound: snap.upgrade.bound ? 1 : 0,
+    data: snap.data,
   };
 }
 
@@ -28,5 +29,6 @@ export function mailSnapshotFromAttachment(attachment: LetterAttachment): MailIt
       skillId: attachment.upgradeSkillId,
       bound: attachment.upgradeBound === 1,
     },
+    data: attachment.data,
   };
 }

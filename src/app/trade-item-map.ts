@@ -9,6 +9,7 @@ export function tradeSnapshotFromMail(snap: MailItemSnapshot): TradeItemSnapshot
     durability: snap.durability,
     durabilityMax: snap.durabilityMax,
     upgrade: snap.upgrade,
+    data: snap.data,
   };
 }
 
@@ -20,5 +21,6 @@ export function mailSnapshotFromTrade(snap: TradeItemSnapshot): MailItemSnapshot
     durability: snap.durability,
     durabilityMax: snap.durabilityMax,
     upgrade: snap.upgrade,
+    data: snap.data,
   };
 }

@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
-import { check, integer, pgSchema, text, unique } from "drizzle-orm/pg-core";
+import { check, integer, jsonb, pgSchema, text, unique } from "drizzle-orm/pg-core";
 import { heroes } from "../../character/infrastructure/schema.ts";
+import type { ItemInstanceData } from "../../inventory/domain/item-instance-data.ts";
 
 export const tradeSchema = pgSchema("trade");
 
@@ -25,6 +26,7 @@ export const heldItems = tradeSchema.table(
     upgradeLevel: integer("upgrade_level").notNull(),
     upgradeSkillId: text("upgrade_skill_id").notNull(),
     upgradeBound: integer("upgrade_bound").notNull(),
+    dataJson: jsonb("data_json").$type<ItemInstanceData>().notNull(),
   },
   (table) => [
     unique("held_items_hero_original_unique").on(table.heroId, table.originalItemId),

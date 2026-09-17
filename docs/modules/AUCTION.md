@@ -42,7 +42,9 @@ IDs выдаёт PostgreSQL identity с `1`. Wire integer `1..2_147_483_647`.
 `auction|*` не ставит — не выдумывать. `allowGhost: true` на debit.
 
 **Решение AUC-01:** колонки снимка на `auction.listings` (как MAIL-02
-attachments, не JSONB). Живой `items` row на лоте не держим.
+attachments: durability/upgrade + instance `data_json`). Dump AMF JSONB нет.
+Живой `items` row на лоте не держим. Заказ (`kind='tender'`) пишет
+`data_json='{}'` — instance нет.
 
 **Решение AUC-02:** тот же `auction.listings`, `kind='tender'`. Hold заказа —
 оставшийся `buyout_minor`. Partial fill — `SELECT FOR UPDATE` строки; два

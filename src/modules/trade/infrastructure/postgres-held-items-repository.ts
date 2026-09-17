@@ -1,6 +1,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { PostgresDatabase } from "../../../infrastructure/postgres/database.ts";
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
+import { requireItemInstanceData } from "../../inventory/domain/item-instance-data.ts";
 import type { TradeItemSnapshot } from "../domain/trade-session.ts";
 import type { HeldItemRecord, HeldItemsRepository } from "../ports/held-items-repository.ts";
 import { heldItems } from "./schema.ts";
@@ -103,6 +104,7 @@ function toInsert(heroId: number, snapshot: TradeItemSnapshot) {
     upgradeLevel: snapshot.upgrade.level,
     upgradeSkillId: snapshot.upgrade.skillId,
     upgradeBound: snapshot.upgrade.bound ? 1 : 0,
+    dataJson: snapshot.data,
   };
 }
 
@@ -125,5 +127,6 @@ function toRecord(row: typeof heldItems.$inferSelect): HeldItemRecord {
       skillId: row.upgradeSkillId,
       bound: upgradeBound === 1,
     },
+    data: requireItemInstanceData(row.dataJson, `trade held item ${row.id} data_json`),
   };
 }

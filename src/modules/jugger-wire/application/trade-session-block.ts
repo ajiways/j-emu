@@ -121,6 +121,8 @@ async function artifactBlock(
     snap.durability,
     snap.durabilityMax,
     snap.upgrade,
+    0,
+    snap.data,
   );
   return buildBagItemBlock(definition, item, catalog);
 }

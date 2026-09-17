@@ -119,6 +119,7 @@ function itemFromAttachment(ownerHeroId: number, attachment: LetterAttachment): 
       bound: attachment.upgradeBound === 1,
     },
     0,
+    attachment.data,
   );
 }
 
