@@ -92,7 +92,9 @@
       fproxy `persEff`+`persInfo`, bootstrap other humans, fan-out
       `effUse`/`effPurge`. CEF 2026-09-17: иконки других охотников.
       Моб пустой, пока нет bot standing (CMB-06/15).
-- [ ] CMB-01 leftover: в бою нет счётчика нанесённого урона (`dealtDamage`).
+- [x] CMB-01 leftover: в бою нет счётчика нанесённого урона (`dealtDamage`).
+      `persList`/`persChangeInfo` и `fight|info.users[].dmg` — applied HP
+      loss, боты кредитуют свои удары. CEF 2026-09-17.
 - [ ] CMB-01 leftover: пропуск хода вешает бой (нет таймера/`attacknow`).
 - [ ] CMB-04 leftover: F5 в бою — иконки баффов/дебаффов без картинки
       (`persEff.img`).
