@@ -86,7 +86,8 @@ function appendOutboxEntry(
 ): void {
   const channel = entry.channel ?? personal;
   if (isUnmergedEsrvFragment(entry.fragment)) {
-    flushChannel(frames, pending, channel, ctime);
+    // Keep pending personal merges open; fight-end chat/unitframe must not
+    // split dungeon instance_conf away from fight|loot.
     frames.push({ channel, ctime, object: entry.fragment });
     return;
   }
