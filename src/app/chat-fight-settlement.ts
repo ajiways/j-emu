@@ -8,6 +8,10 @@ import type {
 import type { ChatDesk } from "./chat-desk.ts";
 import type { HuntFightSettlement } from "./hunt-fight-settlement.ts";
 
+export type FightExperienceHud = Readonly<{
+  push(accountId: number): Promise<void>;
+}>;
+
 export type FightChatFailureSink = Readonly<{
   failed(fightId: string, error: Error): void;
 }>;
@@ -25,6 +29,7 @@ export class ChatFightSettlement implements FightSettlement {
     private readonly inner: HuntFightSettlement,
     private readonly chat: ChatDesk,
     private readonly failures: FightChatFailureSink,
+    private readonly experienceHud: FightExperienceHud,
   ) {}
 
   async persistHumanLeft(snapshot: HumanLeftSnapshot): Promise<void> {
@@ -49,6 +54,9 @@ export class ChatFightSettlement implements FightSettlement {
       loot,
       breaks: this.inner.takeDeathBreaks(outcome.fightId),
     });
+    for (const human of outcome.humans) {
+      await this.experienceHud.push(human.accountId);
+    }
     return loot;
   }
 

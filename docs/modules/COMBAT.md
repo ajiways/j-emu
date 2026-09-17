@@ -11,7 +11,7 @@ handoff и GEAR-01 RAM kind-3 с надетой 20546 (raw-AMF). CMB-11: OA
 copy gate, team-2 без hunt EXP; CMB-12: две параллельные hunt-дуэли на
 50310 (opener↔bot и team-1↔team-2). CEF 2026-09-17: hunt 3↔3 / F5 /
 overkill / орб 99 / сайдбар / loot tooltip. Product status combat остаётся
-частично (bot AOE, MAGRES, F5 img, HUD EXP, friendly duel).
+частично (bot AOE, MAGRES, HUD EXP, friendly duel).
 CMB-09 отдаёт
 quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA
 `START_FIGHT` (quest + ambush) и hunt loot-cap — composition (`QuestDesk` /
@@ -212,7 +212,8 @@ entries overlay 27 штук (включая **77 / 93 / 99**). `leaveFight` HTTP
 `{rs:true}`; last human — flee `type:2` без лута; союзник жив — только
 flee-exit, бой продолжается. Loss: HP 0, loot-блок с нулями, ghost/injury через character `noteDefeat`.
 CEF 2026-09-17: экран результата hunt открывается. Leftover: HUD EXP в
-момент добивания, деньги на `fight|exit` (persist — одна UoW на RAM finish).
+момент добивания, деньги на `fight|exit` (persist — одна UoW на RAM finish;
+raw-AMF: kill `user|unitframe`, money `user|conf` на `fight|exit`).
 
 ### Architecture decision
 
@@ -258,10 +259,10 @@ RNG — injected `RandomSource` (тесты без `Math.random` / `sleep`).
 
 `fight|loot` ключи live `buildFightLootBlock`: `status:100`, numeric
 `fight_id`, `experience`, `money` строка (`"0"` если нет), `honor:0`,
-`revenge:0`, `loot` и `artikul_list` — `[]` если пусто, не `{}`. Один esrv
-personal object: сначала `fight|loot`, потом `fight|exit`, плюс synced HUD
-(`user|unitframe`, `user|conf`, `user|bag`, `state`). Win/loss exit
-`type:0` + `winner`. `leaveFight`: HTTP `{rs:true,sq}`; `fight|exit`
+`revenge:0`, `loot` и `artikul_list` — `[]` если пусто, не `{}`. На persist —
+отдельный esrv `user|unitframe` (EXP HUD в момент добивания). Затем
+`fight|loot` + `fight|exit` + `user|conf`/bag/state (деньги на exit).
+Win/loss exit `type:0` + `winner`. `leaveFight`: HTTP `{rs:true,sq}`; `fight|exit`
 `{flee:true,status:100,type:2}` и тот же HUD (без loot). Если в бою ещё живой союзник — leaver
 получает только flee-exit, бой продолжается; полный loot/EXP — когда RAM
 fight заканчивается. `chat|add` «Вами получено» / «Окончен бой» — [CHAT.md](CHAT.md) (SOC-01), не
@@ -291,7 +292,8 @@ version bump. Combat не читает fixtures.
 Quest loot tables в combat (QST-ENG-02 clip — composition `needed`);
 party split; dungeon bands leftover (personal/coins — DNG-03 landed); system chat; `Clock.schedule`;
 OA FIGHT_JOIN/HELP (CMB-11); live `10_000_000+hero.id`. HUD EXP в момент
-добивания vs деньги на `fight|exit` — leftover CEF 2026-09-17.
+добивания vs деньги на `fight|exit` — leftover: kill `user|unitframe`,
+money на `fight|exit` (raw-AMF).
 
 ## CMB-04 — reconnect, locks, ghost
 
@@ -303,6 +305,7 @@ OA FIGHT_JOIN/HELP (CMB-11); live `10_000_000+hero.id`. HUD EXP в момент
 и `attacknow` с остатком wall-clock `restTime`. Первый вход — `oppwait`→
 `oppnew`. Таймер хода на F5 не паузится; hunt overlay остаётся busy.
 `persSpells` на resume — live pocket count, не count входа в бой.
+CEF 2026-09-17: F5 mid-hunt, `persEff.img`, pocket count.
 Restart процесса по-прежнему без боя, награды и history (`combat-restart`).
 
 Ghost/injury принадлежат character (`heroes.ghost`, `injury_time`,
@@ -317,7 +320,7 @@ CHR-02 regen. Roster `dead:4`. Injury id **875**, `injury_time` = unix now+600;
 `{503:{title}}` с каталожным title, пока `state.area_id` ещё смерть.
 Копия данжа — start area той же copy. CEF 2026-09-17: F5 mid-hunt тот же
 `fightId`/`akey`, без `oppwait`. F5 `persEff.img` на standing hero/bot
-(bootstrap + `persEff` inspect) — raw-AMF; CEF leftover.
+(bootstrap + `persEff` inspect) и live pocket count — CEF 2026-09-17.
 
 ### Architecture decision
 
@@ -331,7 +334,7 @@ layout/travel/USE/ATTACK уже есть; CMB-04 их не расширяет н
 ### Out of scope (CMB-04 leftover)
 
 OA FIGHT_JOIN/HELP (CMB-11); persist боя; `arena|finished_fights`;
-artifact 875; `Clock.schedule`. F5 `persEff.img` CEF. Outdoor dest 503 —
+artifact 875; `Clock.schedule`. Outdoor dest 503 —
 временный stub ([WORLD.md](WORLD.md)). CEF очередь 2026-09-16 —
 [CEF_MANUAL.md](../migration/CEF_MANUAL.md).
 

@@ -23,6 +23,7 @@ import {
   heroIdFrom,
   huntFightIdFrom,
   personalEsrvObject,
+  killExperienceUnitframe,
 } from "../support/harness/wire-payload.ts";
 
 describe("fproxy settlement", () => {
@@ -55,7 +56,9 @@ describe("fproxy settlement", () => {
     const client = await AuthenticatedClient.login(application);
     const before = await client.objectAction({ object: "common", action: "init", sq: 1 });
     await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms));
-    const esrv = personalEsrvObject(await client.pollEsrv());
+    const packets = await client.pollEsrv();
+    expect(killExperienceUnitframe(packets)).toMatchObject({ status: 100, exp: 16 });
+    const esrv = personalEsrvObject(packets);
     expect(Object.keys(esrv).filter((key) => key.startsWith("fight|"))).toEqual([
       "fight|loot",
       "fight|exit",

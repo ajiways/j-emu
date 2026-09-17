@@ -188,6 +188,7 @@ describe("chat macros", () => {
   it("keeps lone chat|message and bag_diff fragments unmerged", () => {
     expect(isUnmergedEsrvFragment({ "chat|message": { status: 100 } })).toBe(true);
     expect(isUnmergedEsrvFragment({ "user|bag_diff": { status: 100 } })).toBe(true);
+    expect(isUnmergedEsrvFragment({ "user|unitframe": { status: 100, exp: 16 } })).toBe(true);
     expect(isUnmergedEsrvFragment({ "chat|message": { status: 100 }, state: {} })).toBe(false);
   });
 });

@@ -88,8 +88,8 @@ CEF leftover (2026-09-16, **частично**): HUD HP/`hp_time` и деньг�
 503 подтверждён (хардкод, [WORLD.md](modules/WORLD.md)). OA `fight|finish`
 отдаёт `fight|info` (raw-AMF); CEF 2026-09-16: карточка результата открывается
 (`share`/`macroses` SHARE). CEF 2026-09-17: экран результата hunt; F5 mid-fight
-тот же `fightId`/`akey`. Leftover: HUD EXP в момент добивания, деньги на
-`fight|exit`.
+тот же `fightId`/`akey`. F5 `persEff.img` и pocket count — CEF 2026-09-17.
+Leftover: HUD EXP в момент добивания, деньги на `fight|exit`.
 
 Equipment-derived `user|skills` / `hpMax` считаются из naked skills + надетых
 предметов (перчатка 9095 даёт VIT+5). Без экипа HUD показывает naked L1.
@@ -256,10 +256,10 @@ MAGRES leftover, aggro persSpells/kill-clone CEF 2026-09-16, 3↔3 shuffle
 2026-09-17, sidebar HP/`oppwait` и 3↔3 без второго удара бота после swap
 CEF 2026-09-17, орб 99 standing+effPurge CEF 2026-09-17, dealtDamage
 CEF 2026-09-17, glove AOE CEF 2026-09-17, skip-turn CEF 2026-09-17, список участников
-persEff/fan-out CEF 2026-09-17, HUD EXP в момент добивания /
+persEff/fan-out CEF 2026-09-17, F5 img/pocket CEF 2026-09-17, HUD EXP в момент добивания /
 деньги на `fight|exit`, friendly duel, gorge hunts, GEAR-01,
-quest roster flags 8, дебаффы, bot AOE,
-F5 img) — [CEF_MANUAL.md](migration/CEF_MANUAL.md).
+quest roster flags 8, дебаффы, bot AOE)
+— [CEF_MANUAL.md](migration/CEF_MANUAL.md).
 CMB-11: OA `FIGHT_JOIN` `{team:1|2}` и `FIGHT_HELP` входят в тот же RAM
 `fightId` на 50310; карта ATTACK_BOT на занятый spawn остаётся team 1;
 две копии 542 изолируют JOIN; после смерти бота живой team-2 продолжает

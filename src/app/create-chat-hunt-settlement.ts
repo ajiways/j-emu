@@ -6,7 +6,7 @@ import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 import type { PartyBagService } from "../modules/party/application/party-bag-service.ts";
 import type { PartyService } from "../modules/party/application/party-service.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
-import { ChatFightSettlement } from "./chat-fight-settlement.ts";
+import { ChatFightSettlement, type FightExperienceHud } from "./chat-fight-settlement.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import { HuntFightSettlement } from "./hunt-fight-settlement.ts";
 import type { HeroismRules } from "./heroism-rules.ts";
@@ -32,6 +32,7 @@ export function createChatHuntSettlement(input: {
   heroism: HeroismRules;
   pvpHonor: PvpFightHonorCache;
   dungeonGrant: DungeonPersonalGrant;
+  experienceHud: FightExperienceHud;
 }): ChatFightSettlement {
   return new ChatFightSettlement(
     new HuntFightSettlement(
@@ -61,5 +62,6 @@ export function createChatHuntSettlement(input: {
         process.stderr.write(`fight-chat ${fightId}: ${error.message}\n`);
       },
     },
+    input.experienceHud,
   );
 }

@@ -101,13 +101,13 @@
 - [x] CMB-01 leftover: пропуск хода вешает бой (нет таймера/`attacknow`).
       raw-AMF: wall-clock `attacktimeout`, skip = ход пары (3↔3 `addHit` +
       shuffle), затем bot/foe grant. CEF 2026-09-17.
-- [ ] CMB-04 leftover: F5 в бою — иконки баффов/дебаффов без картинки
-      (`persEff.img`). raw-AMF: bootstrap/inspect шлёт nested `img` для
-      standing hero и моба; CEF не подтверждён.
+- [x] CMB-04 leftover: F5 в бою — иконки баффов/дебаффов без картинки
+      (`persEff.img`). raw-AMF: bootstrap/inspect nested `img` hero/моб;
+      F5 pocket count из RAM, не snapshot входа. CEF 2026-09-17.
 - [ ] CMB-03 leftover: HUD EXP в момент добивания, деньги — на
       `fight|exit`. Persist — одна UoW (`grantExperience`+`creditMoney`)
-      на RAM finish; HUD `user|conf` едет с esrv loot/exit.
-      CEF 2026-09-17.
+      на RAM finish. raw-AMF: `user|unitframe` отдельным esrv кадром на
+      persist; `user|conf`/деньги с `fight|loot`+`exit`. CEF не подтверждён.
 
 - [x] CMB-05: голый L1 vs Грызль **50310** — урон на полоске HP не
       константа 8–12; с перчаткой 9095 бой выигрывается.

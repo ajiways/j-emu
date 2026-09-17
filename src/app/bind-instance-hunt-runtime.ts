@@ -18,6 +18,7 @@ import type { PresenceFanout } from "../modules/jugger-wire/application/presence
 import type { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
 import type { UnreadMailQuery } from "../modules/mail/ports/unread-mail.ts";
 import { createChatHuntSettlement } from "./create-chat-hunt-settlement.ts";
+import { HuntKillExperienceHud } from "./hunt-kill-experience-hud.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import { DungeonPersonalGrant } from "./dungeon-personal-grant.ts";
 import { HEROISM_RULES } from "./heroism-rules.ts";
@@ -92,6 +93,15 @@ export function bindInstanceHuntRuntime(input: {
       heroism: HEROISM_RULES,
       pvpHonor: input.pvpHonor,
       dungeonGrant,
+      experienceHud: new HuntKillExperienceHud(
+        input.unitOfWork,
+        input.characters.service,
+        input.catalog,
+        input.inventory,
+        input.combat.combat,
+        input.outbox,
+        input.wake,
+      ),
     }),
   );
   return {
