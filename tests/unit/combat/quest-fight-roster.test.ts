@@ -58,7 +58,7 @@ describe("quest fight roster", () => {
     const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const { combat, delay } = createCombatService({
       clock,
-      random: new SequenceRandom([20, 2, 20]),
+      random: new SequenceRandom([20, 20]),
     });
     combat.bindTerminalObserver(hook);
     const start = await startHuntWithIssuedId(

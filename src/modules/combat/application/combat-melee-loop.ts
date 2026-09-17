@@ -148,6 +148,10 @@ export class CombatMeleeLoop {
     if (!token) return;
     const opponent = battle.pairedOpponent(accountId);
     if (opponent.kind === "bot") {
+      if (events.some((event) => event.type === "opponent-new")) {
+        this.grantPairedBot(battle, accountId);
+        return;
+      }
       this.scheduleBotAndGrant(battle, accountId);
       return;
     }
@@ -225,10 +229,19 @@ export class CombatMeleeLoop {
   }
 
   private applyShuffle(battle: Battle, accountId: number): boolean {
-    const previousTokens = battle.delayTokens();
+    const previousByAccount = delayTokensByAccount(battle);
     const shuffle = battle.tryShuffleAfterHits(accountId);
     if (shuffle.kind === "none") return false;
-    for (const token of previousTokens) this.scheduler.cancel(token);
+    const affected =
+      shuffle.kind === "waiter-handoff"
+        ? [shuffle.actorAccountId, shuffle.waiterAccountId]
+        : shuffle.kind === "reserve-swap"
+          ? [shuffle.accountId]
+          : [shuffle.leftAccountId, shuffle.rightAccountId];
+    for (const id of affected) {
+      const token = previousByAccount.get(id);
+      if (token) this.scheduler.cancel(token);
+    }
     if (shuffle.kind === "waiter-handoff") {
       this.enqueue(shuffle.actorAccountId, [{ type: "opponent-wait" }]);
       this.wakeAccount(shuffle.actorAccountId);
@@ -299,6 +312,15 @@ function fanoutRosterEffects(
     enqueue(accountId, fx);
     wakeAccount(accountId);
   }
+}
+
+function delayTokensByAccount(battle: Battle): ReadonlyMap<number, string> {
+  const tokens = new Map<number, string>();
+  for (const accountId of battle.accountIds()) {
+    const token = battle.delayTokenFor(accountId);
+    if (token) tokens.set(accountId, token);
+  }
+  return tokens;
 }
 
 function cancelDuel(scheduler: HuntMeleeScheduler, battle: Battle, accountId: number): void {

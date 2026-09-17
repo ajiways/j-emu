@@ -543,17 +543,19 @@ Quest/copy/friendly deny: fury + полный абсолютный `persSpells`,
 если заряд 0. После смерти текущего бота `takeNextEnemyForHuman` отдаёт
 клон (`oppnew`) паре убившего (next actor = этот охотник, не fight
 opener), бой не finish, пока жив хотя бы один enemy.
-Убийство текущего бота при живой чужой дуэли — `oppwait` кастеру, не
-finish и не throw на shuffle без пары. После melee `persChangeInfo`
-(HP/`dead`) уходит остальным authed — сайдбар тиммейтов и чужих врагов,
-не только текущий opp/`persSelf`.
+После `oppnew` смены моба grant ставится охотнику (`grantPairedBot`, human
+opens), без bot-counter на нового моба. Убийство текущего бота при живой
+чужой дуэли — `oppwait` кастеру, не finish и не throw на shuffle без пары.
+После melee `persChangeInfo` (HP/`dead`) уходит остальным authed —
+сайдбар тиммейтов и чужих врагов, не только текущий opp/`persSelf`.
 
 Shuffle: после каждого удара, если дуэль уже 3↔3. Waiter на команде —
 `oppwait` актору и бот waiter-у; waiting enemy — `oppnew`; обе дуэли
 3↔3 — **cross-swap**. Пока менять некого, hits **держатся**.
-HP без сброса. Cross-swap отменяет таймеры старых пар (токен
-`${fightId}:{min}:{max}` меняется вместе с id) и отдаёт ход каждому
-охотнику против нового бота — без второго bot-counter сразу после смены.
+HP без сброса. Shuffle отменяет delay token **только затронутых** дуэлей
+(`${fightId}:{min}:{max}` меняется вместе с id) и отдаёт ход охотникам
+новой пары — без второго bot-counter сразу после смены. Чужие пары
+свой bot-counter/grant сохраняют.
 
 Новая пара из `tryPairQueues` — `rollOpensFirst` (LUCK, `INITIATIVE_SOFT_C=80`,
 `legacy behavior`). Стартовая opener↔spawn-bot пара открывает opener.

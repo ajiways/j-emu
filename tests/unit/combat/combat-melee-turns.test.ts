@@ -174,6 +174,55 @@ describe("CombatService melee turns", () => {
     ]);
   });
 
+  it("grants the killer after oppnew instead of a bot-first counter", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat, delay } = createCombatService({
+      clock,
+      random: {
+        integer(minInclusive) {
+          return minInclusive;
+        },
+        unit() {
+          return 0.4;
+        },
+      },
+    });
+    const start = await startHuntWithIssuedId(
+      combat,
+      unitHuntStart({ heroStrength: 200, botHp: 8, heroAggroCharges: 2 }),
+    );
+    await combat.joinHunt(unitHuntJoin({ fightId: start.fightId, heroStrength: 200 }));
+    await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(2, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(2, { kind: "poll" });
+    await combat.execute(1, { kind: "aggro", sequence: 2 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(2, { kind: "poll" });
+    await combat.execute(1, { kind: "aggro", sequence: 3 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(2, { kind: "poll" });
+    clock.advanceMs(2500);
+    await delay.fireDue(clock.now());
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(2, { kind: "poll" });
+
+    await combat.execute(2, { kind: "strike", side: "center", sequence: 4 });
+    const killer = await combat.execute(2, { kind: "poll" });
+    expect(killer.some((event) => event.type === "damage" && event.killed)).toBe(true);
+    expect(killer.some((event) => event.type === "opponent-new")).toBe(true);
+
+    clock.advanceMs(1400);
+    await delay.fireDue(clock.now());
+    expect(await combat.execute(2, { kind: "poll" })).toEqual([]);
+
+    clock.advanceMs(1100);
+    await delay.fireDue(clock.now());
+    expect(await combat.execute(2, { kind: "poll" })).toEqual([
+      { type: "turn-granted", timeoutSeconds: 20 },
+    ]);
+  });
+
   it("fans roster HP to the other hunter and waits after a kill while a clone lives", async () => {
     const { combat } = createCombatService({
       random: {
