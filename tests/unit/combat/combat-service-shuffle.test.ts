@@ -42,6 +42,40 @@ describe("CombatService 3↔3 shuffle", () => {
     expect(await combat.hasFight(start.fightId)).toBe(true);
   });
 
+  it("counts an AFK skip as a pair hit and hands the waiter after 3↔3", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat, delay } = createCombatService({
+      clock,
+      random: new SequenceRandom([1, 1, 1]),
+    });
+    const start = await startHuntWithIssuedId(
+      combat,
+      unitHuntStart({ heroStrength: 10, botStrength: 10, botHp: 50 }),
+    );
+    await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.joinHunt(
+      unitHuntJoin({ fightId: start.fightId, heroStrength: 10, heroHp: 27, heroMaxHp: 27 }),
+    );
+    await combat.execute(2, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.execute(2, { kind: "poll" });
+    for (let round = 0; round < 3; round += 1) {
+      clock.advanceMs(20_000);
+      await delay.fireDue(clock.now());
+      const skipped = await combat.execute(1, { kind: "poll" });
+      expect(skipped.some((event) => event.type === "turn-timeout")).toBe(true);
+      if (round === 2) {
+        expect(skipped.some((event) => event.type === "opponent-wait")).toBe(true);
+        break;
+      }
+      clock.advanceMs(2500);
+      await delay.fireDue(clock.now());
+      await combat.execute(1, { kind: "poll" });
+    }
+    const waiter = await combat.execute(2, { kind: "poll" });
+    expect(waiter.some((event) => event.type === "opponent-new")).toBe(true);
+  });
+
   it("lets the waiter finish Gryzl after the 3↔3 handoff", async () => {
     const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const { combat, delay } = createCombatService({

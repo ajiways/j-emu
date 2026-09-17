@@ -99,7 +99,8 @@
       `persList`/`persChangeInfo` и `fight|info.users[].dmg` — applied HP
       loss, боты кредитуют свои удары. CEF 2026-09-17.
 - [ ] CMB-01 leftover: пропуск хода вешает бой (нет таймера/`attacknow`).
-      raw-AMF: wall-clock `attacktimeout` + bot/foe grant; CEF не подтверждён.
+      raw-AMF: wall-clock `attacktimeout`, skip = ход пары (3↔3 `addHit` +
+      shuffle), затем bot/foe grant; CEF не подтверждён.
 - [ ] CMB-04 leftover: F5 в бою — иконки баффов/дебаффов без картинки
       (`persEff.img`).
 - [ ] CMB-03 leftover: HUD EXP в момент добивания, деньги — на

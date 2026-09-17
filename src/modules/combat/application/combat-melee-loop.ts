@@ -323,6 +323,8 @@ export class CombatMeleeLoop {
       await this.settleFinished(battle, events, accountId);
       return;
     }
+    battle.countPairHit(accountId);
+    if (this.applyShuffle(battle, accountId)) return;
     const opponent = battle.pairedOpponent(accountId);
     if (opponent.kind === "bot") {
       await this.runBotCounter(fightId, accountId);

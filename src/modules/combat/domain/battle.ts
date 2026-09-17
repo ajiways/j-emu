@@ -311,6 +311,11 @@ export class Battle {
     return result;
   }
 
+  countPairHit(accountId: number): void {
+    const human = requireBattleHuman(this.humans, accountId);
+    requireDuelContaining(this.duels, human.heroId).addHit(human.heroId);
+  }
+
   grantTurn(accountId: number, nowMs: number): BattleEvent | null {
     if (this.finishedValue) return null;
     return grantHumanTurn(

@@ -142,9 +142,10 @@ Off-turn / waiter / already-ended: пустой HTTP + poll `{rs:true}` без H
 Не `restriction:18` и не fproxy `error`.
 
 Пропуск хода: после `attacknow` wall-clock `turnTimeoutSeconds` шлёт кастеру
-отдельный `{et:attacktimeout}`, сдаёт ход (GEAR-01 remaining), сразу bot
-`cast` в hunt или grant фою в PvP, затем standalone `attacknow`. Strike /
-ending cancel'ит таймер. CEF — leftover.
+отдельный `{et:attacktimeout}`, сдаёт ход (GEAR-01 remaining) и **считается
+ходом пары** — `FightDuel.addHit` как melee, затем тот же 3↔3 shuffle.
+Сразу bot `cast` в hunt (если пара ещё bot) или grant фою в PvP, затем
+standalone `attacknow`. Strike / ending cancel'ит таймер. CEF — leftover.
 
 ## CMB-02 — pocket / glove / rage
 
@@ -427,11 +428,12 @@ friendly human↔human. Melee не ветвится hunt/PvP: удар идёт 
 `user|friendly_duel_request` и `fight|conf` challenger-у. Invites
 process-local, TTL 60s, fail-fast `203`. Practice settlement возвращает
 HP/MP/pocket, без лута/EXP/травмы; `fight|conf.is_pvp=1`, `type:"6"`.
-После 3↔3 melee hits каждый удар (игрок и бот) проверяет, можно ли
-сменить противника: живой waiter на своей команде → бот уходит waiter-у,
-актор `oppwait`; waiting enemy (клон «Разозлить») → `oppnew` клона;
-вторая human↔bot дуэль тоже 3↔3 → cross-swap. 3↔3 не сбрасывается, пока
-менять некого. HP/loadout без сброса. bot↔bot leftover.
+После 3↔3 melee hits каждый удар (игрок и бот) и пропуск хода
+(`attacktimeout`) проверяет, можно ли сменить противника: живой waiter
+на своей команде → бот уходит waiter-у, актор `oppwait`; waiting enemy
+(клон «Разозлить») → `oppnew` клона; вторая human↔bot дуэль тоже 3↔3 →
+cross-swap. 3↔3 не сбрасывается, пока менять некого. HP/loadout без
+сброса. bot↔bot leftover.
 OA `FIGHT_JOIN` / `FIGHT_HELP` landed raw-AMF (CMB-11). CEF 2026-09-17:
 hunt 3↔3 shuffle и без второго удара бота после cross-swap. Friendly
 duel — ещё CEF.
@@ -570,7 +572,7 @@ opens), без bot-counter на нового моба. Убийство теку
 После melee `persChangeInfo` (HP/`dead`) уходит остальным authed —
 сайдбар тиммейтов и чужих врагов, не только текущий opp/`persSelf`.
 
-Shuffle: после каждого удара, если дуэль уже 3↔3. Waiter на команде —
+Shuffle: после каждого удара и пропуска хода, если дуэль уже 3↔3. Waiter на команде —
 `oppwait` актору и бот waiter-у; waiting enemy — `oppnew`; обе дуэли
 3↔3 — **cross-swap**. Пока менять некого, hits **держатся**.
 HP без сброса. Shuffle отменяет delay token **только затронутых** дуэлей
