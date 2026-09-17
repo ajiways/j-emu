@@ -334,25 +334,13 @@ function enqueuePlayerMelee(
   sequence: string | number,
   events: readonly CombatEvent[],
 ): void {
-  const wait = events.find((event) => event.type === "turn-wait");
-  const damage = events.find((event) => event.type === "damage");
-  const finished = events.find((event) => event.type === "finished");
-  const extras = events.filter(
-    (event) =>
-      event.type === "effect-purge" ||
-      event.type === "opponent-new" ||
-      event.type === "opponent-new-human" ||
-      event.type === "opponent-wait",
-  );
-  if (!wait || wait.type !== "turn-wait" || !damage || damage.type !== "damage") {
+  if (events[0]?.type !== "turn-wait" || events[1]?.type !== "damage") {
     throw new Error("Player melee must emit turn-wait then damage");
   }
   enqueue(accountId, [
-    wait,
-    damage,
-    ...extras,
+    ...events.filter((event) => event.type !== "finished"),
     { type: "command-accepted", sequence },
-    ...(finished ? [finished] : []),
+    ...events.filter((event) => event.type === "finished"),
   ]);
 }
 

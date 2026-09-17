@@ -195,6 +195,50 @@ describe("FightWireMapper keep-turn frames", () => {
     expect(JSON.stringify(purged)).not.toContain("timeAdvance");
   });
 
+  it("puts empty-anim DoT ticks as sibling hpChange on the melee map", () => {
+    const frames = mapper.frames([
+      { type: "turn-wait", timeoutSeconds: 20 },
+      {
+        type: "damage",
+        sourceId: 1,
+        targetId: 1_000_000,
+        animation: "attack_left",
+        hpChange: -8,
+        targetMaxHp: 20,
+        killed: false,
+      },
+      {
+        type: "damage",
+        sourceId: 1_000_000,
+        targetId: 1,
+        animation: "",
+        hpChange: -1,
+        targetMaxHp: 27,
+        killed: false,
+        dmgType: 64,
+        react: 2,
+      },
+      { type: "effect-purge", effectId: 1 },
+      { type: "command-accepted", sequence: 4 },
+    ]);
+    expect(evTypes(frames[0])).toEqual(["attackwait", "cast", "hpChange", "effPurge"]);
+    expect(castPacket(frames[0])).toMatchObject({
+      et: "cast",
+      animData: "attack_left",
+      persId: 1,
+      targetId: 1_000_000,
+    });
+    expect(Object.values(evMap(frames[0]))[2]).toMatchObject({
+      et: "hpChange",
+      persId: 1_000_000,
+      targetId: 1,
+      hp: -1,
+      dmgType: 64,
+      maxHp: 27,
+    });
+    expect(frames[1]).toEqual({ rs: true, sq: 4 });
+  });
+
   it("maps pers-change to persChangeInfo for the sidebar", () => {
     const frames = mapper.frames([
       {

@@ -26,6 +26,25 @@ export function unitHuntSpellCard(overrides: Partial<HuntBotSpellCard> = {}): Hu
   };
 }
 
+export function unitHissaSpitBook(): HuntBotSpellBook {
+  return {
+    nothingWeight: 100,
+    spells: [
+      unitHuntSpellCard({
+        spell: {
+          animData: "magic_direct",
+          groupId: 845,
+          endTurn: true,
+          effects: [
+            { kind: 1, dmgType: 64, skills: [{ skillId: "pcSTR", value: -50 }] },
+            { kind: 4, dmgType: 64, duration: 81 },
+          ],
+        },
+      }),
+    ],
+  };
+}
+
 export const GRYZL_FIGHT_LOOK = {
   botAvatar: "avatar_gryzl1_sm.jpg",
   botSk: "11",

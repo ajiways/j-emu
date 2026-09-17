@@ -8,6 +8,7 @@ import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import {
   unitHuntJoin,
   unitHuntStart,
+  unitHissaSpitBook,
   UNIT_FIGHT_SECONDARIES,
 } from "../../support/hunt-start-input.ts";
 
@@ -40,6 +41,49 @@ describe("CombatService melee turns", () => {
     await delay.fireDue(clock.now());
     const grant = await combat.execute(1, { kind: "poll" });
     expect(grant).toEqual([{ type: "turn-granted", timeoutSeconds: 20 }]);
+  });
+
+  it("forwards empty-anim DoT ticks on the hunter melee poll", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat, delay } = createCombatService({
+      clock,
+      random: new SequenceRandom([8, 0.95, 1, 8, 1]),
+    });
+    await startHuntWithIssuedId(
+      combat,
+      unitHuntStart({
+        botId: 4,
+        botNick: "Хисса",
+        botStrength: 15,
+        botSpellBook: unitHissaSpitBook(),
+      }),
+    );
+    await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(1, { kind: "strike", side: "left", sequence: 2 });
+    await combat.execute(1, { kind: "poll" });
+    clock.advanceMs(1400);
+    await delay.fireDue(clock.now());
+    await combat.execute(1, { kind: "poll" });
+    clock.advanceMs(1100);
+    await delay.fireDue(clock.now());
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(1, { kind: "strike", side: "center", sequence: 3 });
+    const melee = await combat.execute(1, { kind: "poll" });
+    expect(melee.map((event) => event.type)).toEqual([
+      "turn-wait",
+      "damage",
+      "damage",
+      "command-accepted",
+    ]);
+    expect(melee[2]).toMatchObject({
+      type: "damage",
+      animation: "",
+      sourceId: 1_000_000,
+      targetId: 1,
+      hpChange: -1,
+      dmgType: 64,
+    });
   });
 
   it("ignores off-turn, waiter, and already-ended strikes", async () => {

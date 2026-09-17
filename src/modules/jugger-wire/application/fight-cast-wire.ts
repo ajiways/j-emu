@@ -3,6 +3,9 @@ import type { CombatEvent } from "../../combat/ports/combat-port.ts";
 type DamageEvent = Extract<CombatEvent, { type: "damage" }>;
 
 export function fightCastEvent(event: DamageEvent): Readonly<Record<string, unknown>> {
+  if (event.animation === "") {
+    throw new Error("Empty-anim tick damage must be a sibling hpChange on the carrier melee map");
+  }
   const heal = event.hpChange > 0;
   const react = event.react ?? (heal ? 0 : event.killed ? 10 : 2);
   return {
@@ -42,6 +45,15 @@ function extraHits(event: DamageEvent): Record<string, unknown> {
     };
   });
   return nested;
+}
+
+export function fightSiblingHpChangeEvent(event: DamageEvent): Readonly<Record<string, unknown>> {
+  if (event.animation !== "") {
+    throw new Error("Sibling hpChange requires empty animation");
+  }
+  const heal = event.hpChange > 0;
+  const react = event.react ?? (heal ? 0 : event.killed ? 10 : 2);
+  return hpChangeRow(event, react, heal);
 }
 
 function hpChangeRow(event: DamageEvent, react: number, heal: boolean): Record<string, unknown> {

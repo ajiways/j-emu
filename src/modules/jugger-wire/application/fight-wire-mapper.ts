@@ -2,7 +2,11 @@ import type { CombatEvent, FightExit, FightStart } from "../../combat/ports/comb
 import { fightCastEvent } from "./fight-cast-wire.ts";
 import { fightBuffCastEvent, fightEffectUseEvent, fightPersCpEvent } from "./fight-effect-wire.ts";
 import { fightEventMap } from "./fight-event-map.ts";
-import { consumePurges, mergePersChangeStrike, strikePackets } from "./fight-strike-packets.ts";
+import {
+  consumeMeleeFollowers,
+  mergePersChangeStrike,
+  strikePackets,
+} from "./fight-strike-packets.ts";
 import { encodeFightWireEvent, type FightWireFrame } from "./fight-wire-event.ts";
 
 export type FightConfHeroLook = Readonly<{ heroSkill: number; heroBody: string }>;
@@ -137,12 +141,9 @@ export class FightWireMapper {
         if (!damage || damage.type !== "damage") {
           throw new Error("turn-wait must precede damage");
         }
-        const packets = [
-          ...strikePackets(event, damage, null),
-          ...consumePurges(events, index + 2),
-        ];
-        frames.push(fightEventMap(packets));
-        index += 1 + consumePurges(events, index + 2).length;
+        const followers = consumeMeleeFollowers(events, index + 2);
+        frames.push(fightEventMap([...strikePackets(event, damage, null), ...followers]));
+        index += 1 + followers.length;
         continue;
       }
       if (event.type === "effect-use") {

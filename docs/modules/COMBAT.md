@@ -384,7 +384,8 @@ Content: Грызл **2** пустая книга / 50310; Хисса **4** spel
 
 Charging overlay 397/428/395 как эффект, не как отсутствие карточки;
 MAGSTR/MAGRES; virus 631; summon; gate `foe_has_dispel_groups`. Kind-4
-attach+`effUse` для 396 landed (unit/raw-AMF); CEF — leftover.
+attach+`effUse` для 396 landed (unit/raw-AMF); sibling tick `hpChange` на
+melee охотника landed (unit); CEF — leftover.
 
 ## CMB-07 — weighted loot table
 
@@ -615,7 +616,10 @@ Representative: Hissa 397, перчатка 181.
 Kind 4/5 ticks: бюджет `duration/period` (каталог без period → named
 jgr default 20s), sibling `hpChange` на carrier melee. Overlay
 `durationTurns` 396 = 3 (live «трех ходов»). Kind-1+DoT: `effUse` до
-`cast`, без тика в том же пакете. Kind 8 dispel
+`cast`, без тика в том же пакете. Player melee poll держит empty-anim tick
+`damage`; wire кладёт sibling `hpChange` (`persId`=bot, `targetId`=охотник,
+`dmgType` 64) в тот же melee `ev` map — не `extraHits` и не empty-anim
+`cast`. Kind 8 dispel
 стоящих `groupId` при gate `foe_has_dispel_groups`. Kind 11 empty
 success. Kind 18 stun skip-turn, `duration` обязателен. Kind 10 summon
 632: `fight_start` сжигается без каста; clone цели в roster **не**

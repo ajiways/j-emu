@@ -8,6 +8,7 @@ import {
   GRYZL_FIGHT_LOOK,
   UNIT_HUNT_APPEARANCE,
   UNIT_HUNT_BATTLE_STATS,
+  unitHissaSpitBook,
   unitHuntHumanStats,
 } from "../../support/hunt-start-input.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
@@ -154,30 +155,7 @@ describe("Battle", () => {
       botArtikulId: 4,
       botNick: "Хисса",
       botStrength: 15,
-      botSpellBook: {
-        nothingWeight: 100,
-        spells: [
-          {
-            artikulId: 396,
-            title: "Ядовитый плевок",
-            picture: "hissa_magic1.png",
-            slot: "turn_roulette",
-            weight: 10,
-            maxCasts: null,
-            gate: null,
-            hpPct: null,
-            spell: {
-              animData: "magic_direct",
-              groupId: 845,
-              endTurn: true,
-              effects: [
-                { kind: 1, dmgType: 64, skills: [{ skillId: "pcSTR", value: -50 }] },
-                { kind: 4, dmgType: 64, duration: 81 },
-              ],
-            },
-          },
-        ],
-      },
+      botSpellBook: unitHissaSpitBook(),
     });
     battle.authenticate(1, AUTH_NOW);
     battle.tryPlayerMelee(1, "left", AUTH_NOW);
@@ -212,6 +190,34 @@ describe("Battle", () => {
         remainTime: 120,
       },
     ]);
+  });
+
+  it("ticks Hissa poison on the hunter's next melee", () => {
+    const battle = createBattle(new SequenceRandom([8, 0.95, 1, 8, 1]), {
+      botArtikulId: 4,
+      botNick: "Хисса",
+      botStrength: 15,
+      botSpellBook: unitHissaSpitBook(),
+    });
+    battle.authenticate(1, AUTH_NOW);
+    battle.tryPlayerMelee(1, "left", AUTH_NOW);
+    battle.resolveBotMelee(1);
+    battle.grantTurn(1, AUTH_NOW);
+    const melee = battle.tryPlayerMelee(1, "center", AUTH_NOW);
+    if (melee.kind !== "resolved") throw new Error("expected resolved melee");
+    expect(melee.events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: "damage",
+          sourceId: 1_000_000,
+          targetId: 1,
+          animation: "",
+          hpChange: -1,
+          dmgType: 64,
+        }),
+      ]),
+    );
+    expect(battle.livingHumans()[0]?.hp).toBe(25);
   });
 
   it("rejects a bot fight id that collides with the hero", () => {

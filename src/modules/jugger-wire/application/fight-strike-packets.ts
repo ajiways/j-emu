@@ -1,5 +1,5 @@
 import type { CombatEvent } from "../../combat/ports/combat-port.ts";
-import { fightCastEvent } from "./fight-cast-wire.ts";
+import { fightCastEvent, fightSiblingHpChangeEvent } from "./fight-cast-wire.ts";
 import { fightEffectPurgeEvent, fightPersCpEvent } from "./fight-effect-wire.ts";
 import { fightEventMap } from "./fight-event-map.ts";
 import { huntPersChangeEvents } from "./hunt-fight-pers-wire.ts";
@@ -20,17 +20,17 @@ export function mergePersChangeStrike(
     if (!damage || damage.type !== "damage") {
       throw new Error("turn-wait must precede damage");
     }
-    const purges = consumePurges(events, index + 3);
+    const followers = consumeMeleeFollowers(events, index + 3);
     return {
-      frame: fightEventMap([...strikePackets(next, damage, patch), ...purges]),
-      consumed: 2 + purges.length,
+      frame: fightEventMap([...strikePackets(next, damage, patch), ...followers]),
+      consumed: 2 + followers.length,
     };
   }
   if (next?.type !== "damage") return null;
-  const purges = consumePurges(events, index + 2);
+  const followers = consumeMeleeFollowers(events, index + 2);
   return {
-    frame: fightEventMap([...strikePackets(null, next, patch), ...purges]),
-    consumed: 1 + purges.length,
+    frame: fightEventMap([...strikePackets(null, next, patch), ...followers]),
+    consumed: 1 + followers.length,
   };
 }
 
@@ -47,19 +47,25 @@ export function strikePackets(
   ];
 }
 
-export function consumePurges(
+export function consumeMeleeFollowers(
   events: readonly CombatEvent[],
   start: number,
-): readonly ReturnType<typeof fightEffectPurgeEvent>[] {
-  const packets: ReturnType<typeof fightEffectPurgeEvent>[] = [];
+): readonly Readonly<Record<string, unknown>>[] {
+  const packets: Readonly<Record<string, unknown>>[] = [];
   let index = start;
-  while (events[index]?.type === "effect-purge") {
-    const purge = events[index];
-    if (!purge || purge.type !== "effect-purge") {
-      throw new Error("effect-purge is missing after melee damage");
+  while (true) {
+    const next = events[index];
+    if (next?.type === "effect-purge") {
+      packets.push(fightEffectPurgeEvent(next));
+      index += 1;
+      continue;
     }
-    packets.push(fightEffectPurgeEvent(purge));
-    index += 1;
+    if (next?.type === "damage" && next.animation === "") {
+      packets.push(fightSiblingHpChangeEvent(next));
+      index += 1;
+      continue;
+    }
+    break;
   }
   return packets;
 }
