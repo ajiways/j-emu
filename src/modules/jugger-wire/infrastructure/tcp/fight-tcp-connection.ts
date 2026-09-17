@@ -1,8 +1,12 @@
 import type { CombatPort } from "../../../combat/ports/combat-port.ts";
 import { encodePlainFrames } from "../../amf/framing.ts";
+import { FightTraceLog, type FightTraceSink } from "../../application/fight-trace-log.ts";
 import type { FightWireMapper } from "../../application/fight-wire-mapper.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
-import type { FproxyCommandRegistry } from "../../registry/fproxy-command-registry.ts";
+import {
+  decodeFightRequest,
+  type FproxyCommandRegistry,
+} from "../../registry/fproxy-command-registry.ts";
 
 export class FightTcpConnection {
   private accountId: number | null = null;
@@ -15,6 +19,7 @@ export class FightTcpConnection {
     private readonly combat: CombatPort,
     private readonly commands: FproxyCommandRegistry,
     private readonly wire: FightWireMapper,
+    private readonly log: FightTraceSink,
   ) {}
 
   async receive(payload: Buffer): Promise<Buffer> {
@@ -34,13 +39,32 @@ export class FightTcpConnection {
     if (pocketItemId !== null) {
       throw new Error("TCP fproxy cannot persist pocket consume");
     }
-    return encodePlainFrames(this.wire.frames(immediate));
+    const frames = this.wire.frames(immediate);
+    FightTraceLog.write(this.log, {
+      channel: "tcp",
+      accountId,
+      command,
+      request: decodeFightRequest(payload),
+      events: immediate,
+      frames,
+    });
+    return encodePlainFrames(frames);
   }
 
   async poll(): Promise<Buffer> {
     const accountId = this.accountId;
     if (!accountId) return Buffer.alloc(0);
-    const events = await this.combat.execute(accountId, { kind: "poll" });
-    return encodePlainFrames(this.wire.frames(events));
+    const command = { kind: "poll" as const };
+    const events = await this.combat.execute(accountId, command);
+    const frames = this.wire.frames(events);
+    FightTraceLog.write(this.log, {
+      channel: "tcp",
+      accountId,
+      command,
+      request: null,
+      events,
+      frames,
+    });
+    return encodePlainFrames(frames);
   }
 }

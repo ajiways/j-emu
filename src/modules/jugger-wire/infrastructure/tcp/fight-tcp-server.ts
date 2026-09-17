@@ -75,7 +75,7 @@ export class FightTcpServer {
   private accept(socket: net.Socket): void {
     const remote = `${socket.remoteAddress}:${socket.remotePort}`;
     this.log.info({ remote }, "fight_tcp_connect");
-    const connection = new FightTcpConnection(this.combat, this.commands, this.wire);
+    const connection = new FightTcpConnection(this.combat, this.commands, this.wire, this.log);
     let buf: Buffer = Buffer.alloc(0);
     let policyDone = false;
     let queue = Promise.resolve();

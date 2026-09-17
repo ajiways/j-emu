@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { CombatEvent, FightCommand } from "../../../combat/ports/combat-port.ts";
 import { FightCastDenied } from "../../../combat/domain/fight-cast-denied.ts";
 import { encodePlainFrames } from "../../amf/framing.ts";
+import { FightTraceLog } from "../../application/fight-trace-log.ts";
 import type { JuggerHttpDependencies } from "./jugger-http-dependencies.ts";
 import { waitForLongPoll } from "./long-poll-request.ts";
 
@@ -18,14 +19,6 @@ export class FproxyRouteRegistrar {
       }
       try {
         const command = this.dependencies.commands.fproxy.decodeHttpBody(request.body);
-        request.log.info(
-          {
-            event: "fproxy",
-            kind: command.kind,
-            bytes: Buffer.isBuffer(request.body) ? request.body.length : 0,
-          },
-          "fproxy",
-        );
         const events = await this.fightEvents(request, account.id, command);
         if (command.kind !== "poll") {
           const itemId = this.dependencies.combat.takePocketConsume(account.id);
@@ -40,9 +33,16 @@ export class FproxyRouteRegistrar {
             });
           }
         }
-        return reply
-          .type("application/octet-stream")
-          .send(encodePlainFrames(this.dependencies.commands.fightWire.frames(events)));
+        const frames = this.dependencies.commands.fightWire.frames(events);
+        FightTraceLog.write(request.log, {
+          channel: "http",
+          accountId: account.id,
+          command,
+          request: FightTraceLog.requestOf(request.body),
+          events,
+          frames,
+        });
+        return reply.type("application/octet-stream").send(encodePlainFrames(frames));
       } catch (error) {
         request.log.error({ err: error }, "fight_command_failed");
         if (error instanceof FightCastDenied) {

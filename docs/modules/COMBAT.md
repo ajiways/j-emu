@@ -179,7 +179,10 @@ kind-3 (`charging` ходов, `groupId` 842, без bake STR — melee бону
 тратит. Повторный drink той же group снимает предыдущий standing.
 CEF 2026-09-17: орб 99 standing + `effPurge` на физ L/C/R. Glove AOE
 raw-AMF landed, CEF не подтверждён:
-[CEF_MANUAL.md](../migration/CEF_MANUAL.md). Kind 11 HTTP
+[CEF_MANUAL.md](../migration/CEF_MANUAL.md).
+Временный leftover-лог: HTTP/TCP fproxy пишет `fight_trace` — decoded request
+AMF, CombatEvent, wire frames и `hp` (`persChangeInfo` / `cast` / `hpChange`).
+Пустой poll — `{empty:true}` без тел. Kind 11 HTTP
 `{rs:false, restriction:18}` — только если опубликованный spell kind 11
 (в текущем slice нет). CEF счётчиков пояса/перчатки/ярости не прогонялся.
 
