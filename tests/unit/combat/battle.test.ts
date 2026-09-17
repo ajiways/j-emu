@@ -321,4 +321,46 @@ describe("Battle", () => {
     });
     expect(events).toContainEqual({ type: "turn-granted", timeoutSeconds: 17 });
   });
+
+  it("gives the joiner the waiting clone after they kill their foe", () => {
+    const battle = new Battle(
+      huntInit({ heroStrength: 200, botMaxHp: 8, heroAggroCharges: 2 }),
+      UNIT_BATTLE_RULES,
+      {
+        integer(minInclusive) {
+          return minInclusive;
+        },
+        unit() {
+          return 0.4;
+        },
+      },
+    );
+    battle.authenticate(1, AUTH_NOW);
+    battle.addHuman({
+      accountId: 2,
+      heroId: 2,
+      nick: "Joiner",
+      level: 1,
+      kind: 1,
+      hp: 27,
+      maxHp: 27,
+      mp: 10,
+      maxMp: 10,
+      ...unitHuntHumanStats(200),
+      team: 1,
+      appearance: UNIT_HUNT_APPEARANCE,
+      loadout: EMPTY_COMBAT_LOADOUT,
+      startedAtMs: AUTH_NOW,
+    });
+    battle.authenticate(2, AUTH_NOW);
+    expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
+    expect(battle.tryAggro(1, () => 1_000_002).kind).toBe("resolved");
+    battle.grantTurn(2, AUTH_NOW);
+    const hit = battle.tryPlayerMelee(2, "center", AUTH_NOW);
+    if (hit.kind !== "resolved") throw new Error("expected the joiner melee to resolve");
+    expect(hit.events.some((event) => event.type === "damage" && event.killed)).toBe(true);
+    const next = hit.events.find((event) => event.type === "opponent-new");
+    expect(next).toMatchObject({ type: "opponent-new", bot: { id: 1_000_002 } });
+    expect(battle.pairedOpponent(2)).toEqual({ kind: "bot" });
+  });
 });

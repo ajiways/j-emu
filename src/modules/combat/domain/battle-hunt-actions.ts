@@ -1,7 +1,6 @@
 import type { BattleRules } from "./battle-rules.ts";
 import { applyHuntBotHit, applyHuntPlayerHit } from "./battle-hunt-runtime.ts";
 import {
-  battleOpener,
   huntRosterBots,
   requireAuthedHuman,
   requireBattleHuman,
@@ -63,7 +62,7 @@ export function applyBattlePlayerMelee(
     roster: state.huntRoster,
     duel,
     duels: state.duels,
-    opener: battleOpener(state.humans),
+    opener: human,
     humans: state.humans,
   });
 }
