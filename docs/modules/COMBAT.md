@@ -705,7 +705,8 @@ Retention 72h в SELECT; cleanup batches вне request path. PvP в history
 
 ### Architecture decision
 
-ADR-0017–0020 достаточны. `ARC-CMB` не нужен. Не выделять `FightRules`.
+ADR-0017–0020 достаточны для этого среза. «Не выделять `FightRules`» — **устарело**: `FightRules` и `startBattle({team1,team2,rules})` выделяются в
+`ARC-CMB` ([ROADMAP.md](../migration/ROADMAP.md)).
 
 ### Out of scope (CMB-17 leftover)
 
@@ -729,7 +730,8 @@ Jugger-wire не читает таблицу напрямую.
 
 ### Architecture decision
 
-ADR-0017–0020 достаточны. `ARC-CMB` не нужен. Не выделять `FightRules`.
+ADR-0017–0020 достаточны для этого среза. «Не выделять `FightRules`» — **устарело**: `FightRules` и `startBattle({team1,team2,rules})` выделяются в
+`ARC-CMB` ([ROADMAP.md](../migration/ROADMAP.md)).
 
 ## HERO-01 — PvP honor snapshot
 
@@ -829,14 +831,93 @@ Dump-блоб 20546 без `dmgType`: на wire сейчас `0` (raw-AMF e2e). 
 
 CEF не прогонялся (Wave 12, [CEF_MANUAL.md](../migration/CEF_MANUAL.md)).
 
+## Участники боя — общая read-поверхность
+
+`Combatant` (`id`, `team`, `maxHp`, `mag`, `strikeStats`) — то, что человек и
+бот отдают одинаково; оба варианта `MeleeTarget` его включают, а строятся
+только фабриками `humanMeleeTarget` / `botMeleeTarget`. Защитник больше не
+получает заглушку силы: `BotMeleePresence` несёт `strength` бота (в
+`rollMeleeOutcome` сила защитника не участвует, поэтому исход не изменился).
+
+`hp` в `Combatant` **не входит** намеренно: человек владеет живым hp на своём
+объекте, а hp бота едет отложенным `BotMeleePresence`, который roster
+применяет после удара. `tryPairedMelee` читает hp человека после применения
+урона, а hp бота — до, поэтому чтение идёт через владельца (`targetHp`).
+Слияние hp — отдельный шаг `ARC-CMB`, не косметика.
+
+## Инженерный долг
+
+Каноническое место для долга боевки. Ничего из списка не меняет продуктовый
+статус capability и не является known bug на wire — это стоимость
+эксплуатации и поддержки. Архитектурная часть (состав боя, `FightRules`) —
+не здесь, а в `ARC-CMB` ([ROADMAP.md](../migration/ROADMAP.md)).
+
+**Read path доски боёв.** `PostgresFinishedFightStore.listByArea` выбирает
+все строки area за окно retention без `LIMIT`, а `FinishedFightList.list`
+применяет фильтры `type` / `level_min` / `level_max` / `nick` и режет
+страницу в памяти. Индексов под `type` и уровни нет, потому что фильтры до
+SQL не доходят; поиск по нику разбирает jsonb `teams` каждой строки. На
+плотной локации это всё окно на каждый запрос доски.
+
+**Коллекции без вытеснения.** `CombatService.settledFights` и `exitSent`,
+`HuntFightSettlement.finished` и `left`, `PvpFightHonorCache.shares`
+пополняются на каждом бою и очищаются только в `shutdown()`. Отдельно
+`CombatService.queues`: у отвалившегося без poll клиента очередь и запись в
+`byAccount` живут до finish или leave, TTL на заброшенный бой нет.
+
+**Settlement.** `HuntFightSettlement.persistFinished` — самая длинная
+функция боевого пути; расчёт доли золота собран вложенными тернарниками, а
+внутри одной транзакции идёт цикл по игрокам с отдельными await на HP,
+death durability, refill кармана, EXP, деньги и по одному на каждый дроп,
+плюс `capRolledDrops` с запросом на каждый дроп. Корректно, но это самое
+долгое удержание транзакции.
+
+**History write — принятый риск, без наблюдаемости.** Решение CMB-03
+(«history best-effort не откатывает награду») в силе и не отменяется:
+`CombatTerminal.recordHistory` логирует сбой и не роняет бой. Долг в том,
+что сбой уходит только в stderr через `StructuredHistoryWriteObserver` —
+нет ни retry, ни счётчика, поэтому расхождение «награда выдана, строки нет»
+незаметно в эксплуатации.
+
+**Стоимость HTTP fproxy.** `FproxyRouteRegistrar` аутентифицирует каждый
+запрос, включая каждый long-poll: `sessions.findById` + `accounts.findById`.
+При `FPROXY_POLL_MS=2500` это два SELECT на бойца каждые 2.5 с. TCP-путь
+(`FightTcpConnection`) держит accountId на соединении и не платит.
+
+**Расход кармана не атомарен.** Combat складывает id в
+`pendingPocketConsume`, роут отдельно берёт его и делает свою транзакцию.
+Сбой транзакции оставляет предмет потраченным в RAM боя и целым в БД.
+
+**Опциональные порты.** `bindSettlement` / `bindWake` /
+`bindTerminalObserver` вызываются после конструктора, а на месте
+использования проверяются как опциональные (`if (!settlement) return`,
+`wakePort?.wake`). В composition root все привязаны, но ошибка сборки даст
+тихую деградацию вместо fail-fast.
+
+**Battleground.** `PostgresBattlegroundHistory.list` делает запрос игроков
+на каждую строку страницы; под фактический `WHERE bg_id` +
+`ORDER BY time_finish` индекса нет (есть только `uniqueIndex(copy_id)`).
+
+**Хардкод контента в domain.** ID ярости `212` и группа `844` с title и png
+лежат в `hunt-cast.ts` и дублируются в `hunt-native-pers-spells.ts`;
+`DOT_DURATION_TURNS` держит override спелла `396`. Должно приходить из
+каталога.
+
+**Размер файлов.** `battle.ts` 399 строк при лимите 400, `combat-service.ts`
+393, `hunt-fight-settlement.ts` 376; всего в combat семь файлов свыше
+порога пересмотра 250. Декомпозиция частично входит в `ARC-CMB`.
+
 ## Границы модулей
 
 Combat получает immutable combat-ready snapshots через public ports; catalog
 и inventory не импортируются как repositories внутрь fight engine. Settlement
 вызывает owning application ports из composition после terminal outcome.
 
-Не создавать generic «будущий» battle abstraction ценой изменения работающего
-legacy flow. Механики переносятся capability за capability.
+Не создавать generic «будущий» battle abstraction спекулятивно и ценой
+изменения работающего flow: механики переносятся capability за capability.
+Это не запрещает `ARC-CMB` — там абстракция уже не «будущая» (оба триггера
+FIGHT_MODEL сработали), поведение и wire не меняются, а порядок миграции и
+acceptance зафиксированы в записи.
 
 ## Acceptance будущей полной combat wave
 

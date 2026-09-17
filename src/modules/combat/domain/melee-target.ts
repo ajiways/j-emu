@@ -1,25 +1,49 @@
+import type { Combatant } from "./combatant.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { MagStats } from "./mag-stats.ts";
+import { strikeStatsFromHuman, unpublishedBotStrikeStats } from "./melee-outcome.ts";
 
 export type BotMeleePresence = Readonly<{
   fightId: number;
   hp: number;
   maxHp: number;
   team: 1 | 2;
+  strength: number;
   mag: MagStats;
 }>;
 
 export type MeleeTarget =
-  | Readonly<{ kind: "human"; human: HuntHuman }>
-  | Readonly<{
-      kind: "bot";
-      id: number;
-      team: 1 | 2;
-      hp: number;
-      maxHp: number;
-      mag: MagStats;
-    }>;
+  | Readonly<{ kind: "human"; human: HuntHuman } & Combatant>
+  | Readonly<{ kind: "bot"; presence: BotMeleePresence } & Combatant>;
+
+export function humanMeleeTarget(human: HuntHuman): MeleeTarget {
+  return {
+    kind: "human",
+    human,
+    id: human.heroId,
+    team: human.team,
+    maxHp: human.maxHp,
+    mag: human.mag,
+    strikeStats: strikeStatsFromHuman(human),
+  };
+}
+
+export function botMeleeTarget(presence: BotMeleePresence): MeleeTarget {
+  return {
+    kind: "bot",
+    presence,
+    id: presence.fightId,
+    team: presence.team,
+    maxHp: presence.maxHp,
+    mag: presence.mag,
+    strikeStats: unpublishedBotStrikeStats(presence.strength),
+  };
+}
+
+export function targetHp(target: MeleeTarget): number {
+  return target.kind === "human" ? target.human.hp : target.presence.hp;
+}
 
 export function resolveMeleeTarget(
   input: Readonly<{
@@ -31,18 +55,9 @@ export function resolveMeleeTarget(
 ): MeleeTarget {
   const otherId = input.duel.otherId(input.attackerHeroId);
   const human = input.humans.find((entry) => entry.heroId === otherId);
-  if (human) return { kind: "human", human };
+  if (human) return humanMeleeTarget(human);
   const bot = input.bots.find((entry) => entry.fightId === otherId);
-  if (bot) {
-    return {
-      kind: "bot",
-      id: bot.fightId,
-      team: bot.team,
-      hp: bot.hp,
-      maxHp: bot.maxHp,
-      mag: bot.mag,
-    };
-  }
+  if (bot) return botMeleeTarget(bot);
   throw new Error(`Duel opponent ${otherId} is neither a human nor a fight bot`);
 }
 

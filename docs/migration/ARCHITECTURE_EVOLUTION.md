@@ -165,7 +165,7 @@ mailbox остаётся планом. Контракт: [MAIL.md](../modules/MA
 Отдельный `ARC-RTM` потребуется позже только если доставка diffs должна
 пережить restart процесса или social-модуль заберёт channel policy.
 
-### `ARC-CMB` — terminal settlement
+### `ARC-CMB` — terminal settlement и модель состава боя
 
 **Сейчас:** combat хранит active battle в RAM и best-effort finished history,
 но не выполняет durable rewards.
@@ -185,8 +185,32 @@ Combat отдаёт terminal snapshot; composition UoW вызывает characte
 composition снапшотит `gearSpells[]` на старт боя; combat держит RAM
 kind-3 и не пишет `items`. ADR-0020 без active-fight tables.
 
-Отдельный `ARC-CMB` потребуется позже только если settlement нельзя провести
-без записи combat в чужие таблицы, durable outbox или active-fight rows.
+Для settlement отдельный `ARC-CMB` потребуется позже только если его нельзя
+провести без записи combat в чужие таблицы, durable outbox или active-fight rows.
+
+**Поднято `ARC-CMB` (состав боя), статус `next` в [ROADMAP.md](ROADMAP.md).**
+Причина не settlement, а bootstrap состава. «Кто в бою» описано тремя
+несовместимыми формами (`HuntBattleInit` с плоскими `hero*`/`bot*` и
+приделанными `extraEnemies`/`allies`, `FriendlyDuelBattleInit`
+`challenger`/`acceptor`, `HuntJoinHuman`), поэтому `Battle.huntRoster` —
+`HuntRoster | null`, участники живут в двух классах без общего интерфейса, а
+на `kind`/`purpose` ветвится 36 мест; номер команды выводится из `purpose`
+(`huntFightOpenerTeam`). Физика уже ветвится вопреки FIGHT_MODEL: AI-участник
+в дуэли невыразим (`battle-hunt-actions` бросает «Human duel has no bot to
+take a turn»), из-за чего aggro-клон ограничен outdoor hunt, а bot summon
+kind 10 возвращает `[]`. Оба триггера FIGHT_MODEL сработали: режимов
+последствий четыре, N×N и три точки старта приземлены. Target —
+`FightRules` + `startBattle({team1,team2,rules})` с плоским списком
+`Combatant` и `controller:"human"|"ai"`; `meta.kind` остаётся только для
+settlement, wire `type` и join/leave policy. Схема и wire не меняются:
+active fight — RAM (ADR-0020), форма `combat.finished_fights` та же, поэтому
+migration/backfill/rollback-риска нет. Порядок миграции, acceptance и список
+разблокируемых capabilities — в записи `ARC-CMB`.
+
+**Устарело этой записью:** «не выделять `FightRules`» из решений CMB-16 и
+CMB-17 и привязка триггера к CMB-18 в решении CMB-14 / CMB-15a–c ниже. Те
+решения остаются верными как факт о своём срезе, но больше не описывают
+целевую границу.
 
 ### `ARC-ECO` — деньги и первый economy vertical
 
@@ -326,9 +350,13 @@ cross-swap; initiative на новых парах `tryPairQueues`. Snapshot stat
 живут в `BattleRules` и spell blobs в start snapshot. Отдельный `ARC-CMB`
 не нужен. CMB-18 (outdoor challenge) — единственная точка, где jgr сам
 откладывает `FightRules` / `startBattle({team1,team2,rules})`.
+**Привязка триггера к CMB-18 устарела:** давление пришло из закрытых
+CMB-11…CMB-17, `ARC-CMB` (состав боя) поднят отдельно. Часть про
+`BattleRules` knobs остаётся в силе.
 
 **Решение CMB-16:** текущих границ достаточно; `ARC-CMB` не нужен. Не
-выделять `FightRules`. `joinHunt` пускает `kind:"pvp"` при том же
+выделять `FightRules` (**устарело:** `FightRules` выделяется в `ARC-CMB`).
+`joinHunt` пускает `kind:"pvp"` при том же
 area/copy; friendly остаётся deny. `startPvp` несёт `instanceCopyId` и
 `fightFlags` с composition; combat battleground не импортирует. Leave в
 PvP copy разрешён. ADR-0017–0020. Контракт: [COMBAT.md](../modules/COMBAT.md),

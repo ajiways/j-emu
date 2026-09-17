@@ -14,7 +14,13 @@ import { isEndingGlove, type KeepTurnResult } from "./hunt-cast.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { spellKind } from "./hunt-human-cast-state.ts";
 import { magicHitFromKind1, magicReact } from "./magic-hit.ts";
-import { resolveMeleeTarget, type BotMeleePresence, type MeleeTarget } from "./melee-target.ts";
+import {
+  botMeleeTarget,
+  resolveMeleeTarget,
+  targetHp,
+  type BotMeleePresence,
+  type MeleeTarget,
+} from "./melee-target.ts";
 import { applyDamageToMeleeTarget } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
 
@@ -134,8 +140,8 @@ function applyGloveKind1Hits(
   const hits: GloveKind1Hit[] = [];
   for (const listed of targets) {
     const target = livingTarget(listed, bots);
-    const foeMag = target.kind === "human" ? target.human.mag : target.mag;
-    const foeHp = target.kind === "human" ? target.human.hp : target.hp;
+    const foeMag = target.mag;
+    const foeHp = targetHp(target);
     const full = magicHitFromKind1(
       spell,
       human.meleeStrength(),
@@ -165,14 +171,7 @@ function livingTarget(listed: MeleeTarget, bots: readonly BotMeleePresence[]): M
   if (listed.kind === "human") return listed;
   const bot = bots.find((entry) => entry.fightId === listed.id);
   if (!bot) throw new Error(`AOE bot ${listed.id} is missing from the roster`);
-  return {
-    kind: "bot",
-    id: bot.fightId,
-    team: bot.team,
-    hp: bot.hp,
-    maxHp: bot.maxHp,
-    mag: bot.mag,
-  };
+  return botMeleeTarget(bot);
 }
 
 function gloveDamageEvent(

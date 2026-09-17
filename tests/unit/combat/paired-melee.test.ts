@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
+import { humanMeleeTarget } from "../../../src/modules/combat/domain/melee-target.ts";
 import {
   tryPairedMelee,
   applyDamageToMeleeTarget,
@@ -38,7 +39,7 @@ describe("tryPairedMelee", () => {
     const attacker = fighter(1, 1, 27);
     attacker.beginTurn(0, 20);
     const defender = fighter(2, 2, 27);
-    const resolved = tryPairedMelee(attacker, { kind: "human", human: defender }, "center", {
+    const resolved = tryPairedMelee(attacker, humanMeleeTarget(defender), "center", {
       finished: false,
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([1]),
@@ -64,13 +65,22 @@ describe("tryPairedMelee", () => {
     const attacker = fighter(1, 1, 27);
     attacker.beginTurn(0, 20);
     const defender = fighter(2, 2, 1);
-    const resolved = tryPairedMelee(attacker, { kind: "human", human: defender }, "center", {
+    const resolved = tryPairedMelee(attacker, humanMeleeTarget(defender), "center", {
       finished: false,
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([1]),
       fightId: "8",
       humans: [attacker, defender],
-      bots: [{ fightId: 1_000_000, hp: 10, maxHp: 10, team: 2, mag: { power: 0, resist: 0 } }],
+      bots: [
+        {
+          fightId: 1_000_000,
+          hp: 10,
+          maxHp: 10,
+          team: 2,
+          strength: 10,
+          mag: { power: 0, resist: 0 },
+        },
+      ],
       nowMs: 0,
     });
     expect(resolved.finished).toBe(false);
@@ -83,7 +93,7 @@ describe("tryPairedMelee", () => {
   it("credits applied human HP-loss and ignores overkill past current HP", () => {
     const attacker = fighter(1, 1, 27);
     const defender = fighter(2, 2, 3);
-    applyDamageToMeleeTarget(attacker, { kind: "human", human: defender }, 10, {
+    applyDamageToMeleeTarget(attacker, humanMeleeTarget(defender), 10, {
       humans: [attacker, defender],
       bots: [],
     });
@@ -95,7 +105,7 @@ describe("tryPairedMelee", () => {
     const attacker = fighter(1, 1, 27, 80);
     attacker.beginTurn(0, 20);
     const defender = fighter(2, 2, 3, 80);
-    const resolved = tryPairedMelee(attacker, { kind: "human", human: defender }, "center", {
+    const resolved = tryPairedMelee(attacker, humanMeleeTarget(defender), "center", {
       finished: false,
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([8]),
@@ -123,7 +133,7 @@ describe("tryPairedMelee", () => {
     const defender = fighter(2, 2, 1);
     defender.applyDamage(1);
     expect(() =>
-      tryPairedMelee(attacker, { kind: "human", human: defender }, "center", {
+      tryPairedMelee(attacker, humanMeleeTarget(defender), "center", {
         finished: false,
         rules: UNIT_BATTLE_RULES,
         random: new SequenceRandom([1]),

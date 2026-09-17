@@ -279,6 +279,12 @@ OA `arena|runned_fights` (живая доска area, RAM) и тестовый
 `/fight_info.php` landed. Live chrome карточки и PvP type 1 history —
 leftover. CEF боя не прогонялся.
 
+Инженерный долг боевки (read path доски боёв, коллекции без вытеснения,
+стоимость settlement и HTTP poll, хардкод контентных ID) перечислен в
+[COMBAT.md](modules/COMBAT.md) § «Инженерный долг» и статуса capability не
+меняет. Состав боя сводится к `FightRules` + `startBattle` в `ARC-CMB`
+([ROADMAP.md](migration/ROADMAP.md)) — без изменения wire и схемы.
+
 ## Quests и NPC — частично
 
 Есть raw-AMF и PostgreSQL: NPC 271 (Голова мертвеца, 503 item **4**) и

@@ -179,6 +179,7 @@ export class HuntRosterBot {
       hp: this.hpValue,
       maxHp: this.maxHp,
       team: this.team,
+      strength: this.strength,
       mag: this.mag,
     };
   }

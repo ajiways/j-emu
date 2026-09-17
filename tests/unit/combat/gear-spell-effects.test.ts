@@ -4,6 +4,7 @@ import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
 import { HuntHumanFightEffects } from "../../../src/modules/combat/domain/hunt-human-fight-effects.ts";
+import { humanMeleeTarget } from "../../../src/modules/combat/domain/melee-target.ts";
 import { tryPairedMelee } from "../../../src/modules/combat/domain/paired-melee.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
@@ -155,7 +156,7 @@ describe("gear-spell melee STR", () => {
       appearance: UNIT_HUNT_APPEARANCE,
       effectIds: new FightEffectIds(),
     });
-    const resolved = tryPairedMelee(attacker, { kind: "human", human: defender }, "center", {
+    const resolved = tryPairedMelee(attacker, humanMeleeTarget(defender), "center", {
       finished: false,
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([7]),

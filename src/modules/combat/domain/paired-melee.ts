@@ -4,13 +4,14 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { rollMeleeDamage } from "./melee-damage.ts";
-import {
-  rollMeleeOutcome,
-  strikeStatsFromHuman,
-  unpublishedBotStrikeStats,
-} from "./melee-outcome.ts";
+import { rollMeleeOutcome, strikeStatsFromHuman } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
-import { enemySideCleared, type BotMeleePresence, type MeleeTarget } from "./melee-target.ts";
+import {
+  enemySideCleared,
+  targetHp,
+  type BotMeleePresence,
+  type MeleeTarget,
+} from "./melee-target.ts";
 import type { RandomSource } from "./random-source.ts";
 
 export type PlayerMeleeResult =
@@ -47,9 +48,8 @@ export function tryPairedMelee(
   const outcome = rollMeleeOutcome({
     baseDamage,
     attacker: strikeStatsFromHuman(attacker),
-    defender:
-      target.kind === "human" ? strikeStatsFromHuman(target.human) : unpublishedBotStrikeStats(1),
-    targetHp: target.kind === "human" ? target.human.hp : target.hp,
+    defender: target.strikeStats,
+    targetHp: targetHp(target),
     forceCrit: attacker.casts.takeGloveCrit(),
     random: input.random,
     rules: input.rules,
@@ -59,30 +59,25 @@ export function tryPairedMelee(
     outcome.applied < 1
       ? {
           killed: false,
-          hitBot:
-            target.kind === "bot"
-              ? {
-                  fightId: target.id,
-                  hp: target.hp,
-                  maxHp: target.maxHp,
-                  team: target.team,
-                  mag: target.mag,
-                }
-              : null,
+          hitBot: target.kind === "bot" ? target.presence : null,
           finished: input.finished,
-          targetId: target.kind === "human" ? target.human.heroId : target.id,
-          targetMaxHp: target.kind === "human" ? target.human.maxHp : target.maxHp,
+          targetId: target.id,
+          targetMaxHp: target.maxHp,
         }
       : applyDamageToMeleeTarget(attacker, target, outcome.applied, {
           humans: input.humans,
           bots: input.bots,
         });
   const extraHp =
-    target.kind === "human" ? target.human.hp : hit.hitBot !== null ? hit.hitBot.hp : target.hp;
+    target.kind === "human"
+      ? target.human.hp
+      : hit.hitBot !== null
+        ? hit.hitBot.hp
+        : target.presence.hp;
   const extra = rollOverlayExtra(
     attacker.casts,
     attacker.mag,
-    target.kind === "human" ? target.human.mag : target.mag,
+    target.mag,
     extraHp,
     input.random,
     input.rules,
@@ -166,20 +161,14 @@ export function applyDamageToMeleeTarget(
     return {
       killed,
       hitBot: null,
-      finished: killed && enemySideCleared(target.human.team, context.humans, context.bots),
-      targetId: target.human.heroId,
-      targetMaxHp: target.human.maxHp,
+      finished: killed && enemySideCleared(target.team, context.humans, context.bots),
+      targetId: target.id,
+      targetMaxHp: target.maxHp,
     };
   }
-  const applied = appliedHpLoss(damage, target.hp);
+  const applied = appliedHpLoss(damage, target.presence.hp);
   attacker.creditDamageToBot(applied);
-  const hitBot: BotMeleePresence = {
-    fightId: target.id,
-    hp: target.hp - applied,
-    maxHp: target.maxHp,
-    team: target.team,
-    mag: target.mag,
-  };
+  const hitBot: BotMeleePresence = { ...target.presence, hp: target.presence.hp - applied };
   const botsAfter = context.bots.map((bot) => (bot.fightId === target.id ? hitBot : bot));
   if (!context.bots.some((bot) => bot.fightId === target.id)) {
     throw new Error(`Melee bot ${target.id} is missing from the roster`);
@@ -195,13 +184,10 @@ export function applyDamageToMeleeTarget(
 }
 
 function requireLivingMeleeTarget(target: MeleeTarget): void {
-  if (target.kind === "human") {
-    if (target.human.waiting || target.human.hp === 0) {
-      throw new Error("Melee target is not a living paired opponent");
-    }
-    return;
+  if (target.kind === "human" && target.human.waiting) {
+    throw new Error("Melee target is not a living paired opponent");
   }
-  if (target.hp === 0) {
+  if (targetHp(target) === 0) {
     throw new Error("Melee target is not a living paired opponent");
   }
 }

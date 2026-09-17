@@ -1944,16 +1944,109 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   area — пусто; restart — строка на месте. Hunt type 1 на той же доске.
 - **Status:** `done`
 
+### ARC-CMB — единая модель боя (`FightRules` + `startBattle`)
+
+- **ID:** `ARC-CMB`
+- **depends_on:** `CMB-17`
+- **Behavior evidence:** [FIGHT_MODEL.md](../../../jgr-emu/docs/FIGHT_MODEL.md)
+  § «Bootstrap и правила боя»: движок — blackbox, ему достаточно roster
+  team A / team B и правил последствий; `startFight` и `startFriendlyDuel`
+  «**не два движка**»; арена 5v5 и human↔human нападение «**не** требуют
+  отдельного combat-engine»; новые режимы добавляются адаптером, но
+  «**не ветвить физику боя**». Целевая форма названа там же: `FightRules` +
+  `startBattle({ team1, team2, rules })`.
+- **Триггеры из FIGHT_MODEL сработали оба.** `FightRules` — «третий режим
+  последствий»: в j-emu их четыре (hunt, quest, friendly-practice, pvp;
+  `HuntFightSettlement.persistFinished` ветвится на три). Общий
+  `startBattle` — «арена N×N или несколько новых стартов подряд»: N×N
+  приземлён (CMB-12/CMB-13), точек старта три (`startHunt`,
+  `startFriendlyDuel`, `startPvp`) плюс BG. Ранее отложено осознанно:
+  checkpoint CMB-14/CMB-15a–c, затем CMB-16/CMB-17 «Не выделять
+  `FightRules`», а сам триггер припаркован на продуктовое решение CMB-18.
+  Архитектурное давление пришло не из CMB-18, а из уже закрытых
+  CMB-11…CMB-17 и quest roster — поэтому ARC поднимается отдельно от
+  продуктового вопроса про outdoor challenge.
+- **Current data flow:** «кто в бою» описано **тремя** несовместимыми
+  формами: `HuntBattleInit` (плоские `hero*` + плоские `bot*` + приделанные
+  `extraEnemies[]` / `allies[]`), `FriendlyDuelBattleInit`
+  (`challenger` / `acceptor`), `HuntJoinHuman` (добор).
+  `seedBattleParticipants` ветвится на первом шаге и производит
+  структурно разные бои; `Battle.huntRoster` имеет тип
+  `HuntRoster | null` (47 ссылок на roster в combat); участники — два
+  класса без общего интерфейса (`HuntHuman`, `HuntRosterBot`), склеенные
+  union `MeleeTarget` `kind:"human"|"bot"`, который протёк в таргетинг,
+  pairing, aggro и fanout. Ветвлений на `kind`/`purpose` — 36 по
+  combat + app. `huntFightOpenerTeam` / `huntFightEnemyTeam` выводят
+  **номер команды из `purpose`**. Физика уже ветвится, вопреки
+  FIGHT_MODEL: `battle-hunt-actions.ts` бросает «Human duel has no bot to
+  take a turn», то есть AI-участник в дуэли невыразим; по той же причине
+  aggro-клон ограничен `kind==="hunt" && purpose==="hunt"`, а bot summon
+  (kind 10) возвращает `[]`.
+- **Target data flow:** `Battle(meta, participants, rules, random)`.
+  `participants` — плоский список `Combatant` (`id`, `team`,
+  `controller:"human"|"ai"`, статы, effects); движок на ходу смотрит на
+  `controller`: human ждёт команду или таймаут, ai зовёт выбор действия.
+  `FightRules` — named versioned policy (`canJoin`, `canLeave`, `canAggro`,
+  `shuffleAfterHits`, `teamAssignment`, `lootMode`, `restoreAfter`), как
+  разрешает AGENTS.md. Тип боя выживает только как `meta.kind` и читается
+  вне движка ровно тремя местами: settlement (последствия), wire
+  (`type` `"6"`/`"1"`), join/leave policy. Адаптеры мира
+  (`createHuntBattle`, `startHumanDuelBattle`, BG, quest roster) остаются
+  тонкими мапперами в `FightSetup`.
+- **Что переносить не нужно:** нижний слой уже generic и не трогается —
+  `HuntHumanFightEffects` общий для `HuntHuman` и `HuntRosterBot`,
+  `rollMeleeOutcome` работает на структурном `StrikeStats`, `FightDuel` —
+  на числовых id, `BotMeleePresence` структурный. Урон, эффекты, magic,
+  pacing ходов и `BattleRules` вне объёма.
+- **Порядок миграции:** (1) **landed** — `Combatant` (`id`, `team`, `maxHp`,
+  `mag`, `strikeStats`) как общая read-поверхность обоих вариантов
+  `MeleeTarget`, фабрики `humanMeleeTarget` / `botMeleeTarget`; (2) унифицировать
+  write-модель hp: человек мутируется живьём, бот едет отложенным
+  `BotMeleePresence`, который roster применяет после удара, поэтому `hp` пока
+  читается через владельца (`targetHp`) и в `Combatant` не входит; (3) извлечь
+  `FightRules` из 36 ветвлений, `teamAssignment` убирает вывод команды из
+  `purpose`; (4) единый `FightSetup { meta, teams }`, три init-формы
+  сводятся к нему, builders становятся адаптерами; (5) снять
+  `huntRoster: HuntRoster | null` — мобы живут в общем списке участников;
+  (6) удалить `kind`/`purpose` ветвления из domain, оставив `meta.kind`
+  для settlement/wire. Каждый шаг — отдельный коммит, зелёный gate и
+  существующие e2e.
+- **Найдено на шаге 1 (меняет порядок):** hp нельзя было слить вместе с
+  остальными полями. `tryPairedMelee` читает hp человека **после**
+  применения урона (живой объект) и hp бота — из снапшота **до** применения;
+  снапшот hp в общий тип менял бы расчёт добивания и overlay-догоняющего
+  удара. Поэтому unification hp вынесена в отдельный шаг 2 перед
+  `FightRules`, а не входит в шаг 1.
+- **Совместимость wire и данных:** миграции схемы и backfill **не
+  требуются** — active fight существует только в RAM (ADR-0020), таблиц
+  боя нет, форма строки `combat.finished_fights` не меняется. Wire не
+  меняется: `fight|conf`, `persList`, `cast`, `fight|exit` собираются
+  мапперами из тех же снапшотов. Restart-риска нет по той же причине:
+  активные бои и так не переживают процесс.
+- **Rollback:** каждый шаг — внутренний refactor за `CombatPort`, откат
+  ревертом коммита; dual-path и compatibility-флагов не вводить.
+- **Acceptance:** существующие e2e боя (hunt, join/intervene, N×N,
+  friendly duel, PvP/BG, quest roster, reconnect, restart) проходят без
+  правок ожиданий; новый unit доказывает, что AI-участник берёт ход в
+  бою, где нет hunt roster (сейчас невозможно); в `src/modules/combat`
+  не остаётся ветвлений на `kind`/`purpose` вне `meta` и wire-маппера;
+  `npm run check` зелёный.
+- **Разблокирует:** CMB-18 (outdoor challenge — уже без архитектурной
+  части), арена / 5v5, новые BG-карты, bot summon kind 10 и aggro вне
+  outdoor hunt, расширения quest roster.
+- **Status:** `next`
+
 ### CMB-18 — Outdoor ATTACK challenge
 
 - **ID:** `CMB-18`
-- **depends_on:** `CMB-17`
+- **depends_on:** `CMB-17`, `ARC-CMB`
 - **Behavior evidence:** leftover дока, не рабочий jgr runtime (`ATTACK`
   по нику идёт только в Раскоп). **Только после явного решения:** третий
   режим последствий → тогда `FightRules` + `startBattle({team1,team2,rules})`
   по FIGHT_MODEL. Не изобретать outdoor challenge из mapper-а.
-- **Architecture checkpoint / decision:** блокируется продуктовым
-  решением, не coding.
+- **Architecture checkpoint / decision:** архитектурная часть вынесена в
+  `ARC-CMB`; сама capability остаётся блокирована продуктовым решением,
+  не coding.
 - **Status:** `deferred` — ждёт продуктового решения от мейнтейнера
   (не coding; не изобретать outdoor ATTACK challenge).
 

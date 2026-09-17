@@ -1,7 +1,12 @@
 import type { CombatSpell } from "./combat-loadout.ts";
 import { kind1Effect } from "./magic-hit.ts";
 import type { HuntHuman } from "./hunt-human.ts";
-import type { BotMeleePresence, MeleeTarget } from "./melee-target.ts";
+import {
+  botMeleeTarget,
+  humanMeleeTarget,
+  type BotMeleePresence,
+  type MeleeTarget,
+} from "./melee-target.ts";
 import type { RandomSource } from "./random-source.ts";
 import { shuffleInPlace } from "./shuffle-in-place.ts";
 
@@ -52,34 +57,17 @@ export function pickGloveAoeTargets(
   }
   const enemyTeam = input.caster.team === 1 ? 2 : 1;
   const pool: MeleeTarget[] = [
-    ...input.bots
-      .filter((bot) => bot.team === enemyTeam && bot.hp > 0)
-      .map((bot) => botTarget(bot)),
+    ...input.bots.filter((bot) => bot.team === enemyTeam && bot.hp > 0).map(botMeleeTarget),
     ...input.humans
       .filter((human) => human.team === enemyTeam && !human.leftLive && human.hp > 0)
-      .map((human) => ({ kind: "human" as const, human })),
+      .map(humanMeleeTarget),
   ];
-  const primaryId = meleeTargetId(input.primary);
-  const preferred = pool.filter((target) => meleeTargetId(target) === primaryId);
+  const primaryId = input.primary.id;
+  const preferred = pool.filter((target) => target.id === primaryId);
   if (preferred.length !== 1) {
     throw new Error(`AOE primary ${primaryId} is not a living enemy`);
   }
-  const rest = pool.filter((target) => meleeTargetId(target) !== primaryId);
+  const rest = pool.filter((target) => target.id !== primaryId);
   shuffleInPlace(rest, input.random);
   return [...preferred, ...rest].slice(0, input.count);
-}
-
-function meleeTargetId(target: MeleeTarget): number {
-  return target.kind === "human" ? target.human.heroId : target.id;
-}
-
-function botTarget(bot: BotMeleePresence): MeleeTarget {
-  return {
-    kind: "bot",
-    id: bot.fightId,
-    team: bot.team,
-    hp: bot.hp,
-    maxHp: bot.maxHp,
-    mag: bot.mag,
-  };
 }
