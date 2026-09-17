@@ -152,7 +152,10 @@ standalone `attacknow`. Strike / ending cancel'ит таймер. CEF 2026-09-17
 Срез закрыт (raw-AMF). `startHunt`/`joinHunt` принимают immutable loadout
 (pocket + надетая перчатка или пусто). Снимок собирает `jugger-wire`
 `HuntCombatLoadout` из inventory/catalog ports; domain combat не импортирует
-их repositories. Combat RAM держит count/cp/rage. Fproxy HTTPS: decode →
+их repositories. Combat RAM держит count/cp/rage. F5/`auth` bootstrap и
+агро `persSpells` (MagicsModel replace) берут **оставшийся** pocket count
+из RAM (`wireLoadout`); строки с 0 опускаются, как jgr `cnt<=0`. Снимок
+старта остаётся для `pocketCells.startCount`. Fproxy HTTPS: decode →
 combat cast → `takePocketConsume` → inventory `consumePocket` только после
 успеха, в `UnitOfWork`. TCP fproxy не персистит карман: pending consume —
 ошибка (production путь — HTTPS).
@@ -299,6 +302,7 @@ OA FIGHT_JOIN/HELP (CMB-11); live `10_000_000+hero.id`. HUD EXP в момент
 `auth` снова паркует bootstrap. В паре resume без `oppwait`, сразу `oppnew`
 и `attacknow` с остатком wall-clock `restTime`. Первый вход — `oppwait`→
 `oppnew`. Таймер хода на F5 не паузится; hunt overlay остаётся busy.
+`persSpells` на resume — live pocket count, не count входа в бой.
 Restart процесса по-прежнему без боя, награды и history (`combat-restart`).
 
 Ghost/injury принадлежат character (`heroes.ghost`, `injury_time`,

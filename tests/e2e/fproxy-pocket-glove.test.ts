@@ -59,6 +59,32 @@ describe("fproxy pocket glove rage", () => {
     expect(JSON.stringify(poll)).not.toContain("persSpells");
   });
 
+  it("resumes persSpells with remaining pocket count after a drink", async () => {
+    const client = await AuthenticatedClient.login(application);
+    const orbId = await putOnArtikul(client, 99, 2);
+    const start = await client.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 3,
+    });
+    const fightId = huntFightIdFrom(start);
+    expect(await client.fight({ rc: "auth", eid: fightId, sq: 4 })).toHaveLength(0);
+    const opened = await client.pollFight();
+    const before = pocketSpellCount(opened, orbId);
+    expect(before).toBeGreaterThanOrEqual(1);
+    expect(await client.fight({ rc: "castSpell", srcType: 2, srcId: orbId, sq: 6 })).toHaveLength(
+      0,
+    );
+    await client.pollFight();
+    await client.objectAction({ object: "common", action: "init", sq: 20 });
+    const init2 = await client.objectAction({ object: "common", action: "init2", sq: 21 });
+    expect(huntFightIdFrom(init2)).toBe(fightId);
+    expect(await client.fight({ rc: "auth", eid: fightId, sq: 22 })).toHaveLength(0);
+    const again = await client.pollFight();
+    expect(pocketSpellCount(again, orbId)).toBe(before - 1);
+  });
+
   it("purges orb 99 on the consuming melee", async () => {
     const client = await AuthenticatedClient.login(application);
     const orbId = await putOnArtikul(client, 99, 2);
@@ -206,6 +232,16 @@ function castEv(frames: readonly AmfValue[]): AmfValue {
 }
 
 function nativeCount(frames: readonly AmfValue[], srcId: number): number {
+  const count = findPersSpellCount(frames, srcId);
+  if (count === null) throw new Error(`native srcId ${srcId} count is missing`);
+  return count;
+}
+
+function pocketSpellCount(frames: readonly AmfValue[], srcId: number): number {
+  return findPersSpellCount(frames, srcId) ?? 0;
+}
+
+function findPersSpellCount(frames: readonly AmfValue[], srcId: number): number | null {
   for (const frame of frames) {
     if (!frame || typeof frame !== "object" || Array.isArray(frame)) continue;
     const ev = frame.ev;
@@ -220,7 +256,7 @@ function nativeCount(frames: readonly AmfValue[], srcId: number): number {
       }
     }
   }
-  throw new Error(`native srcId ${srcId} count is missing`);
+  return null;
 }
 
 function persSpellSrcTypes(frames: readonly AmfValue[]): number[] {

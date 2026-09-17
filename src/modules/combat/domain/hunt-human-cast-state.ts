@@ -173,6 +173,20 @@ export class HuntHumanCastState {
     this.aggro -= 1;
     return this.aggro;
   }
+
+  wireLoadout(): CombatLoadout {
+    return {
+      pocket: this.loadout.pocket.flatMap((row) => {
+        const count = this.pocketCount(row.itemId);
+        if (!Number.isInteger(count) || count < 0 || count > row.count) {
+          throw new Error(`Pocket item ${row.itemId} remaining count is invalid`);
+        }
+        return count > 0 ? [{ ...row, count }] : [];
+      }),
+      glove: this.loadout.glove,
+      gearSpells: this.loadout.gearSpells,
+    };
+  }
 }
 
 export function pocketHealAmount(spell: CombatSpell, maxHp: number): number {

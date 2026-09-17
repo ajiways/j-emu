@@ -49,7 +49,7 @@ function huntAuthenticateEvents(
       cpHits: human.casts.hits,
       rage: human.casts.rage,
       aggro: human.casts.aggro,
-      loadout: human.casts.loadout,
+      loadout: human.casts.wireLoadout(),
       heroEffects: human.effects.snapshot(),
       botEffects: input.botEffects,
       otherEffects: standingEffectsOf(
@@ -103,7 +103,7 @@ function friendlyAuthenticateEvents(
       cpHits: human.casts.hits,
       rage: human.casts.rage,
       aggro: human.casts.aggro,
-      loadout: human.casts.loadout,
+      loadout: human.casts.wireLoadout(),
       heroEffects: human.effects.snapshot(),
       otherEffects: standingEffectsOf(input.allies),
     },

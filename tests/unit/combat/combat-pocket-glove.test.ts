@@ -126,6 +126,30 @@ describe("CombatService pocket glove rage", () => {
     });
   });
 
+  it("resumes persSpells with remaining pocket counts and omits emptied rows", async () => {
+    const { combat } = createCombatService({
+      random: new SequenceRandom([8, 2]),
+      rules: battleRules(),
+    });
+    await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
+    await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(1, { kind: "pocket", itemId: 100_001, sequence: 2 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.execute(1, { kind: "pocket", itemId: 100_002, sequence: 3 });
+    await combat.execute(1, { kind: "poll" });
+    await combat.resumeFight(1);
+    await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 4 });
+    const boot = await combat.execute(1, { kind: "poll" });
+    const bootstrap = boot.find((event) => event.type === "hunt-bootstrap");
+    if (!bootstrap || bootstrap.type !== "hunt-bootstrap") {
+      throw new Error("Resume hunt-bootstrap is missing");
+    }
+    expect(bootstrap.loadout.pocket).toEqual([
+      expect.objectContaining({ itemId: 100_002, artifactId: 99, count: 9 }),
+    ]);
+  });
+
   it("purges pocket 99 standing kind-3 on the consuming melee", async () => {
     const { combat } = createCombatService({
       random: new SequenceRandom([8, 2]),

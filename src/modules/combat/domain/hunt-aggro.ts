@@ -49,7 +49,7 @@ export function tryHuntAggro(
         srcId: 7,
         count: human.casts.aggro,
         title: "Разозлить",
-        loadout: human.casts.loadout,
+        loadout: human.casts.wireLoadout(),
       },
     ],
   });
@@ -87,7 +87,7 @@ export function tryHuntAggro(
         srcId: 7,
         count,
         title: "Разозлить",
-        loadout: human.casts.loadout,
+        loadout: human.casts.wireLoadout(),
       },
       {
         type: "roster-updated",
