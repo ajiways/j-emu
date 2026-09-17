@@ -353,8 +353,8 @@ describe("Battle", () => {
       startedAtMs: AUTH_NOW,
     });
     battle.authenticate(2, AUTH_NOW);
-    expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
-    expect(battle.tryAggro(1, () => 1_000_002).kind).toBe("resolved");
+    expect(battle.tryAggro(1, 1_000_000, () => 1_000_001).kind).toBe("resolved");
+    expect(battle.tryAggro(1, 1_000_000, () => 1_000_002).kind).toBe("resolved");
     battle.grantTurn(2, AUTH_NOW);
     const hit = battle.tryPlayerMelee(2, "center", AUTH_NOW);
     if (hit.kind !== "resolved") throw new Error("expected the joiner melee to resolve");

@@ -166,7 +166,7 @@ describe("Battle 3↔3 shuffle", () => {
       startedAtMs: AUTH_NOW,
     });
     battle.authenticate(2, AUTH_NOW);
-    expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
+    expect(battle.tryAggro(1, 1_000_000, () => 1_000_001).kind).toBe("resolved");
     battle.grantTurn(2, AUTH_NOW);
     for (let round = 0; round < 3; round += 1) {
       expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");

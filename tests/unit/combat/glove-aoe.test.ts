@@ -127,7 +127,7 @@ function pairedHunt(): Battle {
   battle.authenticate(1, AUTH_NOW);
   battle.addHuman(joinTeam1());
   battle.authenticate(2, AUTH_NOW);
-  expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
+  expect(battle.tryAggro(1, 1_000_000, () => 1_000_001).kind).toBe("resolved");
   return battle;
 }
 
@@ -202,7 +202,7 @@ describe("glove AOE leftover", () => {
       },
     });
     battle.authenticate(1, AUTH_NOW);
-    expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
+    expect(battle.tryAggro(1, 1_000_000, () => 1_000_001).kind).toBe("resolved");
     buildFourCombo(battle);
     battle.grantTurn(1, AUTH_NOW + 10);
     const ending = battle.tryGlove(1, 9099, 5, AUTH_NOW + 10);
@@ -244,7 +244,7 @@ describe("glove AOE leftover", () => {
     await combat.execute(1, { kind: "poll" });
     await combat.execute(2, { kind: "authenticate", fightId: "1", sequence: 1 });
     await combat.execute(2, { kind: "poll" });
-    await combat.execute(1, { kind: "aggro", sequence: 2 });
+    await combat.execute(1, { kind: "aggro", targetId: 1_000_000, sequence: 2 });
     await combat.execute(1, { kind: "poll" });
     await combat.execute(2, { kind: "poll" });
     await strikeAndLoop(combat, delay, clock, "center", 3);

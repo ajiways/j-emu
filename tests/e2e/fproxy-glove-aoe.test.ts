@@ -64,7 +64,9 @@ describe("fproxy glove AOE 9099", () => {
     expect(huntFightConfFrom(join).fightId).toBe(opened.fightId);
     expect(await b.fight({ rc: "auth", eid: opened.fightId, sq: 5 })).toHaveLength(0);
     await b.pollFight();
-    expect(await a.fight({ rc: "castSpell", srcType: 1, srcId: 7, sq: 6 })).toHaveLength(0);
+    expect(
+      await a.fight({ rc: "castSpell", srcType: 1, srcId: 7, targetId: spawnId, sq: 6 }),
+    ).toHaveLength(0);
     await a.pollFight();
     const joined = await b.pollFight();
     const cloneId = huntOppNewFrom(joined).id;

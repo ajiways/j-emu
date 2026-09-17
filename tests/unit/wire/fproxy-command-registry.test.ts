@@ -60,8 +60,10 @@ describe("fproxy command registry", () => {
       registry.decodePayload(encodeAmf3({ rc: "castSpell", srcType: 1, srcId: 6, sq: 5 })),
     ).toEqual({ kind: "rage", sequence: 5 });
     expect(
-      registry.decodePayload(encodeAmf3({ rc: "castSpell", srcType: 1, srcId: 7, sq: 6 })),
-    ).toEqual({ kind: "aggro", sequence: 6 });
+      registry.decodePayload(
+        encodeAmf3({ rc: "castSpell", srcType: 1, srcId: 7, targetId: 1_000_000, sq: 6 }),
+      ),
+    ).toEqual({ kind: "aggro", targetId: 1_000_000, sequence: 6 });
     expect(registry.decodePayload(encodeAmf3({ rc: "leaveFight", sq: 7 }))).toEqual({
       kind: "leave",
       sequence: 7,
@@ -100,6 +102,9 @@ describe("fproxy command registry", () => {
     expect(() =>
       registry.decodePayload(encodeAmf3({ rc: "castSpell", srcType: 1, srcId: 99, sq: 1 })),
     ).toThrow(/Fight source id 99 is unsupported/);
+    expect(() =>
+      registry.decodePayload(encodeAmf3({ rc: "castSpell", srcType: 1, srcId: 7, sq: 1 })),
+    ).toThrow(/Fight aggro requires targetId/);
     expect(() => registry.decodePayload(encodeAmf3({ rc: "persEff", sq: 1 }))).toThrow(
       /Fight persEff requires persId/,
     );

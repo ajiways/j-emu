@@ -78,7 +78,7 @@ describe("hunt aggro clone", () => {
     battle.addHuman(joinTeam1());
     battle.authenticate(2, AUTH_NOW);
     expect(battle.livingHumans().find((human) => human.accountId === 2)?.waiting).toBe(true);
-    const aggro = battle.tryAggro(1, () => 1_000_001);
+    const aggro = battle.tryAggro(1, 1_000_000, () => 1_000_001);
     expect(aggro.kind).toBe("resolved");
     if (aggro.kind !== "resolved") throw new Error("expected resolved aggro");
     expect(aggro.pairedAccountIds).toEqual([2]);
@@ -103,7 +103,7 @@ describe("hunt aggro clone", () => {
     battle.authenticate(1, AUTH_NOW);
     battle.addHuman(joinTeam1());
     battle.authenticate(2, AUTH_NOW);
-    expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
+    expect(battle.tryAggro(1, 1_000_000, () => 1_000_001).kind).toBe("resolved");
     const melee = battle.tryPlayerMelee(1, "center", AUTH_NOW);
     expect(melee.kind).toBe("resolved");
     if (melee.kind !== "resolved") throw new Error("expected resolved melee");
@@ -123,7 +123,7 @@ describe("hunt aggro clone", () => {
     const battle = new Battle(huntInit(), UNIT_BATTLE_RULES, new SequenceRandom([0.4]));
     battle.authenticate(1, AUTH_NOW);
     battle.addHuman(joinTeam1());
-    expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
+    expect(battle.tryAggro(1, 1_000_000, () => 1_000_001).kind).toBe("resolved");
     const boot = battle.authenticate(2, AUTH_NOW);
     expect(boot).toEqual(
       expect.arrayContaining([
@@ -144,7 +144,7 @@ describe("hunt aggro clone", () => {
       new SequenceRandom([8]),
     );
     battle.authenticate(1, AUTH_NOW);
-    expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
+    expect(battle.tryAggro(1, 1_000_000, () => 1_000_001).kind).toBe("resolved");
     expect(battle.foeBotSnap(1).id).toBe(1_000_000);
     const melee = battle.tryPlayerMelee(1, "center", AUTH_NOW);
     expect(melee.kind).toBe("resolved");
@@ -169,7 +169,7 @@ describe("hunt aggro clone", () => {
       new SequenceRandom([1, 1, 1, 1, 1, 1]),
     );
     battle.authenticate(1, AUTH_NOW);
-    expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
+    expect(battle.tryAggro(1, 1_000_000, () => 1_000_001).kind).toBe("resolved");
     for (let round = 0; round < 3; round += 1) {
       expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");
       expect(battle.resolveBotMelee(1).killedPlayer).toBe(false);
@@ -192,7 +192,7 @@ describe("hunt aggro clone", () => {
       new SequenceRandom([0.4]),
     );
     quest.authenticate(1, AUTH_NOW);
-    const quested = quest.tryAggro(1, () => 1_000_001);
+    const quested = quest.tryAggro(1, 1_000_000, () => 1_000_001);
     expect(quested).toMatchObject({
       kind: "resolved",
       pairedAccountIds: [],
@@ -207,7 +207,7 @@ describe("hunt aggro clone", () => {
       new SequenceRandom([0.4]),
     );
     copy.authenticate(1, AUTH_NOW);
-    expect(copy.tryAggro(1, () => 1_000_001)).toMatchObject({
+    expect(copy.tryAggro(1, 1_000_000, () => 1_000_001)).toMatchObject({
       kind: "resolved",
       events: [
         { type: "buff-cast", animation: "fury", sourceId: 1, targetId: 1 },
@@ -220,7 +220,7 @@ describe("hunt aggro clone", () => {
       new SequenceRandom([0.4]),
     );
     empty.authenticate(1, AUTH_NOW);
-    expect(empty.tryAggro(1, () => 1_000_001)).toMatchObject({
+    expect(empty.tryAggro(1, 1_000_000, () => 1_000_001)).toMatchObject({
       kind: "resolved",
       events: [
         { type: "buff-cast", animation: "fury", sourceId: 1, targetId: 1 },
@@ -228,5 +228,36 @@ describe("hunt aggro clone", () => {
       ],
     });
     expect(empty.livingHumans()).toHaveLength(1);
+  });
+
+  it("lets a waiting joiner spend their own charge on the opener bot", () => {
+    const battle = new Battle(huntInit(), UNIT_BATTLE_RULES, new SequenceRandom([0.4, 0.4]));
+    battle.authenticate(1, AUTH_NOW);
+    battle.addHuman(joinTeam1());
+    battle.authenticate(2, AUTH_NOW);
+    expect(battle.livingHumans().find((human) => human.accountId === 2)?.waiting).toBe(true);
+    const denied = battle.tryAggro(2, 1_000_099, () => 1_000_001);
+    expect(denied).toMatchObject({
+      kind: "resolved",
+      pairedAccountIds: [],
+      events: [
+        { type: "buff-cast", animation: "fury", sourceId: 2, targetId: 2 },
+        { type: "native-count", srcId: 7, count: 1 },
+      ],
+    });
+    const aggro = battle.tryAggro(2, 1_000_000, () => 1_000_001);
+    expect(aggro.kind).toBe("resolved");
+    if (aggro.kind !== "resolved") throw new Error("expected resolved joiner aggro");
+    expect(aggro.pairedAccountIds).toEqual([2]);
+    expect(aggro.events[0]).toMatchObject({ type: "native-count", srcId: 7, count: 0 });
+    expect(battle.livingHumans().find((human) => human.accountId === 2)?.waiting).toBe(false);
+    expect(battle.livingHumans().find((human) => human.accountId === 1)?.casts.aggro).toBe(1);
+    expect(battle.foeBotSnap(1).id).toBe(1_000_000);
+    expect(battle.foeBotSnap(2).id).toBe(1_000_001);
+    const opener = battle.tryAggro(1, 1_000_000, () => 1_000_002);
+    expect(opener.kind).toBe("resolved");
+    if (opener.kind !== "resolved") throw new Error("expected resolved opener aggro");
+    expect(opener.events[0]).toMatchObject({ type: "native-count", srcId: 7, count: 0 });
+    expect(battle.livingHumans().find((human) => human.accountId === 1)?.casts.aggro).toBe(0);
   });
 });

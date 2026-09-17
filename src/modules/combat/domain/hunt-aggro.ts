@@ -25,11 +25,12 @@ export function tryHuntAggro(
     roster: HuntRoster | null;
     random: RandomSource;
     accountId: number;
+    targetId: number;
     allocateBotId: () => number;
   }>,
 ): HuntAggroResult {
   const human = input.humans.find((entry) => entry.accountId === input.accountId);
-  if (!human || !human.authed || human.waiting || human.hp === 0 || input.finished) {
+  if (!human || !human.authed || human.hp === 0 || input.finished) {
     return { kind: "ignored" };
   }
   const deny = (): HuntAggroResult => ({
@@ -61,7 +62,7 @@ export function tryHuntAggro(
     return deny();
   }
   if (human.casts.aggro < 1) return deny();
-  const source = aggroSourceBot(human, input.duels, input.roster);
+  const source = aggroSourceBot(human, input.roster, input.targetId);
   if (!source) return deny();
   const waitingBefore = new Set(
     input.humans.filter((entry) => entry.waiting).map((entry) => entry.accountId),
@@ -101,12 +102,13 @@ export function tryHuntAggro(
 
 function aggroSourceBot(
   human: HuntHuman,
-  duels: readonly FightDuel[],
   roster: HuntRoster,
+  targetId: number,
 ): HuntRosterBot | null {
-  const duel = duels.find((entry) => entry.has(human.heroId));
-  if (!duel) return null;
-  const bot = roster.findBot(duel.otherId(human.heroId));
-  if (!bot || bot.team === human.team || bot.hp === 0) return null;
+  if (!Number.isInteger(targetId) || targetId < 1) {
+    throw new Error("Hunt aggro target id must be a positive integer");
+  }
+  const bot = roster.findBot(targetId);
+  if (!bot || bot.team === human.team) return null;
   return bot;
 }

@@ -233,7 +233,7 @@ describe("CombatService pocket glove rage", () => {
       "effect-use",
       "buff-cast",
     ]);
-    await combat.execute(1, { kind: "aggro", sequence: 4 });
+    await combat.execute(1, { kind: "aggro", targetId: 1_000_000, sequence: 4 });
     const aggro = await combat.execute(1, { kind: "poll" });
     expect(aggro.map((event) => event.type)).toEqual([
       "command-accepted",

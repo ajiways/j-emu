@@ -46,7 +46,9 @@ describe("fproxy hunt aggro clone pairing", () => {
     });
     const opened = huntFightConfFrom(start);
     expect(await a.fight({ rc: "auth", eid: opened.fightId, sq: 5 })).toHaveLength(0);
-    await a.pollFight();
+    const aBoot = await a.pollFight();
+    const spawnId = huntOppNewFrom(aBoot).id;
+    if (typeof spawnId !== "number") throw new Error("spawn oppnew id is missing");
     const join = await b.objectAction({
       object: "common",
       action: "object",
@@ -57,7 +59,9 @@ describe("fproxy hunt aggro clone pairing", () => {
     expect(await b.fight({ rc: "auth", eid: opened.fightId, sq: 5 })).toHaveLength(0);
     await b.pollFight();
     await a.pollFight();
-    expect(await a.fight({ rc: "castSpell", srcType: 1, srcId: 7, sq: 6 })).toHaveLength(0);
+    expect(
+      await a.fight({ rc: "castSpell", srcType: 1, srcId: 7, targetId: spawnId, sq: 6 }),
+    ).toHaveLength(0);
     const aggro = await a.pollFight();
     expect(fightEventTypes(aggro)).toEqual(
       expect.arrayContaining(["persSpells", "persList", "persChangeInfo"]),
@@ -128,7 +132,9 @@ describe("fproxy hunt aggro clone pairing", () => {
       sq: 4,
     });
     expect(huntFightConfFrom(join).fightId).toBe(opened.fightId);
-    expect(await a.fight({ rc: "castSpell", srcType: 1, srcId: 7, sq: 6 })).toHaveLength(0);
+    expect(
+      await a.fight({ rc: "castSpell", srcType: 1, srcId: 7, targetId: spawnId, sq: 6 }),
+    ).toHaveLength(0);
     await a.pollFight();
     expect(await b.fight({ rc: "auth", eid: opened.fightId, sq: 5 })).toHaveLength(0);
     const bBoot = await b.pollFight();
@@ -154,7 +160,9 @@ describe("fproxy hunt aggro clone pairing", () => {
     const boot = await hero.pollFight();
     const spawnId = huntOppNewFrom(boot).id;
     if (typeof spawnId !== "number") throw new Error("spawn oppnew id is missing");
-    expect(await hero.fight({ rc: "castSpell", srcType: 1, srcId: 7, sq: 6 })).toHaveLength(0);
+    expect(
+      await hero.fight({ rc: "castSpell", srcType: 1, srcId: 7, targetId: spawnId, sq: 6 }),
+    ).toHaveLength(0);
     const aggro = await hero.pollFight();
     expect(persListBotIds(aggro)).toHaveLength(2);
     let switched = false;
@@ -214,7 +222,9 @@ describe("fproxy hunt 3↔3 aggro reserve", () => {
     const boot = await hero.pollFight();
     const spawnId = huntOppNewFrom(boot).id;
     if (typeof spawnId !== "number") throw new Error("spawn oppnew id is missing");
-    expect(await hero.fight({ rc: "castSpell", srcType: 1, srcId: 7, sq: 6 })).toHaveLength(0);
+    expect(
+      await hero.fight({ rc: "castSpell", srcType: 1, srcId: 7, targetId: spawnId, sq: 6 }),
+    ).toHaveLength(0);
     await hero.pollFight();
     let switched: number | null = null;
     for (let round = 0; round < 3; round += 1) {

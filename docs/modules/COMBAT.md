@@ -537,14 +537,17 @@ Seekers = unpaired living humans **и** bots обеих команд. Pair loop 
 jgr: shuffle + last-foe score (`lastOpponentId`). Occupied spawn bot не
 seeker (CMB-12: lone team-2 не крадёт бота).
 
-«Разозлить»: outdoor hunt, цель — enemy bot; ephemeral clone в
-`waitingEnemies` (jgr `waitingBots`); `pairHuntQueues` снимает клон с
-очереди, если сразу спарили waiter-а. Grant/bot-counter новой пары
-ставится сразу, даже если joiner ещё не fight-auth; `oppnew` на poll —
-только authed, иначе первый auth. Auth bootstrap `oppnew` — текущий
-duel foe, не primary spawn. Заряд `1+AGRILKA_MOBOV` из snapshot.
-Quest/copy/friendly deny: fury + полный абсолютный `persSpells`, без −1
-если заряд 0. После смерти текущего бота `takeNextEnemyForHuman` отдаёт
+«Разозлить»: outdoor hunt, цель — enemy bot по wire `targetId` (не
+обязательно свой duel). Waiting/unpaired hunter клонирует чужого врага;
+заряд `1+AGRILKA_MOBOV` на `HuntHuman`, не на команду. Ignore без
+`native-count` нельзя отдавать waiting: клиент на `{rs}` делает
+`aggro − 1`. Ephemeral clone в `waitingEnemies` (jgr `waitingBots`);
+`pairHuntQueues` снимает клон с очереди, если сразу спарили waiter-а.
+Grant/bot-counter новой пары ставится сразу, даже если joiner ещё не
+fight-auth; `oppnew` на poll — только authed, иначе первый auth. Auth
+bootstrap `oppnew` — текущий duel foe, не primary spawn. Quest/copy/
+friendly deny: fury + полный абсолютный `persSpells`, без −1 если заряд 0.
+После смерти текущего бота `takeNextEnemyForHuman` отдаёт
 клон (`oppnew`) паре убившего (next actor = этот охотник, не fight
 opener), бой не finish, пока жив хотя бы один enemy.
 После `oppnew` смены моба grant ставится охотнику (`grantPairedBot`, human

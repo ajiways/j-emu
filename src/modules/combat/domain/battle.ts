@@ -245,7 +245,7 @@ export class Battle {
     return tryRageCast(requireAuthedHuman(this.humans, accountId));
   }
 
-  tryAggro(accountId: number, allocateBotId: () => number): HuntAggroResult {
+  tryAggro(accountId: number, targetId: number, allocateBotId: () => number): HuntAggroResult {
     return tryHuntAggro({
       kind: this.kind,
       purpose: this.purpose,
@@ -256,6 +256,7 @@ export class Battle {
       roster: this.huntRoster,
       random: this.random,
       accountId,
+      targetId,
       allocateBotId,
     });
   }

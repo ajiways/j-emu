@@ -9,6 +9,7 @@ import {
   fightEventTypes,
   framesIncludeFightFinish,
   huntFightIdFrom,
+  huntOppNewFrom,
 } from "../support/harness/wire-payload.ts";
 
 describe("fproxy pocket glove rage", () => {
@@ -76,7 +77,7 @@ describe("fproxy pocket glove rage", () => {
   it("casts rage and aggro as rs then FX", async () => {
     const client = await AuthenticatedClient.login(application);
     await putOnArtikul(client, 9095, 2);
-    await startHunt(client, 3);
+    const spawnId = await startHunt(client, 3);
     expect(await client.fight({ rc: "castSpell", srcType: 1, srcId: 1, sq: 6 })).toHaveLength(0);
     await client.pollFight();
     await harness.elapseCombat(1400);
@@ -85,7 +86,9 @@ describe("fproxy pocket glove rage", () => {
     const rage = await client.pollFight();
     expect(rage[0]).toEqual({ rs: true, sq: 7 });
     expect(fightEventTypes(rage)).toEqual(["effUse", "cast"]);
-    expect(await client.fight({ rc: "castSpell", srcType: 1, srcId: 7, sq: 8 })).toHaveLength(0);
+    expect(
+      await client.fight({ rc: "castSpell", srcType: 1, srcId: 7, targetId: spawnId, sq: 8 }),
+    ).toHaveLength(0);
     const aggro = await client.pollFight();
     expect(aggro[0]).toEqual({ rs: true, sq: 8 });
     expect(fightEventTypes(aggro)).toEqual(["persSpells", "persList", "persChangeInfo"]);
@@ -149,7 +152,7 @@ async function putOnArtikul(
   return requireId(pocket);
 }
 
-async function startHunt(client: AuthenticatedClient, sq: number): Promise<void> {
+async function startHunt(client: AuthenticatedClient, sq: number): Promise<number> {
   const start = await client.objectAction({
     object: "common",
     action: "object",
@@ -160,6 +163,9 @@ async function startHunt(client: AuthenticatedClient, sq: number): Promise<void>
   expect(await client.fight({ rc: "auth", eid: fightId, sq: sq + 1 })).toHaveLength(0);
   const authenticated = await client.pollFight();
   expect(authenticated[0]).toMatchObject({ rs: true });
+  const spawnId = huntOppNewFrom(authenticated).id;
+  if (typeof spawnId !== "number") throw new Error("spawn oppnew id is missing");
+  return spawnId;
 }
 
 function objectBlock(value: AmfValue | undefined): Record<string, AmfValue> {

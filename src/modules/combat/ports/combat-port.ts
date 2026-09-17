@@ -20,7 +20,7 @@ export type FightCommand =
   | Readonly<{ kind: "pocket"; itemId: number; sequence: CommandSequence }>
   | Readonly<{ kind: "glove"; spellId: number; sequence: CommandSequence }>
   | Readonly<{ kind: "rage"; sequence: CommandSequence }>
-  | Readonly<{ kind: "aggro"; sequence: CommandSequence }>
+  | Readonly<{ kind: "aggro"; targetId: number; sequence: CommandSequence }>
   | Readonly<{ kind: "leave"; sequence: CommandSequence }>
   | Readonly<{ kind: "pers-info"; sequence: CommandSequence }>
   | Readonly<{ kind: "pers-effects"; persId: number; sequence: CommandSequence }>

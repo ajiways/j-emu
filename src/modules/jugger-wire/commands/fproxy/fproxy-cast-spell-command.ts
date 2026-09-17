@@ -44,7 +44,13 @@ export class FproxyCastSpellCommand implements FproxyCommand {
       return { kind: "strike", side: "right", sequence };
     }
     if (sourceId === 6) return { kind: "rage", sequence };
-    if (sourceId === 7) return { kind: "aggro", sequence };
+    if (sourceId === 7) {
+      const targetId = record["targetId"];
+      if (typeof targetId !== "number" || !Number.isInteger(targetId) || targetId < 1) {
+        throw new ProtocolError(203, "Fight aggro requires targetId");
+      }
+      return { kind: "aggro", targetId, sequence };
+    }
     throw new ProtocolError(203, `Fight source id ${String(sourceId)} is unsupported`);
   }
 }

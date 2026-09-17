@@ -60,7 +60,7 @@ async function castFightSpecial(
     return;
   }
   if (command.kind === "aggro") {
-    const resolved = battle.tryAggro(accountId, () =>
+    const resolved = battle.tryAggro(accountId, command.targetId, () =>
       input.botFightIds.allocate(battle.heroIdFor(accountId)),
     );
     finishKeepTurn(input, resolved);

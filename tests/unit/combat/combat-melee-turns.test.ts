@@ -147,7 +147,7 @@ describe("CombatService melee turns", () => {
     await combat.joinHunt(unitHuntJoin({ fightId: start.fightId }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     await combat.execute(1, { kind: "poll" });
-    await combat.execute(1, { kind: "aggro", sequence: 2 });
+    await combat.execute(1, { kind: "aggro", targetId: 1_000_000, sequence: 2 });
     await combat.execute(1, { kind: "poll" });
 
     await combat.execute(2, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
@@ -196,10 +196,10 @@ describe("CombatService melee turns", () => {
     await combat.execute(1, { kind: "poll" });
     await combat.execute(2, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     await combat.execute(2, { kind: "poll" });
-    await combat.execute(1, { kind: "aggro", sequence: 2 });
+    await combat.execute(1, { kind: "aggro", targetId: 1_000_000, sequence: 2 });
     await combat.execute(1, { kind: "poll" });
     await combat.execute(2, { kind: "poll" });
-    await combat.execute(1, { kind: "aggro", sequence: 3 });
+    await combat.execute(1, { kind: "aggro", targetId: 1_000_000, sequence: 3 });
     await combat.execute(1, { kind: "poll" });
     await combat.execute(2, { kind: "poll" });
     clock.advanceMs(2500);
@@ -243,7 +243,7 @@ describe("CombatService melee turns", () => {
     await combat.execute(1, { kind: "poll" });
     await combat.execute(2, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     await combat.execute(2, { kind: "poll" });
-    await combat.execute(1, { kind: "aggro", sequence: 2 });
+    await combat.execute(1, { kind: "aggro", targetId: 1_000_000, sequence: 2 });
     await combat.execute(1, { kind: "poll" });
     await combat.execute(2, { kind: "poll" });
     await combat.execute(1, { kind: "strike", side: "center", sequence: 3 });
