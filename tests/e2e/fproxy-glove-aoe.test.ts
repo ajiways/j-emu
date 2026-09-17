@@ -89,7 +89,7 @@ describe("fproxy glove AOE 9099", () => {
     expect(caster[0]).toEqual({ rs: true, sq });
     const casterTypes = fightEventTypes(caster);
     expect(casterTypes).toEqual(expect.arrayContaining(["attackwait", "cast", "persChangeInfo"]));
-    expect(casterTypes.indexOf("persChangeInfo")).toBeLessThan(casterTypes.indexOf("cast"));
+    expect(casterTypes.indexOf("cast")).toBeLessThan(casterTypes.indexOf("persChangeInfo"));
     const casterBots = persChangeBots(caster);
     expect(casterBots.map((bot) => bot.id).sort((left, right) => left - right)).toEqual(
       [spawnId, cloneId].sort((left, right) => left - right),
@@ -100,7 +100,7 @@ describe("fproxy glove AOE 9099", () => {
     const ally = await b.pollFight();
     const allyTypes = fightEventTypes(ally);
     expect(allyTypes.indexOf("persChangeInfo")).toBeGreaterThanOrEqual(0);
-    expect(allyTypes.indexOf("persChangeInfo")).toBeLessThan(allyTypes.indexOf("cast"));
+    expect(allyTypes.indexOf("cast")).toBeLessThan(allyTypes.indexOf("persChangeInfo"));
     const allyBots = persChangeBots(ally);
     const allyClone = allyBots.find((bot) => bot.id === cloneId);
     if (!allyClone) throw new Error("ally persChangeInfo is missing the clone");

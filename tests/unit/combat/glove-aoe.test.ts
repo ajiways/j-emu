@@ -173,14 +173,14 @@ describe("glove AOE leftover", () => {
     const patch = ending.events.find((event) => event.type === "pers-change");
     expect(patch).toMatchObject({ type: "pers-change" });
     if (!patch || patch.type !== "pers-change") throw new Error("expected pers-change");
-    expect(ending.events.map((event) => event.type).indexOf("pers-change")).toBeLessThan(
-      ending.events.map((event) => event.type).indexOf("damage"),
+    expect(ending.events.map((event) => event.type).indexOf("damage")).toBeLessThan(
+      ending.events.map((event) => event.type).indexOf("pers-change"),
     );
     expect(patch.bots.map((bot) => bot.id).sort((a, b) => a - b)).toEqual([1_000_000, 1_000_001]);
     expect(patch.bots.find((bot) => bot.id === 1_000_001)?.hp).toBe(196);
     expect(ending.sideNotifies).toHaveLength(1);
     expect(ending.sideNotifies[0]).toMatchObject({ accountId: 2 });
-    expect(ending.sideNotifies[0]?.events.map((event) => event.type)[0]).toBe("pers-change");
+    expect(ending.sideNotifies[0]?.events.map((event) => event.type)[0]).toBe("damage");
     expect(ending.sideNotifies[0]?.events.find((event) => event.type === "damage")).toMatchObject({
       type: "damage",
       sourceId: 1,
@@ -190,6 +190,28 @@ describe("glove AOE leftover", () => {
     });
     expect(battle.foeBotSnap(1).hp).toBe(164);
     expect(battle.foeBotSnap(2).hp).toBe(196);
+  });
+
+  it("writes AOE HP onto a waiting clone with no paired hunter", () => {
+    const battle = new Battle(huntInit({ heroAggroCharges: 1 }), UNIT_BATTLE_RULES, {
+      integer(minInclusive) {
+        return minInclusive;
+      },
+      unit() {
+        return 0.4;
+      },
+    });
+    battle.authenticate(1, AUTH_NOW);
+    expect(battle.tryAggro(1, () => 1_000_001).kind).toBe("resolved");
+    buildFourCombo(battle);
+    battle.grantTurn(1, AUTH_NOW + 10);
+    const ending = battle.tryGlove(1, 9099, 5, AUTH_NOW + 10);
+    expect(ending.kind).toBe("ending");
+    if (ending.kind !== "ending") throw new Error("expected ending glove");
+    expect(ending.hitTargetIds).toEqual([1_000_000, 1_000_001]);
+    const waiting = battle.boardParticipants().bots.find((bot) => bot.id === 1_000_001);
+    if (!waiting) throw new Error("waiting clone is missing from the roster");
+    expect(waiting.hp).toBeLessThan(waiting.maxHp);
   });
 
   it("keeps 9098 on the current pair", () => {
@@ -235,8 +257,8 @@ describe("glove AOE leftover", () => {
       expect.arrayContaining(["command-accepted", "turn-wait", "damage", "pers-change"]),
     );
     const ally = await combat.execute(2, { kind: "poll" });
-    expect(ally.map((event) => event.type).indexOf("pers-change")).toBeLessThan(
-      ally.map((event) => event.type).indexOf("damage"),
+    expect(ally.map((event) => event.type).indexOf("damage")).toBeLessThan(
+      ally.map((event) => event.type).indexOf("pers-change"),
     );
     expect(ally.find((event) => event.type === "damage")).toMatchObject({
       type: "damage",

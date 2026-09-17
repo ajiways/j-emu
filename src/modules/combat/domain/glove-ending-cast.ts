@@ -30,6 +30,7 @@ export type EndingGloveResult = Readonly<{
   hitBot: BotMeleePresence | null;
   finished: boolean;
   hitTargetIds: readonly number[];
+  hitBots: readonly BotMeleePresence[];
   sideNotifies: readonly GloveSideNotify[];
 }>;
 
@@ -103,6 +104,7 @@ export function resolveGloveFinisher(
     hitBot: primaryHit.hitBot,
     finished,
     hitTargetIds: hits.map((hit) => hit.targetId),
+    hitBots: hits.flatMap((hit) => (hit.hitBot ? [hit.hitBot] : [])),
     sideNotifies: sideNotifiesForHits(human, glove.spell, hits.slice(1), input, dmgType),
   };
 }

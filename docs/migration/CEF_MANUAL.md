@@ -77,12 +77,10 @@
       CEF 2026-09-17.
 - [ ] CMB-02 leftover: AOE (`targetCount>=2`, «Волна света»). raw-AMF
       landed: kind-1 glove бьёт других живых врагов hunt-боя; ally poll —
-      тот же `animData` на своего фо; `persChangeInfo` по hit id **до**
-      ST `cast` в том же `ev` map у caster и остальных (список полосок).
-      CEF 2026-09-17: урон по двум мобам ок; полоска caster после prepend;
-      полоски остальных — повторно не подтверждены (0 HP на живом, удар
-      на 2). Временный лог: `fight_trace` (request/frames/`hp`).
-      Bot kind-1 AOE — не этот leftover.
+      тот же `animData` на своего фо; `persChangeInfo` по hit id **после**
+      ST `cast` отдельным `ev` map (jgr). CEF 2026-09-17: урон по двум мобам
+      ок; same-map `persChangeInfo hp=5` + `hpChange -2` давал 5 vs 3 / 0
+      на живом. Временный лог: `fight_trace`. Bot kind-1 AOE — не этот leftover.
 - [ ] CMB-06/15 leftover: плевок Хиссы — разовый урон, дебафф не вешается.
 - [x] CMB-13 leftover: сайдбар HP тиммейтов/чужих врагов и `oppwait` после
       добивания, пока жив бот напарника. raw-AMF: `persChangeInfo` fan-out

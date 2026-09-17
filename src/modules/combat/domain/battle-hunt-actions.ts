@@ -149,9 +149,12 @@ function settleGloveHits(
     humans: readonly HuntHuman[];
   }>,
 ): EndingGloveResult {
+  if (input.roster) {
+    for (const bot of ending.hitBots) input.roster.applyPresence(bot);
+  }
   const primary = applyHuntBotHit(ending.hitBot, ending.finished, input);
-  const sideNotifies = ending.sideNotifies.map((notify) => {
-    if (!notify.hitBot) return notify;
+  const sideHits = ending.sideNotifies.map((notify) => {
+    if (!notify.hitBot) return { notify, extra: [] as const };
     const duel = requireDuelContaining(input.duels, notify.hitBot.fightId);
     const owner = input.humans.find((human) => duel.has(human.heroId));
     if (!owner) throw new Error(`AOE extra bot ${notify.hitBot.fightId} has no paired human`);
@@ -160,12 +163,17 @@ function settleGloveHits(
       duel,
       opener: owner,
     });
-    if (extra.events.length === 0) return notify;
-    return { ...notify, events: [...notify.events, ...extra.events] };
+    return { notify, extra: extra.events };
   });
-  const events = [...ending.events, ...primary.events];
   if (ending.hitTargetIds.length <= 1) {
-    return { ...ending, events, finished: primary.finished, sideNotifies };
+    return {
+      ...ending,
+      events: [...ending.events, ...primary.events],
+      finished: primary.finished,
+      sideNotifies: sideHits.map(({ notify, extra }) =>
+        extra.length === 0 ? notify : { ...notify, events: [...notify.events, ...extra] },
+      ),
+    };
   }
   const damage = ending.events.find((event) => event.type === "damage");
   if (!damage || damage.type !== "damage") {
@@ -178,11 +186,11 @@ function settleGloveHits(
   ]);
   return {
     ...ending,
-    events: [patch, ...events],
+    events: [...ending.events, patch, ...primary.events],
     finished: primary.finished,
-    sideNotifies: sideNotifies.map((notify) => ({
+    sideNotifies: sideHits.map(({ notify, extra }) => ({
       ...notify,
-      events: [patch, ...notify.events],
+      events: [...notify.events, patch, ...extra],
     })),
   };
 }
