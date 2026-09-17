@@ -131,7 +131,7 @@ async function loadRosterBots(
         avatar: bot.hunt.avatar,
         sk: bot.hunt.sk,
         body: bot.hunt.body,
-        spellBook: huntBotSpellBookFromCatalog(bot.spellBook),
+        spellBook: await huntBotSpellBookFromCatalog(bot.spellBook, catalog),
       });
     }
   }

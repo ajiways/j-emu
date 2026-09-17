@@ -15,11 +15,10 @@ describe("HuntHumanFightEffects ticks", () => {
       kind: 4,
       sourceId: 1_000_000,
       artikulId: 396,
-      title: "396",
-      img: "",
+      title: "Ядовитый плевок",
+      img: "hissa_magic1.png",
       dmgType: 64,
-      duration: 81,
-      period: 20,
+      ticks: 4,
       catalogPcStr: -50,
       catalogStr: 0,
       casterStrength: 15,
@@ -47,5 +46,31 @@ describe("HuntHumanFightEffects ticks", () => {
     const last = effects.takeTickPulses();
     expect(last[0]?.last).toBe(true);
     expect(effects.snapshot()).toHaveLength(0);
+  });
+
+  it("rejects a tick without catalog img", () => {
+    const effects = new HuntHumanFightEffects({
+      heroId: 1,
+      strength: 10,
+      startedAtMs: 0,
+      gearSpells: [],
+      effectIds: new FightEffectIds(),
+    });
+    expect(() =>
+      effects.attachTick({
+        kind: 4,
+        sourceId: 1_000_000,
+        artikulId: 396,
+        title: "Ядовитый плевок",
+        img: "",
+        dmgType: 64,
+        ticks: 3,
+        catalogPcStr: -50,
+        catalogStr: 0,
+        casterStrength: 15,
+        casterMagPower: 0,
+        casterMagResist: 0,
+      }),
+    ).toThrow(/img is required/);
   });
 });

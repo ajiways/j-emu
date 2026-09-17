@@ -1,12 +1,30 @@
 import type { CombatPort } from "../../src/modules/combat/ports/combat-port.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../src/modules/combat/domain/combat-loadout.ts";
-import type { HuntBotSpellBook } from "../../src/modules/combat/domain/hunt-bot-spell-book.ts";
+import type {
+  HuntBotSpellBook,
+  HuntBotSpellCard,
+} from "../../src/modules/combat/domain/hunt-bot-spell-book.ts";
 import { unpublishedBotFightStats } from "../../src/modules/combat/domain/combatant-fight-stats.ts";
 
 export const EMPTY_HUNT_BOT_SPELL_BOOK: HuntBotSpellBook = {
   nothingWeight: 100,
   spells: [],
 };
+
+export function unitHuntSpellCard(overrides: Partial<HuntBotSpellCard> = {}): HuntBotSpellCard {
+  return {
+    artikulId: 396,
+    title: "Ядовитый плевок",
+    picture: "hissa_magic1.png",
+    slot: "turn_roulette",
+    weight: 10,
+    maxCasts: null,
+    gate: null,
+    hpPct: null,
+    spell: { animData: "magic_direct", endTurn: true, effects: [{ kind: 1 }] },
+    ...overrides,
+  };
+}
 
 export const GRYZL_FIGHT_LOOK = {
   botAvatar: "avatar_gryzl1_sm.jpg",

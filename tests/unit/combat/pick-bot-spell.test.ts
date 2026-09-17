@@ -1,17 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { HuntBotSpellBook } from "../../../src/modules/combat/domain/hunt-bot-spell-book.ts";
 import { pickBotSpell } from "../../../src/modules/combat/domain/pick-bot-spell.ts";
+import { unitHuntSpellCard } from "../../support/hunt-start-input.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
-const spit: HuntBotSpellBook["spells"][number] = {
-  artikulId: 396,
-  slot: "turn_roulette",
-  weight: 10,
-  maxCasts: null,
-  gate: null,
-  hpPct: null,
-  spell: { animData: "magic_direct", endTurn: true, effects: [{ kind: 1 }] },
-};
+const spit = unitHuntSpellCard();
 
 describe("pickBotSpell", () => {
   it("returns null when the book has no spells", () => {

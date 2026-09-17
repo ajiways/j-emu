@@ -43,12 +43,30 @@ describe("fproxy bot spell", () => {
     await client.pollFight();
     await harness.elapseCombat(1400);
     const bot = await client.pollFight();
-    expect(fightEventTypes(bot)).toContain("cast");
+    expect(fightEventTypes(bot)).toEqual(expect.arrayContaining(["effUse", "cast"]));
     const castFrame = bot.find((frame) => fightEventTypes([frame]).includes("cast"));
     if (castFrame === undefined) throw new Error("Bot poll is missing a cast frame");
     expect(castAnimation(castFrame)).toBe("magic_direct");
+    expect(effectUse(bot)).toMatchObject({
+      et: "effUse",
+      artikulId: 396,
+      title: "Ядовитый плевок",
+      img: "hissa_magic1.png",
+      kind: 4,
+      groupId: 845,
+    });
   });
 });
+
+function effectUse(frames: readonly unknown[]): Record<string, unknown> {
+  for (const frame of frames) {
+    if (!frame || typeof frame !== "object" || Array.isArray(frame)) continue;
+    const ev = (frame as { ev?: Record<string, { et?: string }> }).ev;
+    const found = ev ? Object.values(ev).find((item) => item.et === "effUse") : undefined;
+    if (found) return found as Record<string, unknown>;
+  }
+  throw new Error("Bot poll is missing effUse");
+}
 
 function castAnimation(frame: unknown): string {
   if (!frame || typeof frame !== "object" || Array.isArray(frame)) {

@@ -138,7 +138,7 @@ export class AttackBotCommand implements OaCommand {
       instanceCopyId: hero.instanceCopyId,
       appearance: await heroFightAppearance(this.catalog, hero),
       loadout,
-      botSpellBook: huntBotSpellBookFromCatalog(bot.spellBook),
+      botSpellBook: await huntBotSpellBookFromCatalog(bot.spellBook, this.catalog),
       extraEnemies: [],
       allies: [],
       chatWin: "",

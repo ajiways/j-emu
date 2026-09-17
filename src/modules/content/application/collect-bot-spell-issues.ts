@@ -52,4 +52,11 @@ function requireSpell(
   if (!skill || skill.value !== pcStr) {
     issues.push(`bot ${botId} spell ${artikulId} pcSTR must be ${pcStr}`);
   }
+  if (artikulId !== 396) return;
+  const kind4 = card.spell.effects.find((effect) => effect.kind === 4);
+  if (!kind4) {
+    issues.push(`bot ${botId} spell ${artikulId} must include kind 4`);
+  } else if (kind4.duration === undefined) {
+    issues.push(`bot ${botId} spell ${artikulId} kind 4 duration is required`);
+  }
 }

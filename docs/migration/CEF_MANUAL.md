@@ -82,6 +82,8 @@
       ок; same-map `persChangeInfo hp=5` + `hpChange -2` давал 5 vs 3 / 0
       на живом. Временный лог: `fight_trace`. Bot kind-1 AOE — не этот leftover.
 - [ ] CMB-06/15 leftover: плевок Хиссы — разовый урон, дебафф не вешается.
+      raw-AMF: kind-1+DoT 396 вешает `effUse` kind-4 (`hissa_magic1.png`,
+      group 845, 3 тика) до `cast`; тик не в пакете плевка. CEF не подтверждён.
 - [x] CMB-13 leftover: сайдбар HP тиммейтов/чужих врагов и `oppwait` после
       добивания, пока жив бот напарника. raw-AMF: `persChangeInfo` fan-out
       и `oppwait` без shuffle throw. CEF 2026-09-17.

@@ -270,8 +270,7 @@ export class HuntHumanFightEffects {
       img: string;
       dmgType: number;
       groupId?: number;
-      duration: number;
-      period: number;
+      ticks: number;
       amount?: number | string;
       catalogPcStr: number;
       catalogStr: number;
@@ -279,10 +278,15 @@ export class HuntHumanFightEffects {
       casterMagPower: number;
       casterMagResist: number;
     }>,
-  ): void {
-    const ticks = Math.max(1, Math.round(input.duration / input.period));
+  ): FightEffectSnap {
+    if (!input.title) throw new Error(`Tick effect ${input.artikulId} title is required`);
+    if (!input.img) throw new Error(`Tick effect ${input.artikulId} img is required`);
+    if (!Number.isInteger(input.ticks) || input.ticks < 1) {
+      throw new Error(`Tick effect ${input.artikulId} ticks must be a positive integer`);
+    }
+    const id = this.effectIds.take();
     this.standing.push({
-      id: this.effectIds.take(),
+      id,
       kind: input.kind,
       sourceId: input.sourceId,
       artikulId: input.artikulId,
@@ -291,9 +295,9 @@ export class HuntHumanFightEffects {
       dmgType: input.dmgType,
       ...(input.groupId !== undefined ? { groupId: input.groupId } : {}),
       skills: {},
-      remainTurns: ticks,
+      remainTurns: input.ticks,
       expiresAtMs: Number.MAX_SAFE_INTEGER,
-      ticksLeft: ticks,
+      ticksLeft: input.ticks,
       ...(input.amount !== undefined ? { tickAmount: input.amount } : {}),
       catalogPcStr: input.catalogPcStr,
       catalogStr: input.catalogStr,
@@ -301,6 +305,9 @@ export class HuntHumanFightEffects {
       casterMagPower: input.casterMagPower,
       casterMagResist: input.casterMagResist,
     });
+    const snap = this.snapshot().find((fx) => fx.id === id);
+    if (!snap) throw new Error(`Tick effect ${id} did not snapshot`);
+    return snap;
   }
 
   private attach(

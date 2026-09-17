@@ -7,6 +7,8 @@ type BotSpellSlot = (typeof BOT_SPELL_SLOTS)[number];
 
 export type HuntBotSpellCard = Readonly<{
   artikulId: number;
+  title: string;
+  picture: string;
   slot: BotSpellSlot;
   weight: number;
   maxCasts: number | null;
@@ -27,6 +29,8 @@ export function requireHuntBotSpellBook(book: HuntBotSpellBook): void {
   const seen = new Set<number>();
   for (const card of book.spells) {
     requireWireIdentity(card.artikulId, "bot spell artikul id");
+    if (!card.title) throw new Error(`Bot spell ${card.artikulId} title is required`);
+    if (!card.picture) throw new Error(`Bot spell ${card.artikulId} picture is required`);
     if (seen.has(card.artikulId)) {
       throw new Error(`Duplicate bot spell artikul ${card.artikulId}`);
     }

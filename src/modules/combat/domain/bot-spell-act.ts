@@ -74,8 +74,9 @@ export function actBotSpellCard(
     ];
   }
   if (spellKind(card.spell, 4) || spellKind(card.spell, 5)) {
-    if (isHuman(target)) attachSpellTicks(target, actor, card);
+    const ticks = isHuman(target) ? attachSpellTicks(target, actor, card) : [];
     return [
+      ...ticks,
       {
         type: "buff-cast",
         animation: botSpellAnimation(card.spell, card.artikulId),
@@ -157,10 +158,12 @@ function instantKind1(
   const killed = target.applyDamage(damage);
   actor.creditDealtDamage(damage);
   const dRage = target.casts.awardIncomingRage(damage, target.maxHp);
-  if (spellKind(card.spell, 4) || spellKind(card.spell, 5)) {
-    attachSpellTicks(target, actor, card);
-  }
+  const ticks =
+    !killed && (spellKind(card.spell, 4) || spellKind(card.spell, 5))
+      ? attachSpellTicks(target, actor, card)
+      : [];
   const events: BattleEvent[] = [
+    ...ticks,
     {
       type: "damage",
       sourceId: actor.fightId,

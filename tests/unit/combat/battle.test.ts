@@ -159,6 +159,8 @@ describe("Battle", () => {
         spells: [
           {
             artikulId: 396,
+            title: "Ядовитый плевок",
+            picture: "hissa_magic1.png",
             slot: "turn_roulette",
             weight: 10,
             maxCasts: null,
@@ -166,8 +168,12 @@ describe("Battle", () => {
             hpPct: null,
             spell: {
               animData: "magic_direct",
+              groupId: 845,
               endTurn: true,
-              effects: [{ kind: 1, skills: [{ skillId: "pcSTR", value: -50 }] }, { kind: 4 }],
+              effects: [
+                { kind: 1, dmgType: 64, skills: [{ skillId: "pcSTR", value: -50 }] },
+                { kind: 4, dmgType: 64, duration: 81 },
+              ],
             },
           },
         ],
@@ -176,13 +182,36 @@ describe("Battle", () => {
     battle.authenticate(1, AUTH_NOW);
     battle.tryPlayerMelee(1, "left", AUTH_NOW);
     const bot = battle.resolveBotMelee(1);
-    expect(bot.events[0]).toMatchObject({
-      type: "damage",
-      animation: "magic_direct",
-      hpChange: -1,
-      sourceId: 1_000_000,
-      targetId: 1,
-    });
+    expect(bot.events).toMatchObject([
+      {
+        type: "effect-use",
+        artikulId: 396,
+        kind: 4,
+        img: "hissa_magic1.png",
+        title: "Ядовитый плевок",
+        groupId: 845,
+        persId: 1,
+        sourceId: 1_000_000,
+        remainTime: 120,
+      },
+      {
+        type: "damage",
+        animation: "magic_direct",
+        hpChange: -1,
+        sourceId: 1_000_000,
+        targetId: 1,
+      },
+    ]);
+    expect(battle.livingHumans()[0]?.effects.snapshot()).toMatchObject([
+      {
+        artikulId: 396,
+        kind: 4,
+        img: "hissa_magic1.png",
+        title: "Ядовитый плевок",
+        groupId: 845,
+        remainTime: 120,
+      },
+    ]);
   });
 
   it("rejects a bot fight id that collides with the hero", () => {

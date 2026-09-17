@@ -11,7 +11,7 @@ handoff и GEAR-01 RAM kind-3 с надетой 20546 (raw-AMF). CMB-11: OA
 copy gate, team-2 без hunt EXP; CMB-12: две параллельные hunt-дуэли на
 50310 (opener↔bot и team-1↔team-2). CEF 2026-09-17: hunt 3↔3 / F5 /
 overkill / орб 99 / сайдбар / loot tooltip. Product status combat остаётся
-частично (bot AOE, MAGRES, skip-turn, Hissa spit, F5 img, friendly duel).
+частично (bot AOE, MAGRES, skip-turn, Hissa spit CEF, F5 img, friendly duel).
 CMB-09 отдаёт
 quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA
 `START_FIGHT` (quest + ambush) и hunt loot-cap — composition (`QuestDesk` /
@@ -363,10 +363,11 @@ dodge/block/crit — CMB-14. kind-1 overlay — CMB-15. Weapon DPS aparte от S
 `max(1, round(STR/10 × (1+pcSTR/100) × [0.85…1.15]))`. Kind-2 heal есть;
 Glove kind-1 AOE landed (CMB-02). Bot kind-1 с `targetCount>=2` в catalog
 всё ещё бьёт одну цель пары — leftover. Огр **99** книга в каталоге DATA-03
-(kind-2 heal на 40% HP). Charging/self-buff, DoT ticks, MAGSTR/MAGRES, virus, summon —
-вне боя: карточки живут в каталоге DATA-03, `pickBotSpell` не выбирает
-kind 3/10 и gate `foe_has_dispel_groups`. Полный `bot_spell_book.json`
-импортирован.
+(kind-2 heal на 40% HP). Kind-1+DoT (396): финишер HP, затем `effUse`
+kind-4 на охотнике (catalog title/img, group 845, overlay `durationTurns`
+3). Charging/self-buff, MAGSTR/MAGRES, virus, summon — вне боя: карточки
+живут в каталоге DATA-03, `pickBotSpell` не выбирает kind 3/10 и gate
+`foe_has_dispel_groups`. Полный `bot_spell_book.json` импортирован.
 
 Content: Грызл **2** пустая книга / 50310; Хисса **4** spells **396**+**397**
 (`396` `magic_direct` / 50101); дух **32** **422**+**428**;
@@ -381,9 +382,9 @@ Content: Грызл **2** пустая книга / 50310; Хисса **4** spel
 
 ### Out of scope (CMB-06 leftover)
 
-DoT ticks (kind 4); charging overlay 397/428/395 как эффект, не как
-отсутствие карточки; MAGSTR/MAGRES; virus 631; summon; gate
-`foe_has_dispel_groups`.
+Charging overlay 397/428/395 как эффект, не как отсутствие карточки;
+MAGSTR/MAGRES; virus 631; summon; gate `foe_has_dispel_groups`. Kind-4
+attach+`effUse` для 396 landed (unit/raw-AMF); CEF — leftover.
 
 ## CMB-07 — weighted loot table
 
@@ -612,7 +613,9 @@ Representative: Hissa 397, перчатка 181.
 
 Срез закрыт (unit). Kind 2 heal — CMB-06. Kind 3 keep-turn / buff-cast.
 Kind 4/5 ticks: бюджет `duration/period` (каталог без period → named
-jgr default 20s), sibling `hpChange` на carrier melee. Kind 8 dispel
+jgr default 20s), sibling `hpChange` на carrier melee. Overlay
+`durationTurns` 396 = 3 (live «трех ходов»). Kind-1+DoT: `effUse` до
+`cast`, без тика в том же пакете. Kind 8 dispel
 стоящих `groupId` при gate `foe_has_dispel_groups`. Kind 11 empty
 success. Kind 18 stun skip-turn, `duration` обязателен. Kind 10 summon
 632: `fight_start` сжигается без каста; clone цели в roster **не**
