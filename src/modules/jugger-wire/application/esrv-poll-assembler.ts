@@ -86,8 +86,10 @@ function appendOutboxEntry(
 ): void {
   const channel = entry.channel ?? personal;
   if (isUnmergedEsrvFragment(entry.fragment)) {
-    // Keep pending personal merges open; fight-end chat/unitframe must not
-    // split dungeon instance_conf away from fight|loot.
+    // A lone frame does not close the channel's pending merges: fight-end
+    // chat/unitframe must not split instance_conf away from fight|loot.
+    // Consequence for every channel: merged fragments queued earlier are
+    // emitted after this frame, in one object at the end of assembly.
     frames.push({ channel, ctime, object: entry.fragment });
     return;
   }

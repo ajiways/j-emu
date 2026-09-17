@@ -228,6 +228,14 @@ Map hunt ID равен `area × 100 + index`; dungeon hunt ID уникален �
 
 События должны находиться внутри `packet.object`. Bare top-level `fight|exit` в esrv-пакете игнорируется клиентским ChatDummy. Когда `fight|loot` и `fight|exit` готовы вместе, они объединяются в один personal object с порядком, позволяющим применить loot до exit. Hunt строится в контексте конкретного героя/instance copy, а не только глобального area id.
 
+Сборка кадров (`EsrvPollAssembler`): фрагменты одного канала сливаются в один
+object, кроме `chat|message`, `user|bag_diff` и `user|unitframe` — каждый из них
+уходит своим кадром. Такой одиночный кадр **не закрывает** накопленные merge
+своего канала: они выпускаются одним object в конце сборки. Практическое
+следствие — `common|instance_conf` clear-tick остаётся в том же personal
+object, что `fight|loot`/`fight|exit`, а не отрывается в отдельный кадр.
+Правило общее для всех каналов, не только personal.
+
 Источники: [`src/routes/esrv.ts`](../../../jgr-emu/src/routes/esrv.ts), [`docs/PROTOCOL.md`](../../../jgr-emu/docs/PROTOCOL.md).
 
 ## Завершение боя

@@ -88,8 +88,9 @@ Wire (jgr `pushInstanceConf`): `artikul_id` string; при `hasClear` —
 Пушить: вход в start, floor→floor (копия жива), и esrv clear-tick когда
 progress сдвинулся. Tick — team-1 humans этого боя (jgr), не все occupants
 копии. Clear-tick `common|instance_conf` лежит в том же personal esrv object,
-что `fight|loot`/`fight|exit`; lone `chat|message` / `user|bag_diff` /
-`user|unitframe` кадры его не закрывают.
+что `fight|loot`/`fight|exit`. Правило сборки кадров общее для всех каналов и
+описано в [WIRE_INVARIANTS.md](../migration/WIRE_INVARIANTS.md) §
+«Realtime channels».
 
 Монеты: только kill спавна `is_boss` (или мёртвый `loot.boss_bot_id`). Не
 за каждый trash tick. Сумма = `clearCoinTotal` jgr (формула **invented** до
