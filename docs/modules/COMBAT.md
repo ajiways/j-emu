@@ -134,6 +134,10 @@ Melee `srcType:1`, `srcId` 1/2/3 = L/C/R. HTTP `castSpell` пустой.
 Kill: `cancel(fightId)` **до** resolve; poll `attackwait`+`cast` `react=10`
 и `fightFinish`; leftover `attacknow` нет.
 
+`persList`/`persChangeInfo` `dealtDamage` — applied HP loss (human:
+`damageToBot+damageToHumans`, bot — свои удары/kind-1). Тот же счётчик в
+`fight|info.users[].dmg`. Не зашивать `0`.
+
 Off-turn / waiter / already-ended: пустой HTTP + poll `{rs:true}` без HP.
 Не `restriction:18` и не fproxy `error`.
 

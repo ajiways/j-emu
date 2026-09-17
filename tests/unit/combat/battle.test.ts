@@ -78,6 +78,7 @@ describe("Battle", () => {
           mp: 10,
           maxMp: 10,
           team: 1,
+          dealtDamage: 0,
         },
         allies: [],
         bot: {
@@ -91,6 +92,7 @@ describe("Battle", () => {
           sk: "11",
           body: "",
           team: 2,
+          dealtDamage: 0,
         },
         rosterBots: [
           {
@@ -104,6 +106,7 @@ describe("Battle", () => {
             sk: "11",
             body: "",
             team: 2,
+            dealtDamage: 0,
           },
         ],
         cp: 0,
@@ -141,6 +144,8 @@ describe("Battle", () => {
       hpChange: -2,
       targetMaxHp: 27,
     });
+    expect(battle.livingHumans()[0]?.dealtDamage).toBe(8);
+    expect(battle.foeBotSnap(1).dealtDamage).toBe(2);
     expect(battle.grantTurn(1, AUTH_NOW)).toEqual({ type: "turn-granted", timeoutSeconds: 20 });
   });
 

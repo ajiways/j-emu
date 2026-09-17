@@ -14,5 +14,6 @@ export function huntBotSnap(init: HuntBattleInit, hp: number): HuntBotSnap {
     sk: init.botSk,
     body: init.botBody,
     team: huntFightEnemyTeam(init.purpose),
+    dealtDamage: 0,
   };
 }

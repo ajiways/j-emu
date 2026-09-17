@@ -131,7 +131,7 @@ export function buildFightResultInfo(input: {
       killCount: 0,
       exp: 0,
       honor: 0,
-      dmg: 0,
+      dmg: bot.dealtDamage,
       heal: 0,
       dead: bot.hp <= 0,
       offline: 0,

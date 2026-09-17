@@ -38,10 +38,7 @@ export function resolveBotTurn(
     return {
       ...resolveBotMelee(human, {
         ...state,
-        botFightId: bot.fightId,
-        botStrength: bot.strength,
-        overlayOwner: bot,
-        casterMag: bot.mag,
+        bot,
       }),
       botHp: bot.hp,
     };
@@ -52,10 +49,7 @@ export function resolveBotTurn(
   if (!killedPlayer && (kind1OverlayCharges(card.spell) > 0 || !botSpellEndsTurn(card.spell))) {
     const melee = resolveBotMelee(human, {
       ...state,
-      botFightId: bot.fightId,
-      botStrength: bot.strength,
-      overlayOwner: bot,
-      casterMag: bot.mag,
+      bot,
     });
     return {
       events: [...events, ...melee.events],

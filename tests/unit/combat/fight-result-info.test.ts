@@ -50,6 +50,7 @@ describe("fight result info", () => {
           sk: "s",
           body: "",
           team: 2,
+          dealtDamage: 9,
         },
       ],
       lootByAccount: new Map([[7, loot]]),
@@ -76,6 +77,7 @@ describe("fight result info", () => {
       bot: true,
       dead: true,
       nick: "Грызль",
+      dmg: 9,
     });
     const wire = fightInfoBlock(info, "Горное поселение");
     expect(wire.status).toBe(100);
@@ -135,6 +137,7 @@ describe("fight result info", () => {
           sk: "s",
           body: "",
           team: 2,
+          dealtDamage: 0,
         },
       ],
       lootByAccount: new Map(),

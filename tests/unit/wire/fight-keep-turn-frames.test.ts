@@ -210,6 +210,7 @@ describe("FightWireMapper keep-turn frames", () => {
             mp: 10,
             maxMp: 10,
             team: 1,
+            dealtDamage: 8,
           },
         ],
         bots: [
@@ -224,19 +225,27 @@ describe("FightWireMapper keep-turn frames", () => {
             sk: "11",
             body: "",
             team: 2,
+            dealtDamage: 2,
           },
         ],
       },
     ]);
     expect(evTypes(frames[0])).toEqual(["persChangeInfo", "persChangeInfo"]);
     const packets = Object.values(evMap(frames[0]));
-    expect(packets[0]).toMatchObject({ et: "persChangeInfo", id: 1, hp: 20, dead: false });
+    expect(packets[0]).toMatchObject({
+      et: "persChangeInfo",
+      id: 1,
+      hp: 20,
+      dead: false,
+      dealtDamage: 8,
+    });
     expect(packets[1]).toMatchObject({
       et: "persChangeInfo",
       id: 1_000_000,
       hp: 8,
       bot: true,
       dead: false,
+      dealtDamage: 2,
     });
   });
 
@@ -256,6 +265,7 @@ describe("FightWireMapper keep-turn frames", () => {
             mp: 10,
             maxMp: 10,
             team: 1,
+            dealtDamage: 0,
           },
         ],
         bots: [
@@ -270,6 +280,7 @@ describe("FightWireMapper keep-turn frames", () => {
             sk: "11",
             body: "",
             team: 2,
+            dealtDamage: 0,
           },
           {
             id: 1_000_001,
@@ -282,6 +293,7 @@ describe("FightWireMapper keep-turn frames", () => {
             sk: "11",
             body: "",
             team: 2,
+            dealtDamage: 0,
           },
         ],
       },
@@ -328,6 +340,7 @@ describe("FightWireMapper keep-turn frames", () => {
             mp: 10,
             maxMp: 10,
             team: 1,
+            dealtDamage: 0,
           },
         ],
         bots: [
@@ -342,6 +355,7 @@ describe("FightWireMapper keep-turn frames", () => {
             sk: "11",
             body: "",
             team: 2,
+            dealtDamage: 0,
           },
           {
             id: 1_000_001,
@@ -354,6 +368,7 @@ describe("FightWireMapper keep-turn frames", () => {
             sk: "11",
             body: "",
             team: 2,
+            dealtDamage: 0,
           },
         ],
       },

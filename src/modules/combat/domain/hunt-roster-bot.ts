@@ -24,6 +24,7 @@ export type HuntRosterBotSeed = Readonly<{
 
 export class HuntRosterBot {
   private hpValue: number;
+  private dealtDamageValue = 0;
   private lastOpponentIdValue: number | null = null;
   readonly casts = new Map<number, number>();
   schoolOverlay: SchoolOverlay | null = null;
@@ -98,6 +99,10 @@ export class HuntRosterBot {
     return this.hpValue;
   }
 
+  get dealtDamage(): number {
+    return this.dealtDamageValue;
+  }
+
   get lastOpponentId(): number | null {
     return this.lastOpponentIdValue;
   }
@@ -141,6 +146,13 @@ export class HuntRosterBot {
     return this.hpValue === 0;
   }
 
+  creditDealtDamage(amount: number): void {
+    if (!Number.isInteger(amount) || amount < 0) {
+      throw new Error("Roster bot dealt damage must be a non-negative integer");
+    }
+    this.dealtDamageValue += amount;
+  }
+
   setHp(hp: number): void {
     if (!Number.isInteger(hp) || hp < 0 || hp > this.maxHp) {
       throw new Error("Roster bot hp is invalid");
@@ -170,6 +182,7 @@ export class HuntRosterBot {
       sk: this.sk,
       body: this.body,
       team: this.team,
+      dealtDamage: this.dealtDamageValue,
     };
   }
 }

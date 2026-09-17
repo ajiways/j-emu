@@ -12,6 +12,7 @@ const hero = {
   mp: 10,
   maxMp: 10,
   team: 1 as const,
+  dealtDamage: 0,
 };
 const bot = {
   id: 1_000_000,
@@ -24,6 +25,7 @@ const bot = {
   sk: "11",
   body: "",
   team: 2 as const,
+  dealtDamage: 0,
 };
 
 describe("huntFightBootstrapEvents", () => {

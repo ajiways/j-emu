@@ -72,6 +72,7 @@ function meleeHit(
   );
   if (outcome.applied > 0) target.applyDamage(outcome.applied);
   if (extra) target.applyDamage(-extra.hpChange);
+  actor.creditDealtDamage(outcome.applied + (extra ? -extra.hpChange : 0));
   const killed = target.hp === 0;
   return {
     type: "damage",

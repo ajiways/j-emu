@@ -1,6 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HuntHuman } from "./hunt-human.ts";
+import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import { rollMeleeDamage } from "./melee-damage.ts";
 import {
   rollMeleeOutcome,
@@ -8,8 +9,6 @@ import {
   unpublishedBotStrikeStats,
 } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
-import type { OverlayOwner } from "./melee-school-overlay.ts";
-import type { MagStats } from "./mag-stats.ts";
 import type { RandomSource } from "./random-source.ts";
 
 export type BotMeleeResult = Readonly<{
@@ -22,22 +21,19 @@ export function resolveBotMelee(
   input: Readonly<{
     rules: BattleRules;
     random: RandomSource;
-    botFightId: number;
-    botStrength: number;
+    bot: HuntRosterBot;
     fightId: string;
     keepFightOnKill: boolean;
     winnerTeam: 1 | 2;
-    overlayOwner: OverlayOwner;
-    casterMag: MagStats;
   }>,
 ): BotMeleeResult {
   if (human.waiting || human.hp === 0) {
     throw new Error("Paired hunter is not a bot melee target");
   }
-  const baseDamage = rollMeleeDamage(input.botStrength, input.random, input.rules);
+  const baseDamage = rollMeleeDamage(input.bot.strength, input.random, input.rules);
   const outcome = rollMeleeOutcome({
     baseDamage,
-    attacker: unpublishedBotStrikeStats(input.botStrength),
+    attacker: unpublishedBotStrikeStats(input.bot.strength),
     defender: strikeStatsFromHuman(human),
     targetHp: human.hp,
     forceCrit: false,
@@ -46,8 +42,8 @@ export function resolveBotMelee(
   });
   const killedPlayer = outcome.applied < 1 ? false : human.applyDamage(outcome.applied);
   const extra = rollOverlayExtra(
-    input.overlayOwner,
-    input.casterMag,
+    input.bot,
+    input.bot.mag,
     human.mag,
     human.hp,
     input.random,
@@ -58,12 +54,13 @@ export function resolveBotMelee(
     overlayKilled = human.applyDamage(-extra.hpChange);
   }
   const totalApplied = outcome.applied + (extra ? -extra.hpChange : 0);
+  input.bot.creditDealtDamage(totalApplied);
   const dRage = totalApplied < 1 ? 0 : human.casts.awardIncomingRage(totalApplied, human.maxHp);
   const dead = killedPlayer || overlayKilled;
   const events: BattleEvent[] = [
     {
       type: "damage",
-      sourceId: input.botFightId,
+      sourceId: input.bot.fightId,
       targetId: human.heroId,
       animation: "attack_center",
       hpChange: -outcome.applied,

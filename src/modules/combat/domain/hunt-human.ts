@@ -22,6 +22,7 @@ export type HuntHumanSnap = Readonly<{
   mp: number;
   maxMp: number;
   team: 1 | 2;
+  dealtDamage: number;
 }>;
 
 type HuntHumanInit = Readonly<{
@@ -158,6 +159,9 @@ export class HuntHuman {
   get damageToHumans(): number {
     return this.damageToHumansValue;
   }
+  get dealtDamage(): number {
+    return this.damageToBotValue + this.damageToHumansValue;
+  }
   get leftLive(): boolean {
     return this.leftLiveValue;
   }
@@ -244,6 +248,7 @@ export class HuntHuman {
       mp: this.mp,
       maxMp: this.maxMp,
       team: this.team,
+      dealtDamage: this.dealtDamage,
     };
   }
 

@@ -20,6 +20,7 @@ export type HuntBotSnap = Readonly<{
   sk: string;
   body: string;
   team: 1 | 2;
+  dealtDamage: number;
 }>;
 
 export type BattleEvent =

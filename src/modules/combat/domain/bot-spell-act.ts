@@ -127,6 +127,7 @@ function instantKind1(
     );
     if (damage < 1) throw new Error("Bot kind-1 hit the living target for no HP");
     const killed = target.applyDamage(damage);
+    actor.creditDealtDamage(damage);
     return [
       {
         type: "damage",
@@ -154,6 +155,7 @@ function instantKind1(
   );
   if (damage < 1) throw new Error("Bot kind-1 hit the living target for no HP");
   const killed = target.applyDamage(damage);
+  actor.creditDealtDamage(damage);
   const dRage = target.casts.awardIncomingRage(damage, target.maxHp);
   if (spellKind(card.spell, 4) || spellKind(card.spell, 5)) {
     attachSpellTicks(target, actor, card);
