@@ -1893,8 +1893,9 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
 - **depends_on:** `CMB-15c`, `CMB-11`, `BG-01`
 - **Behavior evidence:** [FIGHT_JOIN.md](../../../jgr-emu/docs/FIGHT_JOIN.md)
   на живой Раскоп. CMB-11 и BG-01 landed; срез не входил в close CMB-13..15c.
-- **Architecture checkpoint / decision:** ADR-0017–0020 достаточны; `ARC-CMB`
-  не нужен. Не выделять `FightRules` (CMB-18). Combat battleground не
+- **Architecture checkpoint / decision:** ~~ADR-0017–0020 достаточны; `ARC-CMB`
+  не нужен. Не выделять `FightRules` (CMB-18).~~ **Отменено:** `ARC-CMB`
+  поднят, `FightRules` выделен на его шаге 3. Combat battleground не
   импортирует: `startPvp` принимает `instanceCopyId` и `fightFlags` с
   composition (BG-01 runtime). `joinHunt` пускает `kind:"pvp"` при том же
   `areaId`/`instanceCopyId`; `kind:"friendly-duel"` остаётся deny «нельзя
@@ -1921,8 +1922,9 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
 - **depends_on:** `CMB-16`
 - **Behavior evidence:** OA `arena|finished_fights` / type 6 practice
   history. Mapper `finished_fights` уже есть; OA нет.
-- **Architecture checkpoint / decision:** ADR-0017–0020 достаточны;
-  `ARC-CMB` не нужен. Не выделять `FightRules` (CMB-18). Combat владеет
+- **Architecture checkpoint / decision:** ~~ADR-0017–0020 достаточны;
+  `ARC-CMB` не нужен. Не выделять `FightRules` (CMB-18).~~ **Отменено:**
+  `ARC-CMB` поднят, `FightRules` выделен на его шаге 3. Combat владеет
   `combat.finished_fights`; jugger-wire не читает таблицу напрямую.
   OA `arena|finished_fights` — отдельная команда, не `BattlegroundDesk`
   (`arena|bg_finished` остаётся историей матчей Раскопа). Список —
