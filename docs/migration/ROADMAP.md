@@ -2048,6 +2048,15 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   `denied`+причина. Shuffle выключен у quest, `pairsNextWaiter` у quest
   включён (это был `kind === "hunt"`). Шаг 6 больше не зависит от roster для
   skipQuestKills. `BattleRules` не переименовывали: это тюнинг, не policy.
+- **Найдено на шаге 3 (ревью):** `hasBotTurns` / `resultTitleFromBot` /
+  `includesBotIdInNotice` / условие `historyRow==="hunt-bot"` имели одну
+  truth-таблицу — это один факт `hasEnemyBots`, не четыре переключателя.
+  `historyRow` остаётся трёхзначным (`hunt-bot` / `practice-humans` / `none`),
+  но `"hunt-bot"` выводится из `hasEnemyBots`. `pairsNextWaiter` совпал по
+  значению, но это механика очереди (у quest join запрещён, значение
+  ненаблюдаемо); оставлен отдельным полем. `wireFightType` убран из policy:
+  строка `"6"`/`"1"` собирается на границе ответа из `meta.kind`, как говорит
+  target data flow.
 - **Найдено при разборе roster (меняет порядок):** `HuntRoster` — не одна
   абстракция, а четыре обязанности в одном классе: контейнер ботов
   (`bots`, `primary`, `snaps`, `findBot`), очередь паринга

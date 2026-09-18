@@ -41,6 +41,20 @@ describe("FightRules", () => {
     expect(() => FightRules.forHunt(0)).toThrow(/positive integer or null/);
   });
 
+  it("treats enemy bots as one fact and derives hunt-bot history from it", () => {
+    expect(FightRules.forHunt(null).hasEnemyBots).toBe(true);
+    expect(FightRules.forQuest(1).hasEnemyBots).toBe(true);
+    expect(FightRules.forFriendlyDuel().hasEnemyBots).toBe(false);
+    expect(FightRules.forPvp().hasEnemyBots).toBe(false);
+    expect(FightRules.forHunt(null).historyRow).toBe("hunt-bot");
+    expect(FightRules.forQuest(2).historyRow).toBe("hunt-bot");
+    expect(FightRules.forFriendlyDuel().historyRow).toBe("practice-humans");
+    expect(FightRules.forPvp().historyRow).toBe("none");
+    expect(() =>
+      FightRules.create({ ...FightRules.forHunt(null), hasEnemyBots: false } as never),
+    ).toThrow(/historyRow hunt-bot must match hasEnemyBots/);
+  });
+
   it("bakes leave and aggro from the hunt copy, not from a later purpose read", () => {
     const world = FightRules.forHunt(null);
     expect(world.canLeave).toBe(true);

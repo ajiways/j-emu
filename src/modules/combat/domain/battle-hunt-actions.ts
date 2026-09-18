@@ -107,7 +107,7 @@ export function applyBattleBotMelee(
   accountId: number,
   living: readonly HuntHuman[],
 ): BotMeleeResult & Readonly<{ finished: boolean }> {
-  if (!state.fightRules.hasBotTurns) throw new Error("Human duel has no bot to take a turn");
+  if (!state.fightRules.hasEnemyBots) throw new Error("Human duel has no bot to take a turn");
   const roster = requireBattleHuntRoster(state.huntRoster);
   if (state.finished) throw new Error("Cannot resolve bot melee on a finished battle");
   const target = requireBattleHuman(state.humans, accountId);

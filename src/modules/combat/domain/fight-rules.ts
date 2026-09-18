@@ -12,8 +12,6 @@ type HumanJoinMode =
 
 type FightHistoryRow = "hunt-bot" | "practice-humans" | "none";
 
-type FightWireType = "1" | "6";
-
 type FightRulesFields = Readonly<{
   version: typeof FIGHT_RULES_VERSION;
   teamAssignment: FightTeamAssignment;
@@ -23,15 +21,13 @@ type FightRulesFields = Readonly<{
   skipQuestKills: boolean;
   allowsSideBots: boolean;
   shufflesAfterHits: boolean;
+  // Queue pairing, not enemy bots: quest join is denied so this value is unobservable there.
   pairsNextWaiter: boolean;
-  hasBotTurns: boolean;
+  hasEnemyBots: boolean;
   awardsHonor: boolean;
   restoresFighters: boolean;
-  wireFightType: FightWireType;
   historyRow: FightHistoryRow;
-  resultTitleFromBot: boolean;
   includesQuestChat: boolean;
-  includesBotIdInNotice: boolean;
 }>;
 
 type FightRulesContext =
@@ -55,14 +51,11 @@ export class FightRules implements FightRulesFields {
   readonly allowsSideBots!: boolean;
   readonly shufflesAfterHits!: boolean;
   readonly pairsNextWaiter!: boolean;
-  readonly hasBotTurns!: boolean;
+  readonly hasEnemyBots!: boolean;
   readonly awardsHonor!: boolean;
   readonly restoresFighters!: boolean;
-  readonly wireFightType!: FightWireType;
   readonly historyRow!: FightHistoryRow;
-  readonly resultTitleFromBot!: boolean;
   readonly includesQuestChat!: boolean;
-  readonly includesBotIdInNotice!: boolean;
 
   private constructor(fields: FightRulesFields) {
     assertFightRules(fields);
@@ -112,14 +105,10 @@ export class FightRules implements FightRulesFields {
       allowsSideBots: false,
       shufflesAfterHits: true,
       pairsNextWaiter: true,
-      hasBotTurns: true,
       awardsHonor: false,
       restoresFighters: false,
-      wireFightType: "1",
-      historyRow: "hunt-bot",
-      resultTitleFromBot: true,
       includesQuestChat: false,
-      includesBotIdInNotice: true,
+      ...enemyBotsHistory(true),
     });
   }
 
@@ -137,14 +126,10 @@ export class FightRules implements FightRulesFields {
       allowsSideBots: true,
       shufflesAfterHits: false,
       pairsNextWaiter: true,
-      hasBotTurns: true,
       awardsHonor: false,
       restoresFighters: false,
-      wireFightType: "1",
-      historyRow: "hunt-bot",
-      resultTitleFromBot: true,
       includesQuestChat: true,
-      includesBotIdInNotice: true,
+      ...enemyBotsHistory(true),
     });
   }
 
@@ -159,14 +144,10 @@ export class FightRules implements FightRulesFields {
       allowsSideBots: false,
       shufflesAfterHits: false,
       pairsNextWaiter: false,
-      hasBotTurns: false,
       awardsHonor: false,
       restoresFighters: true,
-      wireFightType: "6",
-      historyRow: "practice-humans",
-      resultTitleFromBot: false,
       includesQuestChat: false,
-      includesBotIdInNotice: false,
+      ...enemyBotsHistory(false, "practice-humans"),
     });
   }
 
@@ -181,16 +162,31 @@ export class FightRules implements FightRulesFields {
       allowsSideBots: false,
       shufflesAfterHits: false,
       pairsNextWaiter: false,
-      hasBotTurns: false,
       awardsHonor: true,
       restoresFighters: false,
-      wireFightType: "1",
-      historyRow: "none",
-      resultTitleFromBot: false,
       includesQuestChat: false,
-      includesBotIdInNotice: false,
+      ...enemyBotsHistory(false, "none"),
     });
   }
+}
+
+function enemyBotsHistory(hasEnemyBots: true): {
+  readonly hasEnemyBots: true;
+  readonly historyRow: "hunt-bot";
+};
+function enemyBotsHistory(
+  hasEnemyBots: false,
+  humans: "practice-humans" | "none",
+): { readonly hasEnemyBots: false; readonly historyRow: "practice-humans" | "none" };
+function enemyBotsHistory(
+  hasEnemyBots: boolean,
+  humans?: "practice-humans" | "none",
+): { readonly hasEnemyBots: boolean; readonly historyRow: FightHistoryRow } {
+  if (hasEnemyBots) return { hasEnemyBots: true, historyRow: "hunt-bot" };
+  if (humans !== "practice-humans" && humans !== "none") {
+    throw new Error("FightRules historyRow without enemy bots must be practice-humans or none");
+  }
+  return { hasEnemyBots: false, historyRow: humans };
 }
 
 function assertFightRules(fields: FightRulesFields): void {
@@ -221,21 +217,19 @@ function assertFightRules(fields: FightRulesFields): void {
   requireFlag(fields.allowsSideBots, "allowsSideBots");
   requireFlag(fields.shufflesAfterHits, "shufflesAfterHits");
   requireFlag(fields.pairsNextWaiter, "pairsNextWaiter");
-  requireFlag(fields.hasBotTurns, "hasBotTurns");
+  requireFlag(fields.hasEnemyBots, "hasEnemyBots");
   requireFlag(fields.awardsHonor, "awardsHonor");
   requireFlag(fields.restoresFighters, "restoresFighters");
-  requireFlag(fields.resultTitleFromBot, "resultTitleFromBot");
   requireFlag(fields.includesQuestChat, "includesQuestChat");
-  requireFlag(fields.includesBotIdInNotice, "includesBotIdInNotice");
-  if (fields.wireFightType !== "1" && fields.wireFightType !== "6") {
-    throw new Error(`Unknown FightRules wireFightType: ${String(fields.wireFightType)}`);
-  }
   if (
     fields.historyRow !== "hunt-bot" &&
     fields.historyRow !== "practice-humans" &&
     fields.historyRow !== "none"
   ) {
     throw new Error(`Unknown FightRules historyRow: ${String(fields.historyRow)}`);
+  }
+  if (fields.hasEnemyBots !== (fields.historyRow === "hunt-bot")) {
+    throw new Error("FightRules historyRow hunt-bot must match hasEnemyBots");
   }
 }
 

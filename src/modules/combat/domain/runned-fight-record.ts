@@ -2,6 +2,7 @@ import { parseDecimalId, requireWireIdentity } from "../../../shared/kernel/deci
 import type { Battle } from "./battle.ts";
 import type { HuntBotSnap } from "./battle-event.ts";
 import { fightStartedLabel } from "./fight-started-label.ts";
+import { wireFightTypeOf } from "./fight-result-info.ts";
 import { huntFightTitle } from "./hunt-fight-title.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 
@@ -73,14 +74,7 @@ export function runnedFightRecordOf(battle: Battle, now: Date): RunnedFightRecor
   if (!lead) throw new Error("Runned fight requires a human");
   const foe = bots[0] ?? humans.find((human) => human.team === 2);
   if (!foe) throw new Error("Runned fight requires an opponent");
-  const type =
-    battle.fightRules.wireFightType === "6"
-      ? PRACTICE_FIGHT_TYPE
-      : battle.fightRules.wireFightType === "1"
-        ? HUNT_FIGHT_TYPE
-        : (() => {
-            throw new Error(`Unknown wire fight type: ${String(battle.fightRules.wireFightType)}`);
-          })();
+  const type = numericFightType(wireFightTypeOf(battle.kind));
   const levels = [...humans.map((human) => human.level), ...bots.map((bot) => bot.level)];
   const levelMin = Math.min(...levels);
   const levelMax = Math.max(...levels);
@@ -135,6 +129,12 @@ function runnedHuman(human: HuntHuman): RunnedFightMember {
     bot: 0,
     me: 0,
   };
+}
+
+function numericFightType(wire: "1" | "6"): typeof HUNT_FIGHT_TYPE | typeof PRACTICE_FIGHT_TYPE {
+  if (wire === "6") return PRACTICE_FIGHT_TYPE;
+  if (wire === "1") return HUNT_FIGHT_TYPE;
+  throw new Error(`Unknown wire fight type: ${String(wire)}`);
 }
 
 function runnedBot(bot: HuntBotSnap): RunnedFightMember {

@@ -4,6 +4,12 @@ import type { HuntBotSnap } from "./battle-event.ts";
 
 type FightResultType = "1" | "6";
 
+export function wireFightTypeOf(kind: "hunt" | "friendly-duel" | "pvp"): FightResultType {
+  if (kind === "friendly-duel") return "6";
+  if (kind === "hunt" || kind === "pvp") return "1";
+  throw new Error(`Unknown fight kind: ${String(kind)}`);
+}
+
 type FightResultUser = Readonly<{
   participantId: number;
   id: string;

@@ -867,13 +867,17 @@ hp в `Combatant` намеренно нет: единственный ридер
 `canAggro` (у hunt пекутся из `instanceCopyId === null`); `skipQuestKills`
 (квест с одним ботом кредитует киллы, с несколькими — нет: стартовый
 `botCount > 1`, не live roster); `allowsSideBots`; `shufflesAfterHits`
-(quest выключен) vs `pairsNextWaiter` (quest включён — это был kind hunt);
-`hasBotTurns`; `awardsHonor` / `restoresFighters`; `wireFightType` `"1"`/`"6"`;
-`historyRow`; `resultTitleFromBot`; `includesQuestChat` /
-`includesBotIdInNotice`.
+(quest выключен); `pairsNextWaiter` (очередь паринга, не боты: у quest join
+запрещён, значение ненаблюдаемо); `hasEnemyBots` (ходы бота, title
+результата, botId в notice; `historyRow` `"hunt-bot"` выводится из него);
+`awardsHonor` / `restoresFighters`; `historyRow` (`hunt-bot` /
+`practice-humans` / `none`); `includesQuestChat`.
 
-`Battle.purpose` / `Battle.kind` остаются как meta для settlement, истории и
-wire (шаг 7 ARC-CMB). Решения в domain читают `FightRules`.
+Wire `type` `"6"` дружеская дуэль / `"1"` всё остальное собирает
+`wireFightTypeOf(meta.kind)` на границе ответа (`fight-result-info`,
+`runned-fight-record`), не `FightRules`. `Battle.purpose` / `Battle.kind`
+остаются как meta для settlement, истории и wire (шаг 7 ARC-CMB). Решения в
+domain читают `FightRules`.
 
 ## Инженерный долг
 

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildFightResultInfo } from "../../../src/modules/combat/domain/fight-result-info.ts";
+import {
+  buildFightResultInfo,
+  wireFightTypeOf,
+} from "../../../src/modules/combat/domain/fight-result-info.ts";
 import { fightLootBlock } from "../../../src/modules/combat/domain/fight-loot-block.ts";
 import { fightInfoBlock } from "../../../src/modules/jugger-wire/application/fight-info-block.ts";
 
@@ -145,6 +148,13 @@ describe("fight result info", () => {
     expect(info.finished).toBe(0);
     expect(info.duration).toBe("1");
     expect(info.users[0]).toMatchObject({ flee: true, killCount: 0, exp: 0 });
+  });
+
+  it("maps friendly duel to wire type 6 and every other kind to 1", () => {
+    expect(wireFightTypeOf("friendly-duel")).toBe("6");
+    expect(wireFightTypeOf("hunt")).toBe("1");
+    expect(wireFightTypeOf("pvp")).toBe("1");
+    expect(() => wireFightTypeOf("arena" as never)).toThrow(/Unknown fight kind: arena/);
   });
 });
 

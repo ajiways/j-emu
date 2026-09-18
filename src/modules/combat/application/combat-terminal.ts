@@ -1,7 +1,7 @@
 import type { Battle } from "../domain/battle.ts";
 import type { FightLootBlock } from "../domain/fight-loot-block.ts";
 import { FinishedFightConflictError } from "../domain/finished-fight-conflict-error.ts";
-import { buildFightResultInfo } from "../domain/fight-result-info.ts";
+import { buildFightResultInfo, wireFightTypeOf } from "../domain/fight-result-info.ts";
 import type { FightResultInfo } from "../domain/fight-result-info.ts";
 import { huntFightTitle } from "../domain/hunt-fight-title.ts";
 import type { CombatEvent, FightExit } from "../ports/combat-port.ts";
@@ -195,7 +195,7 @@ export class CombatTerminal {
     return buildFightResultInfo({
       fightId: battle.id,
       title: this.resultTitle(battle, humans),
-      type: battle.fightRules.wireFightType,
+      type: wireFightTypeOf(battle.kind),
       areaId: battle.areaId,
       timeout: battle.turnTimeoutSeconds,
       startedAt: battle.startedAt,
@@ -208,7 +208,7 @@ export class CombatTerminal {
   }
 
   private resultTitle(battle: Battle, humans: readonly { nick: string; team: 1 | 2 }[]): string {
-    if (battle.fightRules.resultTitleFromBot) {
+    if (battle.fightRules.hasEnemyBots) {
       const history = battle.huntHistory();
       return huntFightTitle(history.heroNick, history.botNick);
     }
@@ -233,9 +233,7 @@ export class CombatTerminal {
       purpose: battle.purpose,
       ...(battle.fightRules.includesQuestChat ? battle.questChat() : {}),
       ...(battle.fightRules.skipQuestKills ? { skipQuestKills: true } : {}),
-      ...(battle.fightRules.includesBotIdInNotice
-        ? { botId: battle.huntHistory().botArtikulId }
-        : {}),
+      ...(battle.fightRules.hasEnemyBots ? { botId: battle.huntHistory().botArtikulId } : {}),
     });
   }
 
