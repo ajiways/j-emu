@@ -54,7 +54,6 @@ describe("resolveMeleeTarget", () => {
     expect(target).toMatchObject({
       id: 1_000_000,
       team: 2,
-      hp: 20,
       maxHp: 20,
       mag: { power: 0, resist: 0 },
       strikeStats: { strength: 10, rage: 0, dexterity: 0, defense: 0, block: 0 },

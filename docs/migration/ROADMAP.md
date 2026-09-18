@@ -2003,17 +2003,22 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   `MeleeTarget`, фабрики `humanMeleeTarget` / `botMeleeTarget`; (2) **landed** —
   write-модель hp: удар человека по боту мутирует живой `HuntRosterBot`;
   `BotMeleePresence` / `hitBot` / `presences` / `applyPresence` удалены.
-  `hp` и `alive` входят в `Combatant`; `enemySideCleared` принимает один
-  список участников; (3) извлечь
+  `alive` входит в `Combatant`, `hp` — нет: живой hp читается только через
+  `targetHp`, чтобы устаревшая копия не конкурировала с живым значением.
+  `enemySideCleared` принимает один список участников; (3) извлечь
   `FightRules` из 36 ветвлений, `teamAssignment` убирает вывод команды из
-  `purpose`; (4) единый `FightSetup { meta, teams }`, три init-формы
-  сводятся к нему, builders становятся адаптерами; (5) снять
-  `huntRoster: HuntRoster | null` — мобы живут в общем списке участников;
-  (6) удалить `kind`/`purpose` ветвления из domain, оставив `meta.kind`
-  для settlement/wire. Каждый шаг — отдельный коммит, зелёный gate и
-  существующие e2e.
-- **Согласовано с мейнтейнером (2026-09-17):** очередь идёт по шагам этой
-  записи; следующее действие — шаг 3 (`FightRules`). Перф-долг боевки из
+  `purpose`, `HuntRoster.skipQuestKills` переезжает в правило (иначе шаг 5
+  не сможет удалить класс — правилу останется нужна `bots.length`);
+  (4) единый `FightSetup { meta, teams }`, три init-формы
+  сводятся к нему, builders становятся адаптерами; (5) один движок паринга
+  и один цикл ходов на всех участников независимо от контроллера;
+  (6) снять `huntRoster: HuntRoster | null` — мобы живут в общем списке
+  участников; (7) удалить `kind`/`purpose` ветвления из domain, оставив
+  `meta.kind` для settlement/wire. Каждый шаг — отдельный коммит, зелёный
+  gate и существующие e2e.
+- **Согласовано с мейнтейнером (2026-09-18):** очередь идёт по шагам этой
+  записи; следующее действие — шаг 3 (`FightRules`). Снятие `HuntRoster` не
+  делается раньше шага 5. Перф-долг боевки из
   [COMBAT.md](../modules/COMBAT.md) § «Инженерный долг» в `ARC-CMB` не входит
   и берётся отдельно.
 - **Найдено на шаге 1 (меняет порядок):** hp нельзя было слить вместе с
@@ -2025,9 +2030,27 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
 - **Найдено на шаге 2:** прямая мутация бота уже была в
   `resolveRosterBotTurn` и `resolveBotTurn`; снапшот был исключением одного
   пути. Overlay и react-kill читают живой hp через `targetHp` после
-  основного удара; `Combatant.hp` — копия на wrap для единого списка
-  `enemySideCleared`. `HuntRosterBot.setHp` оставлен: heal в
-  `bot-spell-act` и запись после хода бота в `applyBattleBotMelee`.
+  основного удара. `Combatant.hp` сначала завели копией на wrap, затем
+  убрали: его не читал никто, а копия отдавала hp **до** удара — тот же
+  класс дефекта, что снятый снапшот, только отложенный. Единственный ридер
+  hp — `targetHp`. `HuntRosterBot.setHp` оставлен: heal в `bot-spell-act` и
+  запись после хода бота в `applyBattleBotMelee`.
+- **Найдено при разборе roster (меняет порядок):** `HuntRoster` — не одна
+  абстракция, а четыре обязанности в одном классе: контейнер ботов
+  (`bots`, `primary`, `snaps`, `findBot`), очередь паринга
+  (`waitingEnemies`, `takeNextEnemyForHuman`, `occupy`, `unpairedLiving`),
+  второй цикл ходов (`extraDuels`, `tick`) и вывод команд с квестовым
+  правилом из `purpose` (`openerTeam`, `skipQuestKills`). Контейнер снимается
+  тривиально, а паринг и цикл ходов существуют **дважды**, разрезанные по
+  типу контроллера: люди паруются через `HuntHuman.waiting` / `pair` и
+  `livingWaiterOnTeam`, боты — через roster; дуэли бот↔бот тикаются отдельно
+  от дуэлей с людьми. Поэтому унификация паринга и цикла ходов выделена в
+  отдельный шаг 5 перед снятием `huntRoster`, иначе удалять класс нечего.
+  Нужная форма уже есть и работает: `HuntSeeker` в `try-pair-hunt-queues`
+  приводит человека и бота к одинаковому
+  `{ id, team, lastOpponentId, initiative }` и лазит лишь в два контейнера,
+  а `Combatant.alive` из шага 2 — тот предикат живости, который `huntSeekers`
+  сейчас дублирует вручную для людей и ботов.
 - **Совместимость wire и данных:** миграции схемы и backfill **не
   требуются** — active fight существует только в RAM (ADR-0020), таблиц
   боя нет, форма строки `combat.finished_fights` не меняется. Wire не

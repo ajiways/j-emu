@@ -834,7 +834,7 @@ CEF не прогонялся (Wave 12, [CEF_MANUAL.md](../migration/CEF_MANUAL.
 
 ## Участники боя — общая read-поверхность
 
-`Combatant` (`id`, `team`, `hp`, `maxHp`, `mag`, `strikeStats`, `alive`) — то, что
+`Combatant` (`id`, `team`, `maxHp`, `mag`, `strikeStats`, `alive`) — то, что
 человек и бот отдают одинаково; оба варианта `MeleeTarget` его включают, а
 строятся только фабриками `humanMeleeTarget` / `botMeleeTarget`. Человек и
 hunt-бот мутируют hp на живом объекте (`HuntHuman.applyDamage` /
@@ -842,9 +842,11 @@ hunt-бот мутируют hp на живом объекте (`HuntHuman.apply
 `Combatant` и смотрит `alive` на стороне: для человека это `hp > 0` и не
 `leftLive`, для бота — `hp > 0`.
 
-`Combatant.hp` копируется в момент wrap. Overlay и react-kill читают живой
-объект через `targetHp` уже после основного удара, поэтому добивание и
-догоняющий overlay считают от того же hp, что и до унификации.
+hp в `Combatant` намеренно нет: единственный ридер — `targetHp`, который идёт
+по живому участнику. Overlay и react-kill читают его уже после основного
+удара, поэтому добивание и догоняющий overlay считают от того же hp, что и до
+унификации. Копия hp на wrap отдавала бы значение **до** удара и повторила бы
+тот дефект, из-за которого снимали `BotMeleePresence`.
 
 ## Инженерный долг
 
