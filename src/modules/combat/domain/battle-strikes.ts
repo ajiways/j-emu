@@ -8,7 +8,7 @@ import { resolveGloveFinisher, type EndingGloveResult } from "./glove-ending-cas
 import type { KeepTurnResult } from "./hunt-cast.ts";
 import type { RandomSource } from "./random-source.ts";
 import type { BattleRules } from "./battle-rules.ts";
-import { resolveMeleeTarget, type BotMeleePresence } from "./melee-target.ts";
+import { resolveMeleeTarget } from "./melee-target.ts";
 
 export function applyPairedMelee(
   input: Readonly<{
@@ -19,17 +19,16 @@ export function applyPairedMelee(
     random: RandomSource;
     fightId: string;
     humans: readonly HuntHuman[];
-    bots: readonly BotMeleePresence[];
+    bots: readonly HuntRosterBot[];
     duel: FightDuel;
     nowMs: number;
   }>,
 ): Readonly<{
   result: PlayerMeleeResult;
-  hitBot: BotMeleePresence | null;
   finished: boolean;
 }> {
   if (input.attacker.waiting || !input.attacker.turnActive || input.finished) {
-    return { result: { kind: "ignored" }, hitBot: null, finished: input.finished };
+    return { result: { kind: "ignored" }, finished: input.finished };
   }
   const resolved = tryPairedMelee(
     input.attacker,
@@ -64,7 +63,7 @@ export function applyPairedGloveEnding(
     random: RandomSource;
     fightId: string;
     humans: readonly HuntHuman[];
-    bots: readonly BotMeleePresence[];
+    bots: readonly HuntRosterBot[];
     duel: FightDuel;
     duels: readonly FightDuel[];
     nowMs: number;

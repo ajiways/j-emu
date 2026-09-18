@@ -1996,14 +1996,15 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
 - **Что переносить не нужно:** нижний слой уже generic и не трогается —
   `HuntHumanFightEffects` общий для `HuntHuman` и `HuntRosterBot`,
   `rollMeleeOutcome` работает на структурном `StrikeStats`, `FightDuel` —
-  на числовых id, `BotMeleePresence` структурный. Урон, эффекты, magic,
-  pacing ходов и `BattleRules` вне объёма.
+  на числовых id. Урон, эффекты, magic, pacing ходов и `BattleRules` вне
+  объёма.
 - **Порядок миграции:** (1) **landed** — `Combatant` (`id`, `team`, `maxHp`,
   `mag`, `strikeStats`) как общая read-поверхность обоих вариантов
-  `MeleeTarget`, фабрики `humanMeleeTarget` / `botMeleeTarget`; (2) унифицировать
-  write-модель hp: человек мутируется живьём, бот едет отложенным
-  `BotMeleePresence`, который roster применяет после удара, поэтому `hp` пока
-  читается через владельца (`targetHp`) и в `Combatant` не входит; (3) извлечь
+  `MeleeTarget`, фабрики `humanMeleeTarget` / `botMeleeTarget`; (2) **landed** —
+  write-модель hp: удар человека по боту мутирует живой `HuntRosterBot`;
+  `BotMeleePresence` / `hitBot` / `presences` / `applyPresence` удалены.
+  `hp` и `alive` входят в `Combatant`; `enemySideCleared` принимает один
+  список участников; (3) извлечь
   `FightRules` из 36 ветвлений, `teamAssignment` убирает вывод команды из
   `purpose`; (4) единый `FightSetup { meta, teams }`, три init-формы
   сводятся к нему, builders становятся адаптерами; (5) снять
@@ -2012,8 +2013,7 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   для settlement/wire. Каждый шаг — отдельный коммит, зелёный gate и
   существующие e2e.
 - **Согласовано с мейнтейнером (2026-09-17):** очередь идёт по шагам этой
-  записи; следующее действие — шаг 2 (унификация write-модели hp), затем
-  `FightRules`. Перф-долг боевки из
+  записи; следующее действие — шаг 3 (`FightRules`). Перф-долг боевки из
   [COMBAT.md](../modules/COMBAT.md) § «Инженерный долг» в `ARC-CMB` не входит
   и берётся отдельно.
 - **Найдено на шаге 1 (меняет порядок):** hp нельзя было слить вместе с
@@ -2022,6 +2022,12 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   снапшот hp в общий тип менял бы расчёт добивания и overlay-догоняющего
   удара. Поэтому unification hp вынесена в отдельный шаг 2 перед
   `FightRules`, а не входит в шаг 1.
+- **Найдено на шаге 2:** прямая мутация бота уже была в
+  `resolveRosterBotTurn` и `resolveBotTurn`; снапшот был исключением одного
+  пути. Overlay и react-kill читают живой hp через `targetHp` после
+  основного удара; `Combatant.hp` — копия на wrap для единого списка
+  `enemySideCleared`. `HuntRosterBot.setHp` оставлен: heal в
+  `bot-spell-act` и запись после хода бота в `applyBattleBotMelee`.
 - **Совместимость wire и данных:** миграции схемы и backfill **не
   требуются** — active fight существует только в RAM (ADR-0020), таблиц
   боя нет, форма строки `combat.finished_fights` не меняется. Wire не

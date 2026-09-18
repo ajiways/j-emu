@@ -5,7 +5,7 @@ import { dissolveDuelContaining } from "./try-pair-hunt-queues.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
-import { enemySideCleared, type BotMeleePresence } from "./melee-target.ts";
+import { enemySideCleared, fightCombatants } from "./melee-target.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
 import { retargetDuelTo } from "./retarget-duel.ts";
@@ -21,8 +21,8 @@ export function tickHuntRosterDuels(input: {
 }): Readonly<{ events: readonly BattleEvent[]; finished: boolean }> {
   if (!input.roster || input.finished) return { events: [], finished: input.finished };
   const events = [...input.roster.tick(input.rules, input.random, input.fightId)];
-  const bots = input.roster.presences();
-  if (enemySideCleared(input.opener.team, input.humans, bots)) {
+  const combatants = fightCombatants(input.humans, input.roster.allBots());
+  if (enemySideCleared(input.opener.team, combatants)) {
     events.push({
       type: "finished",
       winnerTeam: input.roster.enemyTeam,
@@ -30,7 +30,7 @@ export function tickHuntRosterDuels(input: {
     });
     return { events, finished: true };
   }
-  if (enemySideCleared(input.roster.enemyTeam, input.humans, bots)) {
+  if (enemySideCleared(input.roster.enemyTeam, combatants)) {
     events.push({
       type: "finished",
       winnerTeam: input.opener.team,
@@ -44,7 +44,6 @@ export function tickHuntRosterDuels(input: {
 export function applyHuntPlayerHit(
   resolved: Readonly<{
     result: PlayerMeleeResult;
-    hitBot: BotMeleePresence | null;
     finished: boolean;
   }>,
   input: Readonly<{
@@ -55,8 +54,11 @@ export function applyHuntPlayerHit(
     humans: readonly HuntHuman[];
   }>,
 ): Readonly<{ result: PlayerMeleeResult; finished: boolean }> {
-  const extra = applyHuntBotHit(resolved.hitBot, resolved.finished, input);
-  if (resolved.result.kind !== "resolved" || extra.events.length === 0) {
+  if (resolved.result.kind !== "resolved") {
+    return { result: resolved.result, finished: resolved.finished };
+  }
+  const extra = applyHuntBotHit(resolved.finished, input);
+  if (extra.events.length === 0) {
     return { result: resolved.result, finished: extra.finished };
   }
   return {
@@ -66,7 +68,6 @@ export function applyHuntPlayerHit(
 }
 
 export function applyHuntBotHit(
-  hitBot: BotMeleePresence | null,
   finished: boolean,
   input: Readonly<{
     roster: HuntRoster | null;
@@ -76,8 +77,8 @@ export function applyHuntBotHit(
     humans: readonly HuntHuman[];
   }>,
 ): Readonly<{ events: readonly BattleEvent[]; finished: boolean }> {
-  if (hitBot && input.roster) input.roster.applyPresence(hitBot);
   if (finished) return { events: [], finished: true };
+  const hitBot = input.roster?.findBot(input.duel.otherId(input.opener.heroId)) ?? null;
   if (!hitBot || hitBot.hp > 0 || !input.roster) return { events: [], finished: false };
   const next = input.roster.takeNextEnemyForHuman(hitBot.fightId);
   if (next) {

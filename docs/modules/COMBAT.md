@@ -834,17 +834,17 @@ CEF не прогонялся (Wave 12, [CEF_MANUAL.md](../migration/CEF_MANUAL.
 
 ## Участники боя — общая read-поверхность
 
-`Combatant` (`id`, `team`, `maxHp`, `mag`, `strikeStats`) — то, что человек и
-бот отдают одинаково; оба варианта `MeleeTarget` его включают, а строятся
-только фабриками `humanMeleeTarget` / `botMeleeTarget`. Защитник больше не
-получает заглушку силы: `BotMeleePresence` несёт `strength` бота (в
-`rollMeleeOutcome` сила защитника не участвует, поэтому исход не изменился).
+`Combatant` (`id`, `team`, `hp`, `maxHp`, `mag`, `strikeStats`, `alive`) — то, что
+человек и бот отдают одинаково; оба варианта `MeleeTarget` его включают, а
+строятся только фабриками `humanMeleeTarget` / `botMeleeTarget`. Человек и
+hunt-бот мутируют hp на живом объекте (`HuntHuman.applyDamage` /
+`HuntRosterBot.applyDamage`). `enemySideCleared` принимает один список
+`Combatant` и смотрит `alive` на стороне: для человека это `hp > 0` и не
+`leftLive`, для бота — `hp > 0`.
 
-`hp` в `Combatant` **не входит** намеренно: человек владеет живым hp на своём
-объекте, а hp бота едет отложенным `BotMeleePresence`, который roster
-применяет после удара. `tryPairedMelee` читает hp человека после применения
-урона, а hp бота — до, поэтому чтение идёт через владельца (`targetHp`).
-Слияние hp — отдельный шаг `ARC-CMB`, не косметика.
+`Combatant.hp` копируется в момент wrap. Overlay и react-kill читают живой
+объект через `targetHp` уже после основного удара, поэтому добивание и
+догоняющий overlay считают от того же hp, что и до унификации.
 
 ## Инженерный долг
 

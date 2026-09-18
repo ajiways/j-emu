@@ -1,10 +1,15 @@
 import type { CombatPort } from "../../src/modules/combat/ports/combat-port.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../src/modules/combat/domain/combat-loadout.ts";
+import { unpublishedBotFightStats } from "../../src/modules/combat/domain/combatant-fight-stats.ts";
+import { FightEffectIds } from "../../src/modules/combat/domain/fight-effect-ids.ts";
 import type {
   HuntBotSpellBook,
   HuntBotSpellCard,
 } from "../../src/modules/combat/domain/hunt-bot-spell-book.ts";
-import { unpublishedBotFightStats } from "../../src/modules/combat/domain/combatant-fight-stats.ts";
+import {
+  HuntRosterBot,
+  type HuntRosterBotSeed,
+} from "../../src/modules/combat/domain/hunt-roster-bot.ts";
 
 export const EMPTY_HUNT_BOT_SPELL_BOOK: HuntBotSpellBook = {
   nothingWeight: 100,
@@ -163,3 +168,29 @@ export const UNIT_HUNT_BATTLE_STATS = {
   heroMagPower: 0,
   heroMagResist: 0,
 } as const;
+
+export function unitRosterBot(
+  overrides: Partial<HuntRosterBotSeed> & { team?: 1 | 2 } = {},
+): HuntRosterBot {
+  const { team = 2, ...seed } = overrides;
+  return HuntRosterBot.fromSeed(
+    {
+      fightId: 1_000_000,
+      artikulId: 2,
+      nick: "Грызль",
+      level: 1,
+      hp: 20,
+      strength: 10,
+      initiative: 0,
+      magPower: 0,
+      magResist: 0,
+      avatar: GRYZL_FIGHT_LOOK.botAvatar,
+      sk: GRYZL_FIGHT_LOOK.botSk,
+      body: GRYZL_FIGHT_LOOK.botBody,
+      spellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
+      ...seed,
+    },
+    team,
+    new FightEffectIds(),
+  );
+}

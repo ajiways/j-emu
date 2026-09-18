@@ -13,30 +13,23 @@ import {
 import { isEndingGlove, type KeepTurnResult } from "./hunt-cast.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { spellKind } from "./hunt-human-cast-state.ts";
+import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import { magicHitFromKind1, magicReact } from "./magic-hit.ts";
-import {
-  botMeleeTarget,
-  resolveMeleeTarget,
-  targetHp,
-  type BotMeleePresence,
-  type MeleeTarget,
-} from "./melee-target.ts";
+import { botMeleeTarget, resolveMeleeTarget, targetHp, type MeleeTarget } from "./melee-target.ts";
 import { applyDamageToMeleeTarget } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
 
 type GloveSideNotify = Readonly<{
   accountId: number;
   events: readonly BattleEvent[];
-  hitBot: BotMeleePresence | null;
+  targetId: number;
 }>;
 
 export type EndingGloveResult = Readonly<{
   kind: "ending";
   events: readonly BattleEvent[];
-  hitBot: BotMeleePresence | null;
   finished: boolean;
   hitTargetIds: readonly number[];
-  hitBots: readonly BotMeleePresence[];
   sideNotifies: readonly GloveSideNotify[];
 }>;
 
@@ -50,7 +43,7 @@ export function resolveGloveFinisher(
     random: RandomSource;
     fightId: string;
     humans: readonly HuntHuman[];
-    bots: readonly BotMeleePresence[];
+    bots: readonly HuntRosterBot[];
     duel: FightDuel;
     duels: readonly FightDuel[];
     nowMs: number;
@@ -107,10 +100,8 @@ export function resolveGloveFinisher(
   return {
     kind: "ending",
     events,
-    hitBot: primaryHit.hitBot,
     finished,
     hitTargetIds: hits.map((hit) => hit.targetId),
-    hitBots: hits.flatMap((hit) => (hit.hitBot ? [hit.hitBot] : [])),
     sideNotifies: sideNotifiesForHits(human, glove.spell, hits.slice(1), input, dmgType),
   };
 }
@@ -121,7 +112,6 @@ type GloveKind1Hit = Readonly<{
   hpChange: number;
   killed: boolean;
   finished: boolean;
-  hitBot: BotMeleePresence | null;
 }>;
 
 function applyGloveKind1Hits(
@@ -130,16 +120,15 @@ function applyGloveKind1Hits(
   targets: readonly MeleeTarget[],
   input: Readonly<{
     humans: readonly HuntHuman[];
-    bots: readonly BotMeleePresence[];
+    bots: readonly HuntRosterBot[];
     random: RandomSource;
     rules: BattleRules;
   }>,
 ): readonly GloveKind1Hit[] {
   const aoe = gloveKind1IsAoe(spell);
-  let bots = [...input.bots];
   const hits: GloveKind1Hit[] = [];
   for (const listed of targets) {
-    const target = livingTarget(listed, bots);
+    const target = livingTarget(listed, input.bots);
     const foeMag = target.mag;
     const foeHp = targetHp(target);
     const full = magicHitFromKind1(
@@ -151,23 +140,22 @@ function applyGloveKind1Hits(
       input.rules,
     );
     const damage = appliedHpLoss(aoe ? aoeKind1Damage(full) : full, foeHp);
-    const hit = applyDamageToMeleeTarget(human, target, damage, { humans: input.humans, bots });
-    if (hit.hitBot) {
-      bots = bots.map((bot) => (bot.fightId === hit.hitBot?.fightId ? hit.hitBot : bot));
-    }
+    const hit = applyDamageToMeleeTarget(human, target, damage, {
+      humans: input.humans,
+      bots: input.bots,
+    });
     hits.push({
       targetId: hit.targetId,
       targetMaxHp: hit.targetMaxHp,
       hpChange: -damage,
       killed: hit.killed,
       finished: hit.finished,
-      hitBot: hit.hitBot,
     });
   }
   return hits;
 }
 
-function livingTarget(listed: MeleeTarget, bots: readonly BotMeleePresence[]): MeleeTarget {
+function livingTarget(listed: MeleeTarget, bots: readonly HuntRosterBot[]): MeleeTarget {
   if (listed.kind === "human") return listed;
   const bot = bots.find((entry) => entry.fightId === listed.id);
   if (!bot) throw new Error(`AOE bot ${listed.id} is missing from the roster`);
@@ -213,7 +201,7 @@ function sideNotifiesForHits(
       const events: BattleEvent[] = hit.killed
         ? [{ type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds }, damage]
         : [damage];
-      notifies.push({ accountId, events, hitBot: hit.hitBot });
+      notifies.push({ accountId, events, targetId: hit.targetId });
     }
   }
   return notifies;

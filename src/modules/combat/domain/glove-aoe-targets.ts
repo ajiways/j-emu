@@ -1,12 +1,8 @@
 import type { CombatSpell } from "./combat-loadout.ts";
 import { kind1Effect } from "./magic-hit.ts";
 import type { HuntHuman } from "./hunt-human.ts";
-import {
-  botMeleeTarget,
-  humanMeleeTarget,
-  type BotMeleePresence,
-  type MeleeTarget,
-} from "./melee-target.ts";
+import { botMeleeTarget, humanMeleeTarget, type MeleeTarget } from "./melee-target.ts";
+import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import type { RandomSource } from "./random-source.ts";
 import { shuffleInPlace } from "./shuffle-in-place.ts";
 
@@ -47,7 +43,7 @@ export function pickGloveAoeTargets(
     caster: HuntHuman;
     primary: MeleeTarget;
     humans: readonly HuntHuman[];
-    bots: readonly BotMeleePresence[];
+    bots: readonly HuntRosterBot[];
     count: number;
     random: RandomSource;
   }>,

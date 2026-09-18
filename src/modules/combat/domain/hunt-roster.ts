@@ -6,7 +6,6 @@ import { resolveRosterBotTurn } from "./hunt-bot-vs-bot.ts";
 import { huntFightEnemyTeam, huntFightOpenerTeam } from "./hunt-fight-teams.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
 import { HuntRosterBot } from "./hunt-roster-bot.ts";
-import type { BotMeleePresence } from "./melee-target.ts";
 import type { RandomSource } from "./random-source.ts";
 
 export class HuntRoster {
@@ -70,14 +69,6 @@ export class HuntRoster {
 
   allBots(): readonly HuntRosterBot[] {
     return this.bots;
-  }
-
-  presences(): readonly BotMeleePresence[] {
-    return this.bots.map((bot) => bot.presence());
-  }
-
-  applyPresence(hit: BotMeleePresence): void {
-    this.requireBot(hit.fightId).setHp(hit.hp);
   }
 
   enemySideCleared(): boolean {

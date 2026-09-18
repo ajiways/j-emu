@@ -1,21 +1,12 @@
 import type { Combatant } from "./combatant.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
-import type { MagStats } from "./mag-stats.ts";
+import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import { strikeStatsFromHuman, unpublishedBotStrikeStats } from "./melee-outcome.ts";
-
-export type BotMeleePresence = Readonly<{
-  fightId: number;
-  hp: number;
-  maxHp: number;
-  team: 1 | 2;
-  strength: number;
-  mag: MagStats;
-}>;
 
 export type MeleeTarget =
   | Readonly<{ kind: "human"; human: HuntHuman } & Combatant>
-  | Readonly<{ kind: "bot"; presence: BotMeleePresence } & Combatant>;
+  | Readonly<{ kind: "bot"; bot: HuntRosterBot } & Combatant>;
 
 export function humanMeleeTarget(human: HuntHuman): MeleeTarget {
   return {
@@ -23,26 +14,37 @@ export function humanMeleeTarget(human: HuntHuman): MeleeTarget {
     human,
     id: human.heroId,
     team: human.team,
+    hp: human.hp,
     maxHp: human.maxHp,
     mag: human.mag,
     strikeStats: strikeStatsFromHuman(human),
+    alive: !human.leftLive && human.hp > 0,
   };
 }
 
-export function botMeleeTarget(presence: BotMeleePresence): MeleeTarget {
+export function botMeleeTarget(bot: HuntRosterBot): MeleeTarget {
   return {
     kind: "bot",
-    presence,
-    id: presence.fightId,
-    team: presence.team,
-    maxHp: presence.maxHp,
-    mag: presence.mag,
-    strikeStats: unpublishedBotStrikeStats(presence.strength),
+    bot,
+    id: bot.fightId,
+    team: bot.team,
+    hp: bot.hp,
+    maxHp: bot.maxHp,
+    mag: bot.mag,
+    strikeStats: unpublishedBotStrikeStats(bot.strength),
+    alive: bot.hp > 0,
   };
+}
+
+export function fightCombatants(
+  humans: readonly HuntHuman[],
+  bots: readonly HuntRosterBot[],
+): readonly Combatant[] {
+  return [...humans.map(humanMeleeTarget), ...bots.map(botMeleeTarget)];
 }
 
 export function targetHp(target: MeleeTarget): number {
-  return target.kind === "human" ? target.human.hp : target.presence.hp;
+  return target.kind === "human" ? target.human.hp : target.bot.hp;
 }
 
 export function resolveMeleeTarget(
@@ -50,7 +52,7 @@ export function resolveMeleeTarget(
     attackerHeroId: number;
     duel: FightDuel;
     humans: readonly HuntHuman[];
-    bots: readonly BotMeleePresence[];
+    bots: readonly HuntRosterBot[];
   }>,
 ): MeleeTarget {
   const otherId = input.duel.otherId(input.attackerHeroId);
@@ -61,14 +63,6 @@ export function resolveMeleeTarget(
   throw new Error(`Duel opponent ${otherId} is neither a human nor a fight bot`);
 }
 
-export function enemySideCleared(
-  team: 1 | 2,
-  humans: readonly HuntHuman[],
-  bots: readonly BotMeleePresence[],
-): boolean {
-  const livingHuman = humans.some(
-    (human) => human.team === team && !human.leftLive && human.hp > 0,
-  );
-  if (livingHuman) return false;
-  return !bots.some((bot) => bot.team === team && bot.hp > 0);
+export function enemySideCleared(team: 1 | 2, combatants: readonly Combatant[]): boolean {
+  return !combatants.some((entry) => entry.team === team && entry.alive);
 }

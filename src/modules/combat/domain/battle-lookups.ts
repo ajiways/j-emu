@@ -5,7 +5,8 @@ import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
 import type { HuntPairing } from "./battle-pairing.ts";
-import { resolveMeleeTarget, type BotMeleePresence, type MeleeTarget } from "./melee-target.ts";
+import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import { resolveMeleeTarget, type MeleeTarget } from "./melee-target.ts";
 
 export function requireBattleHuman(humans: readonly HuntHuman[], accountId: number): HuntHuman {
   const human = humans.find((entry) => entry.accountId === accountId);
@@ -35,8 +36,8 @@ export function battleOpener(humans: readonly HuntHuman[]): HuntHuman {
   return human;
 }
 
-export function huntRosterBots(roster: HuntRoster | null): readonly BotMeleePresence[] {
-  return roster ? roster.presences() : [];
+export function huntRosterBots(roster: HuntRoster | null): readonly HuntRosterBot[] {
+  return roster ? roster.allBots() : [];
 }
 
 export function huntPairingOf(
@@ -51,7 +52,7 @@ export function resolveBattleMeleeTarget(
   attacker: HuntHuman,
   duel: FightDuel,
   humans: readonly HuntHuman[],
-  bots: readonly BotMeleePresence[],
+  bots: readonly HuntRosterBot[],
 ): MeleeTarget {
   return resolveMeleeTarget({
     attackerHeroId: attacker.heroId,

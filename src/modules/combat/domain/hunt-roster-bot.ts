@@ -6,7 +6,6 @@ import { requireHuntBotSpellBook } from "./hunt-bot-spell-book.ts";
 import { HuntHumanFightEffects } from "./hunt-human-fight-effects.ts";
 import type { MagStats } from "./mag-stats.ts";
 import type { SchoolOverlay } from "./school-overlay.ts";
-import type { BotMeleePresence } from "./melee-target.ts";
 
 export type HuntRosterBotSeed = Readonly<{
   fightId: number;
@@ -171,17 +170,6 @@ export class HuntRosterBot {
       throw new Error("Roster bot hp is invalid");
     }
     this.hpValue = hp;
-  }
-
-  presence(): BotMeleePresence {
-    return {
-      fightId: this.fightId,
-      hp: this.hpValue,
-      maxHp: this.maxHp,
-      team: this.team,
-      strength: this.strength,
-      mag: this.mag,
-    };
   }
 
   snap(): HuntBotSnap {

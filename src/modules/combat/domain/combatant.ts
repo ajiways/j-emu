@@ -5,15 +5,17 @@ import type { StrikeStats } from "./melee-outcome.ts";
  * Identity and combat-visible stats shared by every fight participant,
  * human-controlled or bot-controlled.
  *
- * `hp` is deliberately absent: a human owns live hp on its own object, while a
- * roster bot's hp travels as a deferred presence snapshot that the roster
- * applies after the strike. Reading hp therefore still goes through the owning
- * participant. Every field here is stable for the duration of one strike.
+ * `hp` and `alive` are copied at wrap time from the live participant. Both
+ * humans and roster bots mutate hp in place, so wrapping again after a hit
+ * sees the post-hit values. A human who left live is not `alive` even with
+ * remaining hp.
  */
 export type Combatant = Readonly<{
   id: number;
   team: 1 | 2;
+  hp: number;
   maxHp: number;
   mag: MagStats;
   strikeStats: StrikeStats;
+  alive: boolean;
 }>;

@@ -149,16 +149,13 @@ function settleGloveHits(
     humans: readonly HuntHuman[];
   }>,
 ): EndingGloveResult {
-  if (input.roster) {
-    for (const bot of ending.hitBots) input.roster.applyPresence(bot);
-  }
-  const primary = applyHuntBotHit(ending.hitBot, ending.finished, input);
+  const primary = applyHuntBotHit(ending.finished, input);
   const sideHits = ending.sideNotifies.map((notify) => {
-    if (!notify.hitBot) return { notify, extra: [] as const };
-    const duel = requireDuelContaining(input.duels, notify.hitBot.fightId);
+    if (!input.roster?.findBot(notify.targetId)) return { notify, extra: [] as const };
+    const duel = requireDuelContaining(input.duels, notify.targetId);
     const owner = input.humans.find((human) => duel.has(human.heroId));
-    if (!owner) throw new Error(`AOE extra bot ${notify.hitBot.fightId} has no paired human`);
-    const extra = applyHuntBotHit(notify.hitBot, primary.finished, {
+    if (!owner) throw new Error(`AOE extra bot ${notify.targetId} has no paired human`);
+    const extra = applyHuntBotHit(primary.finished, {
       ...input,
       duel,
       opener: owner,
