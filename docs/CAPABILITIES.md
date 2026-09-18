@@ -122,7 +122,7 @@ catalog `f_body`) пересобирается на PUT_ON/OFF (raw-AMF); CEF 3D
 - OA `DROP` (и alias `SELL`) → flat `common|action` + bag/skills/mount_list/state;
 - throw-away 9095 не меняет деньги; equipped DROP и SELL без `sell_price>0` —
   `204` с live `error`;
-- DROP в активном hunt-бою запрещён (`FightRules` `203`; live сервер это не
+- DROP в активном hunt-бою запрещён (`requireNoActiveFight` `203`; live сервер это не
   режет, j-emu закрывает дыру из [FIGHT_LOCK.md](../../jgr-emu/docs/FIGHT_LOCK.md));
 - `creditMoney` на character в той же UoW; inventory не пишет `heroes`.
 
@@ -138,7 +138,7 @@ catalog `f_body`) пересобирается на PUT_ON/OFF (raw-AMF); CEF 3D
 - те же OA `PUT_ON`/`PUT_OFF`; pocket deny **`204`**; перчатка 9095 на пояс
   и DROP из pocket — `204`;
 - unique `(hero_id, pocket_position)`; порт `listPocket`; fight consume — CMB-02;
-- в бою PUT_ON/OFF/DROP/SELL — `FightRules` `203`. Трата из кармана не в срезе.
+- в бою PUT_ON/OFF/DROP/SELL — `requireNoActiveFight` `203`. Трата из кармана не в срезе.
 
 ## Inventory USE — готово
 
@@ -201,7 +201,7 @@ chat auth — пустое тело; restart очищает очередь и с
 
 - `playable-slice/v10`: areas 501/503/504 и четыре travel `area_links`;
 - OA `COME_IN` / `common|exit`; `heroes.move_ready_at`; overload 21/20 → 204;
-- в бою travel `FightRules` `203`; нет ребра → `203` «некуда идти».
+- в бою travel `requireNoActiveFight` `203`; нет ребра → `203` «некуда идти».
 
 ## World и hunt — частично
 

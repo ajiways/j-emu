@@ -78,7 +78,8 @@ armor 20/26/103 is not invented in this playable slice.
 
 ## Fight boundary
 
-Именованное `FightRules` (не live parity, не fallback). Пока
+Именованное `requireNoActiveFight` (не live parity, не fallback; имя и отличие
+от `FightRules` / `BattleRules` — [COMBAT.md](COMBAT.md)). Пока
 `CombatPort.activeFightId(accountId)` не `null`, layout-мутации инвентаря
 запрещены: `PUT_ON`, `PUT_OFF`, `DROP`, `SELL`, world `USE`, `UPGRADE` → **`status:203`** +
 `error: "нельзя во время боя"`. Чтение bag/view/pocket/init не блокируется.
@@ -176,7 +177,7 @@ composition синхронизирует текущие loot/deliver цели ч
 
 Не включать `user|view` / `pocket` / `unitframe` / `conf`. Deny bag-правил —
 **`status:204`** и поле `error` с точной русской строкой. Не «улучшать» bag-deny
-до `203`. Активный бой — `FightRules`, не bag-правило: **`203`** +
+до `203`. Активный бой — `requireNoActiveFight`, не bag-правило: **`203`** +
 `нельзя во время боя`.
 
 | Исход                                               | `error`                                      |
@@ -185,7 +186,7 @@ composition синхронизирует текущие loot/deliver цели ч
 | SELL OA / void-sell deny                            | `Не удалось выполнить действие "Продать"!`   |
 | активный бой (`PUT_ON`/`PUT_OFF`/`DROP`/`SELL`)     | `нельзя во время боя`                        |
 
-DROP **запрещён в бою** (`FightRules`). Вне боя DROP **разрешён при перегрузе**:
+DROP **запрещён в бою** (`requireNoActiveFight`). Вне боя DROP **разрешён при перегрузе**:
 это способ снять overload; `amount > amount_max` DROP не блокирует. Equipped
 (`location.kind !== "bag"`) DROP нельзя.
 
@@ -333,7 +334,7 @@ Deny пояса — **`204`** + `error` (live `putOn` pocket). Paperdoll WearDen
 | DROP не из bag                 | `Не удалось выполнить действие "Выбросить"!` |
 | активный бой                   | `нельзя во время боя` (`203`)                |
 
-PUT_ON/OFF **запрещены в бою** — тот же `FightRules` `203`, что DROP/SELL.
+PUT_ON/OFF **запрещены в бою** — тот же `requireNoActiveFight` `203`, что DROP/SELL.
 Трата из кармана в бою — `CMB-02`, не эта мутация.
 
 ### Правила слота
@@ -421,7 +422,7 @@ TEMPEFFECT / ADD_MP — нет dump-proven L1 артикула в slice; неи�
 ### Wire
 
 Реестр: не `common|object:undefined`. Если `object_class=ARTIFACT` и `code`
-пустой — ключ **`common|object:USE`**. `FightRules`: активный бой → **`203`**
+пустой — ключ **`common|object:USE`**. `requireNoActiveFight`: активный бой → **`203`**
 `нельзя во время боя` (live `fightBusy` на USE).
 
 Успех — **flat**, `common|action` = `{ action: "USE" }` без `msg_text` для
@@ -739,7 +740,7 @@ quest-win REMOVE снимает надетый слот. `fight|finish` отда
 
 Inventory остаётся owner instance и read-only `equippedGearSpells` / `list`.
 PUT_ON 20546 вне боя только меняет location (слот 32); fight packets нет.
-В бою layout — FightRules `203`. Снимок `gearSpells[]` собирает
+В бою layout — `requireNoActiveFight` `203`. Снимок `gearSpells[]` собирает
 `HuntCombatLoadout` на старт боя; combat domain mid-fight inventory не
 читает. Сокеты комбо 20546 в срез не входят: пустые `extra.spells[]` →
 `glove: null`, gear-spell всё равно в snapshot.

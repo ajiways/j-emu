@@ -211,7 +211,7 @@
   survive reconnect/restart. Pocket deny is `204` with live Russian `error`.
   Paperdoll 9095 cannot enter pocket. DROP from pocket remains `204`. CEF:
   drag elixir 93 onto the belt, reconnect, PUT_OFF. No fight cast.
-  PUT_ON/PUT_OFF/DROP/SELL in fight are `FightRules` `203` (named j-emu lock,
+  PUT_ON/PUT_OFF/DROP/SELL in fight are `requireNoActiveFight` `203` (named j-emu lock,
   not live parity; pocket spend stays `CMB-02`).
 - **Status:** `done`
 
@@ -256,7 +256,7 @@
   no `ARC-WORLD`. Location stays `heroes.area_id`; add `heroes.move_ready_at`
   (NULL = free). World owns `areas` + `area_links` + `areas.parent_id`; no
   `character_locations`. OA orchestrates world `requireLink` / `linksFrom`,
-  inventory `bagLoad`, character `setArea`, combat `FightRules`. SPEED=0 in
+  inventory `bagLoad`, character `setArea`, combat `requireNoActiveFight`. SPEED=0 in
   slice; `ftime = floor(ftime_max × (100 − SPEED) / 100)`. Exit from
   `code=store` does not set the lock. Store buy stays ECO-01; presence RTM-01;
   hunt locks WLD-02. Full contract: [WORLD.md](../modules/WORLD.md).
@@ -453,7 +453,7 @@
   arena re-auths, paired hunter sees opponent and remaining turn bar
   (not `oppwait`). Restart mid-fight still no rewards/history. Loss:
   ghost persists, hp stays 0 across clock advance, roster `dead:4`;
-  RESURRECT clears ghost, HP > 0, FightRules unlock. CEF: F5 in Gryzl
+  RESURRECT clears ghost, HP > 0, `requireNoActiveFight` unlock. CEF: F5 in Gryzl
   fight returns to arena; death shows ghost until RESURRECT.
 - **Status:** `done`
 
@@ -482,7 +482,7 @@
   `code=store`; composition UoW `debitMoney` + `grantToBag`. Inventory does
   not write `heroes`. No economy module, ledger, diamond/artifact barter,
   `store|repair`, OPEN_STORE, RANK/REPUTATION parser, or quest book
-  piggyback. `FightRules` does not block `store|*`. Ghost buy is 203.
+  piggyback. `requireNoActiveFight` does not block `store|*`. Ghost buy is 203.
   List/buy wire and status **2** codes: [STORE.md](../modules/STORE.md).
 - **Acceptance:** COME_IN 504 list shows types + lots 23/24; buy both is
   atomic (`25.00` → `23.00`, bag persists reconnect/restart); not-in-store /
@@ -1279,7 +1279,7 @@
   repositories и не читает их mid-fight.
   **Когда в snapshot.** На **старт боя**, не на PUT_ON и не лениво на
   удар: PUT_ON вне боя только меняет location (каталог уже на артикуле);
-  в бою layout — `FightRules` `203` «нельзя во время боя»; блоб без
+  в бою layout — `requireNoActiveFight` `203` «нельзя во время боя»; блоб без
   `triggers` вешается в начале боя (`GEAR_SPELL.md`), это не прок.
   `extra.spells[]` nonempty → прежний CMB-02 fail-fast на сокетах;
   пустые сокеты у 20546 в этом срезе валидны (`glove: null` для комбо,
@@ -2056,7 +2056,9 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   значению, но это механика очереди (у quest join запрещён, значение
   ненаблюдаемо); оставлен отдельным полем. `wireFightType` убран из policy:
   строка `"6"`/`"1"` собирается на границе ответа из `meta.kind`, как говорит
-  target data flow.
+  target data flow. Имя `FightRules` в прозе уже занимал боевой lock `203`;
+  lock в документации переименован в `requireNoActiveFight` (имя функции в
+  `src`), класс policy не трогали.
 - **Найдено при разборе roster (меняет порядок):** `HuntRoster` — не одна
   абстракция, а четыре обязанности в одном классе: контейнер ботов
   (`bots`, `primary`, `snaps`, `findBot`), очередь паринга

@@ -65,7 +65,7 @@ gates / `store|*` — ECO-01/ECO-02 (raw-AMF; CEF не прогонялся). Du
 [INSTANCE.md](INSTANCE.md). BG copies — [BATTLEGROUND.md](BATTLEGROUND.md);
 world владеет authored rooms и `bgId`.
 
-Именованное `FightRules`: активный бой → COME_IN и `common|exit` дают
+Именованное `requireNoActiveFight` ([COMBAT.md](COMBAT.md)): активный бой → COME_IN и `common|exit` дают
 `status:203` `нельзя во время боя` (live `fightBusy`). Это не live-исключение
 для PUT_ON; для travel live уже режет.
 

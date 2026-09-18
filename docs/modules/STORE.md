@@ -43,7 +43,7 @@ minor — helper в character/shared kernel, то же правило, что IN
 **1.00 = 100 minor**. Buy не конвертирует алмазы 1:900; dump-фикстуры уже
 переписали diamond-лоты в золото на seed.
 
-`FightRules` на `store|*` не ставить: live [FIGHT_LOCK.md](../../../jgr-emu/docs/FIGHT_LOCK.md)
+`requireNoActiveFight` на `store|*` не ставить: live [FIGHT_LOCK.md](../../../jgr-emu/docs/FIGHT_LOCK.md)
 магазин в бою не блокирует. Ghost — named CharacterRules: `store|buy` при
 `hero.ghost` → **203** + `error` (map `GhostHeroError` **до** pay, action
 `storeBuy`). Dump-текста в `store.ts` нет; не выдавать `100` и не маскировать

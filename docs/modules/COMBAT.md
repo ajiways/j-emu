@@ -77,10 +77,10 @@ account-keyed `CombatPort.activeFightId`. `CombatService` держит один 
    «завершение боя» ~60 с без `fight|exit`).
 
 Inventory layout lock (`PUT_ON`/`PUT_OFF`/`DROP`/`SELL` → `203` в бою) —
-именованное `FightRules` в [INVENTORY.md](INVENTORY.md), не live. Live
+`requireNoActiveFight` в [INVENTORY.md](INVENTORY.md), не live. Live
 [FIGHT_LOCK.md](../../../jgr-emu/docs/FIGHT_LOCK.md) эти коды не режет.
 Трата из кармана — fproxy. World USE, COME_IN/`common|exit` и ATTACK — live
-`fightBusy`; WLD-01 применяет то же `FightRules` `203`. Карта ATTACK_BOT:
+`fightBusy`; WLD-01 применяет то же `requireNoActiveFight` `203`. Карта ATTACK_BOT:
 ключ — spawn id; занятая живая точка — `joinHunt` team 1. OA `FIGHT_JOIN` /
 `FIGHT_HELP` — hunt team 1\|2 и PvP Раскопа (CMB-16), same-area **и**
 same-copy, dump 204 (CMB-11).
@@ -329,7 +329,7 @@ CHR-02 regen. Roster `dead:4`. Injury id **875**, `injury_time` = unix now+600;
 PostgreSQL. Reconnect — wire overlay на тот же RAM `Battle` (`resumeFight`
 чистит очереди и `prepareResume`). History cleanup уже у
 `FinishedFightCleanup` (72h, batch вне request path) — request-path
-cleanup и OA `arena|finished_fights` не добавлялись. FightRules 203 на
+cleanup и OA `arena|finished_fights` не добавлялись. `requireNoActiveFight` 203 на
 layout/travel/USE/ATTACK уже есть; CMB-04 их не расширяет на store/npc.
 
 ### Out of scope (CMB-04 leftover)
@@ -799,7 +799,7 @@ domain не импортирует inventory/catalog repositories и не чит
 mid-fight.
 
 Snapshot — на **старт боя**, не на PUT_ON и не лениво на удар. PUT_ON вне
-боя только меняет location. В бою layout — FightRules `203` «нельзя во
+боя только меняет location. В бою layout — `requireNoActiveFight` `203` «нельзя во
 время боя». Пустые `extra.spells[]` у 20546 валидны: `glove: null` для
 комбо, gear-spell всё равно в snapshot. Непустые сокеты — прежний CMB-02
 fail-fast.
@@ -850,11 +850,10 @@ hp в `Combatant` намеренно нет: единственный ридер
 
 ## FightRules
 
-`FightRules` — именованная versioned policy разрешений и следствий боя
-(`version: 1`). Это не `BattleRules` (числовой тюнинг: STR/урон, crit,
-таймауты) и не inventory/world «FightRules 203» из
-[INVENTORY.md](INVENTORY.md) (запрет layout в бою). Соседство имён
-намеренное: объекты разные, сливать нельзя.
+`BattleRules` — числовой тюнинг боя (STR/урон, crit, таймауты).
+`FightRules` — versioned policy разрешений и следствий типа боя (`version: 1`).
+`requireNoActiveFight` — запрет действий во время боя (`203`); контракт
+layout — [INVENTORY.md](INVENTORY.md), travel — [WORLD.md](WORLD.md).
 
 Конструируется явно на границе старта: `createHuntBattle` /
 `startHumanDuelBattle` вызывают `FightRules.for({ kind })` и передают
