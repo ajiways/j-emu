@@ -3,6 +3,7 @@ import type { BattleRules } from "./battle-rules.ts";
 import { friendlyHuman, huntOpener, isHumanDuelInit } from "./battle-fighters.ts";
 import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
 import { FightEffectIds } from "./fight-effect-ids.ts";
+import type { FightRules } from "./fight-rules.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { HuntRoster } from "./hunt-roster.ts";
@@ -20,28 +21,30 @@ export type BattleSeed = Readonly<{
 export function seedBattleParticipants(
   init: HuntBattleInit | FriendlyDuelBattleInit,
   rules: BattleRules,
+  fightRules: FightRules,
 ): BattleSeed {
   if (isHumanDuelInit(init)) {
     requireFriendlyDuelBattleInit(init, rules);
     const effectIds = new FightEffectIds();
+    const { openerTeam, enemyTeam } = fightRules.teamAssignment;
     return {
       kind: init.kind,
       huntRoster: null,
       pairedAccountId: init.challenger.accountId,
       humans: [
-        friendlyHuman(init.challenger, 1, false, init.startedAt.getTime(), effectIds),
-        friendlyHuman(init.acceptor, 2, false, init.startedAt.getTime(), effectIds),
+        friendlyHuman(init.challenger, openerTeam, false, init.startedAt.getTime(), effectIds),
+        friendlyHuman(init.acceptor, enemyTeam, false, init.startedAt.getTime(), effectIds),
       ],
       duels: [new FightDuel(init.challenger.heroId, init.acceptor.heroId, init.challenger.heroId)],
     };
   }
-  requireHuntBattleInit(init, rules);
+  requireHuntBattleInit(init, rules, fightRules);
   const effectIds = new FightEffectIds();
   return {
     kind: "hunt",
-    huntRoster: new HuntRoster(init, effectIds),
+    huntRoster: new HuntRoster(init, effectIds, fightRules.teamAssignment),
     pairedAccountId: init.accountId,
-    humans: [huntOpener(init, effectIds)],
+    humans: [huntOpener(init, effectIds, fightRules.teamAssignment.openerTeam)],
     duels: [new FightDuel(init.heroId, init.botFightId, init.heroId)],
   };
 }

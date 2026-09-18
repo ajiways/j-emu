@@ -1,9 +1,9 @@
 import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { FightDuel } from "./fight-duel.ts";
+import type { FightTeamAssignment } from "./fight-rules.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import { resolveRosterBotTurn } from "./hunt-bot-vs-bot.ts";
-import { huntFightEnemyTeam, huntFightOpenerTeam } from "./hunt-fight-teams.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
 import { HuntRosterBot } from "./hunt-roster-bot.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -16,9 +16,13 @@ export class HuntRoster {
   private readonly extraDuels: FightDuel[] = [];
   private readonly waitingEnemies: HuntRosterBot[] = [];
 
-  constructor(init: HuntBattleInit, effectIds: FightEffectIds) {
-    this.openerTeam = huntFightOpenerTeam(init.purpose);
-    this.enemyTeam = huntFightEnemyTeam(init.purpose);
+  constructor(
+    init: HuntBattleInit,
+    effectIds: FightEffectIds,
+    teamAssignment: FightTeamAssignment,
+  ) {
+    this.openerTeam = teamAssignment.openerTeam;
+    this.enemyTeam = teamAssignment.enemyTeam;
     this.primary = HuntRosterBot.fromSeed(
       {
         fightId: init.botFightId,
@@ -73,10 +77,6 @@ export class HuntRoster {
 
   enemySideCleared(): boolean {
     return this.bots.filter((bot) => bot.team === this.enemyTeam).every((bot) => bot.hp === 0);
-  }
-
-  skipQuestKills(): boolean {
-    return this.openerTeam === 2 && this.bots.length > 1;
   }
 
   bot(fightId: number): HuntRosterBot {

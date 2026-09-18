@@ -1,7 +1,6 @@
 import type { BattleEvent } from "./battle-event.ts";
 import { huntBotSnap } from "./hunt-bot-snap.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
-import { huntFightOpenerTeam } from "./hunt-fight-teams.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
 import type { FightDuel } from "./fight-duel.ts";
@@ -38,7 +37,7 @@ export function huntHumanOppNew(human: HuntHuman): BattleEvent {
 export function shuffleHuntAfterHits(
   input: Readonly<{
     pairing: HuntPairing;
-    hunt: HuntBattleInit;
+    openerTeam: 1 | 2;
     roster: HuntRoster;
     duels: readonly FightDuel[];
     finished: boolean;
@@ -47,7 +46,7 @@ export function shuffleHuntAfterHits(
   const actor = requirePaired(input.pairing);
   const foeBot = input.roster.findBot(input.pairing.duel.otherId(actor.heroId));
   if (!foeBot) return { kind: "none" };
-  const openerTeam = huntFightOpenerTeam(input.hunt.purpose);
+  const openerTeam = input.openerTeam;
   const partner = otherHumanBotDuel(
     input.duels,
     input.pairing.duel,
@@ -106,6 +105,8 @@ export function pairNextHuntWaiter(
   input: Readonly<{
     pairing: HuntPairing;
     hunt: HuntBattleInit;
+    openerTeam: 1 | 2;
+    enemyTeam: 1 | 2;
     botHp: number;
     finished: boolean;
   }>,
@@ -116,7 +117,7 @@ export function pairNextHuntWaiter(
 }> | null {
   if (input.finished) return null;
   const previous = requirePaired(input.pairing);
-  const team = input.botHp > 0 ? huntFightOpenerTeam(input.hunt.purpose) : previous.team;
+  const team = input.botHp > 0 ? input.openerTeam : previous.team;
   const waiter = livingWaiterOnTeam(input.pairing.humans, team);
   if (!waiter) return null;
   retargetDuelTo({ duel: input.pairing.duel, fromHeroId: previous.heroId, waiter });
@@ -126,7 +127,9 @@ export function pairNextHuntWaiter(
     return {
       accountId: waiter.accountId,
       authed: true,
-      events: [{ type: "opponent-new", bot: huntBotSnap(input.hunt, input.botHp) }],
+      events: [
+        { type: "opponent-new", bot: huntBotSnap(input.hunt, input.botHp, input.enemyTeam) },
+      ],
     };
   }
   const opponentId = input.pairing.duel.otherId(waiter.heroId);

@@ -2005,11 +2005,13 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   `BotMeleePresence` / `hitBot` / `presences` / `applyPresence` удалены.
   `alive` входит в `Combatant`, `hp` — нет: живой hp читается только через
   `targetHp`, чтобы устаревшая копия не конкурировала с живым значением.
-  `enemySideCleared` принимает один список участников; (3) извлечь
-  `FightRules` из 36 ветвлений, `teamAssignment` убирает вывод команды из
-  `purpose`, `HuntRoster.skipQuestKills` переезжает в правило (иначе шаг 5
-  не сможет удалить класс — правилу останется нужна `bots.length`);
-  (4) единый `FightSetup { meta, teams }`, три init-формы
+  `enemySideCleared` принимает один список участников; (3) **landed** —
+  `FightRules` как обязательная versioned policy на старте боя:
+  `teamAssignment` вместо `huntFightOpenerTeam`/`hunt-fight-teams.ts`,
+  `skipQuestKills` печётся из стартового `botCount` (квест 1 бот кредитует
+  киллы, несколько — нет). Решения join/leave/aggro/shuffle/bot-turns/history
+  /wire type читают правило, не `kind`/`purpose`. `Battle.purpose` остаётся
+  meta; (4) единый `FightSetup { meta, teams }`, три init-формы
   сводятся к нему, builders становятся адаптерами; (5) один движок паринга
   и один цикл ходов на всех участников независимо от контроллера;
   (6) снять `huntRoster: HuntRoster | null` — мобы живут в общем списке
@@ -2017,7 +2019,7 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   `meta.kind` для settlement/wire. Каждый шаг — отдельный коммит, зелёный
   gate и существующие e2e.
 - **Согласовано с мейнтейнером (2026-09-18):** очередь идёт по шагам этой
-  записи; следующее действие — шаг 3 (`FightRules`). Снятие `HuntRoster` не
+  записи; следующее действие — шаг 4 (`FightSetup`). Снятие `HuntRoster` не
   делается раньше шага 5. Перф-долг боевки из
   [COMBAT.md](../modules/COMBAT.md) § «Инженерный долг» в `ARC-CMB` не входит
   и берётся отдельно.
@@ -2035,6 +2037,15 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   класс дефекта, что снятый снапшот, только отложенный. Единственный ридер
   hp — `targetHp`. `HuntRosterBot.setHp` оставлен: heal в `bot-spell-act` и
   запись после хода бота в `applyBattleBotMelee`.
+- **Найдено на шаге 3:** `skipQuestKills` нельзя было свернуть в
+  `purpose !== "quest"`: 1v1 квест (opener team 2, один бот) киллы **кредитует**;
+  skip только при `botCount > 1`. Квест не клонирует через aggro, поэтому
+  стартовый count равен былому live `HuntRoster.bots.length`. `canLeave` и
+  `canAggro` пекут `instanceCopyId` на старте (hunt в копии — нельзя), а не
+  читают purpose mid-fight. Join — не boolean: `hunt-roster` / `pvp-humans` /
+  `denied`+причина. Shuffle выключен у quest, `pairsNextWaiter` у quest
+  включён (это был `kind === "hunt"`). Шаг 6 больше не зависит от roster для
+  skipQuestKills. `BattleRules` не переименовывали: это тюнинг, не policy.
 - **Найдено при разборе roster (меняет порядок):** `HuntRoster` — не одна
   абстракция, а четыре обязанности в одном классе: контейнер ботов
   (`bots`, `primary`, `snaps`, `findBot`), очередь паринга

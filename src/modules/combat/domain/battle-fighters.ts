@@ -1,7 +1,6 @@
 import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { HuntJoinHuman } from "./hunt-join-human.ts";
-import { huntFightOpenerTeam } from "./hunt-fight-teams.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
 import { HuntHuman } from "./hunt-human.ts";
 import type { PracticeRestore } from "./fight-outcome-snapshot.ts";
@@ -18,7 +17,11 @@ export function isHumanDuelInit(
   return "kind" in init && (init.kind === "friendly-duel" || init.kind === "pvp");
 }
 
-export function huntOpener(init: HuntBattleInit, effectIds: FightEffectIds): HuntHuman {
+export function huntOpener(
+  init: HuntBattleInit,
+  effectIds: FightEffectIds,
+  openerTeam: 1 | 2,
+): HuntHuman {
   return new HuntHuman({
     accountId: init.accountId,
     heroId: init.heroId,
@@ -29,7 +32,7 @@ export function huntOpener(init: HuntBattleInit, effectIds: FightEffectIds): Hun
     maxHp: init.playerMaxHp,
     mp: init.heroMp,
     maxMp: init.heroMaxMp,
-    team: huntFightOpenerTeam(init.purpose),
+    team: openerTeam,
     waiting: false,
     strength: init.heroStrength,
     initiative: init.heroInitiative,

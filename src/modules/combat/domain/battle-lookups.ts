@@ -7,6 +7,7 @@ import type { HuntRoster } from "./hunt-roster.ts";
 import type { HuntPairing } from "./battle-pairing.ts";
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import { resolveMeleeTarget, type MeleeTarget } from "./melee-target.ts";
+import { requireDuelContaining } from "./try-pair-hunt-queues.ts";
 
 export function requireBattleHuman(humans: readonly HuntHuman[], accountId: number): HuntHuman {
   const human = humans.find((entry) => entry.accountId === accountId);
@@ -48,7 +49,7 @@ export function huntPairingOf(
   return { duel, humans, pairedAccountId };
 }
 
-export function resolveBattleMeleeTarget(
+function resolveBattleMeleeTarget(
   attacker: HuntHuman,
   duel: FightDuel,
   humans: readonly HuntHuman[],
@@ -60,4 +61,21 @@ export function resolveBattleMeleeTarget(
     humans,
     bots,
   });
+}
+
+export function battlePairedOpponent(
+  humans: readonly HuntHuman[],
+  duels: readonly FightDuel[],
+  huntRoster: HuntRoster | null,
+  accountId: number,
+): Readonly<{ kind: "human"; accountId: number } | { kind: "bot" }> {
+  const human = requireBattleHuman(humans, accountId);
+  const target = resolveBattleMeleeTarget(
+    human,
+    requireDuelContaining(duels, human.heroId),
+    humans,
+    huntRosterBots(huntRoster),
+  );
+  if (target.kind === "bot") return { kind: "bot" };
+  return { kind: "human", accountId: target.human.accountId };
 }

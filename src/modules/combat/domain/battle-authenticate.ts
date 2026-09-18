@@ -158,7 +158,7 @@ export function authenticateFighter(
   const roster = requireBattleHuntRoster(input.huntRoster);
   const hunt = requireHuntInit(input.init);
   const pairedBot = otherId !== undefined && humanOpponent === null ? roster.bot(otherId) : null;
-  const bot = pairedBot ? pairedBot.snap() : huntBotSnap(hunt, roster.primary.hp);
+  const bot = pairedBot ? pairedBot.snap() : huntBotSnap(hunt, roster.primary.hp, roster.enemyTeam);
   return huntAuthenticateEvents({
     human,
     allies: input.humans,

@@ -16,9 +16,7 @@ export type HuntAggroResult =
 
 export function tryHuntAggro(
   input: Readonly<{
-    kind: "hunt" | "friendly-duel" | "pvp";
-    purpose: "hunt" | "quest" | "friendly-duel" | "pvp";
-    instanceCopyId: number | null;
+    canAggro: boolean;
     finished: boolean;
     humans: readonly HuntHuman[];
     duels: FightDuel[];
@@ -53,12 +51,7 @@ export function tryHuntAggro(
       },
     ],
   });
-  if (
-    input.kind !== "hunt" ||
-    input.purpose !== "hunt" ||
-    input.instanceCopyId !== null ||
-    !input.roster
-  ) {
+  if (!input.canAggro || !input.roster) {
     return deny();
   }
   if (human.casts.aggro < 1) return deny();

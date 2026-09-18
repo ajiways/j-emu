@@ -1,6 +1,7 @@
 import { Battle } from "../domain/battle.ts";
 import type { BattleRules } from "../domain/battle-rules.ts";
 import type { EphemeralBotFightIds } from "../domain/ephemeral-bot-fight-ids.ts";
+import { FightRules } from "../domain/fight-rules.ts";
 import type { HuntRosterBotSeed } from "../domain/hunt-roster-bot.ts";
 import type { RandomSource } from "../domain/random-source.ts";
 import type { HuntStartInput } from "../ports/combat-port.ts";
@@ -15,7 +16,8 @@ export function createHuntBattle(
   rules: BattleRules,
   random: RandomSource,
 ): Battle {
-  if (input.purpose === "hunt" && (input.extraEnemies.length > 0 || input.allies.length > 0)) {
+  const fightRules = huntFightRules(input);
+  if (!fightRules.allowsSideBots && (input.extraEnemies.length > 0 || input.allies.length > 0)) {
     throw new Error("Hunt fights cannot include a quest roster");
   }
   const primaryStrength = appliedStrength(input.botStrength, testBotStrength);
@@ -32,8 +34,22 @@ export function createHuntBattle(
       allies,
     ),
     rules,
+    fightRules,
     random,
   );
+}
+
+function huntFightRules(input: HuntStartInput): FightRules {
+  if (input.purpose === "quest") {
+    return FightRules.for({
+      kind: "quest",
+      botCount: 1 + input.extraEnemies.length + input.allies.length,
+    });
+  }
+  if (input.purpose === "hunt") {
+    return FightRules.for({ kind: "hunt", instanceCopyId: input.instanceCopyId });
+  }
+  throw new Error(`Unknown hunt fight purpose: ${String(input.purpose)}`);
 }
 
 function seedRoster(

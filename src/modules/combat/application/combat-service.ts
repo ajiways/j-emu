@@ -6,7 +6,7 @@ import type { Battle } from "../domain/battle.ts";
 import type { BattleRules } from "../domain/battle-rules.ts";
 import { EphemeralBotFightIds } from "../domain/ephemeral-bot-fight-ids.ts";
 import { HuntJoinDenied } from "../domain/hunt-join-denied.ts";
-import { FIGHT_LEAVE_DENIED, fightLeaveDenied } from "../domain/fight-leave-denied.ts";
+import { FIGHT_LEAVE_DENIED } from "../domain/fight-leave-denied.ts";
 import type { RandomSource } from "../domain/random-source.ts";
 import type { CombatDelay } from "../ports/combat-delay.ts";
 import type { CombatWake } from "../ports/combat-wake.ts";
@@ -195,8 +195,8 @@ export class CombatService implements CombatPort {
     const fightId = requireFightId(input.fightId);
     const battle = this.battleByFight.get(fightId);
     if (!battle || battle.finished) throw new HuntJoinDenied("бой не найден");
-    if (battle.kind === "friendly-duel") throw new HuntJoinDenied("нельзя вмешаться в дуэль");
-    if (battle.purpose === "quest") throw new HuntJoinDenied("нельзя вмешаться в квестовый бой");
+    const join = battle.fightRules.humanJoin;
+    if (join.mode === "denied") throw new HuntJoinDenied(join.reason);
     if (battle.areaId !== input.areaId || battle.instanceCopyId !== input.instanceCopyId) {
       throw new HuntJoinDenied("бой в другой локации");
     }
@@ -263,7 +263,7 @@ export class CombatService implements CombatPort {
     }
     if (command.kind === "leave") {
       const battle = this.byAccount.get(accountId);
-      if (battle && !battle.finished && fightLeaveDenied(battle.purpose, battle.instanceCopyId)) {
+      if (battle && !battle.finished && !battle.fightRules.canLeave) {
         return [
           { type: "command-denied" as const, sequence: command.sequence, err: FIGHT_LEAVE_DENIED },
         ];

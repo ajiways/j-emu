@@ -1,10 +1,15 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { requireCombatLoadout } from "./combat-loadout.ts";
+import type { FightRules } from "./fight-rules.ts";
 import { requireHuntBotSpellBook } from "./hunt-bot-spell-book.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 
-export function requireHuntBattleInit(init: HuntBattleInit, rules: BattleRules): void {
+export function requireHuntBattleInit(
+  init: HuntBattleInit,
+  rules: BattleRules,
+  fightRules: FightRules,
+): void {
   if (init.purpose !== "hunt" && init.purpose !== "quest") {
     throw new Error("Hunt battle purpose must be hunt or quest");
   }
@@ -87,7 +92,7 @@ export function requireHuntBattleInit(init: HuntBattleInit, rules: BattleRules):
   }
   if (typeof init.chatWin !== "string") throw new Error("Quest fight chatWin is required");
   if (typeof init.chatLose !== "string") throw new Error("Quest fight chatLose is required");
-  if (init.purpose === "hunt" && (init.extraEnemies.length > 0 || init.allies.length > 0)) {
+  if (!fightRules.allowsSideBots && (init.extraEnemies.length > 0 || init.allies.length > 0)) {
     throw new Error("Hunt fights cannot include a quest roster");
   }
 }

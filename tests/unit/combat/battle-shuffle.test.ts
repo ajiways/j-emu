@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import type { HuntBattleInit } from "../../../src/modules/combat/domain/hunt-battle-init.ts";
-import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
+import { createUnitBattle } from "../../support/fight-rules.ts";
 import {
   EMPTY_HUNT_BOT_SPELL_BOOK,
   GRYZL_FIGHT_LOOK,
@@ -54,11 +53,7 @@ function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
 
 describe("Battle 3↔3 shuffle", () => {
   it("hands the bot to a waiter without changing HP", () => {
-    const battle = new Battle(
-      huntInit(),
-      UNIT_BATTLE_RULES,
-      new SequenceRandom([1, 1, 1, 1, 1, 1]),
-    );
+    const battle = createUnitBattle(huntInit(), new SequenceRandom([1, 1, 1, 1, 1, 1]));
     battle.authenticate(1, AUTH_NOW);
     battle.addHuman({
       accountId: 2,
@@ -101,11 +96,7 @@ describe("Battle 3↔3 shuffle", () => {
   });
 
   it("keeps 3↔3 until a waiter joins and hands the bot after the next player hit", () => {
-    const battle = new Battle(
-      huntInit(),
-      UNIT_BATTLE_RULES,
-      new SequenceRandom([1, 1, 1, 1, 1, 1, 1]),
-    );
+    const battle = createUnitBattle(huntInit(), new SequenceRandom([1, 1, 1, 1, 1, 1, 1]));
     battle.authenticate(1, AUTH_NOW);
     for (let round = 0; round < 3; round += 1) {
       expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");
@@ -143,9 +134,8 @@ describe("Battle 3↔3 shuffle", () => {
   });
 
   it("cross-swaps two 3↔3 human↔bot duels without changing HP", () => {
-    const battle = new Battle(
+    const battle = createUnitBattle(
       huntInit(),
-      UNIT_BATTLE_RULES,
       new SequenceRandom([0.4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
     );
     battle.authenticate(1, AUTH_NOW);

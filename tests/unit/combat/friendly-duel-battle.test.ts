@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import type { FriendlyDuelBattleInit } from "../../../src/modules/combat/domain/friendly-duel-battle-init.ts";
-import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
+import { createUnitBattle } from "../../support/fight-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
 const AUTH_NOW = Date.parse("2026-09-07T12:00:00.000Z");
@@ -55,7 +54,7 @@ function duelInit(): FriendlyDuelBattleInit {
 
 describe("friendly duel Battle", () => {
   it("lets the challenger strike the acceptor and finishes without a bot", () => {
-    const battle = new Battle(duelInit(), UNIT_BATTLE_RULES, new SequenceRandom([1, 1, 1]));
+    const battle = createUnitBattle(duelInit(), new SequenceRandom([1, 1, 1]));
     const opener = battle.authenticate(1, AUTH_NOW);
     expect(opener[0]).toMatchObject({
       type: "friendly-bootstrap",

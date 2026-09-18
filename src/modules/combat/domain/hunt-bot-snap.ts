@@ -1,8 +1,7 @@
 import type { HuntBotSnap } from "./battle-event.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
-import { huntFightEnemyTeam } from "./hunt-fight-teams.ts";
 
-export function huntBotSnap(init: HuntBattleInit, hp: number): HuntBotSnap {
+export function huntBotSnap(init: HuntBattleInit, hp: number, enemyTeam: 1 | 2): HuntBotSnap {
   return {
     id: init.botFightId,
     nick: init.botNick,
@@ -13,7 +12,7 @@ export function huntBotSnap(init: HuntBattleInit, hp: number): HuntBotSnap {
     avatar: init.botAvatar,
     sk: init.botSk,
     body: init.botBody,
-    team: huntFightEnemyTeam(init.purpose),
+    team: enemyTeam,
     dealtDamage: 0,
   };
 }

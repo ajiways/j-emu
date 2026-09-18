@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { Battle } from "../../../src/modules/combat/domain/battle.ts";
+import type { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import type { CombatLoadout } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import type { HuntBattleInit } from "../../../src/modules/combat/domain/hunt-battle-init.ts";
 import {
   aoeKind1Damage,
   gloveKind1IsAoe,
 } from "../../../src/modules/combat/domain/glove-aoe-targets.ts";
-import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { createCombatService } from "../../support/create-combat-service.ts";
+import { createUnitBattle } from "../../support/fight-rules.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import {
   EMPTY_HUNT_BOT_SPELL_BOOK,
@@ -119,11 +119,7 @@ function joinTeam1() {
 }
 
 function pairedHunt(): Battle {
-  const battle = new Battle(
-    huntInit(),
-    UNIT_BATTLE_RULES,
-    new SequenceRandom([0.4, 8, 8, 8, 8, 8, 8]),
-  );
+  const battle = createUnitBattle(huntInit(), new SequenceRandom([0.4, 8, 8, 8, 8, 8, 8]));
   battle.authenticate(1, AUTH_NOW);
   battle.addHuman(joinTeam1());
   battle.authenticate(2, AUTH_NOW);
@@ -193,7 +189,7 @@ describe("glove AOE leftover", () => {
   });
 
   it("writes AOE HP onto a waiting clone with no paired hunter", () => {
-    const battle = new Battle(huntInit({ heroAggroCharges: 1 }), UNIT_BATTLE_RULES, {
+    const battle = createUnitBattle(huntInit({ heroAggroCharges: 1 }), {
       integer(minInclusive) {
         return minInclusive;
       },

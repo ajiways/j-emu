@@ -13,7 +13,7 @@ export class FinishedFightRecorder {
   ) {}
 
   async record(battle: Battle, winnerTeam: 1 | 2): Promise<void> {
-    if (battle.kind === "hunt") {
+    if (battle.fightRules.historyRow === "hunt-bot") {
       await this.store.record(
         huntFinishedFightRecord({
           fightId: battle.id,
@@ -27,7 +27,10 @@ export class FinishedFightRecorder {
       );
       return;
     }
-    if (battle.kind !== "friendly-duel") return;
+    if (battle.fightRules.historyRow === "none") return;
+    if (battle.fightRules.historyRow !== "practice-humans") {
+      throw new Error(`Unknown fight history row: ${String(battle.fightRules.historyRow)}`);
+    }
     await this.store.record(
       practiceFinishedFightRecord({
         fightId: battle.id,

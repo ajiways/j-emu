@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { Battle } from "../domain/battle.ts";
 import { fightStartOf } from "./fight-start-of.ts";
 import type { BattleRules } from "../domain/battle-rules.ts";
+import { FightRules } from "../domain/fight-rules.ts";
 import type { RandomSource } from "../domain/random-source.ts";
 import type { FightStart, FriendlyDuelStartInput } from "../ports/combat-port.ts";
 import { friendlyDuelInitFromStart } from "./friendly-duel-init-from-start.ts";
@@ -27,13 +28,21 @@ export function startHumanDuelBattle(
   const fightId = deps.requireFightId(input.fightId);
   if (deps.battleByFight.has(fightId)) throw new Error(`Fight ${fightId} is already active`);
   const accessKey = randomBytes(16).toString("hex");
+  const fightRules = humanDuelFightRules(kind);
   const battle = new Battle(
     friendlyDuelInitFromStart(input, accessKey, deps.now, kind),
     deps.rules,
+    fightRules,
     deps.random,
   );
   deps.byAccount.set(input.challenger.accountId, battle);
   deps.byAccount.set(input.acceptor.accountId, battle);
   deps.battleByFight.set(fightId, battle);
   return fightStartOf(battle, input.acceptor.heroId);
+}
+
+function humanDuelFightRules(kind: "friendly-duel" | "pvp"): FightRules {
+  if (kind === "friendly-duel") return FightRules.for({ kind: "friendly-duel" });
+  if (kind === "pvp") return FightRules.for({ kind: "pvp" });
+  throw new Error(`Unknown human duel kind: ${String(kind)}`);
 }

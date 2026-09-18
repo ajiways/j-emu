@@ -195,7 +195,7 @@ export class CombatTerminal {
     return buildFightResultInfo({
       fightId: battle.id,
       title: this.resultTitle(battle, humans),
-      type: battle.kind === "friendly-duel" ? "6" : "1",
+      type: battle.fightRules.wireFightType,
       areaId: battle.areaId,
       timeout: battle.turnTimeoutSeconds,
       startedAt: battle.startedAt,
@@ -208,7 +208,7 @@ export class CombatTerminal {
   }
 
   private resultTitle(battle: Battle, humans: readonly { nick: string; team: 1 | 2 }[]): string {
-    if (battle.kind === "hunt") {
+    if (battle.fightRules.resultTitleFromBot) {
       const history = battle.huntHistory();
       return huntFightTitle(history.heroNick, history.botNick);
     }
@@ -231,9 +231,9 @@ export class CombatTerminal {
       winnerTeam,
       outcome,
       purpose: battle.purpose,
-      ...(battle.purpose === "quest" ? battle.questChat() : {}),
-      ...(battle.skipQuestKills() ? { skipQuestKills: true } : {}),
-      ...(battle.purpose === "hunt" || battle.purpose === "quest"
+      ...(battle.fightRules.includesQuestChat ? battle.questChat() : {}),
+      ...(battle.fightRules.skipQuestKills ? { skipQuestKills: true } : {}),
+      ...(battle.fightRules.includesBotIdInNotice
         ? { botId: battle.huntHistory().botArtikulId }
         : {}),
     });

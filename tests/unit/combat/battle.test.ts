@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { Battle } from "../../../src/modules/combat/domain/battle.ts";
+import type { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import type { HuntBattleInit } from "../../../src/modules/combat/domain/hunt-battle-init.ts";
-import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
+import { createUnitBattle } from "../../support/fight-rules.ts";
 import {
   EMPTY_HUNT_BOT_SPELL_BOOK,
   GRYZL_FIGHT_LOOK,
@@ -54,7 +54,7 @@ function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
 const AUTH_NOW = Date.parse("2026-09-07T12:00:00.000Z");
 
 function createBattle(random: SequenceRandom, overrides: Partial<HuntBattleInit> = {}): Battle {
-  return new Battle(huntInit(overrides), UNIT_BATTLE_RULES, random);
+  return createUnitBattle(huntInit(overrides), random);
 }
 
 describe("Battle", () => {
@@ -387,9 +387,8 @@ describe("Battle", () => {
   });
 
   it("gives the joiner the waiting clone after they kill their foe", () => {
-    const battle = new Battle(
+    const battle = createUnitBattle(
       huntInit({ heroStrength: 200, botMaxHp: 8, heroAggroCharges: 2 }),
-      UNIT_BATTLE_RULES,
       {
         integer(minInclusive) {
           return minInclusive;

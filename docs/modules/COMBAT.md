@@ -665,8 +665,8 @@ deny «нельзя вмешаться в дуэль». Quest — CMB-09.
 `startPvp` несёт `instanceCopyId` копии матча и `fightFlags` с
 composition (combat battleground не импортирует). JOIN `fight|conf` —
 `pvpConfiguration`: `is_pvp:1`, `type:"1"`, `can_leave:1`, тот же
-`instance_id`/`flags`, что ATTACK. Leave в PvP copy разрешён; dungeon
-hunt copy по-прежнему `fightLeaveDenied`.
+`instance_id`/`flags`, что ATTACK. Leave в PvP copy разрешён (`FightRules.canLeave`);
+dungeon hunt copy — нет.
 
 Seekers JOIN — waiting humans (`pairHuntQueues`, roster `null`).
 Стартовая 1v1 PvP-пара не seeker. Team-1 waiter без unpaired team-2
@@ -776,9 +776,9 @@ Landed raw-AMF. Product-status не менять здесь. Очередь:
 
 `startQuestFight` поднимает весь authored `enemies[]`/`allies[]` (`count`
 копий). `purpose:"quest"`: `fight|conf.flags:"8"`, `win_fight` после победы.
-Ростер (больше одного бота) ставит `skipQuestKills` — kill-signal не идёт,
-чтобы не бампить чужие `kill`. 1v1 quest-fight по-прежнему бампает kill
-(`q_engine_fight`). Ally/enemy боты — ephemeral IDs, тот же `FightDuel`,
+`FightRules.skipQuestKills` на старте: ростер больше одного бота не шлёт
+kill-signal, чтобы не бампить чужие `kill`; 1v1 quest-fight по-прежнему
+бампит kill (`q_engine_fight`). Ally/enemy боты — ephemeral IDs, тот же `FightDuel`,
 bot↔bot. `chat_*` — ChatDesk после start / terminal. Синтетика
 `q_engine_roster` (bots 2+32 vs ally 4). Акрилон 83–90 не этот срез. Deny
 leave — QST-ENG-04. CEF leftover
@@ -848,6 +848,33 @@ hp в `Combatant` намеренно нет: единственный ридер
 унификации. Копия hp на wrap отдавала бы значение **до** удара и повторила бы
 тот дефект, из-за которого снимали `BotMeleePresence`.
 
+## FightRules
+
+`FightRules` — именованная versioned policy разрешений и следствий боя
+(`version: 1`). Это не `BattleRules` (числовой тюнинг: STR/урон, crit,
+таймауты) и не inventory/world «FightRules 203» из
+[INVENTORY.md](INVENTORY.md) (запрет layout в бою). Соседство имён
+намеренное: объекты разные, сливать нельзя.
+
+Конструируется явно на границе старта: `createHuntBattle` /
+`startHumanDuelBattle` вызывают `FightRules.for({ kind })` и передают
+экземпляр в `Battle`. Domain не выводит правило из `purpose`. Нет полей
+по умолчанию и нет «безопасного» варианта на неизвестный тип: неизвестный
+`kind`, отсутствующий экземпляр, неизвестная `version` — явная ошибка.
+
+Следствия, не ярлыки типа боя: `teamAssignment` (quest opener 2 / enemy 1);
+`humanJoin` `hunt-roster` / `pvp-humans` / `denied`+причина; `canLeave` и
+`canAggro` (у hunt пекутся из `instanceCopyId === null`); `skipQuestKills`
+(квест с одним ботом кредитует киллы, с несколькими — нет: стартовый
+`botCount > 1`, не live roster); `allowsSideBots`; `shufflesAfterHits`
+(quest выключен) vs `pairsNextWaiter` (quest включён — это был kind hunt);
+`hasBotTurns`; `awardsHonor` / `restoresFighters`; `wireFightType` `"1"`/`"6"`;
+`historyRow`; `resultTitleFromBot`; `includesQuestChat` /
+`includesBotIdInNotice`.
+
+`Battle.purpose` / `Battle.kind` остаются как meta для settlement, истории и
+wire (шаг 7 ARC-CMB). Решения в domain читают `FightRules`.
+
 ## Инженерный долг
 
 Каноническое место для долга боевки. Ничего из списка не меняет продуктовый
@@ -906,8 +933,8 @@ death durability, refill кармана, EXP, деньги и по одному 
 `DOT_DURATION_TURNS` держит override спелла `396`. Должно приходить из
 каталога.
 
-**Размер файлов.** `battle.ts` 399 строк при лимите 400, `combat-service.ts`
-393, `hunt-fight-settlement.ts` 376; всего в combat семь файлов свыше
+**Размер файлов.** `battle.ts` и `combat-service.ts` у лимита 400,
+`hunt-fight-settlement.ts` 376; всего в combat семь файлов свыше
 порога пересмотра 250. Декомпозиция частично входит в `ARC-CMB`.
 
 ## Границы модулей

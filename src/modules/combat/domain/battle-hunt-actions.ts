@@ -5,17 +5,16 @@ import {
   requireAuthedHuman,
   requireBattleHuman,
   requireBattleHuntRoster,
-  requireHuntInit,
 } from "./battle-lookups.ts";
 import { applyBotTurn, applyPairedGloveEnding, applyPairedMelee } from "./battle-strikes.ts";
 import type { FightDuel } from "./fight-duel.ts";
+import type { FightRules } from "./fight-rules.ts";
 import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import type { KeepTurnResult } from "./hunt-cast.ts";
 import { tryGloveKeepTurn } from "./hunt-cast.ts";
 import type { HuntHuman } from "./hunt-human.ts";
-import { huntFightEnemyTeam } from "./hunt-fight-teams.ts";
 import type { BotMeleeResult } from "./hunt-melee.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
 import { persChangeForParticipants } from "./melee-pers-change.ts";
@@ -24,7 +23,7 @@ import type { RandomSource } from "./random-source.ts";
 import { requireDuelContaining } from "./try-pair-hunt-queues.ts";
 
 type HuntActionState = Readonly<{
-  kind: "hunt" | "friendly-duel" | "pvp";
+  fightRules: FightRules;
   finished: boolean;
   humans: HuntHuman[];
   duels: FightDuel[];
@@ -108,10 +107,9 @@ export function applyBattleBotMelee(
   accountId: number,
   living: readonly HuntHuman[],
 ): BotMeleeResult & Readonly<{ finished: boolean }> {
-  if (state.kind !== "hunt") throw new Error("Human duel has no bot to take a turn");
+  if (!state.fightRules.hasBotTurns) throw new Error("Human duel has no bot to take a turn");
   const roster = requireBattleHuntRoster(state.huntRoster);
   if (state.finished) throw new Error("Cannot resolve bot melee on a finished battle");
-  const hunt = requireHuntInit(state.init);
   const target = requireBattleHuman(state.humans, accountId);
   const duel = requireDuelContaining(state.duels, target.heroId);
   const bot = roster.bot(duel.otherId(target.heroId));
@@ -130,7 +128,7 @@ export function applyBattleBotMelee(
     ),
     living,
     duel,
-    winnerTeam: huntFightEnemyTeam(hunt.purpose),
+    winnerTeam: state.fightRules.teamAssignment.enemyTeam,
   });
   bot.setHp(result.botHp);
   return {

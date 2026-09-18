@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import type { HuntBattleInit } from "../../../src/modules/combat/domain/hunt-battle-init.ts";
-import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
+import { createUnitBattle } from "../../support/fight-rules.ts";
 import {
   EMPTY_HUNT_BOT_SPELL_BOOK,
   GRYZL_FIGHT_LOOK,
@@ -73,7 +72,7 @@ function joinTeam1() {
 
 describe("hunt aggro clone", () => {
   it("clones the paired enemy bot and pairs a waiting team-1 hunter", () => {
-    const battle = new Battle(huntInit(), UNIT_BATTLE_RULES, new SequenceRandom([0.4]));
+    const battle = createUnitBattle(huntInit(), new SequenceRandom([0.4]));
     battle.authenticate(1, AUTH_NOW);
     battle.addHuman(joinTeam1());
     battle.authenticate(2, AUTH_NOW);
@@ -95,11 +94,7 @@ describe("hunt aggro clone", () => {
   });
 
   it("puts the killer in oppwait when the other hunter still has a live bot", () => {
-    const battle = new Battle(
-      huntInit({ botMaxHp: 8 }),
-      UNIT_BATTLE_RULES,
-      new SequenceRandom([0.4, 8]),
-    );
+    const battle = createUnitBattle(huntInit({ botMaxHp: 8 }), new SequenceRandom([0.4, 8]));
     battle.authenticate(1, AUTH_NOW);
     battle.addHuman(joinTeam1());
     battle.authenticate(2, AUTH_NOW);
@@ -120,7 +115,7 @@ describe("hunt aggro clone", () => {
   });
 
   it("bootstraps the clone as the joiner foe when fight-auth is after pairing", () => {
-    const battle = new Battle(huntInit(), UNIT_BATTLE_RULES, new SequenceRandom([0.4]));
+    const battle = createUnitBattle(huntInit(), new SequenceRandom([0.4]));
     battle.authenticate(1, AUTH_NOW);
     battle.addHuman(joinTeam1());
     expect(battle.tryAggro(1, 1_000_000, () => 1_000_001).kind).toBe("resolved");
@@ -138,11 +133,7 @@ describe("hunt aggro clone", () => {
   });
 
   it("hands the clone after the current outdoor bot dies", () => {
-    const battle = new Battle(
-      huntInit({ botMaxHp: 8 }),
-      UNIT_BATTLE_RULES,
-      new SequenceRandom([8]),
-    );
+    const battle = createUnitBattle(huntInit({ botMaxHp: 8 }), new SequenceRandom([8]));
     battle.authenticate(1, AUTH_NOW);
     expect(battle.tryAggro(1, 1_000_000, () => 1_000_001).kind).toBe("resolved");
     expect(battle.foeBotSnap(1).id).toBe(1_000_000);
@@ -163,9 +154,8 @@ describe("hunt aggro clone", () => {
   });
 
   it("swaps to the waiting clone after 3↔3 hits", () => {
-    const battle = new Battle(
+    const battle = createUnitBattle(
       huntInit({ heroStrength: 10, botStrength: 10, botMaxHp: 50 }),
-      UNIT_BATTLE_RULES,
       new SequenceRandom([1, 1, 1, 1, 1, 1]),
     );
     battle.authenticate(1, AUTH_NOW);
@@ -186,11 +176,7 @@ describe("hunt aggro clone", () => {
   });
 
   it("denies quest, copy, and zero-charge outdoor without spending", () => {
-    const quest = new Battle(
-      huntInit({ purpose: "quest" }),
-      UNIT_BATTLE_RULES,
-      new SequenceRandom([0.4]),
-    );
+    const quest = createUnitBattle(huntInit({ purpose: "quest" }), new SequenceRandom([0.4]));
     quest.authenticate(1, AUTH_NOW);
     const quested = quest.tryAggro(1, 1_000_000, () => 1_000_001);
     expect(quested).toMatchObject({
@@ -201,11 +187,7 @@ describe("hunt aggro clone", () => {
         { type: "native-count", srcId: 7, count: 1 },
       ],
     });
-    const copy = new Battle(
-      huntInit({ instanceCopyId: 7 }),
-      UNIT_BATTLE_RULES,
-      new SequenceRandom([0.4]),
-    );
+    const copy = createUnitBattle(huntInit({ instanceCopyId: 7 }), new SequenceRandom([0.4]));
     copy.authenticate(1, AUTH_NOW);
     expect(copy.tryAggro(1, 1_000_000, () => 1_000_001)).toMatchObject({
       kind: "resolved",
@@ -214,11 +196,7 @@ describe("hunt aggro clone", () => {
         { type: "native-count", srcId: 7, count: 1 },
       ],
     });
-    const empty = new Battle(
-      huntInit({ heroAggroCharges: 0 }),
-      UNIT_BATTLE_RULES,
-      new SequenceRandom([0.4]),
-    );
+    const empty = createUnitBattle(huntInit({ heroAggroCharges: 0 }), new SequenceRandom([0.4]));
     empty.authenticate(1, AUTH_NOW);
     expect(empty.tryAggro(1, 1_000_000, () => 1_000_001)).toMatchObject({
       kind: "resolved",
@@ -231,7 +209,7 @@ describe("hunt aggro clone", () => {
   });
 
   it("lets a waiting joiner spend their own charge on the opener bot", () => {
-    const battle = new Battle(huntInit(), UNIT_BATTLE_RULES, new SequenceRandom([0.4, 0.4]));
+    const battle = createUnitBattle(huntInit(), new SequenceRandom([0.4, 0.4]));
     battle.authenticate(1, AUTH_NOW);
     battle.addHuman(joinTeam1());
     battle.authenticate(2, AUTH_NOW);

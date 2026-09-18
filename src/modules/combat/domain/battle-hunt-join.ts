@@ -3,6 +3,7 @@ import { huntJoiner } from "./battle-fighters.ts";
 import { requireBattleHuntRoster, requireHuntInit } from "./battle-lookups.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
+import type { FightRules } from "./fight-rules.ts";
 import { huntBotSnap } from "./hunt-bot-snap.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
@@ -26,7 +27,7 @@ export function huntHistoryOf(opener: HuntHuman, hunt: HuntBattleInit) {
 }
 
 export function joinBattleHuman(input: {
-  kind: "hunt" | "friendly-duel" | "pvp";
+  fightRules: FightRules;
   finished: boolean;
   humans: HuntHuman[];
   huntRoster: HuntRoster | null;
@@ -37,26 +38,34 @@ export function joinBattleHuman(input: {
   random: RandomSource;
   effectIds: FightEffectIds;
 }): BattleEvent {
+  const join = input.fightRules.humanJoin;
+  if (join.mode === "denied") {
+    throw new Error(join.reason);
+  }
   const roster =
-    input.kind === "pvp"
+    join.mode === "pvp-humans"
       ? addPvpHuman({
-          kind: input.kind,
           finished: input.finished,
           humans: input.humans,
           join: input.join,
           hasHuman: input.hasHuman,
           effectIds: input.effectIds,
         })
-      : addHuntHuman({
-          kind: input.kind,
-          finished: input.finished,
-          humans: input.humans,
-          roster: requireBattleHuntRoster(input.huntRoster),
-          hunt: requireHuntInit(input.init),
-          join: input.join,
-          hasHuman: input.hasHuman,
-          effectIds: input.effectIds,
-        });
+      : join.mode === "hunt-roster"
+        ? addHuntHuman({
+            finished: input.finished,
+            humans: input.humans,
+            roster: requireBattleHuntRoster(input.huntRoster),
+            hunt: requireHuntInit(input.init),
+            join: input.join,
+            hasHuman: input.hasHuman,
+            effectIds: input.effectIds,
+          })
+        : (() => {
+            throw new Error(
+              `Unknown human join mode: ${String((join as { mode?: unknown }).mode)}`,
+            );
+          })();
   pairHuntQueues({
     humans: input.humans,
     duels: input.duels,
@@ -67,7 +76,6 @@ export function joinBattleHuman(input: {
 }
 
 function addHuntHuman(input: {
-  kind: "hunt" | "friendly-duel" | "pvp";
   finished: boolean;
   humans: HuntHuman[];
   roster: HuntRoster;
@@ -76,7 +84,6 @@ function addHuntHuman(input: {
   hasHuman: (accountId: number, heroId: number) => boolean;
   effectIds: FightEffectIds;
 }): BattleEvent {
-  if (input.kind !== "hunt") throw new Error("Cannot join a friendly duel");
   if (input.finished) throw new Error("Cannot join a finished battle");
   if (input.hasHuman(input.join.accountId, input.join.heroId)) {
     throw new Error("Human is already in this battle");
@@ -89,20 +96,18 @@ function addHuntHuman(input: {
   return {
     type: "roster-updated",
     humans: input.humans.map((entry) => entry.snapshot()),
-    bot: huntBotSnap(input.hunt, input.roster.primary.hp),
+    bot: huntBotSnap(input.hunt, input.roster.primary.hp, input.roster.enemyTeam),
     joined: human.snapshot(),
   };
 }
 
 function addPvpHuman(input: {
-  kind: "hunt" | "friendly-duel" | "pvp";
   finished: boolean;
   humans: HuntHuman[];
   join: HuntJoinHuman;
   hasHuman: (accountId: number, heroId: number) => boolean;
   effectIds: FightEffectIds;
 }): BattleEvent {
-  if (input.kind !== "pvp") throw new Error("Cannot PvP-join a non-PvP battle");
   if (input.finished) throw new Error("Cannot join a finished battle");
   if (input.hasHuman(input.join.accountId, input.join.heroId)) {
     throw new Error("Human is already in this battle");

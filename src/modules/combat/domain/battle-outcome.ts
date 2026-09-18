@@ -1,5 +1,6 @@
 import { isFriendlyDuelInit, isHumanDuelInit, practiceRestoreFrom } from "./battle-fighters.ts";
 import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
+import type { FightRules } from "./fight-rules.ts";
 import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { FightOutcomeKind, FightOutcomeSnapshot } from "./fight-outcome-snapshot.ts";
@@ -18,6 +19,7 @@ export function battleOutcomeSnapshot(
     kind: FightOutcomeKind;
     winnerTeam: 1 | 2;
     humans: readonly HuntHuman[];
+    fightRules: FightRules;
   }>,
 ): FightOutcomeSnapshot {
   const humans = input.humans.map((human) => ({
@@ -32,7 +34,10 @@ export function battleOutcomeSnapshot(
     leftLive: human.leftLive,
     pocket: human.pocketCells(),
   }));
-  if (isHumanDuelInit(input.init) && input.init.kind === "pvp") {
+  if (input.fightRules.awardsHonor) {
+    if (!isHumanDuelInit(input.init)) {
+      throw new Error("Honor outcome requires a human duel init");
+    }
     return {
       mode: "pvp",
       fightId: input.fightId,
@@ -41,7 +46,10 @@ export function battleOutcomeSnapshot(
       humans,
     };
   }
-  if (isFriendlyDuelInit(input.init)) {
+  if (input.fightRules.restoresFighters) {
+    if (!isFriendlyDuelInit(input.init)) {
+      throw new Error("Practice restore requires a friendly duel init");
+    }
     return {
       mode: "friendly-practice",
       fightId: input.fightId,
@@ -53,6 +61,9 @@ export function battleOutcomeSnapshot(
         practiceRestoreFrom(input.init.acceptor),
       ],
     };
+  }
+  if (isHumanDuelInit(input.init)) {
+    throw new Error("Hunt outcome requires a hunt battle init");
   }
   return {
     mode: "hunt",

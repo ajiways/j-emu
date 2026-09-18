@@ -73,7 +73,14 @@ export function runnedFightRecordOf(battle: Battle, now: Date): RunnedFightRecor
   if (!lead) throw new Error("Runned fight requires a human");
   const foe = bots[0] ?? humans.find((human) => human.team === 2);
   if (!foe) throw new Error("Runned fight requires an opponent");
-  const type = battle.kind === "friendly-duel" ? PRACTICE_FIGHT_TYPE : HUNT_FIGHT_TYPE;
+  const type =
+    battle.fightRules.wireFightType === "6"
+      ? PRACTICE_FIGHT_TYPE
+      : battle.fightRules.wireFightType === "1"
+        ? HUNT_FIGHT_TYPE
+        : (() => {
+            throw new Error(`Unknown wire fight type: ${String(battle.fightRules.wireFightType)}`);
+          })();
   const levels = [...humans.map((human) => human.level), ...bots.map((bot) => bot.level)];
   const levelMin = Math.min(...levels);
   const levelMax = Math.max(...levels);
