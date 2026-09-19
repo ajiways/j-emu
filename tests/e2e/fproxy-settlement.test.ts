@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Application } from "../../src/app/application.ts";
+import type { RandomSource } from "../../src/modules/combat/domain/random-source.ts";
 import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import {
   AuthenticatedClient,
@@ -25,6 +26,19 @@ import {
   personalEsrvObject,
   killExperienceUnitframe,
 } from "../support/harness/wire-payload.ts";
+
+/** Max melee roll, no crit/dodge/block. 3↔3 leaves leftover HP for the joiner on Gryzl. */
+const maxMeleeRandom: RandomSource = {
+  integer(minInclusive, maxInclusive) {
+    if (minInclusive > maxInclusive) {
+      throw new Error(`Random range ${minInclusive}..${maxInclusive} is invalid`);
+    }
+    return maxInclusive;
+  },
+  unit() {
+    return 0.99;
+  },
+};
 
 describe("fproxy settlement", () => {
   let harness: ApplicationHarness;
@@ -346,6 +360,7 @@ describe("fproxy settlement two hunters and refill", () => {
   beforeEach(async () => {
     harness = new ApplicationHarness(undefined, undefined, {
       lootRandom: new SequenceRandom([0, 0, 0, 0, 0, 0, 0, 0]),
+      combatRandom: maxMeleeRandom,
     });
     application = await harness.start();
   });
@@ -379,6 +394,8 @@ describe("fproxy settlement two hunters and refill", () => {
     await strikeUntilHuntFinish(a, (ms) => harness.elapseCombat(ms), 6, b);
     const lootA = personalEsrvObject(await a.pollEsrv())["fight|loot"];
     const lootB = personalEsrvObject(await b.pollEsrv())["fight|loot"];
+    // Glove opener deals more of Gryzl after 3↔3, so they take the larger share of
+    // baseExp 15; remainder goes to the top damager. Joiner still gets a non-zero slice.
     expect(lootA).toMatchObject({ experience: 11, money: "0.2" });
     expect(lootB).toMatchObject({ experience: 4, money: "0" });
     const afterA = await a.objectAction({ object: "common", action: "init2", sq: 20 });

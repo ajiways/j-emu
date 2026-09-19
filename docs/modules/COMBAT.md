@@ -927,6 +927,14 @@ death durability, refill кармана, EXP, деньги и по одному 
 `wakePort?.wake`). В composition root все привязаны, но ошибка сборки даст
 тихую деградацию вместо fail-fast.
 
+**Молчаливый production RNG.** `CombatModule.create` подставляет
+`input.random ?? new SystemRandomSource()`, а `CompositionRoot.build` то же
+самое для `lootRandom` / `upgradeRandom` / `wanderRandom` / `farmRandom` /
+`partyRandom` / `ambushRandom`. Пропущенный `extras.combatRandom` не
+fail-fast, а уходит в `Math.random`; e2e с точной долей урона из-за этого
+мигают и маскируют регресс. Лечение: обязательный `RandomSource` без `??`,
+явная ошибка в composition, если extra не передали.
+
 **Battleground.** `PostgresBattlegroundHistory.list` делает запрос игроков
 на каждую строку страницы; под фактический `WHERE bg_id` +
 `ORDER BY time_finish` индекса нет (есть только `uniqueIndex(copy_id)`).
