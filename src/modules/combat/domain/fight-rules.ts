@@ -36,6 +36,8 @@ type FightRulesContext =
   | Readonly<{ kind: "friendly-duel" }>
   | Readonly<{ kind: "pvp" }>;
 
+export type FightKind = FightRulesContext["kind"];
+
 /**
  * Permissions and consequences of a fight start. Numeric combat knobs stay on
  * `BattleRules`. Callers construct this at the start boundary and pass it in;

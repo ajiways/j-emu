@@ -1,13 +1,10 @@
 import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
-import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
-import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import { huntBotSnap } from "./hunt-bot-snap.ts";
 import type { FightEffectSnap } from "./hunt-human-fight-effects.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
 import type { FightDuel } from "./fight-duel.ts";
-import { isHumanDuelInit } from "./battle-fighters.ts";
-import { requireBattleHuman, requireBattleHuntRoster, requireHuntInit } from "./battle-lookups.ts";
+import { requireBattleHuman, requireBattleHuntRoster } from "./battle-lookups.ts";
 
 function huntAuthenticateEvents(
   input: Readonly<{
@@ -119,7 +116,6 @@ export function authenticateFighter(
     finished: boolean;
     humans: readonly HuntHuman[];
     duels: readonly FightDuel[];
-    init: HuntBattleInit | FriendlyDuelBattleInit;
     huntRoster: HuntRoster | null;
     timeoutSeconds: number;
     accountId: number;
@@ -131,7 +127,7 @@ export function authenticateFighter(
   if (human.authed) throw new Error("Fight session is already authenticated");
   const resume = human.takeResume();
   human.authed = true;
-  if (isHumanDuelInit(input.init)) {
+  if (input.huntRoster === null) {
     const duel = input.duels.find((entry) => entry.has(human.heroId));
     const opponent =
       duel === undefined
@@ -156,9 +152,10 @@ export function authenticateFighter(
   const humanOpponent =
     otherId === undefined ? null : (input.humans.find((entry) => entry.heroId === otherId) ?? null);
   const roster = requireBattleHuntRoster(input.huntRoster);
-  const hunt = requireHuntInit(input.init);
   const pairedBot = otherId !== undefined && humanOpponent === null ? roster.bot(otherId) : null;
-  const bot = pairedBot ? pairedBot.snap() : huntBotSnap(hunt, roster.primary.hp, roster.enemyTeam);
+  const bot = pairedBot
+    ? pairedBot.snap()
+    : huntBotSnap(roster.primary, roster.primary.hp, roster.enemyTeam);
   return huntAuthenticateEvents({
     human,
     allies: input.humans,

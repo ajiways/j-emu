@@ -1,14 +1,18 @@
 import { FightDuel } from "./fight-duel.ts";
 import type { BattleRules } from "./battle-rules.ts";
-import { friendlyHuman, huntOpener, isHumanDuelInit } from "./battle-fighters.ts";
-import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
+import { seedHuman } from "./battle-fighters.ts";
 import { FightEffectIds } from "./fight-effect-ids.ts";
+import type { FightKind } from "./fight-rules.ts";
 import type { FightRules } from "./fight-rules.ts";
-import type { HuntBattleInit } from "./hunt-battle-init.ts";
+import {
+  aiRosterSeed,
+  fightSetupTeamAis,
+  fightSetupTeamHumans,
+  type FightSetup,
+} from "./fight-setup.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { HuntRoster } from "./hunt-roster.ts";
-import { requireFriendlyDuelBattleInit } from "./require-friendly-duel-battle-init.ts";
-import { requireHuntBattleInit } from "./require-hunt-battle-init.ts";
+import { requireFightSetup } from "./require-fight-setup.ts";
 
 export type BattleSeed = Readonly<{
   kind: "hunt" | "friendly-duel" | "pvp";
@@ -19,32 +23,62 @@ export type BattleSeed = Readonly<{
 }>;
 
 export function seedBattleParticipants(
-  init: HuntBattleInit | FriendlyDuelBattleInit,
+  setup: FightSetup,
   rules: BattleRules,
   fightRules: FightRules,
 ): BattleSeed {
-  if (isHumanDuelInit(init)) {
-    requireFriendlyDuelBattleInit(init, rules);
-    const effectIds = new FightEffectIds();
-    const { openerTeam, enemyTeam } = fightRules.teamAssignment;
+  requireFightSetup(setup, rules, fightRules);
+  const effectIds = new FightEffectIds();
+  const startedAtMs = setup.meta.startedAt.getTime();
+  const { openerTeam, enemyTeam } = fightRules.teamAssignment;
+  const humans = [
+    ...fightSetupTeamHumans(setup, openerTeam).map((human) =>
+      seedHuman(human, openerTeam, false, startedAtMs, effectIds),
+    ),
+    ...fightSetupTeamHumans(setup, enemyTeam).map((human) =>
+      seedHuman(human, enemyTeam, false, startedAtMs, effectIds),
+    ),
+  ];
+  if (!fightRules.hasEnemyBots) {
+    const opener = requireTeamHuman(setup, openerTeam, "Human duel opener");
+    const enemy = requireTeamHuman(setup, enemyTeam, "Human duel acceptor");
     return {
-      kind: init.kind,
+      kind: battleKindOf(setup.meta.kind),
       huntRoster: null,
-      pairedAccountId: init.challenger.accountId,
-      humans: [
-        friendlyHuman(init.challenger, openerTeam, false, init.startedAt.getTime(), effectIds),
-        friendlyHuman(init.acceptor, enemyTeam, false, init.startedAt.getTime(), effectIds),
-      ],
-      duels: [new FightDuel(init.challenger.heroId, init.acceptor.heroId, init.challenger.heroId)],
+      pairedAccountId: opener.accountId,
+      humans,
+      duels: [new FightDuel(opener.heroId, enemy.heroId, opener.heroId)],
     };
   }
-  requireHuntBattleInit(init, rules, fightRules);
-  const effectIds = new FightEffectIds();
+  const primary = fightSetupTeamAis(setup, enemyTeam)[0];
+  if (!primary) throw new Error("Fight setup is missing the primary enemy bot");
+  const extraEnemies = fightSetupTeamAis(setup, enemyTeam).slice(1).map(aiRosterSeed);
+  const allies = fightSetupTeamAis(setup, openerTeam).map(aiRosterSeed);
+  const opener = requireTeamHuman(setup, openerTeam, "Hunt opener");
   return {
     kind: "hunt",
-    huntRoster: new HuntRoster(init, effectIds, fightRules.teamAssignment),
-    pairedAccountId: init.accountId,
-    humans: [huntOpener(init, effectIds, fightRules.teamAssignment.openerTeam)],
-    duels: [new FightDuel(init.heroId, init.botFightId, init.heroId)],
+    huntRoster: new HuntRoster({
+      primary: aiRosterSeed(primary),
+      extraEnemies,
+      allies,
+      occupiedIds: humans.map((human) => human.heroId),
+      effectIds,
+      teamAssignment: fightRules.teamAssignment,
+    }),
+    pairedAccountId: opener.accountId,
+    humans,
+    duels: [new FightDuel(opener.heroId, primary.fightId, opener.heroId)],
   };
+}
+
+function requireTeamHuman(setup: FightSetup, team: 1 | 2, label: string) {
+  const human = fightSetupTeamHumans(setup, team)[0];
+  if (!human) throw new Error(`${label} is missing`);
+  return human;
+}
+
+function battleKindOf(kind: FightKind): "hunt" | "friendly-duel" | "pvp" {
+  if (kind === "quest") return "hunt";
+  if (kind === "hunt" || kind === "friendly-duel" || kind === "pvp") return kind;
+  throw new Error(`Unknown fight kind: ${String(kind)}`);
 }

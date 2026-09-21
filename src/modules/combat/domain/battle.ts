@@ -1,7 +1,6 @@
 import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { authenticateFighter } from "./battle-authenticate.ts";
-import { isHumanDuelInit } from "./battle-fighters.ts";
 import { huntHistoryOf, joinBattleHuman } from "./battle-hunt-join.ts";
 import { practiceHistoryOf } from "./practice-fight-history.ts";
 import {
@@ -16,13 +15,11 @@ import {
   requireAuthedHuman,
   requireBattleHuman,
   requireBattleHuntRoster,
-  requireHuntInit,
 } from "./battle-lookups.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import { fightDelayTokens, fightDuelDelayToken } from "./fight-delay-token.ts";
 import { FightRules } from "./fight-rules.ts";
-import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
-import type { HuntBattleInit } from "./hunt-battle-init.ts";
+import type { FightSetup, FightSetupJoin } from "./fight-setup.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { grantTurn as grantHumanTurn, type BotMeleeResult } from "./hunt-melee.ts";
@@ -31,7 +28,6 @@ import { tryPocketCast, tryRageCast, type KeepTurnResult } from "./hunt-cast.ts"
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import { tryHuntAggro, type HuntAggroResult } from "./hunt-aggro.ts";
 import { tickHuntRosterDuels } from "./battle-hunt-runtime.ts";
-import type { HuntJoinHuman } from "./hunt-join-human.ts";
 import type { RandomSource } from "./random-source.ts";
 import { pairNextHuntWaiter, shuffleHuntAfterHits } from "./battle-pairing.ts";
 import { seedBattleParticipants } from "./battle-seed.ts";
@@ -59,23 +55,23 @@ export class Battle {
   readonly huntRoster: HuntRoster | null;
 
   constructor(
-    readonly init: HuntBattleInit | FriendlyDuelBattleInit,
+    readonly setup: FightSetup,
     private readonly rules: BattleRules,
     readonly fightRules: FightRules,
     private readonly random: RandomSource,
   ) {
     FightRules.require(fightRules);
-    this.id = init.fightId;
-    this.accessKey = init.accessKey;
-    this.arena = init.arena;
-    this.areaId = init.areaId;
-    this.instanceCopyId = init.instanceCopyId;
-    this.fightFlags = isHumanDuelInit(init) ? init.fightFlags : null;
-    this.startedAt = init.startedAt;
+    this.id = setup.meta.fightId;
+    this.accessKey = setup.meta.accessKey;
+    this.arena = setup.meta.arena;
+    this.areaId = setup.meta.areaId;
+    this.instanceCopyId = setup.meta.instanceCopyId;
+    this.fightFlags = setup.meta.fightFlags;
+    this.startedAt = setup.meta.startedAt;
     this.turnTimeoutSeconds = rules.turnTimeoutSeconds;
     this.meleeBotCounterMs = rules.meleeBotCounterMs;
     this.turnGrantDelayMs = rules.turnGrantDelayMs;
-    const seed = seedBattleParticipants(init, rules, fightRules);
+    const seed = seedBattleParticipants(setup, rules, fightRules);
     this.kind = seed.kind;
     this.huntRoster = seed.huntRoster;
     this.pairedAccountIdValue = seed.pairedAccountId;
@@ -93,7 +89,7 @@ export class Battle {
     return this.finishedValue;
   }
   get purpose(): "hunt" | "quest" | "friendly-duel" | "pvp" {
-    return this.kind === "hunt" ? requireHuntInit(this.init).purpose : this.kind;
+    return this.setup.meta.kind;
   }
 
   openerTeam(): 1 | 2 {
@@ -101,12 +97,15 @@ export class Battle {
   }
 
   questChat(): Readonly<{ chatWin: string; chatLose: string }> {
-    const hunt = requireHuntInit(this.init);
-    return { chatWin: hunt.chatWin, chatLose: hunt.chatLose };
+    const kind = this.setup.meta.kind;
+    if (kind !== "hunt" && kind !== "quest") {
+      throw new Error("Quest chat is only available for hunt or quest fights");
+    }
+    return { chatWin: this.setup.meta.chatWin, chatLose: this.setup.meta.chatLose };
   }
 
   huntHistory() {
-    return huntHistoryOf(battleOpener(this.humans), requireHuntInit(this.init));
+    return huntHistoryOf(battleOpener(this.humans), requireBattleHuntRoster(this.huntRoster));
   }
 
   practiceHistory() {
@@ -172,13 +171,12 @@ export class Battle {
     return requireDuelContaining(this.duels, human.heroId).nextActorId === human.heroId;
   }
 
-  addHuman(join: HuntJoinHuman): BattleEvent {
+  addHuman(join: FightSetupJoin): BattleEvent {
     return joinBattleHuman({
       fightRules: this.fightRules,
       finished: this.finishedValue,
       humans: this.humans,
       huntRoster: this.huntRoster,
-      init: this.init,
       join,
       hasHuman: (accountId, heroId) => this.hasHuman(accountId, heroId),
       duels: this.duels,
@@ -192,7 +190,6 @@ export class Battle {
       finished: this.finishedValue,
       humans: this.humans,
       duels: this.duels,
-      init: this.init,
       huntRoster: this.huntRoster,
       timeoutSeconds: this.rules.turnTimeoutSeconds,
       accountId,
@@ -313,7 +310,7 @@ export class Battle {
 
   outcome(kind: FightOutcomeKind, winnerTeam: 1 | 2): FightOutcomeSnapshot {
     return battleOutcomeSnapshot({
-      init: this.init,
+      setup: this.setup,
       fightId: this.id,
       kind,
       winnerTeam,
@@ -355,12 +352,13 @@ export class Battle {
     const duel = this.duels.find((entry) => entry.has(previous.heroId));
     if (!duel) return null;
     const pairing = huntPairingOf(duel, this.humans, previousAccountId);
+    const roster = requireBattleHuntRoster(this.huntRoster);
     const result = pairNextHuntWaiter({
       pairing,
-      hunt: requireHuntInit(this.init),
+      roster,
       openerTeam: this.fightRules.teamAssignment.openerTeam,
       enemyTeam: this.fightRules.teamAssignment.enemyTeam,
-      botHp: requireBattleHuntRoster(this.huntRoster).primary.hp,
+      botHp: roster.primary.hp,
       finished: this.finishedValue,
     });
     this.pairedAccountIdValue = pairing.pairedAccountId;
@@ -379,7 +377,6 @@ export class Battle {
       humans: this.humans,
       duels: this.duels,
       huntRoster: this.huntRoster,
-      init: this.init,
       rules: this.rules,
       random: this.random,
       fightId: this.id,

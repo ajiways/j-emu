@@ -1,86 +1,10 @@
-import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
-import type { HuntBattleInit } from "./hunt-battle-init.ts";
-import type { HuntJoinHuman } from "./hunt-join-human.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
+import type { FightSetupHuman, FightSetupJoin } from "./fight-setup.ts";
 import { HuntHuman } from "./hunt-human.ts";
 import type { PracticeRestore } from "./fight-outcome-snapshot.ts";
 
-export function isFriendlyDuelInit(
-  init: HuntBattleInit | FriendlyDuelBattleInit,
-): init is FriendlyDuelBattleInit {
-  return "kind" in init && init.kind === "friendly-duel";
-}
-
-export function isHumanDuelInit(
-  init: HuntBattleInit | FriendlyDuelBattleInit,
-): init is FriendlyDuelBattleInit {
-  return "kind" in init && (init.kind === "friendly-duel" || init.kind === "pvp");
-}
-
-export function huntOpener(
-  init: HuntBattleInit,
-  effectIds: FightEffectIds,
-  openerTeam: 1 | 2,
-): HuntHuman {
-  return new HuntHuman({
-    accountId: init.accountId,
-    heroId: init.heroId,
-    nick: init.heroNick,
-    level: init.heroLevel,
-    kind: init.heroKind,
-    hp: init.playerHp,
-    maxHp: init.playerMaxHp,
-    mp: init.heroMp,
-    maxMp: init.heroMaxMp,
-    team: openerTeam,
-    waiting: false,
-    strength: init.heroStrength,
-    initiative: init.heroInitiative,
-    rage: init.heroRage,
-    dexterity: init.heroDexterity,
-    defense: init.heroDefense,
-    block: init.heroBlock,
-    aggroCharges: init.heroAggroCharges,
-    magPower: init.heroMagPower,
-    magResist: init.heroMagResist,
-    startedAtMs: init.startedAt.getTime(),
-    loadout: init.loadout,
-    appearance: init.appearance,
-    effectIds,
-  });
-}
-
-export function huntJoiner(join: HuntJoinHuman, effectIds: FightEffectIds): HuntHuman {
-  return new HuntHuman({
-    accountId: join.accountId,
-    heroId: join.heroId,
-    nick: join.nick,
-    level: join.level,
-    kind: join.kind,
-    hp: join.hp,
-    maxHp: join.maxHp,
-    mp: join.mp,
-    maxMp: join.maxMp,
-    team: join.team,
-    waiting: true,
-    strength: join.strength,
-    initiative: join.initiative,
-    rage: join.rage,
-    dexterity: join.dexterity,
-    defense: join.defense,
-    block: join.block,
-    aggroCharges: join.aggroCharges,
-    magPower: join.magPower,
-    magResist: join.magResist,
-    startedAtMs: join.startedAtMs,
-    loadout: join.loadout,
-    appearance: join.appearance,
-    effectIds,
-  });
-}
-
-export function friendlyHuman(
-  fighter: FriendlyDuelBattleInit["challenger"],
+export function seedHuman(
+  fighter: FightSetupHuman,
   team: 1 | 2,
   waiting: boolean,
   startedAtMs: number,
@@ -109,14 +33,16 @@ export function friendlyHuman(
     magResist: fighter.magResist,
     startedAtMs,
     loadout: fighter.loadout,
-    appearance: { avatar: fighter.avatar, body: fighter.body, sk: fighter.sk },
+    appearance: fighter.appearance,
     effectIds,
   });
 }
 
-export function practiceRestoreFrom(
-  fighter: FriendlyDuelBattleInit["challenger"],
-): PracticeRestore {
+export function seedJoiner(join: FightSetupJoin, effectIds: FightEffectIds): HuntHuman {
+  return seedHuman(join, join.team, true, join.startedAtMs, effectIds);
+}
+
+export function practiceRestoreFrom(fighter: FightSetupHuman): PracticeRestore {
   return {
     characterId: fighter.heroId,
     hp: fighter.hp,

@@ -25,6 +25,7 @@ import { createHuntBattle } from "./create-hunt-battle.ts";
 import { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 import { startHumanDuelBattle } from "./start-human-duel.ts";
 import { fightStartOf } from "./fight-start-of.ts";
+import { fightSetupJoinFromInput } from "./fight-setup-human-from-join.ts";
 import { finishFightCommand } from "./combat-special-casts.ts";
 import type {
   CombatEvent,
@@ -203,30 +204,7 @@ export class CombatService implements CombatPort {
     if (battle.hasHuman(input.accountId, input.heroId)) {
       throw new HuntJoinDenied("вы уже участвовали в этом бою");
     }
-    const roster = battle.addHuman({
-      accountId: input.accountId,
-      heroId: input.heroId,
-      nick: input.heroNick,
-      level: input.heroLevel,
-      kind: input.heroKind,
-      hp: input.heroHp,
-      maxHp: input.heroMaxHp,
-      mp: input.heroMp,
-      maxMp: input.heroMaxMp,
-      loadout: input.loadout,
-      strength: input.heroStrength,
-      initiative: input.heroInitiative,
-      rage: input.heroRage,
-      dexterity: input.heroDexterity,
-      defense: input.heroDefense,
-      block: input.heroBlock,
-      aggroCharges: input.heroAggroCharges,
-      magPower: input.heroMagPower,
-      magResist: input.heroMagResist,
-      team: input.team,
-      appearance: input.appearance,
-      startedAtMs: this.scheduler.now().getTime(),
-    });
+    const roster = battle.addHuman(fightSetupJoinFromInput(input, this.scheduler.now().getTime()));
     this.byAccount.set(input.accountId, battle);
     for (const accountId of battle.authedAccountIds()) {
       if (accountId === input.accountId) continue;

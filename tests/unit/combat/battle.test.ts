@@ -1,60 +1,19 @@
 import { describe, expect, it } from "vitest";
 import type { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
-import type { HuntBattleInit } from "../../../src/modules/combat/domain/hunt-battle-init.ts";
 import { createUnitBattle } from "../../support/fight-rules.ts";
 import {
-  EMPTY_HUNT_BOT_SPELL_BOOK,
-  GRYZL_FIGHT_LOOK,
-  UNIT_HUNT_APPEARANCE,
-  UNIT_HUNT_BATTLE_STATS,
-  unitHissaSpitBook,
-  unitHuntHumanStats,
-} from "../../support/hunt-start-input.ts";
+  type UnitHuntFightSetupOverlay,
+  unitFightJoin,
+  unitHuntFightSetup,
+} from "../../support/fight-setup.ts";
+import { UNIT_HUNT_APPEARANCE, unitHissaSpitBook } from "../../support/hunt-start-input.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
-
-function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
-  return {
-    fightId: "1",
-    accessKey: "access-key",
-    accountId: 1,
-    heroId: 1,
-    heroNick: "Hero",
-    heroLevel: 1,
-    heroKind: 1,
-    heroMp: 10,
-    heroMaxMp: 10,
-    heroStrength: 80,
-    botStrength: 20,
-    ...UNIT_HUNT_BATTLE_STATS,
-    botArtikulId: 2,
-    botFightId: 1_000_000,
-    botNick: "Грызль",
-    botLevel: 1,
-    ...GRYZL_FIGHT_LOOK,
-    playerHp: 27,
-    playerMaxHp: 27,
-    botMaxHp: 20,
-    arena: "1_1",
-    areaId: "503",
-    instanceCopyId: null,
-    startedAt: new Date("2026-09-07T12:00:00.000Z"),
-    loadout: EMPTY_COMBAT_LOADOUT,
-    appearance: UNIT_HUNT_APPEARANCE,
-    botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
-    purpose: "hunt",
-    extraEnemies: [],
-    allies: [],
-    chatWin: "",
-    chatLose: "",
-    ...overrides,
-  };
-}
 
 const AUTH_NOW = Date.parse("2026-09-07T12:00:00.000Z");
 
-function createBattle(random: SequenceRandom, overrides: Partial<HuntBattleInit> = {}): Battle {
-  return createUnitBattle(huntInit(overrides), random);
+function createBattle(random: SequenceRandom, overrides: UnitHuntFightSetupOverlay = {}): Battle {
+  return createUnitBattle(unitHuntFightSetup(overrides), random);
 }
 
 describe("Battle", () => {
@@ -230,22 +189,7 @@ describe("Battle", () => {
   it("queues a second human as waiting without attacknow", () => {
     const battle = createBattle(new SequenceRandom([8]));
     battle.authenticate(1, AUTH_NOW);
-    const roster = battle.addHuman({
-      accountId: 2,
-      heroId: 2,
-      nick: "Joiner",
-      level: 1,
-      kind: 1,
-      hp: 27,
-      maxHp: 27,
-      mp: 10,
-      maxMp: 10,
-      ...unitHuntHumanStats(80),
-      team: 1,
-      appearance: UNIT_HUNT_APPEARANCE,
-      loadout: EMPTY_COMBAT_LOADOUT,
-      startedAtMs: AUTH_NOW,
-    });
+    const roster = battle.addHuman(unitFightJoin());
     expect(roster).toMatchObject({
       type: "roster-updated",
       joined: { id: 2, nick: "Joiner", team: 1 },
@@ -265,22 +209,7 @@ describe("Battle", () => {
   it("retargets a living team-2 waiter after the hunt bot dies", () => {
     const battle = createBattle(new SequenceRandom([20]), { heroStrength: 200 });
     battle.authenticate(1, AUTH_NOW);
-    battle.addHuman({
-      accountId: 2,
-      heroId: 2,
-      nick: "Intervenor",
-      level: 1,
-      kind: 1,
-      hp: 27,
-      maxHp: 27,
-      mp: 10,
-      maxMp: 10,
-      ...unitHuntHumanStats(80),
-      team: 2,
-      appearance: UNIT_HUNT_APPEARANCE,
-      loadout: EMPTY_COMBAT_LOADOUT,
-      startedAtMs: AUTH_NOW,
-    });
+    battle.addHuman(unitFightJoin({ nick: "Intervenor", team: 2 }));
     battle.authenticate(2, AUTH_NOW);
     const hit = battle.tryPlayerMelee(1, "left", AUTH_NOW);
     if (hit.kind !== "resolved") throw new Error("Expected a resolved melee hit");
@@ -299,39 +228,9 @@ describe("Battle", () => {
   it("pairs a team-2 joiner with a team-1 waiter while the opener stays on the bot", () => {
     const battle = createBattle(new SequenceRandom([0.4, 8]));
     battle.authenticate(1, AUTH_NOW);
-    battle.addHuman({
-      accountId: 2,
-      heroId: 2,
-      nick: "Waiter",
-      level: 1,
-      kind: 1,
-      hp: 27,
-      maxHp: 27,
-      mp: 10,
-      maxMp: 10,
-      ...unitHuntHumanStats(80),
-      team: 1,
-      appearance: UNIT_HUNT_APPEARANCE,
-      loadout: EMPTY_COMBAT_LOADOUT,
-      startedAtMs: AUTH_NOW,
-    });
+    battle.addHuman(unitFightJoin({ nick: "Waiter" }));
     battle.authenticate(2, AUTH_NOW);
-    battle.addHuman({
-      accountId: 3,
-      heroId: 3,
-      nick: "Intervenor",
-      level: 1,
-      kind: 1,
-      hp: 27,
-      maxHp: 27,
-      mp: 10,
-      maxMp: 10,
-      ...unitHuntHumanStats(80),
-      team: 2,
-      appearance: UNIT_HUNT_APPEARANCE,
-      loadout: EMPTY_COMBAT_LOADOUT,
-      startedAtMs: AUTH_NOW,
-    });
+    battle.addHuman(unitFightJoin({ accountId: 3, heroId: 3, nick: "Intervenor", team: 2 }));
     const bootstrap = battle.authenticate(3, AUTH_NOW);
     expect(bootstrap[0]).toMatchObject({
       type: "hunt-bootstrap",
@@ -388,7 +287,7 @@ describe("Battle", () => {
 
   it("gives the joiner the waiting clone after they kill their foe", () => {
     const battle = createUnitBattle(
-      huntInit({ heroStrength: 200, botMaxHp: 8, heroAggroCharges: 2 }),
+      unitHuntFightSetup({ heroStrength: 200, botMaxHp: 8, heroAggroCharges: 2 }),
       {
         integer(minInclusive) {
           return minInclusive;
@@ -399,22 +298,7 @@ describe("Battle", () => {
       },
     );
     battle.authenticate(1, AUTH_NOW);
-    battle.addHuman({
-      accountId: 2,
-      heroId: 2,
-      nick: "Joiner",
-      level: 1,
-      kind: 1,
-      hp: 27,
-      maxHp: 27,
-      mp: 10,
-      maxMp: 10,
-      ...unitHuntHumanStats(200),
-      team: 1,
-      appearance: UNIT_HUNT_APPEARANCE,
-      loadout: EMPTY_COMBAT_LOADOUT,
-      startedAtMs: AUTH_NOW,
-    });
+    battle.addHuman(unitFightJoin({ strength: 200 }));
     battle.authenticate(2, AUTH_NOW);
     expect(battle.tryAggro(1, 1_000_000, () => 1_000_001).kind).toBe("resolved");
     expect(battle.tryAggro(1, 1_000_000, () => 1_000_002).kind).toBe("resolved");

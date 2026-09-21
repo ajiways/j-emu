@@ -848,6 +848,45 @@ hp в `Combatant` намеренно нет: единственный ридер
 унификации. Копия hp на wrap отдавала бы значение **до** удара и повторила бы
 тот дефект, из-за которого снимали `BotMeleePresence`.
 
+## FightSetup
+
+Канонический вход в бой: `FightSetup { meta, teams }`. `Battle` принимает
+его целиком; три прежние init-формы (`HuntBattleInit`,
+`FriendlyDuelBattleInit`, `HuntJoinHuman`) сняты.
+
+`meta.kind` — тот же union, что `FightRules.for({ kind })`:
+`hunt | quest | friendly-duel | pvp`. Плюс обязательные `fightId`,
+`accessKey`, `arena`, `areaId`, `startedAt`; `instanceCopyId` и
+`fightFlags` — легитимный `null` (hunt/quest/friendly-duel в мире), не
+отсутствие поля. PvP требует положительный copy id и nonempty flags.
+`chatWin` / `chatLose` — обязательные строки (пусто — валидно); наружу в
+`FightFinishedNotice` уходят только при `FightRules.includesQuestChat`.
+
+`teams[1]` и `teams[2]` — списки участников. Человек:
+`controller:"human"` плюс статы, `loadout` и `appearance:{avatar,body,sk}`.
+AI: `controller:"ai"` плюс поля `HuntRosterBotSeed` (`fightId`,
+`artikulId`, `nick`, `hp`, статы, `avatar`/`sk`/`body`, `spellBook`).
+Команда человека и бота задаётся слотом в `teams`, не плоским префиксом.
+
+Кто собирает. Адаптеры на границе старта: `fightSetupFromHuntStart`
+(`HuntStartInput` → opener human на `teamAssignment.openerTeam`, primary
+bot и `extraEnemies` на enemy, `allies` на opener),
+`fightSetupFromHumanDuel` (challenger/acceptor, внешность из плоских
+`avatar`/`body`/`sk` порта). Добор: `fightSetupJoinFromInput` даёт
+`FightSetupJoin` = тот же human + `team` + `startedAtMs` с часов на join,
+не `meta.startedAt`.
+
+Невалидный setup — явная ошибка в `requireFightSetup` до сида:
+неизвестный `kind`/`controller`, пустые обязательные строки, коллизия
+`heroId`/`fightId`, бот ниже `1_000_000`, hunt с side-bots при
+`!allowsSideBots`, PvP без copy/flags. `seedBattleParticipants` по-прежнему
+отдаёт `BattleSeed` с `huntRoster` (шаг 6 ARC-CMB).
+
+`Battle.purpose` = `meta.kind` и кормит `FightStart.purpose` /
+`FightFinishedNotice.purpose` (те же четыре строки, что раньше).
+`Battle.kind` остаётся `"hunt" | "friendly-duel" | "pvp"`: quest
+схлопывается в hunt только для `wireFightTypeOf` (`"1"` / `"6"`).
+
 ## FightRules
 
 `BattleRules` — числовой тюнинг боя (STR/урон, crit, таймауты).
@@ -873,10 +912,12 @@ layout — [INVENTORY.md](INVENTORY.md), travel — [WORLD.md](WORLD.md).
 `practice-humans` / `none`); `includesQuestChat`.
 
 Wire `type` `"6"` дружеская дуэль / `"1"` всё остальное собирает
-`wireFightTypeOf(meta.kind)` на границе ответа (`fight-result-info`,
-`runned-fight-record`), не `FightRules`. `Battle.purpose` / `Battle.kind`
-остаются как meta для settlement, истории и wire (шаг 7 ARC-CMB). Решения в
-domain читают `FightRules`.
+`wireFightTypeOf(Battle.kind)` на границе ответа (`fight-result-info`,
+`runned-fight-record`), не `FightRules`. `Battle.kind` — трёхзначный alias
+(`quest` → `hunt`) только для этой строки; `Battle.purpose` =
+`FightSetup.meta.kind` и уходит в settlement/notice без смены строк.
+Решения в domain читают `FightRules`. Шаг 7 ARC-CMB снимет оставшиеся
+ярлыки `kind`/`purpose` из domain.
 
 ## Инженерный долг
 

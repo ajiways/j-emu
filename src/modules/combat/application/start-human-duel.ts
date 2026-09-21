@@ -5,7 +5,7 @@ import type { BattleRules } from "../domain/battle-rules.ts";
 import { FightRules } from "../domain/fight-rules.ts";
 import type { RandomSource } from "../domain/random-source.ts";
 import type { FightStart, FriendlyDuelStartInput } from "../ports/combat-port.ts";
-import { friendlyDuelInitFromStart } from "./friendly-duel-init-from-start.ts";
+import { fightSetupFromHumanDuel } from "./fight-setup-from-human-duel.ts";
 
 export function startHumanDuelBattle(
   input: FriendlyDuelStartInput,
@@ -30,7 +30,7 @@ export function startHumanDuelBattle(
   const accessKey = randomBytes(16).toString("hex");
   const fightRules = humanDuelFightRules(kind);
   const battle = new Battle(
-    friendlyDuelInitFromStart(input, accessKey, deps.now, kind),
+    fightSetupFromHumanDuel(input, accessKey, deps.now, kind, fightRules.teamAssignment),
     deps.rules,
     fightRules,
     deps.random,

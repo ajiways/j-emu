@@ -1,6 +1,5 @@
 import type { BattleEvent } from "./battle-event.ts";
 import { huntBotSnap } from "./hunt-bot-snap.ts";
-import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
 import type { FightDuel } from "./fight-duel.ts";
@@ -104,7 +103,7 @@ export function shuffleHuntAfterHits(
 export function pairNextHuntWaiter(
   input: Readonly<{
     pairing: HuntPairing;
-    hunt: HuntBattleInit;
+    roster: HuntRoster;
     openerTeam: 1 | 2;
     enemyTeam: 1 | 2;
     botHp: number;
@@ -128,7 +127,10 @@ export function pairNextHuntWaiter(
       accountId: waiter.accountId,
       authed: true,
       events: [
-        { type: "opponent-new", bot: huntBotSnap(input.hunt, input.botHp, input.enemyTeam) },
+        {
+          type: "opponent-new",
+          bot: huntBotSnap(input.roster.primary, input.botHp, input.enemyTeam),
+        },
       ],
     };
   }

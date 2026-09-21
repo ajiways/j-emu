@@ -9,8 +9,6 @@ import {
 import { applyBotTurn, applyPairedGloveEnding, applyPairedMelee } from "./battle-strikes.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
-import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
-import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import type { KeepTurnResult } from "./hunt-cast.ts";
 import { tryGloveKeepTurn } from "./hunt-cast.ts";
@@ -28,7 +26,6 @@ type HuntActionState = Readonly<{
   humans: HuntHuman[];
   duels: FightDuel[];
   huntRoster: HuntRoster | null;
-  init: HuntBattleInit | FriendlyDuelBattleInit;
   rules: BattleRules;
   random: RandomSource;
   fightId: string;

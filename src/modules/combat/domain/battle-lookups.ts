@@ -1,7 +1,4 @@
 import type { FightDuel } from "./fight-duel.ts";
-import { isHumanDuelInit } from "./battle-fighters.ts";
-import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
-import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
 import type { HuntPairing } from "./battle-pairing.ts";
@@ -19,11 +16,6 @@ export function requireAuthedHuman(humans: readonly HuntHuman[], accountId: numb
   const human = requireBattleHuman(humans, accountId);
   if (!human.authed) throw new Error("Fight session is not authenticated");
   return human;
-}
-
-export function requireHuntInit(init: HuntBattleInit | FriendlyDuelBattleInit): HuntBattleInit {
-  if (isHumanDuelInit(init)) throw new Error("Human duel has no hunt bot");
-  return init;
 }
 
 export function requireBattleHuntRoster(roster: HuntRoster | null): HuntRoster {

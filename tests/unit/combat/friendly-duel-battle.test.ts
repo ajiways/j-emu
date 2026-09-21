@@ -1,60 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
-import type { FriendlyDuelBattleInit } from "../../../src/modules/combat/domain/friendly-duel-battle-init.ts";
 import { createUnitBattle } from "../../support/fight-rules.ts";
+import { unitDuelFightSetup } from "../../support/fight-setup.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
 const AUTH_NOW = Date.parse("2026-09-07T12:00:00.000Z");
 
-function fighter(
-  accountId: number,
-  heroId: number,
-  nick: string,
-): FriendlyDuelBattleInit["challenger"] {
-  return {
-    accountId,
-    heroId,
-    nick,
-    level: 1,
-    kind: 1,
-    hp: 27,
-    maxHp: 27,
-    mp: 10,
-    maxMp: 10,
-    strength: 10,
-    initiative: 0,
-    rage: 0,
-    dexterity: 0,
-    defense: 0,
-    block: 0,
-    aggroCharges: 0,
-    magPower: 0,
-    magResist: 0,
-    loadout: EMPTY_COMBAT_LOADOUT,
-    avatar: "avatar_small.jpg",
-    body: "m1",
-    sk: "1",
-  };
-}
-
-function duelInit(): FriendlyDuelBattleInit {
-  return {
-    kind: "friendly-duel",
-    fightId: "8",
-    accessKey: "duel-key",
-    arena: "1_1",
-    areaId: "503",
-    instanceCopyId: null,
-    fightFlags: null,
-    startedAt: new Date("2026-09-07T12:00:00.000Z"),
-    challenger: fighter(1, 1, "A"),
-    acceptor: fighter(2, 2, "B"),
-  };
-}
-
 describe("friendly duel Battle", () => {
   it("lets the challenger strike the acceptor and finishes without a bot", () => {
-    const battle = createUnitBattle(duelInit(), new SequenceRandom([1, 1, 1]));
+    const battle = createUnitBattle(unitDuelFightSetup(), new SequenceRandom([1, 1, 1]));
     const opener = battle.authenticate(1, AUTH_NOW);
     expect(opener[0]).toMatchObject({
       type: "friendly-bootstrap",

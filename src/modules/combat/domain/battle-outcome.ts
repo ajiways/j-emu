@@ -1,7 +1,10 @@
-import { isFriendlyDuelInit, isHumanDuelInit, practiceRestoreFrom } from "./battle-fighters.ts";
-import type { FriendlyDuelBattleInit } from "./friendly-duel-battle-init.ts";
+import { practiceRestoreFrom } from "./battle-fighters.ts";
 import type { FightRules } from "./fight-rules.ts";
-import type { HuntBattleInit } from "./hunt-battle-init.ts";
+import {
+  fightSetupTeamHumans,
+  requireFightSetupPrimaryEnemy,
+  type FightSetup,
+} from "./fight-setup.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { FightOutcomeKind, FightOutcomeSnapshot } from "./fight-outcome-snapshot.ts";
 
@@ -14,7 +17,7 @@ export function leaveWinnerTeam(humans: readonly HuntHuman[]): 1 | 2 {
 
 export function battleOutcomeSnapshot(
   input: Readonly<{
-    init: HuntBattleInit | FriendlyDuelBattleInit;
+    setup: FightSetup;
     fightId: string;
     kind: FightOutcomeKind;
     winnerTeam: 1 | 2;
@@ -35,9 +38,6 @@ export function battleOutcomeSnapshot(
     pocket: human.pocketCells(),
   }));
   if (input.fightRules.awardsHonor) {
-    if (!isHumanDuelInit(input.init)) {
-      throw new Error("Honor outcome requires a human duel init");
-    }
     return {
       mode: "pvp",
       fightId: input.fightId,
@@ -47,29 +47,30 @@ export function battleOutcomeSnapshot(
     };
   }
   if (input.fightRules.restoresFighters) {
-    if (!isFriendlyDuelInit(input.init)) {
-      throw new Error("Practice restore requires a friendly duel init");
-    }
+    const opener = fightSetupTeamHumans(input.setup, input.fightRules.teamAssignment.openerTeam)[0];
+    const enemy = fightSetupTeamHumans(input.setup, input.fightRules.teamAssignment.enemyTeam)[0];
+    if (!opener || !enemy) throw new Error("Practice restore requires both duel fighters");
     return {
       mode: "friendly-practice",
       fightId: input.fightId,
       winnerTeam: input.winnerTeam,
       kind: input.kind,
       humans,
-      restore: [
-        practiceRestoreFrom(input.init.challenger),
-        practiceRestoreFrom(input.init.acceptor),
-      ],
+      restore: [practiceRestoreFrom(opener), practiceRestoreFrom(enemy)],
     };
   }
-  if (isHumanDuelInit(input.init)) {
-    throw new Error("Hunt outcome requires a hunt battle init");
+  if (!input.fightRules.hasEnemyBots) {
+    throw new Error("Hunt outcome requires a hunt fight setup");
   }
+  const primary = requireFightSetupPrimaryEnemy(
+    input.setup,
+    input.fightRules.teamAssignment.enemyTeam,
+  );
   return {
     mode: "hunt",
     fightId: input.fightId,
-    botId: input.init.botArtikulId,
-    botLevel: input.init.botLevel,
+    botId: primary.artikulId,
+    botLevel: primary.level,
     winnerTeam: input.winnerTeam,
     kind: input.kind,
     humans,

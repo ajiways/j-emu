@@ -5,7 +5,7 @@ import { FightRules } from "../domain/fight-rules.ts";
 import type { HuntRosterBotSeed } from "../domain/hunt-roster-bot.ts";
 import type { RandomSource } from "../domain/random-source.ts";
 import type { HuntStartInput } from "../ports/combat-port.ts";
-import { huntBattleInitFromStart } from "./hunt-battle-init-from-start.ts";
+import { fightSetupFromHuntStart } from "./fight-setup-from-hunt-start.ts";
 
 export function createHuntBattle(
   input: HuntStartInput,
@@ -25,13 +25,14 @@ export function createHuntBattle(
   const extraEnemies = seedRoster(input.extraEnemies, input.heroId, botFightIds, testBotStrength);
   const allies = seedRoster(input.allies, input.heroId, botFightIds, testBotStrength);
   return new Battle(
-    huntBattleInitFromStart(
+    fightSetupFromHuntStart(
       { ...input, botStrength: primaryStrength },
       accessKey,
       primaryFightId,
       startedAt,
       extraEnemies,
       allies,
+      fightRules.teamAssignment,
     ),
     rules,
     fightRules,

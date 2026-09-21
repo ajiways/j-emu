@@ -2013,7 +2013,7 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   `skipQuestKills` печётся из стартового `botCount` (квест 1 бот кредитует
   киллы, несколько — нет). Решения join/leave/aggro/shuffle/bot-turns/history
   /wire type читают правило, не `kind`/`purpose`. `Battle.purpose` остаётся
-  meta; (4) единый `FightSetup { meta, teams }`, три init-формы
+  meta; (4) **landed** — единый `FightSetup { meta, teams }`, три init-формы
   сводятся к нему, builders становятся адаптерами; (5) один движок паринга
   и один цикл ходов на всех участников независимо от контроллера;
   (6) снять `huntRoster: HuntRoster | null` — мобы живут в общем списке
@@ -2021,7 +2021,7 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   `meta.kind` для settlement/wire. Каждый шаг — отдельный коммит, зелёный
   gate и существующие e2e.
 - **Согласовано с мейнтейнером (2026-09-18):** очередь идёт по шагам этой
-  записи; следующее действие — шаг 4 (`FightSetup`). Снятие `HuntRoster` не
+  записи; следующее действие — шаг 5 (паринг и цикл ходов). Снятие `HuntRoster` не
   делается раньше шага 5. Перф-долг боевки из
   [COMBAT.md](../modules/COMBAT.md) § «Инженерный долг» в `ARC-CMB` не входит
   и берётся отдельно.
@@ -2059,6 +2059,14 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   target data flow. Имя `FightRules` в прозе уже занимал боевой lock `203`;
   lock в документации переименован в `requireNoActiveFight` (имя функции в
   `src`), класс policy не трогали.
+- **Найдено на шаге 4:** внешность человека сведена к
+  `HuntHumanAppearance {avatar,body,sk}`; у бота те же три поля остаются на
+  `HuntRosterBotSeed`. Join больше не третья identity-форма: `FightSetupJoin`
+  = human + `team` + `startedAtMs` с часов на join (`Date.getTime()`), не
+  `meta.startedAt`. `Battle.kind` трёхзначный (`quest`→`hunt`) оставлен как
+  alias для `wireFightTypeOf`; `Battle.purpose` = `meta.kind` и те же строки
+  уходят в `FightFinishedNotice` / `quest-desk`. Шаги 5–7 не сдвигаются:
+  `seedBattleParticipants` по-прежнему отдаёт `huntRoster`.
 - **Найдено при разборе roster (меняет порядок):** `HuntRoster` — не одна
   абстракция, а четыре обязанности в одном классе: контейнер ботов
   (`bots`, `primary`, `snaps`, `findBot`), очередь паринга

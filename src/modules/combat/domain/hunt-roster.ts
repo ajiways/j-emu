@@ -2,10 +2,9 @@ import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { FightDuel } from "./fight-duel.ts";
 import type { FightTeamAssignment } from "./fight-rules.ts";
-import type { HuntBattleInit } from "./hunt-battle-init.ts";
 import { resolveRosterBotTurn } from "./hunt-bot-vs-bot.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
-import { HuntRosterBot } from "./hunt-roster-bot.ts";
+import { HuntRosterBot, type HuntRosterBotSeed } from "./hunt-roster-bot.ts";
 import type { RandomSource } from "./random-source.ts";
 
 export class HuntRoster {
@@ -17,39 +16,26 @@ export class HuntRoster {
   private readonly waitingEnemies: HuntRosterBot[] = [];
 
   constructor(
-    init: HuntBattleInit,
-    effectIds: FightEffectIds,
-    teamAssignment: FightTeamAssignment,
+    input: Readonly<{
+      primary: HuntRosterBotSeed;
+      extraEnemies: readonly HuntRosterBotSeed[];
+      allies: readonly HuntRosterBotSeed[];
+      occupiedIds: readonly number[];
+      effectIds: FightEffectIds;
+      teamAssignment: FightTeamAssignment;
+    }>,
   ) {
-    this.openerTeam = teamAssignment.openerTeam;
-    this.enemyTeam = teamAssignment.enemyTeam;
-    this.primary = HuntRosterBot.fromSeed(
-      {
-        fightId: init.botFightId,
-        artikulId: init.botArtikulId,
-        nick: init.botNick,
-        level: init.botLevel,
-        hp: init.botMaxHp,
-        strength: init.botStrength,
-        initiative: init.botInitiative,
-        magPower: init.botMagPower,
-        magResist: init.botMagResist,
-        avatar: init.botAvatar,
-        sk: init.botSk,
-        body: init.botBody,
-        spellBook: init.botSpellBook,
-      },
-      this.enemyTeam,
-      effectIds,
+    this.openerTeam = input.teamAssignment.openerTeam;
+    this.enemyTeam = input.teamAssignment.enemyTeam;
+    this.primary = HuntRosterBot.fromSeed(input.primary, this.enemyTeam, input.effectIds);
+    const extraEnemies = input.extraEnemies.map((seed) =>
+      HuntRosterBot.fromSeed(seed, this.enemyTeam, input.effectIds),
     );
-    const extraEnemies = init.extraEnemies.map((seed) =>
-      HuntRosterBot.fromSeed(seed, this.enemyTeam, effectIds),
-    );
-    const allies = init.allies.map((seed) =>
-      HuntRosterBot.fromSeed(seed, this.openerTeam, effectIds),
+    const allies = input.allies.map((seed) =>
+      HuntRosterBot.fromSeed(seed, this.openerTeam, input.effectIds),
     );
     this.bots = [this.primary, ...extraEnemies, ...allies];
-    const seen = new Set<number>([init.heroId]);
+    const seen = new Set<number>(input.occupiedIds);
     for (const bot of this.bots) {
       if (seen.has(bot.fightId)) {
         throw new Error(`Roster bot fight id ${bot.fightId} collides`);

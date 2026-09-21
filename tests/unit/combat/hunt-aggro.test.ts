@@ -1,73 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
-import type { HuntBattleInit } from "../../../src/modules/combat/domain/hunt-battle-init.ts";
 import { createUnitBattle } from "../../support/fight-rules.ts";
-import {
-  EMPTY_HUNT_BOT_SPELL_BOOK,
-  GRYZL_FIGHT_LOOK,
-  UNIT_HUNT_APPEARANCE,
-  UNIT_HUNT_BATTLE_STATS,
-  unitHuntHumanStats,
-} from "../../support/hunt-start-input.ts";
+import { unitFightJoin, unitHuntFightSetup } from "../../support/fight-setup.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
 const AUTH_NOW = Date.parse("2026-09-07T12:00:00.000Z");
 
-function huntInit(overrides: Partial<HuntBattleInit> = {}): HuntBattleInit {
-  return {
-    fightId: "1",
-    accessKey: "access-key",
-    accountId: 1,
-    heroId: 1,
-    heroNick: "Hero",
-    heroLevel: 1,
-    heroKind: 1,
-    heroMp: 10,
-    heroMaxMp: 10,
-    heroStrength: 80,
-    botStrength: 20,
-    ...UNIT_HUNT_BATTLE_STATS,
-    botArtikulId: 2,
-    botFightId: 1_000_000,
-    botNick: "Грызль",
-    botLevel: 1,
-    ...GRYZL_FIGHT_LOOK,
-    playerHp: 27,
-    playerMaxHp: 27,
-    botMaxHp: 20,
-    arena: "1_1",
-    areaId: "503",
-    instanceCopyId: null,
-    startedAt: new Date("2026-09-07T12:00:00.000Z"),
-    loadout: EMPTY_COMBAT_LOADOUT,
-    appearance: UNIT_HUNT_APPEARANCE,
-    botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,
-    purpose: "hunt",
-    extraEnemies: [],
-    allies: [],
-    chatWin: "",
-    chatLose: "",
-    ...overrides,
-  };
+function huntInit(overrides: Parameters<typeof unitHuntFightSetup>[0] = {}) {
+  return unitHuntFightSetup(overrides);
 }
 
 function joinTeam1() {
-  return {
-    accountId: 2,
-    heroId: 2,
-    nick: "Joiner",
-    level: 1,
-    kind: 1,
-    hp: 27,
-    maxHp: 27,
-    mp: 10,
-    maxMp: 10,
-    ...unitHuntHumanStats(80),
-    team: 1 as const,
-    appearance: UNIT_HUNT_APPEARANCE,
-    loadout: EMPTY_COMBAT_LOADOUT,
-    startedAtMs: AUTH_NOW,
-  };
+  return unitFightJoin();
 }
 
 describe("hunt aggro clone", () => {
