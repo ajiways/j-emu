@@ -79,6 +79,8 @@ describe("hunt aggro clone", () => {
     const battle = createUnitBattle(huntInit({ botMaxHp: 8 }), new SequenceRandom([8]));
     battle.authenticate(1, AUTH_NOW);
     expect(battle.tryAggro(1, 1_000_000, () => 1_000_001).kind).toBe("resolved");
+    expect(battle.bots.map((bot) => bot.fightId)).toEqual([1_000_000, 1_000_001]);
+    expect(battle.bots.find((bot) => bot.fightId === 1_000_001)?.waiting).toBe(true);
     expect(battle.foeBotSnap(1).id).toBe(1_000_000);
     const melee = battle.tryPlayerMelee(1, "center", AUTH_NOW);
     expect(melee.kind).toBe("resolved");

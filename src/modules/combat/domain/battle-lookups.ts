@@ -1,6 +1,5 @@
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRoster } from "./hunt-roster.ts";
 import type { HuntPairing } from "./battle-pairing.ts";
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import { resolveMeleeTarget, type MeleeTarget } from "./melee-target.ts";
@@ -18,19 +17,10 @@ export function requireAuthedHuman(humans: readonly HuntHuman[], accountId: numb
   return human;
 }
 
-export function requireBattleHuntRoster(roster: HuntRoster | null): HuntRoster {
-  if (!roster) throw new Error("Battle has no hunt roster");
-  return roster;
-}
-
 export function battleOpener(humans: readonly HuntHuman[]): HuntHuman {
   const human = humans[0];
   if (!human) throw new Error("Battle has no humans");
   return human;
-}
-
-export function huntRosterBots(roster: HuntRoster | null): readonly HuntRosterBot[] {
-  return roster ? roster.allBots() : [];
 }
 
 export function huntPairingOf(
@@ -58,7 +48,7 @@ function resolveBattleMeleeTarget(
 export function battlePairedOpponent(
   humans: readonly HuntHuman[],
   duels: readonly FightDuel[],
-  huntRoster: HuntRoster | null,
+  bots: readonly HuntRosterBot[],
   accountId: number,
 ): Readonly<{ kind: "human"; accountId: number } | { kind: "bot" }> {
   const human = requireBattleHuman(humans, accountId);
@@ -66,7 +56,7 @@ export function battlePairedOpponent(
     human,
     requireDuelContaining(duels, human.heroId),
     humans,
-    huntRosterBots(huntRoster),
+    bots,
   );
   if (target.kind === "bot") return { kind: "bot" };
   return { kind: "human", accountId: target.human.accountId };

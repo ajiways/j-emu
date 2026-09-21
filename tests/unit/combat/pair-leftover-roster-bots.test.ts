@@ -3,9 +3,9 @@ import { seedBattleParticipants } from "../../../src/modules/combat/domain/battl
 import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
 import type { HuntRosterBotSeed } from "../../../src/modules/combat/domain/hunt-roster-bot.ts";
 import { pairLeftoverRosterBots } from "../../../src/modules/combat/domain/pair-leftover-roster-bots.ts";
-import { HuntRoster } from "../../../src/modules/combat/domain/hunt-roster.ts";
-import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
+import { requireFightBot } from "../../../src/modules/combat/domain/fight-bots.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
+import { unitFightBots } from "../../support/fight-bots.ts";
 import { unitHuntFightSetup } from "../../support/fight-setup.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { EMPTY_HUNT_BOT_SPELL_BOOK, GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
@@ -31,21 +31,19 @@ function botSeed(fightId: number, nick: string): HuntRosterBotSeed {
 
 describe("pairLeftoverRosterBots", () => {
   it("opens leftover ally↔enemy with the ally and does not roll initiative", () => {
-    const roster = new HuntRoster({
-      primary: botSeed(1_000_000, "Primary"),
+    const teamAssignment = { openerTeam: 2 as const, enemyTeam: 1 as const };
+    const bots = unitFightBots({
       extraEnemies: [botSeed(1_000_001, "Spirit")],
       allies: [botSeed(1_000_002, "Hissa")],
-      occupiedIds: [1],
-      effectIds: new FightEffectIds(),
-      teamAssignment: { openerTeam: 2, enemyTeam: 1 },
+      teamAssignment,
     });
-    const duels = pairLeftoverRosterBots(roster);
+    const duels = pairLeftoverRosterBots(bots, teamAssignment);
     expect(duels).toHaveLength(1);
     expect(duels[0]?.aId).toBe(1_000_002);
     expect(duels[0]?.bId).toBe(1_000_001);
     expect(duels[0]?.nextActorId).toBe(1_000_002);
-    expect(roster.findBot(1_000_001)?.waiting).toBe(false);
-    expect(roster.findBot(1_000_002)?.waiting).toBe(false);
+    expect(requireFightBot(bots, 1_000_001).waiting).toBe(false);
+    expect(requireFightBot(bots, 1_000_002).waiting).toBe(false);
   });
 });
 

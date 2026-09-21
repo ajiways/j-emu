@@ -4,7 +4,6 @@ import type { HuntHuman } from "./hunt-human.ts";
 import { resolveBotTurn } from "./hunt-bot-turn.ts";
 import { resolveRosterBotTurn } from "./hunt-bot-vs-bot.ts";
 import type { BotMeleeResult } from "./hunt-melee.ts";
-import type { HuntRoster } from "./hunt-roster.ts";
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import type { RandomSource } from "./random-source.ts";
 
@@ -18,7 +17,7 @@ export function resolveAiActorTurn(
     bot: HuntRosterBot;
     duel: FightDuel;
     humans: readonly HuntHuman[];
-    roster: HuntRoster;
+    bots: readonly HuntRosterBot[];
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
@@ -41,7 +40,7 @@ export function resolveAiActorTurn(
     input.duel.addHit(input.bot.fightId);
     return result;
   }
-  const target = input.roster.findBot(otherId);
+  const target = input.bots.find((entry) => entry.fightId === otherId);
   if (!target) {
     throw new Error(`Duel opponent ${otherId} is neither a human nor a fight bot`);
   }

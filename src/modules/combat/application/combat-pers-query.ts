@@ -15,7 +15,7 @@ export function handlePersFightQuery(
   }
   if (!input.battle) throw new Error("Active fight not found");
   const board = input.battle.boardParticipants();
-  const bots = (input.battle.huntRoster?.allBots() ?? []).map((bot) => ({
+  const bots = input.battle.bots.map((bot) => ({
     id: bot.fightId,
     effects: bot.effects,
   }));

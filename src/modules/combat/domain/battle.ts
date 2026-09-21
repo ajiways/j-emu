@@ -14,13 +14,13 @@ import {
   huntPairingOf,
   requireAuthedHuman,
   requireBattleHuman,
-  requireBattleHuntRoster,
 } from "./battle-lookups.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import { fightDelayTokens, fightDuelDelayToken } from "./fight-delay-token.ts";
 import { FightRules } from "./fight-rules.ts";
 import type { FightSetup, FightSetupJoin } from "./fight-setup.ts";
-import type { HuntRoster } from "./hunt-roster.ts";
+import { primaryEnemyBot, requireFightBot, requireFightBots } from "./fight-bots.ts";
+import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { grantTurn as grantHumanTurn, type BotMeleeResult } from "./hunt-melee.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
@@ -52,7 +52,7 @@ export class Battle {
   private pairedAccountIdValue: number;
   private readonly humans: HuntHuman[] = [];
   private readonly duels: FightDuel[] = [];
-  readonly huntRoster: HuntRoster | null;
+  readonly bots: HuntRosterBot[];
 
   constructor(
     readonly setup: FightSetup,
@@ -73,7 +73,7 @@ export class Battle {
     this.turnGrantDelayMs = rules.turnGrantDelayMs;
     const seed = seedBattleParticipants(setup, rules, fightRules);
     this.kind = seed.kind;
-    this.huntRoster = seed.huntRoster;
+    this.bots = requireFightBots(seed.bots);
     this.pairedAccountIdValue = seed.pairedAccountId;
     this.humans.push(...seed.humans);
     this.duels.push(...seed.duels);
@@ -105,7 +105,10 @@ export class Battle {
   }
 
   huntHistory() {
-    return huntHistoryOf(battleOpener(this.humans), requireBattleHuntRoster(this.huntRoster));
+    return huntHistoryOf(
+      battleOpener(this.humans),
+      primaryEnemyBot(this.bots, this.fightRules.teamAssignment.enemyTeam),
+    );
   }
 
   practiceHistory() {
@@ -156,14 +159,15 @@ export class Battle {
   pairedOpponent(
     accountId: number,
   ): Readonly<{ kind: "human"; accountId: number } | { kind: "bot" }> {
-    return battlePairedOpponent(this.humans, this.duels, this.huntRoster, accountId);
+    return battlePairedOpponent(this.humans, this.duels, this.bots, accountId);
   }
 
   foeBotSnap(accountId: number) {
     const human = requireBattleHuman(this.humans, accountId);
-    return requireBattleHuntRoster(this.huntRoster)
-      .bot(requireDuelContaining(this.duels, human.heroId).otherId(human.heroId))
-      .snap();
+    return requireFightBot(
+      this.bots,
+      requireDuelContaining(this.duels, human.heroId).otherId(human.heroId),
+    ).snap();
   }
 
   humanOpensDuel(accountId: number): boolean {
@@ -176,7 +180,8 @@ export class Battle {
       fightRules: this.fightRules,
       finished: this.finishedValue,
       humans: this.humans,
-      huntRoster: this.huntRoster,
+      bots: this.bots,
+      enemyTeam: this.fightRules.teamAssignment.enemyTeam,
       join,
       hasHuman: (accountId, heroId) => this.hasHuman(accountId, heroId),
       duels: this.duels,
@@ -190,7 +195,9 @@ export class Battle {
       finished: this.finishedValue,
       humans: this.humans,
       duels: this.duels,
-      huntRoster: this.huntRoster,
+      bots: this.bots,
+      hasEnemyBots: this.fightRules.hasEnemyBots,
+      enemyTeam: this.fightRules.teamAssignment.enemyTeam,
       timeoutSeconds: this.rules.turnTimeoutSeconds,
       accountId,
       nowMs,
@@ -238,7 +245,8 @@ export class Battle {
       finished: this.finishedValue,
       humans: this.humans,
       duels: this.duels,
-      roster: this.huntRoster,
+      bots: this.bots,
+      enemyTeam: this.fightRules.teamAssignment.enemyTeam,
       random: this.random,
       accountId,
       targetId,
@@ -265,7 +273,9 @@ export class Battle {
 
   tickRosterDuels(): readonly BattleEvent[] {
     const ticked = tickHuntRosterDuels({
-      roster: this.huntRoster,
+      hasEnemyBots: this.fightRules.hasEnemyBots,
+      bots: this.bots,
+      enemyTeam: this.fightRules.teamAssignment.enemyTeam,
       duels: this.duels,
       finished: this.finishedValue,
       opener: battleOpener(this.humans),
@@ -287,7 +297,8 @@ export class Battle {
     const result = shuffleHuntAfterHits({
       pairing,
       openerTeam: this.fightRules.teamAssignment.openerTeam,
-      roster: requireBattleHuntRoster(this.huntRoster),
+      enemyTeam: this.fightRules.teamAssignment.enemyTeam,
+      bots: this.bots,
       duels: this.duels,
       finished: this.finishedValue,
     });
@@ -324,7 +335,7 @@ export class Battle {
     humans: readonly HuntHuman[];
     bots: readonly HuntBotSnap[];
   }> {
-    return { humans: this.humans, bots: this.huntRoster?.snaps() ?? [] };
+    return { humans: this.humans, bots: this.bots.map((bot) => bot.snap()) };
   }
 
   livingHumans(): readonly HuntHuman[] {
@@ -353,13 +364,13 @@ export class Battle {
     const duel = this.duels.find((entry) => entry.has(previous.heroId));
     if (!duel) return null;
     const pairing = huntPairingOf(duel, this.humans, previousAccountId);
-    const roster = requireBattleHuntRoster(this.huntRoster);
+    const primary = primaryEnemyBot(this.bots, this.fightRules.teamAssignment.enemyTeam);
     const result = pairNextHuntWaiter({
       pairing,
-      roster,
+      primary,
       openerTeam: this.fightRules.teamAssignment.openerTeam,
       enemyTeam: this.fightRules.teamAssignment.enemyTeam,
-      botHp: roster.primary.hp,
+      botHp: primary.hp,
       finished: this.finishedValue,
     });
     this.pairedAccountIdValue = pairing.pairedAccountId;
@@ -368,7 +379,7 @@ export class Battle {
 
   dissolveDuelOf(accountId: number): void {
     const human = requireBattleHuman(this.humans, accountId);
-    dissolveDuelContaining(this.duels, this.humans, human.heroId, this.huntRoster);
+    dissolveDuelContaining(this.duels, this.humans, human.heroId, this.bots);
   }
 
   private actionState() {
@@ -377,7 +388,7 @@ export class Battle {
       finished: this.finishedValue,
       humans: this.humans,
       duels: this.duels,
-      huntRoster: this.huntRoster,
+      bots: this.bots,
       rules: this.rules,
       random: this.random,
       fightId: this.id,

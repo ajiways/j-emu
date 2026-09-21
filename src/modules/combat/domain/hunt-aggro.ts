@@ -1,9 +1,9 @@
 import type { BattleEvent } from "./battle-event.ts";
+import { enqueueAggroClone } from "./fight-bots.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRoster } from "./hunt-roster.ts";
-import type { RandomSource } from "./random-source.ts";
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { RandomSource } from "./random-source.ts";
 import { pairHuntQueues } from "./try-pair-hunt-queues.ts";
 
 export type HuntAggroResult =
@@ -20,7 +20,8 @@ export function tryHuntAggro(
     finished: boolean;
     humans: readonly HuntHuman[];
     duels: FightDuel[];
-    roster: HuntRoster | null;
+    bots: HuntRosterBot[];
+    enemyTeam: 1 | 2;
     random: RandomSource;
     accountId: number;
     targetId: number;
@@ -51,21 +52,26 @@ export function tryHuntAggro(
       },
     ],
   });
-  if (!input.canAggro || !input.roster) {
+  if (!input.canAggro) {
     return deny();
   }
   if (human.casts.aggro < 1) return deny();
-  const source = aggroSourceBot(human, input.roster, input.targetId);
+  const source = aggroSourceBot(human, input.bots, input.targetId);
   if (!source) return deny();
   const waitingBefore = new Set(
     input.humans.filter((entry) => entry.waiting).map((entry) => entry.accountId),
   );
   const count = human.casts.spendAggro();
-  const clone = input.roster.enqueueAggroClone(source.fightId, input.allocateBotId());
+  const clone = enqueueAggroClone(
+    input.bots,
+    source.fightId,
+    input.allocateBotId(),
+    input.enemyTeam,
+  );
   pairHuntQueues({
     humans: input.humans,
     duels: input.duels,
-    roster: input.roster,
+    bots: input.bots,
     random: input.random,
   });
   const pairedAccountIds = input.humans
@@ -87,7 +93,7 @@ export function tryHuntAggro(
         humans: input.humans.map((entry) => entry.snapshot()),
         bot: clone.snap(),
         joined: human.snapshot(),
-        rosterBots: input.roster.snaps(),
+        rosterBots: input.bots.map((bot) => bot.snap()),
       },
     ],
   };
@@ -95,13 +101,13 @@ export function tryHuntAggro(
 
 function aggroSourceBot(
   human: HuntHuman,
-  roster: HuntRoster,
+  bots: readonly HuntRosterBot[],
   targetId: number,
 ): HuntRosterBot | null {
   if (!Number.isInteger(targetId) || targetId < 1) {
     throw new Error("Hunt aggro target id must be a positive integer");
   }
-  const bot = roster.findBot(targetId);
+  const bot = bots.find((entry) => entry.fightId === targetId);
   if (!bot || bot.team === human.team) return null;
   return bot;
 }

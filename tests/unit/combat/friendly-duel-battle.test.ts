@@ -8,6 +8,7 @@ const AUTH_NOW = Date.parse("2026-09-07T12:00:00.000Z");
 describe("friendly duel Battle", () => {
   it("lets the challenger strike the acceptor and finishes without a bot", () => {
     const battle = createUnitBattle(unitDuelFightSetup(), new SequenceRandom([1, 1, 1]));
+    expect(battle.bots).toEqual([]);
     const opener = battle.authenticate(1, AUTH_NOW);
     expect(opener[0]).toMatchObject({
       type: "friendly-bootstrap",

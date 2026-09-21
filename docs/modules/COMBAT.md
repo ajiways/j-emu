@@ -879,8 +879,10 @@ bot и `extraEnemies` на enemy, `allies` на opener),
 Невалидный setup — явная ошибка в `requireFightSetup` до сида:
 неизвестный `kind`/`controller`, пустые обязательные строки, коллизия
 `heroId`/`fightId`, бот ниже `1_000_000`, hunt с side-bots при
-`!allowsSideBots`, PvP без copy/flags. `seedBattleParticipants` по-прежнему
-отдаёт `BattleSeed` с `huntRoster` (шаг 6 ARC-CMB).
+`!allowsSideBots`, PvP без copy/flags. `seedBattleParticipants` кладёт
+людей и ботов на один `Battle`: `bots: HuntRosterBot[]` (пустой список,
+если `hasEnemyBots === false`; не null). Primary-враг — первый AI на
+`teamAssignment.enemyTeam` (сид кладёт enemy AIs раньше союзников).
 
 `Battle.purpose` = `meta.kind` и кормит `FightStart.purpose` /
 `FightFinishedNotice.purpose` (те же четыре строки, что раньше).
@@ -909,11 +911,18 @@ true`, смерть в extra-дуэли не эмитит fight-finished). Bulk-
 bot↔bot (`tickHuntRosterDuels` / `Battle.tickRosterDuels`) идёт сразу
 после человеческого удара; bot→человек по-прежнему с `meleeBotCounterMs`.
 
-`HuntRoster` после шага 5 ARC-CMB — контейнер ботов: `bots`, `primary`,
-`snaps`, `findBot`, `enqueueAggroClone` (клон сразу в `waiting`),
-`enemySideCleared` только по ботам roster (не путать с
-`enemySideCleared` из `Combatant`). Очередь паринга и второй цикл ходов
-с него сняты. Nullable `huntRoster` на `Battle` остаётся до шага 6.
+Боты живут на `Battle.bots`, не в nullable `HuntRoster`. Поиск по
+`fightId` — `requireFightBot` (miss — «fight bot X is missing»).
+Primary-враг для истории, join-snap и unpaired authenticate —
+`primaryEnemyBot` (первый `team === enemyTeam`). Aggro-клон —
+`enqueueAggroClone`: копия в список, сразу `waiting`, затем общий
+`pairHuntQueues`. `HuntRoster.enemySideCleared` снят: канон —
+`enemySideCleared(team, combatants)` из списка `Combatant`. Authenticate
+дуэли и охоты различает `FightRules.hasEnemyBots`, не отсутствие списка.
+
+`HuntRosterBot` остаётся live-объектом AI (melee, спеллы, aggro-клон,
+wire snap). Его не сливают с `HuntHuman`: `Combatant` — общая
+read-поверхность.
 
 ## FightRules
 

@@ -2017,13 +2017,13 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   сводятся к нему, builders становятся адаптерами; (5) **landed** — один
   движок паринга и один цикл ходов на всех участников независимо от
   контроллера: все `FightDuel` в `Battle.duels`, очередь `waiting` общая,
-  AI-ход через `resolveAiActorTurn`; (6) снять `huntRoster: HuntRoster | null` — мобы живут в общем списке
+  AI-ход через `resolveAiActorTurn`; (6) **landed** — снять `huntRoster: HuntRoster | null` — мобы живут в общем списке
   участников; (7) удалить `kind`/`purpose` ветвления из domain, оставив
   `meta.kind` для settlement/wire. Каждый шаг — отдельный коммит, зелёный
   gate и существующие e2e.
 - **Согласовано с мейнтейнером (2026-09-18):** очередь идёт по шагам этой
-  записи; следующее действие — шаг 6 (снятие `HuntRoster` как контейнера).
-  Снятие `HuntRoster` не делается раньше шага 5. Перф-долг боевки из
+  записи; следующее действие — шаг 7 (снять `kind`/`purpose` из domain,
+  оставив `meta.kind` для settlement/wire). Перф-долг боевки из
   [COMBAT.md](../modules/COMBAT.md) § «Инженерный долг» в `ARC-CMB` не входит
   и берётся отдельно.
 - **Найдено на шаге 1 (меняет порядок):** hp нельзя было слить вместе с
@@ -2097,6 +2097,14 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   по-прежнему берёт `enemySideCleared` из списка `Combatant`. Шаги 6–7 не
   сдвигаются: контейнер (`bots`, `primary`, `snaps`, `findBot`, aggro-clone)
   и nullable `huntRoster` снимаются на шаге 6.
+- **Найдено на шаге 6:** authenticate отличал дуэль от охоты только по
+  `huntRoster === null`. После снятия контейнера это `FightRules.hasEnemyBots`
+  (пустой `Battle.bots` на сиде, потому что правило false), не
+  `kind`/`purpose` и не «забыли передать ботов». Primary на wire — первый
+  AI с `team === enemyTeam`, не `bots[0]`. Имя join-mode `hunt-roster`
+  остаётся label policy, не удалённый класс. Шаг 7 не сдвигается: ветвления
+  `kind`/`purpose` в domain ещё есть, authenticate в их число больше не
+  входит.
 - **Совместимость wire и данных:** миграции схемы и backfill **не
   требуются** — active fight существует только в RAM (ADR-0020), таблиц
   боя нет, форма строки `combat.finished_fights` не меняется. Wire не

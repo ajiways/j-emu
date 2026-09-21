@@ -4,6 +4,7 @@ import { seedHuman } from "./battle-fighters.ts";
 import { FightEffectIds } from "./fight-effect-ids.ts";
 import type { FightKind } from "./fight-rules.ts";
 import type { FightRules } from "./fight-rules.ts";
+import { seedFightBots } from "./fight-bots.ts";
 import {
   aiRosterSeed,
   fightSetupTeamAis,
@@ -11,13 +12,13 @@ import {
   type FightSetup,
 } from "./fight-setup.ts";
 import type { HuntHuman } from "./hunt-human.ts";
-import { HuntRoster } from "./hunt-roster.ts";
+import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import { pairLeftoverRosterBots } from "./pair-leftover-roster-bots.ts";
 import { requireFightSetup } from "./require-fight-setup.ts";
 
 export type BattleSeed = Readonly<{
   kind: "hunt" | "friendly-duel" | "pvp";
-  huntRoster: HuntRoster | null;
+  bots: readonly HuntRosterBot[];
   pairedAccountId: number;
   humans: readonly HuntHuman[];
   duels: readonly FightDuel[];
@@ -45,33 +46,32 @@ export function seedBattleParticipants(
     const enemy = requireTeamHuman(setup, enemyTeam, "Human duel acceptor");
     return {
       kind: battleKindOf(setup.meta.kind),
-      huntRoster: null,
+      bots: [],
       pairedAccountId: opener.accountId,
       humans,
       duels: [new FightDuel(opener.heroId, enemy.heroId, opener.heroId)],
     };
   }
-  const primary = fightSetupTeamAis(setup, enemyTeam)[0];
+  const enemyAis = fightSetupTeamAis(setup, enemyTeam);
+  const primary = enemyAis[0];
   if (!primary) throw new Error("Fight setup is missing the primary enemy bot");
-  const extraEnemies = fightSetupTeamAis(setup, enemyTeam).slice(1).map(aiRosterSeed);
-  const allies = fightSetupTeamAis(setup, openerTeam).map(aiRosterSeed);
   const opener = requireTeamHuman(setup, openerTeam, "Hunt opener");
-  const huntRoster = new HuntRoster({
-    primary: aiRosterSeed(primary),
-    extraEnemies,
-    allies,
+  const bots = seedFightBots({
+    enemyAis: enemyAis.map(aiRosterSeed),
+    openerAis: fightSetupTeamAis(setup, openerTeam).map(aiRosterSeed),
     occupiedIds: humans.map((human) => human.heroId),
     effectIds,
-    teamAssignment: fightRules.teamAssignment,
+    enemyTeam,
+    openerTeam,
   });
   return {
     kind: "hunt",
-    huntRoster,
+    bots,
     pairedAccountId: opener.accountId,
     humans,
     duels: [
       new FightDuel(opener.heroId, primary.fightId, opener.heroId),
-      ...pairLeftoverRosterBots(huntRoster),
+      ...pairLeftoverRosterBots(bots, fightRules.teamAssignment),
     ],
   };
 }

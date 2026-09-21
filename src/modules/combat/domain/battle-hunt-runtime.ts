@@ -4,7 +4,7 @@ import { huntHumanOppNew, livingWaiterOnTeam } from "./battle-pairing.ts";
 import { dissolveDuelAt, dissolveDuelContaining } from "./try-pair-hunt-queues.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRoster } from "./hunt-roster.ts";
+import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import { takeNextEnemyForHuman } from "./hunt-wait-queue.ts";
 import { botMeleeTarget, enemySideCleared, fightCombatants } from "./melee-target.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
@@ -13,7 +13,9 @@ import { resolveAiActorTurn } from "./resolve-ai-actor-turn.ts";
 import { retargetDuelTo } from "./retarget-duel.ts";
 
 export function tickHuntRosterDuels(input: {
-  roster: HuntRoster | null;
+  hasEnemyBots: boolean;
+  bots: readonly HuntRosterBot[];
+  enemyTeam: 1 | 2;
   duels: FightDuel[];
   finished: boolean;
   opener: HuntHuman;
@@ -22,16 +24,19 @@ export function tickHuntRosterDuels(input: {
   rules: BattleRules;
   random: RandomSource;
 }): Readonly<{ events: readonly BattleEvent[]; finished: boolean }> {
-  if (!input.roster || input.finished) return { events: [], finished: input.finished };
+  if (input.finished) return { events: [], finished: true };
+  if (!input.hasEnemyBots) return { events: [], finished: false };
   const events: BattleEvent[] = [];
   for (let index = input.duels.length - 1; index >= 0; index -= 1) {
     const duel = input.duels[index];
     if (!duel) throw new Error("Battle duel slot is empty");
-    const actor = input.roster.findBot(duel.nextActorId);
-    const target = actor ? input.roster.findBot(duel.otherId(actor.fightId)) : null;
+    const actor = input.bots.find((bot) => bot.fightId === duel.nextActorId);
+    const target = actor
+      ? input.bots.find((bot) => bot.fightId === duel.otherId(actor.fightId))
+      : null;
     if (!actor || !target) continue;
     if (!botMeleeTarget(actor).alive || !botMeleeTarget(target).alive) {
-      dissolveDuelAt(input.duels, index, input.humans, input.roster, null);
+      dissolveDuelAt(input.duels, index, input.humans, input.bots, null);
       continue;
     }
     events.push(
@@ -39,7 +44,7 @@ export function tickHuntRosterDuels(input: {
         bot: actor,
         duel,
         humans: input.humans,
-        roster: input.roster,
+        bots: input.bots,
         rules: input.rules,
         random: input.random,
         fightId: input.fightId,
@@ -49,19 +54,19 @@ export function tickHuntRosterDuels(input: {
       }).events,
     );
     if (!botMeleeTarget(actor).alive || !botMeleeTarget(target).alive) {
-      dissolveDuelAt(input.duels, index, input.humans, input.roster, null);
+      dissolveDuelAt(input.duels, index, input.humans, input.bots, null);
     }
   }
-  const combatants = fightCombatants(input.humans, input.roster.allBots());
+  const combatants = fightCombatants(input.humans, input.bots);
   if (enemySideCleared(input.opener.team, combatants)) {
     events.push({
       type: "finished",
-      winnerTeam: input.roster.enemyTeam,
+      winnerTeam: input.enemyTeam,
       fightId: input.fightId,
     });
     return { events, finished: true };
   }
-  if (enemySideCleared(input.roster.enemyTeam, combatants)) {
+  if (enemySideCleared(input.enemyTeam, combatants)) {
     events.push({
       type: "finished",
       winnerTeam: input.opener.team,
@@ -78,7 +83,8 @@ export function applyHuntPlayerHit(
     finished: boolean;
   }>,
   input: Readonly<{
-    roster: HuntRoster | null;
+    bots: readonly HuntRosterBot[];
+    enemyTeam: 1 | 2;
     duel: FightDuel;
     duels: FightDuel[];
     opener: HuntHuman;
@@ -101,7 +107,8 @@ export function applyHuntPlayerHit(
 export function applyHuntBotHit(
   finished: boolean,
   input: Readonly<{
-    roster: HuntRoster | null;
+    bots: readonly HuntRosterBot[];
+    enemyTeam: 1 | 2;
     duel: FightDuel;
     duels: FightDuel[];
     opener: HuntHuman;
@@ -109,10 +116,11 @@ export function applyHuntBotHit(
   }>,
 ): Readonly<{ events: readonly BattleEvent[]; finished: boolean }> {
   if (finished) return { events: [], finished: true };
-  const hitBot = input.roster?.findBot(input.duel.otherId(input.opener.heroId)) ?? null;
-  if (!hitBot || hitBot.hp > 0 || !input.roster) return { events: [], finished: false };
+  const hitBot = input.bots.find((bot) => bot.fightId === input.duel.otherId(input.opener.heroId));
+  if (!hitBot || hitBot.hp > 0) return { events: [], finished: false };
   const next = takeNextEnemyForHuman({
-    roster: input.roster,
+    bots: input.bots,
+    enemyTeam: input.enemyTeam,
     duels: input.duels,
     occupiedFightId: hitBot.fightId,
   });
@@ -124,7 +132,7 @@ export function applyHuntBotHit(
   }
   const intervenor = livingWaiterOnTeam(input.humans, hitBot.team);
   if (!intervenor) {
-    dissolveDuelContaining(input.duels, input.humans, hitBot.fightId, input.roster);
+    dissolveDuelContaining(input.duels, input.humans, hitBot.fightId, input.bots);
     return { events: [{ type: "opponent-wait" }], finished: false };
   }
   retargetDuelTo({ duel: input.duel, fromHeroId: hitBot.fightId, waiter: intervenor });

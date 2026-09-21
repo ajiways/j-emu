@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { requireFightBot } from "../../../src/modules/combat/domain/fight-bots.ts";
 import type { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { createUnitBattle } from "../../support/fight-rules.ts";
@@ -265,9 +266,8 @@ describe("Battle", () => {
   it("resumes bot standing persEff with img", () => {
     const battle = createBattle(new SequenceRandom([8]));
     battle.authenticate(1, AUTH_NOW);
-    const roster = battle.huntRoster;
-    if (!roster) throw new Error("Hunt roster is required");
-    roster.bot(1_000_000).effects.attachChargingKind3({
+    const bot = requireFightBot(battle.bots, 1_000_000);
+    bot.effects.attachChargingKind3({
       sourceId: 1_000_000,
       artikulId: 397,
       title: "Смертельное прикосновение",

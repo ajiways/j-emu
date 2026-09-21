@@ -3,7 +3,7 @@ import { FightDuel } from "../../../src/modules/combat/domain/fight-duel.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
-import { HuntRoster } from "../../../src/modules/combat/domain/hunt-roster.ts";
+import { requireFightBot, seedFightBots } from "../../../src/modules/combat/domain/fight-bots.ts";
 import type { HuntRosterBotSeed } from "../../../src/modules/combat/domain/hunt-roster-bot.ts";
 import {
   pairHuntHumanQueues,
@@ -11,6 +11,7 @@ import {
   pickHuntPair,
 } from "../../../src/modules/combat/domain/try-pair-hunt-queues.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
+import { unitFightBots } from "../../support/fight-bots.ts";
 import {
   EMPTY_HUNT_BOT_SPELL_BOOK,
   GRYZL_FIGHT_LOOK,
@@ -59,18 +60,11 @@ function botSeed(fightId: number): HuntRosterBotSeed {
   };
 }
 
-function rosterWith(
+function botsWith(
   extraEnemies: readonly HuntRosterBotSeed[],
   allies: readonly HuntRosterBotSeed[] = [],
-): HuntRoster {
-  return new HuntRoster({
-    primary: botSeed(1_000_000),
-    extraEnemies,
-    allies,
-    occupiedIds: [1],
-    effectIds: new FightEffectIds(),
-    teamAssignment: { openerTeam: 1, enemyTeam: 2 },
-  });
+) {
+  return unitFightBots({ extraEnemies, allies });
 }
 
 describe("pairHuntHumanQueues", () => {
@@ -110,7 +104,7 @@ describe("one hunt pairing engine", () => {
       pairHuntQueues({
         humans: [opener],
         duels,
-        roster: rosterWith([]),
+        bots: botsWith([]),
         random: new SequenceRandom([0.4]),
       }),
     ).toBeNull();
@@ -120,12 +114,12 @@ describe("one hunt pairing engine", () => {
   it("pairs a waiting human with a waiting bot into the same duel list", () => {
     const opener = human({ accountId: 1, heroId: 1, team: 1, waiting: false });
     const waiter = human({ accountId: 2, heroId: 2, team: 1, waiting: true });
-    const roster = rosterWith([botSeed(1_000_001)]);
+    const bots = botsWith([botSeed(1_000_001)]);
     const duels = [new FightDuel(1, 1_000_000, 1)];
     const created = pairHuntQueues({
       humans: [opener, waiter],
       duels,
-      roster,
+      bots,
       random: new SequenceRandom([0.4]),
     });
     expect(created).toMatchObject({ aId: 2, bId: 1_000_001 });
@@ -133,17 +127,17 @@ describe("one hunt pairing engine", () => {
     expect(duels[0]?.has(1)).toBe(true);
     expect(duels[1]).toBe(created);
     expect(waiter.waiting).toBe(false);
-    expect(roster.findBot(1_000_001)?.waiting).toBe(false);
+    expect(requireFightBot(bots, 1_000_001).waiting).toBe(false);
   });
 
   it("pairs bot↔bot into the same duel list as the human opener", () => {
     const opener = human({ accountId: 1, heroId: 1, team: 1, waiting: false });
-    const roster = rosterWith([botSeed(1_000_001)], [botSeed(1_000_002)]);
+    const bots = botsWith([botSeed(1_000_001)], [botSeed(1_000_002)]);
     const duels = [new FightDuel(1, 1_000_000, 1)];
     const created = pairHuntQueues({
       humans: [opener],
       duels,
-      roster,
+      bots,
       random: new SequenceRandom([0.4]),
     });
     expect(created).toMatchObject({ aId: 1_000_002, bId: 1_000_001, nextActorId: 1_000_002 });
@@ -151,22 +145,21 @@ describe("one hunt pairing engine", () => {
     expect(duels[0]?.has(1)).toBe(true);
     expect(duels[1]?.has(1_000_001)).toBe(true);
     expect(duels[1]?.has(1_000_002)).toBe(true);
-    expect(roster.findBot(1_000_001)?.waiting).toBe(false);
-    expect(roster.findBot(1_000_002)?.waiting).toBe(false);
+    expect(requireFightBot(bots, 1_000_001).waiting).toBe(false);
+    expect(requireFightBot(bots, 1_000_002).waiting).toBe(false);
   });
 
   it("fails fast when a roster bot id collides with an occupied id", () => {
-    expect(
-      () =>
-        new HuntRoster({
-          primary: botSeed(1_000_000),
-          extraEnemies: [],
-          allies: [],
-          occupiedIds: [1_000_000],
-          effectIds: new FightEffectIds(),
-          teamAssignment: { openerTeam: 1, enemyTeam: 2 },
-        }),
-    ).toThrow(/Roster bot fight id 1000000 collides/);
+    expect(() =>
+      seedFightBots({
+        enemyAis: [botSeed(1_000_000)],
+        openerAis: [],
+        occupiedIds: [1_000_000],
+        effectIds: new FightEffectIds(),
+        enemyTeam: 2,
+        openerTeam: 1,
+      }),
+    ).toThrow(/Fight bot id 1000000 collides/);
   });
 });
 
