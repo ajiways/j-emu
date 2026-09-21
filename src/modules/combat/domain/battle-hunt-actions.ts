@@ -6,7 +6,8 @@ import {
   requireBattleHuman,
   requireBattleHuntRoster,
 } from "./battle-lookups.ts";
-import { applyBotTurn, applyPairedGloveEnding, applyPairedMelee } from "./battle-strikes.ts";
+import { applyPairedGloveEnding, applyPairedMelee } from "./battle-strikes.ts";
+import { resolveAiActorTurn } from "./resolve-ai-actor-turn.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
@@ -110,9 +111,11 @@ export function applyBattleBotMelee(
   const target = requireBattleHuman(state.humans, accountId);
   const duel = requireDuelContaining(state.duels, target.heroId);
   const bot = roster.bot(duel.otherId(target.heroId));
-  const result = applyBotTurn({
-    target,
+  const result = resolveAiActorTurn({
     bot,
+    duel,
+    humans: state.humans,
+    roster,
     rules: state.rules,
     random: state.random,
     fightId: state.fightId,
@@ -124,7 +127,6 @@ export function applyBattleBotMelee(
         entry.hp > 0,
     ),
     living,
-    duel,
     winnerTeam: state.fightRules.teamAssignment.enemyTeam,
   });
   bot.setHp(result.botHp);

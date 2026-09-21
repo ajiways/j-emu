@@ -266,6 +266,7 @@ export class Battle {
   tickRosterDuels(): readonly BattleEvent[] {
     const ticked = tickHuntRosterDuels({
       roster: this.huntRoster,
+      duels: this.duels,
       finished: this.finishedValue,
       opener: battleOpener(this.humans),
       humans: this.humans,
@@ -367,7 +368,7 @@ export class Battle {
 
   dissolveDuelOf(accountId: number): void {
     const human = requireBattleHuman(this.humans, accountId);
-    dissolveDuelContaining(this.duels, this.humans, human.heroId);
+    dissolveDuelContaining(this.duels, this.humans, human.heroId, this.huntRoster);
   }
 
   private actionState() {

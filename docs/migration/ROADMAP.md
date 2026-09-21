@@ -2014,15 +2014,16 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   киллы, несколько — нет). Решения join/leave/aggro/shuffle/bot-turns/history
   /wire type читают правило, не `kind`/`purpose`. `Battle.purpose` остаётся
   meta; (4) **landed** — единый `FightSetup { meta, teams }`, три init-формы
-  сводятся к нему, builders становятся адаптерами; (5) один движок паринга
-  и один цикл ходов на всех участников независимо от контроллера;
-  (6) снять `huntRoster: HuntRoster | null` — мобы живут в общем списке
+  сводятся к нему, builders становятся адаптерами; (5) **landed** — один
+  движок паринга и один цикл ходов на всех участников независимо от
+  контроллера: все `FightDuel` в `Battle.duels`, очередь `waiting` общая,
+  AI-ход через `resolveAiActorTurn`; (6) снять `huntRoster: HuntRoster | null` — мобы живут в общем списке
   участников; (7) удалить `kind`/`purpose` ветвления из domain, оставив
   `meta.kind` для settlement/wire. Каждый шаг — отдельный коммит, зелёный
   gate и существующие e2e.
 - **Согласовано с мейнтейнером (2026-09-18):** очередь идёт по шагам этой
-  записи; следующее действие — шаг 5 (паринг и цикл ходов). Снятие `HuntRoster` не
-  делается раньше шага 5. Перф-долг боевки из
+  записи; следующее действие — шаг 6 (снятие `HuntRoster` как контейнера).
+  Снятие `HuntRoster` не делается раньше шага 5. Перф-долг боевки из
   [COMBAT.md](../modules/COMBAT.md) § «Инженерный долг» в `ARC-CMB` не входит
   и берётся отдельно.
 - **Найдено на шаге 1 (меняет порядок):** hp нельзя было слить вместе с
@@ -2083,6 +2084,19 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   `{ id, team, lastOpponentId, initiative }` и лазит лишь в два контейнера,
   а `Combatant.alive` из шага 2 — тот предикат живости, который `huntSeekers`
   сейчас дублирует вручную для людей и ботов.
+- **Найдено на шаге 5:** конструктор quest leftover парует ally↔enemy без
+  `rollOpensFirst` (opener всегда союзник). Это не баг относительно jgr;
+  семантика сохранена в `pairLeftoverRosterBots` на сиде и **не** свёрнута
+  в `pickHuntPair`. `keepFightOnKill: true` у bot↔bot нельзя слить с
+  человеческим путём: `actBotSpellCard` иначе эмитит fight-finished на
+  смерть моба в extra-дуэли; у бота→человека флаг считается по живым
+  тиммейтам цели. Планировщик один (`resolveAiActorTurn`), момент вызова
+  разный: bot↔bot тикается сразу после человеческого удара, bot→человек
+  с `meleeBotCounterMs` — иначе сдвинется wire. `HuntRoster.enemySideCleared`
+  остался контейнерным предикатом только по ботам roster; quest-tick
+  по-прежнему берёт `enemySideCleared` из списка `Combatant`. Шаги 6–7 не
+  сдвигаются: контейнер (`bots`, `primary`, `snaps`, `findBot`, aggro-clone)
+  и nullable `huntRoster` снимаются на шаге 6.
 - **Совместимость wire и данных:** миграции схемы и backfill **не
   требуются** — active fight существует только в RAM (ADR-0020), таблиц
   боя нет, форма строки `combat.finished_fights` не меняется. Wire не

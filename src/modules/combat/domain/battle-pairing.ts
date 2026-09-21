@@ -3,6 +3,8 @@ import { huntBotSnap } from "./hunt-bot-snap.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntRoster } from "./hunt-roster.ts";
 import type { FightDuel } from "./fight-duel.ts";
+import { peekWaitingEnemy, takeNextEnemyForHuman } from "./hunt-wait-queue.ts";
+import { botMeleeTarget, humanMeleeTarget } from "./melee-target.ts";
 import {
   PAIR_HITS_TO_SWITCH,
   planHuntShuffle,
@@ -21,7 +23,7 @@ export function livingWaiterOnTeam(
   team: 1 | 2,
 ): HuntHuman | undefined {
   return humans.find(
-    (entry) => entry.waiting && !entry.leftLive && entry.hp > 0 && entry.team === team,
+    (entry) => entry.waiting && humanMeleeTarget(entry).alive && entry.team === team,
   );
 }
 
@@ -38,7 +40,7 @@ export function shuffleHuntAfterHits(
     pairing: HuntPairing;
     openerTeam: 1 | 2;
     roster: HuntRoster;
-    duels: readonly FightDuel[];
+    duels: FightDuel[];
     finished: boolean;
   }>,
 ): ShuffleOutcome {
@@ -61,7 +63,7 @@ export function shuffleHuntAfterHits(
     botHits: input.pairing.duel.hitsFor(foeBot.fightId),
     hasLivingWaiter: livingWaiterOnTeam(input.pairing.humans, openerTeam) !== undefined,
     hasSwappableOther: swappable !== null,
-    hasLivingReserve: input.roster.peekWaitingEnemy() !== null,
+    hasLivingReserve: peekWaitingEnemy(input.roster) !== null,
     finished: input.finished || foeBot.hp === 0,
   });
   if (plan === "none") return { kind: "none" };
@@ -79,7 +81,7 @@ export function shuffleHuntAfterHits(
     );
   }
   if (plan === "reserve-swap") {
-    return applyReserveSwap(input.pairing, input.roster, actor, foeBot);
+    return applyReserveSwap(input.pairing, input.roster, input.duels, actor, foeBot);
   }
   const waiter = livingWaiterOnTeam(input.pairing.humans, openerTeam);
   if (!waiter) throw new Error("Shuffle waiter-handoff requires a living waiter");
@@ -147,19 +149,24 @@ export function pairNextHuntWaiter(
 function applyReserveSwap(
   pairing: HuntPairing,
   roster: HuntRoster,
+  duels: FightDuel[],
   actor: HuntHuman,
   foeBot: ReturnType<HuntRoster["bot"]>,
 ): ShuffleOutcome {
-  const reserve = roster.peekWaitingEnemy();
+  const reserve = peekWaitingEnemy(roster);
   if (!reserve) throw new Error("Shuffle reserve-swap requires a waiting enemy");
-  const next = roster.takeNextEnemyForHuman(foeBot.fightId);
+  const next = takeNextEnemyForHuman({
+    roster,
+    duels,
+    occupiedFightId: foeBot.fightId,
+  });
   if (!next || next.fightId !== reserve.fightId) {
     throw new Error("Shuffle reserve-swap did not take the waiting enemy");
   }
   const actorHp = actor.hp;
   const foeHp = foeBot.hp;
   const nextHp = next.hp;
-  roster.enqueueWaiting(foeBot.fightId);
+  foeBot.unpair();
   pairing.duel.replace(foeBot.fightId, next.fightId);
   pairing.duel.resetHits();
   pairing.duel.setNextActor(actor.heroId);
@@ -178,11 +185,11 @@ function applyCrossSwap(
   actorBot: ReturnType<HuntRoster["bot"]>,
 ): ShuffleOutcome {
   const otherHuman = humans.find(
-    (human) => other.has(human.heroId) && !human.waiting && human.hp > 0 && !human.leftLive,
+    (human) => other.has(human.heroId) && !human.waiting && humanMeleeTarget(human).alive,
   );
   if (!otherHuman) throw new Error("Shuffle cross-swap requires a living other human");
   const otherBot = roster.findBot(other.otherId(otherHuman.heroId));
-  if (!otherBot || otherBot.hp === 0) {
+  if (!otherBot || !botMeleeTarget(otherBot).alive) {
     throw new Error("Shuffle cross-swap requires a living other bot");
   }
   const leftHp = actor.hp;
@@ -223,11 +230,11 @@ function otherHumanBotDuel(
   for (const duel of duels) {
     if (duel === actorDuel) continue;
     const human = humans.find(
-      (entry) => duel.has(entry.heroId) && !entry.waiting && entry.hp > 0 && !entry.leftLive,
+      (entry) => duel.has(entry.heroId) && !entry.waiting && humanMeleeTarget(entry).alive,
     );
     if (!human) continue;
     const bot = roster.findBot(duel.otherId(human.heroId));
-    if (bot && bot.hp > 0) return duel;
+    if (bot && botMeleeTarget(bot).alive) return duel;
   }
   return null;
 }

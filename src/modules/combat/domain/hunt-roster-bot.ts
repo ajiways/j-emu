@@ -27,6 +27,7 @@ export class HuntRosterBot {
   private hpValue: number;
   private dealtDamageValue = 0;
   private lastOpponentIdValue: number | null = null;
+  private waitingValue = false;
   readonly casts = new Map<number, number>();
   schoolOverlay: SchoolOverlay | null = null;
   stunnedTurns = 0;
@@ -118,8 +119,22 @@ export class HuntRosterBot {
     return this.lastOpponentIdValue;
   }
 
+  get waiting(): boolean {
+    return this.waitingValue;
+  }
+
   get mag(): MagStats {
     return { power: this.magPower, resist: this.magResist };
+  }
+
+  pair(): void {
+    if (!this.waitingValue) throw new Error("Hunt roster bot is already paired");
+    this.waitingValue = false;
+  }
+
+  unpair(): void {
+    if (this.waitingValue) throw new Error("Hunt roster bot is already waiting");
+    this.waitingValue = true;
   }
 
   markFought(opponentId: number): void {

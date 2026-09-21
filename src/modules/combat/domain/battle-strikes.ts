@@ -1,7 +1,5 @@
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
-import { resolveBotTurn } from "./hunt-bot-turn.ts";
-import { type BotMeleeResult } from "./hunt-melee.ts";
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import { tryPairedMelee, type PlayerMeleeResult } from "./paired-melee.ts";
 import { resolveGloveFinisher, type EndingGloveResult } from "./glove-ending-cast.ts";
@@ -82,29 +80,4 @@ export function applyPairedGloveEnding(
   });
   if (ending.kind === "ending") input.duel.addHit(input.human.heroId);
   return ending;
-}
-
-export function applyBotTurn(
-  input: Readonly<{
-    target: HuntHuman;
-    bot: HuntRosterBot;
-    rules: BattleRules;
-    random: RandomSource;
-    fightId: string;
-    keepFightOnKill: boolean;
-    living: readonly HuntHuman[];
-    duel: FightDuel;
-    winnerTeam: 1 | 2;
-  }>,
-): BotMeleeResult & Readonly<{ botHp: number }> {
-  const result = resolveBotTurn(input.target, input.bot, {
-    rules: input.rules,
-    random: input.random,
-    fightId: input.fightId,
-    keepFightOnKill: input.keepFightOnKill,
-    living: input.living,
-    winnerTeam: input.winnerTeam,
-  });
-  input.duel.addHit(input.bot.fightId);
-  return result;
 }

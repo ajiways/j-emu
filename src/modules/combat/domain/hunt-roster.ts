@@ -1,19 +1,13 @@
-import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
-import type { BattleRules } from "./battle-rules.ts";
-import { FightDuel } from "./fight-duel.ts";
+import type { HuntBotSnap } from "./battle-event.ts";
 import type { FightTeamAssignment } from "./fight-rules.ts";
-import { resolveRosterBotTurn } from "./hunt-bot-vs-bot.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
 import { HuntRosterBot, type HuntRosterBotSeed } from "./hunt-roster-bot.ts";
-import type { RandomSource } from "./random-source.ts";
 
 export class HuntRoster {
   readonly openerTeam: 1 | 2;
   readonly enemyTeam: 1 | 2;
   readonly primary: HuntRosterBot;
   private readonly bots: HuntRosterBot[];
-  private readonly extraDuels: FightDuel[] = [];
-  private readonly waitingEnemies: HuntRosterBot[] = [];
 
   constructor(
     input: Readonly<{
@@ -42,15 +36,8 @@ export class HuntRoster {
       }
       seen.add(bot.fightId);
     }
-    const leftoverEnemies = [...extraEnemies];
-    const leftoverAllies = [...allies];
-    while (leftoverEnemies.length > 0 && leftoverAllies.length > 0) {
-      const enemy = leftoverEnemies.shift();
-      const ally = leftoverAllies.shift();
-      if (!enemy || !ally) throw new Error("Quest roster pairing is missing a bot");
-      this.extraDuels.push(new FightDuel(ally.fightId, enemy.fightId, ally.fightId));
-    }
-    this.waitingEnemies.push(...leftoverEnemies);
+    for (const bot of extraEnemies) bot.unpair();
+    for (const bot of allies) bot.unpair();
   }
 
   snaps(): readonly HuntBotSnap[] {
@@ -73,39 +60,6 @@ export class HuntRoster {
     return this.bots.find((entry) => entry.fightId === fightId) ?? null;
   }
 
-  takeNextEnemyForHuman(occupiedFightId: number): HuntRosterBot | null {
-    const waiting = this.waitingEnemies.find((bot) => bot.hp > 0);
-    if (waiting) {
-      this.waitingEnemies.splice(this.waitingEnemies.indexOf(waiting), 1);
-      return waiting;
-    }
-    for (let index = this.extraDuels.length - 1; index >= 0; index -= 1) {
-      const duel = this.extraDuels[index];
-      if (!duel) continue;
-      const enemy = this.livingEnemyIn(duel);
-      if (!enemy || enemy.fightId === occupiedFightId) continue;
-      this.dissolve(index, enemy.fightId);
-      return enemy;
-    }
-    return null;
-  }
-
-  extraDuelParticipantIds(): readonly number[] {
-    const ids: number[] = [];
-    for (const duel of this.extraDuels) {
-      ids.push(duel.aId, duel.bId);
-    }
-    return ids;
-  }
-
-  unpairedLiving(occupied: ReadonlySet<number>): readonly HuntRosterBot[] {
-    return this.bots.filter((bot) => bot.hp > 0 && !occupied.has(bot.fightId));
-  }
-
-  addExtraDuel(duel: FightDuel): void {
-    this.extraDuels.push(duel);
-  }
-
   enqueueAggroClone(sourceFightId: number, cloneFightId: number): HuntRosterBot {
     const source = this.requireBot(sourceFightId);
     if (source.team !== this.enemyTeam) {
@@ -116,65 +70,8 @@ export class HuntRoster {
       throw new Error(`Roster bot fight id ${clone.fightId} collides`);
     }
     this.bots.push(clone);
-    this.waitingEnemies.push(clone);
+    clone.unpair();
     return clone;
-  }
-
-  occupy(fightId: number): void {
-    this.requireBot(fightId);
-    const index = this.waitingEnemies.findIndex((bot) => bot.fightId === fightId);
-    if (index < 0) return;
-    this.waitingEnemies.splice(index, 1);
-  }
-
-  peekWaitingEnemy(): HuntRosterBot | null {
-    return this.waitingEnemies.find((bot) => bot.hp > 0) ?? null;
-  }
-
-  enqueueWaiting(fightId: number): void {
-    const bot = this.requireBot(fightId);
-    if (bot.hp < 1) throw new Error("Dead roster bot cannot wait");
-    if (this.waitingEnemies.some((entry) => entry.fightId === fightId)) return;
-    this.waitingEnemies.push(bot);
-  }
-
-  tick(rules: BattleRules, random: RandomSource, fightId: string): readonly BattleEvent[] {
-    void fightId;
-    const events: BattleEvent[] = [];
-    for (let index = this.extraDuels.length - 1; index >= 0; index -= 1) {
-      const duel = this.extraDuels[index];
-      if (!duel) continue;
-      const actor = this.requireBot(duel.nextActorId);
-      const target = this.requireBot(duel.otherId(actor.fightId));
-      if (actor.hp === 0 || target.hp === 0) {
-        this.dissolve(index, null);
-        continue;
-      }
-      events.push(...resolveRosterBotTurn(actor, target, { rules, random }));
-      duel.addHit(actor.fightId);
-      if (target.hp > 0) duel.setNextActor(target.fightId);
-      if (actor.hp === 0 || target.hp === 0) this.dissolve(index, null);
-    }
-    return events;
-  }
-
-  private livingEnemyIn(duel: FightDuel): HuntRosterBot | null {
-    for (const id of [duel.aId, duel.bId]) {
-      const bot = this.requireBot(id);
-      if (bot.team === this.enemyTeam && bot.hp > 0) return bot;
-    }
-    return null;
-  }
-
-  private dissolve(index: number, keepFightId: number | null): void {
-    const duel = this.extraDuels[index];
-    if (!duel) throw new Error("Quest roster extra duel is missing");
-    this.extraDuels.splice(index, 1);
-    for (const id of [duel.aId, duel.bId]) {
-      if (id === keepFightId) continue;
-      const bot = this.requireBot(id);
-      if (bot.team === this.enemyTeam && bot.hp > 0) this.waitingEnemies.push(bot);
-    }
   }
 
   private requireBot(fightId: number): HuntRosterBot {

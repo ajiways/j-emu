@@ -566,7 +566,7 @@ seeker (CMB-12: lone team-2 не крадёт бота).
 обязательно свой duel). Waiting/unpaired hunter клонирует чужого врага;
 заряд `1+AGRILKA_MOBOV` на `HuntHuman`, не на команду. Ignore без
 `native-count` нельзя отдавать waiting: клиент на `{rs}` делает
-`aggro − 1`. Ephemeral clone в `waitingEnemies` (jgr `waitingBots`);
+`aggro − 1`. Ephemeral clone в единую очередь `waiting` (jgr `waitingBots`);
 `pairHuntQueues` снимает клон с очереди, если сразу спарили waiter-а.
 Grant/bot-counter новой пары ставится сразу, даже если joiner ещё не
 fight-auth; `oppnew` на poll — только authed, иначе первый auth. Auth
@@ -886,6 +886,34 @@ bot и `extraEnemies` на enemy, `allies` на opener),
 `FightFinishedNotice.purpose` (те же четыре строки, что раньше).
 `Battle.kind` остаётся `"hunt" | "friendly-duel" | "pvp"`: quest
 схлопывается в hunt только для `wireFightTypeOf` (`"1"` / `"6"`).
+
+## Паринг и цикл ходов
+
+Один список дуэлей: все `FightDuel` живут в `Battle.duels` — human↔bot,
+human↔human и bot↔bot. Отдельного `HuntRoster.extraDuels` нет.
+
+Одна очередь «ждёт пару»: флаг `waiting` на человеке и на боте. Seekers
+собирает `huntSeekers` из обоих, живость — `Combatant.alive`, не
+отдельный `hp > 0 && !leftLive`. Join, aggro-клон и shuffle (в том числе
+`oppnew` / reserve-swap) паруют через тот же `pairHuntQueues` /
+`peekWaitingEnemy` / `takeNextEnemyForHuman`. Новая пара из очереди —
+`rollOpensFirst`. Квестовый leftover ally↔enemy на сиде — отдельный
+`pairLeftoverRosterBots`: opener всегда союзник, без броска инициативы
+(байт-в-байт со старым конструктором roster).
+
+Один планировщик AI-хода: `resolveAiActorTurn`. Чей ход — смотрит
+контроллера: человек ждёт команду (melee-loop), бот зовёт AI. Формулы
+удара не слиты: бот→человек — `resolveBotTurn` (`keepFightOnKill` по
+живым тиммейтам цели); бот→бот — `resolveRosterBotTurn` (`keepFightOnKill:
+true`, смерть в extra-дуэли не эмитит fight-finished). Bulk-tick
+bot↔bot (`tickHuntRosterDuels` / `Battle.tickRosterDuels`) идёт сразу
+после человеческого удара; bot→человек по-прежнему с `meleeBotCounterMs`.
+
+`HuntRoster` после шага 5 ARC-CMB — контейнер ботов: `bots`, `primary`,
+`snaps`, `findBot`, `enqueueAggroClone` (клон сразу в `waiting`),
+`enemySideCleared` только по ботам roster (не путать с
+`enemySideCleared` из `Combatant`). Очередь паринга и второй цикл ходов
+с него сняты. Nullable `huntRoster` на `Battle` остаётся до шага 6.
 
 ## FightRules
 

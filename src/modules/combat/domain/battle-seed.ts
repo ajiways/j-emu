@@ -12,6 +12,7 @@ import {
 } from "./fight-setup.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { HuntRoster } from "./hunt-roster.ts";
+import { pairLeftoverRosterBots } from "./pair-leftover-roster-bots.ts";
 import { requireFightSetup } from "./require-fight-setup.ts";
 
 export type BattleSeed = Readonly<{
@@ -55,19 +56,23 @@ export function seedBattleParticipants(
   const extraEnemies = fightSetupTeamAis(setup, enemyTeam).slice(1).map(aiRosterSeed);
   const allies = fightSetupTeamAis(setup, openerTeam).map(aiRosterSeed);
   const opener = requireTeamHuman(setup, openerTeam, "Hunt opener");
+  const huntRoster = new HuntRoster({
+    primary: aiRosterSeed(primary),
+    extraEnemies,
+    allies,
+    occupiedIds: humans.map((human) => human.heroId),
+    effectIds,
+    teamAssignment: fightRules.teamAssignment,
+  });
   return {
     kind: "hunt",
-    huntRoster: new HuntRoster({
-      primary: aiRosterSeed(primary),
-      extraEnemies,
-      allies,
-      occupiedIds: humans.map((human) => human.heroId),
-      effectIds,
-      teamAssignment: fightRules.teamAssignment,
-    }),
+    huntRoster,
     pairedAccountId: opener.accountId,
     humans,
-    duels: [new FightDuel(opener.heroId, primary.fightId, opener.heroId)],
+    duels: [
+      new FightDuel(opener.heroId, primary.fightId, opener.heroId),
+      ...pairLeftoverRosterBots(huntRoster),
+    ],
   };
 }
 
