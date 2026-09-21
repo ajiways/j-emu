@@ -378,6 +378,15 @@ Runtime не читает `hunt_spawns.json` и не запускает legacy g
   due оба xy на stop; 50310 остаётся 883/1499;
 - нет per-spawn `setInterval`; runtime не читает `hunt_spawns.json`.
 
+### Известный гонок при остановке
+
+Wander может уйти в запрос (наблюдали `appearance_presets`) уже после закрытия
+пула Postgres. В e2e это выглядит как перемежающийся unhandled rejection
+`CONNECTION_ENDED` в teardown — тесты при этом зелёные и exit code `0`, поэтому
+suite не краснеет. Воспроизводится не каждый прогон. Причина — отсутствие
+ожидания уже начатых wander-тиков при shutdown, а не боевка и не `FightSetup`.
+Если suite начнёт падать на unhandled errors, смотреть сюда.
+
 ## Presence и channels — RTM-01
 
 ### Architecture decision
