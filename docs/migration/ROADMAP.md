@@ -2122,8 +2122,8 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   ревертом коммита; dual-path и compatibility-флагов не вводить.
 - **Acceptance:** существующие e2e боя (hunt, join/intervene, N×N,
   friendly duel, PvP/BG, quest roster, reconnect, restart) проходят без
-  правок ожиданий; новый unit доказывает, что AI-участник берёт ход в
-  бою, где нет hunt roster (сейчас невозможно); в `src/modules/combat`
+  правок ожиданий; unit `resolve-ai-actor-turn` гоняет AI-ход по
+  `Battle.duels` без контейнера `HuntRoster`; в `src/modules/combat`
   не остаётся ветвлений на `kind`/`purpose` вне `meta` и wire-маппера;
   `npm run check` зелёный.
 - **Разблокирует:** CMB-18 (outdoor challenge — уже без архитектурной
