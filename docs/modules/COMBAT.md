@@ -1022,9 +1022,8 @@ fail-fast, а уходит в `Math.random`; e2e с точной долей ур
 `DOT_DURATION_TURNS` держит override спелла `396`. Должно приходить из
 каталога.
 
-**Размер файлов.** `battle.ts` и `combat-service.ts` у лимита 400,
-`hunt-fight-settlement.ts` 376; всего в combat семь файлов свыше
-порога пересмотра 250. Декомпозиция частично входит в `ARC-CMB`.
+**Размер файлов.** `battle.ts` у лимита 400, рядом `combat-service.ts` и
+`combat-melee-loop.ts`. Декомпозиция частично входит в `ARC-CMB`.
 
 ## Границы модулей
 

@@ -23,8 +23,6 @@ Barrel может только re-export публичный контракт и 
 
 ## Лимиты размера
 
-- 250 строк: обязательный review threshold. Автор объясняет, почему файл остаётся
-  когезионным, либо делит его до review.
 - 400 строк: жёсткий лимит handwritten production file.
 - Generated codecs и migrations не учитываются; ручной код рядом с генерацией
   выносится отдельно.
@@ -138,5 +136,5 @@ Fastify adapters регистрируют routes и переводят bytes/coo
   duplicate exports и dependency cycles; entry exports также проверяются.
 
 Текущая проверка — `npm run check:architecture` (`scripts/check-architecture.ts`).
-Allowlist multi-export и 250-line justifications в этом скрипте пусты.
-Отклонений handwritten production files нет.
+Allowlist multi-export в этом скрипте пуст. Отклонений handwritten production
+files нет.

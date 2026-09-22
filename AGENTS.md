@@ -101,8 +101,8 @@
   регистрируются статически в composition root/module factory.
 - Один основной exported class/interface на файл. Семейство DTO можно держать
   вместе только для одного небольшого контракта.
-- Handwritten production-файл пересматривается при 250 строках и не может
-  превышать 400 строк. Исключения: generated codec и миграции.
+- Handwritten production-файл не может превышать 400 строк. Исключения:
+  generated codec и миграции.
 
 ## Перенос capability из jgr-emu
 
