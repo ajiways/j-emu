@@ -111,13 +111,14 @@ SINGLE/MULTI framing, exact `sq`, source IDs и packet order менять нел
 Join/waiter WLD-02 не ломается: пока A в дуэли, B без `attacknow`/`oppnew`.
 Если A умер и бот жив — authed B получает `oppnew`, затем `attacknow`.
 
-Player melee и ending glove бьют `FightDuel.otherId`, а не `Battle.kind`.
+Player melee и ending glove бьют `FightDuel.otherId`, а не тип боя.
 Цель — живой human в паре или hunt bot; иначе fail-fast. После удара
 сначала 3↔3 shuffle; bot-counter ставится только если противник всё ещё
 бот, иначе grant этому human.
-`Battle.kind` остаётся для bootstrap, join, practice settlement и history,
-не для формулы удара. Hybrid (люди и боты в обеих командах) ещё не playable
-slice; finish — когда на стороне цели не осталось живых.
+Решения bootstrap, join, settlement и history читают `FightRules`.
+Тип боя живёт только как `setup.meta.kind`. Hybrid (люди и боты в обеих
+командах) ещё не playable slice; finish — когда на стороне цели не
+осталось живых.
 
 CEF (кнопки после паузы, скрытие на свой удар) в этом срезе не прогонялся.
 
@@ -706,7 +707,7 @@ Retention 72h в SELECT; cleanup batches вне request path. PvP в history
 
 ### Architecture decision
 
-ADR-0017–0020 достаточны для этого среза. «Не выделять `FightRules`» — **устарело**: `FightRules` и `startBattle({team1,team2,rules})` выделяются в
+ADR-0017–0020 достаточны для этого среза. «Не выделять `FightRules`» — **устарело**: `FightRules` и `FightSetup` выделены в
 `ARC-CMB` ([ROADMAP.md](../migration/ROADMAP.md)).
 
 ### Out of scope (CMB-17 leftover)
@@ -731,7 +732,7 @@ Jugger-wire не читает таблицу напрямую.
 
 ### Architecture decision
 
-ADR-0017–0020 достаточны для этого среза. «Не выделять `FightRules`» — **устарело**: `FightRules` и `startBattle({team1,team2,rules})` выделяются в
+ADR-0017–0020 достаточны для этого среза. «Не выделять `FightRules`» — **устарело**: `FightRules` и `FightSetup` выделены в
 `ARC-CMB` ([ROADMAP.md](../migration/ROADMAP.md)).
 
 ## HERO-01 — PvP honor snapshot
@@ -885,9 +886,9 @@ bot и `extraEnemies` на enemy, `allies` на opener),
 `teamAssignment.enemyTeam` (сид кладёт enemy AIs раньше союзников).
 
 `Battle.purpose` = `meta.kind` и кормит `FightStart.purpose` /
-`FightFinishedNotice.purpose` (те же четыре строки, что раньше).
-`Battle.kind` остаётся `"hunt" | "friendly-duel" | "pvp"`: quest
-схлопывается в hunt только для `wireFightTypeOf` (`"1"` / `"6"`).
+`FightFinishedNotice.purpose` (те же четыре строки). Отдельного
+`Battle.kind` нет: `wireFightTypeOf(meta.kind)` даёт `"1"` для hunt, quest
+и pvp и `"6"` для friendly-duel.
 
 ## Паринг и цикл ходов
 
@@ -948,13 +949,11 @@ layout — [INVENTORY.md](INVENTORY.md), travel — [WORLD.md](WORLD.md).
 `awardsHonor` / `restoresFighters`; `historyRow` (`hunt-bot` /
 `practice-humans` / `none`); `includesQuestChat`.
 
-Wire `type` `"6"` дружеская дуэль / `"1"` всё остальное собирает
-`wireFightTypeOf(Battle.kind)` на границе ответа (`fight-result-info`,
-`runned-fight-record`), не `FightRules`. `Battle.kind` — трёхзначный alias
-(`quest` → `hunt`) только для этой строки; `Battle.purpose` =
+Wire `type` `"6"` дружеская дуэль / `"1"` hunt, quest и pvp собирает
+`wireFightTypeOf(meta.kind)` на границе ответа (`fight-result-info`,
+`runned-fight-record`), не `FightRules`. `Battle.purpose` =
 `FightSetup.meta.kind` и уходит в settlement/notice без смены строк.
-Решения в domain читают `FightRules`. Шаг 7 ARC-CMB снимет оставшиеся
-ярлыки `kind`/`purpose` из domain.
+Решения в domain читают `FightRules`.
 
 ## Инженерный долг
 
@@ -1023,7 +1022,7 @@ fail-fast, а уходит в `Math.random`; e2e с точной долей ур
 каталога.
 
 **Размер файлов.** `battle.ts` у лимита 400, рядом `combat-service.ts` и
-`combat-melee-loop.ts`. Декомпозиция частично входит в `ARC-CMB`.
+`combat-melee-loop.ts`. `ARC-CMB` закрыт и этот долг не снимал.
 
 ## Границы модулей
 
@@ -1033,9 +1032,8 @@ Combat получает immutable combat-ready snapshots через public ports
 
 Не создавать generic «будущий» battle abstraction спекулятивно и ценой
 изменения работающего flow: механики переносятся capability за capability.
-Это не запрещает `ARC-CMB` — там абстракция уже не «будущая» (оба триггера
-FIGHT_MODEL сработали), поведение и wire не меняются, а порядок миграции и
-acceptance зафиксированы в записи.
+`ARC-CMB` landed: абстракция — `FightRules` + `FightSetup`, поведение и wire
+не менялись; порядок миграции и acceptance — в записи.
 
 ## Acceptance будущей полной combat wave
 

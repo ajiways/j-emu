@@ -31,19 +31,30 @@ function extraEnemy(fightId: number): HuntRosterBotSeed {
 }
 
 describe("FightSetup", () => {
-  it("exposes quest as purpose while Battle.kind and wire type stay hunt", () => {
+  it("exposes quest as purpose and maps it to wire type 1", () => {
     const battle = createUnitBattle(unitHuntFightSetup({ purpose: "quest" }), random());
     expect(battle.purpose).toBe("quest");
-    expect(battle.kind).toBe("hunt");
-    expect(wireFightTypeOf(battle.kind)).toBe("1");
+    expect(Object.hasOwn(battle, "kind")).toBe(false);
+    expect(wireFightTypeOf(battle.setup.meta.kind)).toBe("1");
+    expect(battle.fightRules.includesQuestChat).toBe(true);
     expect(battle.questChat()).toEqual({ chatWin: "", chatLose: "" });
+  });
+
+  it("keeps hunt purpose without quest chat and maps it to wire type 1", () => {
+    const battle = createUnitBattle(unitHuntFightSetup(), random());
+    expect(battle.purpose).toBe("hunt");
+    expect(Object.hasOwn(battle, "kind")).toBe(false);
+    expect(wireFightTypeOf(battle.setup.meta.kind)).toBe("1");
+    expect(battle.fightRules.includesQuestChat).toBe(false);
+    expect(() => battle.questChat()).toThrow(/includesQuestChat/);
   });
 
   it("keeps friendly-duel purpose and wire type 6", () => {
     const battle = createUnitBattle(unitDuelFightSetup(), random());
     expect(battle.purpose).toBe("friendly-duel");
-    expect(battle.kind).toBe("friendly-duel");
-    expect(wireFightTypeOf(battle.kind)).toBe("6");
+    expect(wireFightTypeOf(battle.setup.meta.kind)).toBe("6");
+    expect(battle.fightRules.includesQuestChat).toBe(false);
+    expect(() => battle.questChat()).toThrow(/includesQuestChat/);
   });
 
   it("fails fast on an unknown meta.kind", () => {

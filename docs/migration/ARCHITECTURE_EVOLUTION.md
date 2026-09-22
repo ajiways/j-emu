@@ -188,7 +188,7 @@ kind-3 и не пишет `items`. ADR-0020 без active-fight tables.
 Для settlement отдельный `ARC-CMB` потребуется позже только если его нельзя
 провести без записи combat в чужие таблицы, durable outbox или active-fight rows.
 
-**Поднято `ARC-CMB` (состав боя), статус `next` в [ROADMAP.md](ROADMAP.md).**
+**Поднято `ARC-CMB` (состав боя); запись в [ROADMAP.md](ROADMAP.md) — `done`.**
 Причина не settlement, а bootstrap состава. «Кто в бою» описано тремя
 несовместимыми формами (`HuntBattleInit` с плоскими `hero*`/`bot*` и
 приделанными `extraEnemies`/`allies`, `FriendlyDuelBattleInit`

@@ -195,7 +195,7 @@ export class CombatTerminal {
     return buildFightResultInfo({
       fightId: battle.id,
       title: this.resultTitle(battle, humans),
-      type: wireFightTypeOf(battle.kind),
+      type: wireFightTypeOf(battle.setup.meta.kind),
       areaId: battle.areaId,
       timeout: battle.turnTimeoutSeconds,
       startedAt: battle.startedAt,

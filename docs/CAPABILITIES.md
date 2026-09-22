@@ -282,7 +282,7 @@ leftover. CEF боя не прогонялся.
 Инженерный долг боевки (read path доски боёв, коллекции без вытеснения,
 стоимость settlement и HTTP poll, хардкод контентных ID) перечислен в
 [COMBAT.md](modules/COMBAT.md) § «Инженерный долг» и статуса capability не
-меняет. Состав боя сводится к `FightRules` + `startBattle` в `ARC-CMB`
+меняет. Состав боя сведён к `FightRules` + `FightSetup` в `ARC-CMB`
 ([ROADMAP.md](migration/ROADMAP.md)) — без изменения wire и схемы.
 
 ## Quests и NPC — частично

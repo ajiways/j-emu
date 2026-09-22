@@ -150,10 +150,11 @@ describe("fight result info", () => {
     expect(info.users[0]).toMatchObject({ flee: true, killCount: 0, exp: 0 });
   });
 
-  it("maps friendly duel to wire type 6 and every other kind to 1", () => {
-    expect(wireFightTypeOf("friendly-duel")).toBe("6");
+  it("maps hunt, quest and pvp to wire type 1 and friendly duel to 6", () => {
     expect(wireFightTypeOf("hunt")).toBe("1");
+    expect(wireFightTypeOf("quest")).toBe("1");
     expect(wireFightTypeOf("pvp")).toBe("1");
+    expect(wireFightTypeOf("friendly-duel")).toBe("6");
     expect(() => wireFightTypeOf("arena" as never)).toThrow(/Unknown fight kind: arena/);
   });
 });

@@ -2,7 +2,6 @@ import { FightDuel } from "./fight-duel.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { seedHuman } from "./battle-fighters.ts";
 import { FightEffectIds } from "./fight-effect-ids.ts";
-import type { FightKind } from "./fight-rules.ts";
 import type { FightRules } from "./fight-rules.ts";
 import { seedFightBots } from "./fight-bots.ts";
 import {
@@ -17,7 +16,6 @@ import { pairLeftoverRosterBots } from "./pair-leftover-roster-bots.ts";
 import { requireFightSetup } from "./require-fight-setup.ts";
 
 export type BattleSeed = Readonly<{
-  kind: "hunt" | "friendly-duel" | "pvp";
   bots: readonly HuntRosterBot[];
   pairedAccountId: number;
   humans: readonly HuntHuman[];
@@ -45,7 +43,6 @@ export function seedBattleParticipants(
     const opener = requireTeamHuman(setup, openerTeam, "Human duel opener");
     const enemy = requireTeamHuman(setup, enemyTeam, "Human duel acceptor");
     return {
-      kind: battleKindOf(setup.meta.kind),
       bots: [],
       pairedAccountId: opener.accountId,
       humans,
@@ -65,7 +62,6 @@ export function seedBattleParticipants(
     openerTeam,
   });
   return {
-    kind: "hunt",
     bots,
     pairedAccountId: opener.accountId,
     humans,
@@ -80,10 +76,4 @@ function requireTeamHuman(setup: FightSetup, team: 1 | 2, label: string) {
   const human = fightSetupTeamHumans(setup, team)[0];
   if (!human) throw new Error(`${label} is missing`);
   return human;
-}
-
-function battleKindOf(kind: FightKind): "hunt" | "friendly-duel" | "pvp" {
-  if (kind === "quest") return "hunt";
-  if (kind === "hunt" || kind === "friendly-duel" || kind === "pvp") return kind;
-  throw new Error(`Unknown fight kind: ${String(kind)}`);
 }

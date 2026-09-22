@@ -37,7 +37,6 @@ import type { ShuffleOutcome } from "./try-shuffle-after-hits.ts";
 import { dissolveDuelContaining, requireDuelContaining } from "./try-pair-hunt-queues.ts";
 
 export class Battle {
-  readonly kind: "hunt" | "friendly-duel" | "pvp";
   readonly id: string;
   readonly accessKey: string;
   readonly arena: string;
@@ -72,7 +71,6 @@ export class Battle {
     this.meleeBotCounterMs = rules.meleeBotCounterMs;
     this.turnGrantDelayMs = rules.turnGrantDelayMs;
     const seed = seedBattleParticipants(setup, rules, fightRules);
-    this.kind = seed.kind;
     this.bots = requireFightBots(seed.bots);
     this.pairedAccountIdValue = seed.pairedAccountId;
     this.humans.push(...seed.humans);
@@ -97,9 +95,8 @@ export class Battle {
   }
 
   questChat(): Readonly<{ chatWin: string; chatLose: string }> {
-    const kind = this.setup.meta.kind;
-    if (kind !== "hunt" && kind !== "quest") {
-      throw new Error("Quest chat is only available for hunt or quest fights");
+    if (!this.fightRules.includesQuestChat) {
+      throw new Error("Quest chat requires FightRules.includesQuestChat");
     }
     return { chatWin: this.setup.meta.chatWin, chatLose: this.setup.meta.chatLose };
   }

@@ -1,12 +1,13 @@
 import { fightStartedLabel } from "./fight-started-label.ts";
 import type { FightLootBlock } from "./fight-loot-block.ts";
 import type { HuntBotSnap } from "./battle-event.ts";
+import type { FightKind } from "./fight-rules.ts";
 
 type FightResultType = "1" | "6";
 
-export function wireFightTypeOf(kind: "hunt" | "friendly-duel" | "pvp"): FightResultType {
+export function wireFightTypeOf(kind: FightKind): FightResultType {
   if (kind === "friendly-duel") return "6";
-  if (kind === "hunt" || kind === "pvp") return "1";
+  if (kind === "hunt" || kind === "quest" || kind === "pvp") return "1";
   throw new Error(`Unknown fight kind: ${String(kind)}`);
 }
 

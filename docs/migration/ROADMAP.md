@@ -2018,12 +2018,12 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   движок паринга и один цикл ходов на всех участников независимо от
   контроллера: все `FightDuel` в `Battle.duels`, очередь `waiting` общая,
   AI-ход через `resolveAiActorTurn`; (6) **landed** — снять `huntRoster: HuntRoster | null` — мобы живут в общем списке
-  участников; (7) удалить `kind`/`purpose` ветвления из domain, оставив
+  участников; (7) **landed** — удалить `kind`/`purpose` ветвления из domain, оставив
   `meta.kind` для settlement/wire. Каждый шаг — отдельный коммит, зелёный
   gate и существующие e2e.
-- **Согласовано с мейнтейнером (2026-09-18):** очередь идёт по шагам этой
-  записи; следующее действие — шаг 7 (снять `kind`/`purpose` из domain,
-  оставив `meta.kind` для settlement/wire). Перф-долг боевки из
+- **Согласовано с мейнтейнером (2026-09-18):** очередь шла по шагам этой
+  записи. Шаг 7 закрыт: `Battle.kind` / `battleKindOf` сняты, `meta.kind`
+  остаётся для settlement и `wireFightTypeOf`. Перф-долг боевки из
   [COMBAT.md](../modules/COMBAT.md) § «Инженерный долг» в `ARC-CMB` не входит
   и берётся отдельно.
 - **Найдено на шаге 1 (меняет порядок):** hp нельзя было слить вместе с
@@ -2105,6 +2105,13 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   остаётся label policy, не удалённый класс. Шаг 7 не сдвигается: ветвления
   `kind`/`purpose` в domain ещё есть, authenticate в их число больше не
   входит.
+- **Найдено на шаге 7:** `Battle.questChat` ветвился на `meta.kind` hunt|quest,
+  а `FightRules.includesQuestChat` true только у quest. Notice уже шёл по
+  правилу, поэтому hunt на wire не отдавал chat. После замены ветки правилом
+  hunt `questChat()` бросает; quest по-прежнему отдаёт строки. `wireFightTypeOf`
+  принимает четыре `FightKind`: quest не throw, даёт `"1"`. `Battle.purpose`
+  оставлен тонким alias `meta.kind` для `FightStart` / notice. `requireMeta`
+  остаётся проверкой документа setup на старте.
 - **Совместимость wire и данных:** миграции схемы и backfill **не
   требуются** — active fight существует только в RAM (ADR-0020), таблиц
   боя нет, форма строки `combat.finished_fights` не меняется. Wire не
@@ -2122,7 +2129,7 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
 - **Разблокирует:** CMB-18 (outdoor challenge — уже без архитектурной
   части), арена / 5v5, новые BG-карты, bot summon kind 10 и aggro вне
   outdoor hunt, расширения quest roster.
-- **Status:** `next`
+- **Status:** `done`
 
 ### CMB-18 — Outdoor ATTACK challenge
 
