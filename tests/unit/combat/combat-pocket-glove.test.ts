@@ -74,7 +74,7 @@ function dumpLoadout(overrides: Partial<CombatLoadout> = {}): CombatLoadout {
           spell: {
             persRestr: { active: true, dead: false },
             targetRestr: { self: true, dead: false },
-            effects: [{ kind: 3, charging: 1 }],
+            effects: [{ kind: 3, dmgType: 1, charging: 1 }],
           },
         },
         {
@@ -319,7 +319,7 @@ describe("CombatService pocket glove rage", () => {
     const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const { combat, delay } = createCombatService({
       clock,
-      random: new SequenceRandom([8, 2, 8, 2, 8, 2]),
+      random: new SequenceRandom([8, 2, 8, 2, 8, 2, 8, 2]),
     });
     await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
@@ -328,11 +328,19 @@ describe("CombatService pocket glove rage", () => {
     await strikeAndLoop(combat, delay, clock, "right", 3);
     await strikeAndLoop(combat, delay, clock, "center", 4);
     await combat.execute(1, { kind: "glove", spellId: 9100, sequence: 5 });
-    expect((await combat.execute(1, { kind: "poll" })).map((event) => event.type)).toEqual([
+    const cast = await combat.execute(1, { kind: "poll" });
+    expect(cast.map((event) => event.type)).toEqual([
       "command-accepted",
       "effect-use",
       "buff-cast",
       "pers-cp",
+    ]);
+    expect(cast[1]).toMatchObject({ artikulId: 9100, kind: 3, id: 1, sourceId: 1, dmgType: 1 });
+
+    await combat.execute(1, { kind: "strike", side: "left", sequence: 6 });
+    const strike = await combat.execute(1, { kind: "poll" });
+    expect(strike.filter((event) => event.type === "effect-purge")).toEqual([
+      { type: "effect-purge", effectId: 1 },
     ]);
   });
 

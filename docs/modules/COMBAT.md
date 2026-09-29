@@ -642,7 +642,9 @@ Hissa 396 / 50101 `magic_direct` остаётся kind-1; Грызль melee-onl
 не бьёт сразу: keep-turn, `schoolOverlay`, затем melee физика + второе
 `hpChange` школы (`extraHits`), в том числе после dodge/block (`applied`
 0, HP без изменения). Убийство физикой не жжёт заряд overlay.
-Representative: Hissa 397, перчатка 181. Bot 397: `effUse` kind-3 на мобе
+Glove keep-turn баффы (crit 9100, overlay 181) вешают стоящий эффект: `effUse` несёт
+свой `id`/`remainTime`, `effPurge` идёт на ударе, который расходует заряд (иначе
+иконка висела вечно и делила `id` с DoT). Representative: Hissa 397, перчатка 181. Bot 397: `effUse` kind-3 на мобе
 (catalog title/img) до `magic_baf`; overlay charges; `effPurge` после
 последнего consuming melee. CEF 2026-09-17: иконка 397 на Хиссе.
 

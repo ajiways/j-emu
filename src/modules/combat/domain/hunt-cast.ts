@@ -1,5 +1,5 @@
 import type { BattleEvent } from "./battle-event.ts";
-import type { CombatSpell } from "./combat-loadout.ts";
+import type { CombatGloveSpell, CombatSpell } from "./combat-loadout.ts";
 import { FightCastDenied } from "./fight-cast-denied.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { pocketHealAmount, spellCharging, spellKind } from "./hunt-human-cast-state.ts";
@@ -121,11 +121,21 @@ export function tryGloveKeepTurn(
   }
   const cp = human.casts.spendCombo(glove.cost);
   const overlay = schoolOverlayFromKind1(glove.spell, human.meleeStrength());
+  const charges = overlay ? overlay.charges : spellCharging(glove.spell) || 1;
   if (overlay) {
     human.casts.schoolOverlay = overlay;
   } else {
-    human.casts.armGloveCrit(spellCharging(glove.spell) || 1);
+    human.casts.armGloveCrit(charges);
   }
+  const standing = human.effects.attachChargingKind3({
+    sourceId: human.heroId,
+    artikulId: glove.artikulId,
+    title: glove.title,
+    img: glove.picture,
+    dmgType: overlay ? overlay.dmgType : gloveDmgType(glove),
+    remainTurns: charges,
+    ...(glove.spell.groupId !== undefined ? { groupId: glove.spell.groupId } : {}),
+  });
   return {
     kind: "resolved",
     events: [
@@ -135,9 +145,14 @@ export function tryGloveKeepTurn(
         animation: glove.spell.animData ?? "",
         kind: 3,
         flags: "262144",
-        img: glove.picture,
-        title: glove.title,
+        img: standing.img,
+        title: standing.title,
         persId: human.heroId,
+        dmgType: standing.dmgType,
+        id: standing.id,
+        sourceId: standing.sourceId,
+        remainTime: standing.remainTime,
+        ...(standing.groupId !== undefined ? { groupId: standing.groupId } : {}),
       },
       {
         type: "buff-cast",
@@ -154,4 +169,10 @@ export function tryGloveKeepTurn(
 export function isEndingGlove(spell: CombatSpell): boolean {
   if (kind1OverlayCharges(spell) > 0) return false;
   return spell.endTurn === true || spellKind(spell, 1);
+}
+
+function gloveDmgType(glove: CombatGloveSpell): number {
+  const dmgType = glove.spell.effects.find((effect) => effect.dmgType !== undefined)?.dmgType;
+  if (dmgType === undefined) throw new Error(`Glove spell ${glove.artikulId} dmgType is required`);
+  return dmgType;
 }

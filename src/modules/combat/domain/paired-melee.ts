@@ -42,12 +42,14 @@ export function tryPairedMelee(
   const rage = attacker.casts.takeRagePcStr();
   if (orb > 0) baseDamage = Math.max(1, Math.round(baseDamage * (1 + orb / 100)));
   if (rage > 0) baseDamage = Math.max(1, Math.round(baseDamage * (1 + rage / 100)));
+  const gloveCrit = attacker.casts.takeGloveCrit();
+  const overlayBefore = attacker.casts.schoolOverlay;
   const outcome = rollMeleeOutcome({
     baseDamage,
     attacker: strikeStatsFromHuman(attacker),
     defender: target.strikeStats,
     targetHp: targetHp(target),
-    forceCrit: attacker.casts.takeGloveCrit(),
+    forceCrit: gloveCrit,
     random: input.random,
     rules: input.rules,
   });
@@ -95,7 +97,7 @@ export function tryPairedMelee(
   for (const effectId of attacker.effects.onActorEndingTurn(input.nowMs)) {
     events.push({ type: "effect-purge", effectId });
   }
-  if (orb > 0 || rage > 0) {
+  if (orb > 0 || rage > 0 || gloveCrit || overlayBefore !== attacker.casts.schoolOverlay) {
     for (const effectId of attacker.effects.consumeChargingHit()) {
       events.push({ type: "effect-purge", effectId });
     }
