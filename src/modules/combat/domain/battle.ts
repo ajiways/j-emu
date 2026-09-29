@@ -23,7 +23,7 @@ import { primaryEnemyBot, requireFightBot, requireFightBots } from "./fight-bots
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { grantTurn as grantHumanTurn, type BotMeleeResult } from "./hunt-melee.ts";
-import type { PlayerMeleeResult } from "./paired-melee.ts";
+import { opposingTeam, type PlayerMeleeResult } from "./paired-melee.ts";
 import { tryPocketCast, tryRageCast, type KeepTurnResult } from "./hunt-cast.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import { tryHuntAggro, type HuntAggroResult } from "./hunt-aggro.ts";
@@ -92,6 +92,10 @@ export class Battle {
     return this.setup.meta.kind;
   }
 
+  opposingTeamOf(accountId: number): 1 | 2 {
+    return opposingTeam(requireBattleHuman(this.humans, accountId).team);
+  }
+
   openerTeam(): 1 | 2 {
     return battleOpener(this.humans).team;
   }
@@ -145,14 +149,6 @@ export class Battle {
     const actor = this.humans.find((entry) => entry.heroId === actorId);
     if (!actor) throw new Error("Duel next actor is not a human in this battle");
     return actor.accountId;
-  }
-
-  opponentAccountId(accountId: number): number {
-    const opponent = this.pairedOpponent(accountId);
-    if (opponent.kind !== "human") {
-      throw new Error("Duel opponent is not a human in this battle");
-    }
-    return opponent.accountId;
   }
 
   pairedOpponent(

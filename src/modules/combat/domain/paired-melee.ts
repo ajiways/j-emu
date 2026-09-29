@@ -11,7 +11,8 @@ import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
 
 export type PlayerMeleeResult =
-  Readonly<{ kind: "ignored" }> | Readonly<{ kind: "resolved"; events: readonly BattleEvent[] }>;
+  | Readonly<{ kind: "ignored" }>
+  | Readonly<{ kind: "resolved"; events: readonly BattleEvent[]; selfKilled?: true }>;
 
 export function tryPairedMelee(
   attacker: HuntHuman,
@@ -98,11 +99,21 @@ export function tryPairedMelee(
       events.push({ type: "effect-purge", effectId });
     }
   }
-  events.push(...applyCarrierTicks(attacker, input.random, input.rules));
   if (finished) {
     events.push({ type: "finished", winnerTeam: attacker.team, fightId: input.fightId });
+    return { result: { kind: "resolved", events }, finished };
   }
-  return { result: { kind: "resolved", events }, finished };
+  events.push(...applyCarrierTicks(attacker, input.random, input.rules));
+  if (attacker.hp > 0) return { result: { kind: "resolved", events }, finished };
+  const lost = enemySideCleared(attacker.team, fightCombatants(input.humans, input.bots));
+  if (lost) {
+    events.push({
+      type: "finished",
+      winnerTeam: opposingTeam(attacker.team),
+      fightId: input.fightId,
+    });
+  }
+  return { result: { kind: "resolved", events, selfKilled: true }, finished: lost };
 }
 
 export function applyDamageToMeleeTarget(
@@ -144,4 +155,8 @@ function requireLivingMeleeTarget(target: MeleeTarget): void {
   if (targetHp(target) === 0) {
     throw new Error("Melee target is not a living paired opponent");
   }
+}
+
+export function opposingTeam(team: 1 | 2): 1 | 2 {
+  return team === 1 ? 2 : 1;
 }

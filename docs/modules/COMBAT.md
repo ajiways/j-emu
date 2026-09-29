@@ -656,7 +656,10 @@ Kind 4/5 ticks: бюджет `round(duration/period)`; `period` обязател
 `cast`, без тика в том же пакете. Player melee poll держит empty-anim tick
 `damage`; wire кладёт sibling `hpChange` (`persId`=bot, `targetId`=охотник,
 `dmgType` 64) в тот же melee `ev` map — не `extraHits` и не empty-anim
-`cast`. Kind 8 dispel
+`cast`. Тик, убивший бьющего охотника: конец боя, если его команда пуста,
+иначе hand-off ожидающему (как смерть от бота); после последнего убийства
+тики не идут. `winnerTeam` выхода — команда против погибшего/ушедшего, не
+константа. Kind 8 dispel
 стоящих `groupId` при gate `foe_has_dispel_groups`. Kind 11 empty
 success. Kind 18 stun skip-turn, `duration` обязателен. Kind 10 summon
 632: `fight_start` сжигается без каста; clone цели в roster **не**

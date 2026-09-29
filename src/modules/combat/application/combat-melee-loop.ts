@@ -54,6 +54,10 @@ export class CombatMeleeLoop {
       await this.settleFinished(battle, resolved.events, accountId);
       return;
     }
+    if (resolved.selfKilled) {
+      await this.handOffToWaiter(battle, accountId);
+      return;
+    }
     await this.followUpAfterStrike(battle, accountId, resolved.events);
   }
 
@@ -235,9 +239,10 @@ export class CombatMeleeLoop {
 
   private async handOffToWaiter(battle: Battle, deadAccountId: number): Promise<void> {
     cancelDuel(this.scheduler, battle, deadAccountId);
-    this.enqueue(deadAccountId, [{ type: "finished", winnerTeam: 2, fightId: battle.id }]);
+    const winnerTeam = battle.opposingTeamOf(deadAccountId);
+    this.enqueue(deadAccountId, [{ type: "finished", winnerTeam, fightId: battle.id }]);
     await this.departHuman(battle, deadAccountId);
-    this.queueExit(deadAccountId, battle.id, { fightId: battle.id, winnerTeam: 2 });
+    this.queueExit(deadAccountId, battle.id, { fightId: battle.id, winnerTeam });
     this.byAccount.delete(deadAccountId);
     this.wakeAccount(deadAccountId);
     const waiter = battle.pairNextWaiter(deadAccountId);

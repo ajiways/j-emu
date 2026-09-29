@@ -91,7 +91,7 @@ export function applyHuntPlayerHit(
     humans: readonly HuntHuman[];
   }>,
 ): Readonly<{ result: PlayerMeleeResult; finished: boolean }> {
-  if (resolved.result.kind !== "resolved") {
+  if (resolved.result.kind !== "resolved" || resolved.result.selfKilled) {
     return { result: resolved.result, finished: resolved.finished };
   }
   const extra = applyHuntBotHit(resolved.finished, input);
@@ -99,7 +99,7 @@ export function applyHuntPlayerHit(
     return { result: resolved.result, finished: extra.finished };
   }
   return {
-    result: { kind: "resolved", events: [...resolved.result.events, ...extra.events] },
+    result: { ...resolved.result, events: [...resolved.result.events, ...extra.events] },
     finished: extra.finished,
   };
 }

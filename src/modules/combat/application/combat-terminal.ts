@@ -68,7 +68,11 @@ export class CombatTerminal {
         if (token) this.scheduler.cancel(token);
       }
       await this.departHuman(battle, accountId);
-      this.queueExit(accountId, battle.id, { fightId: battle.id, winnerTeam: 2, flee: true });
+      this.queueExit(accountId, battle.id, {
+        fightId: battle.id,
+        winnerTeam: battle.opposingTeamOf(accountId),
+        flee: true,
+      });
       this.byAccount.delete(accountId);
       this.wakeAccount(accountId);
       if (!wasPaired) return;
