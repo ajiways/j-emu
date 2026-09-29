@@ -73,6 +73,10 @@ generated-файлах. Остальные типы (NPC/quests) из матри
 `content/playable-slice.json` — вручную собранный bundle для типов без
 отдельного decoder. Item corpus сюда не кладётся: `itemsFile` указывает на
 `content/pub1-items.generated.json` (`npm run content:decode:items`).
+Decoder переносит все поля `spell` и `spell.effects[]` из Pub1, в том числе
+ещё не используемые боем (`botArtikulId`, `delta`, `limit`, `durationInTurns`
+и др.); неизвестное поле роняет декодирование, а не пропадает. Боевой движок
+читает только понятые поля (`toCombatSpell`).
 Bot corpus тоже не кладётся: `botsFile` / `botLootFile` / `botSpellBooksFile`
 указывают на generated JSON (`npm run content:decode:bots`).
 Area/hunt corpus тоже не кладётся: `areasFile` / `areaLinksFile` /

@@ -2,10 +2,10 @@ import {
   amfActionParam,
   amfInteger,
   amfOmittedZeroInteger,
-  amfSpellSkillValue,
   amfString,
   isRecord,
 } from "./amf-fields.ts";
+import { decodeSpell } from "./artifact-spell-from-amf.ts";
 import {
   GEAR_COMBO_GLOVE_ARTIKUL_ID,
   GLOVE_CATALOG_HITS,
@@ -172,113 +172,6 @@ function actionRows(raw: unknown, artifactId: number): Record<string, unknown>[]
   );
 }
 
-function decodeSpell(raw: unknown, artifactId: number): Record<string, unknown> | undefined {
-  if (raw === undefined || raw === null || raw === "") return undefined;
-  const parsed = parseSpellPayload(raw, artifactId);
-  if (!parsed) return undefined;
-  const effectsRaw = parsed.effects;
-  if (!Array.isArray(effectsRaw) || effectsRaw.length < 1) return undefined;
-  return {
-    ...(typeof parsed.animData === "string" && parsed.animData
-      ? { animData: parsed.animData }
-      : {}),
-    ...(parsed.groupId !== undefined
-      ? includePositiveInt(parsed.groupId, `artifact ${artifactId} spell groupId`, "groupId")
-      : {}),
-    ...(parsed.cooldown !== undefined
-      ? { cooldown: amfInteger(parsed.cooldown, `artifact ${artifactId} spell cooldown`) }
-      : {}),
-    ...(typeof parsed.endTurn === "boolean" ? { endTurn: parsed.endTurn } : {}),
-    ...(parsed.flags !== undefined ? { flags: parsed.flags } : {}),
-    ...(isRecord(parsed.persRestr) ? { persRestr: parsed.persRestr } : {}),
-    ...(isRecord(parsed.targetRestr) ? { targetRestr: parsed.targetRestr } : {}),
-    ...(parsed.triggers !== undefined ? { triggers: parsed.triggers } : {}),
-    ...(parsed.onlyPvP !== undefined ? { onlyPvP: parsed.onlyPvP } : {}),
-    effects: effectsRaw.map((effect, index) => decodeEffect(effect, artifactId, index)),
-  };
-}
-
-function decodeEffect(raw: unknown, artifactId: number, index: number): Record<string, unknown> {
-  const row = requireRow(raw, `artifact ${artifactId} spell effect ${index}`);
-  const effect: Record<string, unknown> = {
-    kind: requirePositive(
-      amfInteger(row.kind, `artifact ${artifactId} spell effect ${index} kind`),
-      `artifact ${artifactId} spell effect ${index} kind`,
-    ),
-  };
-  if (row.amount !== undefined) effect.amount = row.amount;
-  if (row.dmgType !== undefined) {
-    effect.dmgType = amfInteger(
-      row.dmgType,
-      `artifact ${artifactId} spell effect ${index} dmgType`,
-    );
-  }
-  if (row.charging !== undefined) {
-    const charging = amfInteger(
-      row.charging,
-      `artifact ${artifactId} spell effect ${index} charging`,
-    );
-    if (charging > 0) effect.charging = charging;
-  }
-  if (row.capacity !== undefined) {
-    const capacity = amfInteger(
-      row.capacity,
-      `artifact ${artifactId} spell effect ${index} capacity`,
-    );
-    if (capacity > 0) effect.capacity = capacity;
-  }
-  if (row.order !== undefined) {
-    effect.order = amfInteger(row.order, `artifact ${artifactId} spell effect ${index} order`);
-  }
-  if (row.hidden !== undefined) {
-    effect.hidden = amfInteger(row.hidden, `artifact ${artifactId} spell effect ${index} hidden`);
-  }
-  if (row.targetCount !== undefined) {
-    const targetCount = amfInteger(
-      row.targetCount,
-      `artifact ${artifactId} spell effect ${index} targetCount`,
-    );
-    if (targetCount > 0) effect.targetCount = targetCount;
-  }
-  if (row.duration !== undefined) {
-    effect.duration = amfInteger(
-      row.duration,
-      `artifact ${artifactId} spell effect ${index} duration`,
-    );
-  }
-  if (row.period !== undefined) {
-    effect.period = requirePositive(
-      amfInteger(row.period, `artifact ${artifactId} spell effect ${index} period`),
-      `artifact ${artifactId} spell effect ${index} period`,
-    );
-  }
-  if (typeof row.forceSelfTargeting === "boolean") {
-    effect.forceSelfTargeting = row.forceSelfTargeting;
-  }
-  if (typeof row.realStartTime === "boolean") effect.realStartTime = row.realStartTime;
-  if (row.skills !== undefined) effect.skills = decodeSpellSkills(row.skills, artifactId, index);
-  return effect;
-}
-
-function decodeSpellSkills(raw: unknown, artifactId: number, index: number): unknown {
-  if (!Array.isArray(raw)) {
-    throw new Error(`artifact ${artifactId} spell effect ${index} skills must be an array`);
-  }
-  return raw.map((skill, skillIndex) => {
-    const row = requireRow(
-      skill,
-      `artifact ${artifactId} spell effect ${index} skill ${skillIndex}`,
-    );
-    return {
-      skill_id: amfString(row.skill_id, `artifact ${artifactId} spell skill_id`),
-      value: amfSpellSkillValue(
-        row.value,
-        `artifact ${artifactId} spell effect ${index} skill ${skillIndex} value`,
-      ),
-    };
-  });
-}
-
 function decodeSockets(raw: unknown, artifactId: number): Array<Record<string, unknown>> {
   if (raw === undefined || raw === null) return [];
   if (!Array.isArray(raw)) throw new Error(`artifact ${artifactId} extra.spells must be an array`);
@@ -342,29 +235,9 @@ function decodeSet(raw: unknown, artifactId: number): Record<string, unknown> | 
   return set;
 }
 
-function parseSpellPayload(raw: unknown, artifactId: number): Record<string, unknown> | undefined {
-  if (typeof raw === "string") {
-    try {
-      const parsed: unknown = JSON.parse(raw);
-      if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return undefined;
-      return parsed as Record<string, unknown>;
-    } catch (error) {
-      throw new Error(`artifact ${artifactId} spell JSON is invalid`, { cause: error });
-    }
-  }
-  if (isRecord(raw)) return raw;
-  throw new Error(`artifact ${artifactId} spell is invalid`);
-}
-
 function requirePositive(value: number, label: string): number {
   if (value < 1) throw new Error(`${label} must be positive`);
   return value;
-}
-
-function includePositiveInt(value: unknown, label: string, key: string): Record<string, number> {
-  const parsed = amfInteger(value, label);
-  if (parsed < 1) return {};
-  return { [key]: parsed };
 }
 
 function requireRow(value: unknown, label: string): Record<string, unknown> {

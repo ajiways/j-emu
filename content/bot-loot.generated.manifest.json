@@ -2,7 +2,7 @@
   "sourceGroup": "DATA-03 / base loot",
   "decoderVersion": "pub1-bot-loot/v1",
   "documentSchema": "bot-document/playable-slice-v35",
-  "filesDigest": "fe86cc0d233a11df84f41b50c826444215b100d6574f00526fd505e119521b27",
+  "filesDigest": "4c15df0966611c2bbe7dd94f0d8f6830158c855c6b5b28f89067e90d73791a9b",
   "acceptedCount": 164,
   "keys": [
     {
@@ -662,5 +662,5 @@
       "digest": "6432521994730cc58d7572f0fdd937845f974c99bf85ad7388a33437e62b7f37"
     }
   ],
-  "corpusDigest": "f93d70d66490d2f9a67fc7815c1b4c0bff37b3d59d72a9141fbce0d63c5c992e"
+  "corpusDigest": "9e653e4c1ea5e30ead6abcda26d3ded6df532eb3a074cd7b158b6f72f07a8836"
 }

@@ -650,7 +650,7 @@ Representative: Hissa 397, перчатка 181. Bot 397: `effUse` kind-3 на �
 
 Срез закрыт (unit). Kind 2 heal — CMB-06. Kind 3 keep-turn / buff-cast.
 Kind 4/5 ticks: бюджет `round(duration/period)`; `period` обязателен и
-приходит из Pub1 через decoder `pub1-items/v3` (без period бой падает с
+приходит из Pub1 через decoder `pub1-items/v4` (без period бой падает с
 ошибкой, дефолта нет); sibling `hpChange` на carrier melee. Overlay
 `durationTurns` 396 = 3 (live «трех ходов»). Kind-1+DoT: `effUse` до
 `cast`, без тика в том же пакете. Player melee poll держит empty-anim tick

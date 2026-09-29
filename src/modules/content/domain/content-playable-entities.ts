@@ -15,26 +15,58 @@ type ArtifactSpellSkillDocument = Readonly<{
   value: number;
 }>;
 
+type ArtifactSpellDeltaDocument = Readonly<{
+  skill: string;
+  abs?: number;
+  proc?: number;
+  target?: boolean;
+}>;
+
+type ArtifactSpellSkillPairDocument = Readonly<{
+  skill1: string;
+  skill2: string;
+  abs: number;
+  proc: number;
+}>;
+
 type ArtifactSpellEffectDocument = Readonly<{
   kind: number;
   amount?: number | string;
   dmgType?: number;
+  dmgMask?: number;
   charging?: number;
   capacity?: number;
   order?: number;
   hidden?: number;
   targetCount?: number;
+  targetGroups?: readonly number[];
+  targetEffectGroupId?: number;
+  targetEffectCount?: number;
+  botArtikulId?: number;
   duration?: number;
   period?: number;
   forceSelfTargeting?: boolean;
   realStartTime?: boolean;
+  durationInTurns?: boolean;
+  noHasten?: boolean;
+  chargable?: boolean;
+  dont_putoff_after_death?: boolean;
+  animData?: string;
+  manaCost?: number;
+  limit?: number | string;
+  useSkill?: string;
+  delta?: ArtifactSpellDeltaDocument;
   skills?: readonly ArtifactSpellSkillDocument[];
+  skills2?: readonly ArtifactSpellSkillPairDocument[];
 }>;
 
 type ArtifactSpellDocument = Readonly<{
   animData?: string;
   groupId?: number;
   cooldown?: number;
+  mpCost?: number;
+  triggerCount?: number;
+  needConfirm?: boolean;
   endTurn?: boolean;
   flags?: string | number;
   persRestr?: Readonly<Record<string, unknown>>;

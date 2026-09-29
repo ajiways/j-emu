@@ -36,21 +36,54 @@ const artifactSpellSkillSchema = z
   })
   .strict();
 
+const artifactSpellDeltaSchema = z
+  .object({
+    skill: z.string().min(1),
+    abs: z.number().optional(),
+    proc: z.number().optional(),
+    target: z.boolean().optional(),
+  })
+  .strict();
+
+const artifactSpellSkillPairSchema = z
+  .object({
+    skill1: z.string().min(1),
+    skill2: z.string().min(1),
+    abs: z.number(),
+    proc: z.number(),
+  })
+  .strict();
+
 const artifactSpellEffectSchema = z
   .object({
     kind: z.number().int().positive(),
     amount: z.union([z.number(), z.string()]).optional(),
     dmgType: z.number().int().nonnegative().optional(),
+    dmgMask: z.number().int().optional(),
     charging: z.number().int().positive().optional(),
     capacity: z.number().int().positive().optional(),
     order: z.number().int().optional(),
     hidden: z.number().int().nonnegative().optional(),
     targetCount: z.number().int().positive().optional(),
+    targetGroups: z.array(z.number().int()).optional(),
+    targetEffectGroupId: z.number().int().optional(),
+    targetEffectCount: z.number().int().optional(),
+    botArtikulId: z.number().int().optional(),
     duration: z.number().int().nonnegative().optional(),
     period: z.number().int().positive().optional(),
     forceSelfTargeting: z.boolean().optional(),
     realStartTime: z.boolean().optional(),
+    durationInTurns: z.boolean().optional(),
+    noHasten: z.boolean().optional(),
+    chargable: z.boolean().optional(),
+    dont_putoff_after_death: z.boolean().optional(),
+    animData: z.string().optional(),
+    manaCost: z.number().int().optional(),
+    limit: z.union([z.number().int(), z.string()]).optional(),
+    useSkill: z.string().optional(),
+    delta: artifactSpellDeltaSchema.optional(),
     skills: z.array(artifactSpellSkillSchema).optional(),
+    skills2: z.array(artifactSpellSkillPairSchema).optional(),
   })
   .strict();
 
@@ -59,6 +92,9 @@ export const artifactSpellSchema = z
     animData: z.string().min(1).optional(),
     groupId: z.number().int().positive().optional(),
     cooldown: z.number().int().nonnegative().optional(),
+    mpCost: z.number().int().optional(),
+    triggerCount: z.number().int().optional(),
+    needConfirm: z.boolean().optional(),
     endTurn: z.boolean().optional(),
     flags: z.union([z.string(), z.number()]).optional(),
     persRestr: z.record(z.string(), z.unknown()).optional(),

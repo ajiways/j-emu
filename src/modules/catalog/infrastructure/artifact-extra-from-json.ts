@@ -91,6 +91,9 @@ function spellFromJson(artifactId: number, value: unknown): ArtifactSpell {
     ...(typeof record.animData === "string" ? { animData: record.animData } : {}),
     ...(typeof record.groupId === "number" ? { groupId: record.groupId } : {}),
     ...(typeof record.cooldown === "number" ? { cooldown: record.cooldown } : {}),
+    ...(typeof record.mpCost === "number" ? { mpCost: record.mpCost } : {}),
+    ...(typeof record.triggerCount === "number" ? { triggerCount: record.triggerCount } : {}),
+    ...(typeof record.needConfirm === "boolean" ? { needConfirm: record.needConfirm } : {}),
     ...(typeof record.endTurn === "boolean" ? { endTurn: record.endTurn } : {}),
     ...(record.flags !== undefined ? { flags: String(record.flags) } : {}),
     ...(record.persRestr && typeof record.persRestr === "object"
@@ -126,6 +129,7 @@ function effectFromJson(artifactId: number, value: unknown, index: number): Arti
 function optionalEffectFields(record: Record<string, unknown>): Partial<ArtifactSpellEffect> {
   return {
     ...(typeof record.dmgType === "number" ? { dmgType: record.dmgType } : {}),
+    ...unmodelledEffectFields(record),
     ...(typeof record.charging === "number" ? { charging: record.charging } : {}),
     ...(typeof record.capacity === "number" ? { capacity: record.capacity } : {}),
     ...(typeof record.order === "number" ? { order: record.order } : {}),
@@ -152,6 +156,50 @@ function optionalEffectFields(record: Record<string, unknown>): Partial<Artifact
         }
       : {}),
   };
+}
+
+/** Pub1 effect fields the fight engine does not read yet; kept so nothing is lost on the way in. */
+function unmodelledEffectFields(record: Record<string, unknown>): Partial<ArtifactSpellEffect> {
+  const numbers = [
+    "dmgMask",
+    "targetEffectGroupId",
+    "targetEffectCount",
+    "botArtikulId",
+    "manaCost",
+  ] as const;
+  const flags = ["durationInTurns", "noHasten", "chargable"] as const;
+  return {
+    ...Object.fromEntries(numbers.flatMap((key) => optionalOf(record[key], "number", key))),
+    ...Object.fromEntries(flags.flatMap((key) => optionalOf(record[key], "boolean", key))),
+    ...(typeof record.dont_putoff_after_death === "boolean"
+      ? { dontPutoffAfterDeath: record.dont_putoff_after_death }
+      : {}),
+    ...(typeof record.animData === "string" ? { animData: record.animData } : {}),
+    ...(typeof record.useSkill === "string" ? { useSkill: record.useSkill } : {}),
+    ...(typeof record.limit === "number" || typeof record.limit === "string"
+      ? { limit: record.limit }
+      : {}),
+    ...(Array.isArray(record.targetGroups)
+      ? { targetGroups: record.targetGroups.map((group) => requireNumber(group, "targetGroups")) }
+      : {}),
+    ...(isPlainRecord(record.delta) ? { delta: record.delta as ArtifactSpellEffect["delta"] } : {}),
+    ...(Array.isArray(record.skills2)
+      ? { skills2: record.skills2 as ArtifactSpellEffect["skills2"] }
+      : {}),
+  };
+}
+
+function optionalOf(value: unknown, type: "number" | "boolean", key: string) {
+  return typeof value === type ? [[key, value]] : [];
+}
+
+function requireNumber(value: unknown, label: string): number {
+  if (typeof value !== "number") throw new Error(`Spell ${label} entry must be a number`);
+  return value;
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function socketsFromJson(artifactId: number, value: unknown): readonly ArtifactGloveSocket[] {

@@ -2,16 +2,16 @@
   "sourceGroup": "DATA-03 / spell definitions",
   "decoderVersion": "pub1-bot-spell-books/v1",
   "documentSchema": "bot-document/playable-slice-v35",
-  "filesDigest": "fe86cc0d233a11df84f41b50c826444215b100d6574f00526fd505e119521b27",
+  "filesDigest": "4c15df0966611c2bbe7dd94f0d8f6830158c855c6b5b28f89067e90d73791a9b",
   "acceptedCount": 164,
   "keys": [
     {
       "key": "10",
-      "digest": "7bdda5f63f255006c06bdd624109505942ae64b8ee558ccc98b0ef7e90933f3c"
+      "digest": "eb53945500c0133566e63cbe6468519a72503fcf5efcd644723ef41134168ea6"
     },
     {
       "key": "106",
-      "digest": "552966944955f87676b34afec1b61c4e17e8c4030aa60ce6f28e91f464598958"
+      "digest": "4c1f1b9c00d8330d306c4f77a2cca87616643a6577f8bddd54d8055e137bc0e0"
     },
     {
       "key": "107",
@@ -39,7 +39,7 @@
     },
     {
       "key": "115",
-      "digest": "7d56c73d4fdfeb0947a417c8779170c396b2082245d7454948faa8520cd2dcf5"
+      "digest": "73fbcbc7cdf51469a12df05704dd5a6ec9874e1830614eb9914fc68edc4110f1"
     },
     {
       "key": "116",
@@ -211,7 +211,7 @@
     },
     {
       "key": "1960",
-      "digest": "d943c35fecc75f5eedf6476a495a84c6f6468fbd8a5cade40d82a8876593d983"
+      "digest": "2ddd9168349a379458f6b1e2c9abf6d305e5cc1c3271039d41d73bb135eee8cb"
     },
     {
       "key": "2",
@@ -235,7 +235,7 @@
     },
     {
       "key": "205",
-      "digest": "9bd132aa3ced08b0f05c649f445e9d4b886a156c21046c2ac7ec3e44b57965c9"
+      "digest": "6d36394423743e0117588e679aae3e852f7464ba29f090544350ff3b84d5abb2"
     },
     {
       "key": "206",
@@ -283,7 +283,7 @@
     },
     {
       "key": "23",
-      "digest": "737eb3ad6165fdd6356322355bc67b0d6515bf49a754274f2048f15926474423"
+      "digest": "bf93b6ff67684493e2f9760371d24ce0ec0854754285469bdf0c6a29b09e1950"
     },
     {
       "key": "238",
@@ -295,7 +295,7 @@
     },
     {
       "key": "24",
-      "digest": "84f84ed35b463e47955044e872bb5c11fc9c190f0a12d9d66079cc4875da0dcb"
+      "digest": "cabefb61f34c37e799b2bb3218fbc1c7a7bd330a8dd2cc01db561d30d552d952"
     },
     {
       "key": "240",
@@ -327,7 +327,7 @@
     },
     {
       "key": "3",
-      "digest": "e9bf6a71d226a1dc7aa92d00447c1243e14f38d4eb8cfa683d3ea918164001cf"
+      "digest": "92336043383fb83db491cc7129d0ba9ebdf222c5b6697f89e6a369295f6ad270"
     },
     {
       "key": "301",
@@ -343,7 +343,7 @@
     },
     {
       "key": "304",
-      "digest": "01cdb14fed8623baa16464d35189bcc381bd37ad6b5682aed60715bfbb4813c7"
+      "digest": "2139442315c4aae5902b84c269ccf81026a32840bfca1d08097ab23ca301696b"
     },
     {
       "key": "305",
@@ -367,7 +367,7 @@
     },
     {
       "key": "353",
-      "digest": "7f5d5d7b7a3adc583699ae5cb2bf30afd89a1f4750b52a67fb6f8d0123ca719a"
+      "digest": "8aa602931b4cad52686e744a63e743c1623f6ab50aa36955b3cfc6d458a76a4a"
     },
     {
       "key": "354",
@@ -479,7 +479,7 @@
     },
     {
       "key": "43",
-      "digest": "7aa9833553d0140cf410870fa2a3ae51690ea094a573f790fa92486c6493056a"
+      "digest": "6a6aa3897886166a08a0d98c4646818ea18907ace24fad894c0c0e6b63e6c9a5"
     },
     {
       "key": "443",
@@ -503,15 +503,15 @@
     },
     {
       "key": "471",
-      "digest": "8b39e3539fce727eaa4bd809cca227b7207061becb3c38e02d4625a8c636a677"
+      "digest": "ff4888b3d00b5a8b17a0b1256ce25de64151ed2024202d126c202f7d47d37893"
     },
     {
       "key": "477",
-      "digest": "f28acb238d6c1b6a93675a2aac599d8a7456669f9e5acda45ecbc96c40097718"
+      "digest": "3d23f2bfd0d3fbb2743d3b2826824312bea670f7b3037bcd5803caac642ed2ee"
     },
     {
       "key": "483",
-      "digest": "a1d63ac3f1b261cbc6f1959feb0654d7dd4efd32967bc6e202e4ed000aa5ec01"
+      "digest": "ec8b23c3904291c90ce3419ad319aaf85ef12431250cd37f61502729306e039b"
     },
     {
       "key": "494",
@@ -551,7 +551,7 @@
     },
     {
       "key": "6",
-      "digest": "ea99c415cad86c3898bf51ccf2ff17382ba8fa2c91730358e73f9849c2359a44"
+      "digest": "c9fa3d4559cba015ede95f0e3ca225945459e9c851783f7af5bac4818f8a4020"
     },
     {
       "key": "677",
@@ -655,12 +655,12 @@
     },
     {
       "key": "99",
-      "digest": "204d7d8de7732ed39ad3b9f5a3deab12e0e6ffb2f4805ca74d7619f6eaac6990"
+      "digest": "38b55168c50535ac98c7e5ca45e683b0bd44c887260399911a7df564bed30163"
     },
     {
       "key": "996",
       "digest": "bae9b4ec23cb56e43981e2edb815df77c7f64d6fc06238fdf7203ea7b6f1037b"
     }
   ],
-  "corpusDigest": "08813a7e9d07adb8278b45b95abc1662e98f245ea399b2a63ae27f7d6375a226"
+  "corpusDigest": "3ac25b7b0659eada18e9627bd150a951d4c8736acdc767b4787261e35d2efa10"
 }

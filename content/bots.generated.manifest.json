@@ -25,8 +25,8 @@
     },
     {
       "relativePath": "pub1-items.generated.json",
-      "size": 12347663,
-      "digest": "5898502708719248ca56ca2f8ac830eaf8b47a16a739048a5fb95ce913eb1a22"
+      "size": 12440290,
+      "digest": "f95cc5d85f6b90c12a771ded5e683ed5fe1b80e596ff02e8974a202308431c3b"
     },
     {
       "relativePath": "radvei-hunt-bots.json",
@@ -34,7 +34,7 @@
       "digest": "1f64d6c3305a457d3b2997ccb3437606b4644a5600c24cfd930fdebcd21e8e2e"
     }
   ],
-  "filesDigest": "fe86cc0d233a11df84f41b50c826444215b100d6574f00526fd505e119521b27",
+  "filesDigest": "4c15df0966611c2bbe7dd94f0d8f6830158c855c6b5b28f89067e90d73791a9b",
   "acceptedCount": 164,
   "keys": [
     {
@@ -694,5 +694,5 @@
       "digest": "013199874b4191a0839d9cf0fc7480b7f82fbf687a2e545c8efc9ec9bb765283"
     }
   ],
-  "corpusDigest": "5a20f7b08a74726b3964ca6a4dd886afb7780aa3172d64cbb92909c07267d3dc"
+  "corpusDigest": "85e3b83bc9d94409e57811509f61be84acd7e24aa2a792ebf849754df9daef2e"
 }
