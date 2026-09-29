@@ -21,8 +21,7 @@
 
 - [x] CMB-03: экран результата hunt 50310 после `fight|exit`.
   ```
-  CEF 2026-09-17: карточка открывается. Leftover: HUD EXP в момент
-  добивания, деньги на `fight|exit`.
+  CEF 2026-09-17: карточка открывается. Leftover — строка CMB-03 ниже.
   ```
 - [x] CMB-04: F5 в активном hunt — тот же `fightId`/`akey`, без `oppwait`.
   ```
@@ -150,12 +149,13 @@
   (`persEff.img`). raw-AMF: bootstrap/inspect nested `img` hero/моб;
   F5 pocket count из RAM, не snapshot входа. CEF 2026-09-17.
   ```
-- [ ] CMB-03 leftover: HUD EXP в момент добивания, деньги — на
+- [ ] CMB-03 leftover: HUD EXP и деньги приходят вместе с `fight|exit`,
 
   ```
-  `fight|exit`. Persist — одна UoW (`grantExperience`+`creditMoney`)
-  на RAM finish. raw-AMF: `user|unitframe` отдельным esrv кадром на
-  persist; `user|conf`/деньги с `fight|loot`+`exit`. CEF не подтверждён.
+  не раньше. CEF 2026-09-26: EXP и деньги менялись в момент добивания —
+  лишний kill-кадр `user|unitframe` убран. raw-AMF: EXP/деньги только в
+  кадре `fight|loot`+`fight|exit`. Live dump: HUD через ~1.8–3 с после
+  удара-добивания. CEF повторить.
   ```
 
 - [x] CMB-05: голый L1 vs Грызль **50310** — урон на полоске HP не
@@ -384,8 +384,7 @@
   ```
   HP/`hp_time` и деньги приходят на esrv вместе с `fight|loot`/`exit`;
   operator grant/money тоже пушит HUD. CEF 2026-09-17: экран результата
-  открывается; HUD EXP в момент добивания, деньги на `fight|exit` —
-  leftover CMB-03.
+  открывается; EXP/деньги — leftover CMB-03.
   ```
 
 ## Internal ports (нет production OA)

@@ -153,7 +153,8 @@ export function personalEsrvObject(packets: readonly AmfValue[]): Record<string,
   throw new Error("personal esrv fight object is missing");
 }
 
-export function killExperienceUnitframe(packets: readonly AmfValue[]): Record<string, AmfValue> {
+export function loneUnitframeFrameCount(packets: readonly AmfValue[]): number {
+  let count = 0;
   for (const packet of packets) {
     if (!packet || typeof packet !== "object" || Array.isArray(packet)) continue;
     if (typeof packet.channel !== "string" || !packet.channel.startsWith("2:")) continue;
@@ -164,13 +165,10 @@ export function killExperienceUnitframe(packets: readonly AmfValue[]): Record<st
     ) {
       continue;
     }
-    const object = packet.object as Record<string, AmfValue>;
-    const keys = Object.keys(object);
-    if (keys.length === 1 && keys[0] === "user|unitframe") {
-      return requireRecord(object["user|unitframe"], "kill user|unitframe");
-    }
+    const keys = Object.keys(packet.object);
+    if (keys.length === 1 && keys[0] === "user|unitframe") count += 1;
   }
-  throw new Error("kill EXP user|unitframe frame is missing");
+  return count;
 }
 
 export function esrvObjectWith(

@@ -24,7 +24,7 @@ import {
   heroIdFrom,
   huntFightIdFrom,
   personalEsrvObject,
-  killExperienceUnitframe,
+  loneUnitframeFrameCount,
 } from "../support/harness/wire-payload.ts";
 
 /** Max melee roll, no crit/dodge/block. 3↔3 leaves leftover HP for the joiner on Gryzl. */
@@ -71,7 +71,8 @@ describe("fproxy settlement", () => {
     const before = await client.objectAction({ object: "common", action: "init", sq: 1 });
     await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms));
     const packets = await client.pollEsrv();
-    expect(killExperienceUnitframe(packets)).toMatchObject({ status: 100, exp: 16 });
+    // Live 2players 2026-08-11: EXP and money share the fight|exit frame.
+    expect(loneUnitframeFrameCount(packets)).toBe(0);
     const esrv = personalEsrvObject(packets);
     expect(Object.keys(esrv).filter((key) => key.startsWith("fight|"))).toEqual([
       "fight|loot",
