@@ -5,8 +5,8 @@ import { advanceFightTimer, type FighterTimerTicks } from "./duel-clock.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
 import type { Fighter } from "./fighter.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { enemySideCleared, fightCombatants } from "./melee-target.ts";
 import { persChangeForParticipants } from "./melee-pers-change.ts";
 import { opposingTeam } from "./opposing-team.ts";
@@ -37,8 +37,8 @@ export function nextEffectDueMs(fighters: readonly Fighter[]): number | null {
 /** The battle timer fired: real time for every effect, ticks for paired carriers, then fallout. */
 export function tickFightEffects(
   input: Readonly<{
-    humans: readonly HuntHuman[];
-    bots: readonly HuntRosterBot[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
     duels: FightDuel[];
     fightRules: FightRules;
     rules: BattleRules;
@@ -105,8 +105,8 @@ export function tickFightEffects(
 function deliver(
   entry: FighterTimerTicks,
   input: Readonly<{
-    humans: readonly HuntHuman[];
-    bots: readonly HuntRosterBot[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
     duels: FightDuel[];
   }>,
 ): readonly EffectClockDelivery[] {
@@ -127,16 +127,16 @@ function deliver(
 }
 
 function pairedHuman(
-  input: Readonly<{ humans: readonly HuntHuman[]; duels: FightDuel[] }>,
+  input: Readonly<{ humans: readonly HumanFighter[]; duels: FightDuel[] }>,
   botId: number,
-): HuntHuman | undefined {
+): HumanFighter | undefined {
   const duel = input.duels.find((entry) => entry.has(botId));
   if (!duel) return undefined;
   const otherId = duel.otherId(botId);
   return input.humans.find((human) => human.heroId === otherId);
 }
 
-function humanOf(humans: readonly HuntHuman[], id: number): HuntHuman {
+function humanOf(humans: readonly HumanFighter[], id: number): HumanFighter {
   const human = humans.find((entry) => entry.heroId === id);
   if (!human) throw new Error(`Fight human ${id} is missing`);
   return human;

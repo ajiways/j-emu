@@ -1,5 +1,5 @@
 import type { CombatEvent } from "../../combat/ports/combat-port.ts";
-import type { FightEffectSnap } from "../../combat/domain/hunt-human-fight-effects.ts";
+import type { FightEffectSnap } from "../../combat/domain/fighter-effects.ts";
 
 type EffectUse = Extract<CombatEvent, { type: "effect-use" }>;
 type EffectPurge = Extract<CombatEvent, { type: "effect-purge" }>;

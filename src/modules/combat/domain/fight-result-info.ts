@@ -1,6 +1,6 @@
 import { fightStartedLabel } from "./fight-started-label.ts";
 import type { FightLootBlock } from "./fight-loot-block.ts";
-import type { HuntBotSnap } from "./battle-event.ts";
+import type { BotSnap } from "./battle-event.ts";
 import type { FightKind } from "./fight-rules.ts";
 
 type FightResultType = "1" | "6";
@@ -76,7 +76,7 @@ export function buildFightResultInfo(input: {
   now: Date;
   winnerTeam: 1 | 2;
   humans: readonly FightResultHumanInput[];
-  bots: readonly HuntBotSnap[];
+  bots: readonly BotSnap[];
   lootByAccount: ReadonlyMap<number, FightLootBlock>;
 }): FightResultInfo {
   if (!input.fightId) throw new Error("Fight result requires a fight id");

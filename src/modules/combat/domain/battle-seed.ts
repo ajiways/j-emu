@@ -10,15 +10,15 @@ import {
   fightSetupTeamHumans,
   type FightSetup,
 } from "./fight-setup.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { pairLeftoverRosterBots } from "./pair-leftover-roster-bots.ts";
 import { requireFightSetup } from "./require-fight-setup.ts";
 
 export type BattleSeed = Readonly<{
-  bots: readonly HuntRosterBot[];
+  bots: readonly BotFighter[];
   pairedAccountId: number;
-  humans: readonly HuntHuman[];
+  humans: readonly HumanFighter[];
   duels: readonly FightDuel[];
 }>;
 
@@ -39,7 +39,7 @@ export function seedBattleParticipants(
       seedHuman(human, enemyTeam, false, startedAtMs, effectIds),
     ),
   ];
-  if (!fightRules.hasEnemyBots) {
+  if (fightSetupTeamAis(setup, enemyTeam).length === 0) {
     const opener = requireTeamHuman(setup, openerTeam, "Human duel opener");
     const enemy = requireTeamHuman(setup, enemyTeam, "Human duel acceptor");
     return {

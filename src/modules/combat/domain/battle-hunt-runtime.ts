@@ -3,8 +3,8 @@ import type { BattleRules } from "./battle-rules.ts";
 import { huntHumanOppNew, livingWaiterOnTeam } from "./battle-pairing.ts";
 import { dissolveDuelAt, dissolveDuelContaining } from "./try-pair-hunt-queues.ts";
 import type { FightDuel } from "./fight-duel.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { takeNextEnemyForHuman } from "./hunt-wait-queue.ts";
 import { botMeleeTarget, enemySideCleared, fightCombatants } from "./melee-target.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
@@ -13,20 +13,19 @@ import { resolveAiActorTurn } from "./resolve-ai-actor-turn.ts";
 import { retargetDuelTo } from "./retarget-duel.ts";
 
 export function tickHuntRosterDuels(input: {
-  hasEnemyBots: boolean;
-  bots: readonly HuntRosterBot[];
+  bots: readonly BotFighter[];
   enemyTeam: 1 | 2;
   duels: FightDuel[];
   finished: boolean;
-  opener: HuntHuman;
-  humans: readonly HuntHuman[];
+  opener: HumanFighter;
+  humans: readonly HumanFighter[];
   fightId: string;
   rules: BattleRules;
   random: RandomSource;
   nowMs: number;
 }): Readonly<{ events: readonly BattleEvent[]; finished: boolean }> {
   if (input.finished) return { events: [], finished: true };
-  if (!input.hasEnemyBots) return { events: [], finished: false };
+  if (input.bots.length === 0) return { events: [], finished: false };
   const events: BattleEvent[] = [];
   for (let index = input.duels.length - 1; index >= 0; index -= 1) {
     const duel = input.duels[index];
@@ -85,12 +84,12 @@ export function applyHuntPlayerHit(
     finished: boolean;
   }>,
   input: Readonly<{
-    bots: readonly HuntRosterBot[];
+    bots: readonly BotFighter[];
     enemyTeam: 1 | 2;
     duel: FightDuel;
     duels: FightDuel[];
-    opener: HuntHuman;
-    humans: readonly HuntHuman[];
+    opener: HumanFighter;
+    humans: readonly HumanFighter[];
   }>,
 ): Readonly<{ result: PlayerMeleeResult; finished: boolean }> {
   if (resolved.result.kind !== "resolved" || resolved.result.selfKilled) {
@@ -109,12 +108,12 @@ export function applyHuntPlayerHit(
 export function applyHuntBotHit(
   finished: boolean,
   input: Readonly<{
-    bots: readonly HuntRosterBot[];
+    bots: readonly BotFighter[];
     enemyTeam: 1 | 2;
     duel: FightDuel;
     duels: FightDuel[];
-    opener: HuntHuman;
-    humans: readonly HuntHuman[];
+    opener: HumanFighter;
+    humans: readonly HumanFighter[];
   }>,
 ): Readonly<{ events: readonly BattleEvent[]; finished: boolean }> {
   if (finished) return { events: [], finished: true };

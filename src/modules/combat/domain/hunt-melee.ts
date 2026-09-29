@@ -1,7 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { consumeOverlayCharge } from "./consume-overlay-charge.ts";
 import { rollMeleeDamage } from "./melee-damage.ts";
 import {
@@ -19,11 +19,11 @@ export type BotMeleeResult = Readonly<{
 }>;
 
 export function resolveBotMelee(
-  human: HuntHuman,
+  human: HumanFighter,
   input: Readonly<{
     rules: BattleRules;
     random: RandomSource;
-    bot: HuntRosterBot;
+    bot: BotFighter;
     fightId: string;
     keepFightOnKill: boolean;
     winnerTeam: 1 | 2;
@@ -82,7 +82,7 @@ export function resolveBotMelee(
 }
 
 export function grantTurn(
-  human: HuntHuman,
+  human: HumanFighter,
   timeoutSeconds: number,
   nowMs: number,
 ): BattleEvent | null {

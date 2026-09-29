@@ -1,7 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { CombatPocketRow } from "./combat-loadout.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import { spellCharging, spellPcStr } from "./hunt-human-cast-state.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import { spellCharging, spellPcStr } from "./human-cast-state.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
 
 export function requirePocketOrb(row: CombatPocketRow): void {
@@ -14,7 +14,7 @@ export function requirePocketOrb(row: CombatPocketRow): void {
 }
 
 export function applyPocketKind3(
-  human: HuntHuman,
+  human: HumanFighter,
   consumed: CombatPocketRow,
 ): readonly BattleEvent[] {
   const hits = spellCharging(consumed.spell);

@@ -1,14 +1,14 @@
 import type { Combatant } from "./combatant.ts";
 import type { FightDuel } from "./fight-duel.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { strikeStatsFromHuman, unpublishedBotStrikeStats } from "./melee-outcome.ts";
 
 export type MeleeTarget =
-  | Readonly<{ kind: "human"; human: HuntHuman } & Combatant>
-  | Readonly<{ kind: "bot"; bot: HuntRosterBot } & Combatant>;
+  | Readonly<{ kind: "human"; human: HumanFighter } & Combatant>
+  | Readonly<{ kind: "bot"; bot: BotFighter } & Combatant>;
 
-export function humanMeleeTarget(human: HuntHuman): MeleeTarget {
+export function humanMeleeTarget(human: HumanFighter): MeleeTarget {
   return {
     kind: "human",
     human,
@@ -21,7 +21,7 @@ export function humanMeleeTarget(human: HuntHuman): MeleeTarget {
   };
 }
 
-export function botMeleeTarget(bot: HuntRosterBot): MeleeTarget {
+export function botMeleeTarget(bot: BotFighter): MeleeTarget {
   return {
     kind: "bot",
     bot,
@@ -35,8 +35,8 @@ export function botMeleeTarget(bot: HuntRosterBot): MeleeTarget {
 }
 
 export function fightCombatants(
-  humans: readonly HuntHuman[],
-  bots: readonly HuntRosterBot[],
+  humans: readonly HumanFighter[],
+  bots: readonly BotFighter[],
 ): readonly Combatant[] {
   return [...humans.map(humanMeleeTarget), ...bots.map(botMeleeTarget)];
 }
@@ -49,8 +49,8 @@ export function resolveMeleeTarget(
   input: Readonly<{
     attackerHeroId: number;
     duel: FightDuel;
-    humans: readonly HuntHuman[];
-    bots: readonly HuntRosterBot[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
   }>,
 ): MeleeTarget {
   const otherId = input.duel.otherId(input.attackerHeroId);

@@ -5,10 +5,10 @@ import {
   requireFightSetupPrimaryEnemy,
   type FightSetup,
 } from "./fight-setup.ts";
-import type { HuntHuman } from "./hunt-human.ts";
+import type { HumanFighter } from "./human-fighter.ts";
 import type { FightOutcomeKind, FightOutcomeSnapshot } from "./fight-outcome-snapshot.ts";
 
-export function leaveWinnerTeam(humans: readonly HuntHuman[]): 1 | 2 {
+export function leaveWinnerTeam(humans: readonly HumanFighter[]): 1 | 2 {
   const remaining = humans.filter((human) => !human.leftLive);
   const last = remaining[remaining.length - 1];
   if (!last) throw new Error("Leave requires a human in the battle");
@@ -21,7 +21,7 @@ export function battleOutcomeSnapshot(
     fightId: string;
     kind: FightOutcomeKind;
     winnerTeam: 1 | 2;
-    humans: readonly HuntHuman[];
+    humans: readonly HumanFighter[];
     fightRules: FightRules;
   }>,
 ): FightOutcomeSnapshot {
@@ -58,9 +58,6 @@ export function battleOutcomeSnapshot(
       humans,
       restore: [practiceRestoreFrom(opener), practiceRestoreFrom(enemy)],
     };
-  }
-  if (!input.fightRules.hasEnemyBots) {
-    throw new Error("Hunt outcome requires a hunt fight setup");
   }
   const primary = requireFightSetupPrimaryEnemy(
     input.setup,

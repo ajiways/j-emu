@@ -1,8 +1,8 @@
 import { advanceActionClock } from "./duel-clock.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { rollMeleeDamage } from "./melee-damage.ts";
 import { rollMeleeOutcome, strikeStatsFromHuman } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
@@ -15,7 +15,7 @@ export type PlayerMeleeResult =
   | Readonly<{ kind: "resolved"; events: readonly BattleEvent[]; selfKilled?: true }>;
 
 export function tryPairedMelee(
-  attacker: HuntHuman,
+  attacker: HumanFighter,
   target: MeleeTarget,
   side: "left" | "center" | "right",
   input: Readonly<{
@@ -23,8 +23,8 @@ export function tryPairedMelee(
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
-    humans: readonly HuntHuman[];
-    bots: readonly HuntRosterBot[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
     nowMs: number;
   }>,
 ): Readonly<{
@@ -131,12 +131,12 @@ export function tryPairedMelee(
 }
 
 export function applyDamageToMeleeTarget(
-  attacker: HuntHuman,
+  attacker: HumanFighter,
   target: MeleeTarget,
   damage: number,
   context: Readonly<{
-    humans: readonly HuntHuman[];
-    bots: readonly HuntRosterBot[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
   }>,
 ): Readonly<{
   killed: boolean;

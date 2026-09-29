@@ -1,9 +1,9 @@
-import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
-import type { HuntHuman } from "./hunt-human.ts";
+import type { BattleEvent, BotSnap } from "./battle-event.ts";
+import type { HumanFighter } from "./human-fighter.ts";
 
 export function persChangeForHit(
-  humans: readonly HuntHuman[],
-  bots: readonly HuntBotSnap[],
+  humans: readonly HumanFighter[],
+  bots: readonly BotSnap[],
   sourceId: number,
   targetId: number,
 ): Extract<BattleEvent, { type: "pers-change" }> {
@@ -11,8 +11,8 @@ export function persChangeForHit(
 }
 
 export function persChangeForParticipants(
-  humans: readonly HuntHuman[],
-  bots: readonly HuntBotSnap[],
+  humans: readonly HumanFighter[],
+  bots: readonly BotSnap[],
   ids: readonly number[],
 ): Extract<BattleEvent, { type: "pers-change" }> {
   const wanted = new Set(ids);

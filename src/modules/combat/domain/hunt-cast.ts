@@ -2,8 +2,8 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { CombatGloveSpell, CombatSpell } from "./combat-loadout.ts";
 import { FightCastDenied } from "./fight-cast-denied.ts";
 import { requirePvpForSpell } from "./pvp-only-spell.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import { pocketHealAmount, spellCharging, spellKind } from "./hunt-human-cast-state.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import { pocketHealAmount, spellCharging, spellKind } from "./human-cast-state.ts";
 import { applyPocketKind3, requirePocketOrb } from "./pocket-kind3-cast.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
@@ -15,7 +15,7 @@ export type KeepTurnResult =
   | Readonly<{ kind: "resolved"; events: readonly BattleEvent[]; consumePocketItemId?: number }>;
 
 export function tryPocketCast(
-  human: HuntHuman,
+  human: HumanFighter,
   itemId: number,
   nowMs: number,
   sequence: string | number,
@@ -60,7 +60,7 @@ export function tryPocketCast(
   throw new Error(`Pocket artifact ${consumed.artifactId} has no supported fight effect`);
 }
 
-export function tryRageCast(human: HuntHuman): KeepTurnResult {
+export function tryRageCast(human: HumanFighter): KeepTurnResult {
   if (!human.authed || human.waiting || human.hp === 0) return { kind: "ignored" };
   const fury = {
     type: "buff-cast" as const,
@@ -110,7 +110,7 @@ export function tryRageCast(human: HuntHuman): KeepTurnResult {
 }
 
 export function tryGloveKeepTurn(
-  human: HuntHuman,
+  human: HumanFighter,
   spellId: number,
   sequence: string | number,
   pvp: boolean,

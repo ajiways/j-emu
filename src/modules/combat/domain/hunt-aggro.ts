@@ -1,8 +1,8 @@
 import type { BattleEvent } from "./battle-event.ts";
 import { enqueueAggroClone } from "./fight-bots.ts";
 import type { FightDuel } from "./fight-duel.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import type { RandomSource } from "./random-source.ts";
 import { pairHuntQueues } from "./try-pair-hunt-queues.ts";
 
@@ -18,9 +18,9 @@ export function tryHuntAggro(
   input: Readonly<{
     canAggro: boolean;
     finished: boolean;
-    humans: readonly HuntHuman[];
+    humans: readonly HumanFighter[];
     duels: FightDuel[];
-    bots: HuntRosterBot[];
+    bots: BotFighter[];
     enemyTeam: 1 | 2;
     random: RandomSource;
     accountId: number;
@@ -100,10 +100,10 @@ export function tryHuntAggro(
 }
 
 function aggroSourceBot(
-  human: HuntHuman,
-  bots: readonly HuntRosterBot[],
+  human: HumanFighter,
+  bots: readonly BotFighter[],
   targetId: number,
-): HuntRosterBot | null {
+): BotFighter | null {
   if (!Number.isInteger(targetId) || targetId < 1) {
     throw new Error("Hunt aggro target id must be a positive integer");
   }

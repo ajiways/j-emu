@@ -1,6 +1,6 @@
 import type { CombatLoadout } from "./combat-loadout.ts";
-import type { FightEffectSnap } from "./hunt-human-fight-effects.ts";
-import type { HuntHumanAppearance, HuntHumanSnap } from "./hunt-human.ts";
+import type { FightEffectSnap } from "./fighter-effects.ts";
+import type { FighterAppearance, HumanSnap } from "./human-fighter.ts";
 
 export type ExtraHit = Readonly<{
   hpChange: number;
@@ -9,7 +9,7 @@ export type ExtraHit = Readonly<{
   killed: boolean;
 }>;
 
-export type HuntBotSnap = Readonly<{
+export type BotSnap = Readonly<{
   id: number;
   nick: string;
   level: number;
@@ -29,12 +29,12 @@ export type BattleEvent =
       waiting: boolean;
       pvp: boolean;
       resumePaired?: true;
-      hero: HuntHumanSnap;
-      allies: readonly HuntHumanSnap[];
-      bot: HuntBotSnap;
-      humanOpponent?: HuntHumanSnap;
-      humanOpponentAppearance?: HuntHumanAppearance;
-      rosterBots: readonly HuntBotSnap[];
+      hero: HumanSnap;
+      allies: readonly HumanSnap[];
+      bot: BotSnap;
+      humanOpponent?: HumanSnap;
+      humanOpponentAppearance?: FighterAppearance;
+      rosterBots: readonly BotSnap[];
       cp: number;
       cpHits: readonly number[];
       rage: number;
@@ -49,10 +49,10 @@ export type BattleEvent =
     }>
   | Readonly<{
       type: "roster-updated";
-      humans: readonly HuntHumanSnap[];
-      joined: HuntHumanSnap;
-      bot?: HuntBotSnap;
-      rosterBots?: readonly HuntBotSnap[];
+      humans: readonly HumanSnap[];
+      joined: HumanSnap;
+      bot?: BotSnap;
+      rosterBots?: readonly BotSnap[];
     }>
   | Readonly<{
       type: "damage";
@@ -71,24 +71,24 @@ export type BattleEvent =
   | Readonly<{ type: "turn-granted"; timeoutSeconds: number }>
   | Readonly<{ type: "turn-timeout" }>
   | Readonly<{ type: "turn-wait"; timeoutSeconds: number }>
-  | Readonly<{ type: "opponent-new"; bot: HuntBotSnap }>
+  | Readonly<{ type: "opponent-new"; bot: BotSnap }>
   | Readonly<{ type: "opponent-wait" }>
   | Readonly<{
       type: "pers-change";
-      humans: readonly HuntHumanSnap[];
-      bots: readonly HuntBotSnap[];
+      humans: readonly HumanSnap[];
+      bots: readonly BotSnap[];
     }>
   | Readonly<{
       type: "opponent-new-human";
-      human: HuntHumanSnap;
+      human: HumanSnap;
       appearance: Readonly<{ avatar: string; body: string; sk: string }>;
     }>
   | Readonly<{
       type: "friendly-bootstrap";
       waiting: boolean;
-      hero: HuntHumanSnap;
-      allies: readonly HuntHumanSnap[];
-      opponent?: HuntHumanSnap;
+      hero: HumanSnap;
+      allies: readonly HumanSnap[];
+      opponent?: HumanSnap;
       opponentAppearance?: Readonly<{ avatar: string; body: string; sk: string }>;
       cp: number;
       cpHits: readonly number[];

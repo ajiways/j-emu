@@ -66,7 +66,7 @@ type StandingEffect = {
   charging?: boolean;
 };
 
-export class HuntHumanFightEffects {
+export class FighterEffects {
   readonly effectIds: FightEffectIds;
   private readonly standing: StandingEffect[] = [];
 

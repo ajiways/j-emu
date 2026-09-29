@@ -1,13 +1,13 @@
 import { FightDuel } from "./fight-duel.ts";
 import type { FightTeamAssignment } from "./fight-rules.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 
 /**
  * Quest leftover ally/enemy pairing at seed. Opener is always the ally;
  * there is no `rollOpensFirst` (legacy constructor path).
  */
 export function pairLeftoverRosterBots(
-  bots: readonly HuntRosterBot[],
+  bots: readonly BotFighter[],
   teamAssignment: FightTeamAssignment,
 ): FightDuel[] {
   const leftoverEnemies = bots.filter(

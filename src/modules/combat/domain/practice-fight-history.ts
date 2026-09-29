@@ -1,6 +1,6 @@
-import type { HuntHuman } from "./hunt-human.ts";
+import type { HumanFighter } from "./human-fighter.ts";
 
-export function practiceHistoryOf(humans: readonly HuntHuman[]) {
+export function practiceHistoryOf(humans: readonly HumanFighter[]) {
   if (humans.length !== 2) {
     throw new Error("Practice history requires exactly two humans");
   }

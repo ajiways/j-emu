@@ -1,12 +1,9 @@
 import type { FightDuel } from "./fight-duel.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { botMeleeTarget } from "./melee-target.ts";
 import { dissolveDuelAt } from "./try-pair-hunt-queues.ts";
 
-export function peekWaitingEnemy(
-  bots: readonly HuntRosterBot[],
-  enemyTeam: 1 | 2,
-): HuntRosterBot | null {
+export function peekWaitingEnemy(bots: readonly BotFighter[], enemyTeam: 1 | 2): BotFighter | null {
   return (
     bots.find((bot) => bot.waiting && bot.team === enemyTeam && botMeleeTarget(bot).alive) ?? null
   );
@@ -14,12 +11,12 @@ export function peekWaitingEnemy(
 
 export function takeNextEnemyForHuman(
   input: Readonly<{
-    bots: readonly HuntRosterBot[];
+    bots: readonly BotFighter[];
     enemyTeam: 1 | 2;
     duels: FightDuel[];
     occupiedFightId: number;
   }>,
-): HuntRosterBot | null {
+): BotFighter | null {
   const waiting = peekWaitingEnemy(input.bots, input.enemyTeam);
   if (waiting) {
     waiting.pair();
@@ -38,9 +35,9 @@ export function takeNextEnemyForHuman(
 
 function livingEnemyInBotDuel(
   duel: FightDuel,
-  bots: readonly HuntRosterBot[],
+  bots: readonly BotFighter[],
   enemyTeam: 1 | 2,
-): HuntRosterBot | null {
+): BotFighter | null {
   const a = bots.find((bot) => bot.fightId === duel.aId);
   const b = bots.find((bot) => bot.fightId === duel.bId);
   if (!a || !b) return null;

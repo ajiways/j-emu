@@ -1,6 +1,6 @@
 import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { BattleRules } from "./battle-rules.ts";
-import type { HuntHuman } from "./hunt-human.ts";
+import type { HumanFighter } from "./human-fighter.ts";
 import type { RandomSource } from "./random-source.ts";
 
 /** Wire `cast.react` / nested `hpChange.react`. Legacy behavior from jgr `damage.ts`. */
@@ -35,7 +35,7 @@ export function unpublishedBotStrikeStats(strength: number): StrikeStats {
 }
 
 export function strikeStatsFromHuman(
-  human: HuntHuman,
+  human: HumanFighter,
   strength = human.meleeStrength(),
 ): StrikeStats {
   return {

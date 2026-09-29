@@ -1,11 +1,11 @@
 import type { BattleEvent } from "./battle-event.ts";
-import type { HuntHuman } from "./hunt-human.ts";
+import type { HumanFighter } from "./human-fighter.ts";
 
 export type HumanTimeout = Readonly<{ events: readonly BattleEvent[]; fell: boolean }>;
 
 /** The turn ran out; `maxSkips` skips in a row kill the AFK fighter. */
 export function timeoutHumanTurn(
-  human: HuntHuman,
+  human: HumanFighter,
   nowMs: number,
   maxSkips: number,
 ): HumanTimeout | null {

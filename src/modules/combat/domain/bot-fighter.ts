@@ -1,14 +1,14 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
-import type { HuntBotSnap } from "./battle-event.ts";
+import type { BotSnap } from "./battle-event.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
 import type { HuntBotSpellBook } from "./hunt-bot-spell-book.ts";
 import { requireHuntBotSpellBook } from "./hunt-bot-spell-book.ts";
-import { HuntHumanFightEffects } from "./hunt-human-fight-effects.ts";
+import { FighterEffects } from "./fighter-effects.ts";
 import type { Fighter, FighterKind } from "./fighter.ts";
 import type { MagStats } from "./mag-stats.ts";
 import type { SchoolOverlay } from "./school-overlay.ts";
 
-export type HuntRosterBotSeed = Readonly<{
+export type BotFighterSeed = Readonly<{
   fightId: number;
   artikulId: number;
   nick: string;
@@ -24,7 +24,7 @@ export type HuntRosterBotSeed = Readonly<{
   spellBook: HuntBotSpellBook;
 }>;
 
-export class HuntRosterBot implements Fighter {
+export class BotFighter implements Fighter {
   private hpValue: number;
   private dealtDamageValue = 0;
   private lastOpponentIdValue: number | null = null;
@@ -32,7 +32,7 @@ export class HuntRosterBot implements Fighter {
   readonly casts = new Map<number, number>();
   schoolOverlay: SchoolOverlay | null = null;
   stunnedTurns = 0;
-  readonly effects: HuntHumanFightEffects;
+  readonly effects: FighterEffects;
 
   constructor(
     readonly fightId: number,
@@ -78,7 +78,7 @@ export class HuntRosterBot implements Fighter {
     }
     requireHuntBotSpellBook(spellBook);
     this.hpValue = hp;
-    this.effects = new HuntHumanFightEffects({
+    this.effects = new FighterEffects({
       heroId: fightId,
       strength,
       startedAtMs: 0,
@@ -87,8 +87,8 @@ export class HuntRosterBot implements Fighter {
     });
   }
 
-  static fromSeed(seed: HuntRosterBotSeed, team: 1 | 2, effectIds: FightEffectIds): HuntRosterBot {
-    return new HuntRosterBot(
+  static fromSeed(seed: BotFighterSeed, team: 1 | 2, effectIds: FightEffectIds): BotFighter {
+    return new BotFighter(
       seed.fightId,
       seed.artikulId,
       seed.nick,
@@ -153,8 +153,8 @@ export class HuntRosterBot implements Fighter {
     this.lastOpponentIdValue = opponentId;
   }
 
-  cloneWithFightId(fightId: number): HuntRosterBot {
-    return new HuntRosterBot(
+  cloneWithFightId(fightId: number): BotFighter {
+    return new BotFighter(
       fightId,
       this.artikulId,
       this.nick,
@@ -209,7 +209,7 @@ export class HuntRosterBot implements Fighter {
     this.hpValue = hp;
   }
 
-  snap(): HuntBotSnap {
+  snap(): BotSnap {
     return {
       id: this.fightId,
       nick: this.nick,

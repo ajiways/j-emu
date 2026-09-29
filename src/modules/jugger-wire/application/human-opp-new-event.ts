@@ -1,7 +1,7 @@
-import type { HuntHumanSnap } from "../../combat/domain/hunt-human.ts";
+import type { HumanSnap } from "../../combat/domain/human-fighter.ts";
 
 export function humanOppNewEvent(
-  human: HuntHumanSnap,
+  human: HumanSnap,
   appearance: Readonly<{ avatar: string; body: string; sk: string }>,
 ): Readonly<Record<string, unknown>> {
   if (!appearance.avatar) throw new Error("Human opponent avatar is required");

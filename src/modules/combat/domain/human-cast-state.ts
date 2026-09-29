@@ -14,7 +14,7 @@ type PocketRuntime = {
   lastUseAt: number;
 };
 
-export class HuntHumanCastState {
+export class HumanCastState {
   cp = 0;
   rage = 0;
   aggro: number;

@@ -6,10 +6,7 @@ import type {
   HuntBotSpellBook,
   HuntBotSpellCard,
 } from "../../src/modules/combat/domain/hunt-bot-spell-book.ts";
-import {
-  HuntRosterBot,
-  type HuntRosterBotSeed,
-} from "../../src/modules/combat/domain/hunt-roster-bot.ts";
+import { BotFighter, type BotFighterSeed } from "../../src/modules/combat/domain/bot-fighter.ts";
 
 export const EMPTY_HUNT_BOT_SPELL_BOOK: HuntBotSpellBook = {
   nothingWeight: 100,
@@ -173,10 +170,10 @@ export const UNIT_HUNT_BATTLE_STATS = {
 } as const;
 
 export function unitRosterBot(
-  overrides: Partial<HuntRosterBotSeed> & { team?: 1 | 2 } = {},
-): HuntRosterBot {
+  overrides: Partial<BotFighterSeed> & { team?: 1 | 2 } = {},
+): BotFighter {
   const { team = 2, ...seed } = overrides;
-  return HuntRosterBot.fromSeed(
+  return BotFighter.fromSeed(
     {
       fightId: 1_000_000,
       artikulId: 2,

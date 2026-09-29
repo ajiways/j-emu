@@ -2,12 +2,12 @@ import type { BattleEvent } from "./battle-event.ts";
 import { botSpellEndsTurn } from "./bot-spell-damage.ts";
 import type { Fighter } from "./fighter.ts";
 import type { HuntBotSpellCard } from "./hunt-bot-spell-book.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { spellSkillValue } from "./magic-hit.ts";
 
 export function attachSpellTicks(
   carrier: Fighter,
-  caster: HuntRosterBot,
+  caster: BotFighter,
   card: HuntBotSpellCard,
   nowMs: number,
 ): readonly BattleEvent[] {

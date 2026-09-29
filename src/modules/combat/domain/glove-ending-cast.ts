@@ -14,9 +14,9 @@ import {
 } from "./glove-aoe-targets.ts";
 import { advanceActionClock } from "./duel-clock.ts";
 import { isEndingGlove, type KeepTurnResult } from "./hunt-cast.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import { spellKind } from "./hunt-human-cast-state.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import { spellKind } from "./human-cast-state.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { magicHitFromKind1, magicReact } from "./magic-hit.ts";
 import { botMeleeTarget, resolveMeleeTarget, targetHp, type MeleeTarget } from "./melee-target.ts";
 import { applyDamageToMeleeTarget } from "./paired-melee.ts";
@@ -38,7 +38,7 @@ export type EndingGloveResult = Readonly<{
 }>;
 
 export function resolveGloveFinisher(
-  human: HuntHuman,
+  human: HumanFighter,
   spellId: number,
   sequence: string | number,
   input: Readonly<{
@@ -46,8 +46,8 @@ export function resolveGloveFinisher(
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
-    humans: readonly HuntHuman[];
-    bots: readonly HuntRosterBot[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
     duel: FightDuel;
     duels: readonly FightDuel[];
     nowMs: number;
@@ -141,12 +141,12 @@ type GloveKind1Hit = Readonly<{
 }>;
 
 function applyGloveKind1Hits(
-  human: HuntHuman,
+  human: HumanFighter,
   spell: CombatSpell,
   targets: readonly MeleeTarget[],
   input: Readonly<{
-    humans: readonly HuntHuman[];
-    bots: readonly HuntRosterBot[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
     random: RandomSource;
     rules: BattleRules;
   }>,
@@ -181,7 +181,7 @@ function applyGloveKind1Hits(
   return hits;
 }
 
-function livingTarget(listed: MeleeTarget, bots: readonly HuntRosterBot[]): MeleeTarget {
+function livingTarget(listed: MeleeTarget, bots: readonly BotFighter[]): MeleeTarget {
   if (listed.kind === "human") return listed;
   const bot = bots.find((entry) => entry.fightId === listed.id);
   if (!bot) throw new Error(`AOE bot ${listed.id} is missing from the roster`);
@@ -210,12 +210,12 @@ function gloveDamageEvent(
 }
 
 function sideNotifiesForHits(
-  caster: HuntHuman,
+  caster: HumanFighter,
   spell: CombatSpell,
   hits: readonly GloveKind1Hit[],
   input: Readonly<{
     rules: BattleRules;
-    humans: readonly HuntHuman[];
+    humans: readonly HumanFighter[];
     duels: readonly FightDuel[];
   }>,
   dmgType: number | undefined,
@@ -236,7 +236,7 @@ function sideNotifiesForHits(
 function notifyAccountIds(
   casterAccountId: number,
   targetId: number,
-  input: Readonly<{ humans: readonly HuntHuman[]; duels: readonly FightDuel[] }>,
+  input: Readonly<{ humans: readonly HumanFighter[]; duels: readonly FightDuel[] }>,
 ): readonly number[] {
   const ids: number[] = [];
   for (const human of input.humans) {

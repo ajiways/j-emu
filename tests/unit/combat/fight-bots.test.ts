@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
-import { HuntRosterBot } from "../../../src/modules/combat/domain/hunt-roster-bot.ts";
+import { BotFighter } from "../../../src/modules/combat/domain/bot-fighter.ts";
 import {
   enqueueAggroClone,
   primaryEnemyBot,
@@ -53,7 +53,7 @@ describe("fight bots on Battle", () => {
   });
 
   it("finds the primary enemy by enemy team, not by array index 0", () => {
-    const ally = HuntRosterBot.fromSeed(
+    const ally = BotFighter.fromSeed(
       {
         fightId: 1_000_002,
         artikulId: 4,
@@ -72,7 +72,7 @@ describe("fight bots on Battle", () => {
       1,
       new FightEffectIds(),
     );
-    const enemy = HuntRosterBot.fromSeed(unitBotSeed(1_000_000, "Грызль"), 2, new FightEffectIds());
+    const enemy = BotFighter.fromSeed(unitBotSeed(1_000_000, "Грызль"), 2, new FightEffectIds());
     expect(primaryEnemyBot([ally, enemy], 2)).toBe(enemy);
     expect(() => primaryEnemyBot([ally], 2)).toThrow(/missing the primary enemy bot/);
   });

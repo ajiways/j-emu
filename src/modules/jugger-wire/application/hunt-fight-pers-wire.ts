@@ -1,9 +1,9 @@
-import type { BattleEvent, HuntBotSnap } from "../../combat/domain/battle-event.ts";
-import type { HuntHumanSnap } from "../../combat/domain/hunt-human.ts";
+import type { BattleEvent, BotSnap } from "../../combat/domain/battle-event.ts";
+import type { HumanSnap } from "../../combat/domain/human-fighter.ts";
 
 export function huntPersListEvent(
-  humans: readonly HuntHumanSnap[],
-  bots: readonly HuntBotSnap[],
+  humans: readonly HumanSnap[],
+  bots: readonly BotSnap[],
 ): Readonly<Record<string, unknown>> {
   const event: Record<string, unknown> = { et: "persList" };
   for (const human of humans) {
@@ -26,7 +26,7 @@ export function huntPersChangeEvents(
   return events;
 }
 
-export function huntHumanPersFields(human: HuntHumanSnap): Readonly<Record<string, unknown>> {
+export function huntHumanPersFields(human: HumanSnap): Readonly<Record<string, unknown>> {
   return {
     aggressive: false,
     berserk: 0,
@@ -46,7 +46,7 @@ export function huntHumanPersFields(human: HuntHumanSnap): Readonly<Record<strin
   };
 }
 
-function huntBotPersFields(bot: HuntBotSnap): Readonly<Record<string, unknown>> {
+function huntBotPersFields(bot: BotSnap): Readonly<Record<string, unknown>> {
   return {
     aggressive: true,
     artikulId: bot.artikulId,

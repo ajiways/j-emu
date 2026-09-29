@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
-import { HuntHumanFightEffects } from "../../../src/modules/combat/domain/hunt-human-fight-effects.ts";
+import { FighterEffects } from "../../../src/modules/combat/domain/fighter-effects.ts";
 import type { Fighter, FighterKind } from "../../../src/modules/combat/domain/fighter.ts";
 import { resolveHpLoss } from "../../../src/modules/combat/domain/resolve-hp-loss.ts";
 
@@ -9,7 +9,7 @@ class FakeFighter implements Fighter {
   readonly maxHp: number;
   readonly mag = { power: 0, resist: 0 };
   stunnedTurns = 0;
-  readonly effects = new HuntHumanFightEffects({
+  readonly effects = new FighterEffects({
     heroId: 1,
     strength: 1,
     startedAtMs: 0,

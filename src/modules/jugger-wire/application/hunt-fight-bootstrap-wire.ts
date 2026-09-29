@@ -1,4 +1,4 @@
-import type { HuntBotSnap } from "../../combat/domain/battle-event.ts";
+import type { BotSnap } from "../../combat/domain/battle-event.ts";
 import type { CombatEvent } from "../../combat/ports/combat-port.ts";
 import { fightPersEffSnapshotEvents } from "./fight-effect-wire.ts";
 import { huntPersSpellsEvent } from "./hunt-fight-pers-spells.ts";
@@ -60,7 +60,7 @@ export function huntFightRosterEvents(
 
 function rosterUpdatedBots(
   event: Extract<CombatEvent, { type: "roster-updated" }>,
-): readonly HuntBotSnap[] {
+): readonly BotSnap[] {
   if (event.rosterBots !== undefined) return event.rosterBots;
   if (event.bot !== undefined) return [event.bot];
   throw new Error("roster-updated is missing bots");

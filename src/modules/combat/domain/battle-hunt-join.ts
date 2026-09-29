@@ -6,13 +6,13 @@ import type { FightEffectIds } from "./fight-effect-ids.ts";
 import type { FightRules } from "./fight-rules.ts";
 import { huntBotSnap } from "./hunt-bot-snap.ts";
 import type { FightSetupJoin } from "./fight-setup.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import type { RandomSource } from "./random-source.ts";
 import { requireFightSetupJoin } from "./require-fight-setup.ts";
 import { pairHuntQueues } from "./try-pair-hunt-queues.ts";
 
-export function huntHistoryOf(opener: HuntHuman, primary: HuntRosterBot) {
+export function huntHistoryOf(opener: HumanFighter, primary: BotFighter) {
   return {
     accountId: opener.accountId,
     heroId: opener.heroId,
@@ -28,8 +28,8 @@ export function huntHistoryOf(opener: HuntHuman, primary: HuntRosterBot) {
 export function joinBattleHuman(input: {
   fightRules: FightRules;
   finished: boolean;
-  humans: HuntHuman[];
-  bots: HuntRosterBot[];
+  humans: HumanFighter[];
+  bots: BotFighter[];
   enemyTeam: 1 | 2;
   join: FightSetupJoin;
   hasHuman: (accountId: number, heroId: number) => boolean;
@@ -77,8 +77,8 @@ export function joinBattleHuman(input: {
 
 function addHuntHuman(input: {
   finished: boolean;
-  humans: HuntHuman[];
-  bots: readonly HuntRosterBot[];
+  humans: HumanFighter[];
+  bots: readonly BotFighter[];
   enemyTeam: 1 | 2;
   join: FightSetupJoin;
   hasHuman: (accountId: number, heroId: number) => boolean;
@@ -104,7 +104,7 @@ function addHuntHuman(input: {
 
 function addPvpHuman(input: {
   finished: boolean;
-  humans: HuntHuman[];
+  humans: HumanFighter[];
   join: FightSetupJoin;
   hasHuman: (accountId: number, heroId: number) => boolean;
   effectIds: FightEffectIds;

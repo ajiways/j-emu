@@ -1,9 +1,9 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
-import type { FightEffectSnap } from "./hunt-human-fight-effects.ts";
-import type { HuntHuman } from "./hunt-human.ts";
+import type { FightEffectSnap } from "./fighter-effects.ts";
+import type { HumanFighter } from "./human-fighter.ts";
 
 export function snapshotFightEffects(
-  humans: readonly HuntHuman[],
+  humans: readonly HumanFighter[],
   bots: readonly Readonly<{
     id: number;
     effects: { snapshot(nowMs?: number): readonly FightEffectSnap[] };

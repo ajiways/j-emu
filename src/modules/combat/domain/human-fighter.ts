@@ -1,19 +1,19 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { CombatLoadout } from "./combat-loadout.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
-import { HuntHumanCastState } from "./hunt-human-cast-state.ts";
+import { HumanCastState } from "./human-cast-state.ts";
 import type { PocketCellSnapshot } from "./fight-outcome-snapshot.ts";
-import { HuntHumanFightEffects } from "./hunt-human-fight-effects.ts";
+import { FighterEffects } from "./fighter-effects.ts";
 import type { Fighter, FighterKind } from "./fighter.ts";
 import type { MagStats } from "./mag-stats.ts";
 
-export type HuntHumanAppearance = Readonly<{
+export type FighterAppearance = Readonly<{
   avatar: string;
   body: string;
   sk: string;
 }>;
 
-export type HuntHumanSnap = Readonly<{
+export type HumanSnap = Readonly<{
   id: number;
   nick: string;
   level: number;
@@ -26,7 +26,7 @@ export type HuntHumanSnap = Readonly<{
   dealtDamage: number;
 }>;
 
-type HuntHumanInit = Readonly<{
+type HumanFighterInit = Readonly<{
   accountId: number;
   heroId: number;
   nick: string;
@@ -49,14 +49,14 @@ type HuntHumanInit = Readonly<{
   magResist: number;
   startedAtMs: number;
   loadout: CombatLoadout;
-  appearance: HuntHumanAppearance;
+  appearance: FighterAppearance;
   effectIds: FightEffectIds;
 }>;
 
-export class HuntHuman implements Fighter {
+export class HumanFighter implements Fighter {
   authed = false;
-  readonly casts: HuntHumanCastState;
-  readonly effects: HuntHumanFightEffects;
+  readonly casts: HumanCastState;
+  readonly effects: FighterEffects;
   private waitingValue: boolean;
   private turnActiveValue = false;
   private turnDeadlineMsValue: number | null = null;
@@ -69,12 +69,12 @@ export class HuntHuman implements Fighter {
   private lastOpponentIdValue: number | null = null;
   stunnedTurns = 0;
 
-  constructor(private readonly init: HuntHumanInit) {
+  constructor(private readonly init: HumanFighterInit) {
     requireHuntHumanInit(init);
     this.waitingValue = init.waiting;
     this.hpValue = init.hp;
-    this.casts = new HuntHumanCastState(init.loadout, init.aggroCharges);
-    this.effects = new HuntHumanFightEffects({
+    this.casts = new HumanCastState(init.loadout, init.aggroCharges);
+    this.effects = new FighterEffects({
       heroId: init.heroId,
       strength: init.strength,
       startedAtMs: init.startedAtMs,
@@ -152,7 +152,7 @@ export class HuntHuman implements Fighter {
   get team(): 1 | 2 {
     return this.init.team;
   }
-  get appearance(): HuntHumanAppearance {
+  get appearance(): FighterAppearance {
     return this.init.appearance;
   }
   get waiting(): boolean {
@@ -269,7 +269,7 @@ export class HuntHuman implements Fighter {
     return this.casts.pocketCells();
   }
 
-  snapshot(): HuntHumanSnap {
+  snapshot(): HumanSnap {
     return {
       id: this.heroId,
       nick: this.nick,
@@ -302,13 +302,13 @@ export class HuntHuman implements Fighter {
   }
 }
 
-function requireAppearance(appearance: HuntHumanAppearance): void {
+function requireAppearance(appearance: FighterAppearance): void {
   if (!appearance.avatar) throw new Error("Hunt human avatar is required");
   if (typeof appearance.body !== "string") throw new Error("Hunt human body is required");
   if (!appearance.sk) throw new Error("Hunt human sk is required");
 }
 
-function requireHuntHumanInit(init: HuntHumanInit): void {
+function requireHuntHumanInit(init: HumanFighterInit): void {
   requireWireIdentity(init.accountId, "account id");
   requireWireIdentity(init.heroId, "hero id");
   if (!init.nick) throw new Error("Hunt human nick is required");

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { seedBattleParticipants } from "../../../src/modules/combat/domain/battle-seed.ts";
 import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
-import type { HuntRosterBotSeed } from "../../../src/modules/combat/domain/hunt-roster-bot.ts";
+import type { BotFighterSeed } from "../../../src/modules/combat/domain/bot-fighter.ts";
 import { pairLeftoverRosterBots } from "../../../src/modules/combat/domain/pair-leftover-roster-bots.ts";
 import { requireFightBot } from "../../../src/modules/combat/domain/fight-bots.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
@@ -11,7 +11,7 @@ import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { EMPTY_HUNT_BOT_SPELL_BOOK, GRYZL_FIGHT_LOOK } from "../../support/hunt-start-input.ts";
 import { createUnitBattle } from "../../support/fight-rules.ts";
 
-function botSeed(fightId: number, nick: string): HuntRosterBotSeed {
+function botSeed(fightId: number, nick: string): BotFighterSeed {
   return {
     fightId,
     artikulId: 32,

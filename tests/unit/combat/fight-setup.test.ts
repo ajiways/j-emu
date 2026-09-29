@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
-import type { HuntRosterBotSeed } from "../../../src/modules/combat/domain/hunt-roster-bot.ts";
+import type { BotFighterSeed } from "../../../src/modules/combat/domain/bot-fighter.ts";
 import { requireFightSetup } from "../../../src/modules/combat/domain/require-fight-setup.ts";
 import { wireFightTypeOf } from "../../../src/modules/combat/domain/fight-result-info.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
@@ -12,7 +12,7 @@ import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
 const random = () => new SequenceRandom([8]);
 
-function extraEnemy(fightId: number): HuntRosterBotSeed {
+function extraEnemy(fightId: number): BotFighterSeed {
   return {
     fightId,
     artikulId: 32,

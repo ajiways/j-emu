@@ -1,6 +1,6 @@
 import type { FightDuel } from "./fight-duel.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { tryPairedMelee, type PlayerMeleeResult } from "./paired-melee.ts";
 import { resolveGloveFinisher, type EndingGloveResult } from "./glove-ending-cast.ts";
 import type { KeepTurnResult } from "./hunt-cast.ts";
@@ -10,14 +10,14 @@ import { resolveMeleeTarget } from "./melee-target.ts";
 
 export function applyPairedMelee(
   input: Readonly<{
-    attacker: HuntHuman;
+    attacker: HumanFighter;
     side: "left" | "center" | "right";
     finished: boolean;
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
-    humans: readonly HuntHuman[];
-    bots: readonly HuntRosterBot[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
     duel: FightDuel;
     nowMs: number;
   }>,
@@ -53,15 +53,15 @@ export function applyPairedMelee(
 
 export function applyPairedGloveEnding(
   input: Readonly<{
-    human: HuntHuman;
+    human: HumanFighter;
     spellId: number;
     sequence: string | number;
     finished: boolean;
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
-    humans: readonly HuntHuman[];
-    bots: readonly HuntRosterBot[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
     duel: FightDuel;
     duels: readonly FightDuel[];
     nowMs: number;

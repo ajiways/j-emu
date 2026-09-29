@@ -1,21 +1,21 @@
-import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
+import type { BattleEvent, BotSnap } from "./battle-event.ts";
 import { huntBotSnap } from "./hunt-bot-snap.ts";
 import { primaryEnemyBot, requireFightBot } from "./fight-bots.ts";
-import type { FightEffectSnap } from "./hunt-human-fight-effects.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { FightEffectSnap } from "./fighter-effects.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import { requireBattleHuman } from "./battle-lookups.ts";
 import { rosterIsPvp } from "./roster-pvp.ts";
 
 function huntAuthenticateEvents(
   input: Readonly<{
-    human: HuntHuman;
-    allies: readonly HuntHuman[];
-    bot: HuntBotSnap;
-    rosterBots: readonly HuntBotSnap[];
+    human: HumanFighter;
+    allies: readonly HumanFighter[];
+    bot: BotSnap;
+    rosterBots: readonly BotSnap[];
     botEffects: readonly FightEffectSnap[];
-    humanOpponent: HuntHuman | null;
+    humanOpponent: HumanFighter | null;
     pvp: boolean;
     nextActorId: number;
     resume: boolean;
@@ -69,9 +69,9 @@ function huntAuthenticateEvents(
 
 function friendlyAuthenticateEvents(
   input: Readonly<{
-    human: HuntHuman;
-    allies: readonly HuntHuman[];
-    opponent?: HuntHuman;
+    human: HumanFighter;
+    allies: readonly HumanFighter[];
+    opponent?: HumanFighter;
     nextActorId?: number;
     timeoutSeconds: number;
     nowMs: number;
@@ -119,10 +119,9 @@ function friendlyAuthenticateEvents(
 export function authenticateFighter(
   input: Readonly<{
     finished: boolean;
-    humans: readonly HuntHuman[];
+    humans: readonly HumanFighter[];
     duels: readonly FightDuel[];
-    bots: readonly HuntRosterBot[];
-    hasEnemyBots: boolean;
+    bots: readonly BotFighter[];
     enemyTeam: 1 | 2;
     timeoutSeconds: number;
     accountId: number;
@@ -134,7 +133,7 @@ export function authenticateFighter(
   if (human.authed) throw new Error("Fight session is already authenticated");
   const resume = human.takeResume();
   human.authed = true;
-  if (!input.hasEnemyBots) {
+  if (input.bots.length === 0) {
     const duel = input.duels.find((entry) => entry.has(human.heroId));
     const opponent =
       duel === undefined
@@ -177,7 +176,7 @@ export function authenticateFighter(
   });
 }
 
-function standingEffectsOf(humans: readonly HuntHuman[], nowMs: number) {
+function standingEffectsOf(humans: readonly HumanFighter[], nowMs: number) {
   return humans.map((entry) => ({
     persId: entry.heroId,
     effects: entry.effects.snapshot(nowMs),

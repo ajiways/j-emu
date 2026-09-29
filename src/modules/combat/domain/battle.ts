@@ -1,4 +1,4 @@
-import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
+import type { BattleEvent, BotSnap } from "./battle-event.ts";
 import {
   nextEffectDueMs,
   tickFightEffects,
@@ -25,8 +25,8 @@ import { fightDelayTokens, fightDuelDelayToken } from "./fight-delay-token.ts";
 import { FightRules } from "./fight-rules.ts";
 import type { FightSetup, FightSetupJoin } from "./fight-setup.ts";
 import { primaryEnemyBot, requireFightBot, requireFightBots } from "./fight-bots.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
-import type { HuntHuman } from "./hunt-human.ts";
+import type { BotFighter } from "./bot-fighter.ts";
+import type { HumanFighter } from "./human-fighter.ts";
 import { grantTurn as grantHumanTurn, type BotMeleeResult } from "./hunt-melee.ts";
 import { opposingTeam } from "./opposing-team.ts";
 import { rosterIsPvp } from "./roster-pvp.ts";
@@ -58,9 +58,9 @@ export class Battle {
   readonly turnGrantDelayMs: number;
   readonly resultRevealDelayMs: number;
   private finishedValue = false;
-  private readonly humans: HuntHuman[] = [];
+  private readonly humans: HumanFighter[] = [];
   private readonly duels: FightDuel[] = [];
-  readonly bots: HuntRosterBot[];
+  readonly bots: BotFighter[];
 
   constructor(
     readonly setup: FightSetup,
@@ -91,6 +91,9 @@ export class Battle {
   }
   get finished(): boolean {
     return this.finishedValue;
+  }
+  get hasBots(): boolean {
+    return this.bots.length > 0;
   }
   get purpose(): "hunt" | "quest" | "friendly-duel" | "pvp" {
     return this.setup.meta.kind;
@@ -187,7 +190,6 @@ export class Battle {
   authenticate(accountId: number, nowMs: number): readonly BattleEvent[] {
     return authenticateFighter({
       ...this.actionState(),
-      hasEnemyBots: this.fightRules.hasEnemyBots,
       enemyTeam: this.fightRules.teamAssignment.enemyTeam,
       timeoutSeconds: this.rules.turnTimeoutSeconds,
       accountId,
@@ -261,7 +263,6 @@ export class Battle {
 
   tickRosterDuels(nowMs: number): readonly BattleEvent[] {
     const ticked = tickHuntRosterDuels({
-      hasEnemyBots: this.fightRules.hasEnemyBots,
       bots: this.bots,
       enemyTeam: this.fightRules.teamAssignment.enemyTeam,
       duels: this.duels,
@@ -332,17 +333,17 @@ export class Battle {
   }
 
   boardParticipants(): Readonly<{
-    humans: readonly HuntHuman[];
-    bots: readonly HuntBotSnap[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotSnap[];
   }> {
     return { humans: this.humans, bots: this.bots.map((bot) => bot.snap()) };
   }
 
-  livingHumans(): readonly HuntHuman[] {
+  livingHumans(): readonly HumanFighter[] {
     return this.humans.filter((human) => !human.leftLive && human.hp > 0);
   }
 
-  markHumanLeft(accountId: number): HuntHuman {
+  markHumanLeft(accountId: number): HumanFighter {
     const human = requireBattleHuman(this.humans, accountId);
     human.markLeft();
     return human;

@@ -535,6 +535,16 @@ join в `hunt-roster` бой делает его PvP. Composition ставит
 PvP по-прежнему только 1×1 (`persistPvpHonor`): охота, ставшая PvP, считается
 как охота.
 
+### Участники и ветвление по составу
+
+Участники боя — `HumanFighter` и `BotFighter` (общий интерфейс `Fighter`, один
+путь потери HP `resolveHpLoss`). Бой не ветвится по типу: bootstrap, ход бота,
+тики roster-дуэлей и итог зависят от того, есть ли в бою боты
+(`Battle.hasBots`, `bots.length`), и от состава команд (`rosterIsPvp`).
+`FightRules.hasEnemyBots` и `kind` остаются только правилами **старта**:
+валидируют состав `FightSetup` и выбирают строку истории
+(`historyRow`); рантайм их не читает.
+
 ### CMB-12 — parallel hunt duels
 
 Срез закрыт (raw-AMF). Product-status не поднимать: CEF не прогонялся.
@@ -597,7 +607,7 @@ seeker (CMB-12: lone team-2 не крадёт бота).
 
 «Разозлить»: outdoor hunt, цель — enemy bot по wire `targetId` (не
 обязательно свой duel). Waiting/unpaired hunter клонирует чужого врага;
-заряд `1+AGRILKA_MOBOV` на `HuntHuman`, не на команду. Ignore без
+заряд `1+AGRILKA_MOBOV` на `HumanFighter`, не на команду. Ignore без
 `native-count` нельзя отдавать waiting: клиент на `{rs}` делает
 `aggro − 1`. Ephemeral clone в единую очередь `waiting` (jgr `waitingBots`);
 `pairHuntQueues` снимает клон с очереди, если сразу спарили waiter-а.
@@ -893,8 +903,8 @@ CEF не прогонялся (Wave 12, [CEF_MANUAL.md](../migration/CEF_MANUAL.
 `Combatant` (`id`, `team`, `maxHp`, `mag`, `strikeStats`, `alive`) — то, что
 человек и бот отдают одинаково; оба варианта `MeleeTarget` его включают, а
 строятся только фабриками `humanMeleeTarget` / `botMeleeTarget`. Человек и
-hunt-бот мутируют hp на живом объекте (`HuntHuman.applyDamage` /
-`HuntRosterBot.applyDamage`). `enemySideCleared` принимает один список
+hunt-бот мутируют hp на живом объекте (`HumanFighter.applyDamage` /
+`BotFighter.applyDamage`). `enemySideCleared` принимает один список
 `Combatant` и смотрит `alive` на стороне: для человека это `hp > 0` и не
 `leftLive`, для бота — `hp > 0`.
 
@@ -920,7 +930,7 @@ hp в `Combatant` намеренно нет: единственный ридер
 
 `teams[1]` и `teams[2]` — списки участников. Человек:
 `controller:"human"` плюс статы, `loadout` и `appearance:{avatar,body,sk}`.
-AI: `controller:"ai"` плюс поля `HuntRosterBotSeed` (`fightId`,
+AI: `controller:"ai"` плюс поля `BotFighterSeed` (`fightId`,
 `artikulId`, `nick`, `hp`, статы, `avatar`/`sk`/`body`, `spellBook`).
 Команда человека и бота задаётся слотом в `teams`, не плоским префиксом.
 
@@ -936,7 +946,7 @@ bot и `extraEnemies` на enemy, `allies` на opener),
 неизвестный `kind`/`controller`, пустые обязательные строки, коллизия
 `heroId`/`fightId`, бот ниже `1_000_000`, hunt с side-bots при
 `!allowsSideBots`, PvP без copy/flags. `seedBattleParticipants` кладёт
-людей и ботов на один `Battle`: `bots: HuntRosterBot[]` (пустой список,
+людей и ботов на один `Battle`: `bots: BotFighter[]` (пустой список,
 если `hasEnemyBots === false`; не null). Primary-враг — первый AI на
 `teamAssignment.enemyTeam` (сид кладёт enemy AIs раньше союзников).
 
@@ -976,8 +986,8 @@ Primary-враг для истории, join-snap и unpaired authenticate —
 `enemySideCleared(team, combatants)` из списка `Combatant`. Authenticate
 дуэли и охоты различает `FightRules.hasEnemyBots`, не отсутствие списка.
 
-`HuntRosterBot` остаётся live-объектом AI (melee, спеллы, aggro-клон,
-wire snap). Его не сливают с `HuntHuman`: `Combatant` — общая
+`BotFighter` остаётся live-объектом AI (melee, спеллы, aggro-клон,
+wire snap). Его не сливают с `HumanFighter`: `Combatant` — общая
 read-поверхность.
 
 ## FightRules

@@ -2,7 +2,7 @@ import { Battle } from "../domain/battle.ts";
 import type { BattleRules } from "../domain/battle-rules.ts";
 import type { EphemeralBotFightIds } from "../domain/ephemeral-bot-fight-ids.ts";
 import { FightRules } from "../domain/fight-rules.ts";
-import type { HuntRosterBotSeed } from "../domain/hunt-roster-bot.ts";
+import type { BotFighterSeed } from "../domain/bot-fighter.ts";
 import type { RandomSource } from "../domain/random-source.ts";
 import type { HuntStartInput } from "../ports/combat-port.ts";
 import { fightSetupFromHuntStart } from "./fight-setup-from-hunt-start.ts";
@@ -58,7 +58,7 @@ function seedRoster(
   heroId: number,
   botFightIds: EphemeralBotFightIds,
   testBotStrength: number | undefined,
-): readonly HuntRosterBotSeed[] {
+): readonly BotFighterSeed[] {
   return bots.map((bot) => ({
     fightId: botFightIds.allocate(heroId),
     artikulId: bot.artikulId,

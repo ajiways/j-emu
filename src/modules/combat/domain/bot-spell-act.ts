@@ -2,9 +2,9 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { botSpellAnimation, botSpellKind1DmgType, rollBotSpellDamage } from "./bot-spell-damage.ts";
 import type { HuntBotSpellCard } from "./hunt-bot-spell-book.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import { pocketHealAmount, spellKind } from "./hunt-human-cast-state.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import { pocketHealAmount, spellKind } from "./human-cast-state.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { kind1OverlayCharges, magicReact } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
@@ -16,14 +16,14 @@ export type BotKindActState = Readonly<{
   random: RandomSource;
   fightId: string;
   keepFightOnKill: boolean;
-  living: readonly HuntHuman[];
+  living: readonly HumanFighter[];
   winnerTeam: 1 | 2;
   nowMs: number;
 }>;
 
 export function actBotSpellCard(
-  actor: HuntRosterBot,
-  target: HuntHuman | HuntRosterBot,
+  actor: BotFighter,
+  target: HumanFighter | BotFighter,
   card: HuntBotSpellCard,
   state: BotKindActState,
 ): readonly BattleEvent[] {
@@ -98,7 +98,7 @@ export function actBotSpellCard(
   throw new Error(`Bot spell ${card.artikulId} has no supported CMB-15 effect`);
 }
 
-function attachKind1Overlay(actor: HuntRosterBot, card: HuntBotSpellCard): readonly BattleEvent[] {
+function attachKind1Overlay(actor: BotFighter, card: HuntBotSpellCard): readonly BattleEvent[] {
   const overlay = schoolOverlayFromKind1(card.spell, actor.strength);
   if (!overlay) throw new Error(`Bot spell ${card.artikulId} overlay charges are required`);
   actor.schoolOverlay = overlay;
@@ -139,8 +139,8 @@ function attachKind1Overlay(actor: HuntRosterBot, card: HuntBotSpellCard): reado
 }
 
 function instantKind1(
-  actor: HuntRosterBot,
-  target: HuntHuman | HuntRosterBot,
+  actor: BotFighter,
+  target: HumanFighter | BotFighter,
   card: HuntBotSpellCard,
   state: BotKindActState,
 ): readonly BattleEvent[] {
@@ -181,7 +181,7 @@ function instantKind1(
   return events;
 }
 
-function healActor(actor: HuntRosterBot, card: HuntBotSpellCard): readonly BattleEvent[] {
+function healActor(actor: BotFighter, card: HuntBotSpellCard): readonly BattleEvent[] {
   const healed = actor.applyHeal(pocketHealAmount(card.spell, actor.maxHp));
   return [
     {
@@ -196,6 +196,6 @@ function healActor(actor: HuntRosterBot, card: HuntBotSpellCard): readonly Battl
   ];
 }
 
-function isHuman(target: HuntHuman | HuntRosterBot): target is HuntHuman {
+function isHuman(target: HumanFighter | BotFighter): target is HumanFighter {
   return "heroId" in target;
 }

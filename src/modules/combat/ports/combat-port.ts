@@ -5,7 +5,7 @@ import type { FightInfoCard } from "../domain/fight-info-card.ts";
 import type { FightResultInfo } from "../domain/fight-result-info.ts";
 import type { FightLootBlock } from "../domain/fight-loot-block.ts";
 import type { FinishedFightListQuery, FinishedFightPage } from "../domain/finished-fight-page.ts";
-import type { HuntHumanAppearance } from "../domain/hunt-human.ts";
+import type { FighterAppearance } from "../domain/human-fighter.ts";
 import type { RunnedFightPage } from "../domain/runned-fight-record.ts";
 
 type CommandSequence = string | number;
@@ -70,7 +70,7 @@ export type HuntStartInput = Readonly<{
   arena: string;
   areaId: string;
   instanceCopyId: number | null;
-  appearance: HuntHumanAppearance;
+  appearance: FighterAppearance;
   loadout: CombatLoadout;
   botSpellBook: HuntBotSpellBook;
   purpose: "hunt" | "quest";
@@ -118,7 +118,7 @@ export type HuntJoinInput = Readonly<{
   areaId: string;
   instanceCopyId: number | null;
   team: 1 | 2;
-  appearance: HuntHumanAppearance;
+  appearance: FighterAppearance;
   loadout: CombatLoadout;
 }>;
 

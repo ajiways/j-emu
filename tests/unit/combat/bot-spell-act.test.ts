@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { actBotSpellCard } from "../../../src/modules/combat/domain/bot-spell-act.ts";
-import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
-import { HuntRosterBot } from "../../../src/modules/combat/domain/hunt-roster-bot.ts";
+import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
+import { BotFighter } from "../../../src/modules/combat/domain/bot-fighter.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import {
@@ -14,7 +14,7 @@ import {
 
 describe("actBotSpellCard overkill", () => {
   it("sends hpChange equal to remaining HP on a kind-1 kill", () => {
-    const actor = HuntRosterBot.fromSeed(
+    const actor = BotFighter.fromSeed(
       {
         fightId: 1_000_000,
         artikulId: 4,
@@ -33,7 +33,7 @@ describe("actBotSpellCard overkill", () => {
       2,
       new FightEffectIds(),
     );
-    const human = new HuntHuman({
+    const human = new HumanFighter({
       accountId: 1,
       heroId: 1,
       nick: "H1",
@@ -82,7 +82,7 @@ describe("actBotSpellCard overkill", () => {
   });
 
   it("attaches Hissa 396 kind-4 as effUse before the kind-1 hit", () => {
-    const actor = HuntRosterBot.fromSeed(
+    const actor = BotFighter.fromSeed(
       {
         fightId: 1_000_000,
         artikulId: 4,
@@ -101,7 +101,7 @@ describe("actBotSpellCard overkill", () => {
       2,
       new FightEffectIds(),
     );
-    const human = new HuntHuman({
+    const human = new HumanFighter({
       accountId: 1,
       heroId: 1,
       nick: "H1",
@@ -170,7 +170,7 @@ describe("actBotSpellCard overkill", () => {
 
   it("hangs Hissa 397 charging overlay as bot effUse before magic_baf", () => {
     const ids = new FightEffectIds();
-    const actor = HuntRosterBot.fromSeed(
+    const actor = BotFighter.fromSeed(
       {
         fightId: 1_000_000,
         artikulId: 4,
@@ -189,7 +189,7 @@ describe("actBotSpellCard overkill", () => {
       2,
       ids,
     );
-    const human = new HuntHuman({
+    const human = new HumanFighter({
       accountId: 1,
       heroId: 1,
       nick: "H1",

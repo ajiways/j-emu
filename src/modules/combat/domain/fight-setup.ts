@@ -1,7 +1,7 @@
 import type { CombatLoadout } from "./combat-loadout.ts";
 import type { FightKind } from "./fight-rules.ts";
 import type { HuntBotSpellBook } from "./hunt-bot-spell-book.ts";
-import type { HuntHumanAppearance } from "./hunt-human.ts";
+import type { FighterAppearance } from "./human-fighter.ts";
 
 export type FightSetupHuman = Readonly<{
   controller: "human";
@@ -24,7 +24,7 @@ export type FightSetupHuman = Readonly<{
   magPower: number;
   magResist: number;
   loadout: CombatLoadout;
-  appearance: HuntHumanAppearance;
+  appearance: FighterAppearance;
 }>;
 
 export type FightSetupAi = Readonly<{

@@ -1,7 +1,7 @@
 import type { BattleRules } from "./battle-rules.ts";
 import { requireBattleHuman } from "./battle-lookups.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { enemySideCleared, fightCombatants } from "./melee-target.ts";
 import { opposingTeam } from "./opposing-team.ts";
 import { timeoutHumanTurn, type HumanTimeout } from "./timeout-human-turn.ts";
@@ -9,8 +9,8 @@ import { timeoutHumanTurn, type HumanTimeout } from "./timeout-human-turn.ts";
 /** The turn timed out; an AFK fighter at the skip limit dies, and the fight ends if he was the last. */
 export function timeoutBattleTurn(
   input: Readonly<{
-    humans: readonly HuntHuman[];
-    bots: readonly HuntRosterBot[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
     rules: BattleRules;
     fightId: string;
     accountId: number;
@@ -32,7 +32,7 @@ export function timeoutBattleTurn(
 }
 
 /** A stunned human loses this turn instead of receiving it. */
-export function consumeStunSkip(human: HuntHuman): boolean {
+export function consumeStunSkip(human: HumanFighter): boolean {
   if (human.stunnedTurns < 1 || human.waiting || human.hp === 0) return false;
   human.stunnedTurns -= 1;
   return true;

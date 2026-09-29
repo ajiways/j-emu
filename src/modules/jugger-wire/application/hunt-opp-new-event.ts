@@ -1,6 +1,6 @@
-import type { HuntBotSnap } from "../../combat/domain/battle-event.ts";
+import type { BotSnap } from "../../combat/domain/battle-event.ts";
 
-export function huntOppNewEvent(bot: HuntBotSnap): Readonly<Record<string, unknown>> {
+export function huntOppNewEvent(bot: BotSnap): Readonly<Record<string, unknown>> {
   return {
     aggressive: true,
     artikulId: bot.artikulId,

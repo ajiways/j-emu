@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { FightDuel } from "../../../src/modules/combat/domain/fight-duel.ts";
-import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
+import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
 import {
   UNIT_HUNT_APPEARANCE,
   unitHuntHumanStats,
@@ -16,8 +16,8 @@ import {
   resolveMeleeTarget,
 } from "../../../src/modules/combat/domain/melee-target.ts";
 
-function human(heroId: number, team: 1 | 2, waiting = false): HuntHuman {
-  return new HuntHuman({
+function human(heroId: number, team: 1 | 2, waiting = false): HumanFighter {
+  return new HumanFighter({
     accountId: heroId,
     heroId,
     nick: `H${heroId}`,

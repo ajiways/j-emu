@@ -8,8 +8,8 @@ import type {
   FightSetupJoin,
 } from "../../src/modules/combat/domain/fight-setup.ts";
 import type { HuntBotSpellBook } from "../../src/modules/combat/domain/hunt-bot-spell-book.ts";
-import type { HuntHumanAppearance } from "../../src/modules/combat/domain/hunt-human.ts";
-import type { HuntRosterBotSeed } from "../../src/modules/combat/domain/hunt-roster-bot.ts";
+import type { FighterAppearance } from "../../src/modules/combat/domain/human-fighter.ts";
+import type { BotFighterSeed } from "../../src/modules/combat/domain/bot-fighter.ts";
 import {
   EMPTY_HUNT_BOT_SPELL_BOOK,
   GRYZL_FIGHT_LOOK,
@@ -59,9 +59,9 @@ export type UnitHuntFightSetupOverlay = {
   fightFlags?: string | null;
   startedAt?: Date;
   loadout?: CombatLoadout;
-  appearance?: HuntHumanAppearance;
-  extraEnemies?: readonly HuntRosterBotSeed[];
-  allies?: readonly HuntRosterBotSeed[];
+  appearance?: FighterAppearance;
+  extraEnemies?: readonly BotFighterSeed[];
+  allies?: readonly BotFighterSeed[];
   chatWin?: string;
   chatLose?: string;
   kind?: FightKind;
@@ -225,6 +225,6 @@ function unitDuelHuman(
   };
 }
 
-function aiFromSeed(seed: HuntRosterBotSeed): FightSetupAi {
+function aiFromSeed(seed: BotFighterSeed): FightSetupAi {
   return { controller: "ai", ...seed };
 }

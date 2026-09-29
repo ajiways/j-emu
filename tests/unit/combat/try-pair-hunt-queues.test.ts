@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { FightDuel } from "../../../src/modules/combat/domain/fight-duel.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
-import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
+import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { requireFightBot, seedFightBots } from "../../../src/modules/combat/domain/fight-bots.ts";
-import type { HuntRosterBotSeed } from "../../../src/modules/combat/domain/hunt-roster-bot.ts";
+import type { BotFighterSeed } from "../../../src/modules/combat/domain/bot-fighter.ts";
 import {
   pairHuntHumanQueues,
   pairHuntQueues,
@@ -22,7 +22,7 @@ import {
 function human(
   input: Readonly<{ accountId: number; heroId: number; team: 1 | 2; waiting: boolean }>,
 ) {
-  return new HuntHuman({
+  return new HumanFighter({
     accountId: input.accountId,
     heroId: input.heroId,
     nick: `h${input.heroId}`,
@@ -42,7 +42,7 @@ function human(
   });
 }
 
-function botSeed(fightId: number): HuntRosterBotSeed {
+function botSeed(fightId: number): BotFighterSeed {
   return {
     fightId,
     artikulId: 2,
@@ -60,10 +60,7 @@ function botSeed(fightId: number): HuntRosterBotSeed {
   };
 }
 
-function botsWith(
-  extraEnemies: readonly HuntRosterBotSeed[],
-  allies: readonly HuntRosterBotSeed[] = [],
-) {
+function botsWith(extraEnemies: readonly BotFighterSeed[], allies: readonly BotFighterSeed[] = []) {
   return unitFightBots({ extraEnemies, allies });
 }
 

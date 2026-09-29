@@ -2,11 +2,11 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { advanceDuelClock, botActionJumpSeconds } from "./duel-clock.ts";
 import type { FightDuel } from "./fight-duel.ts";
-import type { HuntHuman } from "./hunt-human.ts";
+import type { HumanFighter } from "./human-fighter.ts";
 import { resolveBotTurn } from "./hunt-bot-turn.ts";
 import { resolveRosterBotTurn } from "./hunt-bot-vs-bot.ts";
 import type { BotMeleeResult } from "./hunt-melee.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import type { RandomSource } from "./random-source.ts";
 
 /**
@@ -16,15 +16,15 @@ import type { RandomSource } from "./random-source.ts";
  */
 export function resolveAiActorTurn(
   input: Readonly<{
-    bot: HuntRosterBot;
+    bot: BotFighter;
     duel: FightDuel;
-    humans: readonly HuntHuman[];
-    bots: readonly HuntRosterBot[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
     keepFightOnKill: boolean;
-    living: readonly HuntHuman[];
+    living: readonly HumanFighter[];
     winnerTeam: 1 | 2;
     nowMs: number;
   }>,
@@ -76,12 +76,12 @@ export function resolveAiActorTurn(
 
 function botClockTicks(
   input: Readonly<{
-    bot: HuntRosterBot;
+    bot: BotFighter;
     rules: BattleRules;
     random: RandomSource;
     nowMs: number;
   }>,
-  other: HuntHuman | HuntRosterBot,
+  other: HumanFighter | BotFighter,
 ): readonly BattleEvent[] {
   return advanceDuelClock({
     fighters: [input.bot, other],

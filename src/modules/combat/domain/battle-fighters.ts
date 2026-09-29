@@ -1,6 +1,6 @@
 import type { FightEffectIds } from "./fight-effect-ids.ts";
 import type { FightSetupHuman, FightSetupJoin } from "./fight-setup.ts";
-import { HuntHuman } from "./hunt-human.ts";
+import { HumanFighter } from "./human-fighter.ts";
 import type { PracticeRestore } from "./fight-outcome-snapshot.ts";
 
 export function seedHuman(
@@ -9,8 +9,8 @@ export function seedHuman(
   waiting: boolean,
   startedAtMs: number,
   effectIds: FightEffectIds,
-): HuntHuman {
-  return new HuntHuman({
+): HumanFighter {
+  return new HumanFighter({
     accountId: fighter.accountId,
     heroId: fighter.heroId,
     nick: fighter.nick,
@@ -38,7 +38,7 @@ export function seedHuman(
   });
 }
 
-export function seedJoiner(join: FightSetupJoin, effectIds: FightEffectIds): HuntHuman {
+export function seedJoiner(join: FightSetupJoin, effectIds: FightEffectIds): HumanFighter {
   return seedHuman(join, join.team, true, join.startedAtMs, effectIds);
 }
 

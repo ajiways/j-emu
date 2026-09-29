@@ -11,9 +11,9 @@ import type { FightRules } from "./fight-rules.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import type { KeepTurnResult } from "./hunt-cast.ts";
 import { tryGloveKeepTurn } from "./hunt-cast.ts";
-import type { HuntHuman } from "./hunt-human.ts";
+import type { HumanFighter } from "./human-fighter.ts";
 import type { BotMeleeResult } from "./hunt-melee.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { enemySideCleared, fightCombatants } from "./melee-target.ts";
 import { persChangeForParticipants } from "./melee-pers-change.ts";
 import { opposingTeam } from "./opposing-team.ts";
@@ -24,9 +24,9 @@ import { requireDuelContaining } from "./try-pair-hunt-queues.ts";
 type HuntActionState = Readonly<{
   fightRules: FightRules;
   finished: boolean;
-  humans: HuntHuman[];
+  humans: HumanFighter[];
   duels: FightDuel[];
-  bots: HuntRosterBot[];
+  bots: BotFighter[];
   rules: BattleRules;
   random: RandomSource;
   fightId: string;
@@ -91,10 +91,10 @@ export function applyBattleGlove(
 export function applyBattleBotMelee(
   state: HuntActionState,
   accountId: number,
-  living: readonly HuntHuman[],
+  living: readonly HumanFighter[],
   nowMs: number,
 ): BotMeleeResult & Readonly<{ finished: boolean }> {
-  if (!state.fightRules.hasEnemyBots) throw new Error("Human duel has no bot to take a turn");
+  if (state.bots.length === 0) throw new Error("Human duel has no bot to take a turn");
   if (state.finished) throw new Error("Cannot resolve bot melee on a finished battle");
   const target = requireBattleHuman(state.humans, accountId);
   const duel = requireDuelContaining(state.duels, target.heroId);
@@ -130,8 +130,8 @@ export function applyBattleBotMelee(
 /** A DoT tick emptied the bot during its own action: end the fight or bring the next foe. */
 function botFellToTick(
   state: HuntActionState,
-  bot: HuntRosterBot,
-  hunter: HuntHuman,
+  bot: BotFighter,
+  hunter: HumanFighter,
   duel: FightDuel,
   result: BotMeleeResult,
 ): readonly BattleEvent[] {
@@ -152,12 +152,12 @@ function botFellToTick(
 function settleGloveHits(
   ending: EndingGloveResult,
   input: Readonly<{
-    bots: readonly HuntRosterBot[];
+    bots: readonly BotFighter[];
     enemyTeam: 1 | 2;
     duel: FightDuel;
     duels: FightDuel[];
-    opener: HuntHuman;
-    humans: readonly HuntHuman[];
+    opener: HumanFighter;
+    humans: readonly HumanFighter[];
   }>,
 ): EndingGloveResult {
   if (ending.selfKilled) return ending;
@@ -208,15 +208,15 @@ function settleGloveHits(
 
 function hitInput(
   state: HuntActionState,
-  human: HuntHuman,
+  human: HumanFighter,
   duel: FightDuel,
 ): Readonly<{
-  bots: readonly HuntRosterBot[];
+  bots: readonly BotFighter[];
   enemyTeam: 1 | 2;
   duel: FightDuel;
   duels: FightDuel[];
-  opener: HuntHuman;
-  humans: readonly HuntHuman[];
+  opener: HumanFighter;
+  humans: readonly HumanFighter[];
 }> {
   return {
     bots: state.bots,

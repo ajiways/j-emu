@@ -1,8 +1,8 @@
 import type { CombatSpell } from "./combat-loadout.ts";
 import { kind1Effect } from "./magic-hit.ts";
-import type { HuntHuman } from "./hunt-human.ts";
+import type { HumanFighter } from "./human-fighter.ts";
 import { botMeleeTarget, humanMeleeTarget, type MeleeTarget } from "./melee-target.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import type { RandomSource } from "./random-source.ts";
 import { shuffleInPlace } from "./shuffle-in-place.ts";
 
@@ -40,10 +40,10 @@ export function aoeKind1Damage(full: number): number {
 
 export function pickGloveAoeTargets(
   input: Readonly<{
-    caster: HuntHuman;
+    caster: HumanFighter;
     primary: MeleeTarget;
-    humans: readonly HuntHuman[];
-    bots: readonly HuntRosterBot[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
     count: number;
     random: RandomSource;
   }>,

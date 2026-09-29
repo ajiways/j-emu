@@ -2,7 +2,7 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { actBotSpellCard } from "./bot-spell-act.ts";
 import { botSpellEndsTurn } from "./bot-spell-damage.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { rollMeleeDamage } from "./melee-damage.ts";
 import { rollMeleeOutcome, unpublishedBotStrikeStats } from "./melee-outcome.ts";
@@ -13,8 +13,8 @@ import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
 
 export function resolveRosterBotTurn(
-  actor: HuntRosterBot,
-  target: HuntRosterBot,
+  actor: BotFighter,
+  target: BotFighter,
   input: Readonly<{
     rules: BattleRules;
     random: RandomSource;
@@ -52,8 +52,8 @@ export function resolveRosterBotTurn(
 }
 
 function meleeHit(
-  actor: HuntRosterBot,
-  target: HuntRosterBot,
+  actor: BotFighter,
+  target: BotFighter,
   input: Readonly<{ rules: BattleRules; random: RandomSource }>,
 ): readonly BattleEvent[] {
   const baseDamage = rollMeleeDamage(actor.strength, input.random, input.rules);

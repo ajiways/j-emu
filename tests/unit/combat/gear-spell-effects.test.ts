@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { bakeTimedStatPercents } from "../../../src/modules/combat/domain/bake-timed-stat-percents.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
-import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
-import { HuntHumanFightEffects } from "../../../src/modules/combat/domain/hunt-human-fight-effects.ts";
+import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
+import { FighterEffects } from "../../../src/modules/combat/domain/fighter-effects.ts";
 import { humanMeleeTarget } from "../../../src/modules/combat/domain/melee-target.ts";
 import { tryPairedMelee } from "../../../src/modules/combat/domain/paired-melee.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
@@ -37,9 +37,9 @@ describe("bakeTimedStatPercents", () => {
   });
 });
 
-describe("HuntHumanFightEffects", () => {
+describe("FighterEffects", () => {
   it("snapshots remainTime 320 and purges on the 8th ending turn", () => {
-    const effects = new HuntHumanFightEffects({
+    const effects = new FighterEffects({
       heroId: 1,
       strength: 53,
       startedAtMs: 0,
@@ -70,7 +70,7 @@ describe("HuntHumanFightEffects", () => {
   });
 
   it("purges on wall-clock expiresAtMs even if turns remain", () => {
-    const effects = new HuntHumanFightEffects({
+    const effects = new FighterEffects({
       heroId: 1,
       strength: 53,
       startedAtMs: 0,
@@ -82,7 +82,7 @@ describe("HuntHumanFightEffects", () => {
   });
 
   it("attaches pocket charging kind-3 without STR bake and purges on a physical hit, not an ending turn", () => {
-    const effects = new HuntHumanFightEffects({
+    const effects = new FighterEffects({
       heroId: 1,
       strength: 53,
       startedAtMs: 0,
@@ -117,7 +117,7 @@ describe("HuntHumanFightEffects", () => {
 
 describe("gear-spell melee STR", () => {
   it("uses standing kind-3 STR while the effect lives", () => {
-    const attacker = new HuntHuman({
+    const attacker = new HumanFighter({
       accountId: 1,
       heroId: 1,
       nick: "H1",
@@ -138,7 +138,7 @@ describe("gear-spell melee STR", () => {
     attacker.authed = true;
     attacker.beginTurn(0, 20);
     expect(attacker.meleeStrength()).toBe(58);
-    const defender = new HuntHuman({
+    const defender = new HumanFighter({
       accountId: 2,
       heroId: 2,
       nick: "H2",

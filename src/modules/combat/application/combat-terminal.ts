@@ -235,7 +235,7 @@ export class CombatTerminal {
   }
 
   private resultTitle(battle: Battle, humans: readonly { nick: string; team: 1 | 2 }[]): string {
-    if (battle.fightRules.hasEnemyBots) {
+    if (battle.hasBots) {
       const history = battle.huntHistory();
       return huntFightTitle(history.heroNick, history.botNick);
     }
@@ -260,7 +260,7 @@ export class CombatTerminal {
       purpose: battle.purpose,
       ...(battle.fightRules.includesQuestChat ? battle.questChat() : {}),
       ...(battle.fightRules.skipQuestKills ? { skipQuestKills: true } : {}),
-      ...(battle.fightRules.hasEnemyBots ? { botId: battle.huntHistory().botArtikulId } : {}),
+      ...(battle.hasBots ? { botId: battle.huntHistory().botArtikulId } : {}),
     });
   }
 

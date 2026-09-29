@@ -1,4 +1,4 @@
-import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
+import type { BattleEvent, BotSnap } from "./battle-event.ts";
 
 export const PAIR_HITS_TO_SWITCH = 3;
 
@@ -17,13 +17,13 @@ export type ShuffleOutcome =
       kind: "cross-swap";
       leftAccountId: number;
       rightAccountId: number;
-      leftBot: HuntBotSnap;
-      rightBot: HuntBotSnap;
+      leftBot: BotSnap;
+      rightBot: BotSnap;
     }>
   | Readonly<{
       kind: "reserve-swap";
       accountId: number;
-      bot: HuntBotSnap;
+      bot: BotSnap;
     }>;
 
 export function planHuntShuffle(

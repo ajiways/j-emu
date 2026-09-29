@@ -2,8 +2,8 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { applyPeriodicItems } from "./apply-periodic-items.ts";
 import type { Fighter } from "./fighter.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { enemySideCleared, fightCombatants } from "./melee-target.ts";
 import { opposingTeam } from "./opposing-team.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -77,15 +77,15 @@ export type ActionClockResult = Readonly<{
  */
 export function advanceActionClock(
   input: Readonly<{
-    attacker: HuntHuman;
+    attacker: HumanFighter;
     victim: Fighter;
     victimKilledByHit: boolean;
     turnElapsedMs: number;
     nowMs: number;
     rules: BattleRules;
     random: RandomSource;
-    humans: readonly HuntHuman[];
-    bots: readonly HuntRosterBot[];
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
     fightId: string;
   }>,
 ): ActionClockResult {

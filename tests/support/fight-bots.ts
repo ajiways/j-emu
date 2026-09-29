@@ -1,11 +1,11 @@
 import { FightEffectIds } from "../../src/modules/combat/domain/fight-effect-ids.ts";
 import { seedFightBots } from "../../src/modules/combat/domain/fight-bots.ts";
 import type { FightTeamAssignment } from "../../src/modules/combat/domain/fight-rules.ts";
-import type { HuntRosterBot } from "../../src/modules/combat/domain/hunt-roster-bot.ts";
-import type { HuntRosterBotSeed } from "../../src/modules/combat/domain/hunt-roster-bot.ts";
+import type { BotFighter } from "../../src/modules/combat/domain/bot-fighter.ts";
+import type { BotFighterSeed } from "../../src/modules/combat/domain/bot-fighter.ts";
 import { EMPTY_HUNT_BOT_SPELL_BOOK, GRYZL_FIGHT_LOOK } from "./hunt-start-input.ts";
 
-export function unitBotSeed(fightId: number, nick = `bot${fightId}`): HuntRosterBotSeed {
+export function unitBotSeed(fightId: number, nick = `bot${fightId}`): BotFighterSeed {
   return {
     fightId,
     artikulId: 2,
@@ -25,14 +25,14 @@ export function unitBotSeed(fightId: number, nick = `bot${fightId}`): HuntRoster
 
 export function unitFightBots(
   input: Readonly<{
-    extraEnemies?: readonly HuntRosterBotSeed[];
-    allies?: readonly HuntRosterBotSeed[];
+    extraEnemies?: readonly BotFighterSeed[];
+    allies?: readonly BotFighterSeed[];
     occupiedIds?: readonly number[];
     teamAssignment?: FightTeamAssignment;
     effectIds?: FightEffectIds;
-    primary?: HuntRosterBotSeed;
+    primary?: BotFighterSeed;
   }> = {},
-): HuntRosterBot[] {
+): BotFighter[] {
   const teamAssignment = input.teamAssignment ?? { openerTeam: 1, enemyTeam: 2 };
   return seedFightBots({
     enemyAis: [input.primary ?? unitBotSeed(1_000_000), ...(input.extraEnemies ?? [])],

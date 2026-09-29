@@ -1975,7 +1975,7 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   `seedBattleParticipants` ветвится на первом шаге и производит
   структурно разные бои; `Battle.huntRoster` имеет тип
   `HuntRoster | null` (47 ссылок на roster в combat); участники — два
-  класса без общего интерфейса (`HuntHuman`, `HuntRosterBot`), склеенные
+  класса без общего интерфейса (`HumanFighter`, `BotFighter`), склеенные
   union `MeleeTarget` `kind:"human"|"bot"`, который протёк в таргетинг,
   pairing, aggro и fanout. Ветвлений на `kind`/`purpose` — 36 по
   combat + app. `huntFightOpenerTeam` / `huntFightEnemyTeam` выводят
@@ -1996,14 +1996,14 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   (`createHuntBattle`, `startHumanDuelBattle`, BG, quest roster) остаются
   тонкими мапперами в `FightSetup`.
 - **Что переносить не нужно:** нижний слой уже generic и не трогается —
-  `HuntHumanFightEffects` общий для `HuntHuman` и `HuntRosterBot`,
+  `FighterEffects` общий для `HumanFighter` и `BotFighter`,
   `rollMeleeOutcome` работает на структурном `StrikeStats`, `FightDuel` —
   на числовых id. Урон, эффекты, magic, pacing ходов и `BattleRules` вне
   объёма.
 - **Порядок миграции:** (1) **landed** — `Combatant` (`id`, `team`, `maxHp`,
   `mag`, `strikeStats`) как общая read-поверхность обоих вариантов
   `MeleeTarget`, фабрики `humanMeleeTarget` / `botMeleeTarget`; (2) **landed** —
-  write-модель hp: удар человека по боту мутирует живой `HuntRosterBot`;
+  write-модель hp: удар человека по боту мутирует живой `BotFighter`;
   `BotMeleePresence` / `hitBot` / `presences` / `applyPresence` удалены.
   `alive` входит в `Combatant`, `hp` — нет: живой hp читается только через
   `targetHp`, чтобы устаревшая копия не конкурировала с живым значением.
@@ -2038,7 +2038,7 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   основного удара. `Combatant.hp` сначала завели копией на wrap, затем
   убрали: его не читал никто, а копия отдавала hp **до** удара — тот же
   класс дефекта, что снятый снапшот, только отложенный. Единственный ридер
-  hp — `targetHp`. `HuntRosterBot.setHp` оставлен: heal в `bot-spell-act` и
+  hp — `targetHp`. `BotFighter.setHp` оставлен: heal в `bot-spell-act` и
   запись после хода бота в `applyBattleBotMelee`.
 - **Найдено на шаге 3:** `skipQuestKills` нельзя было свернуть в
   `purpose !== "quest"`: 1v1 квест (opener team 2, один бот) киллы **кредитует**;
@@ -2061,8 +2061,8 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   lock в документации переименован в `requireNoActiveFight` (имя функции в
   `src`), класс policy не трогали.
 - **Найдено на шаге 4:** внешность человека сведена к
-  `HuntHumanAppearance {avatar,body,sk}`; у бота те же три поля остаются на
-  `HuntRosterBotSeed`. Join больше не третья identity-форма: `FightSetupJoin`
+  `FighterAppearance {avatar,body,sk}`; у бота те же три поля остаются на
+  `BotFighterSeed`. Join больше не третья identity-форма: `FightSetupJoin`
   = human + `team` + `startedAtMs` с часов на join (`Date.getTime()`), не
   `meta.startedAt`. `Battle.kind` трёхзначный (`quest`→`hunt`) оставлен как
   alias для `wireFightTypeOf`; `Battle.purpose` = `meta.kind` и те же строки
@@ -2075,7 +2075,7 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   второй цикл ходов (`extraDuels`, `tick`) и вывод команд с квестовым
   правилом из `purpose` (`openerTeam`, `skipQuestKills`). Контейнер снимается
   тривиально, а паринг и цикл ходов существуют **дважды**, разрезанные по
-  типу контроллера: люди паруются через `HuntHuman.waiting` / `pair` и
+  типу контроллера: люди паруются через `HumanFighter.waiting` / `pair` и
   `livingWaiterOnTeam`, боты — через roster; дуэли бот↔бот тикаются отдельно
   от дуэлей с людьми. Поэтому унификация паринга и цикла ходов выделена в
   отдельный шаг 5 перед снятием `huntRoster`, иначе удалять класс нечего.

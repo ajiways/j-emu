@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
-import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
+import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
 import {
   humanMeleeTarget,
   botMeleeTarget,
@@ -19,8 +19,8 @@ import {
   unitRosterBot,
 } from "../../support/hunt-start-input.ts";
 
-function fighter(heroId: number, team: 1 | 2, hp: number, strength = 10): HuntHuman {
-  const human = new HuntHuman({
+function fighter(heroId: number, team: 1 | 2, hp: number, strength = 10): HumanFighter {
+  const human = new HumanFighter({
     accountId: heroId,
     heroId,
     nick: `H${heroId}`,

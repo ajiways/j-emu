@@ -1,22 +1,22 @@
 import type { BattleRules } from "./battle-rules.ts";
 import { actBotSpellCard } from "./bot-spell-act.ts";
-import type { HuntHuman } from "./hunt-human.ts";
+import type { HumanFighter } from "./human-fighter.ts";
 import { resolveBotMelee, type BotMeleeResult } from "./hunt-melee.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import { noteCast, pickBotSpell } from "./pick-bot-spell.ts";
 import type { RandomSource } from "./random-source.ts";
 import { botSpellEndsTurn } from "./bot-spell-damage.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 
 export function resolveBotTurn(
-  human: HuntHuman,
-  bot: HuntRosterBot,
+  human: HumanFighter,
+  bot: BotFighter,
   state: Readonly<{
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
     keepFightOnKill: boolean;
-    living: readonly HuntHuman[];
+    living: readonly HumanFighter[];
     winnerTeam: 1 | 2;
     nowMs: number;
   }>,

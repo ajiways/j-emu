@@ -1,10 +1,10 @@
 import { parseDecimalId, requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { Battle } from "./battle.ts";
-import type { HuntBotSnap } from "./battle-event.ts";
+import type { BotSnap } from "./battle-event.ts";
 import { fightStartedLabel } from "./fight-started-label.ts";
 import { wireFightTypeOf } from "./fight-result-info.ts";
 import { huntFightTitle } from "./hunt-fight-title.ts";
-import type { HuntHuman } from "./hunt-human.ts";
+import type { HumanFighter } from "./human-fighter.ts";
 
 const HUNT_FIGHT_TYPE = 1;
 const PRACTICE_FIGHT_TYPE = 6;
@@ -105,7 +105,7 @@ export function runnedFightRecordOf(battle: Battle, now: Date): RunnedFightRecor
   };
 }
 
-function runnedHuman(human: HuntHuman): RunnedFightMember {
+function runnedHuman(human: HumanFighter): RunnedFightMember {
   requireWireIdentity(human.heroId, "hero id");
   return {
     id: human.heroId,
@@ -137,7 +137,7 @@ function numericFightType(wire: "1" | "6"): typeof HUNT_FIGHT_TYPE | typeof PRAC
   throw new Error(`Unknown wire fight type: ${String(wire)}`);
 }
 
-function runnedBot(bot: HuntBotSnap): RunnedFightMember {
+function runnedBot(bot: BotSnap): RunnedFightMember {
   requireWireIdentity(bot.artikulId, "bot artikul id");
   return {
     bot: 1,

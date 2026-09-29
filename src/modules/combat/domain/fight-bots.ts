@@ -1,14 +1,12 @@
 import type { FightEffectIds } from "./fight-effect-ids.ts";
-import { HuntRosterBot, type HuntRosterBotSeed } from "./hunt-roster-bot.ts";
+import { BotFighter, type BotFighterSeed } from "./bot-fighter.ts";
 
-export function requireFightBots(
-  bots: readonly HuntRosterBot[] | null | undefined,
-): HuntRosterBot[] {
+export function requireFightBots(bots: readonly BotFighter[] | null | undefined): BotFighter[] {
   if (!Array.isArray(bots)) throw new Error("Battle fight bots are required");
   return [...bots];
 }
 
-export function requireFightBot(bots: readonly HuntRosterBot[], fightId: number): HuntRosterBot {
+export function requireFightBot(bots: readonly BotFighter[], fightId: number): BotFighter {
   const bot = bots.find((entry) => entry.fightId === fightId);
   if (!bot) throw new Error(`Fight bot ${fightId} is missing`);
   return bot;
@@ -19,18 +17,18 @@ export function requireFightBot(bots: readonly HuntRosterBot[], fightId: number)
  * this is the start-time primary (`fightSetupTeamAis(setup, enemyTeam)[0]`),
  * not “whatever sits at bots[0]”.
  */
-export function primaryEnemyBot(bots: readonly HuntRosterBot[], enemyTeam: 1 | 2): HuntRosterBot {
+export function primaryEnemyBot(bots: readonly BotFighter[], enemyTeam: 1 | 2): BotFighter {
   const bot = bots.find((entry) => entry.team === enemyTeam);
   if (!bot) throw new Error("Battle is missing the primary enemy bot");
   return bot;
 }
 
 export function enqueueAggroClone(
-  bots: HuntRosterBot[],
+  bots: BotFighter[],
   sourceFightId: number,
   cloneFightId: number,
   enemyTeam: 1 | 2,
-): HuntRosterBot {
+): BotFighter {
   const source = requireFightBot(bots, sourceFightId);
   if (source.team !== enemyTeam) {
     throw new Error("Aggro clone source must be an enemy bot");
@@ -46,16 +44,16 @@ export function enqueueAggroClone(
 
 export function seedFightBots(
   input: Readonly<{
-    enemyAis: readonly HuntRosterBotSeed[];
-    openerAis: readonly HuntRosterBotSeed[];
+    enemyAis: readonly BotFighterSeed[];
+    openerAis: readonly BotFighterSeed[];
     occupiedIds: readonly number[];
     effectIds: FightEffectIds;
     enemyTeam: 1 | 2;
     openerTeam: 1 | 2;
   }>,
-): HuntRosterBot[] {
+): BotFighter[] {
   const seen = new Set<number>(input.occupiedIds);
-  const bots: HuntRosterBot[] = [];
+  const bots: BotFighter[] = [];
   for (const [index, seed] of input.enemyAis.entries()) {
     bots.push(createFightBot(seed, input.enemyTeam, input.effectIds, seen, index > 0));
   }
@@ -66,13 +64,13 @@ export function seedFightBots(
 }
 
 function createFightBot(
-  seed: HuntRosterBotSeed,
+  seed: BotFighterSeed,
   team: 1 | 2,
   effectIds: FightEffectIds,
   seen: Set<number>,
   waiting: boolean,
-): HuntRosterBot {
-  const bot = HuntRosterBot.fromSeed(seed, team, effectIds);
+): BotFighter {
+  const bot = BotFighter.fromSeed(seed, team, effectIds);
   if (seen.has(bot.fightId)) {
     throw new Error(`Fight bot id ${bot.fightId} collides`);
   }

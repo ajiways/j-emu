@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { FightDuel } from "../../../src/modules/combat/domain/fight-duel.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
-import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
+import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
 import { requireFightBot } from "../../../src/modules/combat/domain/fight-bots.ts";
-import type { HuntRosterBotSeed } from "../../../src/modules/combat/domain/hunt-roster-bot.ts";
+import type { BotFighterSeed } from "../../../src/modules/combat/domain/bot-fighter.ts";
 import { pairLeftoverRosterBots } from "../../../src/modules/combat/domain/pair-leftover-roster-bots.ts";
 import { resolveAiActorTurn } from "../../../src/modules/combat/domain/resolve-ai-actor-turn.ts";
 import { tickHuntRosterDuels } from "../../../src/modules/combat/domain/battle-hunt-runtime.ts";
@@ -23,7 +23,7 @@ import { unitHuntFightSetup } from "../../support/fight-setup.ts";
 const AUTH_NOW = Date.parse("2026-09-07T12:00:00.000Z");
 const TEAM = { openerTeam: 1 as const, enemyTeam: 2 as const };
 
-function botSeed(fightId: number): HuntRosterBotSeed {
+function botSeed(fightId: number): BotFighterSeed {
   return {
     fightId,
     artikulId: 2,
@@ -49,8 +49,8 @@ function leftoverBots() {
   });
 }
 
-function openerHuman(): HuntHuman {
-  return new HuntHuman({
+function openerHuman(): HumanFighter {
+  return new HumanFighter({
     accountId: 1,
     heroId: 1,
     nick: "Hero",
@@ -137,7 +137,6 @@ describe("resolveAiActorTurn", () => {
     const duels = [new FightDuel(1, 1_000_000, 1), extra];
     const opener = openerHuman();
     const ticked = tickHuntRosterDuels({
-      hasEnemyBots: true,
       bots,
       enemyTeam: 2,
       duels,

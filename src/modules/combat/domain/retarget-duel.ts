@@ -1,11 +1,11 @@
 import type { FightDuel } from "./fight-duel.ts";
-import type { HuntHuman } from "./hunt-human.ts";
+import type { HumanFighter } from "./human-fighter.ts";
 
 export function retargetDuelTo(
   input: Readonly<{
     duel: FightDuel;
     fromHeroId: number;
-    waiter: HuntHuman;
+    waiter: HumanFighter;
   }>,
 ): void {
   input.waiter.pair();

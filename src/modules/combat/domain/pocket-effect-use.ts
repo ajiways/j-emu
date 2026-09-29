@@ -1,6 +1,6 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { CombatPocketRow } from "./combat-loadout.ts";
-import type { FightEffectSnap } from "./hunt-human-fight-effects.ts";
+import type { FightEffectSnap } from "./fighter-effects.ts";
 import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
 
 export function pocketEffectUse(

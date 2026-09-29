@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { attachSpellTicks } from "../../../src/modules/combat/domain/fight-effect-ticks.ts";
-import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
-import { HuntRosterBot } from "../../../src/modules/combat/domain/hunt-roster-bot.ts";
+import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
+import { BotFighter } from "../../../src/modules/combat/domain/bot-fighter.ts";
 import {
   EMPTY_HUNT_BOT_SPELL_BOOK,
   UNIT_HUNT_APPEARANCE,
   unitHuntHumanStats,
 } from "../../support/hunt-start-input.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
-import { HuntHumanFightEffects } from "../../../src/modules/combat/domain/hunt-human-fight-effects.ts";
+import { FighterEffects } from "../../../src/modules/combat/domain/fighter-effects.ts";
 
 function effectsWithPoison(durationSeconds: number, periodSeconds: number, castEndsTurn = false) {
-  const effects = new HuntHumanFightEffects({
+  const effects = new FighterEffects({
     heroId: 1,
     strength: 10,
     startedAtMs: 0,
@@ -41,7 +41,7 @@ function effectsWithPoison(durationSeconds: number, periodSeconds: number, castE
 
 const kinds = (items: readonly { kind: string }[]) => items.map((item) => item.kind);
 
-describe("HuntHumanFightEffects periodic effects", () => {
+describe("FighterEffects periodic effects", () => {
   it("ticks once per action and expires with the action that reaches the duration", () => {
     const effects = effectsWithPoison(80, 20);
     expect(effects.snapshot()).toMatchObject([{ remainTime: 80 }]);
@@ -85,7 +85,7 @@ describe("HuntHumanFightEffects periodic effects", () => {
   });
 
   it("rejects a tick without catalog img", () => {
-    const effects = new HuntHumanFightEffects({
+    const effects = new FighterEffects({
       heroId: 1,
       strength: 10,
       startedAtMs: 0,
@@ -117,7 +117,7 @@ describe("HuntHumanFightEffects periodic effects", () => {
 describe("attachSpellTicks period", () => {
   it("requires a catalog period on a kind-4/5 spell", () => {
     const effectIds = new FightEffectIds();
-    const caster = HuntRosterBot.fromSeed(
+    const caster = BotFighter.fromSeed(
       {
         fightId: 1_000_000,
         artikulId: 4,
@@ -136,7 +136,7 @@ describe("attachSpellTicks period", () => {
       2,
       effectIds,
     );
-    const carrier = new HuntHuman({
+    const carrier = new HumanFighter({
       accountId: 1,
       heroId: 1,
       nick: "H1",

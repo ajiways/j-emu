@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { snapshotFightEffects } from "../../../src/modules/combat/domain/snapshot-fight-effects.ts";
-import { HuntHuman } from "../../../src/modules/combat/domain/hunt-human.ts";
-import { HuntHumanFightEffects } from "../../../src/modules/combat/domain/hunt-human-fight-effects.ts";
+import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
+import { FighterEffects } from "../../../src/modules/combat/domain/fighter-effects.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { UNIT_HUNT_APPEARANCE, unitHuntHumanStats } from "../../support/hunt-start-input.ts";
 
 describe("snapshotFightEffects", () => {
   it("returns human and bot standing snapshots with img", () => {
     const ids = new FightEffectIds();
-    const human = new HuntHuman({
+    const human = new HumanFighter({
       accountId: 1,
       heroId: 1,
       nick: "H1",
@@ -36,7 +36,7 @@ describe("snapshotFightEffects", () => {
       remainTurns: 1,
       groupId: 842,
     });
-    const botEffects = new HuntHumanFightEffects({
+    const botEffects = new FighterEffects({
       heroId: 1_000_000,
       strength: 15,
       startedAtMs: 0,

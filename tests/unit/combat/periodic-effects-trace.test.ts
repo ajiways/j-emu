@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import {
-  HuntHumanFightEffects,
+  FighterEffects,
   type PeriodicItem,
-} from "../../../src/modules/combat/domain/hunt-human-fight-effects.ts";
+} from "../../../src/modules/combat/domain/fighter-effects.ts";
 import {
   EXPECTED_REMAIN_TIME,
   EXPECTED_TICKS,
@@ -22,7 +22,7 @@ class TraceRun {
   readonly ticks: Seen[] = [];
   readonly expiries: { effect: string; at: number }[] = [];
   private readonly effectIds = new FightEffectIds();
-  private readonly fighters = new Map<string, HuntHumanFightEffects>();
+  private readonly fighters = new Map<string, FighterEffects>();
   private readonly names = new Map<number, string>();
   private readonly tickCounts = new Map<string, number>();
   private readonly duel = new Map<string, string>();
@@ -33,7 +33,7 @@ class TraceRun {
     for (const id of ids) {
       this.fighters.set(
         id,
-        new HuntHumanFightEffects({
+        new FighterEffects({
           heroId: heroId++,
           strength: 10,
           startedAtMs: 0,

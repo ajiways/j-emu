@@ -1,8 +1,8 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { Fighter } from "./fighter.ts";
-import type { PeriodicItem } from "./hunt-human-fight-effects.ts";
-import { pocketHealAmount } from "./hunt-human-cast-state.ts";
+import type { PeriodicItem } from "./fighter-effects.ts";
+import { pocketHealAmount } from "./human-cast-state.ts";
 import { magicReact, rollMagicHit } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";

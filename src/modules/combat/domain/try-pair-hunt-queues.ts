@@ -1,7 +1,7 @@
 import { FightDuel } from "./fight-duel.ts";
 import { requireFightBot } from "./fight-bots.ts";
-import type { HuntHuman } from "./hunt-human.ts";
-import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import type { HumanFighter } from "./human-fighter.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import type { RandomSource } from "./random-source.ts";
 import { botMeleeTarget, humanMeleeTarget } from "./melee-target.ts";
 import { rollOpensFirst } from "./roll-opens-first.ts";
@@ -22,7 +22,7 @@ export function requireDuelContaining(duels: readonly FightDuel[], id: number): 
 }
 
 export function pairHuntHumanQueues(
-  humans: readonly HuntHuman[],
+  humans: readonly HumanFighter[],
   duels: FightDuel[],
   random: RandomSource,
 ): FightDuel | null {
@@ -31,9 +31,9 @@ export function pairHuntHumanQueues(
 
 export function pairHuntQueues(
   input: Readonly<{
-    humans: readonly HuntHuman[];
+    humans: readonly HumanFighter[];
     duels: FightDuel[];
-    bots: readonly HuntRosterBot[];
+    bots: readonly BotFighter[];
     random: RandomSource;
   }>,
 ): FightDuel | null {
@@ -78,9 +78,9 @@ export function pickHuntPair(
 
 export function dissolveDuelContaining(
   duels: FightDuel[],
-  humans: readonly HuntHuman[],
+  humans: readonly HumanFighter[],
   participantId: number,
-  bots: readonly HuntRosterBot[],
+  bots: readonly BotFighter[],
 ): void {
   const index = duels.findIndex((duel) => duel.has(participantId));
   if (index < 0) return;
@@ -90,8 +90,8 @@ export function dissolveDuelContaining(
 export function dissolveDuelAt(
   duels: FightDuel[],
   index: number,
-  humans: readonly HuntHuman[],
-  bots: readonly HuntRosterBot[],
+  humans: readonly HumanFighter[],
+  bots: readonly BotFighter[],
   keepFightId: number | null,
 ): void {
   const duel = duels[index];
@@ -105,9 +105,9 @@ export function dissolveDuelAt(
 
 function pairOneHuntQueue(
   input: Readonly<{
-    humans: readonly HuntHuman[];
+    humans: readonly HumanFighter[];
     duels: FightDuel[];
-    bots: readonly HuntRosterBot[];
+    bots: readonly BotFighter[];
     random: RandomSource;
   }>,
 ): FightDuel | null {
@@ -133,8 +133,8 @@ function pairOneHuntQueue(
 }
 
 function huntSeekers(
-  humans: readonly HuntHuman[],
-  bots: readonly HuntRosterBot[],
+  humans: readonly HumanFighter[],
+  bots: readonly BotFighter[],
   occupied: ReadonlySet<number>,
 ): HuntSeeker[] {
   const seekers: HuntSeeker[] = [];
@@ -171,8 +171,8 @@ function occupiedParticipantIds(duels: readonly FightDuel[]): Set<number> {
 }
 
 function pairSeeker(
-  humans: readonly HuntHuman[],
-  bots: readonly HuntRosterBot[],
+  humans: readonly HumanFighter[],
+  bots: readonly BotFighter[],
   seeker: HuntSeeker,
 ): void {
   if (seeker.kind === "human") {
@@ -185,8 +185,8 @@ function pairSeeker(
 }
 
 function releaseSeeker(
-  humans: readonly HuntHuman[],
-  bots: readonly HuntRosterBot[],
+  humans: readonly HumanFighter[],
+  bots: readonly BotFighter[],
   id: number,
 ): void {
   const human = humans.find((entry) => entry.heroId === id);

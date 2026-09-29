@@ -1,6 +1,6 @@
 import type { FightTeamAssignment } from "../domain/fight-rules.ts";
 import type { FightSetup, FightSetupAi, FightSetupHuman } from "../domain/fight-setup.ts";
-import type { HuntRosterBotSeed } from "../domain/hunt-roster-bot.ts";
+import type { BotFighterSeed } from "../domain/bot-fighter.ts";
 import type { HuntStartInput } from "../ports/combat-port.ts";
 
 export function fightSetupFromHuntStart(
@@ -8,8 +8,8 @@ export function fightSetupFromHuntStart(
   accessKey: string,
   botFightId: number,
   startedAt: Date,
-  extraEnemies: readonly HuntRosterBotSeed[],
-  allies: readonly HuntRosterBotSeed[],
+  extraEnemies: readonly BotFighterSeed[],
+  allies: readonly BotFighterSeed[],
   teamAssignment: FightTeamAssignment,
 ): FightSetup {
   const human = huntHuman(input);
@@ -78,6 +78,6 @@ function huntPrimaryAi(input: HuntStartInput, botFightId: number): FightSetupAi 
   };
 }
 
-function aiFromSeed(seed: HuntRosterBotSeed): FightSetupAi {
+function aiFromSeed(seed: BotFighterSeed): FightSetupAi {
   return { controller: "ai", ...seed };
 }
