@@ -4,6 +4,7 @@ import type { FightEffectIds } from "./fight-effect-ids.ts";
 import { HuntHumanCastState } from "./hunt-human-cast-state.ts";
 import type { PocketCellSnapshot } from "./fight-outcome-snapshot.ts";
 import { HuntHumanFightEffects } from "./hunt-human-fight-effects.ts";
+import type { Fighter, FighterKind } from "./fighter.ts";
 import type { MagStats } from "./mag-stats.ts";
 
 export type HuntHumanAppearance = Readonly<{
@@ -52,7 +53,7 @@ type HuntHumanInit = Readonly<{
   effectIds: FightEffectIds;
 }>;
 
-export class HuntHuman {
+export class HuntHuman implements Fighter {
   authed = false;
   readonly casts: HuntHumanCastState;
   readonly effects: HuntHumanFightEffects;
@@ -86,6 +87,12 @@ export class HuntHuman {
   }
   get heroId(): number {
     return this.init.heroId;
+  }
+  get id(): number {
+    return this.init.heroId;
+  }
+  get fighterKind(): FighterKind {
+    return "human";
   }
   get nick(): string {
     return this.init.nick;
@@ -217,6 +224,11 @@ export class HuntHuman {
     this.turnActiveValue = false;
     this.turnDeadlineMsValue = null;
     this.resumeBootstrapValue = false;
+  }
+
+  creditDealt(amount: number, targetKind: FighterKind): void {
+    if (targetKind === "bot") this.creditDamageToBot(amount);
+    else this.creditDamageToHumans(amount);
   }
 
   creditDamageToBot(amount: number): void {

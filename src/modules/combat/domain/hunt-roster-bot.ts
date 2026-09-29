@@ -4,6 +4,7 @@ import type { FightEffectIds } from "./fight-effect-ids.ts";
 import type { HuntBotSpellBook } from "./hunt-bot-spell-book.ts";
 import { requireHuntBotSpellBook } from "./hunt-bot-spell-book.ts";
 import { HuntHumanFightEffects } from "./hunt-human-fight-effects.ts";
+import type { Fighter, FighterKind } from "./fighter.ts";
 import type { MagStats } from "./mag-stats.ts";
 import type { SchoolOverlay } from "./school-overlay.ts";
 
@@ -23,7 +24,7 @@ export type HuntRosterBotSeed = Readonly<{
   spellBook: HuntBotSpellBook;
 }>;
 
-export class HuntRosterBot {
+export class HuntRosterBot implements Fighter {
   private hpValue: number;
   private dealtDamageValue = 0;
   private lastOpponentIdValue: number | null = null;
@@ -111,6 +112,14 @@ export class HuntRosterBot {
     return this.hpValue;
   }
 
+  get id(): number {
+    return this.fightId;
+  }
+
+  get fighterKind(): FighterKind {
+    return "bot";
+  }
+
   get dealtDamage(): number {
     return this.dealtDamageValue;
   }
@@ -171,6 +180,10 @@ export class HuntRosterBot {
     }
     this.hpValue = Math.max(0, this.hpValue - damage);
     return this.hpValue === 0;
+  }
+
+  creditDealt(amount: number): void {
+    this.creditDealtDamage(amount);
   }
 
   creditDealtDamage(amount: number): void {

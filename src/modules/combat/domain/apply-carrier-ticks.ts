@@ -1,9 +1,9 @@
-import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { magicReact, rollMagicHit } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
+import { resolveHpLoss } from "./resolve-hp-loss.ts";
 import { pocketHealAmount } from "./hunt-human-cast-state.ts";
 
 export function applyCarrierTicks(
@@ -37,7 +37,8 @@ export function applyCarrierTicks(
       if (pulse.last) events.push({ type: "effect-purge", effectId: pulse.effectId });
       continue;
     }
-    const damage = appliedHpLoss(
+    const { applied: damage, killed } = resolveHpLoss(
+      human,
       rollMagicHit({
         caster: { power: pulse.casterMagPower, resist: pulse.casterMagResist },
         target: human.mag,
@@ -49,13 +50,11 @@ export function applyCarrierTicks(
         random,
         rules,
       }),
-      human.hp,
     );
     if (damage < 1) {
       if (pulse.last) events.push({ type: "effect-purge", effectId: pulse.effectId });
       continue;
     }
-    const killed = human.applyDamage(damage);
     events.push({
       type: "damage",
       sourceId: pulse.sourceId,

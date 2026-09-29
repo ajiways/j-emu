@@ -11,6 +11,7 @@ import {
 } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import type { RandomSource } from "./random-source.ts";
+import { resolveHpLoss } from "./resolve-hp-loss.ts";
 
 export type BotMeleeResult = Readonly<{
   events: readonly BattleEvent[];
@@ -41,7 +42,7 @@ export function resolveBotMelee(
     random: input.random,
     rules: input.rules,
   });
-  const killedPlayer = outcome.applied < 1 ? false : human.applyDamage(outcome.applied);
+  const killedPlayer = resolveHpLoss(human, outcome.applied).killed;
   const overlayBefore = input.bot.schoolOverlay;
   const extra = rollOverlayExtra(
     input.bot,
@@ -53,7 +54,7 @@ export function resolveBotMelee(
   );
   let overlayKilled = false;
   if (extra) {
-    overlayKilled = human.applyDamage(-extra.hpChange);
+    overlayKilled = resolveHpLoss(human, -extra.hpChange).killed;
   }
   const totalApplied = outcome.applied + (extra ? -extra.hpChange : 0);
   input.bot.creditDealtDamage(totalApplied);

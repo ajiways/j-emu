@@ -10,6 +10,7 @@ import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import { consumeOverlayCharge } from "./consume-overlay-charge.ts";
 import { noteCast, pickBotSpell } from "./pick-bot-spell.ts";
 import type { RandomSource } from "./random-source.ts";
+import { resolveHpLoss } from "./resolve-hp-loss.ts";
 
 export function resolveRosterBotTurn(
   actor: HuntRosterBot,
@@ -72,8 +73,8 @@ function meleeHit(
     input.random,
     input.rules,
   );
-  if (outcome.applied > 0) target.applyDamage(outcome.applied);
-  if (extra) target.applyDamage(-extra.hpChange);
+  resolveHpLoss(target, outcome.applied);
+  if (extra) resolveHpLoss(target, -extra.hpChange);
   actor.creditDealtDamage(outcome.applied + (extra ? -extra.hpChange : 0));
   const killed = target.hp === 0;
   return [

@@ -1,4 +1,3 @@
-import { appliedHpLoss } from "./applied-hp-loss.ts";
 import { applyCarrierTicks } from "./apply-carrier-ticks.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
@@ -9,6 +8,7 @@ import { rollMeleeOutcome, strikeStatsFromHuman } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import { enemySideCleared, fightCombatants, targetHp, type MeleeTarget } from "./melee-target.ts";
 import type { RandomSource } from "./random-source.ts";
+import { resolveHpLoss } from "./resolve-hp-loss.ts";
 
 export type PlayerMeleeResult =
   Readonly<{ kind: "ignored" }> | Readonly<{ kind: "resolved"; events: readonly BattleEvent[] }>;
@@ -123,24 +123,11 @@ export function applyDamageToMeleeTarget(
     throw new Error("Melee damage must be a positive integer");
   }
   requireLivingMeleeTarget(target);
-  if (target.kind === "human") {
-    const applied = appliedHpLoss(damage, target.human.hp);
-    attacker.creditDamageToHumans(applied);
-    const killed = target.human.applyDamage(applied);
-    return {
-      killed,
-      finished:
-        killed && enemySideCleared(target.team, fightCombatants(context.humans, context.bots)),
-      targetId: target.id,
-      targetMaxHp: target.maxHp,
-    };
-  }
-  if (!context.bots.some((bot) => bot.fightId === target.id)) {
+  if (target.kind === "bot" && !context.bots.some((bot) => bot.fightId === target.id)) {
     throw new Error(`Melee bot ${target.id} is missing from the roster`);
   }
-  const applied = appliedHpLoss(damage, target.bot.hp);
-  attacker.creditDamageToBot(applied);
-  const killed = target.bot.applyDamage(applied);
+  const victim = target.kind === "human" ? target.human : target.bot;
+  const { killed } = resolveHpLoss(victim, damage, attacker);
   return {
     killed,
     finished:

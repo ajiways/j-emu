@@ -1,4 +1,3 @@
-import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { botSpellAnimation, botSpellKind1DmgType, rollBotSpellDamage } from "./bot-spell-damage.ts";
@@ -8,6 +7,7 @@ import { pocketHealAmount, spellKind } from "./hunt-human-cast-state.ts";
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import { kind1OverlayCharges, magicReact } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
+import { resolveHpLoss } from "./resolve-hp-loss.ts";
 import { schoolOverlayFromKind1 } from "./school-overlay.ts";
 import { attachSpellTicks } from "./fight-effect-ticks.ts";
 
@@ -51,16 +51,14 @@ export function actBotSpellCard(
     if (!stun || stun.duration === undefined) {
       throw new Error(`Bot stun ${card.artikulId} duration is required`);
     }
-    const turns = Math.max(1, stun.duration);
-    if (isHuman(target)) target.stunnedTurns += turns;
-    else target.stunnedTurns += turns;
+    target.stunnedTurns += Math.max(1, stun.duration);
     return [
       {
         type: "buff-cast",
         animation: card.spell.animData ?? "magic_aoe",
         sourceId: actor.fightId,
-        targetId: isHuman(target) ? target.heroId : target.fightId,
-        maxHp: isHuman(target) ? target.maxHp : target.maxHp,
+        targetId: target.id,
+        maxHp: target.maxHp,
       },
     ];
   }
@@ -72,8 +70,8 @@ export function actBotSpellCard(
         type: "buff-cast",
         animation: botSpellAnimation(card.spell, card.artikulId),
         sourceId: actor.fightId,
-        targetId: isHuman(target) ? target.heroId : target.fightId,
-        maxHp: isHuman(target) ? target.maxHp : target.maxHp,
+        targetId: target.id,
+        maxHp: target.maxHp,
       },
     ];
   }
@@ -145,36 +143,8 @@ function instantKind1(
   card: HuntBotSpellCard,
   state: BotKindActState,
 ): readonly BattleEvent[] {
-  if (!isHuman(target)) {
-    const damage = appliedHpLoss(
-      rollBotSpellDamage(
-        actor.strength,
-        card.spell,
-        state.random,
-        state.rules,
-        actor.mag,
-        target.mag,
-      ),
-      target.hp,
-    );
-    if (damage < 1) throw new Error("Bot kind-1 hit the living target for no HP");
-    const killed = target.applyDamage(damage);
-    actor.creditDealtDamage(damage);
-    return [
-      {
-        type: "damage",
-        sourceId: actor.fightId,
-        targetId: target.fightId,
-        animation: botSpellAnimation(card.spell, card.artikulId),
-        hpChange: -damage,
-        targetMaxHp: target.maxHp,
-        killed,
-        dmgType: botSpellKind1DmgType(card.spell),
-        react: magicReact(killed),
-      },
-    ];
-  }
-  const damage = appliedHpLoss(
+  const { applied: damage, killed } = resolveHpLoss(
+    target,
     rollBotSpellDamage(
       actor.strength,
       card.spell,
@@ -183,31 +153,27 @@ function instantKind1(
       actor.mag,
       target.mag,
     ),
-    target.hp,
+    actor,
   );
   if (damage < 1) throw new Error("Bot kind-1 hit the living target for no HP");
-  const killed = target.applyDamage(damage);
-  actor.creditDealtDamage(damage);
+  const hit: Extract<BattleEvent, { type: "damage" }> = {
+    type: "damage",
+    sourceId: actor.fightId,
+    targetId: target.id,
+    animation: botSpellAnimation(card.spell, card.artikulId),
+    hpChange: -damage,
+    targetMaxHp: target.maxHp,
+    killed,
+    dmgType: botSpellKind1DmgType(card.spell),
+    react: magicReact(killed),
+  };
+  if (!isHuman(target)) return [hit];
   const dRage = target.casts.awardIncomingRage(damage, target.maxHp);
   const ticks =
     !killed && (spellKind(card.spell, 4) || spellKind(card.spell, 5))
       ? attachSpellTicks(target, actor, card)
       : [];
-  const events: BattleEvent[] = [
-    ...ticks,
-    {
-      type: "damage",
-      sourceId: actor.fightId,
-      targetId: target.heroId,
-      animation: botSpellAnimation(card.spell, card.artikulId),
-      hpChange: -damage,
-      targetMaxHp: target.maxHp,
-      killed,
-      dRage,
-      dmgType: botSpellKind1DmgType(card.spell),
-      react: magicReact(killed),
-    },
-  ];
+  const events: BattleEvent[] = [...ticks, { ...hit, dRage }];
   if (killed && !state.keepFightOnKill) {
     events.push({ type: "finished", winnerTeam: state.winnerTeam, fightId: state.fightId });
   }
