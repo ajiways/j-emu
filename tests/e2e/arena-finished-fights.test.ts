@@ -5,6 +5,7 @@ import {
   AuthenticatedClient,
   createIsolatedHero,
 } from "../support/harness/authenticated-client.ts";
+import { FixedRandom } from "../support/fakes/fixed-random.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import {
   completeMeleeHunt,
@@ -20,6 +21,7 @@ describe("arena finished fights", () => {
   beforeEach(async () => {
     harness = new ApplicationHarness(undefined, undefined, {
       combatRules: { strPerDamagePoint: 1 },
+      combatRandom: new FixedRandom(0.4),
     });
     application = await harness.start();
   });

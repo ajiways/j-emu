@@ -5,6 +5,7 @@ import { requirePvpForSpell } from "./pvp-only-spell.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { pocketHealAmount, spellCharging, spellKind } from "./human-cast-state.ts";
 import { applyPocketKind3, requirePocketOrb } from "./pocket-kind3-cast.ts";
+import { castChargingBuff } from "./charging-buff-cast.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { rageBonusPctFromFill } from "./rage-bonus.ts";
@@ -76,36 +77,21 @@ export function tryRageCast(human: HumanFighter): KeepTurnResult {
   const pcSTR = rageBonusPctFromFill(fill);
   if (pcSTR <= 0) return { kind: "resolved", events: [fury] };
   human.casts.armRage(pcSTR);
-  const standing = human.effects.attachChargingKind3({
-    sourceId: human.heroId,
-    artikulId: 212,
-    title: "Ярость",
-    img: "rageeffect_2702.png",
-    dmgType: 1,
-    remainTurns: 1,
-    groupId: 844,
-  });
   return {
     kind: "resolved",
-    events: [
-      {
-        type: "effect-use",
-        artikulId: 212,
-        animation: "fury",
-        kind: 3,
-        groupId: 844,
-        flags: "0",
-        img: standing.img,
-        title: standing.title,
-        persId: human.heroId,
-        dmgType: 1,
-        id: standing.id,
-        sourceId: standing.sourceId,
-        remainTime: 0,
-        skills: { pcSTR },
-      },
-      fury,
-    ],
+    events: castChargingBuff(human, {
+      artikulId: 212,
+      title: "Ярость",
+      img: "rageeffect_2702.png",
+      dmgType: 1,
+      remainTurns: 1,
+      groupId: 844,
+      animation: "fury",
+      flags: "0",
+      remainTime: 0,
+      skills: { pcSTR },
+      castAnimation: "fury",
+    }),
   };
 }
 
@@ -132,42 +118,20 @@ export function tryGloveKeepTurn(
   } else {
     human.casts.armGloveCrit(charges);
   }
-  const standing = human.effects.attachChargingKind3({
-    sourceId: human.heroId,
-    artikulId: glove.artikulId,
-    title: glove.title,
-    img: glove.picture,
-    dmgType: overlay ? overlay.dmgType : gloveDmgType(glove),
-    remainTurns: charges,
-    ...(glove.spell.groupId !== undefined ? { groupId: glove.spell.groupId } : {}),
-  });
   return {
     kind: "resolved",
-    events: [
-      {
-        type: "effect-use",
-        artikulId: glove.artikulId,
-        animation: glove.spell.animData ?? "",
-        kind: 3,
-        flags: "262144",
-        img: standing.img,
-        title: standing.title,
-        persId: human.heroId,
-        dmgType: standing.dmgType,
-        id: standing.id,
-        sourceId: standing.sourceId,
-        remainTime: standing.remainTime,
-        ...(standing.groupId !== undefined ? { groupId: standing.groupId } : {}),
-      },
-      {
-        type: "buff-cast",
-        animation: glove.spell.animData ?? "",
-        sourceId: human.heroId,
-        targetId: human.heroId,
-        maxHp: human.maxHp,
-      },
-      { type: "pers-cp", cp },
-    ],
+    events: castChargingBuff(human, {
+      artikulId: glove.artikulId,
+      title: glove.title,
+      img: glove.picture,
+      dmgType: overlay ? overlay.dmgType : gloveDmgType(glove),
+      remainTurns: charges,
+      ...(glove.spell.groupId !== undefined ? { groupId: glove.spell.groupId } : {}),
+      animation: glove.spell.animData ?? "",
+      flags: "262144",
+      castAnimation: glove.spell.animData ?? "",
+      after: [{ type: "pers-cp", cp }],
+    }),
   };
 }
 

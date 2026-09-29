@@ -5,11 +5,13 @@ import type { RandomSource } from "../../../src/modules/combat/domain/random-sou
  * blocks, or crits and damage stays at its floor.
  */
 export class FixedRandom implements RandomSource {
+  constructor(private readonly unitValue = 0.99) {}
+
   integer(minInclusive: number): number {
     return minInclusive;
   }
 
   unit(): number {
-    return 0.99;
+    return this.unitValue;
   }
 }

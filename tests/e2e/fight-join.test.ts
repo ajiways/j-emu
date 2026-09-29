@@ -6,6 +6,7 @@ import {
   AuthenticatedClient,
   createIsolatedHero,
 } from "../support/harness/authenticated-client.ts";
+import { FixedRandom } from "../support/fakes/fixed-random.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { FakeClock } from "../support/fake-clock.ts";
 import { ManualCombatDelay } from "../support/fakes/manual-combat-delay.ts";
@@ -120,6 +121,7 @@ describe("hunt fight join team 2", () => {
     harness = new ApplicationHarness(undefined, undefined, {
       combatBotStrength: 1,
       combatRules: { strPerDamagePoint: 1 },
+      combatRandom: new FixedRandom(),
     });
     application = await harness.start();
   });

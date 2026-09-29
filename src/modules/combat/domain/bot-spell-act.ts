@@ -1,4 +1,5 @@
 import type { BattleEvent } from "./battle-event.ts";
+import { castChargingBuff } from "./charging-buff-cast.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { botSpellAnimation, botSpellKind1DmgType, rollBotSpellDamage } from "./bot-spell-damage.ts";
 import type { HuntBotSpellCard } from "./hunt-bot-spell-book.ts";
@@ -102,40 +103,18 @@ function attachKind1Overlay(actor: BotFighter, card: HuntBotSpellCard): readonly
   const overlay = schoolOverlayFromKind1(card.spell, actor.strength);
   if (!overlay) throw new Error(`Bot spell ${card.artikulId} overlay charges are required`);
   actor.schoolOverlay = overlay;
-  const standing = actor.effects.attachChargingKind3({
-    sourceId: actor.fightId,
+  const animation = botSpellAnimation(card.spell, card.artikulId);
+  return castChargingBuff(actor, {
     artikulId: card.artikulId,
     title: card.title,
     img: card.picture,
     dmgType: overlay.dmgType,
     remainTurns: overlay.charges,
     ...(card.spell.groupId !== undefined ? { groupId: card.spell.groupId } : {}),
+    animation,
+    flags: 0,
+    castAnimation: animation,
   });
-  const animation = botSpellAnimation(card.spell, card.artikulId);
-  return [
-    {
-      type: "effect-use",
-      artikulId: card.artikulId,
-      animation,
-      kind: 3,
-      flags: 0,
-      img: standing.img,
-      title: standing.title,
-      persId: actor.fightId,
-      dmgType: standing.dmgType,
-      id: standing.id,
-      sourceId: standing.sourceId,
-      remainTime: standing.remainTime,
-      ...(standing.groupId !== undefined ? { groupId: standing.groupId } : {}),
-    },
-    {
-      type: "buff-cast",
-      animation,
-      sourceId: actor.fightId,
-      targetId: actor.fightId,
-      maxHp: actor.maxHp,
-    },
-  ];
 }
 
 function instantKind1(

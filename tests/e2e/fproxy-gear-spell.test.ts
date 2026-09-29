@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Application } from "../../src/app/application.ts";
 import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
+import { FixedRandom } from "../support/fakes/fixed-random.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { MAP_HUNT_SPAWN_ID } from "../support/harness/map-hunt-spawn.ts";
 import {
@@ -172,6 +173,7 @@ describe("fproxy gear spell 20546", () => {
     beforeEach(async () => {
       harness = new ApplicationHarness(undefined, undefined, {
         combatRules: { strPerDamagePoint: 10_000 },
+        combatRandom: new FixedRandom(),
       });
       application = await harness.start();
     });

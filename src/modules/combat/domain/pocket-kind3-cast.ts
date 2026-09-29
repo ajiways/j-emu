@@ -2,7 +2,8 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { CombatPocketRow } from "./combat-loadout.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { spellCharging, spellPcStr } from "./human-cast-state.ts";
-import { pocketEffectUse } from "./pocket-effect-use.ts";
+import { castChargingBuff } from "./charging-buff-cast.ts";
+import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
 
 export function requirePocketOrb(row: CombatPocketRow): void {
   if (spellCharging(row.spell) < 1) {
@@ -19,27 +20,22 @@ export function applyPocketKind3(
 ): readonly BattleEvent[] {
   const hits = spellCharging(consumed.spell);
   human.casts.armOrb(spellPcStr(consumed.spell), hits);
-  const events: BattleEvent[] = [];
+  const purges: BattleEvent[] = [];
   if (consumed.spell.groupId !== undefined) {
     for (const effectId of human.effects.dispelGroups([consumed.spell.groupId])) {
-      events.push({ type: "effect-purge", effectId });
+      purges.push({ type: "effect-purge", effectId });
     }
   }
-  const standing = human.effects.attachChargingKind3({
-    sourceId: human.heroId,
+  return castChargingBuff(human, {
     artikulId: consumed.artifactId,
     title: consumed.title,
     img: consumed.picture,
     dmgType: 1,
     remainTurns: hits,
     ...(consumed.spell.groupId !== undefined ? { groupId: consumed.spell.groupId } : {}),
+    animation: consumed.spell.animData ?? "",
+    flags: pocketSpellWireFlags(consumed.spell.flags),
+    castAnimation: consumed.spell.animData ?? "botles_strenght_grey",
+    before: purges,
   });
-  events.push(pocketEffectUse(consumed, human.heroId, 3, 1, standing), {
-    type: "buff-cast",
-    animation: consumed.spell.animData ?? "botles_strenght_grey",
-    sourceId: human.heroId,
-    targetId: human.heroId,
-    maxHp: human.maxHp,
-  });
-  return events;
 }
