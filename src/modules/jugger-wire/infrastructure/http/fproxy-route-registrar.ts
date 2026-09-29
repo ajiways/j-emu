@@ -2,6 +2,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import type { CombatEvent, FightCommand } from "../../../combat/ports/combat-port.ts";
 import { FightCastDenied } from "../../../combat/domain/fight-cast-denied.ts";
 import { encodePlainFrames } from "../../amf/framing.ts";
+import { summarizeFightFrames } from "../../application/fight-wire-log.ts";
 import type { JuggerHttpDependencies } from "./jugger-http-dependencies.ts";
 import { waitForLongPoll } from "./long-poll-request.ts";
 
@@ -33,6 +34,12 @@ export class FproxyRouteRegistrar {
           }
         }
         const frames = this.dependencies.commands.fightWire.frames(events);
+        if (frames.length > 0) {
+          request.log.info(
+            { accountId: account.id, command: command.kind, frames: summarizeFightFrames(frames) },
+            "fight_wire",
+          );
+        }
         return reply.type("application/octet-stream").send(encodePlainFrames(frames));
       } catch (error) {
         request.log.error({ err: error }, "fight_command_failed");
