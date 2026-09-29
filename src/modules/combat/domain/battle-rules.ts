@@ -4,6 +4,7 @@ export type BattleRules = Readonly<{
   turnTimeoutSeconds: number;
   meleeBotCounterMs: number;
   turnGrantDelayMs: number;
+  maxConsecutiveSkips: number;
   resultRevealDelayMs: number;
   combatSoftC: number;
   combatChanceCap: number;

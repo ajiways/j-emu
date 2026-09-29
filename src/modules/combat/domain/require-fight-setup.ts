@@ -160,6 +160,9 @@ function requireBattleRules(rules: BattleRules): void {
   if (rules.turnGrantDelayMs < rules.meleeBotCounterMs) {
     throw new Error("Turn grant delay must be at least the melee bot-counter delay");
   }
+  if (!Number.isInteger(rules.maxConsecutiveSkips) || rules.maxConsecutiveSkips < 1) {
+    throw new Error("Max consecutive skips must be positive");
+  }
   if (!Number.isInteger(rules.resultRevealDelayMs) || rules.resultRevealDelayMs < 1) {
     throw new Error("Result reveal delay must be positive");
   }

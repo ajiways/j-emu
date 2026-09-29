@@ -1,10 +1,12 @@
 import type { Battle } from "../domain/battle.ts";
 import type { EndingGloveResult } from "../domain/glove-ending-cast.ts";
-import { timeoutHumanTurn } from "../domain/timeout-human-turn.ts";
 import type { CombatEvent, FightExit } from "../ports/combat-port.ts";
 import {
   cancelDuel,
+  deliverAggroPairs,
+  deliverGloveSides,
   delayTokensByAccount,
+  shuffleAffectedAccountIds,
   enqueuePlayerMelee,
   fanoutPersChange,
   fanoutRosterEffects,
@@ -100,7 +102,14 @@ export class CombatMeleeLoop {
       fanoutPersChange(battle, accountId, ending.events, this.enqueue, this.wakeAccount, sideIds);
       fanoutRosterEffects(battle, accountId, ending.events, this.enqueue, this.wakeAccount);
       await Promise.resolve();
-      this.deliverGloveSides(battle, ending);
+      deliverGloveSides({
+        battle,
+        ending,
+        scheduler: this.scheduler,
+        enqueue: this.enqueue,
+        wakeAccount: this.wakeAccount,
+        grantPairedBot: (accountId) => this.grantPairedBot(battle, accountId),
+      });
       if (battle.finished) {
         await this.settleFinished(battle, ending.events, accountId);
         return;
@@ -165,20 +174,15 @@ export class CombatMeleeLoop {
     pairedAccountIds: readonly number[],
     roster: Extract<CombatEvent, { type: "roster-updated" }> | null,
   ): void {
-    for (const accountId of battle.authedAccountIds()) {
-      if (accountId === casterAccountId || !roster) continue;
-      this.enqueue(accountId, [roster]);
-      this.wakeAccount(accountId);
-    }
-    for (const accountId of pairedAccountIds) {
-      const human = battle.livingHumans().find((entry) => entry.accountId === accountId);
-      if (!human || human.waiting) continue;
-      if (human.authed) {
-        this.enqueue(accountId, [{ type: "opponent-new", bot: battle.foeBotSnap(accountId) }]);
-        this.wakeAccount(accountId);
-      }
-      this.grantPairedBot(battle, accountId);
-    }
+    deliverAggroPairs({
+      battle,
+      casterAccountId,
+      pairedAccountIds,
+      roster,
+      enqueue: this.enqueue,
+      wakeAccount: this.wakeAccount,
+      grantPairedBot: (accountId) => this.grantPairedBot(battle, accountId),
+    });
   }
 
   private async followUpAfterStrike(
@@ -283,13 +287,7 @@ export class CombatMeleeLoop {
     const previousByAccount = delayTokensByAccount(battle);
     const shuffle = battle.tryShuffleAfterHits(accountId);
     if (shuffle.kind === "none") return false;
-    const affected =
-      shuffle.kind === "waiter-handoff"
-        ? [shuffle.actorAccountId, shuffle.waiterAccountId]
-        : shuffle.kind === "reserve-swap"
-          ? [shuffle.accountId]
-          : [shuffle.leftAccountId, shuffle.rightAccountId];
-    for (const id of affected) {
+    for (const id of shuffleAffectedAccountIds(shuffle)) {
       const token = previousByAccount.get(id);
       if (token) this.scheduler.cancel(token);
     }
@@ -325,10 +323,22 @@ export class CombatMeleeLoop {
     this.scheduleBotAndGrant(battle, accountId);
   }
 
+  /** A stunned fighter's turn goes straight to his foe: the bot acts again, or the human foe is granted. */
+  private passStunnedTurn(battle: Battle, accountId: number): void {
+    const token = battle.delayTokenFor(accountId);
+    if (!token) return;
+    const opponent = battle.pairedOpponent(accountId);
+    if (opponent.kind === "bot") return this.scheduleBotAndGrant(battle, accountId);
+    this.scheduler.schedule(token, battle.turnGrantDelayMs, () =>
+      this.runGrant(battle.id, opponent.accountId),
+    );
+  }
+
   private runGrant(fightId: string, accountId: number): void {
     const battle = this.battleByFight.get(fightId);
     if (!battle || battle.finished) return;
     if (!battle.accountIds().includes(accountId)) return;
+    if (battle.consumeStunSkip(accountId)) return this.passStunnedTurn(battle, accountId);
     const granted = battle.grantTurn(accountId, this.scheduler.now().getTime());
     if (!granted) return;
     this.enqueue(accountId, [granted]);
@@ -340,15 +350,19 @@ export class CombatMeleeLoop {
     await this.armAfter(this.battleByFight.get(fightId), async (battle) => {
       if (!battle || battle.finished) return;
       if (!battle.accountIds().includes(accountId)) return;
-      const human = battle.livingHumans().find((entry) => entry.accountId === accountId);
-      if (!human) return;
-      const events = timeoutHumanTurn(human, this.scheduler.now().getTime());
-      if (!events) return;
+      if (!battle.livingHumans().some((entry) => entry.accountId === accountId)) return;
+      const timeout = battle.timeoutTurn(accountId, this.scheduler.now().getTime());
+      if (!timeout) return;
+      const events = timeout.events;
       this.enqueue(accountId, events);
       fanoutRosterEffects(battle, accountId, events, this.enqueue, this.wakeAccount);
       this.wakeAccount(accountId);
       if (battle.finished) {
         await this.settleFinished(battle, events, accountId);
+        return;
+      }
+      if (timeout.fell) {
+        await this.handOffToWaiter(battle, accountId);
         return;
       }
       battle.countPairHit(accountId);
@@ -379,18 +393,5 @@ export class CombatMeleeLoop {
   ): Promise<void> {
     await work(battle);
     if (battle && !battle.finished) this.effectClock.arm(battle);
-  }
-
-  private deliverGloveSides(battle: Battle, ending: EndingGloveResult): void {
-    for (const notify of ending.sideNotifies) {
-      const wait = notify.events.some((event) => event.type === "opponent-wait");
-      const next = notify.events.some(
-        (event) => event.type === "opponent-new" || event.type === "opponent-new-human",
-      );
-      if (wait || next) cancelDuel(this.scheduler, battle, notify.accountId);
-      this.enqueue(notify.accountId, notify.events, "head");
-      this.wakeAccount(notify.accountId);
-      if (next) this.grantPairedBot(battle, notify.accountId);
-    }
   }
 }

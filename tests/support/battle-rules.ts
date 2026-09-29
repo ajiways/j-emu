@@ -7,6 +7,7 @@ export const UNIT_BATTLE_RULES: BattleRules = {
   turnTimeoutSeconds: 20,
   meleeBotCounterMs: 1400,
   turnGrantDelayMs: 2500,
+  maxConsecutiveSkips: 3,
   resultRevealDelayMs: 1800,
   combatSoftC: 600,
   combatChanceCap: 0.4,

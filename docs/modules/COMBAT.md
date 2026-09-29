@@ -674,7 +674,13 @@ Kind 4/5 живут на часах боя (модель подогнана к l
 четвёртом действии после каста; CEF/дампа именно 396 нет. `winnerTeam`
 выхода — команда против погибшего/ушедшего, не константа. Kind 8 dispel
 стоящих `groupId` при gate `foe_has_dispel_groups`. Kind 11 empty
-success. Kind 18 stun skip-turn, `duration` обязателен. Kind 10 summon
+success. Kind 18 stun: `duration` обязателен, это число пропускаемых ходов. Ход
+стоящего в стане бойца не выдаётся: бот бьёт снова (человек-соперник получает
+ход) без событий; пропуск по стану в счётчик shuffle не идёт, а подряд идущие
+ходы одного бойца считаются как один (`FightDuel.addHit`). Три AFK-таймаута
+подряд (`maxConsecutiveSkips`, `BattleRules`, config `combat`) убивают
+охотника: `turn-timeout`, затем конец боя, если он был последним, иначе
+hand-off ожидающему. Любое ходозавершающее действие обнуляет серию. Kind 10 summon
 632: `fight_start` сжигается без каста; clone цели в roster **не**
 landed (явный skip). Period deadline без удара (~20s unpaired) — не
 этот срез. Glove kind-1 AOE landed (CMB-02). Bot kind-1 `targetCount>=2` —

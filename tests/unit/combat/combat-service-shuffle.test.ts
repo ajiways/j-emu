@@ -42,7 +42,7 @@ describe("CombatService 3↔3 shuffle", () => {
     expect(await combat.hasFight(start.fightId)).toBe(true);
   });
 
-  it("counts an AFK skip as a pair hit and hands the waiter after 3↔3", async () => {
+  it("hands the waiter the bot when the third AFK skip kills the hunter in 3↔3", async () => {
     const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const { combat, delay } = createCombatService({
       clock,
@@ -65,7 +65,7 @@ describe("CombatService 3↔3 shuffle", () => {
       const skipped = await combat.execute(1, { kind: "poll" });
       expect(skipped.some((event) => event.type === "turn-timeout")).toBe(true);
       if (round === 2) {
-        expect(skipped.some((event) => event.type === "opponent-wait")).toBe(true);
+        expect(skipped.some((event) => event.type === "finished")).toBe(true);
         break;
       }
       clock.advanceMs(2500);

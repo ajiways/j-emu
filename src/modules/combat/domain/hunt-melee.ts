@@ -86,10 +86,6 @@ export function grantTurn(
   timeoutSeconds: number,
   nowMs: number,
 ): BattleEvent | null {
-  if (human.stunnedTurns > 0) {
-    human.stunnedTurns -= 1;
-    return null;
-  }
   if (human.waiting || human.hp === 0 || human.turnActive) return null;
   human.beginTurn(nowMs, timeoutSeconds);
   return { type: "turn-granted", timeoutSeconds };

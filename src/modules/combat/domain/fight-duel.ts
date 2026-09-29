@@ -4,6 +4,7 @@ import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 export class FightDuel {
   private hitsAValue = 0;
   private hitsBValue = 0;
+  private lastCountedId: number | null = null;
   private nextActorIdValue: number;
 
   constructor(
@@ -48,8 +49,14 @@ export class FightDuel {
     return this.aIdValue === id ? this.hitsAValue : this.hitsBValue;
   }
 
+  /**
+   * Books one turn of `attackerId` for the shuffle counter. Consecutive turns of the same
+   * fighter (the opponent was stunned in between) count once.
+   */
   addHit(attackerId: number): void {
     this.requireSide(attackerId, "duel attacker");
+    if (this.lastCountedId === attackerId) return;
+    this.lastCountedId = attackerId;
     if (this.aIdValue === attackerId) this.hitsAValue += 1;
     else this.hitsBValue += 1;
   }
@@ -57,6 +64,7 @@ export class FightDuel {
   resetHits(): void {
     this.hitsAValue = 0;
     this.hitsBValue = 0;
+    this.lastCountedId = null;
   }
 
   setNextActor(id: number): void {
@@ -72,6 +80,7 @@ export class FightDuel {
     if (this.aIdValue === oldId) this.aIdValue = nextId;
     else this.bIdValue = nextId;
     if (this.nextActorIdValue === oldId) this.nextActorIdValue = nextId;
+    if (this.lastCountedId === oldId) this.lastCountedId = null;
   }
 
   private requireSide(id: number, label: string): void {

@@ -79,6 +79,7 @@ export function resolveGloveFinisher(
     : [primary];
   const turnElapsedMs = human.turnElapsedMs(input.nowMs, input.rules.turnTimeoutSeconds);
   human.endTurn();
+  human.noteAction();
   const cp = human.casts.spendCombo(glove.cost);
   const dmgType = glove.spell.effects.find((effect) => effect.kind === 1)?.dmgType;
   const hits = applyGloveKind1Hits(human, glove.spell, targets, {

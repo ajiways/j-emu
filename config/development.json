@@ -111,6 +111,7 @@
     "turnTimeoutSeconds": 20,
     "meleeBotCounterMs": 1400,
     "turnGrantDelayMs": 2500,
+    "maxConsecutiveSkips": 3,
     "resultRevealDelayMs": 1800,
     "damageProvenance": "legacy behavior",
     "combatSoftC": 600,

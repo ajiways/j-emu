@@ -1,5 +1,7 @@
 import type { Battle } from "../domain/battle.ts";
+import type { EndingGloveResult } from "../domain/glove-ending-cast.ts";
 import { persChangeForHit } from "../domain/melee-pers-change.ts";
+import type { ShuffleOutcome } from "../domain/try-shuffle-after-hits.ts";
 import type { CombatEvent } from "../ports/combat-port.ts";
 import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 
@@ -78,4 +80,62 @@ function persChangeFromDamage(
   if (!damage || damage.type !== "damage") return null;
   const roster = battle.boardParticipants();
   return persChangeForHit(roster.humans, roster.bots, damage.sourceId, damage.targetId);
+}
+
+export function deliverAggroPairs(
+  input: Readonly<{
+    battle: Battle;
+    casterAccountId: number;
+    pairedAccountIds: readonly number[];
+    roster: Extract<CombatEvent, { type: "roster-updated" }> | null;
+    enqueue: (accountId: number, events: readonly CombatEvent[]) => void;
+    wakeAccount: (accountId: number) => void;
+    grantPairedBot: (accountId: number) => void;
+  }>,
+): void {
+  const { battle, enqueue, wakeAccount } = input;
+  for (const accountId of battle.authedAccountIds()) {
+    if (accountId === input.casterAccountId || !input.roster) continue;
+    enqueue(accountId, [input.roster]);
+    wakeAccount(accountId);
+  }
+  for (const accountId of input.pairedAccountIds) {
+    const human = battle.livingHumans().find((entry) => entry.accountId === accountId);
+    if (!human || human.waiting) continue;
+    if (human.authed) {
+      enqueue(accountId, [{ type: "opponent-new", bot: battle.foeBotSnap(accountId) }]);
+      wakeAccount(accountId);
+    }
+    input.grantPairedBot(accountId);
+  }
+}
+
+export function deliverGloveSides(
+  input: Readonly<{
+    battle: Battle;
+    ending: EndingGloveResult;
+    scheduler: HuntMeleeScheduler;
+    enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void;
+    wakeAccount: (accountId: number) => void;
+    grantPairedBot: (accountId: number) => void;
+  }>,
+): void {
+  for (const notify of input.ending.sideNotifies) {
+    const wait = notify.events.some((event) => event.type === "opponent-wait");
+    const next = notify.events.some(
+      (event) => event.type === "opponent-new" || event.type === "opponent-new-human",
+    );
+    if (wait || next) cancelDuel(input.scheduler, input.battle, notify.accountId);
+    input.enqueue(notify.accountId, notify.events, "head");
+    input.wakeAccount(notify.accountId);
+    if (next) input.grantPairedBot(notify.accountId);
+  }
+}
+
+export function shuffleAffectedAccountIds(
+  shuffle: Exclude<ShuffleOutcome, { kind: "none" }>,
+): readonly number[] {
+  if (shuffle.kind === "waiter-handoff") return [shuffle.actorAccountId, shuffle.waiterAccountId];
+  if (shuffle.kind === "reserve-swap") return [shuffle.accountId];
+  return [shuffle.leftAccountId, shuffle.rightAccountId];
 }

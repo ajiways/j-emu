@@ -65,6 +65,7 @@ export class HuntHuman implements Fighter {
   private damageToBotValue = 0;
   private damageToHumansValue = 0;
   private leftLiveValue = false;
+  private skipStreakValue = 0;
   private lastOpponentIdValue: number | null = null;
   stunnedTurns = 0;
 
@@ -224,6 +225,17 @@ export class HuntHuman implements Fighter {
   endTurn(): void {
     this.turnActiveValue = false;
     this.turnDeadlineMsValue = null;
+  }
+
+  /** An AFK timeout: returns how many turns in a row have now been skipped. */
+  noteTimeout(): number {
+    this.skipStreakValue += 1;
+    return this.skipStreakValue;
+  }
+
+  /** A turn-ending action of the player breaks the AFK streak. */
+  noteAction(): void {
+    this.skipStreakValue = 0;
   }
 
   markLeft(): void {

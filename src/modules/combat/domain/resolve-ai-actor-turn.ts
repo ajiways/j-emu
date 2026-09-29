@@ -30,6 +30,7 @@ export function resolveAiActorTurn(
   }>,
 ): BotMeleeResult {
   const otherId = input.duel.otherId(input.bot.fightId);
+  const skipsTurn = input.bot.stunnedTurns > 0;
   const human = input.humans.find((entry) => entry.heroId === otherId);
   if (human) {
     const result = resolveBotTurn(human, input.bot, {
@@ -41,7 +42,7 @@ export function resolveAiActorTurn(
       winnerTeam: input.winnerTeam,
       nowMs: input.nowMs,
     });
-    input.duel.addHit(input.bot.fightId);
+    if (!skipsTurn) input.duel.addHit(input.bot.fightId);
     if (result.killedPlayer || input.bot.hp < 1) return result;
     const ticks = botClockTicks(input, human);
     const fell = human.hp < 1;
@@ -67,7 +68,7 @@ export function resolveAiActorTurn(
       nowMs: input.nowMs,
     }),
   ];
-  input.duel.addHit(input.bot.fightId);
+  if (!skipsTurn) input.duel.addHit(input.bot.fightId);
   if (input.bot.hp > 0 && target.hp > 0) events.push(...botClockTicks(input, target));
   if (target.hp > 0) input.duel.setNextActor(target.fightId);
   return { events, killedPlayer: false };

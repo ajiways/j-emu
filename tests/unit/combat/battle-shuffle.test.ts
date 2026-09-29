@@ -38,7 +38,7 @@ describe("Battle 3↔3 shuffle", () => {
       waiterAccountId: 2,
       waiterAuthed: true,
     });
-    expect(battle.pairedAccountId).toBe(2);
+    expect(battle.pairedOpponent(2)).toEqual({ kind: "bot" });
     expect(battle.tryPlayerMelee(1, "center", AUTH_NOW)).toEqual({ kind: "ignored" });
     const outcome = battle.outcome("win", 1);
     const actor = outcome.humans.find((human) => human.accountId === 1);
@@ -57,7 +57,7 @@ describe("Battle 3↔3 shuffle", () => {
       if (round < 2) battle.grantTurn(1, AUTH_NOW);
     }
     expect(battle.tryShuffleAfterHits(1)).toEqual({ kind: "none" });
-    expect(battle.pairedAccountId).toBe(1);
+    expect(battle.pairedOpponent(1)).toEqual({ kind: "bot" });
     battle.addHuman(joinTeam1());
     battle.authenticate(2, AUTH_NOW);
     battle.grantTurn(1, AUTH_NOW);
@@ -67,7 +67,7 @@ describe("Battle 3↔3 shuffle", () => {
       actorAccountId: 1,
       waiterAccountId: 2,
     });
-    expect(battle.pairedAccountId).toBe(2);
+    expect(battle.pairedOpponent(2)).toEqual({ kind: "bot" });
     expect(battle.tryPlayerMelee(1, "center", AUTH_NOW)).toEqual({ kind: "ignored" });
   });
 

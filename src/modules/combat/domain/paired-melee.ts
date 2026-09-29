@@ -37,6 +37,7 @@ export function tryPairedMelee(
   requireLivingMeleeTarget(target);
   const turnElapsedMs = attacker.turnElapsedMs(input.nowMs, input.rules.turnTimeoutSeconds);
   attacker.endTurn();
+  attacker.noteAction();
   let baseDamage = rollMeleeDamage(attacker.meleeStrength(), input.random, input.rules);
   const orb = attacker.casts.takeOrbPcStr();
   const rage = attacker.casts.takeRagePcStr();
