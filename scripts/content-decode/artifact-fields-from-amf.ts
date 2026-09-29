@@ -246,6 +246,12 @@ function decodeEffect(raw: unknown, artifactId: number, index: number): Record<s
       `artifact ${artifactId} spell effect ${index} duration`,
     );
   }
+  if (row.period !== undefined) {
+    effect.period = requirePositive(
+      amfInteger(row.period, `artifact ${artifactId} spell effect ${index} period`),
+      `artifact ${artifactId} spell effect ${index} period`,
+    );
+  }
   if (typeof row.forceSelfTargeting === "boolean") {
     effect.forceSelfTargeting = row.forceSelfTargeting;
   }

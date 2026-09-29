@@ -25,6 +25,7 @@ type ArtifactSpellEffectDocument = Readonly<{
   hidden?: number;
   targetCount?: number;
   duration?: number;
+  period?: number;
   forceSelfTargeting?: boolean;
   realStartTime?: boolean;
   skills?: readonly ArtifactSpellSkillDocument[];

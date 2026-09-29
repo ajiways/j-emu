@@ -649,8 +649,9 @@ Representative: Hissa 397, перчатка 181. Bot 397: `effUse` kind-3 на �
 ## CMB-15c — remaining magic kinds
 
 Срез закрыт (unit). Kind 2 heal — CMB-06. Kind 3 keep-turn / buff-cast.
-Kind 4/5 ticks: бюджет `duration/period` (каталог без period → named
-jgr default 20s), sibling `hpChange` на carrier melee. Overlay
+Kind 4/5 ticks: бюджет `round(duration/period)`; `period` обязателен и
+приходит из Pub1 через decoder `pub1-items/v3` (без period бой падает с
+ошибкой, дефолта нет); sibling `hpChange` на carrier melee. Overlay
 `durationTurns` 396 = 3 (live «трех ходов»). Kind-1+DoT: `effUse` до
 `cast`, без тика в том же пакете. Player melee poll держит empty-anim tick
 `damage`; wire кладёт sibling `hpChange` (`persId`=bot, `targetId`=охотник,

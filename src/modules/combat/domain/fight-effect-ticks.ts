@@ -5,9 +5,6 @@ import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import { spellSkillValue } from "./magic-hit.ts";
 
-/** Named jgr period when catalog kind-4/5 omits `period` (CMB-15c). */
-const TICK_PERIOD_SECONDS = 20;
-
 export function attachSpellTicks(
   carrier: HuntHuman,
   caster: HuntRosterBot,
@@ -76,6 +73,8 @@ function tickBudget(
   if (duration === undefined) {
     throw new Error(`Bot spell ${artikulId} kind 4/5 duration is required`);
   }
-  const step = period !== undefined && period > 0 ? period : TICK_PERIOD_SECONDS;
-  return Math.max(1, Math.round(duration / step));
+  if (period === undefined || period < 1) {
+    throw new Error(`Bot spell ${artikulId} kind 4/5 period is required`);
+  }
+  return Math.max(1, Math.round(duration / period));
 }

@@ -5,18 +5,18 @@
   "files": [
     {
       "relativePath": "bestiary-bots.json",
-      "size": 253653,
-      "digest": "3ca8b497af3c7bd50df5b3ab9941edda79b6562afa4d5653a142c16e67b03d9c"
+      "size": 240224,
+      "digest": "beca163953472210ca0d3758bd71059c7d7bb096a842a27f326870c9701fc83f"
     },
     {
       "relativePath": "bot-spell-book.json",
-      "size": 133567,
-      "digest": "2c6d4704eb42a23f30e201861ac92fd2ce8d84a5bace2a15f187b64207a87dd0"
+      "size": 130246,
+      "digest": "65109a3248d74c3ed0cbd3ba2f8524ec839f424817200c43d2955cccae1ab6a8"
     },
     {
       "relativePath": "bots-overlay.json",
-      "size": 311438,
-      "digest": "39f06d8e6acf98eac1f592bbad576ba2414d9e821c7ecb59fe350bc287b79b4a"
+      "size": 298961,
+      "digest": "5c9533232651ed217d757b8d21fe23b243373bd05f40bccc9fa9aa5ef52f17f5"
     },
     {
       "relativePath": "images/locale/ru/amf/bestiary.amf",
@@ -25,16 +25,16 @@
     },
     {
       "relativePath": "pub1-items.generated.json",
-      "size": 11875587,
-      "digest": "5849330395c4afd22b1b8d18f94e17a0e1435aa549497b287ac9d6c57b007954"
+      "size": 12347663,
+      "digest": "5898502708719248ca56ca2f8ac830eaf8b47a16a739048a5fb95ce913eb1a22"
     },
     {
       "relativePath": "radvei-hunt-bots.json",
-      "size": 31272,
-      "digest": "b11e79266d800832d47f2733fca990987a375ff64b91d240346b96b8be927b33"
+      "size": 30077,
+      "digest": "1f64d6c3305a457d3b2997ccb3437606b4644a5600c24cfd930fdebcd21e8e2e"
     }
   ],
-  "filesDigest": "0653ff965564f4f4710d10183ba047862791f7a5ead21fd5f2661f114404b3b6",
+  "filesDigest": "fe86cc0d233a11df84f41b50c826444215b100d6574f00526fd505e119521b27",
   "acceptedCount": 164,
   "keys": [
     {
@@ -694,5 +694,5 @@
       "digest": "013199874b4191a0839d9cf0fc7480b7f82fbf687a2e545c8efc9ec9bb765283"
     }
   ],
-  "corpusDigest": "dfcf21b0f5aa9464228b9949089bc0e4732247c12afd5d542fd50e590e3ca9e4"
+  "corpusDigest": "5a20f7b08a74726b3964ca6a4dd886afb7780aa3172d64cbb92909c07267d3dc"
 }

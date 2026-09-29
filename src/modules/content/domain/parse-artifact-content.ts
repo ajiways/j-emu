@@ -47,6 +47,7 @@ const artifactSpellEffectSchema = z
     hidden: z.number().int().nonnegative().optional(),
     targetCount: z.number().int().positive().optional(),
     duration: z.number().int().nonnegative().optional(),
+    period: z.number().int().positive().optional(),
     forceSelfTargeting: z.boolean().optional(),
     realStartTime: z.boolean().optional(),
     skills: z.array(artifactSpellSkillSchema).optional(),

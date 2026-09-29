@@ -42,7 +42,7 @@ export function unitHissaSpitBook(): HuntBotSpellBook {
           endTurn: true,
           effects: [
             { kind: 1, dmgType: 64, skills: [{ skillId: "pcSTR", value: -50 }] },
-            { kind: 4, dmgType: 64, duration: 81 },
+            { kind: 4, dmgType: 64, duration: 81, period: 40 },
           ],
         },
       }),
