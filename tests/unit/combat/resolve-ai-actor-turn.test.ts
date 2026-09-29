@@ -74,7 +74,7 @@ describe("resolveAiActorTurn", () => {
   it("resolves a bot vs human turn through the same scheduler as bot vs bot", () => {
     const battle = createUnitBattle(unitHuntFightSetup(), new SequenceRandom([2, 2]));
     battle.authenticate(1, AUTH_NOW);
-    const vsHuman = battle.resolveBotMelee(1);
+    const vsHuman = battle.resolveBotMelee(1, AUTH_NOW);
     expect(vsHuman.events.some((event) => event.type === "damage")).toBe(true);
     expect(vsHuman.killedPlayer).toBe(false);
 
@@ -94,6 +94,7 @@ describe("resolveAiActorTurn", () => {
       keepFightOnKill: true,
       living: [],
       winnerTeam: 1,
+      nowMs: AUTH_NOW,
     });
     expect(vsBot.killedPlayer).toBe(false);
     expect(vsBot.events).toEqual(
@@ -122,6 +123,7 @@ describe("resolveAiActorTurn", () => {
         keepFightOnKill: true,
         living: [],
         winnerTeam: 1,
+        nowMs: AUTH_NOW,
       }),
     ).toThrow(/Roster bot actor is dead/);
   });
@@ -145,6 +147,7 @@ describe("resolveAiActorTurn", () => {
       fightId: "1",
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([2]),
+      nowMs: AUTH_NOW,
     });
     expect(ticked.events.filter((event) => event.type === "damage")).toEqual([]);
     expect(duels).toHaveLength(1);

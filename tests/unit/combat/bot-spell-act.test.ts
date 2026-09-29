@@ -72,6 +72,7 @@ describe("actBotSpellCard overkill", () => {
         keepFightOnKill: true,
         living: [human],
         winnerTeam: 2,
+        nowMs: 0,
       },
     );
     expect(events).toMatchObject([
@@ -147,6 +148,7 @@ describe("actBotSpellCard overkill", () => {
         keepFightOnKill: true,
         living: [human],
         winnerTeam: 2,
+        nowMs: 0,
       },
     );
     expect(events).toMatchObject([
@@ -158,7 +160,7 @@ describe("actBotSpellCard overkill", () => {
         title: "Ядовитый плевок",
         groupId: 845,
         persId: 1,
-        remainTime: 120,
+        remainTime: 81,
       },
       { type: "damage", animation: "magic_direct", hpChange: -1, killed: false },
     ]);
@@ -232,6 +234,7 @@ describe("actBotSpellCard overkill", () => {
         keepFightOnKill: true,
         living: [human],
         winnerTeam: 2,
+        nowMs: 0,
       },
     );
     expect(events).toMatchObject([

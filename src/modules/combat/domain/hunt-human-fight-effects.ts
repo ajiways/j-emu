@@ -2,6 +2,14 @@ import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { bakeTimedStatPercents } from "./bake-timed-stat-percents.ts";
 import type { CombatGearSpell } from "./combat-loadout.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
+import {
+  nextPeriodicDueMs,
+  remainingSeconds,
+  startPeriodic,
+  stepPeriodicOnAction,
+  stepPeriodicOnTimer,
+  type PeriodicState,
+} from "./periodic-effect.ts";
 
 const TURN_SECONDS = 40;
 
@@ -16,8 +24,12 @@ export type FightTickPulse = Readonly<{
   casterStrength: number;
   casterMagPower: number;
   casterMagResist: number;
-  last: boolean;
 }>;
+
+/** What one clock step did to the effects: a tick to apply, or an effect that ran out. */
+export type PeriodicItem =
+  | Readonly<{ kind: "tick"; pulse: FightTickPulse }>
+  | Readonly<{ kind: "expire"; effectId: number }>;
 
 export type FightEffectSnap = Readonly<{
   id: number;
@@ -44,7 +56,7 @@ type StandingEffect = {
   skills: Readonly<Record<string, number>>;
   remainTurns: number;
   expiresAtMs: number;
-  ticksLeft?: number;
+  periodic?: PeriodicState;
   tickAmount?: number | string;
   catalogPcStr?: number;
   catalogStr?: number;
@@ -88,7 +100,8 @@ export class HuntHumanFightEffects {
     return bonus;
   }
 
-  snapshot(): readonly FightEffectSnap[] {
+  /** With `nowMs` a periodic effect reports the time left at that instant, not at its last step. */
+  snapshot(nowMs?: number): readonly FightEffectSnap[] {
     return this.standing.map((fx) => ({
       id: fx.id,
       kind: fx.kind,
@@ -97,7 +110,9 @@ export class HuntHumanFightEffects {
       title: fx.title,
       img: fx.img,
       dmgType: fx.dmgType,
-      remainTime: fx.remainTurns * TURN_SECONDS,
+      remainTime: fx.periodic
+        ? Math.ceil(remainingSeconds(fx.periodic, nowMs))
+        : fx.remainTurns * TURN_SECONDS,
       ...(fx.groupId !== undefined ? { groupId: fx.groupId } : {}),
       skills: fx.skills,
     }));
@@ -110,7 +125,7 @@ export class HuntHumanFightEffects {
     const purged: number[] = [];
     const keep: StandingEffect[] = [];
     for (const fx of this.standing) {
-      if (fx.kind === 4 || fx.kind === 5 || fx.charging) {
+      if (fx.periodic || fx.charging) {
         keep.push(fx);
         continue;
       }
@@ -175,49 +190,73 @@ export class HuntHumanFightEffects {
     return purged;
   }
 
-  takeTickPulses(): readonly FightTickPulse[] {
-    const pulses: FightTickPulse[] = [];
+  /** A turn-ending action in this fighter's duel: real time plus the action's clock jump. */
+  advanceOnAction(nowMs: number, jumpSeconds: number): readonly PeriodicItem[] {
+    return this.stepPeriodic((state) => {
+      const step = stepPeriodicOnAction(state, nowMs, jumpSeconds);
+      return { ticks: step.tick ? 1 : 0, expired: step.expired };
+    });
+  }
+
+  /** Real time up to `nowMs`; only a fighter in a duel ticks, expiry is silent otherwise. */
+  advanceOnTimer(nowMs: number, inDuel: boolean): readonly PeriodicItem[] {
+    return this.stepPeriodic((state) => stepPeriodicOnTimer(state, nowMs, inDuel));
+  }
+
+  nextPeriodicDueMs(): number | null {
+    let due: number | null = null;
+    for (const fx of this.standing) {
+      if (!fx.periodic) continue;
+      const at = nextPeriodicDueMs(fx.periodic);
+      if (due === null || at < due) due = at;
+    }
+    return due;
+  }
+
+  private stepPeriodic(
+    step: (state: PeriodicState) => Readonly<{ ticks: number; expired: boolean }>,
+  ): readonly PeriodicItem[] {
+    const items: PeriodicItem[] = [];
     const keep: StandingEffect[] = [];
     for (const fx of this.standing) {
-      if (fx.kind !== 4 && fx.kind !== 5) {
+      if (!fx.periodic) {
         keep.push(fx);
         continue;
       }
-      if (fx.ticksLeft === undefined) {
-        throw new Error(`Tick effect ${fx.id} ticksLeft is required`);
+      const result = step(fx.periodic);
+      for (let index = 0; index < result.ticks; index += 1) {
+        items.push({ kind: "tick", pulse: this.pulseOf(fx) });
       }
-      if (
-        fx.casterStrength === undefined ||
-        fx.casterMagPower === undefined ||
-        fx.casterMagResist === undefined ||
-        fx.catalogPcStr === undefined ||
-        fx.catalogStr === undefined
-      ) {
-        throw new Error(`Tick effect ${fx.id} caster snapshot is required`);
-      }
-      const left = fx.ticksLeft;
-      if (left < 1) continue;
-      const next = left - 1;
-      pulses.push({
-        effectId: fx.id,
-        kind: fx.kind,
-        sourceId: fx.sourceId,
-        dmgType: fx.dmgType,
-        ...(fx.tickAmount !== undefined ? { amount: fx.tickAmount } : {}),
-        catalogPcStr: fx.catalogPcStr,
-        catalogStr: fx.catalogStr,
-        casterStrength: fx.casterStrength,
-        casterMagPower: fx.casterMagPower,
-        casterMagResist: fx.casterMagResist,
-        last: next < 1,
-      });
-      fx.ticksLeft = next;
-      fx.remainTurns = next;
-      if (next > 0) keep.push(fx);
+      if (result.expired) items.push({ kind: "expire", effectId: fx.id });
+      else keep.push(fx);
     }
     this.standing.length = 0;
     this.standing.push(...keep);
-    return pulses;
+    return items;
+  }
+
+  private pulseOf(fx: StandingEffect): FightTickPulse {
+    if (
+      fx.casterStrength === undefined ||
+      fx.casterMagPower === undefined ||
+      fx.casterMagResist === undefined ||
+      fx.catalogPcStr === undefined ||
+      fx.catalogStr === undefined
+    ) {
+      throw new Error(`Tick effect ${fx.id} caster snapshot is required`);
+    }
+    return {
+      effectId: fx.id,
+      kind: fx.kind,
+      sourceId: fx.sourceId,
+      dmgType: fx.dmgType,
+      ...(fx.tickAmount !== undefined ? { amount: fx.tickAmount } : {}),
+      catalogPcStr: fx.catalogPcStr,
+      catalogStr: fx.catalogStr,
+      casterStrength: fx.casterStrength,
+      casterMagPower: fx.casterMagPower,
+      casterMagResist: fx.casterMagResist,
+    };
   }
 
   attachChargingKind3(
@@ -270,7 +309,10 @@ export class HuntHumanFightEffects {
       img: string;
       dmgType: number;
       groupId?: number;
-      ticks: number;
+      durationSeconds: number;
+      periodSeconds: number;
+      nowMs: number;
+      castEndsTurn: boolean;
       amount?: number | string;
       catalogPcStr: number;
       catalogStr: number;
@@ -281,9 +323,6 @@ export class HuntHumanFightEffects {
   ): FightEffectSnap {
     if (!input.title) throw new Error(`Tick effect ${input.artikulId} title is required`);
     if (!input.img) throw new Error(`Tick effect ${input.artikulId} img is required`);
-    if (!Number.isInteger(input.ticks) || input.ticks < 1) {
-      throw new Error(`Tick effect ${input.artikulId} ticks must be a positive integer`);
-    }
     const id = this.effectIds.take();
     this.standing.push({
       id,
@@ -295,9 +334,9 @@ export class HuntHumanFightEffects {
       dmgType: input.dmgType,
       ...(input.groupId !== undefined ? { groupId: input.groupId } : {}),
       skills: {},
-      remainTurns: input.ticks,
+      remainTurns: 0,
       expiresAtMs: Number.MAX_SAFE_INTEGER,
-      ticksLeft: input.ticks,
+      periodic: startPeriodic(input),
       ...(input.amount !== undefined ? { tickAmount: input.amount } : {}),
       catalogPcStr: input.catalogPcStr,
       catalogStr: input.catalogStr,

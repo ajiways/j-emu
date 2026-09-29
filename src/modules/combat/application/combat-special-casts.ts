@@ -24,6 +24,7 @@ export async function finishFightCommand(
       accountId: input.accountId,
       command: input.command,
       battle: input.battle,
+      nowMs: input.nowMs,
       enqueue: input.enqueue,
     });
   }

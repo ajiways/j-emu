@@ -10,6 +10,7 @@ import {
   gloveKind1IsAoe,
   pickGloveAoeTargets,
 } from "./glove-aoe-targets.ts";
+import { advanceActionClock } from "./duel-clock.ts";
 import { isEndingGlove, type KeepTurnResult } from "./hunt-cast.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { spellKind } from "./hunt-human-cast-state.ts";
@@ -31,6 +32,7 @@ export type EndingGloveResult = Readonly<{
   finished: boolean;
   hitTargetIds: readonly number[];
   sideNotifies: readonly GloveSideNotify[];
+  selfKilled?: true;
 }>;
 
 export function resolveGloveFinisher(
@@ -75,6 +77,7 @@ export function resolveGloveFinisher(
         random: input.random,
       })
     : [primary];
+  const turnElapsedMs = human.turnElapsedMs(input.nowMs, input.rules.turnTimeoutSeconds);
   human.endTurn();
   const cp = human.casts.spendCombo(glove.cost);
   const dmgType = glove.spell.effects.find((effect) => effect.kind === 1)?.dmgType;
@@ -93,9 +96,27 @@ export function resolveGloveFinisher(
   for (const effectId of human.effects.onActorEndingTurn(input.nowMs)) {
     events.push({ type: "effect-purge", effectId });
   }
-  const finished = hits.some((hit) => hit.finished);
+  let finished = hits.some((hit) => hit.finished);
   if (finished) {
     events.push({ type: "finished", winnerTeam: human.team, fightId: input.fightId });
+  }
+  let selfKilled = false;
+  if (!finished) {
+    const clock = advanceActionClock({
+      attacker: human,
+      victim: primary.kind === "human" ? primary.human : primary.bot,
+      victimKilledByHit: primaryHit.killed,
+      turnElapsedMs,
+      nowMs: input.nowMs,
+      rules: input.rules,
+      random: input.random,
+      humans: input.humans,
+      bots: input.bots,
+      fightId: input.fightId,
+    });
+    events.push(...clock.events);
+    finished = clock.finished;
+    selfKilled = clock.selfKilled;
   }
   return {
     kind: "ending",
@@ -103,6 +124,7 @@ export function resolveGloveFinisher(
     finished,
     hitTargetIds: hits.map((hit) => hit.targetId),
     sideNotifies: sideNotifiesForHits(human, glove.spell, hits.slice(1), input, dmgType),
+    ...(selfKilled ? { selfKilled: true as const } : {}),
   };
 }
 

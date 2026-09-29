@@ -11,50 +11,77 @@ import {
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { HuntHumanFightEffects } from "../../../src/modules/combat/domain/hunt-human-fight-effects.ts";
 
-describe("HuntHumanFightEffects ticks", () => {
-  it("budgets duration/period pulses and drops the effect on the last tick", () => {
-    const effects = new HuntHumanFightEffects({
-      heroId: 1,
-      strength: 10,
-      startedAtMs: 0,
-      gearSpells: [],
-      effectIds: new FightEffectIds(),
-    });
-    effects.attachTick({
-      kind: 4,
-      sourceId: 1_000_000,
-      artikulId: 396,
-      title: "Ядовитый плевок",
-      img: "hissa_magic1.png",
-      dmgType: 64,
-      ticks: 4,
-      catalogPcStr: -50,
-      catalogStr: 0,
-      casterStrength: 15,
-      casterMagPower: 0,
-      casterMagResist: 0,
-    });
-    expect(effects.snapshot()).toHaveLength(1);
-    const first = effects.takeTickPulses();
-    expect(first).toEqual([
-      {
-        effectId: 1,
-        kind: 4,
-        sourceId: 1_000_000,
-        dmgType: 64,
-        catalogPcStr: -50,
-        catalogStr: 0,
-        casterStrength: 15,
-        casterMagPower: 0,
-        casterMagResist: 0,
-        last: false,
-      },
-    ]);
-    effects.takeTickPulses();
-    effects.takeTickPulses();
-    const last = effects.takeTickPulses();
-    expect(last[0]?.last).toBe(true);
+function effectsWithPoison(durationSeconds: number, periodSeconds: number, castEndsTurn = false) {
+  const effects = new HuntHumanFightEffects({
+    heroId: 1,
+    strength: 10,
+    startedAtMs: 0,
+    gearSpells: [],
+    effectIds: new FightEffectIds(),
+  });
+  effects.attachTick({
+    kind: 4,
+    sourceId: 1_000_000,
+    artikulId: 396,
+    title: "Ядовитый плевок",
+    img: "hissa_magic1.png",
+    dmgType: 64,
+    durationSeconds,
+    periodSeconds,
+    nowMs: 0,
+    castEndsTurn,
+    catalogPcStr: -50,
+    catalogStr: 0,
+    casterStrength: 15,
+    casterMagPower: 0,
+    casterMagResist: 0,
+  });
+  return effects;
+}
+
+const kinds = (items: readonly { kind: string }[]) => items.map((item) => item.kind);
+
+describe("HuntHumanFightEffects periodic effects", () => {
+  it("ticks once per action and expires with the action that reaches the duration", () => {
+    const effects = effectsWithPoison(80, 20);
+    expect(effects.snapshot()).toMatchObject([{ remainTime: 80 }]);
+    expect(kinds(effects.advanceOnAction(0, 20))).toEqual(["tick"]);
+    expect(kinds(effects.advanceOnAction(0, 20))).toEqual(["tick"]);
+    expect(kinds(effects.advanceOnAction(0, 20))).toEqual(["tick"]);
+    expect(kinds(effects.advanceOnAction(0, 20))).toEqual(["tick", "expire"]);
     expect(effects.snapshot()).toHaveLength(0);
+  });
+
+  it("holds a backlog and pays one tick per action", () => {
+    const effects = effectsWithPoison(120, 20);
+    expect(kinds(effects.advanceOnAction(1_000, 50))).toEqual(["tick"]);
+    expect(kinds(effects.advanceOnAction(2_000, 0))).toEqual(["tick"]);
+    expect(kinds(effects.advanceOnAction(3_000, 0))).toEqual([]);
+  });
+
+  it("ticks on the timer only for a paired carrier and never at the expiry instant", () => {
+    const paired = effectsWithPoison(80, 20);
+    expect(kinds(paired.advanceOnTimer(20_000, true))).toEqual(["tick"]);
+    expect(kinds(paired.advanceOnTimer(40_000, true))).toEqual(["tick"]);
+    expect(kinds(paired.advanceOnTimer(60_000, true))).toEqual(["tick"]);
+    expect(kinds(paired.advanceOnTimer(80_000, true))).toEqual(["expire"]);
+    const unpaired = effectsWithPoison(80, 20);
+    expect(kinds(unpaired.advanceOnTimer(30_000, false))).toEqual([]);
+    expect(kinds(unpaired.advanceOnAction(31_000, 0))).toEqual(["tick"]);
+  });
+
+  it("skips the clock jump of the action that cast a turn-ending effect", () => {
+    const effects = effectsWithPoison(80, 20, true);
+    expect(kinds(effects.advanceOnAction(0, 20))).toEqual([]);
+    expect(kinds(effects.advanceOnAction(0, 20))).toEqual(["tick"]);
+  });
+
+  it("reports the next timer wake and the time left at a given instant", () => {
+    const effects = effectsWithPoison(81, 40);
+    expect(effects.nextPeriodicDueMs()).toBe(40_000);
+    expect(effects.snapshot(10_000)).toMatchObject([{ remainTime: 71 }]);
+    effects.advanceOnTimer(40_000, true);
+    expect(effects.nextPeriodicDueMs()).toBe(80_000);
   });
 
   it("rejects a tick without catalog img", () => {
@@ -73,7 +100,10 @@ describe("HuntHumanFightEffects ticks", () => {
         title: "Ядовитый плевок",
         img: "",
         dmgType: 64,
-        ticks: 3,
+        durationSeconds: 81,
+        periodSeconds: 40,
+        nowMs: 0,
+        castEndsTurn: false,
         catalogPcStr: -50,
         catalogStr: 0,
         casterStrength: 15,
@@ -135,7 +165,7 @@ describe("attachSpellTicks period", () => {
       hpPct: null,
       spell: { effects: [{ kind: 4, dmgType: 256, duration: 120 }] },
     };
-    expect(() => attachSpellTicks(carrier, caster, card)).toThrow(
+    expect(() => attachSpellTicks(carrier, caster, card, 0)).toThrow(
       /447 kind 4\/5 period is required/,
     );
   });

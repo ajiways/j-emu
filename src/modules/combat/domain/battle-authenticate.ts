@@ -48,10 +48,11 @@ function huntAuthenticateEvents(
       rage: human.casts.rage,
       aggro: human.casts.aggro,
       loadout: human.casts.wireLoadout(),
-      heroEffects: human.effects.snapshot(),
+      heroEffects: human.effects.snapshot(input.nowMs),
       botEffects: input.botEffects,
       otherEffects: standingEffectsOf(
         input.allies.filter((entry) => entry.accountId !== human.accountId),
+        input.nowMs,
       ),
     },
   ];
@@ -94,7 +95,7 @@ function friendlyAuthenticateEvents(
         ? {
             opponent: opponent.snapshot(),
             opponentAppearance: opponent.appearance,
-            opponentEffects: opponent.effects.snapshot(),
+            opponentEffects: opponent.effects.snapshot(input.nowMs),
           }
         : {}),
       cp: human.casts.cp,
@@ -102,8 +103,8 @@ function friendlyAuthenticateEvents(
       rage: human.casts.rage,
       aggro: human.casts.aggro,
       loadout: human.casts.wireLoadout(),
-      heroEffects: human.effects.snapshot(),
-      otherEffects: standingEffectsOf(input.allies),
+      heroEffects: human.effects.snapshot(input.nowMs),
+      otherEffects: standingEffectsOf(input.allies, input.nowMs),
     },
   ];
   if (human.turnActive) {
@@ -163,7 +164,7 @@ export function authenticateFighter(
     allies: input.humans,
     bot,
     rosterBots: input.bots.map((entry) => entry.snap()),
-    botEffects: pairedBot ? pairedBot.effects.snapshot() : [],
+    botEffects: pairedBot ? pairedBot.effects.snapshot(input.nowMs) : [],
     humanOpponent,
     nextActorId: duel?.nextActorId ?? human.heroId,
     resume,
@@ -172,9 +173,9 @@ export function authenticateFighter(
   });
 }
 
-function standingEffectsOf(humans: readonly HuntHuman[]) {
+function standingEffectsOf(humans: readonly HuntHuman[], nowMs: number) {
   return humans.map((entry) => ({
     persId: entry.heroId,
-    effects: entry.effects.snapshot(),
+    effects: entry.effects.snapshot(nowMs),
   }));
 }

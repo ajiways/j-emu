@@ -9,6 +9,7 @@ import {
   fanoutPersChange,
   fanoutRosterEffects,
 } from "./combat-melee-dispatch.ts";
+import { CombatEffectClock } from "./combat-effect-clock.ts";
 import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 
 export class CombatMeleeLoop {
@@ -25,40 +26,56 @@ export class CombatMeleeLoop {
     private readonly settleFinished: (
       battle: Battle,
       events: readonly CombatEvent[],
-      strikerAccountId: number,
+      strikerAccountId: number | null,
     ) => Promise<void>,
     private readonly departHuman: (battle: Battle, accountId: number) => Promise<void>,
     private readonly queueExit: (accountId: number, fightId: string, exit: FightExit) => void,
-  ) {}
+  ) {
+    this.effectClock = new CombatEffectClock(
+      battleByFight,
+      scheduler,
+      enqueue,
+      wakeAccount,
+      settleFinished,
+      (battle, accountId) => {
+        cancelDuel(this.scheduler, battle, accountId);
+        this.grantPairedBot(battle, accountId);
+      },
+      (battle, accountId) => this.handOffToWaiter(battle, accountId),
+    );
+  }
+
+  private readonly effectClock: CombatEffectClock;
 
   async strike(
     accountId: number,
     side: "left" | "center" | "right",
     sequence: string | number,
   ): Promise<void> {
-    const battle = this.byAccount.get(accountId);
-    if (!battle) {
-      this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
-      return;
-    }
-    cancelDuel(this.scheduler, battle, accountId);
-    const resolved = battle.tryPlayerMelee(accountId, side, this.scheduler.now().getTime());
-    if (resolved.kind === "ignored") {
-      this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
-      return;
-    }
-    enqueuePlayerMelee(this.enqueue, accountId, sequence, resolved.events);
-    fanoutPersChange(battle, accountId, resolved.events, this.enqueue, this.wakeAccount);
-    fanoutRosterEffects(battle, accountId, resolved.events, this.enqueue, this.wakeAccount);
-    if (battle.finished) {
-      await this.settleFinished(battle, resolved.events, accountId);
-      return;
-    }
-    if (resolved.selfKilled) {
-      await this.handOffToWaiter(battle, accountId);
-      return;
-    }
-    await this.followUpAfterStrike(battle, accountId, resolved.events);
+    await this.armAfter(this.byAccount.get(accountId), async (battle) => {
+      if (!battle) {
+        this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
+        return;
+      }
+      cancelDuel(this.scheduler, battle, accountId);
+      const resolved = battle.tryPlayerMelee(accountId, side, this.scheduler.now().getTime());
+      if (resolved.kind === "ignored") {
+        this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
+        return;
+      }
+      enqueuePlayerMelee(this.enqueue, accountId, sequence, resolved.events);
+      fanoutPersChange(battle, accountId, resolved.events, this.enqueue, this.wakeAccount);
+      fanoutRosterEffects(battle, accountId, resolved.events, this.enqueue, this.wakeAccount);
+      if (battle.finished) {
+        await this.settleFinished(battle, resolved.events, accountId);
+        return;
+      }
+      if (resolved.selfKilled) {
+        await this.handOffToWaiter(battle, accountId);
+        return;
+      }
+      await this.followUpAfterStrike(battle, accountId, resolved.events);
+    });
   }
 
   keepTurn(accountId: number, sequence: string | number, events: readonly CombatEvent[]): void {
@@ -72,23 +89,28 @@ export class CombatMeleeLoop {
     sequence: string | number,
     ending: EndingGloveResult,
   ): Promise<void> {
-    const battle = this.byAccount.get(accountId);
-    if (!battle) {
-      this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
-      return;
-    }
-    cancelDuel(this.scheduler, battle, accountId);
-    this.enqueue(accountId, [{ type: "command-accepted", sequence }, ...ending.events]);
-    const sideIds = new Set(ending.sideNotifies.map((notify) => notify.accountId));
-    fanoutPersChange(battle, accountId, ending.events, this.enqueue, this.wakeAccount, sideIds);
-    fanoutRosterEffects(battle, accountId, ending.events, this.enqueue, this.wakeAccount);
-    await Promise.resolve();
-    this.deliverGloveSides(battle, ending);
-    if (battle.finished) {
-      await this.settleFinished(battle, ending.events, accountId);
-      return;
-    }
-    await this.followUpAfterStrike(battle, accountId, ending.events);
+    await this.armAfter(this.byAccount.get(accountId), async (battle) => {
+      if (!battle) {
+        this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
+        return;
+      }
+      cancelDuel(this.scheduler, battle, accountId);
+      this.enqueue(accountId, [{ type: "command-accepted", sequence }, ...ending.events]);
+      const sideIds = new Set(ending.sideNotifies.map((notify) => notify.accountId));
+      fanoutPersChange(battle, accountId, ending.events, this.enqueue, this.wakeAccount, sideIds);
+      fanoutRosterEffects(battle, accountId, ending.events, this.enqueue, this.wakeAccount);
+      await Promise.resolve();
+      this.deliverGloveSides(battle, ending);
+      if (battle.finished) {
+        await this.settleFinished(battle, ending.events, accountId);
+        return;
+      }
+      if (ending.selfKilled) {
+        await this.handOffToWaiter(battle, accountId);
+        return;
+      }
+      await this.followUpAfterStrike(battle, accountId, ending.events);
+    });
   }
 
   grantAfterPair(battle: Battle, accountId: number): void {
@@ -164,7 +186,7 @@ export class CombatMeleeLoop {
     accountId: number,
     events: readonly CombatEvent[],
   ): Promise<void> {
-    const extra = battle.tickRosterDuels();
+    const extra = battle.tickRosterDuels(this.scheduler.now().getTime());
     if (extra.length > 0) this.enqueue(accountId, extra);
     if (battle.finished) {
       await this.settleFinished(battle, extra, accountId);
@@ -212,29 +234,30 @@ export class CombatMeleeLoop {
   }
 
   private async runBotCounter(fightId: string, targetAccountId: number): Promise<void> {
-    const battle = this.battleByFight.get(fightId);
-    if (!battle || battle.finished) return;
-    if (!battle.accountIds().includes(targetAccountId)) return;
-    const result = battle.resolveBotMelee(targetAccountId);
-    this.enqueue(targetAccountId, result.events);
-    fanoutPersChange(battle, targetAccountId, result.events, this.enqueue, this.wakeAccount);
-    fanoutRosterEffects(battle, targetAccountId, result.events, this.enqueue, this.wakeAccount);
-    this.wakeAccount(targetAccountId);
-    if (!result.killedPlayer) {
-      const extra = battle.tickRosterDuels();
-      if (extra.length > 0) this.enqueue(targetAccountId, extra);
+    await this.armAfter(this.battleByFight.get(fightId), async (battle) => {
+      if (!battle || battle.finished) return;
+      if (!battle.accountIds().includes(targetAccountId)) return;
+      const result = battle.resolveBotMelee(targetAccountId, this.scheduler.now().getTime());
+      this.enqueue(targetAccountId, result.events);
+      fanoutPersChange(battle, targetAccountId, result.events, this.enqueue, this.wakeAccount);
+      fanoutRosterEffects(battle, targetAccountId, result.events, this.enqueue, this.wakeAccount);
+      this.wakeAccount(targetAccountId);
       if (battle.finished) {
-        await this.settleFinished(battle, extra, targetAccountId);
+        await this.settleFinished(battle, result.events, targetAccountId);
         return;
       }
-      this.applyShuffle(battle, targetAccountId);
-      return;
-    }
-    if (battle.finished) {
-      await this.settleFinished(battle, result.events, targetAccountId);
-      return;
-    }
-    await this.handOffToWaiter(battle, targetAccountId);
+      if (!result.killedPlayer) {
+        const extra = battle.tickRosterDuels(this.scheduler.now().getTime());
+        if (extra.length > 0) this.enqueue(targetAccountId, extra);
+        if (battle.finished) {
+          await this.settleFinished(battle, extra, targetAccountId);
+          return;
+        }
+        this.applyShuffle(battle, targetAccountId);
+        return;
+      }
+      await this.handOffToWaiter(battle, targetAccountId);
+    });
   }
 
   private async handOffToWaiter(battle: Battle, deadAccountId: number): Promise<void> {
@@ -314,38 +337,48 @@ export class CombatMeleeLoop {
   }
 
   private async runTurnTimeout(fightId: string, accountId: number): Promise<void> {
-    const battle = this.battleByFight.get(fightId);
-    if (!battle || battle.finished) return;
-    if (!battle.accountIds().includes(accountId)) return;
-    const human = battle.livingHumans().find((entry) => entry.accountId === accountId);
-    if (!human) return;
-    const events = timeoutHumanTurn(human, this.scheduler.now().getTime());
-    if (!events) return;
-    this.enqueue(accountId, events);
-    fanoutRosterEffects(battle, accountId, events, this.enqueue, this.wakeAccount);
-    this.wakeAccount(accountId);
-    if (battle.finished) {
-      await this.settleFinished(battle, events, accountId);
-      return;
-    }
-    battle.countPairHit(accountId);
-    if (this.applyShuffle(battle, accountId)) return;
-    const opponent = battle.pairedOpponent(accountId);
-    if (opponent.kind === "bot") {
-      await this.runBotCounter(fightId, accountId);
-      if (battle.finished || !battle.accountIds().includes(accountId)) return;
+    await this.armAfter(this.battleByFight.get(fightId), async (battle) => {
+      if (!battle || battle.finished) return;
+      if (!battle.accountIds().includes(accountId)) return;
+      const human = battle.livingHumans().find((entry) => entry.accountId === accountId);
+      if (!human) return;
+      const events = timeoutHumanTurn(human, this.scheduler.now().getTime());
+      if (!events) return;
+      this.enqueue(accountId, events);
+      fanoutRosterEffects(battle, accountId, events, this.enqueue, this.wakeAccount);
+      this.wakeAccount(accountId);
+      if (battle.finished) {
+        await this.settleFinished(battle, events, accountId);
+        return;
+      }
+      battle.countPairHit(accountId);
+      if (this.applyShuffle(battle, accountId)) return;
+      const opponent = battle.pairedOpponent(accountId);
+      if (opponent.kind === "bot") {
+        await this.runBotCounter(fightId, accountId);
+        if (battle.finished || !battle.accountIds().includes(accountId)) return;
+        const token = battle.delayTokenFor(accountId);
+        if (!token) return;
+        this.scheduler.schedule(token, battle.turnGrantDelayMs, () =>
+          this.runGrant(fightId, accountId),
+        );
+        return;
+      }
       const token = battle.delayTokenFor(accountId);
       if (!token) return;
       this.scheduler.schedule(token, battle.turnGrantDelayMs, () =>
-        this.runGrant(fightId, accountId),
+        this.runGrant(fightId, opponent.accountId),
       );
-      return;
-    }
-    const token = battle.delayTokenFor(accountId);
-    if (!token) return;
-    this.scheduler.schedule(token, battle.turnGrantDelayMs, () =>
-      this.runGrant(fightId, opponent.accountId),
-    );
+    });
+  }
+
+  /** Runs one action of a battle, then re-arms its effect timer for what the action changed. */
+  private async armAfter(
+    battle: Battle | undefined,
+    work: (battle: Battle | undefined) => Promise<void>,
+  ): Promise<void> {
+    await work(battle);
+    if (battle && !battle.finished) this.effectClock.arm(battle);
   }
 
   private deliverGloveSides(battle: Battle, ending: EndingGloveResult): void {

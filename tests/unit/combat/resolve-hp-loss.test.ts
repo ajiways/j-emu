@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
+import { HuntHumanFightEffects } from "../../../src/modules/combat/domain/hunt-human-fight-effects.ts";
 import type { Fighter, FighterKind } from "../../../src/modules/combat/domain/fighter.ts";
 import { resolveHpLoss } from "../../../src/modules/combat/domain/resolve-hp-loss.ts";
 
@@ -7,6 +9,13 @@ class FakeFighter implements Fighter {
   readonly maxHp: number;
   readonly mag = { power: 0, resist: 0 };
   stunnedTurns = 0;
+  readonly effects = new HuntHumanFightEffects({
+    heroId: 1,
+    strength: 1,
+    startedAtMs: 0,
+    gearSpells: [],
+    effectIds: new FightEffectIds(),
+  });
   readonly credits: { amount: number; targetKind: FighterKind }[] = [];
   applyCalls = 0;
 
@@ -22,6 +31,12 @@ class FakeFighter implements Fighter {
     this.applyCalls += 1;
     this.hp = Math.max(0, this.hp - amount);
     return this.hp === 0;
+  }
+
+  applyHeal(amount: number): number {
+    const healed = Math.min(this.maxHp - this.hp, amount);
+    this.hp += healed;
+    return healed;
   }
 
   creditDealt(amount: number, targetKind: FighterKind): void {

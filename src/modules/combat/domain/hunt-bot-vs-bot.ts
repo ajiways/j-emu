@@ -18,6 +18,7 @@ export function resolveRosterBotTurn(
   input: Readonly<{
     rules: BattleRules;
     random: RandomSource;
+    nowMs: number;
   }>,
 ): readonly BattleEvent[] {
   if (actor.hp === 0) throw new Error("Roster bot actor is dead");
@@ -41,6 +42,7 @@ export function resolveRosterBotTurn(
       keepFightOnKill: true,
       living: [],
       winnerTeam: 1,
+      nowMs: input.nowMs,
     }),
   ];
   if (target.hp > 0 && (kind1OverlayCharges(card.spell) > 0 || !botSpellEndsTurn(card.spell))) {

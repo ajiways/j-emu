@@ -1,3 +1,4 @@
+import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { applyHuntBotHit, applyHuntPlayerHit } from "./battle-hunt-runtime.ts";
 import { requireAuthedHuman, requireBattleHuman } from "./battle-lookups.ts";
@@ -12,7 +13,9 @@ import { tryGloveKeepTurn } from "./hunt-cast.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import type { BotMeleeResult } from "./hunt-melee.ts";
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
+import { enemySideCleared, fightCombatants } from "./melee-target.ts";
 import { persChangeForParticipants } from "./melee-pers-change.ts";
+import { opposingTeam } from "./opposing-team.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
 import { requireDuelContaining } from "./try-pair-hunt-queues.ts";
@@ -88,12 +91,14 @@ export function applyBattleBotMelee(
   state: HuntActionState,
   accountId: number,
   living: readonly HuntHuman[],
+  nowMs: number,
 ): BotMeleeResult & Readonly<{ finished: boolean }> {
   if (!state.fightRules.hasEnemyBots) throw new Error("Human duel has no bot to take a turn");
   if (state.finished) throw new Error("Cannot resolve bot melee on a finished battle");
   const target = requireBattleHuman(state.humans, accountId);
   const duel = requireDuelContaining(state.duels, target.heroId);
   const bot = requireFightBot(state.bots, duel.otherId(target.heroId));
+  const enemyTeam = state.fightRules.teamAssignment.enemyTeam;
   const result = resolveAiActorTurn({
     bot,
     duel,
@@ -110,13 +115,37 @@ export function applyBattleBotMelee(
         entry.hp > 0,
     ),
     living,
-    winnerTeam: state.fightRules.teamAssignment.enemyTeam,
+    winnerTeam: enemyTeam,
+    nowMs,
   });
-  bot.setHp(result.botHp);
+  const events = [...result.events, ...botFellToTick(state, bot, target, duel, result)];
   return {
-    ...result,
-    finished: result.events.some((event) => event.type === "finished"),
+    events,
+    killedPlayer: result.killedPlayer,
+    finished: events.some((event) => event.type === "finished"),
   };
+}
+
+/** A DoT tick emptied the bot during its own action: end the fight or bring the next foe. */
+function botFellToTick(
+  state: HuntActionState,
+  bot: HuntRosterBot,
+  hunter: HuntHuman,
+  duel: FightDuel,
+  result: BotMeleeResult,
+): readonly BattleEvent[] {
+  if (bot.hp > 0 || result.killedPlayer) return [];
+  if (enemySideCleared(bot.team, fightCombatants(state.humans, state.bots))) {
+    return [{ type: "finished", winnerTeam: opposingTeam(bot.team), fightId: state.fightId }];
+  }
+  return applyHuntBotHit(false, {
+    bots: state.bots,
+    enemyTeam: state.fightRules.teamAssignment.enemyTeam,
+    duel,
+    duels: state.duels,
+    opener: hunter,
+    humans: state.humans,
+  }).events;
 }
 
 function settleGloveHits(
@@ -130,6 +159,7 @@ function settleGloveHits(
     humans: readonly HuntHuman[];
   }>,
 ): EndingGloveResult {
+  if (ending.selfKilled) return ending;
   const primary = applyHuntBotHit(ending.finished, input);
   const sideHits = ending.sideNotifies.map((notify) => {
     if (!input.bots.some((bot) => bot.fightId === notify.targetId)) {

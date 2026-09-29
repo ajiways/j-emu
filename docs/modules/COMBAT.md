@@ -649,17 +649,28 @@ Representative: Hissa 397, перчатка 181. Bot 397: `effUse` kind-3 на �
 ## CMB-15c — remaining magic kinds
 
 Срез закрыт (unit). Kind 2 heal — CMB-06. Kind 3 keep-turn / buff-cast.
-Kind 4/5 ticks: бюджет `round(duration/period)`; `period` обязателен и
-приходит из Pub1 через decoder `pub1-items/v4` (без period бой падает с
-ошибкой, дефолта нет); sibling `hpChange` на carrier melee. Overlay
-`durationTurns` 396 = 3 (live «трех ходов»). Kind-1+DoT: `effUse` до
-`cast`, без тика в том же пакете. Player melee poll держит empty-anim tick
-`damage`; wire кладёт sibling `hpChange` (`persId`=bot, `targetId`=охотник,
-`dmgType` 64) в тот же melee `ev` map — не `extraHits` и не empty-anim
-`cast`. Тик, убивший бьющего охотника: конец боя, если его команда пуста,
-иначе hand-off ожидающему (как смерть от бота); после последнего убийства
-тики не идут. `winnerTeam` выхода — команда против погибшего/ушедшего, не
-константа. Kind 8 dispel
+Kind 4/5 живут на часах боя (модель подогнана к live-трассе
+`_research/new_usable_session`, фикстура `tests/fixtures/combat/`): возраст
+эффекта = реальное время + скачок каждого действия дуэли носителя
+(`turnTimeoutSeconds − время, уже потраченное в ходе`, у ответа бота —
+`meleeBotCounterMs`; это live `timeAdvance.span`, самого пакета j-emu не
+шлёт). Тик k срабатывает, когда возраст пересёк `k·period`: на действии
+(не больше одного на эффект, остаток ждёт следующего действия) или по
+таймеру боя строго до истечения; тикает только носитель в дуэли, эффект
+кончается при возрасте ≥ `duration` (`effPurge`, на самом моменте истечения
+таймерного тика нет). Возраст идёт и у носителя вне дуэли. `period` и
+`duration` обязательны и приходят из Pub1 (decoder `pub1-items/v4`), без
+них бой падает; `castEndsTurn` — эффект наложен ходозавершающим кастом:
+скачок этого же действия его не старит. Носитель — любой боец (человек или
+бот). Тик приходит sibling `hpChange` (empty-anim `damage`) в ответе
+действия либо отдельным пакетом с `pers-change`, если сработал таймер;
+`persId`=кастер, `targetId`=носитель, HoT `react` 32. Kind-1+DoT: `effUse`
+до `cast`, без тика в том же пакете. Тик, убивший бойца: конец боя, если
+его команда пуста; бьющего охотника — hand-off ожидающему (как смерть от
+бота); бота — следующий враг или ожидание; после последнего убийства тики
+не идут. 396 (81/40): тики на 40-й и 80-й секундах, то есть на втором и
+четвёртом действии после каста; CEF/дампа именно 396 нет. `winnerTeam`
+выхода — команда против погибшего/ушедшего, не константа. Kind 8 dispel
 стоящих `groupId` при gate `foe_has_dispel_groups`. Kind 11 empty
 success. Kind 18 stun skip-turn, `duration` обязателен. Kind 10 summon
 632: `fight_start` сжигается без каста; clone цели в roster **не**

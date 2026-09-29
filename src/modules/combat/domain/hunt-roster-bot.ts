@@ -182,6 +182,15 @@ export class HuntRosterBot implements Fighter {
     return this.hpValue === 0;
   }
 
+  applyHeal(amount: number): number {
+    if (!Number.isInteger(amount) || amount < 0) {
+      throw new Error("Roster bot heal must be a non-negative integer");
+    }
+    const before = this.hpValue;
+    this.hpValue = Math.min(this.maxHp, this.hpValue + amount);
+    return this.hpValue - before;
+  }
+
   creditDealt(amount: number): void {
     this.creditDealtDamage(amount);
   }

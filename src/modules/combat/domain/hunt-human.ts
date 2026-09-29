@@ -213,6 +213,14 @@ export class HuntHuman implements Fighter {
     return Math.max(0, Math.ceil((this.turnDeadlineMsValue - nowMs) / 1000));
   }
 
+  /** Real milliseconds this open turn has run; call before `endTurn`. */
+  turnElapsedMs(nowMs: number, timeoutSeconds: number): number {
+    if (!this.turnActiveValue || this.turnDeadlineMsValue === null) {
+      throw new Error("Hunt human has no open turn");
+    }
+    return nowMs - (this.turnDeadlineMsValue - timeoutSeconds * 1000);
+  }
+
   endTurn(): void {
     this.turnActiveValue = false;
     this.turnDeadlineMsValue = null;

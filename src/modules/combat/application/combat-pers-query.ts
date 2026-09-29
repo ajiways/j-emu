@@ -7,6 +7,7 @@ export function handlePersFightQuery(
     accountId: number;
     command: Extract<FightCommand, { kind: "pers-info" | "pers-effects" }>;
     battle: Battle | undefined;
+    nowMs: number;
     enqueue: (accountId: number, events: readonly CombatEvent[]) => void;
   }>,
 ): readonly CombatEvent[] {
@@ -24,7 +25,7 @@ export function handlePersFightQuery(
     {
       type: "pers-effects",
       persId: input.command.persId,
-      effects: snapshotFightEffects(board.humans, bots, input.command.persId),
+      effects: snapshotFightEffects(board.humans, bots, input.command.persId, input.nowMs),
     },
   ]);
   return [];

@@ -7,5 +7,12 @@ export function fightDuelDelayToken(fightId: string, duel: FightDuel): string {
 }
 
 export function fightDelayTokens(fightId: string, duels: readonly FightDuel[]): readonly string[] {
-  return duels.map((duel) => fightDuelDelayToken(fightId, duel));
+  return [
+    ...duels.map((duel) => fightDuelDelayToken(fightId, duel)),
+    fightEffectClockToken(fightId),
+  ];
+}
+
+export function fightEffectClockToken(fightId: string): string {
+  return `${fightId}:effect-clock`;
 }

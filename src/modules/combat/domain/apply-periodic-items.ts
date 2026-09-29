@@ -1,47 +1,52 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
-import type { HuntHuman } from "./hunt-human.ts";
+import type { Fighter } from "./fighter.ts";
+import type { PeriodicItem } from "./hunt-human-fight-effects.ts";
+import { pocketHealAmount } from "./hunt-human-cast-state.ts";
 import { magicReact, rollMagicHit } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
-import { pocketHealAmount } from "./hunt-human-cast-state.ts";
 
-export function applyCarrierTicks(
-  human: HuntHuman,
+/** Wire `hpChange.react` of a HoT tick (live trace: hp +N, react 32, no dmgType). */
+const HOT_TICK_REACT = 32;
+
+/** Turns what a clock step did to a fighter's DoT/HoT effects into fight events. */
+export function applyPeriodicItems(
+  fighter: Fighter,
+  items: readonly PeriodicItem[],
   random: RandomSource,
   rules: BattleRules,
 ): readonly BattleEvent[] {
   const events: BattleEvent[] = [];
-  for (const pulse of human.effects.takeTickPulses()) {
+  for (const item of items) {
+    if (item.kind === "expire") {
+      events.push({ type: "effect-purge", effectId: item.effectId });
+      continue;
+    }
+    const { pulse } = item;
     if (pulse.kind === 5) {
-      const healed = human.applyHeal(
-        typeof pulse.amount === "string" || typeof pulse.amount === "number"
-          ? healTick(pulse.amount, human.maxHp)
-          : 0,
+      const healed = fighter.applyHeal(
+        pulse.amount === undefined ? 0 : healTick(pulse.amount, fighter.maxHp),
       );
       events.push({
         type: "damage",
         sourceId: pulse.sourceId,
-        targetId: human.heroId,
+        targetId: fighter.id,
         animation: "",
         hpChange: healed,
-        targetMaxHp: human.maxHp,
+        targetMaxHp: fighter.maxHp,
         killed: false,
-        react: 0,
+        react: HOT_TICK_REACT,
         dmgType: pulse.dmgType,
       });
-      if (pulse.last) events.push({ type: "effect-purge", effectId: pulse.effectId });
       continue;
     }
-    if (human.hp < 1) {
-      if (pulse.last) events.push({ type: "effect-purge", effectId: pulse.effectId });
-      continue;
-    }
-    const { applied: damage, killed } = resolveHpLoss(
-      human,
+    if (fighter.hp < 1) continue;
+    const { applied, killed } = resolveHpLoss(
+      fighter,
       rollMagicHit({
         caster: { power: pulse.casterMagPower, resist: pulse.casterMagResist },
-        target: human.mag,
+        target: fighter.mag,
         casterStrength: pulse.casterStrength,
         dmgType: pulse.dmgType,
         ...(typeof pulse.amount === "number" ? { catalogAmount: pulse.amount } : {}),
@@ -51,22 +56,18 @@ export function applyCarrierTicks(
         rules,
       }),
     );
-    if (damage < 1) {
-      if (pulse.last) events.push({ type: "effect-purge", effectId: pulse.effectId });
-      continue;
-    }
+    if (applied < 1) continue;
     events.push({
       type: "damage",
       sourceId: pulse.sourceId,
-      targetId: human.heroId,
+      targetId: fighter.id,
       animation: "",
-      hpChange: -damage,
-      targetMaxHp: human.maxHp,
+      hpChange: -applied,
+      targetMaxHp: fighter.maxHp,
       killed,
       react: magicReact(killed),
       dmgType: pulse.dmgType,
     });
-    if (pulse.last) events.push({ type: "effect-purge", effectId: pulse.effectId });
   }
   return events;
 }

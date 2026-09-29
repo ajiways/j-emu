@@ -23,6 +23,7 @@ export function tickHuntRosterDuels(input: {
   fightId: string;
   rules: BattleRules;
   random: RandomSource;
+  nowMs: number;
 }): Readonly<{ events: readonly BattleEvent[]; finished: boolean }> {
   if (input.finished) return { events: [], finished: true };
   if (!input.hasEnemyBots) return { events: [], finished: false };
@@ -51,6 +52,7 @@ export function tickHuntRosterDuels(input: {
         keepFightOnKill: true,
         living: [],
         winnerTeam: 1,
+        nowMs: input.nowMs,
       }).events,
     );
     if (!botMeleeTarget(actor).alive || !botMeleeTarget(target).alive) {

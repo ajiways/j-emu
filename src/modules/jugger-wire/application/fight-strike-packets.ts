@@ -26,7 +26,7 @@ export function mergePersChangeStrike(
       consumed: 2 + followers.length,
     };
   }
-  if (next?.type !== "damage") return null;
+  if (next?.type !== "damage" || next.animation === "") return null;
   const followers = consumeMeleeFollowers(events, index + 2);
   return {
     frame: fightEventMap([...strikePackets(null, next, patch), ...followers]),

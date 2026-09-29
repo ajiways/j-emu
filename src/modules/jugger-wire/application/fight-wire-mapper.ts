@@ -1,5 +1,5 @@
 import type { CombatEvent, FightExit, FightStart } from "../../combat/ports/combat-port.ts";
-import { fightCastEvent } from "./fight-cast-wire.ts";
+import { fightCastEvent, fightSiblingHpChangeEvent } from "./fight-cast-wire.ts";
 import { fightBuffCastEvent, fightEffectUseEvent, fightPersCpEvent } from "./fight-effect-wire.ts";
 import { fightEventMap } from "./fight-event-map.ts";
 import {
@@ -161,6 +161,12 @@ export class FightWireMapper {
         }
         frames.push(fightEventMap(packets));
         index += consumed;
+        continue;
+      }
+      if (event.type === "damage" && event.animation === "") {
+        const followers = consumeMeleeFollowers(events, index + 1);
+        frames.push(fightEventMap([fightSiblingHpChangeEvent(event), ...followers]));
+        index += followers.length;
         continue;
       }
       if (event.type === "damage") {

@@ -44,8 +44,8 @@ describe("snapshotFightEffects", () => {
       effectIds: ids,
     });
     const emptyBot = { id: 1_000_000, effects: botEffects };
-    expect(snapshotFightEffects([human], [emptyBot], 1)).toEqual(human.effects.snapshot());
-    expect(snapshotFightEffects([human], [emptyBot], 1_000_000)).toEqual([]);
+    expect(snapshotFightEffects([human], [emptyBot], 1, 0)).toEqual(human.effects.snapshot());
+    expect(snapshotFightEffects([human], [emptyBot], 1_000_000, 0)).toEqual([]);
     botEffects.attachChargingKind3({
       sourceId: 1_000_000,
       artikulId: 397,
@@ -55,12 +55,12 @@ describe("snapshotFightEffects", () => {
       remainTurns: 1,
       groupId: 845,
     });
-    expect(snapshotFightEffects([human], [emptyBot], 1_000_000)).toEqual(
+    expect(snapshotFightEffects([human], [emptyBot], 1_000_000, 0)).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ artikulId: 397, img: "hissa_magic1.png" }),
       ]),
     );
-    expect(() => snapshotFightEffects([human], [emptyBot], 3)).toThrow(
+    expect(() => snapshotFightEffects([human], [emptyBot], 3, 0)).toThrow(
       /Fight participant 3 is missing/,
     );
   });

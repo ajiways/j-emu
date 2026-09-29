@@ -81,7 +81,7 @@ describe("CombatService melee turns", () => {
         botId: 4,
         botNick: "Хисса",
         botStrength: 15,
-        botSpellBook: unitHissaSpitBook(),
+        botSpellBook: unitHissaSpitBook({ duration: 80, period: 20 }),
       }),
     );
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });

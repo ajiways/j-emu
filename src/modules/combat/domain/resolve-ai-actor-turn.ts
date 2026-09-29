@@ -1,4 +1,6 @@
+import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
+import { advanceDuelClock, botActionJumpSeconds } from "./duel-clock.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { resolveBotTurn } from "./hunt-bot-turn.ts";
@@ -10,7 +12,7 @@ import type { RandomSource } from "./random-source.ts";
 /**
  * One AI-turn scheduler. Hit formulas stay split: bot→human is `resolveBotTurn`,
  * bot→bot is `resolveRosterBotTurn` (`keepFightOnKill: true` there so a bot kill
- * does not emit fight-finished).
+ * does not emit fight-finished). Either way the bot's action moves the duel clock.
  */
 export function resolveAiActorTurn(
   input: Readonly<{
@@ -24,8 +26,9 @@ export function resolveAiActorTurn(
     keepFightOnKill: boolean;
     living: readonly HuntHuman[];
     winnerTeam: 1 | 2;
+    nowMs: number;
   }>,
-): BotMeleeResult & Readonly<{ botHp: number }> {
+): BotMeleeResult {
   const otherId = input.duel.otherId(input.bot.fightId);
   const human = input.humans.find((entry) => entry.heroId === otherId);
   if (human) {
@@ -36,18 +39,54 @@ export function resolveAiActorTurn(
       keepFightOnKill: input.keepFightOnKill,
       living: input.living,
       winnerTeam: input.winnerTeam,
+      nowMs: input.nowMs,
     });
     input.duel.addHit(input.bot.fightId);
-    return result;
+    if (result.killedPlayer || input.bot.hp < 1) return result;
+    const ticks = botClockTicks(input, human);
+    const fell = human.hp < 1;
+    return {
+      events: [
+        ...result.events,
+        ...ticks,
+        ...(fell && !input.keepFightOnKill
+          ? [{ type: "finished" as const, winnerTeam: input.winnerTeam, fightId: input.fightId }]
+          : []),
+      ],
+      killedPlayer: fell,
+    };
   }
   const target = input.bots.find((entry) => entry.fightId === otherId);
   if (!target) {
     throw new Error(`Duel opponent ${otherId} is neither a human nor a fight bot`);
   }
   const events = [
-    ...resolveRosterBotTurn(input.bot, target, { rules: input.rules, random: input.random }),
+    ...resolveRosterBotTurn(input.bot, target, {
+      rules: input.rules,
+      random: input.random,
+      nowMs: input.nowMs,
+    }),
   ];
   input.duel.addHit(input.bot.fightId);
+  if (input.bot.hp > 0 && target.hp > 0) events.push(...botClockTicks(input, target));
   if (target.hp > 0) input.duel.setNextActor(target.fightId);
-  return { events, killedPlayer: false, botHp: input.bot.hp };
+  return { events, killedPlayer: false };
+}
+
+function botClockTicks(
+  input: Readonly<{
+    bot: HuntRosterBot;
+    rules: BattleRules;
+    random: RandomSource;
+    nowMs: number;
+  }>,
+  other: HuntHuman | HuntRosterBot,
+): readonly BattleEvent[] {
+  return advanceDuelClock({
+    fighters: [input.bot, other],
+    nowMs: input.nowMs,
+    jumpSeconds: botActionJumpSeconds(input.rules),
+    random: input.random,
+    rules: input.rules,
+  });
 }

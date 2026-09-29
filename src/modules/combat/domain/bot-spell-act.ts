@@ -18,6 +18,7 @@ export type BotKindActState = Readonly<{
   keepFightOnKill: boolean;
   living: readonly HuntHuman[];
   winnerTeam: 1 | 2;
+  nowMs: number;
 }>;
 
 export function actBotSpellCard(
@@ -63,7 +64,7 @@ export function actBotSpellCard(
     ];
   }
   if (spellKind(card.spell, 4) || spellKind(card.spell, 5)) {
-    const ticks = isHuman(target) ? attachSpellTicks(target, actor, card) : [];
+    const ticks = attachSpellTicks(target, actor, card, state.nowMs);
     return [
       ...ticks,
       {
@@ -167,12 +168,12 @@ function instantKind1(
     dmgType: botSpellKind1DmgType(card.spell),
     react: magicReact(killed),
   };
-  if (!isHuman(target)) return [hit];
-  const dRage = target.casts.awardIncomingRage(damage, target.maxHp);
   const ticks =
     !killed && (spellKind(card.spell, 4) || spellKind(card.spell, 5))
-      ? attachSpellTicks(target, actor, card)
+      ? attachSpellTicks(target, actor, card, state.nowMs)
       : [];
+  if (!isHuman(target)) return [...ticks, hit];
+  const dRage = target.casts.awardIncomingRage(damage, target.maxHp);
   const events: BattleEvent[] = [...ticks, { ...hit, dRage }];
   if (killed && !state.keepFightOnKill) {
     events.push({ type: "finished", winnerTeam: state.winnerTeam, fightId: state.fightId });
@@ -181,8 +182,7 @@ function instantKind1(
 }
 
 function healActor(actor: HuntRosterBot, card: HuntBotSpellCard): readonly BattleEvent[] {
-  const healed = Math.min(actor.maxHp - actor.hp, pocketHealAmount(card.spell, actor.maxHp));
-  actor.setHp(actor.hp + healed);
+  const healed = actor.applyHeal(pocketHealAmount(card.spell, actor.maxHp));
   return [
     {
       type: "damage",

@@ -9,7 +9,7 @@ const HISSA = {
   botId: 4,
   botNick: "Хисса",
   botStrength: 15,
-  botSpellBook: unitHissaSpitBook(),
+  botSpellBook: unitHissaSpitBook({ duration: 80, period: 20 }),
   heroHp: 2,
   heroMaxHp: 27,
 } as const;

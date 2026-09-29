@@ -1,4 +1,4 @@
-import { applyCarrierTicks } from "./apply-carrier-ticks.ts";
+import { advanceActionClock } from "./duel-clock.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HuntHuman } from "./hunt-human.ts";
@@ -35,6 +35,7 @@ export function tryPairedMelee(
     return { result: { kind: "ignored" }, finished: input.finished };
   }
   requireLivingMeleeTarget(target);
+  const turnElapsedMs = attacker.turnElapsedMs(input.nowMs, input.rules.turnTimeoutSeconds);
   attacker.endTurn();
   let baseDamage = rollMeleeDamage(attacker.meleeStrength(), input.random, input.rules);
   const orb = attacker.casts.takeOrbPcStr();
@@ -103,17 +104,27 @@ export function tryPairedMelee(
     events.push({ type: "finished", winnerTeam: attacker.team, fightId: input.fightId });
     return { result: { kind: "resolved", events }, finished };
   }
-  events.push(...applyCarrierTicks(attacker, input.random, input.rules));
-  if (attacker.hp > 0) return { result: { kind: "resolved", events }, finished };
-  const lost = enemySideCleared(attacker.team, fightCombatants(input.humans, input.bots));
-  if (lost) {
-    events.push({
-      type: "finished",
-      winnerTeam: opposingTeam(attacker.team),
-      fightId: input.fightId,
-    });
-  }
-  return { result: { kind: "resolved", events, selfKilled: true }, finished: lost };
+  const clock = advanceActionClock({
+    attacker,
+    victim: target.kind === "human" ? target.human : target.bot,
+    victimKilledByHit: killed,
+    turnElapsedMs,
+    nowMs: input.nowMs,
+    rules: input.rules,
+    random: input.random,
+    humans: input.humans,
+    bots: input.bots,
+    fightId: input.fightId,
+  });
+  events.push(...clock.events);
+  return {
+    result: {
+      kind: "resolved",
+      events,
+      ...(clock.selfKilled ? { selfKilled: true as const } : {}),
+    },
+    finished: clock.finished,
+  };
 }
 
 export function applyDamageToMeleeTarget(
@@ -155,8 +166,4 @@ function requireLivingMeleeTarget(target: MeleeTarget): void {
   if (targetHp(target) === 0) {
     throw new Error("Melee target is not a living paired opponent");
   }
-}
-
-export function opposingTeam(team: 1 | 2): 1 | 2 {
-  return team === 1 ? 2 : 1;
 }

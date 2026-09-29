@@ -18,11 +18,12 @@ export function resolveBotTurn(
     keepFightOnKill: boolean;
     living: readonly HuntHuman[];
     winnerTeam: 1 | 2;
+    nowMs: number;
   }>,
-): BotMeleeResult & Readonly<{ botHp: number }> {
+): BotMeleeResult {
   if (bot.stunnedTurns > 0) {
     bot.stunnedTurns -= 1;
-    return { events: [], killedPlayer: false, botHp: bot.hp };
+    return { events: [], killedPlayer: false };
   }
   const card = pickBotSpell(
     bot.spellBook,
@@ -35,13 +36,7 @@ export function resolveBotTurn(
     state.random,
   );
   if (!card) {
-    return {
-      ...resolveBotMelee(human, {
-        ...state,
-        bot,
-      }),
-      botHp: bot.hp,
-    };
+    return resolveBotMelee(human, { ...state, bot });
   }
   noteCast(bot.casts, card.artikulId);
   const events = [...actBotSpellCard(bot, human, card, { ...state, winnerTeam: state.winnerTeam })];
@@ -51,11 +46,7 @@ export function resolveBotTurn(
       ...state,
       bot,
     });
-    return {
-      events: [...events, ...melee.events],
-      killedPlayer: melee.killedPlayer,
-      botHp: bot.hp,
-    };
+    return { events: [...events, ...melee.events], killedPlayer: melee.killedPlayer };
   }
-  return { events, killedPlayer, botHp: bot.hp };
+  return { events, killedPlayer };
 }

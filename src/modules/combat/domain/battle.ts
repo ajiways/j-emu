@@ -1,4 +1,9 @@
 import type { BattleEvent, HuntBotSnap } from "./battle-event.ts";
+import {
+  nextEffectDueMs,
+  tickFightEffects,
+  type EffectClockOutcome,
+} from "./battle-effect-clock.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { authenticateFighter } from "./battle-authenticate.ts";
 import { huntHistoryOf, joinBattleHuman } from "./battle-hunt-join.ts";
@@ -23,7 +28,8 @@ import { primaryEnemyBot, requireFightBot, requireFightBots } from "./fight-bots
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { grantTurn as grantHumanTurn, type BotMeleeResult } from "./hunt-melee.ts";
-import { opposingTeam, type PlayerMeleeResult } from "./paired-melee.ts";
+import { opposingTeam } from "./opposing-team.ts";
+import type { PlayerMeleeResult } from "./paired-melee.ts";
 import { tryPocketCast, tryRageCast, type KeepTurnResult } from "./hunt-cast.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import { tryHuntAggro, type HuntAggroResult } from "./hunt-aggro.ts";
@@ -172,25 +178,17 @@ export class Battle {
 
   addHuman(join: FightSetupJoin): BattleEvent {
     return joinBattleHuman({
-      fightRules: this.fightRules,
-      finished: this.finishedValue,
-      humans: this.humans,
-      bots: this.bots,
+      ...this.actionState(),
       enemyTeam: this.fightRules.teamAssignment.enemyTeam,
       join,
       hasHuman: (accountId, heroId) => this.hasHuman(accountId, heroId),
-      duels: this.duels,
-      random: this.random,
       effectIds: battleOpener(this.humans).effects.effectIds,
     });
   }
 
   authenticate(accountId: number, nowMs: number): readonly BattleEvent[] {
     return authenticateFighter({
-      finished: this.finishedValue,
-      humans: this.humans,
-      duels: this.duels,
-      bots: this.bots,
+      ...this.actionState(),
       hasEnemyBots: this.fightRules.hasEnemyBots,
       enemyTeam: this.fightRules.teamAssignment.enemyTeam,
       timeoutSeconds: this.rules.turnTimeoutSeconds,
@@ -236,13 +234,9 @@ export class Battle {
 
   tryAggro(accountId: number, targetId: number, allocateBotId: () => number): HuntAggroResult {
     return tryHuntAggro({
+      ...this.actionState(),
       canAggro: this.fightRules.canAggro,
-      finished: this.finishedValue,
-      humans: this.humans,
-      duels: this.duels,
-      bots: this.bots,
       enemyTeam: this.fightRules.teamAssignment.enemyTeam,
-      random: this.random,
       accountId,
       targetId,
       allocateBotId,
@@ -260,13 +254,13 @@ export class Battle {
     return applied.result;
   }
 
-  resolveBotMelee(accountId: number): BotMeleeResult {
-    const result = applyBattleBotMelee(this.actionState(), accountId, this.livingHumans());
+  resolveBotMelee(accountId: number, nowMs: number): BotMeleeResult {
+    const result = applyBattleBotMelee(this.actionState(), accountId, this.livingHumans(), nowMs);
     if (result.finished) this.finishedValue = true;
     return result;
   }
 
-  tickRosterDuels(): readonly BattleEvent[] {
+  tickRosterDuels(nowMs: number): readonly BattleEvent[] {
     const ticked = tickHuntRosterDuels({
       hasEnemyBots: this.fightRules.hasEnemyBots,
       bots: this.bots,
@@ -278,9 +272,21 @@ export class Battle {
       fightId: this.id,
       rules: this.rules,
       random: this.random,
+      nowMs,
     });
     if (ticked.finished) this.finishedValue = true;
     return ticked.events;
+  }
+
+  nextEffectDueMs(): number | null {
+    return this.finishedValue ? null : nextEffectDueMs([...this.humans, ...this.bots]);
+  }
+
+  tickDueEffects(nowMs: number): EffectClockOutcome {
+    if (this.finishedValue) throw new Error("Cannot tick effects of a finished battle");
+    const outcome = tickFightEffects({ ...this.actionState(), nowMs });
+    if (outcome.finished) this.finishedValue = true;
+    return outcome;
   }
 
   tryShuffleAfterHits(accountId: number): ShuffleOutcome {

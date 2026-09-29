@@ -244,6 +244,51 @@ describe("FightWireMapper keep-turn frames", () => {
     expect(frames[1]).toEqual({ rs: true, sq: 4 });
   });
 
+  it("sends a timer tick as a standalone hpChange map, not as an empty-anim cast", () => {
+    const frames = mapper.frames([
+      {
+        type: "pers-change",
+        humans: [],
+        bots: [
+          {
+            id: 1_000_000,
+            nick: "Хисса",
+            level: 2,
+            hp: 19,
+            maxHp: 20,
+            artikulId: 4,
+            avatar: "avatar_hissa1_sm.jpg",
+            sk: "16",
+            body: "",
+            team: 2,
+            dealtDamage: 0,
+          },
+        ],
+      },
+      {
+        type: "damage",
+        sourceId: 1_000_000,
+        targetId: 1,
+        animation: "",
+        hpChange: -1,
+        targetMaxHp: 27,
+        killed: false,
+        dmgType: 64,
+        react: 2,
+      },
+      { type: "effect-purge", effectId: 1 },
+    ]);
+    expect(frames).toHaveLength(2);
+    expect(evTypes(frames[1])).toEqual(["hpChange", "effPurge"]);
+    expect(Object.values(evMap(frames[1]))[0]).toMatchObject({
+      et: "hpChange",
+      persId: 1_000_000,
+      targetId: 1,
+      hp: -1,
+      dmgType: 64,
+    });
+  });
+
   it("packs bot overlay purge on the melee map", () => {
     const frames = mapper.frames([
       {

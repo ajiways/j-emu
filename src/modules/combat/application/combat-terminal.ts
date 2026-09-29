@@ -44,7 +44,7 @@ export class CombatTerminal {
   async settleFinished(
     battle: Battle,
     events: readonly CombatEvent[],
-    strikerAccountId: number,
+    strikerAccountId: number | null,
   ): Promise<void> {
     const finished = events.find((event) => event.type === "finished");
     if (!finished || finished.type !== "finished") {
@@ -171,7 +171,7 @@ export class CombatTerminal {
     battle: Battle,
     kind: FinishKind,
     winnerTeam: 1 | 2,
-    input: Readonly<{ strikerAccountId: number; finished?: CombatEvent }>,
+    input: Readonly<{ strikerAccountId: number | null; finished?: CombatEvent }>,
   ): Promise<void> {
     for (const token of battle.delayTokens()) this.scheduler.cancel(token);
     if (this.settledFights.has(battle.id)) return;

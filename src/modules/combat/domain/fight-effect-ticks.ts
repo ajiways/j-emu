@@ -1,14 +1,15 @@
 import type { BattleEvent } from "./battle-event.ts";
-import { DOT_DURATION_TURNS } from "./dot-duration-turns.ts";
+import { botSpellEndsTurn } from "./bot-spell-damage.ts";
+import type { Fighter } from "./fighter.ts";
 import type { HuntBotSpellCard } from "./hunt-bot-spell-book.ts";
-import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import { spellSkillValue } from "./magic-hit.ts";
 
 export function attachSpellTicks(
-  carrier: HuntHuman,
+  carrier: Fighter,
   caster: HuntRosterBot,
   card: HuntBotSpellCard,
+  nowMs: number,
 ): readonly BattleEvent[] {
   const events: BattleEvent[] = [];
   for (const effect of card.spell.effects) {
@@ -19,9 +20,12 @@ export function attachSpellTicks(
       artikulId: card.artikulId,
       title: card.title,
       img: card.picture,
-      dmgType: requireTickDmgType(card.artikulId, effect.dmgType),
+      dmgType: requireTickField(card.artikulId, "dmgType", effect.dmgType),
       ...(card.spell.groupId !== undefined ? { groupId: card.spell.groupId } : {}),
-      ticks: tickBudget(card.artikulId, effect.duration, effect.period),
+      durationSeconds: requireTickField(card.artikulId, "duration", effect.duration),
+      periodSeconds: requireTickField(card.artikulId, "period", effect.period),
+      nowMs,
+      castEndsTurn: botSpellEndsTurn(card.spell),
       ...(effect.amount !== undefined ? { amount: effect.amount } : {}),
       catalogPcStr: spellSkillValue(effect, "pcSTR"),
       catalogStr: spellSkillValue(effect, "STR"),
@@ -37,7 +41,7 @@ export function attachSpellTicks(
       flags: 0,
       img: snap.img,
       title: snap.title,
-      persId: carrier.heroId,
+      persId: carrier.id,
       dmgType: snap.dmgType,
       id: snap.id,
       sourceId: snap.sourceId,
@@ -51,30 +55,9 @@ export function attachSpellTicks(
   return events;
 }
 
-function requireTickDmgType(artikulId: number, dmgType: number | undefined): number {
-  if (dmgType === undefined) {
-    throw new Error(`Bot spell ${artikulId} kind 4/5 dmgType is required`);
+function requireTickField(artikulId: number, field: string, value: number | undefined): number {
+  if (value === undefined) {
+    throw new Error(`Bot spell ${artikulId} kind 4/5 ${field} is required`);
   }
-  return dmgType;
-}
-
-function tickBudget(
-  artikulId: number,
-  duration: number | undefined,
-  period: number | undefined,
-): number {
-  const overlay = DOT_DURATION_TURNS[artikulId];
-  if (overlay !== undefined) {
-    if (!Number.isInteger(overlay) || overlay < 1) {
-      throw new Error(`Bot spell ${artikulId} durationTurns overlay is invalid`);
-    }
-    return overlay;
-  }
-  if (duration === undefined) {
-    throw new Error(`Bot spell ${artikulId} kind 4/5 duration is required`);
-  }
-  if (period === undefined || period < 1) {
-    throw new Error(`Bot spell ${artikulId} kind 4/5 period is required`);
-  }
-  return Math.max(1, Math.round(duration / period));
+  return value;
 }

@@ -31,7 +31,10 @@ export function unitHuntSpellCard(overrides: Partial<HuntBotSpellCard> = {}): Hu
   };
 }
 
-export function unitHissaSpitBook(): HuntBotSpellBook {
+/** Hissa 396 as the catalog ships it (81/40); pass a faster DoT to see ticks sooner. */
+export function unitHissaSpitBook(
+  poison: Readonly<{ duration: number; period: number }> = { duration: 81, period: 40 },
+): HuntBotSpellBook {
   return {
     nothingWeight: 100,
     spells: [
@@ -42,7 +45,7 @@ export function unitHissaSpitBook(): HuntBotSpellBook {
           endTurn: true,
           effects: [
             { kind: 1, dmgType: 64, skills: [{ skillId: "pcSTR", value: -50 }] },
-            { kind: 4, dmgType: 64, duration: 81, period: 40 },
+            { kind: 4, dmgType: 64, duration: poison.duration, period: poison.period },
           ],
         },
       }),
