@@ -1,0 +1,1 @@
+ALTER TABLE "catalog"."level_boundaries" ADD COLUMN "notice" jsonb;

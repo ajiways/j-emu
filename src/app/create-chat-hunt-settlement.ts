@@ -6,6 +6,8 @@ import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 import type { PartyBagService } from "../modules/party/application/party-bag-service.ts";
 import type { PartyService } from "../modules/party/application/party-service.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
+import type { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.ts";
+import { LevelUpNotifier } from "./level-up-notifier.ts";
 import { ChatFightSettlement } from "./chat-fight-settlement.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import { HuntFightSettlement } from "./hunt-fight-settlement.ts";
@@ -27,6 +29,8 @@ export function createChatHuntSettlement(input: {
   partyBag: PartyBagService;
   partyNotify: PartyNotify;
   chat: ChatDesk;
+  outbox: EsrvOutbox;
+  wake: Readonly<{ wake(accountId: number): void }>;
   bestiary: HeroBestiary;
   lootNeeded: QuestLootNeeded;
   heroism: HeroismRules;
@@ -56,6 +60,7 @@ export function createChatHuntSettlement(input: {
       input.dungeonGrant,
     ),
     input.chat,
+    new LevelUpNotifier(input.catalog, input.outbox, input.wake),
     {
       failed(fightId, error) {
         process.stderr.write(`fight-chat ${fightId}: ${error.message}\n`);

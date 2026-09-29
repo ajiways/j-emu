@@ -10,6 +10,7 @@ import {
   text,
   uuid,
 } from "drizzle-orm/pg-core";
+import type { LevelNoticeDocument } from "../../content/domain/bootstrap-content.ts";
 import { releases } from "../../content/infrastructure/schema.ts";
 
 export const catalogSchema = pgSchema("catalog");
@@ -173,6 +174,7 @@ export const levelBoundaries = catalogSchema.table(
     honorMin: integer("honor_min").notNull(),
     honorMax: integer("honor_max").notNull(),
     honorStatus: integer("honor_status").notNull(),
+    notice: jsonb("notice").$type<LevelNoticeDocument>(),
   },
   (table) => [
     primaryKey({ columns: [table.releaseId, table.level] }),

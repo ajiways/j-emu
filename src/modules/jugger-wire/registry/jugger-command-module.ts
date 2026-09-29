@@ -81,6 +81,7 @@ import type { SessionPresence } from "../../identity/ports/session-presence.ts";
 import type { EsrvOutbox } from "../application/esrv-outbox.ts";
 import { AcceptFriendlyDuel } from "../application/accept-friendly-duel.ts";
 import { FriendlyDuelInvites } from "../application/friendly-duel-invites.ts";
+import { LevelUpNotifier } from "../../../app/level-up-notifier.ts";
 import { DeclineFriendlyDuel } from "../application/decline-friendly-duel.ts";
 import { ProposeFriendlyDuel } from "../application/propose-friendly-duel.ts";
 import { TradeMutation } from "../application/trade-mutation.ts";
@@ -175,6 +176,7 @@ export class JuggerCommandModule {
       ambushRandom,
       travel,
       presence,
+      new LevelUpNotifier(catalog, outbox, wake),
     );
     const invites = new FriendlyDuelInvites(clock);
     const propose = new ProposeFriendlyDuel(

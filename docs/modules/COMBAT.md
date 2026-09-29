@@ -269,7 +269,8 @@ Win/loss exit `type:0` + `winner`. Кадр loot+exit+HUD (и chat «Оконч�
 бой») выдаётся через `combat.resultRevealDelayMs` после того, как fproxy poll
 забрал `fightFinish` (live дамп: exit → loot/HUD ~1.5–1.8 с после добивания;
 клиент момент «выйти» не сообщает, `fight|finish` OA приходит позже). Persist
-при этом остаётся на RAM finish. Flee-exit `last-leave` не откладывается. `leaveFight`: HTTP `{rs:true,sq}`; `fight|exit`
+при этом остаётся на RAM finish. Окно нового уровня (`common|window`,
+[CHARACTER.md](CHARACTER.md)) уходит вместе с этим кадром (`publishEnded`). Flee-exit `last-leave` не откладывается. `leaveFight`: HTTP `{rs:true,sq}`; `fight|exit`
 `{flee:true,status:100,type:2}` и тот же HUD (без loot). Если в бою ещё живой союзник — leaver
 получает только flee-exit, бой продолжается; полный loot/EXP — когда RAM
 fight заканчивается. `chat|add` «Вами получено» / «Окончен бой» — [CHAT.md](CHAT.md) (SOC-01), не
@@ -298,8 +299,8 @@ version bump. Combat не читает fixtures.
 
 Quest loot tables в combat (QST-ENG-02 clip — composition `needed`);
 party split; dungeon bands leftover (personal/coins — DNG-03 landed); system chat; `Clock.schedule`;
-OA FIGHT_JOIN/HELP (CMB-11); live `10_000_000+hero.id`; уведомление о
-повышении уровня/звания после боя ([CHARACTER.md](CHARACTER.md)).
+OA FIGHT_JOIN/HELP (CMB-11); live `10_000_000+hero.id`; окно повышения
+звания после боя (нет дампа, [CHARACTER.md](CHARACTER.md)).
 
 ## CMB-04 — reconnect, locks, ghost
 
@@ -443,7 +444,13 @@ friendly human↔human. Melee не ветвится hunt/PvP: удар идёт 
 `images/duel.png`, кнопки с embedded OA `user|friendly_duel_accept|decline`
 `{nick}` и `ban_keys`, как trade/friend/group; live 2players dump), challenger-у
 после accept — `fight|conf`. Старый `user|friendly_duel_request` — не live wire,
-удалён. Invites
+удалён. «Игнорировать» — только клиент (`ServerWindow.buttonClick`): OA не
+шлётся, клиент запоминает `ban_key` до перезапуска, и окна с тем же ключом
+больше не показываются (`showBlocking`). Ключ у нас `md5(friendly-duel:
+challenger:target)`, то есть бан на пару. Сервер об игноре не знает: вызов
+висит до TTL 60 с и снимается им; повторный propose от того же игрока для
+игнорирующего невидим. Live-схема ключа неизвестна (в дампе один ключ на две
+одинаковые пары). Invites
 process-local, TTL 60s, fail-fast `203`. Practice settlement возвращает
 HP/MP/pocket, без лута/EXP/травмы; `fight|conf.is_pvp=1`, `type:"6"`.
 После 3↔3 melee hits каждый удар (игрок и бот) и пропуск хода

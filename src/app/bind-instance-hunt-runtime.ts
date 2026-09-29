@@ -87,6 +87,8 @@ export function bindInstanceHuntRuntime(input: {
       partyBag: input.parties.bag,
       partyNotify: input.partyNotify,
       chat: input.chat,
+      outbox: input.outbox,
+      wake: input.wake,
       bestiary: input.characters.bestiary,
       lootNeeded: input.lootNeeded,
       heroism: HEROISM_RULES,

@@ -248,25 +248,41 @@ CHR-01 implementation закрыт как internal enabling capability: producti
 не имеет отдельного EXP OA. CMB-03 — consumer боя (raw-AMF). Workflow-статус
 `done` не повышает character progression до `готово`. Quest consumer ещё нет.
 
-### Уведомление о повышении уровня и звания (план)
+### Уведомление о повышении уровня (LVL-NOTICE)
 
-Сейчас не реализовано: `grantExperience` / `grantHonor` меняют HUD, но клиенту
-не уходит окно о новом уровне или звании. Клиент сам окно не рисует (`PersData.Level`
-только диспатчит `CHANGE_LEVEL`), значит это серверный push, скорее всего
-personal esrv `common|window` (`title`, `text` с macroses, `image`, `buttons`;
-шаблоны — trade/friend/group/duel в `2players_social_2026-08-11`).
+Wire подтверждён дампом `reg-6lvl.har` (esrv, герой `_industrial`, уровни 2–6).
+Клиент окно сам не рисует (`PersData.Level` лишь диспатчит `CHANGE_LEVEL`);
+его шлёт сервер personal esrv отдельным кадром `common|window`:
 
-**Wire не подтверждён:** в просмотренных дампах (`2players_social`,
-`giga_dump`, `reg_6lvl`, `from_register`) нет ни esrv-кадра, ни chat-сообщения
-на смене уровня: у `reg_6lvl`/`from_register` захвачены только OA-ответы
-(`user|unitframe.level` 1→2 на `fight|finish`/`npc|answer`), у остальных
-уровень не менялся. Нужен дамп esrv на повышении уровня и на повышении звания
-(honor rollover); до него не выдумывать title/image/text.
+- `status:100`, `title:""`, `image:""`, `width:380`, `buttons:[{caption:"Закрыть"}]`;
+- `text` (разделитель `\r\n`): `[[IMG <достижение>]] [[IMG <text_pozdrav>]]`,
+  `<b><font color="#ff0000">Вы достигли <N>-го уровня!</font></b><br>`, тело,
+  затем `[[ARTIFACT_IMG …]]` открывшихся вещей;
+- `macroses`: `IMG` (`/images/data/achievements/achiv_lvl_N.png`,
+  `/images/data/upl/text_pozdrav.png`) и `ARTIFACT_IMG` (тот же payload, что
+  `ARTIFACT`, но без `macro_text`/`creator_nick`/`engraved_note`).
 
-Когда wire известен: окно строит composition/wire после committed
-`grantExperience` (`levelsGained > 0`) и `grantHonor` (смена звания), а не
-character; звание использует ту же форму окна. Отправка идёт вместе с
-`fight|loot`/`fight|exit` кадром (не на добивании), см. COMBAT.md.
+Порядок в live: бой — сразу после первого `fight|exit`, до loot/HUD-кадра;
+квест — перед OA-ответом `npc|answer` в момент выдачи EXP.
+
+Реализация: авторский `notice` на строке уровня (`level_boundaries.notice`,
+`LevelBoundaryDocument.notice`: `headline`, `body`, `achievementImage`,
+`artikulIds`; в digest прогрессии не входит). Уровень **без** `notice` окна не
+шлёт (явное правило контента, не fallback); отсутствующая строка уровня —
+ошибка. Валидатор требует, чтобы каждый `artikulId` был в bundle. Сейчас
+авторские notices — уровни 2–6 (из дампа); 7+ в дампе нет, нужен дамп или
+ручной автор. На несколько уровней за раз — окно на каждый достигнутый уровень
+по порядку (в дампе такого нет, предположение).
+
+Триггеры (`LevelUpNotifier`, composition, а не character): `grantExperience`
+`levelsGained > 0` в hunt settlement — окно уходит в `publishEnded`, то есть с
+кадром loot/exit, не на добивании — и в `GRANT_AWARDS` квеста. Окно не в
+персистентной транзакции: reconnect после потери кадра его не повторяет.
+
+Повышение **звания**: дампа нет (в `giga_dump` PvP-героизм есть, окна звания
+нет), поэтому не реализовано. Форма окна та же (`levelUpWindow`); нужны
+authored rank notices и триггер по смене `rank` в `HonorGrantResult`
+(`persist-pvp-honor`) — сделать при появлении дампа.
 
 ## CHR-02 — out-of-combat HP regeneration
 

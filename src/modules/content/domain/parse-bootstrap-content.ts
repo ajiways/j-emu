@@ -12,6 +12,15 @@ export const skillDocumentSchema = z
   })
   .strict();
 
+const levelNoticeDocumentSchema = z
+  .object({
+    headline: z.string().min(1),
+    body: z.string().min(1),
+    achievementImage: z.string().min(1),
+    artikulIds: z.array(z.number().int().positive()).min(1),
+  })
+  .strict();
+
 export const levelBoundaryDocumentSchema = z
   .object({
     level: z.number().int().positive(),
@@ -33,6 +42,7 @@ export const levelBoundaryDocumentSchema = z
       )
       .min(1),
     evidenceKind: z.union([z.literal("confirmed"), z.literal("legacy_extrapolated")]),
+    notice: levelNoticeDocumentSchema.optional(),
   })
   .strict()
   .refine((row) => row.expMax > row.expMin, { message: "expMax must be greater than expMin" })

@@ -24,6 +24,34 @@ export type ArtifactMacroToken = Readonly<{
 }>;
 
 export function buildArtifactMacro(source: ArtifactMacroSource): ArtifactMacroToken {
+  requireArtifactMacroSource(source);
+  const key = macroKeyId("ARTIFACT", source.id);
+  return {
+    key,
+    token: `[[ARTIFACT ${key}]]`,
+    macro: {
+      ...artifactMacroFields(source),
+      macro_text: source.title,
+      creator_nick: "",
+      engraved_note: "",
+      key_id: key,
+      macro_type: "ARTIFACT",
+    },
+  };
+}
+
+/** Icon-only artifact macro (live `ARTIFACT_IMG`, e.g. level-up windows): no macro_text/creator. */
+export function buildArtifactImgMacro(source: ArtifactMacroSource): ArtifactMacroToken {
+  requireArtifactMacroSource(source);
+  const key = macroKeyId("ARTIFACT_IMG", source.id);
+  return {
+    key,
+    token: `[[ARTIFACT_IMG ${key}]]`,
+    macro: { ...artifactMacroFields(source), key_id: key, macro_type: "ARTIFACT_IMG" },
+  };
+}
+
+function requireArtifactMacroSource(source: ArtifactMacroSource): void {
   if (!Number.isInteger(source.id) || source.id < 1) {
     throw new Error("Artifact macro id is invalid");
   }
@@ -33,35 +61,28 @@ export function buildArtifactMacro(source: ArtifactMacroSource): ArtifactMacroTo
   if (!Number.isInteger(source.priceMinor) || source.priceMinor < 0) {
     throw new Error(`Artifact ${source.id} price is invalid`);
   }
-  const key = macroKeyId("ARTIFACT", source.id);
+}
+
+function artifactMacroFields(source: ArtifactMacroSource): Record<string, unknown> {
   return {
-    key,
-    token: `[[ARTIFACT ${key}]]`,
-    macro: {
-      id: source.id,
-      title: source.title,
-      type_id: source.typeId,
-      kind_id: source.kindId,
-      trend: source.trend,
-      quality: 0,
-      picture: source.picture,
-      price: source.priceMinor / 100,
-      level_min: source.levelMin,
-      level_max: source.levelMax,
-      durability: source.durability,
-      durability_max: source.durabilityMax,
-      validity: 0,
-      cnt: source.slotMask !== 0 ? 0 : 1,
-      flags: source.flags,
-      slot_mask: source.slotMask,
-      slot2_mask: 0,
-      companion_type: 0,
-      artifact_skills: Object.keys(source.skillBlocks).length === 0 ? [] : source.skillBlocks,
-      macro_text: source.title,
-      creator_nick: "",
-      engraved_note: "",
-      key_id: key,
-      macro_type: "ARTIFACT",
-    },
+    id: source.id,
+    title: source.title,
+    type_id: source.typeId,
+    kind_id: source.kindId,
+    trend: source.trend,
+    quality: 0,
+    picture: source.picture,
+    price: source.priceMinor / 100,
+    level_min: source.levelMin,
+    level_max: source.levelMax,
+    durability: source.durability,
+    durability_max: source.durabilityMax,
+    validity: 0,
+    cnt: source.slotMask !== 0 ? 0 : 1,
+    flags: source.flags,
+    slot_mask: source.slotMask,
+    slot2_mask: 0,
+    companion_type: 0,
+    artifact_skills: Object.keys(source.skillBlocks).length === 0 ? [] : source.skillBlocks,
   };
 }

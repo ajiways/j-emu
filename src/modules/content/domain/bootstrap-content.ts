@@ -61,6 +61,14 @@ type ManagedSkillDocument = Readonly<{
   value: number;
 }>;
 
+/** Authored `common|window` for reaching a level; a level without it sends no window. */
+export type LevelNoticeDocument = Readonly<{
+  headline: string;
+  body: string;
+  achievementImage: string;
+  artikulIds: readonly number[];
+}>;
+
 export type LevelBoundaryDocument = Readonly<{
   level: number;
   expMin: number;
@@ -72,6 +80,7 @@ export type LevelBoundaryDocument = Readonly<{
   honorStatus: number;
   managedSkills: readonly ManagedSkillDocument[];
   evidenceKind: "confirmed" | "legacy_extrapolated";
+  notice?: LevelNoticeDocument;
 }>;
 
 export type AppearanceDocument = Readonly<{

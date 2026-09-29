@@ -14,8 +14,10 @@ import type { ReputationCatalog } from "./reputation-catalog.ts";
 import type { ProfessionCatalog } from "./profession-catalog.ts";
 import type { FarmCatalog } from "./farm-catalog.ts";
 import type { CraftCatalog } from "./craft-catalog.ts";
+import type { LevelNoticeCatalog } from "./level-notice-catalog.ts";
 
-export interface Catalog extends ReputationCatalog, ProfessionCatalog, FarmCatalog, CraftCatalog {
+export interface Catalog
+  extends ReputationCatalog, ProfessionCatalog, FarmCatalog, CraftCatalog, LevelNoticeCatalog {
   artifact(id: number): Promise<ArtifactDefinition | null>;
   searchArtifacts(query: ArtifactSearchQuery): Promise<readonly ArtifactBrief[]>;
   bonus(id: number): Promise<ArtifactBonus | null>;

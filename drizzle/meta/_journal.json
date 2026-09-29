@@ -260,6 +260,13 @@
       "when": 1789667726707,
       "tag": "0036_mail_auction_trade_item_data_json",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1790671582161,
+      "tag": "0037_catalog_level_notice",
+      "breakpoints": true
     }
   ]
 }

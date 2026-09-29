@@ -15,6 +15,7 @@ import { collectProfessionIssues, overlayProfessionInfo } from "./collect-profes
 import { collectFarmIssues } from "./collect-farm-issues.ts";
 import { collectCraftIssues } from "./collect-craft-issues.ts";
 import { collectQuestIssues } from "./collect-quest-issues.ts";
+import { collectLevelNoticeIssues } from "./collect-level-notice-issues.ts";
 import { collectSetIssues } from "./collect-set-issues.ts";
 import { collectUpgradeIssues } from "./collect-upgrade-issues.ts";
 import { collectUseIssues } from "./collect-use-issues.ts";
@@ -174,6 +175,7 @@ export class ContentValidator {
     issues.push(...collectQuestIssues(bundle));
     issues.push(...collectUpgradeIssues(bundle));
     issues.push(...collectSetIssues(bundle));
+    issues.push(...collectLevelNoticeIssues(bundle));
     issues.push(...collectUseIssues(bundle));
     issues.push(...collectBotSpellIssues(bundle));
     issues.push(...collectDungeonIssues(bundle));

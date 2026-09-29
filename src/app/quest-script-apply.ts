@@ -6,6 +6,7 @@ import type { QuestService } from "../modules/quests/application/quest-service.t
 import { capDropQuantity } from "../modules/quests/domain/quest-loot-needed.ts";
 import type { QuestScriptEffect } from "../modules/quests/domain/quest-script-effect.ts";
 import type { ChatDesk } from "./chat-desk.ts";
+import type { LevelUpNotifier } from "./level-up-notifier.ts";
 
 export async function applyQuestScriptEffect(
   deps: Readonly<{
@@ -14,6 +15,7 @@ export async function applyQuestScriptEffect(
     inventory: InventoryService;
     combat: CombatPort;
     chat: ChatDesk;
+    levelUps: LevelUpNotifier;
   }>,
   accountId: number,
   heroId: number,
@@ -74,11 +76,14 @@ export async function applyQuestScriptEffect(
       if (grant.amount !== quest.awardExp) {
         throw new Error("GRANT_AWARDS experience amount does not match the quest");
       }
-      await deps.characters.grantExperience({
+      const result = await deps.characters.grantExperience({
         characterId: heroId,
         operationId: grant.operationId,
         amount: grant.amount,
       });
+      if (result.levelsGained > 0) {
+        await deps.levelUps.notify(accountId, result.levelBefore, result.levelAfter);
+      }
     }
     if (quest.awardMoneyMinor > 0) {
       await deps.characters.creditMoney({

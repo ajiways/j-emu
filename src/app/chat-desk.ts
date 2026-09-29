@@ -7,7 +7,7 @@ import type { DeathDurabilityBreak } from "../modules/inventory/domain/apply-dea
 import { ChatDeniedError } from "../modules/chat/domain/chat-denied-error.ts";
 import { chatChannelType, isAreaScopedChat } from "../modules/chat/domain/chat-channels.ts";
 import { buildArtifactMacro } from "../modules/chat/domain/artifact-macro.ts";
-import { artifactSkillWireMap } from "../modules/jugger-wire/application/artifact-skill-wire.ts";
+import { loadArtifactMacroSource } from "./load-artifact-macro-source.ts";
 import {
   buildArtifactItemMacro,
   type ArtifactItemMacroToken,
@@ -281,27 +281,7 @@ export class ChatDesk {
   }
 
   async artifactMacro(artikulId: number) {
-    const definition = await this.deps.catalog.artifact(artikulId);
-    if (!definition) {
-      throw new Error(`Artifact catalog entry ${artikulId} is missing`);
-    }
-    const skillBlocks = await artifactSkillWireMap(definition.skills, this.deps.catalog);
-    return buildArtifactMacro({
-      id: definition.id,
-      title: definition.title,
-      picture: definition.picture,
-      typeId: definition.typeId,
-      kindId: definition.kindId,
-      priceMinor: definition.priceMinor,
-      levelMin: definition.levelMin,
-      levelMax: definition.levelMax,
-      durability: definition.durability,
-      durabilityMax: definition.durabilityMax,
-      flags: definition.flags,
-      slotMask: definition.slotMask,
-      trend: definition.extra.trend,
-      skillBlocks,
-    });
+    return buildArtifactMacro(await loadArtifactMacroSource(this.deps.catalog, artikulId));
   }
 
   private message(fields: ChatMessageDraft): ChatMessageBlock {

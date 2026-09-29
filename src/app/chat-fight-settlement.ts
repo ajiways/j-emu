@@ -7,6 +7,8 @@ import type {
 } from "../modules/combat/ports/fight-settlement.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import type { HuntFightSettlement } from "./hunt-fight-settlement.ts";
+import type { FightLevelUp } from "./fight-level-up-log.ts";
+import type { LevelUpNotifier } from "./level-up-notifier.ts";
 
 export type FightChatFailureSink = Readonly<{
   failed(fightId: string, error: Error): void;
@@ -16,6 +18,7 @@ type PendingEnded = Readonly<{
   outcome: FightOutcomeSnapshot;
   loot: ReadonlyMap<number, FightLootBlock>;
   breaks: ReadonlyMap<number, readonly DeathDurabilityBreak[]>;
+  levelUps: readonly FightLevelUp[];
 }>;
 
 export class ChatFightSettlement implements FightSettlement {
@@ -24,6 +27,7 @@ export class ChatFightSettlement implements FightSettlement {
   constructor(
     private readonly inner: HuntFightSettlement,
     private readonly chat: ChatDesk,
+    private readonly levelUps: LevelUpNotifier,
     private readonly failures: FightChatFailureSink,
   ) {}
 
@@ -48,6 +52,7 @@ export class ChatFightSettlement implements FightSettlement {
       outcome,
       loot,
       breaks: this.inner.takeDeathBreaks(outcome.fightId),
+      levelUps: this.inner.takeLevelUps(outcome.fightId),
     });
     return loot;
   }
@@ -57,6 +62,9 @@ export class ChatFightSettlement implements FightSettlement {
     if (!pending) return;
     this.pendingEnded.delete(fightId);
     try {
+      for (const up of pending.levelUps) {
+        await this.levelUps.notify(up.accountId, up.levelBefore, up.levelAfter);
+      }
       await this.chat.notifyFightEnded(pending.outcome, pending.loot, pending.breaks);
     } catch (error) {
       const failure = error instanceof Error ? error : new Error(String(error));

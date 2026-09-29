@@ -44,6 +44,7 @@ import type { HeroismRules } from "./heroism-rules.ts";
 import { persistPvpHonor } from "./persist-pvp-honor.ts";
 import type { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 import type { DungeonPersonalGrant } from "./dungeon-personal-grant.ts";
+import { FightLevelUpLog, type FightLevelUp } from "./fight-level-up-log.ts";
 import { capRolledDrops, loadArtikulList, persistFightHp } from "./hunt-fight-loot-apply.ts";
 
 type SettlementCharacters = CharacterResources &
@@ -57,6 +58,7 @@ type SettlementCharacters = CharacterResources &
 export class HuntFightSettlement implements FightSettlement {
   private readonly finished = new Map<string, Map<number, FightLootBlock>>();
   private readonly left = new Set<string>();
+  private readonly levelUps = new FightLevelUpLog();
   private readonly deathBreaks = new Map<string, Map<number, readonly DeathDurabilityBreak[]>>();
 
   constructor(
@@ -198,11 +200,18 @@ export class HuntFightSettlement implements FightSettlement {
           });
         }
         if (exp >= 1) {
-          await this.characters.grantExperience({
+          const grant = await this.characters.grantExperience({
             characterId: human.characterId,
             operationId: `fight:${outcome.fightId}:${human.characterId}`,
             amount: exp,
           });
+          if (grant.levelsGained > 0) {
+            this.levelUps.note(outcome.fightId, {
+              accountId: human.accountId,
+              levelBefore: grant.levelBefore,
+              levelAfter: grant.levelAfter,
+            });
+          }
         }
         if (goldMinor >= 1) {
           await this.characters.creditMoney({
@@ -323,6 +332,10 @@ export class HuntFightSettlement implements FightSettlement {
 
   async publishEnded(fightId: string): Promise<void> {
     if (!fightId) throw new Error("Fight id is required");
+  }
+
+  takeLevelUps(fightId: string): readonly FightLevelUp[] {
+    return this.levelUps.take(fightId);
   }
 
   takeDeathBreaks(fightId: string): ReadonlyMap<number, readonly DeathDurabilityBreak[]> {

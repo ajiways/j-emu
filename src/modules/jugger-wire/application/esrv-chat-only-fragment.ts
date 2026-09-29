@@ -1,4 +1,12 @@
+const STANDALONE_ESRV_KEYS: ReadonlySet<string> = new Set([
+  "chat|message",
+  "user|bag_diff",
+  "common|window",
+]);
+
+/** Live sends these as their own esrv frame; merging would overwrite a second window or line. */
 export function isUnmergedEsrvFragment(fragment: object): boolean {
   const keys = Object.keys(fragment);
-  return keys.length === 1 && (keys[0] === "chat|message" || keys[0] === "user|bag_diff");
+  const key = keys[0];
+  return keys.length === 1 && key !== undefined && STANDALONE_ESRV_KEYS.has(key);
 }

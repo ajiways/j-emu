@@ -36,6 +36,8 @@ import { HudDefaults } from "../domain/hud-defaults.ts";
 import { HuntLook } from "../domain/hunt-look.ts";
 import { loadBotSpellBook } from "./postgres-catalog-bot-spell-rows.ts";
 import { LevelBoundary } from "../domain/level-boundary.ts";
+import type { LevelNotice } from "../domain/level-notice.ts";
+import { loadLevelNotice } from "./postgres-catalog-level-notice.ts";
 import { SkillDefinition } from "../domain/skill-definition.ts";
 import {
   appearancePresets,
@@ -173,6 +175,10 @@ export class PostgresCatalog implements Catalog {
       row.honorMax,
       row.honorStatus,
     );
+  }
+
+  async levelNotice(level: number): Promise<LevelNotice | null> {
+    return loadLevelNotice(this.database, await this.revision.requireId(), level);
   }
 
   async appearance(kind: number, gender: number): Promise<AppearancePreset> {

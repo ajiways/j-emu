@@ -527,6 +527,9 @@ function fakeCatalog(): Catalog {
     level: async () => {
       throw new Error("unused");
     },
+    levelNotice: async () => {
+      throw new Error("unused");
+    },
     appearance: async () => {
       throw new Error("unused");
     },

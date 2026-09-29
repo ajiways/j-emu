@@ -249,6 +249,7 @@ async function insertLevels(
       honorMin: level.honorMin,
       honorMax: level.honorMax,
       honorStatus: level.honorStatus,
+      notice: level.notice === undefined ? null : level.notice,
     })),
   );
 }

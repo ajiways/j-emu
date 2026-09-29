@@ -866,7 +866,13 @@
           "id": "MPMAX",
           "value": 13
         }
-      ]
+      ],
+      "notice": {
+        "headline": "Вы достигли второго уровня!",
+        "body": "В деревенской лавке вам стало доступно:",
+        "achievementImage": "/images/data/achievements/achiv_lvl_2.png",
+        "artikulIds": [24, 23]
+      }
     },
     {
       "level": 3,
@@ -903,7 +909,13 @@
           "id": "MPMAX",
           "value": 14
         }
-      ]
+      ],
+      "notice": {
+        "headline": "Вы достигли третьего уровня!",
+        "body": "В деревенской лавке вам стало доступно:",
+        "achievementImage": "/images/data/achievements/achiv_lvl_3.png",
+        "artikulIds": [5, 19]
+      }
     },
     {
       "level": 4,
@@ -940,7 +952,13 @@
           "id": "MPMAX",
           "value": 16
         }
-      ]
+      ],
+      "notice": {
+        "headline": "Вы достигли четвертого уровня!",
+        "body": "В деревенской лавке вам стало доступно:",
+        "achievementImage": "/images/data/achievements/achiv_lvl_4.png",
+        "artikulIds": [22]
+      }
     },
     {
       "level": 5,
@@ -977,7 +995,13 @@
           "id": "MPMAX",
           "value": 17
         }
-      ]
+      ],
+      "notice": {
+        "headline": "Вы достигли пятого уровня!",
+        "body": "В деревенской лавке вам стало доступно:",
+        "achievementImage": "/images/data/achievements/achiv_lvl_5.png",
+        "artikulIds": [1]
+      }
     },
     {
       "level": 6,
@@ -1014,7 +1038,13 @@
           "id": "MPMAX",
           "value": 19
         }
-      ]
+      ],
+      "notice": {
+        "headline": "Вы достигли шестого уровня!",
+        "body": "Теперь вы можете <a href=\"/info/info/index.php?obj=cat&id=14&page=4\" target=\"_blank\"><b>торговать</b></a> с другими игроками, а также пользоваться почтой и <a href=\"/info/info/index.php?obj=cat&id=14&page=5\" target=\"_blank\"><b>аукционом</b></a>.<br>Вам стал доступен новый навык - <a href=\"/info/info/index.php?obj=cat&id=291\" target=\"_blank\"><b>Верховая езда</b></a>. Для обучения обратитесь к наезднице Иллисии, живущей в Квартале ремесленников Бранендая.",
+        "achievementImage": "/images/data/achievements/achiv_lvl_6.png",
+        "artikulIds": [617, 618]
+      }
     },
     {
       "level": 7,
