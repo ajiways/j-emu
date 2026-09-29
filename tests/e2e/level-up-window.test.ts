@@ -29,6 +29,12 @@ describe("level-up window", () => {
     });
     await completeMeleeHunt(client, (ms) => harness.elapseCombat(ms));
     const packets = await client.pollEsrv();
+    const order = packets.map((packet) => {
+      const object = (packet as { object?: Record<string, unknown> }).object ?? {};
+      return "common|window" in object ? "window" : "fight|exit" in object ? "exit" : "other";
+    });
+    expect(order.indexOf("exit")).toBeGreaterThanOrEqual(0);
+    expect(order.indexOf("window")).toBeGreaterThan(order.indexOf("exit"));
     const window = esrvObjectWith(packets, "common|window")["common|window"];
     if (!window || typeof window !== "object" || Array.isArray(window)) {
       throw new Error("common|window is missing");

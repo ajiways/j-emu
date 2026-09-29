@@ -16,8 +16,8 @@ const levelNoticeDocumentSchema = z
   .object({
     headline: z.string().min(1),
     body: z.string().min(1),
-    achievementImage: z.string().min(1),
-    artikulIds: z.array(z.number().int().positive()).min(1),
+    achievementImage: z.string().min(1).optional(),
+    artikulIds: z.array(z.number().int().positive()),
   })
   .strict();
 

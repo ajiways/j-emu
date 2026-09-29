@@ -35,7 +35,7 @@ import {
   questFlat as flat,
   requireQuestInt as requireInt,
 } from "./quest-oa-codec.ts";
-import type { LevelUpNotifier } from "./level-up-notifier.ts";
+import type { ProgressNotifier } from "./progress-notifier.ts";
 import type { PresenceFanout } from "../modules/jugger-wire/application/presence-fanout.ts";
 
 export class QuestDesk {
@@ -53,7 +53,7 @@ export class QuestDesk {
     private readonly random: Readonly<{ unit(): number }>,
     private readonly travel: ComeInTravel,
     private readonly presence: PresenceFanout,
-    private readonly levelUps: LevelUpNotifier,
+    private readonly progress: ProgressNotifier,
   ) {}
 
   async execute(
@@ -303,7 +303,7 @@ export class QuestDesk {
       inventory: this.inventory,
       combat: this.combat,
       chat: this.chat,
-      levelUps: this.levelUps,
+      progress: this.progress,
     };
   }
 }

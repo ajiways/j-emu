@@ -7,7 +7,7 @@ import type { PartyBagService } from "../modules/party/application/party-bag-ser
 import type { PartyService } from "../modules/party/application/party-service.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
 import type { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.ts";
-import { LevelUpNotifier } from "./level-up-notifier.ts";
+import { ProgressNotifier } from "./progress-notifier.ts";
 import { ChatFightSettlement } from "./chat-fight-settlement.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import { HuntFightSettlement } from "./hunt-fight-settlement.ts";
@@ -60,7 +60,7 @@ export function createChatHuntSettlement(input: {
       input.dungeonGrant,
     ),
     input.chat,
-    new LevelUpNotifier(input.catalog, input.outbox, input.wake),
+    new ProgressNotifier(input.catalog, input.outbox, input.wake),
     {
       failed(fightId, error) {
         process.stderr.write(`fight-chat ${fightId}: ${error.message}\n`);

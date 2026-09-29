@@ -7,6 +7,7 @@ import type { Hero } from "../modules/character/domain/hero.ts";
 import type { CharacterProgression } from "../modules/character/ports/character-progression.ts";
 import type { PvpFightOutcomeSnapshot } from "../modules/combat/domain/fight-outcome-snapshot.ts";
 import { rawHonorFromDamage, type HeroismRules } from "./heroism-rules.ts";
+import type { FightProgressUp } from "./fight-progress-log.ts";
 import type { PvpHonorShare } from "./pvp-fight-honor-cache.ts";
 
 type HonorCharacters = CharacterProgression &
@@ -19,12 +20,13 @@ export async function persistPvpHonor(input: {
   characters: HonorCharacters;
   catalog: Pick<Catalog, "commonConf">;
   rules: HeroismRules;
-}): Promise<readonly PvpHonorShare[]> {
+}): Promise<Readonly<{ shares: readonly PvpHonorShare[]; rankUps: readonly FightProgressUp[] }>> {
   if (input.outcome.humans.length !== 2) {
     throw new Error(`PvP snapshot ${input.outcome.fightId} must have exactly 2 humans`);
   }
   const ranks = honorRankCatalogFromConf(await input.catalog.commonConf());
   const shares: PvpHonorShare[] = [];
+  const rankUps: FightProgressUp[] = [];
   for (const human of input.outcome.humans) {
     const victim = input.outcome.humans.find((row) => row.characterId !== human.characterId);
     if (!victim) {
@@ -47,6 +49,16 @@ export async function persistPvpHonor(input: {
         amount: raw,
       });
       rank = String(granted.rank);
+      const before = honorProgress(ranks, granted.honorBefore, human.level).rank;
+      if (granted.rank > before) {
+        rankUps.push({
+          kind: "rank",
+          accountId: human.accountId,
+          before,
+          after: granted.rank,
+          heroLevel: human.level,
+        });
+      }
     } else {
       const hero = await input.characters.lockById(human.characterId);
       rank = String(honorProgress(ranks, hero.honor, hero.level).rank);
@@ -59,5 +71,5 @@ export async function persistPvpHonor(input: {
       rank,
     });
   }
-  return shares;
+  return { shares, rankUps };
 }

@@ -65,7 +65,7 @@ type ManagedSkillDocument = Readonly<{
 export type LevelNoticeDocument = Readonly<{
   headline: string;
   body: string;
-  achievementImage: string;
+  achievementImage?: string;
   artikulIds: readonly number[];
 }>;
 

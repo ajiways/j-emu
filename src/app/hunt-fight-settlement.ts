@@ -44,7 +44,7 @@ import type { HeroismRules } from "./heroism-rules.ts";
 import { persistPvpHonor } from "./persist-pvp-honor.ts";
 import type { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 import type { DungeonPersonalGrant } from "./dungeon-personal-grant.ts";
-import { FightLevelUpLog, type FightLevelUp } from "./fight-level-up-log.ts";
+import { FightProgressLog, type FightProgressUp } from "./fight-progress-log.ts";
 import { capRolledDrops, loadArtikulList, persistFightHp } from "./hunt-fight-loot-apply.ts";
 
 type SettlementCharacters = CharacterResources &
@@ -58,7 +58,7 @@ type SettlementCharacters = CharacterResources &
 export class HuntFightSettlement implements FightSettlement {
   private readonly finished = new Map<string, Map<number, FightLootBlock>>();
   private readonly left = new Set<string>();
-  private readonly levelUps = new FightLevelUpLog();
+  private readonly progress = new FightProgressLog();
   private readonly deathBreaks = new Map<string, Map<number, readonly DeathDurabilityBreak[]>>();
 
   constructor(
@@ -206,10 +206,11 @@ export class HuntFightSettlement implements FightSettlement {
             amount: exp,
           });
           if (grant.levelsGained > 0) {
-            this.levelUps.note(outcome.fightId, {
+            this.progress.note(outcome.fightId, {
+              kind: "level",
               accountId: human.accountId,
-              levelBefore: grant.levelBefore,
-              levelAfter: grant.levelAfter,
+              before: grant.levelBefore,
+              after: grant.levelAfter,
             });
           }
         }
@@ -303,7 +304,7 @@ export class HuntFightSettlement implements FightSettlement {
     const cached = this.finished.get(outcome.fightId);
     if (cached) return cached;
     const lootByAccount = new Map<number, FightLootBlock>();
-    const shares = await this.unitOfWork.run(async () => {
+    const honor = await this.unitOfWork.run(async () => {
       for (const human of outcome.humans) {
         if (human.leftLive) continue;
         await persistFightHp(this.characters, human.characterId, human.hp);
@@ -325,7 +326,8 @@ export class HuntFightSettlement implements FightSettlement {
         rules: this.heroism,
       });
     });
-    this.pvpHonor.remember(outcome.fightId, shares);
+    this.pvpHonor.remember(outcome.fightId, honor.shares);
+    for (const up of honor.rankUps) this.progress.note(outcome.fightId, up);
     this.finished.set(outcome.fightId, lootByAccount);
     return lootByAccount;
   }
@@ -334,8 +336,8 @@ export class HuntFightSettlement implements FightSettlement {
     if (!fightId) throw new Error("Fight id is required");
   }
 
-  takeLevelUps(fightId: string): readonly FightLevelUp[] {
-    return this.levelUps.take(fightId);
+  takeProgress(fightId: string): readonly FightProgressUp[] {
+    return this.progress.take(fightId);
   }
 
   takeDeathBreaks(fightId: string): ReadonlyMap<number, readonly DeathDurabilityBreak[]> {

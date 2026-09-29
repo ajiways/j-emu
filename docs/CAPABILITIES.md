@@ -80,9 +80,9 @@ bootstrap. Internal `grantExperience` атомарно применяет DATA-0
 
 Не перенесено:
 
-- окно о повышении звания (`common|window`): нет дампа, см.
-  [CHARACTER.md](modules/CHARACTER.md); окно уровня 2–6 есть (raw-AMF), 7+ без
-  authored notice;
+- окна повышения уровня (2–6 из дампа, 7–14 придуманы по таблице опыта) и
+  звания (придуманы по таблице званий, дампа нет): raw-AMF, CEF — LVL-NOTICE в
+  [CEF_MANUAL.md](migration/CEF_MANUAL.md);
 - клиентский EXP grant через квест.
 
 CEF leftover (2026-09-16, **частично**): HUD HP/`hp_time` и деньги обновляются

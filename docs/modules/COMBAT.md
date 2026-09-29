@@ -299,8 +299,7 @@ version bump. Combat не читает fixtures.
 
 Quest loot tables в combat (QST-ENG-02 clip — composition `needed`);
 party split; dungeon bands leftover (personal/coins — DNG-03 landed); system chat; `Clock.schedule`;
-OA FIGHT_JOIN/HELP (CMB-11); live `10_000_000+hero.id`; окно повышения
-звания после боя (нет дампа, [CHARACTER.md](CHARACTER.md)).
+OA FIGHT_JOIN/HELP (CMB-11); live `10_000_000+hero.id`.
 
 ## CMB-04 — reconnect, locks, ghost
 

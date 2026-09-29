@@ -7,8 +7,8 @@ import type {
 } from "../modules/combat/ports/fight-settlement.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import type { HuntFightSettlement } from "./hunt-fight-settlement.ts";
-import type { FightLevelUp } from "./fight-level-up-log.ts";
-import type { LevelUpNotifier } from "./level-up-notifier.ts";
+import type { FightProgressUp } from "./fight-progress-log.ts";
+import type { ProgressNotifier } from "./progress-notifier.ts";
 
 export type FightChatFailureSink = Readonly<{
   failed(fightId: string, error: Error): void;
@@ -18,7 +18,7 @@ type PendingEnded = Readonly<{
   outcome: FightOutcomeSnapshot;
   loot: ReadonlyMap<number, FightLootBlock>;
   breaks: ReadonlyMap<number, readonly DeathDurabilityBreak[]>;
-  levelUps: readonly FightLevelUp[];
+  progress: readonly FightProgressUp[];
 }>;
 
 export class ChatFightSettlement implements FightSettlement {
@@ -27,7 +27,7 @@ export class ChatFightSettlement implements FightSettlement {
   constructor(
     private readonly inner: HuntFightSettlement,
     private readonly chat: ChatDesk,
-    private readonly levelUps: LevelUpNotifier,
+    private readonly progress: ProgressNotifier,
     private readonly failures: FightChatFailureSink,
   ) {}
 
@@ -52,7 +52,7 @@ export class ChatFightSettlement implements FightSettlement {
       outcome,
       loot,
       breaks: this.inner.takeDeathBreaks(outcome.fightId),
-      levelUps: this.inner.takeLevelUps(outcome.fightId),
+      progress: this.inner.takeProgress(outcome.fightId),
     });
     return loot;
   }
@@ -62,8 +62,12 @@ export class ChatFightSettlement implements FightSettlement {
     if (!pending) return;
     this.pendingEnded.delete(fightId);
     try {
-      for (const up of pending.levelUps) {
-        await this.levelUps.notify(up.accountId, up.levelBefore, up.levelAfter);
+      for (const up of pending.progress) {
+        if (up.kind === "level") {
+          await this.progress.notifyLevel(up.accountId, up.before, up.after);
+        } else {
+          await this.progress.notifyRank(up.accountId, up.before, up.after, up.heroLevel);
+        }
       }
       await this.chat.notifyFightEnded(pending.outcome, pending.loot, pending.breaks);
     } catch (error) {

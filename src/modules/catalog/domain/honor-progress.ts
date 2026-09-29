@@ -60,7 +60,8 @@ export function honorRankTitle(catalog: HonorRankCatalog, rankId: number): strin
   return title;
 }
 
-function minLevelForRank(rankId: number): number {
+/** Ranks open with level: 0–3 from level 1, 4–30 from rank + 4, the rest from level 35. */
+export function minLevelForRank(rankId: number): number {
   if (!Number.isInteger(rankId) || rankId < 0) throw new Error("Rank id is required");
   if (rankId <= 3) return 1;
   if (rankId <= 30) return rankId + 4;

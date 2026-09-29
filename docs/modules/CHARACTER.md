@@ -248,7 +248,7 @@ CHR-01 implementation закрыт как internal enabling capability: producti
 не имеет отдельного EXP OA. CMB-03 — consumer боя (raw-AMF). Workflow-статус
 `done` не повышает character progression до `готово`. Quest consumer ещё нет.
 
-### Уведомление о повышении уровня (LVL-NOTICE)
+### Уведомление о повышении уровня и звания (LVL-NOTICE)
 
 Wire подтверждён дампом `reg-6lvl.har` (esrv, герой `_industrial`, уровни 2–6).
 Клиент окно сам не рисует (`PersData.Level` лишь диспатчит `CHANGE_LEVEL`);
@@ -263,26 +263,42 @@ Wire подтверждён дампом `reg-6lvl.har` (esrv, герой `_indu
   `ARTIFACT`, но без `macro_text`/`creator_nick`/`engraved_note`).
 
 Порядок в live: бой — сразу после первого `fight|exit`, до loot/HUD-кадра;
-квест — перед OA-ответом `npc|answer` в момент выдачи EXP.
+квест — перед OA-ответом `npc|answer` в момент выдачи EXP. Клиент в fight mode
+паркует единственный `DialogManager.delayedDialog` и показывает его только при
+закрытии другого диалога, поэтому окно, пришедшее раньше `fight|exit`, теряется.
+Поэтому `EsrvPollAssembler` при `fight|exit`/`fight|loot` в этом же poll ставит
+`common|window` **после** кадра exit/loot/HUD.
 
-Реализация: авторский `notice` на строке уровня (`level_boundaries.notice`,
-`LevelBoundaryDocument.notice`: `headline`, `body`, `achievementImage`,
-`artikulIds`; в digest прогрессии не входит). Уровень **без** `notice` окна не
-шлёт (явное правило контента, не fallback); отсутствующая строка уровня —
-ошибка. Валидатор требует, чтобы каждый `artikulId` был в bundle. Сейчас
-авторские notices — уровни 2–6 (из дампа); 7+ в дампе нет, нужен дамп или
-ручной автор. На несколько уровней за раз — окно на каждый достигнутый уровень
-по порядку (в дампе такого нет, предположение).
+**Уровень.** Авторский `notice` на строке уровня (`level_boundaries.notice`,
+`LevelBoundaryDocument.notice`: `headline`, `body`, опциональный
+`achievementImage`, `artikulIds`; в digest прогрессии не входит). Уровни 2–6 —
+дословно из дампа (иконка достижения и вещи лавки). Уровни 7–14 **придуманы**
+по клиентской таблице опыта (`common_conf.level_table.description`) плюс строка
+«С этого уровня открывается звание …; звания открываются вместе с уровнем» по
+правилу `minLevelForRank` (звания 0–3 с 1 уровня, 4–30 с уровня `rank + 4`,
+остальные с 35); иконки достижения и вещей у них нет (URL 7+ не подтверждён).
+Тело может ссылаться на `[[MAP|IMG|ARTIFACT_IMG key]]` из `common_conf.macros_list`
+— эти макросы добавляются в окно; валидатор требует, чтобы каждый ключ и каждый
+`artikulId` существовали. Уровень **без** `notice` окна не шлёт (явное правило
+контента, не fallback); отсутствующая строка уровня — ошибка. На несколько
+уровней за раз — окно на каждый достигнутый уровень по порядку (в дампе такого
+нет, предположение).
 
-Триггеры (`LevelUpNotifier`, composition, а не character): `grantExperience`
-`levelsGained > 0` в hunt settlement — окно уходит в `publishEnded`, то есть с
-кадром loot/exit, не на добивании — и в `GRANT_AWARDS` квеста. Окно не в
-персистентной транзакции: reconnect после потери кадра его не повторяет.
+**Звание.** Дампа окна звания нет; форма та же, текст придуман из клиентской
+таблицы званий: заголовок «Вы получили звание «…»!», тело —
+`rank_table.description` (что даёт звание, «С N уровня», вещи у Веллоса Юла) и
+строка про следующее звание: если его `minLevelForRank` выше уровня героя —
+«откроется с N уровня (нужно X героизма). Звания открываются вместе с
+уровнем», иначе только нужный героизм. Иконки нет. Из `common_conf`, отдельного
+контента нет. Ранг считается по `honorProgress`; `rankBefore` — по
+`HonorGrantResult.honorBefore` и уровню героя из снапшота боя.
 
-Повышение **звания**: дампа нет (в `giga_dump` PvP-героизм есть, окна звания
-нет), поэтому не реализовано. Форма окна та же (`levelUpWindow`); нужны
-authored rank notices и триггер по смене `rank` в `HonorGrantResult`
-(`persist-pvp-honor`) — сделать при появлении дампа.
+Триггеры (`ProgressNotifier`, composition, а не character): `grantExperience`
+`levelsGained > 0` и `grantHonor` со сменой ранга (PvP,
+`persist-pvp-honor`) в fight settlement — окно уходит в `publishEnded`, то есть
+с кадром loot/exit, не на добивании — и `grantExperience` в `GRANT_AWARDS`
+квеста. Окно не в персистентной транзакции: reconnect после потери кадра его не
+повторяет.
 
 ## CHR-02 — out-of-combat HP regeneration
 

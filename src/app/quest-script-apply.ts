@@ -6,7 +6,7 @@ import type { QuestService } from "../modules/quests/application/quest-service.t
 import { capDropQuantity } from "../modules/quests/domain/quest-loot-needed.ts";
 import type { QuestScriptEffect } from "../modules/quests/domain/quest-script-effect.ts";
 import type { ChatDesk } from "./chat-desk.ts";
-import type { LevelUpNotifier } from "./level-up-notifier.ts";
+import type { ProgressNotifier } from "./progress-notifier.ts";
 
 export async function applyQuestScriptEffect(
   deps: Readonly<{
@@ -15,7 +15,7 @@ export async function applyQuestScriptEffect(
     inventory: InventoryService;
     combat: CombatPort;
     chat: ChatDesk;
-    levelUps: LevelUpNotifier;
+    progress: ProgressNotifier;
   }>,
   accountId: number,
   heroId: number,
@@ -82,7 +82,7 @@ export async function applyQuestScriptEffect(
         amount: grant.amount,
       });
       if (result.levelsGained > 0) {
-        await deps.levelUps.notify(accountId, result.levelBefore, result.levelAfter);
+        await deps.progress.notifyLevel(accountId, result.levelBefore, result.levelAfter);
       }
     }
     if (quest.awardMoneyMinor > 0) {

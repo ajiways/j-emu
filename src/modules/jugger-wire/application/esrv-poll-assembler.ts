@@ -61,7 +61,15 @@ export class EsrvPollAssembler {
     ];
     const personal = personalEsrvChannel(accountId);
     const pending = new Map<string, Record<string, unknown>>();
+    const windows: EsrvFrame[] = [];
+    const fightEnds =
+      (await this.combat.peekExit(accountId)) !== null ||
+      (await this.combat.peekLoot(accountId)) !== null;
     for (const entry of this.outbox.take(accountId)) {
+      if (fightEnds && isWindowFragment(entry.fragment)) {
+        windows.push({ channel: entry.channel ?? personal, ctime, object: entry.fragment });
+        continue;
+      }
       appendOutboxEntry(frames, pending, entry, personal, ctime);
     }
     const loot = await this.combat.takeLoot(accountId);
@@ -73,6 +81,9 @@ export class EsrvPollAssembler {
     for (const channel of pending.keys()) {
       flushChannel(frames, pending, channel, ctime);
     }
+    // Live sends `common|window` after fight|exit: a dialog shown while the client is
+    // still in fight mode is parked and lost, so windows go last when a fight ends.
+    frames.push(...windows);
     return frames;
   }
 }
@@ -116,4 +127,9 @@ function flushChannel(
   if (!object || Object.keys(object).length === 0) return;
   pending.delete(channel);
   frames.push({ channel, ctime, object });
+}
+
+function isWindowFragment(fragment: object): boolean {
+  const keys = Object.keys(fragment);
+  return keys.length === 1 && keys[0] === "common|window";
 }
