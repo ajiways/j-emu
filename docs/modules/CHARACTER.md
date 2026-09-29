@@ -248,6 +248,26 @@ CHR-01 implementation закрыт как internal enabling capability: producti
 не имеет отдельного EXP OA. CMB-03 — consumer боя (raw-AMF). Workflow-статус
 `done` не повышает character progression до `готово`. Quest consumer ещё нет.
 
+### Уведомление о повышении уровня и звания (план)
+
+Сейчас не реализовано: `grantExperience` / `grantHonor` меняют HUD, но клиенту
+не уходит окно о новом уровне или звании. Клиент сам окно не рисует (`PersData.Level`
+только диспатчит `CHANGE_LEVEL`), значит это серверный push, скорее всего
+personal esrv `common|window` (`title`, `text` с macroses, `image`, `buttons`;
+шаблоны — trade/friend/group/duel в `2players_social_2026-08-11`).
+
+**Wire не подтверждён:** в просмотренных дампах (`2players_social`,
+`giga_dump`, `reg_6lvl`, `from_register`) нет ни esrv-кадра, ни chat-сообщения
+на смене уровня: у `reg_6lvl`/`from_register` захвачены только OA-ответы
+(`user|unitframe.level` 1→2 на `fight|finish`/`npc|answer`), у остальных
+уровень не менялся. Нужен дамп esrv на повышении уровня и на повышении звания
+(honor rollover); до него не выдумывать title/image/text.
+
+Когда wire известен: окно строит composition/wire после committed
+`grantExperience` (`levelsGained > 0`) и `grantHonor` (смена звания), а не
+character; звание использует ту же форму окна. Отправка идёт вместе с
+`fight|loot`/`fight|exit` кадром (не на добивании), см. COMBAT.md.
+
 ## CHR-02 — out-of-combat HP regeneration
 
 ### Architecture decision

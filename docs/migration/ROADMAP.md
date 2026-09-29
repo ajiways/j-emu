@@ -721,8 +721,8 @@
   живых 3↔3 пар (клон «Разозлить») landed. 3↔3 держится, пока менять некого;
   проверка после каждого удара. Invites process-local, TTL 60s через `Clock`, ключ
   target accountId; restart/TTL → `203` «вызов устарел». OA
-  `user|friendly_duel_propose` / `accept`; esrv `user|friendly_duel_request`
-  и `fight|conf` challenger-у. Practice settlement восстанавливает HP/MP/
+  `user|friendly_duel_propose` / `accept` / `decline`; esrv `common|window`
+  (`images/duel.png`) целевому и `fight|conf` challenger-у. Practice settlement восстанавливает HP/MP/
   pocket, без лута/EXP/травмы; history type 6 — leftover. OA `FIGHT_JOIN` /
   `FIGHT_HELP` вне среза. CEF не прогоняется.
 - **Acceptance:** friendly duel propose/accept работает между двумя героями;

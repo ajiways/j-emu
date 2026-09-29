@@ -61,6 +61,7 @@ import { UserBagCommand } from "../commands/oa/user-bag-command.ts";
 import { UserBagOrderCommand } from "../commands/oa/user-bag-order-command.ts";
 import { UserFlashMessageCommand } from "../commands/oa/user-flash-message-command.ts";
 import { FriendlyDuelAcceptCommand } from "../commands/oa/friendly-duel-accept-command.ts";
+import { FriendlyDuelDeclineCommand } from "../commands/oa/friendly-duel-decline-command.ts";
 import { FriendlyDuelProposeCommand } from "../commands/oa/friendly-duel-propose-command.ts";
 import { UserMagicCommand } from "../commands/oa/user-magic-command.ts";
 import { UserPersonalDetailsCommand } from "../commands/oa/user-personal-details-command.ts";
@@ -80,6 +81,7 @@ import type { SessionPresence } from "../../identity/ports/session-presence.ts";
 import type { EsrvOutbox } from "../application/esrv-outbox.ts";
 import { AcceptFriendlyDuel } from "../application/accept-friendly-duel.ts";
 import { FriendlyDuelInvites } from "../application/friendly-duel-invites.ts";
+import { DeclineFriendlyDuel } from "../application/decline-friendly-duel.ts";
 import { ProposeFriendlyDuel } from "../application/propose-friendly-duel.ts";
 import { TradeMutation } from "../application/trade-mutation.ts";
 import type { PartyJoinService } from "../../party/application/party-join-service.ts";
@@ -179,12 +181,12 @@ export class JuggerCommandModule {
       characters,
       sessions,
       combat,
-      catalog,
       invites,
       outbox,
       wake,
       clock,
     );
+    const decline = new DeclineFriendlyDuel(invites);
     const accept = new AcceptFriendlyDuel(
       unitOfWork,
       characters,
@@ -239,6 +241,7 @@ export class JuggerCommandModule {
       new UserFlashMessageCommand(bootstrap),
       new FriendlyDuelProposeCommand(propose),
       new FriendlyDuelAcceptCommand(accept),
+      new FriendlyDuelDeclineCommand(decline),
       new ChatConfCommand(bootstrap, sheet),
       new ChatAddCommand(chat, bootstrap),
       new EmptyCollectionOaCommand("companion|list_user_companions", "companions", bootstrap),

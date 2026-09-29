@@ -1,8 +1,9 @@
 import type { Clock } from "../../../shared/kernel/clock.ts";
-import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../character/application/character-service.ts";
 import type { CombatPort } from "../../combat/ports/combat-port.ts";
 import type { SessionPresence } from "../../identity/ports/session-presence.ts";
+import { friendlyDuelBanKey, friendlyDuelInviteWindow } from "./friendly-duel-window.ts";
+import { buildUserMacro } from "./user-macro.ts";
 import { ProtocolError } from "./protocol-error.ts";
 import type { EsrvOutbox } from "./esrv-outbox.ts";
 import type { FriendlyDuelInvites } from "./friendly-duel-invites.ts";
@@ -12,7 +13,6 @@ export class ProposeFriendlyDuel {
     private readonly characters: CharacterService,
     private readonly sessions: SessionPresence,
     private readonly combat: CombatPort,
-    private readonly catalog: Catalog,
     private readonly invites: FriendlyDuelInvites,
     private readonly outbox: EsrvOutbox,
     private readonly wake: Readonly<{ wake(accountId: number): void }>,
@@ -42,7 +42,6 @@ export class ProposeFriendlyDuel {
     if ((await this.combat.activeFightId(target.accountId)) !== null) {
       throw new ProtocolError(203, "противник уже в бою");
     }
-    const appearance = await this.catalog.appearance(challenger.kind, challenger.gender);
     this.invites.put({
       fromAccountId: challenger.accountId,
       fromNick: challenger.nick,
@@ -51,18 +50,15 @@ export class ProposeFriendlyDuel {
       createdAtMs: this.clock.now().getTime(),
     });
     this.outbox.enqueue(target.accountId, {
-      "user|friendly_duel_request": {
-        status: 100,
-        user: {
+      "common|window": friendlyDuelInviteWindow(
+        challenger.nick,
+        buildUserMacro({
           nick: challenger.nick,
           level: challenger.level,
-          id: challenger.accountId,
           kind: challenger.kind,
-          sk: challenger.sk,
-          body: challenger.body,
-          avatar_small: appearance.avatarSmall,
-        },
-      },
+        }),
+        friendlyDuelBanKey(challenger.accountId, target.accountId),
+      ),
     });
     this.wake.wake(target.accountId);
   }

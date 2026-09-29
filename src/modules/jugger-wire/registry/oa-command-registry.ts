@@ -41,6 +41,7 @@ export class OaCommandRegistry {
     "user|bag",
     "user|flash_message",
     "user|friendly_duel_accept",
+    "user|friendly_duel_decline",
     "user|friendly_duel_propose",
     "user|magic",
     "user|personal_details",

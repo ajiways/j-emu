@@ -36,10 +36,22 @@ describe("fproxy friendly duel", () => {
       sq: 2,
     });
     expect(propose["user|friendly_duel_propose"]).toEqual({ status: 100 });
-    const request = personalObject(await b.pollEsrv())["user|friendly_duel_request"];
-    expect(request).toMatchObject({
+    const invite = personalObject(await b.pollEsrv())["common|window"];
+    expect(invite).toMatchObject({
       status: 100,
-      user: { nick: nickA, id: a.accountId },
+      title: "Приглашение на дуэль",
+      image: "images/duel.png",
+      buttons: [
+        {
+          caption: "Согласиться",
+          action: { object: "user", action: "friendly_duel_accept", form: { nick: nickA } },
+        },
+        {
+          caption: "Отказаться",
+          action: { object: "user", action: "friendly_duel_decline", form: { nick: nickA } },
+        },
+        { caption: "Игнорировать" },
+      ],
     });
     const accept = await b.objectAction({
       object: "user",
@@ -71,6 +83,36 @@ describe("fproxy friendly duel", () => {
     const grantB = await b.pollFight();
     expect(fightEventTypes(grantB)).toContain("attacknow");
     expect(acceptorConf.fightId).toBe(fightId);
+  });
+
+  it("declines an invite and rejects a second answer", async () => {
+    const a = await createIsolatedHero(application);
+    const b = await createIsolatedHero(application);
+    const nickA = nickFrom(await a.objectAction({ object: "common", action: "init", sq: 1 }));
+    const nickB = nickFrom(await b.objectAction({ object: "common", action: "init", sq: 1 }));
+    await a.objectAction({
+      object: "user",
+      action: "friendly_duel_propose",
+      form: { nick: nickB },
+      sq: 2,
+    });
+    const decline = await b.objectAction({
+      object: "user",
+      action: "friendly_duel_decline",
+      form: { nick: nickA },
+      sq: 2,
+    });
+    expect(decline["user|friendly_duel_decline"]).toEqual({ status: 100 });
+    const again = await b.objectAction({
+      object: "user",
+      action: "friendly_duel_accept",
+      form: { nick: nickA },
+      sq: 3,
+    });
+    expect(again["user|friendly_duel_accept"]).toEqual({
+      status: 203,
+      error: "вызов устарел",
+    });
   });
 });
 

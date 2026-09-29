@@ -80,7 +80,8 @@ bootstrap. Internal `grantExperience` атомарно применяет DATA-0
 
 Не перенесено:
 
-- leftover CMB-03 (CEF): HUD EXP и деньги одним esrv-кадром с `fight|exit`;
+- уведомление о повышении уровня и звания (`common|window`): не отправляется,
+  см. [CHARACTER.md](modules/CHARACTER.md);
 - клиентский EXP grant через квест.
 
 CEF leftover (2026-09-16, **частично**): HUD HP/`hp_time` и деньги обновляются
@@ -89,7 +90,7 @@ CEF leftover (2026-09-16, **частично**): HUD HP/`hp_time` и деньг�
 отдаёт `fight|info` (raw-AMF); CEF 2026-09-16: карточка результата открывается
 (`share`/`macroses` SHARE). CEF 2026-09-17: экран результата hunt; F5 mid-fight
 тот же `fightId`/`akey`. F5 `persEff.img` и pocket count — CEF 2026-09-17.
-Leftover CEF: HUD EXP и деньги одним esrv-кадром с `fight|exit`.
+CEF: EXP и деньги обновляют HUD вместе с `fight|exit`, не на добивании.
 
 Equipment-derived `user|skills` / `hpMax` считаются из naked skills + надетых
 предметов (перчатка 9095 даёт VIT+5). Без экипа HUD показывает naked L1.
@@ -237,8 +238,8 @@ Ghost блокирует regen; OA `RESURRECT` снимает ghost и outdoor �
 храм 503 (CEF 2026-09-16; dest — временный stub,
 [WORLD.md](modules/WORLD.md)). Duplicate settlement
 no-op. Restart посреди боя без награды. CMB-08: OA
-`user|friendly_duel_propose`/`accept` между двумя героями в 503 (esrv
-request, `fight|conf` `is_pvp:1` `type:6`, practice restore); hunt 3↔3
+`user|friendly_duel_propose`/`accept`/`decline` между двумя героями в 503
+(esrv `common|window` `images/duel.png`, `fight|conf` `is_pvp:1` `type:6`, practice restore); hunt 3↔3
 waiter-handoff без сброса HP. GEAR-01: надетая **20546** на старт hunt
 вешает kind-3 (`persEff` затем `effUse`, `groupId` 936, 8 ходов), без
 прока; `effPurge` на 8-м ударе; F5 в том же процессе сохраняет remaining;

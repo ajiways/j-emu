@@ -213,8 +213,8 @@ Kind 11 HTTP
 entries overlay 27 штук (включая **77 / 93 / 99**). `leaveFight` HTTP
 `{rs:true}`; last human — flee `type:2` без лута; союзник жив — только
 flee-exit, бой продолжается. Loss: HP 0, loot-блок с нулями, ghost/injury через character `noteDefeat`.
-CEF 2026-09-17: экран результата hunt открывается. Leftover CEF: HUD EXP и деньги одним esrv-кадром с `fight|exit`
-(persist — одна UoW на RAM finish; wire — § Wire).
+CEF 2026-09-17: экран результата hunt открывается; CEF 2026-09-29: EXP и деньги
+обновляют HUD вместе с `fight|exit` (persist — одна UoW на RAM finish; wire — § Wire).
 
 ### Architecture decision
 
@@ -298,8 +298,8 @@ version bump. Combat не читает fixtures.
 
 Quest loot tables в combat (QST-ENG-02 clip — composition `needed`);
 party split; dungeon bands leftover (personal/coins — DNG-03 landed); system chat; `Clock.schedule`;
-OA FIGHT_JOIN/HELP (CMB-11); live `10_000_000+hero.id`. CEF leftover:
-HUD EXP и деньги одним esrv-кадром с `fight|exit`.
+OA FIGHT_JOIN/HELP (CMB-11); live `10_000_000+hero.id`; уведомление о
+повышении уровня/звания после боя ([CHARACTER.md](CHARACTER.md)).
 
 ## CMB-04 — reconnect, locks, ghost
 
@@ -438,8 +438,12 @@ combat import; party lottery; honor.
 
 Срез закрыт (raw-AMF). `FightDuel` на том же `Battle`: hunt human↔bot и
 friendly human↔human. Melee не ветвится hunt/PvP: удар идёт в текущего
-соперника пары. OA `user|friendly_duel_propose` / `accept`; esrv
-`user|friendly_duel_request` и `fight|conf` challenger-у. Invites
+соперника пары. OA `user|friendly_duel_propose` / `accept` / `decline`; приглашение уходит
+целевому игроку esrv `common|window` (title «Приглашение на дуэль», image
+`images/duel.png`, кнопки с embedded OA `user|friendly_duel_accept|decline`
+`{nick}` и `ban_keys`, как trade/friend/group; live 2players dump), challenger-у
+после accept — `fight|conf`. Старый `user|friendly_duel_request` — не live wire,
+удалён. Invites
 process-local, TTL 60s, fail-fast `203`. Practice settlement возвращает
 HP/MP/pocket, без лута/EXP/травмы; `fight|conf.is_pvp=1`, `type:"6"`.
 После 3↔3 melee hits каждый удар (игрок и бот) и пропуск хода
