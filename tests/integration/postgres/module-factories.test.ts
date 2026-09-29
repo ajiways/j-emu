@@ -1,3 +1,4 @@
+import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PostgresDatabase } from "../../../src/infrastructure/postgres/database.ts";
 import { migrateDatabase } from "../../../src/infrastructure/postgres/migration-runner.ts";
@@ -37,6 +38,7 @@ describe("module factory lifecycle", () => {
       rules: UNIT_BATTLE_RULES,
       clock,
       delay: new ManualCombatDelay(),
+      playerAttackPolicy: new AllowPlayerAttackPolicy(),
     });
     await expect(combat.close()).resolves.toBeUndefined();
   });

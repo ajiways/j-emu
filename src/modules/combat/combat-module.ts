@@ -11,6 +11,7 @@ import type { BattleRules } from "./domain/battle-rules.ts";
 import type { CombatDelay } from "./ports/combat-delay.ts";
 import type { CombatWake } from "./ports/combat-wake.ts";
 import type { FightSettlement } from "./ports/fight-settlement.ts";
+import type { PlayerAttackPolicy } from "./ports/player-attack-policy.ts";
 import {
   FINISHED_FIGHT_CLEANUP_BATCH_SIZE,
   FINISHED_FIGHT_CLEANUP_INTERVAL_MS,
@@ -38,6 +39,7 @@ export class CombatModule {
     clock: Clock;
     delay: CombatDelay;
     random?: RandomSource;
+    playerAttackPolicy: PlayerAttackPolicy;
     testBotStrength?: number;
   }): CombatModule {
     const database = requirePresent(input.database, "Combat module requires a database");
@@ -56,6 +58,7 @@ export class CombatModule {
       new FinishedFightRecorder(history, clock),
       historyWrites,
       delay,
+      requirePresent(input.playerAttackPolicy, "Combat module requires a player attack policy"),
       input.testBotStrength,
     );
     runtime.bindHistoryList(new FinishedFightList(history, clock));

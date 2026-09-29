@@ -10,6 +10,8 @@ import { migrateDatabase } from "../../../src/infrastructure/postgres/migration-
 import { writeClientStaticStubs } from "./client-static-stubs.ts";
 import { requireTestDatabaseUrl } from "../postgres/test-database-url.ts";
 import { FakeClock } from "../fake-clock.ts";
+import { AllowPlayerAttackPolicy } from "../fakes/allow-player-attack-policy.ts";
+import type { PlayerAttackPolicy } from "../../../src/modules/combat/ports/player-attack-policy.ts";
 import { ManualCombatDelay } from "../fakes/manual-combat-delay.ts";
 import { MutableClock } from "../fakes/mutable-clock.ts";
 import type { RandomSource } from "../../../src/modules/combat/domain/random-source.ts";
@@ -32,6 +34,7 @@ export class ApplicationHarness {
     combatBotStrength?: number;
     farmRandom?: FarmRng;
     ambushRandom?: RandomSource;
+    playerAttackPolicy?: PlayerAttackPolicy;
   }>;
 
   constructor(
@@ -46,11 +49,12 @@ export class ApplicationHarness {
       combatBotStrength?: number;
       farmRandom?: FarmRng;
       ambushRandom?: RandomSource;
+      playerAttackPolicy?: PlayerAttackPolicy;
     }> = {},
   ) {
     this.clock = clock ?? new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     this.delay = delay;
-    this.extras = extras;
+    this.extras = { playerAttackPolicy: new AllowPlayerAttackPolicy(), ...extras };
   }
 
   async start(): Promise<Application> {

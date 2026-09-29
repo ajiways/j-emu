@@ -237,6 +237,31 @@ describe("CombatService pocket glove rage", () => {
     expect(await combat.execute(1, { kind: "poll" })).toEqual([]);
   });
 
+  it("denies an onlyPvP pocket elixir in a fight without a human on each team", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat } = createCombatService({ clock });
+    const runic = {
+      itemId: 100_003,
+      artifactId: 6327,
+      position: 3,
+      count: 1,
+      title: "Рунический эликсир жизни",
+      picture: "bottles_live_runic.png",
+      spell: { ...elixirSpell, onlyPvP: true },
+    };
+    const loadout = dumpLoadout();
+    await startHuntWithIssuedId(
+      combat,
+      unitHuntStart({ loadout: { ...loadout, pocket: [...loadout.pocket, runic] }, botHp: 50 }),
+    );
+    await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await expect(
+      combat.execute(1, { kind: "pocket", itemId: 100_003, sequence: 2 }),
+    ).rejects.toMatchObject({ deny: "pvp-only" });
+    expect(await combat.execute(1, { kind: "poll" })).toEqual([]);
+  });
+
   it("orders rage then fury and aggro then absolute count", async () => {
     const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const { combat, delay } = createCombatService({

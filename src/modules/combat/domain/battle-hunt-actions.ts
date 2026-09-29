@@ -3,6 +3,7 @@ import type { BattleRules } from "./battle-rules.ts";
 import { applyHuntBotHit, applyHuntPlayerHit } from "./battle-hunt-runtime.ts";
 import { requireAuthedHuman, requireBattleHuman } from "./battle-lookups.ts";
 import { applyPairedGloveEnding, applyPairedMelee } from "./battle-strikes.ts";
+import { rosterIsPvp } from "./roster-pvp.ts";
 import { requireFightBot } from "./fight-bots.ts";
 import { resolveAiActorTurn } from "./resolve-ai-actor-turn.ts";
 import type { FightDuel } from "./fight-duel.ts";
@@ -65,7 +66,7 @@ export function applyBattleGlove(
   nowMs: number,
 ): Readonly<{ result: KeepTurnResult | EndingGloveResult; finished: boolean }> {
   const human = requireAuthedHuman(state.humans, accountId);
-  const keep = tryGloveKeepTurn(human, spellId, sequence);
+  const keep = tryGloveKeepTurn(human, spellId, sequence, rosterIsPvp(state.humans));
   if (keep.kind !== "ignored") return { result: keep, finished: state.finished };
   const duel = requireDuelContaining(state.duels, human.heroId);
   const ending = applyPairedGloveEnding({

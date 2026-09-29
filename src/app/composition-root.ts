@@ -27,6 +27,8 @@ import { CatalogHonorRanks } from "../modules/catalog/infrastructure/catalog-hon
 import { TradeModule } from "../modules/trade/trade-module.ts";
 import { bindInstanceHuntRuntime } from "./bind-instance-hunt-runtime.ts";
 import { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
+import { RadwayPlayerAttackPolicy } from "./radway-player-attack-policy.ts";
+import type { PlayerAttackPolicy } from "../modules/combat/ports/player-attack-policy.ts";
 import { MailModule } from "../modules/mail/mail-module.ts";
 import { AuctionModule } from "../modules/auction/auction-module.ts";
 import { createAuctionOps } from "./auction-ops.ts";
@@ -61,6 +63,7 @@ export class CompositionRoot {
       combatRules?: Partial<BattleRules>;
       combatBotStrength?: number;
       ambushRandom?: RandomSource;
+      playerAttackPolicy?: PlayerAttackPolicy;
     }> = {},
   ): Promise<Application> {
     const policy = loadGamePolicy(config.gamePolicyFile);
@@ -116,6 +119,10 @@ export class CompositionRoot {
         },
         clock,
         delay,
+        playerAttackPolicy:
+          extras.playerAttackPolicy === undefined
+            ? new RadwayPlayerAttackPolicy()
+            : extras.playerAttackPolicy,
         ...(extras.combatRandom === undefined ? {} : { random: extras.combatRandom }),
         ...(extras.combatBotStrength === undefined
           ? {}

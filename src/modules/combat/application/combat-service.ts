@@ -38,6 +38,8 @@ import type {
   HuntStartInput,
 } from "../ports/combat-port.ts";
 import type { FightIdSource } from "../ports/fight-id-source.ts";
+import type { PlayerAttackPolicy } from "../ports/player-attack-policy.ts";
+import { rosterIsPvp } from "../domain/roster-pvp.ts";
 import type { FightSettlement } from "../ports/fight-settlement.ts";
 import type { FightTerminalObserver } from "../ports/fight-terminal-observer.ts";
 import type { FightLootBlock } from "../domain/fight-loot-block.ts";
@@ -70,6 +72,7 @@ export class CombatService implements CombatPort {
     history: FinishedFightRecorder,
     historyWrites: HistoryWriteObserver,
     delay: CombatDelay,
+    private readonly attackPolicy: PlayerAttackPolicy,
     private readonly testBotStrength?: number,
   ) {
     this.scheduler = new HuntMeleeScheduler(delay, clock);
@@ -203,6 +206,19 @@ export class CombatService implements CombatPort {
     }
     if (battle.hasHuman(input.accountId, input.heroId)) {
       throw new HuntJoinDenied("вы уже участвовали в этом бою");
+    }
+    const humans = battle.boardParticipants().humans;
+    if (
+      join.mode === "hunt-roster" &&
+      !rosterIsPvp(humans) &&
+      rosterIsPvp([...humans, { team: input.team }])
+    ) {
+      this.attackPolicy.requireAllowed({
+        areaId: battle.areaId,
+        instanceCopyId: battle.instanceCopyId,
+        attackerHeroId: input.heroId,
+        joinTeam: input.team,
+      });
     }
     const roster = battle.addHuman(fightSetupJoinFromInput(input, this.scheduler.now().getTime()));
     this.byAccount.set(input.accountId, battle);

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Application } from "../../src/app/application.ts";
+import { RadwayPlayerAttackPolicy } from "../../src/app/radway-player-attack-policy.ts";
 import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import {
   AuthenticatedClient,
@@ -504,6 +505,55 @@ function framesIncludeHumanOppNew(events: readonly AmfValue[]): boolean {
   }
   return false;
 }
+
+describe("hunt fight join under the Radway attack policy", () => {
+  let harness: ApplicationHarness;
+  let application: Application;
+
+  beforeEach(async () => {
+    harness = new ApplicationHarness(undefined, undefined, {
+      combatBotStrength: 1,
+      combatRules: { strPerDamagePoint: 1 },
+      combatRandom: new SequenceRandom([0.4]),
+      playerAttackPolicy: new RadwayPlayerAttackPolicy(),
+    });
+    application = await harness.start();
+  });
+
+  afterEach(async () => {
+    await harness.stop();
+  });
+
+  it("refuses JOIN team 2 against a hunting player and lets JOIN team 1 through", async () => {
+    const a = await createIsolatedHero(application);
+    const b = await createIsolatedHero(application);
+    const c = await createIsolatedHero(application);
+    await a.objectAction({ object: "common", action: "init", sq: 1 });
+    await b.objectAction({ object: "common", action: "init", sq: 1 });
+    await c.objectAction({ object: "common", action: "init", sq: 1 });
+    const start = await a.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID },
+      sq: 2,
+    });
+    const fightId = huntFightIdFrom(start);
+    const denied = await b.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "FIGHT_JOIN", fight: fightId, team: 2 },
+      sq: 2,
+    });
+    expect(denied["common|action"]).toMatchObject({ status: 204 });
+    const helped = await c.objectAction({
+      object: "common",
+      action: "object",
+      form: { code: "FIGHT_JOIN", fight: fightId, team: 1 },
+      sq: 2,
+    });
+    expect(helped["common|action"]).toEqual({ status: 100 });
+  });
+});
 
 function requireNick(payload: Record<string, AmfValue>): string {
   const conf = objectBlock(payload["user|conf"]);

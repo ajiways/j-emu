@@ -1,3 +1,4 @@
+import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AccountKeyedActiveFightQuery } from "../../../src/app/account-keyed-active-fight-query.ts";
@@ -62,6 +63,7 @@ describe("HP regeneration persistence", () => {
       rules: UNIT_BATTLE_RULES,
       clock,
       delay: new SystemCombatDelay(),
+      playerAttackPolicy: new AllowPlayerAttackPolicy(),
     });
     characters = CharacterModule.create(
       playableCharacterModuleInput(

@@ -29,6 +29,7 @@ describe("Battle", () => {
       {
         type: "hunt-bootstrap",
         waiting: false,
+        pvp: false,
         hero: {
           id: 1,
           nick: "Hero",

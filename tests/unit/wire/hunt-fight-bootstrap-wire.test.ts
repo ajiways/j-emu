@@ -33,6 +33,7 @@ describe("huntFightBootstrapEvents", () => {
     const types = huntFightBootstrapEvents({
       type: "hunt-bootstrap",
       waiting: false,
+      pvp: false,
       hero,
       allies: [],
       bot,
@@ -53,6 +54,7 @@ describe("huntFightBootstrapEvents", () => {
     const types = huntFightBootstrapEvents({
       type: "hunt-bootstrap",
       waiting: false,
+      pvp: false,
       resumePaired: true,
       hero,
       allies: [],
@@ -75,6 +77,7 @@ describe("huntFightBootstrapEvents", () => {
     const types = huntFightBootstrapEvents({
       type: "hunt-bootstrap",
       waiting: false,
+      pvp: false,
       hero,
       allies: [],
       bot,
@@ -98,6 +101,7 @@ describe("huntFightBootstrapEvents", () => {
     const oppnew = huntFightBootstrapEvents({
       type: "hunt-bootstrap",
       waiting: false,
+      pvp: false,
       hero,
       allies: [],
       bot,
@@ -126,6 +130,7 @@ describe("huntFightBootstrapEvents", () => {
     const events = huntFightBootstrapEvents({
       type: "hunt-bootstrap",
       waiting: false,
+      pvp: false,
       hero,
       allies: [],
       bot,
@@ -190,6 +195,7 @@ describe("huntFightBootstrapEvents", () => {
     const types = huntFightBootstrapEvents({
       type: "hunt-bootstrap",
       waiting: false,
+      pvp: false,
       hero,
       allies: [{ ...hero, id: 2, nick: "Waiter" }],
       bot,
@@ -233,6 +239,7 @@ describe("huntFightBootstrapEvents", () => {
     const events = huntFightBootstrapEvents({
       type: "hunt-bootstrap",
       waiting: false,
+      pvp: false,
       hero,
       allies: [],
       bot,

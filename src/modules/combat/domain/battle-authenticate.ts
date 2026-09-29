@@ -6,6 +6,7 @@ import type { HuntHuman } from "./hunt-human.ts";
 import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import { requireBattleHuman } from "./battle-lookups.ts";
+import { rosterIsPvp } from "./roster-pvp.ts";
 
 function huntAuthenticateEvents(
   input: Readonly<{
@@ -15,6 +16,7 @@ function huntAuthenticateEvents(
     rosterBots: readonly HuntBotSnap[];
     botEffects: readonly FightEffectSnap[];
     humanOpponent: HuntHuman | null;
+    pvp: boolean;
     nextActorId: number;
     resume: boolean;
     timeoutSeconds: number;
@@ -30,6 +32,7 @@ function huntAuthenticateEvents(
     {
       type: "hunt-bootstrap",
       waiting: human.waiting,
+      pvp: input.pvp,
       ...(input.resume && !human.waiting ? { resumePaired: true as const } : {}),
       hero: human.snapshot(),
       allies: input.allies
@@ -166,6 +169,7 @@ export function authenticateFighter(
     rosterBots: input.bots.map((entry) => entry.snap()),
     botEffects: pairedBot ? pairedBot.effects.snapshot(input.nowMs) : [],
     humanOpponent,
+    pvp: rosterIsPvp(input.humans),
     nextActorId: duel?.nextActorId ?? human.heroId,
     resume,
     timeoutSeconds: input.timeoutSeconds,

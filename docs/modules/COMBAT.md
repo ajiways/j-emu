@@ -517,6 +517,24 @@ CMB-11 2-hero JOIN team 2 без team-1 waiter по-прежнему ждёт б
   тот же `FightDuel` ретаргет живой team-1 ↔ team-2;
 - finish — `enemySideCleared` по людям **и** ботам стороны.
 
+### PvP как состав боя
+
+Бой PvP, когда в каждой команде есть человек (`rosterIsPvp`; умершие и вышедшие
+остаются в списке, поэтому ответ меняется только при входе). Это не тип боя:
+охота, в которую вошёл человек за команду мобов, становится PvP. От предиката
+зависят `fightState.pvp` в bootstrap и запрет каста спеллов с `onlyPvP` (pocket,
+glove; denial — `FightCastDenied("pvp-only")`, wire `{rs:false}`, как cooldown).
+
+Нападение на игрока — обычный `FIGHT_JOIN` в команду против человека.
+`PlayerAttackPolicy` (порт combat, `requireAllowed`) вызывается, только если
+join в `hunt-roster` бой делает его PvP. Composition ставит
+`RadwayPlayerAttackPolicy`: на Радвее нападать на игроков нельзя нигде, join
+отказывается `HuntJoinDenied` (dump 204). Текст отказа выдуман, дампа нет.
+Фракции и локации — параметры `PlayerAttackAttempt`, пока не читаются.
+Раскоп и дуэли PvP по типу старта, политику не спрашивают. Honor и settlement
+PvP по-прежнему только 1×1 (`persistPvpHonor`): охота, ставшая PvP, считается
+как охота.
+
 ### CMB-12 — parallel hunt duels
 
 Срез закрыт (raw-AMF). Product-status не поднимать: CEF не прогонялся.

@@ -1,3 +1,4 @@
+import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
 import { describe, expect, it } from "vitest";
 import { CombatService } from "../../../src/modules/combat/application/combat-service.ts";
 import { FinishedFightRecorder } from "../../../src/modules/combat/application/finished-fight-recorder.ts";
@@ -108,6 +109,7 @@ describe("CombatService hunt join", () => {
       new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
       new RecordingHistoryWriteObserver(),
       delay,
+      new AllowPlayerAttackPolicy(),
     );
     const start = await startHuntWithIssuedId(combat, unitHuntStart({ heroStrength: 200 }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
@@ -142,6 +144,7 @@ describe("CombatService hunt join", () => {
       new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
       new RecordingHistoryWriteObserver(),
       delay,
+      new AllowPlayerAttackPolicy(),
     );
     const start = await startHuntWithIssuedId(combat, unitHuntStart());
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
@@ -193,6 +196,7 @@ describe("CombatService PvP join", () => {
       new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
       new RecordingHistoryWriteObserver(),
       delay,
+      new AllowPlayerAttackPolicy(),
     );
     const start = await combat.startPvp(unitPvpStart("1"));
     expect(start.purpose).toBe("pvp");
@@ -286,6 +290,7 @@ function service(
     new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
     new RecordingHistoryWriteObserver(),
     delay,
+    new AllowPlayerAttackPolicy(),
   );
 }
 

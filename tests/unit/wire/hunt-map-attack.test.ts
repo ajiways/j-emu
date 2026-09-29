@@ -1,3 +1,4 @@
+import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
 import { describe, expect, it } from "vitest";
 import { CombatService } from "../../../src/modules/combat/application/combat-service.ts";
 import { FinishedFightRecorder } from "../../../src/modules/combat/application/finished-fight-recorder.ts";
@@ -93,6 +94,7 @@ function harness(): {
     new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
     new RecordingHistoryWriteObserver(),
     new ManualCombatDelay(),
+    new AllowPlayerAttackPolicy(),
   );
   const fanout = { wakeArea: async () => undefined };
   return {

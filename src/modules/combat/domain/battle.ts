@@ -29,6 +29,7 @@ import type { HuntRosterBot } from "./hunt-roster-bot.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { grantTurn as grantHumanTurn, type BotMeleeResult } from "./hunt-melee.ts";
 import { opposingTeam } from "./opposing-team.ts";
+import { rosterIsPvp } from "./roster-pvp.ts";
 import { consumeStunSkip, timeoutBattleTurn } from "./battle-turn-skips.ts";
 import type { HumanTimeout } from "./timeout-human-turn.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
@@ -222,7 +223,8 @@ export class Battle {
     nowMs: number,
     sequence: string | number,
   ): KeepTurnResult {
-    return tryPocketCast(requireAuthedHuman(this.humans, accountId), itemId, nowMs, sequence);
+    const human = requireAuthedHuman(this.humans, accountId);
+    return tryPocketCast(human, itemId, nowMs, sequence, rosterIsPvp(this.humans));
   }
 
   tryRage(accountId: number): KeepTurnResult {
@@ -326,14 +328,7 @@ export class Battle {
   }
 
   outcome(kind: FightOutcomeKind, winnerTeam: 1 | 2): FightOutcomeSnapshot {
-    return battleOutcomeSnapshot({
-      setup: this.setup,
-      fightId: this.id,
-      kind,
-      winnerTeam,
-      humans: this.humans,
-      fightRules: this.fightRules,
-    });
+    return battleOutcomeSnapshot({ ...this.actionState(), setup: this.setup, kind, winnerTeam });
   }
 
   boardParticipants(): Readonly<{

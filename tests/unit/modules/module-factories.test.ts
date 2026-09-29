@@ -1,3 +1,4 @@
+import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
 import { describe, expect, it } from "vitest";
 import type { PostgresDatabase } from "../../../src/infrastructure/postgres/database.ts";
 import { CatalogModule } from "../../../src/modules/catalog/catalog-module.ts";
@@ -293,6 +294,7 @@ describe("module factories", () => {
         rules: combatRules,
         clock,
         delay: combatDelay,
+        playerAttackPolicy: new AllowPlayerAttackPolicy(),
       }),
     ).toThrow(/Combat module requires a database/);
     expect(() =>
@@ -301,6 +303,7 @@ describe("module factories", () => {
         rules: combatRules,
         clock: undefined as unknown as Clock,
         delay: combatDelay,
+        playerAttackPolicy: new AllowPlayerAttackPolicy(),
       }),
     ).toThrow(/Combat module requires a clock/);
     expect(() =>
@@ -309,6 +312,7 @@ describe("module factories", () => {
         rules: combatRules,
         clock,
         delay: undefined as unknown as CombatDelay,
+        playerAttackPolicy: new AllowPlayerAttackPolicy(),
       }),
     ).toThrow(/Combat module requires a combat delay/);
   });
@@ -494,6 +498,7 @@ describe("module factories", () => {
       rules: combatRules,
       clock,
       delay: combatDelay,
+      playerAttackPolicy: new AllowPlayerAttackPolicy(),
     });
     await expect(combat.close()).resolves.toBeUndefined();
     const characters = CharacterModule.create({

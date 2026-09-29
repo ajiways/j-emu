@@ -1,3 +1,4 @@
+import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
 import { describe, expect, it } from "vitest";
 import { CombatService } from "../../../src/modules/combat/application/combat-service.ts";
 import { FinishedFightRecorder } from "../../../src/modules/combat/application/finished-fight-recorder.ts";
@@ -28,6 +29,7 @@ describe("FightTcpConnection", () => {
       new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
       new RecordingHistoryWriteObserver(),
       new ManualCombatDelay(),
+      new AllowPlayerAttackPolicy(),
     );
     const started = await startHuntWithIssuedId(combat, unitHuntStart());
     const commands = FproxyCommandRegistry.fromMeleeSourceIds({ left: 1, center: 2, right: 3 });

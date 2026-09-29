@@ -13,7 +13,7 @@ export function huntFightBootstrapEvents(
 ): readonly Readonly<Record<string, unknown>>[] {
   const { hero, bot, allies, waiting } = event;
   const events: Readonly<Record<string, unknown>>[] = [
-    { bg: 1, et: "fightState", pvp: false, startTime: 0 },
+    { bg: 1, et: "fightState", pvp: event.pvp, startTime: 0 },
     huntPersListEvent([hero, ...allies], event.rosterBots),
     {
       companions: [],

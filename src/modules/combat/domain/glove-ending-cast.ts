@@ -3,6 +3,8 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { CombatSpell } from "./combat-loadout.ts";
 import { FightCastDenied } from "./fight-cast-denied.ts";
+import { requirePvpForSpell } from "./pvp-only-spell.ts";
+import { rosterIsPvp } from "./roster-pvp.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import {
   aoeKind1Damage,
@@ -54,6 +56,7 @@ export function resolveGloveFinisher(
   if (!human.authed || input.finished) return { kind: "ignored" };
   const glove = human.casts.gloveSpell(spellId);
   if (!glove || !isEndingGlove(glove.spell)) return { kind: "ignored" };
+  requirePvpForSpell(glove.spell, rosterIsPvp(input.humans), sequence);
   if (spellKind(glove.spell, 11)) throw new FightCastDenied("kind11", sequence);
   if (human.waiting || !human.turnActive) {
     return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };

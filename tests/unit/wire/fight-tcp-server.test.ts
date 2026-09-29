@@ -1,3 +1,4 @@
+import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
 import net from "node:net";
 import { once } from "node:events";
 import { describe, expect, it } from "vitest";
@@ -31,6 +32,7 @@ describe("FightTcpServer", () => {
       new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
       new RecordingHistoryWriteObserver(),
       new ManualCombatDelay(),
+      new AllowPlayerAttackPolicy(),
     );
     const started = await startHuntWithIssuedId(combat, unitHuntStart());
     const longPoll = new LongPollCoordinator();

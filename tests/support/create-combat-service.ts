@@ -3,6 +3,8 @@ import { FinishedFightRecorder } from "../../src/modules/combat/application/fini
 import { FinishedFightList } from "../../src/modules/combat/application/finished-fight-list.ts";
 import type { BattleRules } from "../../src/modules/combat/domain/battle-rules.ts";
 import { UNIT_BATTLE_RULES } from "./battle-rules.ts";
+import { AllowPlayerAttackPolicy } from "./fakes/allow-player-attack-policy.ts";
+import type { PlayerAttackPolicy } from "../../src/modules/combat/ports/player-attack-policy.ts";
 import { ManualCombatDelay } from "./fakes/manual-combat-delay.ts";
 import { MonotonicFightIdSource } from "./fakes/monotonic-fight-id-source.ts";
 import { MutableClock } from "./fakes/mutable-clock.ts";
@@ -26,6 +28,7 @@ export function createCombatService(input: {
   history?: FinishedFightStore;
   writes?: HistoryWriteObserver;
   fightId?: number;
+  attackPolicy?: PlayerAttackPolicy;
 }): Readonly<{
   combat: CombatService;
   clock: Clock;
@@ -45,6 +48,7 @@ export function createCombatService(input: {
     new FinishedFightRecorder(history, clock),
     writes,
     delay,
+    input.attackPolicy ?? new AllowPlayerAttackPolicy(),
   );
   combat.bindHistoryList(new FinishedFightList(history, clock));
   return { combat, clock, delay, history, writes };

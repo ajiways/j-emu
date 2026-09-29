@@ -1,6 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { CombatGloveSpell, CombatSpell } from "./combat-loadout.ts";
 import { FightCastDenied } from "./fight-cast-denied.ts";
+import { requirePvpForSpell } from "./pvp-only-spell.ts";
 import type { HuntHuman } from "./hunt-human.ts";
 import { pocketHealAmount, spellCharging, spellKind } from "./hunt-human-cast-state.ts";
 import { applyPocketKind3, requirePocketOrb } from "./pocket-kind3-cast.ts";
@@ -18,10 +19,12 @@ export function tryPocketCast(
   itemId: number,
   nowMs: number,
   sequence: string | number,
+  pvp: boolean,
 ): KeepTurnResult {
   if (!human.authed || human.waiting || human.hp === 0) return { kind: "ignored" };
   const row = human.casts.pocketRow(itemId);
   if (!row) return { kind: "ignored" };
+  requirePvpForSpell(row.spell, pvp, sequence);
   if (human.casts.cooldownLeftMs(itemId, nowMs) > 0) {
     throw new FightCastDenied("cooldown", sequence);
   }
@@ -110,10 +113,12 @@ export function tryGloveKeepTurn(
   human: HuntHuman,
   spellId: number,
   sequence: string | number,
+  pvp: boolean,
 ): KeepTurnResult {
   if (!human.authed || human.waiting || human.hp === 0) return { kind: "ignored" };
   const glove = human.casts.gloveSpell(spellId);
   if (!glove) return { kind: "ignored" };
+  requirePvpForSpell(glove.spell, pvp, sequence);
   if (spellKind(glove.spell, 11)) throw new FightCastDenied("kind11", sequence);
   if (isEndingGlove(glove.spell)) return { kind: "ignored" };
   if (human.casts.cp < glove.cost) {
