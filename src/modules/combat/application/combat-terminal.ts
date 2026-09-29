@@ -14,10 +14,14 @@ import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 
 type FinishKind = "win" | "loss" | "last-leave";
 
+const revealToken = (fightId: string): string => `${fightId}:result-reveal`;
+
 export class CombatTerminal {
   private readonly heldLoot = new Map<number, FightLootBlock>();
   private readonly heldExits = new Map<number, FightExit>();
   private readonly finishedTaken = new Set<number>();
+  private readonly revealDelayMs = new Map<string, number>();
+  private readonly revealScheduled = new Set<string>();
 
   constructor(
     private readonly byAccount: Map<number, Battle>,
@@ -106,13 +110,29 @@ export class CombatTerminal {
       this.finishedTaken.add(accountId);
       return;
     }
-    await this.releaseHeldForFight(mine.fightId);
+    this.scheduleReveal(mine.fightId);
   }
 
   discardHeldWire(): void {
+    for (const fightId of this.revealScheduled) this.scheduler.cancel(revealToken(fightId));
+    this.revealScheduled.clear();
+    this.revealDelayMs.clear();
     this.heldLoot.clear();
     this.heldExits.clear();
     this.finishedTaken.clear();
+  }
+
+  /** Client already saw fightFinish; loot/exit/HUD follow after the kill animation, as live. */
+  private scheduleReveal(fightId: string): void {
+    if (this.revealScheduled.has(fightId)) return;
+    const delayMs = this.revealDelayMs.get(fightId);
+    if (delayMs === undefined) throw new Error(`Fight ${fightId} has no result reveal delay`);
+    this.revealScheduled.add(fightId);
+    this.scheduler.schedule(revealToken(fightId), delayMs, async () => {
+      this.revealScheduled.delete(fightId);
+      this.revealDelayMs.delete(fightId);
+      await this.releaseHeldForFight(fightId);
+    });
   }
 
   private async releaseHeldForFight(fightId: string): Promise<void> {
@@ -178,8 +198,11 @@ export class CombatTerminal {
       this.wakeAccount(accountId);
     }
     if (kind === "last-leave" && settlement) await settlement.publishEnded(battle.id);
-    else if (battle.accountIds().some((id) => this.finishedTaken.has(id))) {
-      await this.releaseHeldForFight(battle.id);
+    else {
+      this.revealDelayMs.set(battle.id, battle.resultRevealDelayMs);
+      if (battle.accountIds().some((id) => this.finishedTaken.has(id))) {
+        this.scheduleReveal(battle.id);
+      }
     }
     for (const accountId of battle.accountIds()) this.byAccount.delete(accountId);
     this.battleByFight.delete(battle.id);

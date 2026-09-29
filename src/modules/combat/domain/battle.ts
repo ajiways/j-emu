@@ -47,6 +47,7 @@ export class Battle {
   readonly turnTimeoutSeconds: number;
   readonly meleeBotCounterMs: number;
   readonly turnGrantDelayMs: number;
+  readonly resultRevealDelayMs: number;
   private finishedValue = false;
   private pairedAccountIdValue: number;
   private readonly humans: HuntHuman[] = [];
@@ -70,6 +71,7 @@ export class Battle {
     this.turnTimeoutSeconds = rules.turnTimeoutSeconds;
     this.meleeBotCounterMs = rules.meleeBotCounterMs;
     this.turnGrantDelayMs = rules.turnGrantDelayMs;
+    this.resultRevealDelayMs = rules.resultRevealDelayMs;
     const seed = seedBattleParticipants(setup, rules, fightRules);
     this.bots = requireFightBots(seed.bots);
     this.pairedAccountIdValue = seed.pairedAccountId;

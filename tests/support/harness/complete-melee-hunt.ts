@@ -1,3 +1,4 @@
+import { UNIT_BATTLE_RULES } from "../battle-rules.ts";
 import type { AmfValue } from "../../../src/modules/jugger-wire/amf/amf3.ts";
 import type { AuthenticatedClient } from "./authenticated-client.ts";
 import { MAP_HUNT_SPAWN_ID } from "./map-hunt-spawn.ts";
@@ -10,6 +11,8 @@ import {
 
 const STARTER_GLOVE_ARTIKUL = 9095;
 const MAX_MELEE_STRIKES = 40;
+/** Same value as config/development.json `combat.resultRevealDelayMs`. */
+const RESULT_REVEAL_MS = UNIT_BATTLE_RULES.resultRevealDelayMs;
 
 export async function completeMeleeHunt(
   client: AuthenticatedClient,
@@ -93,6 +96,7 @@ export async function strikeUntilHuntFinish(
     if (framesIncludeFightFinish(after)) finished = true;
   }
   if (!finished) throw new Error("Hunt fight did not finish");
+  await elapse(RESULT_REVEAL_MS);
 }
 
 /** Human↔human: each melee hit grants the opponent after `turnGrantDelayMs`. */
@@ -137,6 +141,7 @@ export async function strikeUntilPvpFinish(
     }
   }
   if (!finished) throw new Error("Hunt fight did not finish");
+  await elapse(RESULT_REVEAL_MS);
 }
 
 export async function putOnStarterGloveIfInBag(

@@ -100,6 +100,8 @@ export class CompositionRoot {
           meleeBotCounterMs:
             extras.combatRules?.meleeBotCounterMs ?? policy.combat.meleeBotCounterMs,
           turnGrantDelayMs: extras.combatRules?.turnGrantDelayMs ?? policy.combat.turnGrantDelayMs,
+          resultRevealDelayMs:
+            extras.combatRules?.resultRevealDelayMs ?? policy.combat.resultRevealDelayMs,
           combatSoftC: extras.combatRules?.combatSoftC ?? policy.combat.combatSoftC,
           combatChanceCap: extras.combatRules?.combatChanceCap ?? policy.combat.combatChanceCap,
           critMult: extras.combatRules?.critMult ?? policy.combat.critMult,

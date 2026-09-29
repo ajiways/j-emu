@@ -265,7 +265,11 @@ kill-кадра `user|unitframe` нет: EXP и деньги приходят т
 `fight|loot` + `fight|exit` + `user|unitframe`/`user|conf`/bag/state в одном
 personal esrv-кадре (live `2players_social_2026-08-11`: `fight|exit` →
 `fight|loot` → `state.money` + `user|unitframe.exp` одним кадром).
-Win/loss exit `type:0` + `winner`. `leaveFight`: HTTP `{rs:true,sq}`; `fight|exit`
+Win/loss exit `type:0` + `winner`. Кадр loot+exit+HUD (и chat «Окончен
+бой») выдаётся через `combat.resultRevealDelayMs` после того, как fproxy poll
+забрал `fightFinish` (live дамп: exit → loot/HUD ~1.5–1.8 с после добивания;
+клиент момент «выйти» не сообщает, `fight|finish` OA приходит позже). Persist
+при этом остаётся на RAM finish. Flee-exit `last-leave` не откладывается. `leaveFight`: HTTP `{rs:true,sq}`; `fight|exit`
 `{flee:true,status:100,type:2}` и тот же HUD (без loot). Если в бою ещё живой союзник — leaver
 получает только flee-exit, бой продолжается; полный loot/EXP — когда RAM
 fight заканчивается. `chat|add` «Вами получено» / «Окончен бой» — [CHAT.md](CHAT.md) (SOC-01), не

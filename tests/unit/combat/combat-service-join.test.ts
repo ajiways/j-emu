@@ -62,13 +62,19 @@ describe("CombatService hunt join", () => {
   });
 
   it("finishes every account on the shared battle", async () => {
-    const combat = service();
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const delay = new ManualCombatDelay();
+    const combat = service(clock, delay);
     const start = await startHuntWithIssuedId(combat, unitHuntStart({ heroStrength: 200 }));
     await combat.joinHunt(unitHuntJoin({ fightId: start.fightId }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
     await combat.execute(1, { kind: "strike", side: "left", sequence: 2 });
     const joinerEvents = await combat.execute(2, { kind: "poll" });
     expect(joinerEvents.some((event) => event.type === "finished")).toBe(true);
+    expect(await combat.peekExit(1)).toBeNull();
+    expect(await combat.peekExit(2)).toBeNull();
+    clock.advanceMs(rules.resultRevealDelayMs);
+    await delay.fireDue(clock.now());
     expect(await combat.takeExit(1)).toEqual({ fightId: start.fightId, winnerTeam: 1 });
     expect(await combat.takeExit(2)).toEqual({ fightId: start.fightId, winnerTeam: 1 });
     expect(await combat.hasFight(start.fightId)).toBe(false);
@@ -268,8 +274,10 @@ describe("CombatService PvP join", () => {
   });
 });
 
-function service(): CombatService {
-  const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+function service(
+  clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z")),
+  delay = new ManualCombatDelay(),
+): CombatService {
   return new CombatService(
     new MonotonicFightIdSource(1),
     new SequenceRandom([20]),
@@ -277,7 +285,7 @@ function service(): CombatService {
     clock,
     new FinishedFightRecorder(new RecordingFinishedFightStore(), clock),
     new RecordingHistoryWriteObserver(),
-    new ManualCombatDelay(),
+    delay,
   );
 }
 
