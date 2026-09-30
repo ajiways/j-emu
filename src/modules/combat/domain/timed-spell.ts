@@ -18,7 +18,7 @@ export type TimedSpellSource = Readonly<{
 }>;
 
 /** A kind-3 effect that is not spent by strikes: it ages on the fight clock instead. */
-function isTimedBuff(effect: CombatEffect): boolean {
+export function isTimedBuff(effect: CombatEffect): boolean {
   return effect.kind === 3 && !(effect.charging && effect.charging > 0) && !effect.capacity;
 }
 
@@ -55,6 +55,7 @@ export function castTimedSpell(
   // One spell shows one icon, however many kind-3 effects carry its skills.
   const buffs = ordered.filter(isTimedBuff);
   let buffed = false;
+  const mask = intakeMask(buffs);
   for (const effect of ordered) {
     if (effect.kind === 3 && buffed) continue;
     if (effect.kind === 2) {
@@ -83,6 +84,7 @@ export function castTimedSpell(
       dmgType: effect.dmgType ?? 0,
       ...(spell.groupId !== undefined ? { groupId: spell.groupId } : {}),
       skills: buffs.flatMap((buff) => buff.skills ?? []),
+      ...(mask !== undefined ? { dmgMask: mask } : {}),
       durationSeconds: effect.duration ?? null,
       nowMs,
       castEndsTurn: false,
@@ -106,4 +108,18 @@ export function castTimedSpell(
     });
   }
   return events;
+}
+
+const INTAKE_SKILLS: ReadonlySet<string> = new Set([
+  "DFR",
+  "MAG_DFR",
+  "ADFR",
+  "DMG_AMP",
+  "pcDMG_AMP",
+]);
+
+/** The damage-type mask of the first merged effect that carries an intake skill. */
+function intakeMask(buffs: readonly CombatEffect[]): number | undefined {
+  return buffs.find((buff) => buff.skills?.some((skill) => INTAKE_SKILLS.has(skill.skillId)))
+    ?.dmgMask;
 }

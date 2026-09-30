@@ -3,6 +3,7 @@ import { rollOverlayExtra } from "../../../src/modules/combat/domain/melee-schoo
 import { schoolOverlayFromKind1 } from "../../../src/modules/combat/domain/school-overlay.ts";
 import { UNPUBLISHED_MAG_STATS } from "../../../src/modules/combat/domain/mag-stats.ts";
 import type { CombatSpell } from "../../../src/modules/combat/domain/combat-loadout.ts";
+import { plainTarget } from "../../support/plain-damage-target.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
@@ -26,7 +27,7 @@ describe("rollOverlayExtra", () => {
     const extra = rollOverlayExtra(
       owner,
       UNPUBLISHED_MAG_STATS,
-      UNPUBLISHED_MAG_STATS,
+      plainTarget(UNPUBLISHED_MAG_STATS),
       27,
       new SequenceRandom([1]),
       UNIT_BATTLE_RULES,
@@ -47,7 +48,7 @@ describe("rollOverlayExtra", () => {
       rollOverlayExtra(
         owner,
         UNPUBLISHED_MAG_STATS,
-        UNPUBLISHED_MAG_STATS,
+        plainTarget(UNPUBLISHED_MAG_STATS),
         0,
         new SequenceRandom([1]),
         UNIT_BATTLE_RULES,

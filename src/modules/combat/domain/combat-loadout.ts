@@ -4,6 +4,7 @@ type CombatSpellEffect = Readonly<{
   kind: number;
   order?: number;
   hidden?: number;
+  dmgMask?: number;
   amount?: number | string;
   dmgType?: number;
   charging?: number;

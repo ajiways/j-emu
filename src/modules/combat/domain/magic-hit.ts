@@ -1,4 +1,5 @@
 import type { BattleRules } from "./battle-rules.ts";
+import type { DamageTarget } from "./damage-target.ts";
 import type { CombatSpell } from "./combat-loadout.ts";
 import { magPowerForDmgType, magResistForDmgType, type MagStats } from "./mag-stats.ts";
 import { MELEE_REACT } from "./melee-outcome.ts";
@@ -6,7 +7,7 @@ import type { RandomSource } from "./random-source.ts";
 
 export type MagicHitInput = Readonly<{
   caster: MagStats;
-  target: MagStats;
+  target: DamageTarget;
   casterStrength: number;
   dmgType: number;
   catalogAmount?: number;
@@ -31,8 +32,11 @@ export function rollMagicHit(input: MagicHitInput): number {
   const max = Math.max(min, Math.round(mean * (1 + input.rules.damageSpread)));
   const rolled = input.random.integer(min, max);
   const leftover =
-    1 - mitigationFromMagres(magResistForDmgType(input.target, input.dmgType), input.rules);
-  return Math.max(1, Math.round(rolled * leftover));
+    1 - mitigationFromMagres(magResistForDmgType(input.target.mag, input.dmgType), input.rules);
+  return input.target.effects.takenDamage(
+    Math.max(1, Math.round(rolled * leftover)),
+    input.dmgType,
+  );
 }
 
 export function magicReact(killed: boolean): number {
@@ -62,7 +66,7 @@ export function magicHitFromKind1(
   spell: CombatSpell,
   casterStrength: number,
   caster: MagStats,
-  target: MagStats,
+  target: DamageTarget,
   random: RandomSource,
   rules: BattleRules,
 ): number {

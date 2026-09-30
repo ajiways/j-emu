@@ -11,6 +11,7 @@ export type TimedBuffInput = Readonly<{
   dmgType: number;
   groupId?: number;
   skills: readonly SkillValue[];
+  dmgMask?: number;
   /** Fight-clock seconds; `null` — no duration in the data, the buff lasts to the end of the fight. */
   durationSeconds: number | null;
   nowMs: number;
@@ -34,6 +35,7 @@ export function timedBuffEffect(id: number, input: TimedBuffInput): StandingEffe
     dmgType: input.dmgType,
     ...(input.groupId !== undefined ? { groupId: input.groupId } : {}),
     skills: bakeSkills(input.skills, input.base),
+    ...(input.dmgMask !== undefined ? { dmgMask: input.dmgMask } : {}),
     remainTurns: 0,
     expiresAtMs: Number.MAX_SAFE_INTEGER,
     ...(input.durationSeconds === null

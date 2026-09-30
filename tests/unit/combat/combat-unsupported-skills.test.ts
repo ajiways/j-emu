@@ -17,7 +17,7 @@ describe("unsupported skills at fight start", () => {
         animData: "magic_baf",
         endTurn: true,
         effects: [
-          { kind: 3, skills: [{ skillId: "DFR", value: 0.4 }] },
+          { kind: 3, skills: [{ skillId: "CR", value: 0.5 }] },
           { kind: 3, skills: [{ skillId: "STR", value: 5 }] },
         ],
       },
@@ -34,7 +34,7 @@ describe("unsupported skills at fight start", () => {
         fightId: start.fightId,
         source: "bot",
         artikulId: 6197,
-        skillId: "DFR",
+        skillId: "CR",
         effectKind: 3,
       }),
     ]);

@@ -1,3 +1,4 @@
+import type { FighterEffects } from "./fighter-effects.ts";
 import type { MagStats } from "./mag-stats.ts";
 import type { StrikeStats } from "./melee-outcome.ts";
 
@@ -16,6 +17,7 @@ export type Combatant = Readonly<{
   team: 1 | 2;
   maxHp: number;
   mag: MagStats;
+  effects: FighterEffects;
   strikeStats: StrikeStats;
   alive: boolean;
 }>;

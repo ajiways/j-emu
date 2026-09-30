@@ -16,6 +16,7 @@ export function toCombatSpell(spell: ArtifactSpell): CombatSpell {
       kind: effect.kind,
       ...(effect.order !== undefined ? { order: effect.order } : {}),
       ...(effect.hidden !== undefined ? { hidden: effect.hidden } : {}),
+      ...(effect.dmgMask !== undefined ? { dmgMask: effect.dmgMask } : {}),
       ...(effect.amount !== undefined ? { amount: effect.amount } : {}),
       ...(effect.dmgType !== undefined ? { dmgType: effect.dmgType } : {}),
       ...(effect.charging !== undefined ? { charging: effect.charging } : {}),

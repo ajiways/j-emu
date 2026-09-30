@@ -1,6 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { Fighter } from "./fighter.ts";
 import type { CombatSpell } from "./combat-loadout.ts";
+import { castTimedSpell, isTimedBuff } from "./timed-spell.ts";
 import { stunTurns } from "./stun-turns.ts";
 
 export type StunSource = Readonly<{
@@ -11,7 +12,7 @@ export type StunSource = Readonly<{
 }>;
 
 /** Stuns the target for the spell's turns and shows the stun icon on it (`effUse` kind 18). */
-export function applyStun(caster: Fighter, target: Fighter, source: StunSource): BattleEvent {
+function applyStun(caster: Fighter, target: Fighter, source: StunSource): BattleEvent {
   const turns = stunTurns(source.spell, source.artikulId);
   target.stunnedTurns += turns;
   const standing = target.effects.attachStun({
@@ -45,4 +46,27 @@ export function spendStunTurn(fighter: Fighter): readonly BattleEvent[] {
   fighter.stunnedTurns -= 1;
   if (fighter.stunnedTurns > 0) return [];
   return fighter.effects.clearStun().map((effectId) => ({ type: "effect-purge", effectId }));
+}
+
+/**
+ * A spell that stuns and also leaves a timed effect on the target (live: Сокрушение stuns for two
+ * turns and, for 80 fight seconds, lets the target take only 60% damage).
+ */
+export function applyStunSpell(
+  caster: Fighter,
+  target: Fighter,
+  source: StunSource & Readonly<{ flags: string | number }>,
+  nowMs: number,
+): readonly BattleEvent[] {
+  const timed = source.spell.effects.filter(isTimedBuff);
+  const lingering =
+    timed.length === 0
+      ? []
+      : castTimedSpell(
+          caster,
+          target,
+          { ...source, spell: { ...source.spell, effects: timed } },
+          nowMs,
+        );
+  return [...lingering, applyStun(caster, target, source)];
 }

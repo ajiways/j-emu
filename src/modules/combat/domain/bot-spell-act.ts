@@ -1,4 +1,4 @@
-import { applyStun } from "./apply-stun.ts";
+import { applyStunSpell } from "./apply-stun.ts";
 import { dispelTargetGroups } from "./dispel-target-groups.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import { castChargingBuff } from "./charging-buff-cast.ts";
@@ -50,7 +50,7 @@ export function actBotSpellCard(
   }
   if (spellKind(card.spell, 18)) {
     return [
-      applyStun(actor, target, card),
+      ...applyStunSpell(actor, target, { ...card, flags: 0 }, state.nowMs),
       {
         type: "buff-cast",
         animation: card.spell.animData ?? "magic_aoe",
@@ -151,17 +151,9 @@ function instantKind1(
 ): readonly BattleEvent[] {
   const { applied: damage, killed } = resolveHpLoss(
     target,
-    rollBotSpellDamage(
-      actor.strength,
-      card.spell,
-      state.random,
-      state.rules,
-      actor.mag,
-      target.mag,
-    ),
+    rollBotSpellDamage(actor.strength, card.spell, state.random, state.rules, actor.mag, target),
     actor,
   );
-  if (damage < 1) throw new Error("Bot kind-1 hit the living target for no HP");
   const hit: Extract<BattleEvent, { type: "damage" }> = {
     type: "damage",
     sourceId: actor.fightId,
@@ -178,7 +170,7 @@ function instantKind1(
       ? attachSpellTicks(target, actor, card, state.nowMs)
       : [];
   if (!isHuman(target)) return [...ticks, hit];
-  const dRage = target.casts.awardIncomingRage(damage, target.maxHp);
+  const dRage = damage < 1 ? 0 : target.casts.awardIncomingRage(damage, target.maxHp);
   const events: BattleEvent[] = [...ticks, { ...hit, dRage }];
   if (killed && !state.keepFightOnKill) {
     events.push({ type: "finished", winnerTeam: state.winnerTeam, fightId: state.fightId });

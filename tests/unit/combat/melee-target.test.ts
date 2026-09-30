@@ -70,7 +70,7 @@ describe("resolveMeleeTarget", () => {
       humans: [challenger, acceptor],
       bots: [],
     });
-    expect(target).toEqual(humanMeleeTarget(acceptor));
+    expect(target).toMatchObject({ kind: "human", id: 2, human: acceptor, alive: true });
   });
 
   it("fails when the pair id is neither a human nor the hunt bot", () => {

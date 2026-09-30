@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { rollMagicHit } from "../../../src/modules/combat/domain/magic-hit.ts";
 import { UNPUBLISHED_MAG_STATS } from "../../../src/modules/combat/domain/mag-stats.ts";
+import { plainTarget } from "../../support/plain-damage-target.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
@@ -9,7 +10,7 @@ describe("rollMagicHit", () => {
     expect(
       rollMagicHit({
         caster: UNPUBLISHED_MAG_STATS,
-        target: UNPUBLISHED_MAG_STATS,
+        target: plainTarget(UNPUBLISHED_MAG_STATS),
         casterStrength: 15,
         dmgType: 64,
         catalogPcStr: -50,
@@ -23,7 +24,7 @@ describe("rollMagicHit", () => {
     expect(
       rollMagicHit({
         caster: UNPUBLISHED_MAG_STATS,
-        target: { power: 0, resist: 200 },
+        target: plainTarget({ power: 0, resist: 200 }),
         casterStrength: 80,
         dmgType: 64,
         random: new SequenceRandom([8]),
@@ -36,7 +37,7 @@ describe("rollMagicHit", () => {
     expect(
       rollMagicHit({
         caster: { power: 40, resist: 0 },
-        target: UNPUBLISHED_MAG_STATS,
+        target: plainTarget(UNPUBLISHED_MAG_STATS),
         casterStrength: 80,
         dmgType: 1,
         random: new SequenceRandom([8]),

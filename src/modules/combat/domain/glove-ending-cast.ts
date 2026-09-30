@@ -152,13 +152,12 @@ function applyGloveKind1Hits(
   const hits: GloveKind1Hit[] = [];
   for (const listed of targets) {
     const target = livingTarget(listed, input.bots);
-    const foeMag = target.mag;
     const foeHp = targetHp(target);
     const full = magicHitFromKind1(
       spell,
       human.meleeStrength(),
       human.mag,
-      foeMag,
+      target,
       input.random,
       input.rules,
     );

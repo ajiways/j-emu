@@ -63,15 +63,17 @@ export const SKILL_REGISTRY: Readonly<Record<string, SkillEntry>> = {
   DFR: skill(
     "доля физического урона, которую цель не получает (0.32 -> 68%, 1 -> неуязвим); по dmgMask",
     "spell-text",
+    "supported",
   ),
-  MAG_DFR: skill("то же для магического урона", "spell-text"),
+  MAG_DFR: skill("то же для магического урона", "spell-text", "supported"),
   ADFR: skill(
     "после всех расчётов итоговый входящий урон снижается на долю (1 = полностью)",
     "owner",
+    "supported",
   ),
   DR: skill("абсолютный шанс уклонения, вместо стандартного, от ловкости", "owner"),
-  DMG_AMP: skill("носитель получает больше урона на долю (0.23 = +23%)", "spell-text"),
-  pcDMG_AMP: skill("то же в процентах", "spell-text"),
+  DMG_AMP: skill("носитель получает больше урона на долю (0.23 = +23%)", "spell-text", "supported"),
+  pcDMG_AMP: skill("то же в процентах", "spell-text", "supported"),
   VAMP: skill("лечение носителя на долю ИТОГОВОГО урона его удара; минус = самоурон", "owner"),
   pcVAMP: skill("неизвестно (единичный спелл «Поцелуй бездны»)", "unknown"),
   ANTIVAMP: skill(

@@ -16,6 +16,7 @@ export function humanMeleeTarget(human: HumanFighter): MeleeTarget {
     team: human.team,
     maxHp: human.maxHp,
     mag: human.mag,
+    effects: human.effects,
     strikeStats: strikeStatsFromHuman(human),
     alive: !human.leftLive && human.hp > 0,
   };
@@ -29,6 +30,7 @@ export function botMeleeTarget(bot: BotFighter): MeleeTarget {
     team: bot.team,
     maxHp: bot.maxHp,
     mag: bot.mag,
+    effects: bot.effects,
     strikeStats: strikeStatsFromBot(bot),
     alive: bot.hp > 0,
   };

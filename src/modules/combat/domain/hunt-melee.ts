@@ -43,7 +43,7 @@ export function resolveBotMelee(
   const extra = rollOverlayExtra(
     input.bot,
     input.bot.mag,
-    human.mag,
+    human,
     human.hp,
     input.random,
     input.rules,

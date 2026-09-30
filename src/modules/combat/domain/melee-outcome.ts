@@ -5,6 +5,8 @@ import type { HumanFighter } from "./human-fighter.ts";
 import type { RandomSource } from "./random-source.ts";
 
 /** Wire `cast.react` / nested `hpChange.react`. Legacy behavior from jgr `damage.ts`. */
+const PHYSICAL_DMG_TYPE = 1;
+
 export const MELEE_REACT = {
   dodge: 1,
   hit: 2,
@@ -19,6 +21,8 @@ export type StrikeStats = Readonly<{
   dexterity: number;
   defense: number;
   block: number;
+  /** What a physical hit of `raw` becomes under what stands on the fighter (DFR, ADFR, DMG_AMP). */
+  takePhysical: (raw: number) => number;
 }>;
 
 export type MeleeOutcome = Readonly<{
@@ -36,6 +40,7 @@ export function strikeStatsFromBot(bot: BotFighter): StrikeStats {
     dexterity: bot.dexterity,
     defense: bot.defense,
     block: bot.block,
+    takePhysical: (raw) => bot.effects.takenDamage(raw, PHYSICAL_DMG_TYPE),
   };
 }
 
@@ -43,7 +48,7 @@ export function unpublishedBotStrikeStats(strength: number): StrikeStats {
   if (!Number.isInteger(strength) || strength < 1) {
     throw new Error("Bot strength must be a positive integer");
   }
-  return { strength, rage: 0, dexterity: 0, defense: 0, block: 0 };
+  return { strength, rage: 0, dexterity: 0, defense: 0, block: 0, takePhysical: (raw) => raw };
 }
 
 export function strikeStatsFromHuman(
@@ -56,6 +61,7 @@ export function strikeStatsFromHuman(
     dexterity: human.dexterity,
     defense: human.defense,
     block: human.block,
+    takePhysical: (raw) => human.effects.takenDamage(raw, PHYSICAL_DMG_TYPE),
   };
 }
 
@@ -94,10 +100,11 @@ export function rollMeleeOutcome(
     rollCrit(input.attacker.rage, input.defender.dexterity, input.random, input.rules);
   const preMit = Math.max(1, Math.round(input.baseDamage * (crit ? input.rules.critMult : 1)));
   const mit = effectiveMitigation(input.attacker.rage, input.defender.defense, crit, input.rules);
-  const raw = Math.max(1, Math.round(preMit * (1 - mit)));
+  const unheld = Math.max(1, Math.round(preMit * (1 - mit)));
   if (defense === "block") {
-    return { applied: 0, raw, react: MELEE_REACT.hit, blocked: raw };
+    return { applied: 0, raw: unheld, react: MELEE_REACT.hit, blocked: unheld };
   }
+  const raw = input.defender.takePhysical(unheld);
   const applied = appliedHpLoss(raw, input.targetHp);
   if (applied > 0 && applied >= input.targetHp) {
     return {

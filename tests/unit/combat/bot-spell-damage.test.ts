@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { rollBotSpellDamage } from "../../../src/modules/combat/domain/bot-spell-damage.ts";
 import { UNPUBLISHED_MAG_STATS } from "../../../src/modules/combat/domain/mag-stats.ts";
+import { plainTarget } from "../../support/plain-damage-target.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
@@ -18,7 +19,7 @@ describe("rollBotSpellDamage", () => {
         new SequenceRandom([1]),
         UNIT_BATTLE_RULES,
         UNPUBLISHED_MAG_STATS,
-        UNPUBLISHED_MAG_STATS,
+        plainTarget(UNPUBLISHED_MAG_STATS),
       ),
     ).toBe(1);
   });
@@ -32,7 +33,7 @@ describe("rollBotSpellDamage", () => {
         new SequenceRandom([8]),
         UNIT_BATTLE_RULES,
         UNPUBLISHED_MAG_STATS,
-        UNPUBLISHED_MAG_STATS,
+        plainTarget(UNPUBLISHED_MAG_STATS),
       ),
     ).toBe(8);
   });

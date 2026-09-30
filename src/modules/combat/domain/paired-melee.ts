@@ -68,7 +68,7 @@ export function tryPairedMelee(
   const extra = rollOverlayExtra(
     attacker.casts,
     attacker.mag,
-    target.mag,
+    target,
     targetHp(target),
     input.random,
     input.rules,

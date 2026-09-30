@@ -57,6 +57,8 @@ export type StandingEffect = {
   stun?: boolean;
   /** No duration in the data: lasts to the end of the fight, `remainTime` is left off the wire. */
   fightLong?: boolean;
+  /** Damage types (bit set) that `DFR`/`ADFR`/`DMG_AMP` of this effect cover; absent — all. */
+  dmgMask?: number;
 };
 
 /** The wire view of a standing effect; a periodic one reports the time left at `nowMs`. */

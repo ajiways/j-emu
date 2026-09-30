@@ -1,6 +1,7 @@
 import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { ExtraHit } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
+import type { DamageTarget } from "./damage-target.ts";
 import type { MagStats } from "./mag-stats.ts";
 import { magicReact, rollMagicHit } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -11,7 +12,7 @@ export type OverlayOwner = { schoolOverlay: SchoolOverlay | null };
 export function rollOverlayExtra(
   owner: OverlayOwner,
   caster: MagStats,
-  target: MagStats,
+  target: DamageTarget,
   targetHp: number,
   random: RandomSource,
   rules: BattleRules,

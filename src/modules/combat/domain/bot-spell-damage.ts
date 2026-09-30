@@ -1,5 +1,6 @@
 import type { BattleRules } from "./battle-rules.ts";
 import type { CombatSpell } from "./combat-loadout.ts";
+import type { DamageTarget } from "./damage-target.ts";
 import type { MagStats } from "./mag-stats.ts";
 import { kind1Effect, kind1OverlayCharges, magicHitFromKind1 } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -10,7 +11,7 @@ export function rollBotSpellDamage(
   random: RandomSource,
   rules: BattleRules,
   caster: MagStats,
-  target: MagStats,
+  target: DamageTarget,
 ): number {
   if (!Number.isInteger(strength) || strength < 1) {
     throw new Error("Bot spell strength must be a positive integer");

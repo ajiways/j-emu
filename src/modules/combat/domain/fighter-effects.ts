@@ -1,4 +1,5 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
+import { takenDamage } from "./damage-intake.ts";
 import type { StatBase } from "./skill-bake.ts";
 import { timedBuffEffect, type TimedBuffInput } from "./timed-buff.ts";
 import type {
@@ -55,6 +56,11 @@ export class FighterEffects {
     let total = 0;
     for (const fx of this.standing) total += fx.skills[skillId] ?? 0;
     return total;
+  }
+
+  /** What the damage `raw` of `dmgType` becomes under the effects standing on this fighter. */
+  takenDamage(raw: number, dmgType: number): number {
+    return takenDamage(this.standing, raw, dmgType);
   }
 
   /** A kind-3 buff that lives on the fight clock (or the whole fight); baked against the fighter's stats. */

@@ -66,7 +66,7 @@ function meleeHit(
   const extra = rollOverlayExtra(
     actor,
     actor.mag,
-    target.mag,
+    target,
     outcome.applied < 1 ? target.hp : Math.max(0, target.hp - outcome.applied),
     input.random,
     input.rules,

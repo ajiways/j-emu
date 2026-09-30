@@ -48,7 +48,7 @@ export function applyPeriodicItems(
       fighter,
       rollMagicHit({
         caster: { power: pulse.casterMagPower, resist: pulse.casterMagResist },
-        target: fighter.mag,
+        target: fighter,
         casterStrength: pulse.casterStrength,
         dmgType: pulse.dmgType,
         ...(typeof pulse.amount === "number" ? { catalogAmount: pulse.amount } : {}),
