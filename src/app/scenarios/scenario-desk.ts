@@ -12,6 +12,7 @@ import { heroFightConfLook } from "../../modules/jugger-wire/application/hero-fi
 import { toCombatSpell } from "../../modules/jugger-wire/application/to-combat-spell.ts";
 import type { ChatDesk } from "../chat-desk.ts";
 import { startHuntWithRoster, type FightStartDeps } from "../quest-fight-start.ts";
+import { PocketDeniedError } from "../../modules/inventory/domain/pocket-denied-error.ts";
 import { provisionPocket } from "./scenario-hero-pocket.ts";
 import type { FightScenario, FightScenarioBot } from "./fight-scenario.ts";
 import type { FightScenarioCatalog } from "./fight-scenario-catalog.ts";
@@ -59,7 +60,17 @@ export class ScenarioDesk {
       );
       return {};
     }
-    await provisionPocket(hero, scenario.hero.pocket, this.deps.pocket);
+    let pocket: string;
+    try {
+      pocket = await provisionPocket(hero, scenario.hero.pocket, this.deps.pocket);
+    } catch (error) {
+      if (!(error instanceof PocketDeniedError)) throw error;
+      await this.deps.chat.deliverSystem(
+        accountId,
+        `Сценарий «${name}» не запущен: в боевом кармане нет места, освободите ячейки.`,
+      );
+      return {};
+    }
     const started = await startHuntWithRoster(hero, this.deps.start, {
       purpose: scenario.purpose,
       heroHp: scenario.hero.hp,
@@ -70,7 +81,10 @@ export class ScenarioDesk {
       chatWin: "",
       chatLose: "",
     });
-    await this.deps.chat.deliverSystem(accountId, `Сценарий «${name}»: ${scenario.description}`);
+    await this.deps.chat.deliverSystem(
+      accountId,
+      `Сценарий «${name}»: ${scenario.description} Боевой карман: ${pocket}.`,
+    );
     return {
       "fight|conf": this.deps.fightWire.fightConfiguration(started, heroFightConfLook(hero)),
     };

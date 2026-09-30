@@ -118,6 +118,8 @@ describe("scripted fight scenarios from chat", () => {
   it("stat-buffs: the glove buff arrives baked and the elixir raises the max hp and heals", async () => {
     const client = await startScenario("stat-buffs");
     expect(opened).toContain('"artikulId":169');
+    // A pocket cell holds one elixir, so three elixirs fill three cells.
+    expect(opened.match(/"artikulId":169/g)).toHaveLength(3);
     let sq = 4;
     await client.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: sq++ });
     await untilAttackNow(client);
