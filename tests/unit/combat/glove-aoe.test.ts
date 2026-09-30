@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import type { CombatLoadout } from "../../../src/modules/combat/domain/combat-loadout.ts";
-import { aoeKind1Damage, spellKind1IsAoe } from "../../../src/modules/combat/domain/spell-aoe.ts";
+import { spellKind1IsAoe } from "../../../src/modules/combat/domain/spell-aoe.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { createCombatService } from "../../support/create-combat-service.ts";
 import { createUnitBattle } from "../../support/fight-rules.ts";
@@ -77,9 +77,7 @@ function buildFourCombo(battle: Battle): void {
 }
 
 describe("glove AOE leftover", () => {
-  it("halves kind-1 roll per extra GLOVE_MAGIC target", () => {
-    expect(aoeKind1Damage(8)).toBe(4);
-    expect(aoeKind1Damage(1)).toBe(1);
+  it("tells an AOE kind-1 spell from a single-target one", () => {
     expect(
       spellKind1IsAoe({
         effects: [{ kind: 1, targetCount: 2 }],
@@ -104,7 +102,7 @@ describe("glove AOE leftover", () => {
       type: "damage",
       targetId: 1_000_000,
       animation: "magic_aoe_light",
-      hpChange: -4,
+      hpChange: -8,
     });
     const patch = ending.events.find((event) => event.type === "pers-change");
     expect(patch).toMatchObject({ type: "pers-change" });
@@ -113,7 +111,7 @@ describe("glove AOE leftover", () => {
       ending.events.map((event) => event.type).indexOf("pers-change"),
     );
     expect(patch.bots.map((bot) => bot.id).sort((a, b) => a - b)).toEqual([1_000_000, 1_000_001]);
-    expect(patch.bots.find((bot) => bot.id === 1_000_001)?.hp).toBe(196);
+    expect(patch.bots.find((bot) => bot.id === 1_000_001)?.hp).toBe(192);
     expect(ending.sideNotifies).toHaveLength(1);
     expect(ending.sideNotifies[0]).toMatchObject({ accountId: 2 });
     expect(ending.sideNotifies[0]?.events.map((event) => event.type)[0]).toBe("damage");
@@ -122,10 +120,10 @@ describe("glove AOE leftover", () => {
       sourceId: 1,
       targetId: 1_000_001,
       animation: "magic_aoe_light",
-      hpChange: -4,
+      hpChange: -8,
     });
-    expect(battle.foeBotSnap(1).hp).toBe(164);
-    expect(battle.foeBotSnap(2).hp).toBe(196);
+    expect(battle.foeBotSnap(1).hp).toBe(160);
+    expect(battle.foeBotSnap(2).hp).toBe(192);
   });
 
   it("writes AOE HP onto a waiting clone with no paired hunter", () => {

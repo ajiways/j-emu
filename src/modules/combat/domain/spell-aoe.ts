@@ -31,16 +31,9 @@ export function spellAoeTargetCount(spell: CombatSpell): number {
   return AOE_DEFAULT_TARGET_COUNT;
 }
 
-export function aoeKind1Damage(full: number): number {
-  if (!Number.isInteger(full) || full < 1) {
-    throw new Error("AOE full roll must be a positive integer");
-  }
-  return Math.max(1, Math.round(full / 2));
-}
-
 /**
  * What an instant kind-1 spell of `caster` asks of `target`, before the target's hp caps it: the
- * magic roll, halved for every target of an AOE spell. The same for a player's glove and a bot.
+ * magic roll, rolled anew for every target of an AOE spell. The same for a player's glove and a bot.
  */
 export function rollSpellDamage(
   input: Readonly<{
@@ -52,7 +45,7 @@ export function rollSpellDamage(
     rules: BattleRules;
   }>,
 ): number {
-  const full = magicHitFromKind1(
+  return magicHitFromKind1(
     input.spell,
     input.casterStrength,
     input.caster,
@@ -60,7 +53,6 @@ export function rollSpellDamage(
     input.random,
     input.rules,
   );
-  return spellKind1IsAoe(input.spell) ? aoeKind1Damage(full) : full;
 }
 
 /**
