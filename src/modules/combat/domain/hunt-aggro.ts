@@ -20,7 +20,8 @@ export function tryHuntAggro(
     finished: boolean;
     humans: readonly HumanFighter[];
     duels: FightDuel[];
-    bots: BotFighter[];
+    bots: readonly BotFighter[];
+    addBot: (bot: BotFighter) => void;
     enemyTeam: 1 | 2;
     random: RandomSource;
     accountId: number;
@@ -67,6 +68,7 @@ export function tryHuntAggro(
     source.fightId,
     input.allocateBotId(),
     input.enemyTeam,
+    input.addBot,
   );
   pairHuntQueues({
     humans: input.humans,

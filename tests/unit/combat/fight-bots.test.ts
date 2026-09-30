@@ -79,11 +79,11 @@ describe("fight bots on Battle", () => {
 
   it("enqueues an aggro clone as waiting on the live bot list", () => {
     const bots = unitFightBots();
-    const clone = enqueueAggroClone(bots, 1_000_000, 1_000_001, 2);
+    const clone = enqueueAggroClone(bots, 1_000_000, 1_000_001, 2, (bot) => bots.push(bot));
     expect(bots.map((bot) => bot.fightId)).toEqual([1_000_000, 1_000_001]);
     expect(clone.waiting).toBe(true);
     expect(clone.fightId).toBe(1_000_001);
-    expect(() => enqueueAggroClone(bots, 1_000_000, 1_000_001, 2)).toThrow(
+    expect(() => enqueueAggroClone(bots, 1_000_000, 1_000_001, 2, (bot) => bots.push(bot))).toThrow(
       /Fight bot id 1000001 collides/,
     );
   });

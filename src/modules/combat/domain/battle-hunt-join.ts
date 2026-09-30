@@ -28,11 +28,12 @@ export function huntHistoryOf(opener: HumanFighter, primary: BotFighter) {
 export function joinBattleHuman(input: {
   fightRules: FightRules;
   finished: boolean;
-  humans: HumanFighter[];
-  bots: BotFighter[];
+  humans: readonly HumanFighter[];
+  bots: readonly BotFighter[];
   enemyTeam: 1 | 2;
   join: FightSetupJoin;
   hasHuman: (accountId: number, heroId: number) => boolean;
+  add: (participant: HumanFighter) => void;
   duels: FightDuel[];
   random: RandomSource;
   effectIds: FightEffectIds;
@@ -47,6 +48,7 @@ export function joinBattleHuman(input: {
       ? addPvpHuman({
           finished: input.finished,
           humans: input.humans,
+          add: input.add,
           join: input.join,
           hasHuman: input.hasHuman,
           effectIds: input.effectIds,
@@ -55,6 +57,7 @@ export function joinBattleHuman(input: {
         ? addHuntHuman({
             finished: input.finished,
             humans: input.humans,
+            add: input.add,
             bots: input.bots,
             enemyTeam: input.enemyTeam,
             join: input.join,
@@ -77,7 +80,8 @@ export function joinBattleHuman(input: {
 
 function addHuntHuman(input: {
   finished: boolean;
-  humans: HumanFighter[];
+  humans: readonly HumanFighter[];
+  add: (participant: HumanFighter) => void;
   bots: readonly BotFighter[];
   enemyTeam: 1 | 2;
   join: FightSetupJoin;
@@ -92,7 +96,7 @@ function addHuntHuman(input: {
     throw new Error("Fight bot id collides with the human participant id");
   }
   const human = seedJoiner(input.join, input.effectIds);
-  input.humans.push(human);
+  input.add(human);
   const primary = primaryEnemyBot(input.bots, input.enemyTeam);
   return {
     type: "roster-updated",
@@ -104,7 +108,8 @@ function addHuntHuman(input: {
 
 function addPvpHuman(input: {
   finished: boolean;
-  humans: HumanFighter[];
+  humans: readonly HumanFighter[];
+  add: (participant: HumanFighter) => void;
   join: FightSetupJoin;
   hasHuman: (accountId: number, heroId: number) => boolean;
   effectIds: FightEffectIds;
@@ -114,7 +119,7 @@ function addPvpHuman(input: {
     throw new Error("Human is already in this battle");
   }
   const human = seedJoiner(input.join, input.effectIds);
-  input.humans.push(human);
+  input.add(human);
   return {
     type: "roster-updated",
     humans: input.humans.map((entry) => entry.snapshot()),

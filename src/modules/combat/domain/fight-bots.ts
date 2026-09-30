@@ -24,10 +24,11 @@ export function primaryEnemyBot(bots: readonly BotFighter[], enemyTeam: 1 | 2): 
 }
 
 export function enqueueAggroClone(
-  bots: BotFighter[],
+  bots: readonly BotFighter[],
   sourceFightId: number,
   cloneFightId: number,
   enemyTeam: 1 | 2,
+  add: (bot: BotFighter) => void,
 ): BotFighter {
   const source = requireFightBot(bots, sourceFightId);
   if (source.team !== enemyTeam) {
@@ -37,7 +38,7 @@ export function enqueueAggroClone(
   if (bots.some((bot) => bot.fightId === clone.fightId)) {
     throw new Error(`Fight bot id ${clone.fightId} collides`);
   }
-  bots.push(clone);
+  add(clone);
   clone.unpair();
   return clone;
 }

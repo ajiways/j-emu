@@ -25,6 +25,7 @@ import type { FightDuel } from "./fight-duel.ts";
 import { fightDelayTokens, fightDuelDelayToken } from "./fight-delay-token.ts";
 import { FightRules } from "./fight-rules.ts";
 import type { FightSetup, FightSetupJoin } from "./fight-setup.ts";
+import { Roster } from "./roster.ts";
 import { primaryEnemyBot, requireFightBot, requireFightBots } from "./fight-bots.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { HumanFighter } from "./human-fighter.ts";
@@ -59,9 +60,10 @@ export class Battle {
   readonly turnGrantDelayMs: number;
   readonly resultRevealDelayMs: number;
   private finishedValue = false;
-  private readonly humans: HumanFighter[] = [];
+  private readonly roster = new Roster();
+  private readonly humans: HumanFighter[] = this.roster.humans;
+  readonly bots: BotFighter[] = this.roster.bots;
   private readonly duels: FightDuel[] = [];
-  readonly bots: BotFighter[];
 
   constructor(
     readonly setup: FightSetup,
@@ -82,8 +84,9 @@ export class Battle {
     this.turnGrantDelayMs = rules.turnGrantDelayMs;
     this.resultRevealDelayMs = rules.resultRevealDelayMs;
     const seed = seedBattleParticipants(setup, rules, fightRules);
-    this.bots = requireFightBots(seed.bots);
-    this.humans.push(...seed.humans);
+    for (const participant of [...seed.humans, ...requireFightBots(seed.bots)]) {
+      this.roster.add(participant);
+    }
     this.duels.push(...seed.duels);
   }
 
@@ -185,6 +188,7 @@ export class Battle {
       join,
       hasHuman: (accountId, heroId) => this.hasHuman(accountId, heroId),
       effectIds: battleOpener(this.humans).effects.effectIds,
+      add: (human) => this.roster.add(human),
     });
   }
 
@@ -242,6 +246,7 @@ export class Battle {
       accountId,
       targetId,
       allocateBotId,
+      addBot: (bot) => this.roster.add(bot),
     });
   }
 
