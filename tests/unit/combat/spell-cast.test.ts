@@ -10,6 +10,7 @@ import {
   unitHuntHumanStats,
 } from "../../support/hunt-start-input.ts";
 
+import { castTimedSpell } from "../../../src/modules/combat/domain/timed-spell.ts";
 import { tryGloveKeepTurn } from "../../../src/modules/combat/domain/hunt-cast.ts";
 
 const CRUSH: CombatGloveSpell = {
@@ -105,5 +106,25 @@ describe("a player's glove spell goes through the same cast as a bot's", () => {
     expect(events.map((event) => event.type)).toEqual(["effect-purge", "effect-purge", "pers-cp"]);
     expect(foe.effects.takenDamage(10, 1)).toBe(10);
     expect(() => cast(7001, 2000)).toThrow(/cooldown/);
+  });
+
+  it.each([1, 100])("does not stun a foe that stands under ANTI_STUN %i", (value) => {
+    const human = hero();
+    const foe = bot();
+    castTimedSpell(
+      foe,
+      foe,
+      {
+        artikulId: 7188,
+        title: "Защита от оглушения",
+        picture: "p.png",
+        flags: 0,
+        spell: { effects: [{ kind: 3, duration: 80, skills: [{ skillId: "ANTI_STUN", value }] }] },
+      },
+      0,
+    );
+    tryGloveKeepTurn(human, 6197, 1, false, { nowMs: 0, foe: () => foe });
+    expect(foe.stunnedTurns).toBe(0);
+    expect(foe.effects.takenDamage(10, 1)).toBe(6);
   });
 });

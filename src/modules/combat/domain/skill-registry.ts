@@ -47,7 +47,7 @@ export const SKILL_REGISTRY: Readonly<Record<string, SkillEntry>> = {
     "live",
     "supported",
   ),
-  MPMAX: skill("максимум маны, плоский", "name"),
+  MPMAX: skill("максимум маны, плоский; мана в бою ещё не моделируется (владелец: нужна)", "name"),
   VIT: skill("неизвестно, описаний нет", "unknown"),
   pcVIT: skill("неизвестно, описаний нет", "unknown"),
   LUCK: skill(
@@ -92,7 +92,11 @@ export const SKILL_REGISTRY: Readonly<Record<string, SkillEntry>> = {
     "owner",
     "supported",
   ),
-  pcVAMP: skill("неизвестно (единичный спелл «Поцелуй бездны»)", "unknown"),
+  pcVAMP: skill(
+    "вампиризм в процентах, то же что VAMP (владелец); прибавляется к нему",
+    "owner",
+    "supported",
+  ),
   ANTIVAMP: skill(
     "самоурон носителя на долю итогового урона его удара, ОТДЕЛЬНЫМ пакетом",
     "owner",
@@ -104,7 +108,11 @@ export const SKILL_REGISTRY: Readonly<Record<string, SkillEntry>> = {
     "owner",
     "supported",
   ),
-  pcRAGE_MOD: skill("то же, процентное изменение", "owner"),
+  pcRAGE_MOD: skill(
+    "то же, что RAGE_MOD, в процентах (владелец); прибавляется к нему",
+    "owner",
+    "supported",
+  ),
   MAGSTR_ACD: skill("сила магии кислоты, плоская прибавка", "owner", "supported"),
   MAGSTR_DRK: skill("сила магии тьмы, плоская прибавка", "owner", "supported"),
   MAGSTR_FR: skill(

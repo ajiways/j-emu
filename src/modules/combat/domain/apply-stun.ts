@@ -40,6 +40,14 @@ function applyStun(caster: Fighter, target: Fighter, source: StunSource): Battle
   };
 }
 
+/**
+ * Stun immunity as a share: the catalog writes `ANTI_STUN` as 100 (percent) on 45 spells and as 1
+ * (a whole) on «Защита от оглушения» 7188; both mean full immunity.
+ */
+function stunImmunity(value: number): number {
+  return value > 1 ? value / 100 : value;
+}
+
 /** One stunned turn lost; the stun icon goes with the last one. */
 export function spendStunTurn(fighter: Fighter): readonly BattleEvent[] {
   if (fighter.stunnedTurns < 1) throw new Error("Fighter is not stunned");
@@ -68,7 +76,7 @@ export function applyStunSpell(
           { ...source, spell: { ...source.spell, effects: timed } },
           nowMs,
         );
-  // ANTI_STUN 100: immune while it stands; the rest of the spell still lands.
-  if (target.effects.standingMax("ANTI_STUN") >= 100) return lingering;
+  // ANTI_STUN: immune while it stands; the rest of the spell still lands.
+  if (stunImmunity(target.effects.standingMax("ANTI_STUN")) >= 1) return lingering;
   return [...lingering, applyStun(caster, target, source)];
 }

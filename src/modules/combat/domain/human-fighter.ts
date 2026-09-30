@@ -135,7 +135,11 @@ export class HumanFighter implements Fighter {
   }
   /** Rage a received hit adds, more while a `RAGE_MOD` effect stands. Returns the rage gained. */
   awardIncomingRage(damage: number): number {
-    return this.casts.awardIncomingRage(damage, this.maxHp, this.effects.standingSkill("RAGE_MOD"));
+    return this.casts.awardIncomingRage(
+      damage,
+      this.maxHp,
+      this.effects.standingSkill("RAGE_MOD") + this.effects.standingSkill("pcRAGE_MOD"),
+    );
   }
   get rageStat(): number {
     return this.stat(this.init.rage, "RAG");

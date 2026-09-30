@@ -20,9 +20,7 @@ export async function provisionPocket(
 ): Promise<string> {
   for (const entry of entries) {
     await deps.unitOfWork.run(async () => {
-      const inPocket = (await deps.inventory.list(hero.id))
-        .filter((item) => item.artifactId === entry.artikulId && item.location.kind === "pocket")
-        .reduce((sum, item) => sum + item.quantity, 0);
+      const inPocket = pocketCount(await deps.inventory.list(hero.id), entry.artikulId);
       const missing = entry.count - inPocket;
       if (missing <= 0) return;
       const definition = await deps.catalog.artifact(entry.artikulId);
@@ -35,8 +33,8 @@ export async function provisionPocket(
           quantity: missing - inBag,
         });
       }
-      // A put-on moves one unit into the pocket, so one call per missing unit.
-      for (let unit = 0; unit < missing; unit += 1) {
+      // A put-on moves one unit of some stacks and the whole stack of others: count again each time.
+      while (pocketCount(await deps.inventory.list(hero.id), entry.artikulId) < entry.count) {
         const stack = (await deps.inventory.list(hero.id)).find(
           (item) => item.artifactId === entry.artikulId && item.location.kind === "bag",
         );
@@ -65,6 +63,15 @@ async function pocketSummary(
     parts.push(`${cell}: ${title} ×${item.quantity}`);
   }
   return parts.length === 0 ? "карман пуст" : parts.join(", ");
+}
+
+function pocketCount(
+  items: Awaited<ReturnType<InventoryService["list"]>>,
+  artikulId: number,
+): number {
+  return items
+    .filter((item) => item.artifactId === artikulId && item.location.kind === "pocket")
+    .reduce((sum, item) => sum + item.quantity, 0);
 }
 
 function bagCount(items: Awaited<ReturnType<InventoryService["list"]>>, artikulId: number): number {

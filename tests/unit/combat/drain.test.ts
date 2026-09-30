@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BotFighter } from "../../../src/modules/combat/domain/bot-fighter.ts";
-import { settleDrain } from "../../../src/modules/combat/domain/drain.ts";
+import { drainFromSkills, settleDrain } from "../../../src/modules/combat/domain/drain.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { EMPTY_HUNT_BOT_SPELL_BOOK } from "../../support/hunt-start-input.ts";
 
@@ -68,5 +68,13 @@ describe("settleDrain", () => {
       healed: 0,
       hurtEvent: null,
     });
+  });
+});
+
+describe("drainFromSkills", () => {
+  it("counts pcVAMP as vampirism and keeps a negative one as self-damage", () => {
+    const skills: Record<string, number> = { VAMP: 30, pcVAMP: 50 };
+    expect(drainFromSkills((id) => skills[id] ?? 0)).toEqual({ healPct: 80, hurtPct: 0 });
+    expect(drainFromSkills((id) => ({ VAMP: -15 })[id] ?? 0)).toEqual({ healPct: 0, hurtPct: 15 });
   });
 });

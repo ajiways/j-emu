@@ -84,4 +84,15 @@ describe("RAGE_MOD", () => {
     buff(human, [["RAGE_MOD", 80]]);
     expect(human.awardIncomingRage(35)).toBeCloseTo(plain * 1.8, 5);
   });
+
+  it("adds pcRAGE_MOD to RAGE_MOD", () => {
+    const human = hero();
+    const plain = human.awardIncomingRage(35);
+    human.casts.spendRage();
+    buff(human, [
+      ["RAGE_MOD", 50],
+      ["pcRAGE_MOD", 30],
+    ]);
+    expect(human.awardIncomingRage(35)).toBeCloseTo(plain * 1.8, 5);
+  });
 });

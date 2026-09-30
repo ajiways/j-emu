@@ -17,7 +17,7 @@ export const NO_DRAIN: Drain = { healPct: 0, hurtPct: 0 };
  * against each other (old server): both apply to the same hit.
  */
 export function drainFromSkills(skill: (skillId: string) => number): Drain {
-  const vamp = skill("VAMP");
+  const vamp = skill("VAMP") + skill("pcVAMP");
   return {
     healPct: Math.max(vamp, 0),
     hurtPct: Math.max(-vamp, 0) + Math.max(skill("ANTIVAMP"), 0),
