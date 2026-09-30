@@ -15,6 +15,7 @@ import {
   enqueueKeepTurn,
   withActorPersChange,
 } from "./combat-melee-dispatch.ts";
+import { CombatBotDuelClock } from "./combat-bot-duel-clock.ts";
 import { CombatEffectClock } from "./combat-effect-clock.ts";
 import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 
@@ -47,9 +48,17 @@ export class CombatMeleeLoop {
       },
       (battle, accountId) => this.handOffToWaiter(battle, accountId),
     );
+    this.botDuelClock = new CombatBotDuelClock(
+      battleByFight,
+      scheduler,
+      enqueue,
+      wakeAccount,
+      settleFinished,
+    );
   }
 
   private readonly effectClock: CombatEffectClock;
+  private readonly botDuelClock: CombatBotDuelClock;
 
   async strike(
     accountId: number,
@@ -130,6 +139,11 @@ export class CombatMeleeLoop {
     );
   }
 
+  /** Arms what runs without a click: mob duels already standing when a player arrives. */
+  armFightClocks(battle: Battle): void {
+    this.botDuelClock.arm(battle);
+  }
+
   armTurnTimeout(battle: Battle, accountId: number): void {
     const human = battle.livingHumans().find((entry) => entry.accountId === accountId);
     if (!human?.turnActive) return;
@@ -190,12 +204,6 @@ export class CombatMeleeLoop {
     accountId: number,
     events: readonly CombatEvent[],
   ): Promise<void> {
-    const extra = battle.tickRosterDuels(this.scheduler.now().getTime());
-    if (extra.length > 0) this.enqueue(accountId, extra);
-    if (battle.finished) {
-      await this.settleFinished(battle, extra, accountId);
-      return;
-    }
     if (this.applyShuffle(battle, accountId)) return;
     const token = battle.delayTokenFor(accountId);
     if (!token) return;
@@ -251,12 +259,6 @@ export class CombatMeleeLoop {
       }
       await this.effectClock.settleFallout(battle, result.sideFallout);
       if (!result.killedPlayer) {
-        const extra = battle.tickRosterDuels(this.scheduler.now().getTime());
-        if (extra.length > 0) this.enqueue(targetAccountId, extra);
-        if (battle.finished) {
-          await this.settleFinished(battle, extra, targetAccountId);
-          return;
-        }
         this.applyShuffle(battle, targetAccountId);
         return;
       }
@@ -390,6 +392,8 @@ export class CombatMeleeLoop {
     work: (battle: Battle | undefined) => Promise<void>,
   ): Promise<void> {
     await work(battle);
-    if (battle && !battle.finished) this.effectClock.arm(battle);
+    if (!battle || battle.finished) return;
+    this.effectClock.arm(battle);
+    this.botDuelClock.arm(battle);
   }
 }

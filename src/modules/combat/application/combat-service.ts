@@ -258,6 +258,7 @@ export class CombatService implements CombatPort {
         ...battle.authenticate(accountId, this.scheduler.now().getTime()),
       ]);
       this.melee.armTurnTimeout(battle, accountId);
+      this.melee.armFightClocks(battle);
       return [];
     }
     if (command.kind === "strike") {

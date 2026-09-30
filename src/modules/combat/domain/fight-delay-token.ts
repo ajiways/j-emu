@@ -10,9 +10,14 @@ export function fightDelayTokens(fightId: string, duels: readonly FightDuel[]): 
   return [
     ...duels.map((duel) => fightDuelDelayToken(fightId, duel)),
     fightEffectClockToken(fightId),
+    botDuelClockToken(fightId),
   ];
 }
 
 export function fightEffectClockToken(fightId: string): string {
   return `${fightId}:effect-clock`;
+}
+
+export function botDuelClockToken(fightId: string): string {
+  return `${fightId}:bot-duels`;
 }

@@ -37,7 +37,7 @@ import type { PlayerMeleeResult } from "./paired-melee.ts";
 import { tryPocketCast, tryRageCast, type KeepTurnResult } from "./hunt-cast.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import { tryHuntAggro, type HuntAggroResult } from "./hunt-aggro.ts";
-import { tickHuntRosterDuels } from "./battle-hunt-runtime.ts";
+import { hasBotDuels, tickBotDuels } from "./battle-bot-duels.ts";
 import type { RandomSource } from "./random-source.ts";
 import { pairNextHuntWaiter, shuffleHuntAfterHits } from "./battle-pairing.ts";
 import { seedBattleParticipants } from "./battle-seed.ts";
@@ -263,20 +263,13 @@ export class Battle {
   }
 
   tickRosterDuels(nowMs: number): readonly BattleEvent[] {
-    const ticked = tickHuntRosterDuels({
-      bots: this.bots,
-      enemyTeam: this.fightRules.teamAssignment.enemyTeam,
-      duels: this.duels,
-      finished: this.finishedValue,
-      opener: battleOpener(this.humans),
-      humans: this.humans,
-      fightId: this.id,
-      rules: this.rules,
-      random: this.random,
-      nowMs,
-    });
+    const ticked = tickBotDuels(this.actionState(), nowMs);
     if (ticked.finished) this.finishedValue = true;
     return ticked.events;
+  }
+
+  hasBotDuels(): boolean {
+    return hasBotDuels(this.actionState());
   }
 
   nextEffectDueMs(): number | null {
