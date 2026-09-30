@@ -8,13 +8,7 @@ import {
   unitHuntHumanStats,
   unitRosterBot,
 } from "../../support/hunt-start-input.ts";
-import {
-  botMeleeTarget,
-  enemySideCleared,
-  fightCombatants,
-  humanMeleeTarget,
-  resolveMeleeTarget,
-} from "../../../src/modules/combat/domain/melee-target.ts";
+import { duelFoe, enemySideCleared } from "../../../src/modules/combat/domain/melee-target.ts";
 
 function human(heroId: number, team: 1 | 2, waiting = false): HumanFighter {
   return new HumanFighter({
@@ -37,51 +31,34 @@ function human(heroId: number, team: 1 | 2, waiting = false): HumanFighter {
   });
 }
 
-describe("resolveMeleeTarget", () => {
-  it("resolves the hunt bot while a teammate waits", () => {
+describe("duelFoe", () => {
+  it("resolves the mob across from the hero while a teammate waits", () => {
     const opener = human(1, 1);
     const waiter = human(2, 1, true);
     const bot = unitRosterBot();
-    const target = resolveMeleeTarget({
-      attackerHeroId: 1,
-      duel: new FightDuel(1, 1_000_000, 1),
-      humans: [opener, waiter],
-      bots: [bot],
-    });
-    expect(target.kind).toBe("bot");
-    if (target.kind !== "bot") throw new Error("expected bot target");
-    expect(target.bot).toBe(bot);
-    expect(target).toMatchObject({
-      id: 1_000_000,
-      team: 2,
-      maxHp: 20,
-      mag: { power: 0, resist: 0 },
-      strikeStats: { strength: 10, rage: 0, dexterity: 0, defense: 0, block: 0 },
-      alive: true,
+    const foe = duelFoe(new FightDuel(1, 1_000_000, 1), [opener, waiter, bot], 1);
+    expect(foe).toBe(bot);
+    expect(foe).toMatchObject({ id: 1_000_000, team: 2, maxHp: 20, alive: true });
+    expect(foe.mag).toEqual({ power: 0, resist: 0 });
+    expect(foe.strikeStats()).toMatchObject({
+      strength: 10,
+      rage: 0,
+      dexterity: 0,
+      defense: 0,
+      block: 0,
     });
   });
 
-  it("resolves the paired human when there is no bot", () => {
+  it("resolves the paired human when there is no mob", () => {
     const challenger = human(1, 1);
     const acceptor = human(2, 2);
-    const target = resolveMeleeTarget({
-      attackerHeroId: 1,
-      duel: new FightDuel(1, 2, 1),
-      humans: [challenger, acceptor],
-      bots: [],
-    });
-    expect(target).toMatchObject({ kind: "human", id: 2, human: acceptor, alive: true });
+    expect(duelFoe(new FightDuel(1, 2, 1), [challenger, acceptor], 1)).toBe(acceptor);
   });
 
-  it("fails when the pair id is neither a human nor the hunt bot", () => {
-    expect(() =>
-      resolveMeleeTarget({
-        attackerHeroId: 1,
-        duel: new FightDuel(1, 99, 1),
-        humans: [human(1, 1)],
-        bots: [unitRosterBot()],
-      }),
-    ).toThrow(/neither a human nor a fight bot/);
+  it("fails when the pair id is not in the fight", () => {
+    expect(() => duelFoe(new FightDuel(1, 99, 1), [human(1, 1), unitRosterBot()], 1)).toThrow(
+      /not in the fight/,
+    );
   });
 });
 
@@ -89,22 +66,20 @@ describe("enemySideCleared", () => {
   it("stays uncleared while a bot remains on the killed human's team", () => {
     const dead = human(2, 2);
     dead.applyDamage(27);
-    expect(
-      enemySideCleared(2, fightCombatants([human(1, 1), dead], [unitRosterBot({ hp: 10 })])),
-    ).toBe(false);
+    expect(enemySideCleared(2, [human(1, 1), dead, unitRosterBot({ hp: 10 })])).toBe(false);
   });
 
   it("clears hunt team 2 after the bot dies", () => {
     const bot = unitRosterBot();
     bot.applyDamage(20);
-    expect(enemySideCleared(2, fightCombatants([human(1, 1)], [bot]))).toBe(true);
+    expect(enemySideCleared(2, [human(1, 1), bot])).toBe(true);
   });
 
   it("treats a left-live human as not keeping the side alive", () => {
     const leaver = human(2, 2);
     leaver.markLeft();
-    expect(enemySideCleared(2, fightCombatants([human(1, 1), leaver], []))).toBe(true);
-    expect(humanMeleeTarget(leaver).alive).toBe(false);
-    expect(botMeleeTarget(unitRosterBot({ hp: 1 })).alive).toBe(true);
+    expect(enemySideCleared(2, [human(1, 1), leaver])).toBe(true);
+    expect(leaver.alive).toBe(false);
+    expect(unitRosterBot({ hp: 1 }).alive).toBe(true);
   });
 });

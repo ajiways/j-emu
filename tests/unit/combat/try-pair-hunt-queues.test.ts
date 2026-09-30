@@ -99,9 +99,8 @@ describe("one hunt pairing engine", () => {
     const duels = [new FightDuel(1, 1_000_000, 1)];
     expect(
       pairHuntQueues({
-        humans: [opener],
+        participants: [opener],
         duels,
-        bots: botsWith([]),
         random: new SequenceRandom([0.4]),
       }),
     ).toBeNull();
@@ -114,9 +113,8 @@ describe("one hunt pairing engine", () => {
     const bots = botsWith([botSeed(1_000_001)]);
     const duels = [new FightDuel(1, 1_000_000, 1)];
     const created = pairHuntQueues({
-      humans: [opener, waiter],
+      participants: [opener, waiter, ...bots],
       duels,
-      bots,
       random: new SequenceRandom([0.4]),
     });
     expect(created).toMatchObject({ aId: 2, bId: 1_000_001 });
@@ -132,9 +130,8 @@ describe("one hunt pairing engine", () => {
     const bots = botsWith([botSeed(1_000_001)], [botSeed(1_000_002)]);
     const duels = [new FightDuel(1, 1_000_000, 1)];
     const created = pairHuntQueues({
-      humans: [opener],
+      participants: [opener, ...bots],
       duels,
-      bots,
       random: new SequenceRandom([0.4]),
     });
     expect(created).toMatchObject({ aId: 1_000_002, bId: 1_000_001, nextActorId: 1_000_002 });

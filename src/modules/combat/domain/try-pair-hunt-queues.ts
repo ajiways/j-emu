@@ -1,9 +1,7 @@
 import { FightDuel } from "./fight-duel.ts";
-import { requireFightBot } from "./fight-bots.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import type { BotFighter } from "./bot-fighter.ts";
+import type { Participant } from "./participant.ts";
 import type { RandomSource } from "./random-source.ts";
-import { botMeleeTarget, humanMeleeTarget } from "./melee-target.ts";
 import { rollOpensFirst } from "./roll-opens-first.ts";
 import { shuffleInPlace } from "./shuffle-in-place.ts";
 
@@ -12,7 +10,6 @@ export type HuntSeeker = Readonly<{
   team: 1 | 2;
   lastOpponentId: number | null;
   initiative: number;
-  kind: "human" | "bot";
 }>;
 
 export function requireDuelContaining(duels: readonly FightDuel[], id: number): FightDuel {
@@ -26,14 +23,13 @@ export function pairHuntHumanQueues(
   duels: FightDuel[],
   random: RandomSource,
 ): FightDuel | null {
-  return pairHuntQueues({ humans, duels, bots: [], random });
+  return pairHuntQueues({ participants: humans, duels, random });
 }
 
 export function pairHuntQueues(
   input: Readonly<{
-    humans: readonly HumanFighter[];
+    participants: readonly Participant[];
     duels: FightDuel[];
-    bots: readonly BotFighter[];
     random: RandomSource;
   }>,
 ): FightDuel | null {
@@ -47,11 +43,10 @@ export function pairHuntQueues(
 
 /** Whether a living waiting participant of each team is free to be paired. */
 export function hasPairableSeekers(
-  humans: readonly HumanFighter[],
-  bots: readonly BotFighter[],
+  participants: readonly Participant[],
   duels: readonly FightDuel[],
 ): boolean {
-  const seekers = huntSeekers(humans, bots, occupiedParticipantIds(duels));
+  const seekers = huntSeekers(participants, occupiedParticipantIds(duels));
   return seekers.some((s) => s.team === 1) && seekers.some((s) => s.team === 2);
 }
 
@@ -88,20 +83,18 @@ export function pickHuntPair(
 
 export function dissolveDuelContaining(
   duels: FightDuel[],
-  humans: readonly HumanFighter[],
+  participants: readonly Participant[],
   participantId: number,
-  bots: readonly BotFighter[],
 ): void {
   const index = duels.findIndex((duel) => duel.has(participantId));
   if (index < 0) return;
-  dissolveDuelAt(duels, index, humans, bots, participantId);
+  dissolveDuelAt(duels, index, participants, participantId);
 }
 
 export function dissolveDuelAt(
   duels: FightDuel[],
   index: number,
-  humans: readonly HumanFighter[],
-  bots: readonly BotFighter[],
+  participants: readonly Participant[],
   keepFightId: number | null,
 ): void {
   const duel = duels[index];
@@ -109,20 +102,19 @@ export function dissolveDuelAt(
   duels.splice(index, 1);
   for (const id of [duel.aId, duel.bId]) {
     if (id === keepFightId) continue;
-    releaseSeeker(humans, bots, id);
+    releaseSeeker(participants, id);
   }
 }
 
 function pairOneHuntQueue(
   input: Readonly<{
-    humans: readonly HumanFighter[];
+    participants: readonly Participant[];
     duels: FightDuel[];
-    bots: readonly BotFighter[];
     random: RandomSource;
   }>,
 ): FightDuel | null {
   const occupied = occupiedParticipantIds(input.duels);
-  const seekers = huntSeekers(input.humans, input.bots, occupied);
+  const seekers = huntSeekers(input.participants, occupied);
   const picked = pickHuntPair(seekers, occupied, input.random);
   if (!picked) return null;
   if (occupied.has(picked.aId) || occupied.has(picked.bId)) {
@@ -135,40 +127,25 @@ function pairOneHuntQueue(
   const openerId = rollOpensFirst(team1.initiative, team2.initiative, input.random)
     ? team1.id
     : team2.id;
-  pairSeeker(input.humans, input.bots, a);
-  pairSeeker(input.humans, input.bots, b);
+  pairSeeker(input.participants, a);
+  pairSeeker(input.participants, b);
   const duel = new FightDuel(a.id, b.id, openerId);
   input.duels.push(duel);
   return duel;
 }
 
 function huntSeekers(
-  humans: readonly HumanFighter[],
-  bots: readonly BotFighter[],
+  participants: readonly Participant[],
   occupied: ReadonlySet<number>,
 ): HuntSeeker[] {
-  const seekers: HuntSeeker[] = [];
-  for (const human of humans) {
-    if (!humanMeleeTarget(human).alive || occupied.has(human.heroId) || !human.waiting) continue;
-    seekers.push({
-      id: human.heroId,
-      team: human.team,
-      lastOpponentId: human.lastOpponentId,
-      initiative: human.currentInitiative,
-      kind: "human",
-    });
-  }
-  for (const bot of bots) {
-    if (!botMeleeTarget(bot).alive || occupied.has(bot.fightId) || !bot.waiting) continue;
-    seekers.push({
-      id: bot.fightId,
-      team: bot.team,
-      lastOpponentId: bot.lastOpponentId,
-      initiative: bot.currentInitiative,
-      kind: "bot",
-    });
-  }
-  return seekers;
+  return participants
+    .filter((member) => member.alive && member.waiting && !occupied.has(member.id))
+    .map((member) => ({
+      id: member.id,
+      team: member.team,
+      lastOpponentId: member.lastOpponentId,
+      initiative: member.currentInitiative,
+    }));
 }
 
 function occupiedParticipantIds(duels: readonly FightDuel[]): Set<number> {
@@ -180,33 +157,23 @@ function occupiedParticipantIds(duels: readonly FightDuel[]): Set<number> {
   return occupied;
 }
 
-function pairSeeker(
-  humans: readonly HumanFighter[],
-  bots: readonly BotFighter[],
-  seeker: HuntSeeker,
-): void {
-  if (seeker.kind === "human") {
-    const human = humans.find((entry) => entry.heroId === seeker.id);
-    if (!human) throw new Error(`Hunt seeker ${seeker.id} is missing`);
-    human.pair();
-    return;
-  }
-  requireFightBot(bots, seeker.id).pair();
+function pairSeeker(participants: readonly Participant[], seeker: HuntSeeker): void {
+  requireParticipant(participants, seeker.id, "Hunt seeker").pair();
 }
 
-function releaseSeeker(
-  humans: readonly HumanFighter[],
-  bots: readonly BotFighter[],
+function releaseSeeker(participants: readonly Participant[], id: number): void {
+  const member = requireParticipant(participants, id, "Duel participant");
+  if (!member.waiting && member.alive) member.unpair();
+}
+
+function requireParticipant(
+  participants: readonly Participant[],
   id: number,
-): void {
-  const human = humans.find((entry) => entry.heroId === id);
-  if (human) {
-    if (!human.waiting && humanMeleeTarget(human).alive) human.unpair();
-    return;
-  }
-  const bot = bots.find((entry) => entry.fightId === id);
-  if (!bot) throw new Error(`Duel participant ${id} is missing`);
-  if (!bot.waiting && botMeleeTarget(bot).alive) bot.unpair();
+  label: string,
+): Participant {
+  const member = participants.find((entry) => entry.id === id);
+  if (!member) throw new Error(`${label} ${id} is missing`);
+  return member;
 }
 
 function requireSeeker(seekers: readonly HuntSeeker[], id: number): HuntSeeker {

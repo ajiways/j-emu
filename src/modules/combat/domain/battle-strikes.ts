@@ -6,7 +6,7 @@ import { resolveGloveFinisher, type EndingGloveResult } from "./glove-ending-cas
 import type { KeepTurnResult } from "./hunt-cast.ts";
 import type { RandomSource } from "./random-source.ts";
 import type { BattleRules } from "./battle-rules.ts";
-import { resolveMeleeTarget } from "./melee-target.ts";
+import { duelFoe } from "./melee-target.ts";
 
 export function applyPairedMelee(
   input: Readonly<{
@@ -30,12 +30,7 @@ export function applyPairedMelee(
   }
   const resolved = tryPairedMelee(
     input.attacker,
-    resolveMeleeTarget({
-      attackerHeroId: input.attacker.heroId,
-      duel: input.duel,
-      humans: input.humans,
-      bots: input.bots,
-    }),
+    duelFoe(input.duel, [...input.humans, ...input.bots], input.attacker.id),
     input.side,
     {
       finished: input.finished,

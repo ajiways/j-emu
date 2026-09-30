@@ -3,10 +3,6 @@ import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
 import {
-  humanMeleeTarget,
-  botMeleeTarget,
-} from "../../../src/modules/combat/domain/melee-target.ts";
-import {
   tryPairedMelee,
   applyDamageToMeleeTarget,
 } from "../../../src/modules/combat/domain/paired-melee.ts";
@@ -60,7 +56,7 @@ describe("tryPairedMelee", () => {
       remainTurns: 1,
     });
     const defender = fighter(2, 2, 1);
-    const resolved = tryPairedMelee(attacker, humanMeleeTarget(defender), "center", {
+    const resolved = tryPairedMelee(attacker, defender, "center", {
       finished: false,
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([1]),
@@ -85,7 +81,7 @@ describe("tryPairedMelee", () => {
     const attacker = fighter(1, 1, 27);
     attacker.beginTurn(0, 20);
     const defender = fighter(2, 2, 27);
-    const resolved = tryPairedMelee(attacker, humanMeleeTarget(defender), "center", {
+    const resolved = tryPairedMelee(attacker, defender, "center", {
       finished: false,
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([1]),
@@ -110,7 +106,7 @@ describe("tryPairedMelee", () => {
     const attacker = fighter(1, 1, 27);
     attacker.beginTurn(0, 20);
     const defender = fighter(2, 2, 1);
-    const resolved = tryPairedMelee(attacker, humanMeleeTarget(defender), "center", {
+    const resolved = tryPairedMelee(attacker, defender, "center", {
       finished: false,
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([1]),
@@ -129,10 +125,7 @@ describe("tryPairedMelee", () => {
   it("credits applied human HP-loss and ignores overkill past current HP", () => {
     const attacker = fighter(1, 1, 27);
     const defender = fighter(2, 2, 3);
-    applyDamageToMeleeTarget(attacker, humanMeleeTarget(defender), 10, {
-      humans: [attacker, defender],
-      bots: [],
-    });
+    applyDamageToMeleeTarget(attacker, defender, 10, [attacker, defender]);
     expect(attacker.damageToHumans).toBe(3);
     expect(defender.hp).toBe(0);
   });
@@ -141,7 +134,7 @@ describe("tryPairedMelee", () => {
     const attacker = fighter(1, 1, 27, 80);
     attacker.beginTurn(0, 20);
     const defender = fighter(2, 2, 3, 80);
-    const resolved = tryPairedMelee(attacker, humanMeleeTarget(defender), "center", {
+    const resolved = tryPairedMelee(attacker, defender, "center", {
       finished: false,
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([8]),
@@ -169,7 +162,7 @@ describe("tryPairedMelee", () => {
     const defender = fighter(2, 2, 1);
     defender.applyDamage(1);
     expect(() =>
-      tryPairedMelee(attacker, humanMeleeTarget(defender), "center", {
+      tryPairedMelee(attacker, defender, "center", {
         finished: false,
         rules: UNIT_BATTLE_RULES,
         random: new SequenceRandom([1]),
@@ -186,7 +179,7 @@ describe("tryPairedMelee", () => {
     const attacker = fighter(1, 1, 27);
     attacker.beginTurn(0, 20);
     const bot = unitRosterBot({ hp: 20 });
-    const resolved = tryPairedMelee(attacker, botMeleeTarget(bot), "center", {
+    const resolved = tryPairedMelee(attacker, bot, "center", {
       finished: false,
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([1]),
@@ -229,7 +222,7 @@ describe("tryPairedMelee", () => {
       remainTurns: 1,
     });
     const bot = unitRosterBot({ hp: 1 });
-    const resolved = tryPairedMelee(attacker, botMeleeTarget(bot), "center", {
+    const resolved = tryPairedMelee(attacker, bot, "center", {
       finished: false,
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([1]),
@@ -247,24 +240,18 @@ describe("tryPairedMelee", () => {
   it("throws when the melee bot is missing from the roster list", () => {
     const attacker = fighter(1, 1, 27);
     const bot = unitRosterBot();
-    expect(() =>
-      applyDamageToMeleeTarget(attacker, botMeleeTarget(bot), 1, {
-        humans: [attacker],
-        bots: [],
-      }),
-    ).toThrow(/missing from the roster/);
+    expect(() => applyDamageToMeleeTarget(attacker, bot, 1, [attacker])).toThrow(
+      /missing from the roster/,
+    );
     expect(bot.hp).toBe(20);
   });
 
   it("rejects non-positive melee damage without mutating the bot", () => {
     const attacker = fighter(1, 1, 27);
     const bot = unitRosterBot();
-    expect(() =>
-      applyDamageToMeleeTarget(attacker, botMeleeTarget(bot), 0, {
-        humans: [attacker],
-        bots: [bot],
-      }),
-    ).toThrow(/positive integer/);
+    expect(() => applyDamageToMeleeTarget(attacker, bot, 0, [attacker, bot])).toThrow(
+      /positive integer/,
+    );
     expect(bot.hp).toBe(20);
   });
 });

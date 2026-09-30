@@ -10,10 +10,7 @@ import {
 } from "../../../src/modules/combat/domain/fight-bots.ts";
 import { seedBattleParticipants } from "../../../src/modules/combat/domain/battle-seed.ts";
 import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
-import {
-  enemySideCleared,
-  fightCombatants,
-} from "../../../src/modules/combat/domain/melee-target.ts";
+import { enemySideCleared } from "../../../src/modules/combat/domain/melee-target.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { unitFightBots, unitBotSeed } from "../../support/fight-bots.ts";
 import { unitDuelFightSetup, unitHuntFightSetup } from "../../support/fight-setup.ts";
@@ -99,8 +96,8 @@ describe("fight bots on Battle", () => {
     });
     const primary = bots[0];
     if (!primary) throw new Error("expected a seeded enemy bot");
-    expect(enemySideCleared(2, fightCombatants([], bots))).toBe(false);
+    expect(enemySideCleared(2, bots)).toBe(false);
     primary.applyDamage(20);
-    expect(enemySideCleared(2, fightCombatants([], bots))).toBe(true);
+    expect(enemySideCleared(2, bots)).toBe(true);
   });
 });

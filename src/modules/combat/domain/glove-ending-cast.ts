@@ -18,13 +18,8 @@ import type { HumanFighter } from "./human-fighter.ts";
 import { spellKind } from "./cast-state.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { magicReact } from "./magic-hit.ts";
-import {
-  botMeleeTarget,
-  humanMeleeTarget,
-  resolveMeleeTarget,
-  targetHp,
-  type MeleeTarget,
-} from "./melee-target.ts";
+import { duelFoe } from "./melee-target.ts";
+import type { Participant } from "./participant.ts";
 import { applyDamageToMeleeTarget } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
 
@@ -70,16 +65,12 @@ export function resolveGloveFinisher(
   if (human.casts.cp < glove.cost) {
     return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };
   }
-  const primary = resolveMeleeTarget({
-    attackerHeroId: human.heroId,
-    duel: input.duel,
-    humans: input.humans,
-    bots: input.bots,
-  });
+  const everyone = [...input.humans, ...input.bots];
+  const primary = duelFoe(input.duel, everyone, human.id);
   const targets = spellKind1IsAoe(glove.spell)
     ? pickSpellTargets({
         primaryId: primary.id,
-        enemies: livingEnemies(human, input.humans, input.bots),
+        enemies: livingEnemies(human, everyone),
         count: spellAoeTargetCount(glove.spell),
         random: input.random,
       })
@@ -90,8 +81,7 @@ export function resolveGloveFinisher(
   const cp = human.casts.spendCombo(glove.cost);
   const dmgType = glove.spell.effects.find((effect) => effect.kind === 1)?.dmgType;
   const hits = applyGloveKind1Hits(human, glove.spell, targets, {
-    humans: input.humans,
-    bots: input.bots,
+    participants: everyone,
     random: input.random,
     rules: input.rules,
   });
@@ -109,7 +99,7 @@ export function resolveGloveFinisher(
   if (!finished) {
     const clock = advanceActionClock({
       attacker: human,
-      victim: primary.kind === "human" ? primary.human : primary.bot,
+      victim: primary,
       victimKilledByHit: primaryHit.killed,
       turnElapsedMs,
       nowMs: input.nowMs,
@@ -144,18 +134,16 @@ type GloveKind1Hit = Readonly<{
 function applyGloveKind1Hits(
   human: HumanFighter,
   spell: CombatSpell,
-  targets: readonly MeleeTarget[],
+  targets: readonly Participant[],
   input: Readonly<{
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
+    participants: readonly Participant[];
     random: RandomSource;
     rules: BattleRules;
   }>,
 ): readonly GloveKind1Hit[] {
   const hits: GloveKind1Hit[] = [];
-  for (const listed of targets) {
-    const target = livingTarget(listed, input.bots);
-    const foeHp = targetHp(target);
+  for (const target of targets) {
+    const foeHp = target.hp;
     const damage = appliedHpLoss(
       rollSpellDamage({
         spell,
@@ -167,10 +155,7 @@ function applyGloveKind1Hits(
       }),
       foeHp,
     );
-    const hit = applyDamageToMeleeTarget(human, target, damage, {
-      humans: input.humans,
-      bots: input.bots,
-    });
+    const hit = applyDamageToMeleeTarget(human, target, damage, input.participants);
     hits.push({
       targetId: hit.targetId,
       targetMaxHp: hit.targetMaxHp,
@@ -183,23 +168,10 @@ function applyGloveKind1Hits(
 }
 
 function livingEnemies(
-  caster: HumanFighter,
-  humans: readonly HumanFighter[],
-  bots: readonly BotFighter[],
-): readonly MeleeTarget[] {
-  return [
-    ...bots.filter((bot) => bot.team !== caster.team && bot.hp > 0).map(botMeleeTarget),
-    ...humans
-      .filter((human) => human.team !== caster.team && !human.leftLive && human.hp > 0)
-      .map(humanMeleeTarget),
-  ];
-}
-
-function livingTarget(listed: MeleeTarget, bots: readonly BotFighter[]): MeleeTarget {
-  if (listed.kind === "human") return listed;
-  const bot = bots.find((entry) => entry.fightId === listed.id);
-  if (!bot) throw new Error(`AOE bot ${listed.id} is missing from the roster`);
-  return botMeleeTarget(bot);
+  caster: Participant,
+  participants: readonly Participant[],
+): readonly Participant[] {
+  return participants.filter((entry) => entry.team !== caster.team && entry.alive);
 }
 
 function gloveDamageEvent(

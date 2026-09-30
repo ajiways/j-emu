@@ -17,7 +17,7 @@ import type { BotMeleeResult } from "./hunt-melee.ts";
 import { settleBotSideHits } from "./bot-side-hits.ts";
 import type { Fallout } from "./settle-fallen.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { enemySideCleared, fightCombatants } from "./melee-target.ts";
+import { enemySideCleared } from "./melee-target.ts";
 import { persChangeForParticipants } from "./melee-pers-change.ts";
 import { opposingTeam } from "./opposing-team.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
@@ -162,7 +162,7 @@ function botFellToTick(
   result: BotMeleeResult,
 ): readonly BattleEvent[] {
   if (bot.hp > 0 || result.killedPlayer) return [];
-  if (enemySideCleared(bot.team, fightCombatants(state.humans, state.bots))) {
+  if (enemySideCleared(bot.team, [...state.humans, ...state.bots])) {
     return [{ type: "finished", winnerTeam: opposingTeam(bot.team), fightId: state.fightId }];
   }
   return applyHuntBotHit(false, {

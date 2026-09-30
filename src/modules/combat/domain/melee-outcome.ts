@@ -1,8 +1,6 @@
 import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { BattleRules } from "./battle-rules.ts";
-import type { BotFighter } from "./bot-fighter.ts";
 import type { FighterEffects } from "./fighter-effects.ts";
-import type { HumanFighter } from "./human-fighter.ts";
 import type { RandomSource } from "./random-source.ts";
 
 /** Wire `cast.react` / nested `hpChange.react`. Legacy behavior from jgr `damage.ts`. */
@@ -63,18 +61,27 @@ export type MeleeOutcome = Readonly<{
   blocked: number;
 }>;
 
-/** A bot has only strength of its own; its other stats come from the effects standing on it. */
-export function strikeStatsFromBot(bot: BotFighter): StrikeStats {
+/** What a participant strikes and defends with now: his stats and what stands on him. */
+export function strikeStatsOf(
+  fighter: Readonly<{
+    meleeStrength(): number;
+    rageStat: number;
+    dexterity: number;
+    defense: number;
+    block: number;
+    effects: FighterEffects;
+  }>,
+): StrikeStats {
   return {
-    strength: bot.meleeStrength(),
-    rage: bot.rageStat,
-    dexterity: bot.dexterity,
-    defense: bot.defense,
-    block: bot.block,
-    takePhysical: (raw) => bot.effects.takenDamage(raw, PHYSICAL_DMG_TYPE),
-    dodgeRate: bot.effects.standingMax("DR"),
-    blockRate: blockRateOf(bot.effects),
-    critMod: critModOf(bot.effects),
+    strength: fighter.meleeStrength(),
+    rage: fighter.rageStat,
+    dexterity: fighter.dexterity,
+    defense: fighter.defense,
+    block: fighter.block,
+    takePhysical: (raw) => fighter.effects.takenDamage(raw, PHYSICAL_DMG_TYPE),
+    dodgeRate: fighter.effects.standingMax("DR"),
+    blockRate: blockRateOf(fighter.effects),
+    critMod: critModOf(fighter.effects),
   };
 }
 
@@ -92,23 +99,6 @@ export function unpublishedBotStrikeStats(strength: number): StrikeStats {
     dodgeRate: 0,
     blockRate: 0,
     critMod: NO_CRIT_MOD,
-  };
-}
-
-export function strikeStatsFromHuman(
-  human: HumanFighter,
-  strength = human.meleeStrength(),
-): StrikeStats {
-  return {
-    strength,
-    rage: human.rageStat,
-    dexterity: human.dexterity,
-    defense: human.defense,
-    block: human.block,
-    takePhysical: (raw) => human.effects.takenDamage(raw, PHYSICAL_DMG_TYPE),
-    dodgeRate: human.effects.standingMax("DR"),
-    blockRate: blockRateOf(human.effects),
-    critMod: critModOf(human.effects),
   };
 }
 

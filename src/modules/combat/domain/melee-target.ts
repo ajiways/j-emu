@@ -1,68 +1,19 @@
-import type { Combatant } from "./combatant.ts";
 import type { FightDuel } from "./fight-duel.ts";
-import type { HumanFighter } from "./human-fighter.ts";
-import type { BotFighter } from "./bot-fighter.ts";
-import { strikeStatsFromBot, strikeStatsFromHuman } from "./melee-outcome.ts";
+import type { Participant } from "./participant.ts";
 
-export type MeleeTarget =
-  | Readonly<{ kind: "human"; human: HumanFighter } & Combatant>
-  | Readonly<{ kind: "bot"; bot: BotFighter } & Combatant>;
-
-export function humanMeleeTarget(human: HumanFighter): MeleeTarget {
-  return {
-    kind: "human",
-    human,
-    id: human.heroId,
-    team: human.team,
-    maxHp: human.maxHp,
-    mag: human.mag,
-    effects: human.effects,
-    strikeStats: strikeStatsFromHuman(human),
-    alive: !human.leftLive && human.hp > 0,
-  };
+/** Whoever stands across from `attackerId` in his duel. */
+export function duelFoe(
+  duel: FightDuel,
+  participants: readonly Participant[],
+  attackerId: number,
+): Participant {
+  const foeId = duel.otherId(attackerId);
+  const foe = participants.find((entry) => entry.id === foeId);
+  if (!foe) throw new Error(`Duel opponent ${foeId} is not in the fight`);
+  return foe;
 }
 
-export function botMeleeTarget(bot: BotFighter): MeleeTarget {
-  return {
-    kind: "bot",
-    bot,
-    id: bot.fightId,
-    team: bot.team,
-    maxHp: bot.maxHp,
-    mag: bot.mag,
-    effects: bot.effects,
-    strikeStats: strikeStatsFromBot(bot),
-    alive: bot.hp > 0,
-  };
-}
-
-export function fightCombatants(
-  humans: readonly HumanFighter[],
-  bots: readonly BotFighter[],
-): readonly Combatant[] {
-  return [...humans.map(humanMeleeTarget), ...bots.map(botMeleeTarget)];
-}
-
-export function targetHp(target: MeleeTarget): number {
-  return target.kind === "human" ? target.human.hp : target.bot.hp;
-}
-
-export function resolveMeleeTarget(
-  input: Readonly<{
-    attackerHeroId: number;
-    duel: FightDuel;
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
-  }>,
-): MeleeTarget {
-  const otherId = input.duel.otherId(input.attackerHeroId);
-  const human = input.humans.find((entry) => entry.heroId === otherId);
-  if (human) return humanMeleeTarget(human);
-  const bot = input.bots.find((entry) => entry.fightId === otherId);
-  if (bot) return botMeleeTarget(bot);
-  throw new Error(`Duel opponent ${otherId} is neither a human nor a fight bot`);
-}
-
-export function enemySideCleared(team: 1 | 2, combatants: readonly Combatant[]): boolean {
-  return !combatants.some((entry) => entry.team === team && entry.alive);
+/** No one of `team` is left standing. */
+export function enemySideCleared(team: 1 | 2, participants: readonly Participant[]): boolean {
+  return !participants.some((entry) => entry.team === team && entry.alive);
 }

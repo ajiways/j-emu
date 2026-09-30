@@ -4,7 +4,6 @@ import type { BattleRules } from "./battle-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { strikeFighter } from "./melee-strike.ts";
-import { strikeStatsFromHuman, strikeStatsFromBot } from "./melee-outcome.ts";
 import type { RandomSource } from "./random-source.ts";
 
 export type BotMeleeResult = Readonly<{
@@ -31,9 +30,9 @@ export function resolveBotMelee(
   const strike = strikeFighter({
     attacker: input.bot,
     attackerStrength: input.bot.meleeStrength(),
-    attackerStats: strikeStatsFromBot(input.bot),
+    attackerStats: input.bot.strikeStats(),
     target: human,
-    targetStats: strikeStatsFromHuman(human),
+    targetStats: human.strikeStats(),
     random: input.random,
     rules: input.rules,
   });

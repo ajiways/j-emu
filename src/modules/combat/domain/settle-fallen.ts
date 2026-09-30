@@ -5,7 +5,7 @@ import type { FightRules } from "./fight-rules.ts";
 import type { Fighter } from "./fighter.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { enemySideCleared, fightCombatants } from "./melee-target.ts";
+import { enemySideCleared } from "./melee-target.ts";
 import { opposingTeam } from "./opposing-team.ts";
 import { dissolveDuelContaining } from "./try-pair-hunt-queues.ts";
 
@@ -35,7 +35,7 @@ export function settleFallen(
     fightId: string;
   }>,
 ): Fallout {
-  const combatants = fightCombatants(input.humans, input.bots);
+  const combatants = [...input.humans, ...input.bots];
   const lost = fallen.find((fighter) => enemySideCleared(fighter.team, combatants));
   if (lost) {
     const finished = {
@@ -54,7 +54,7 @@ export function settleFallen(
     }
     const hunter = pairedHuman(input, fighter.id);
     if (!hunter) {
-      dissolveDuelContaining(input.duels, input.humans, fighter.id, input.bots);
+      dissolveDuelContaining(input.duels, [...input.humans, ...input.bots], fighter.id);
       continue;
     }
     const duel = input.duels.find((entry) => entry.has(fighter.id));

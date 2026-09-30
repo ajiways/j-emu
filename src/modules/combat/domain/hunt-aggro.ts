@@ -71,9 +71,8 @@ export function tryHuntAggro(
     input.addBot,
   );
   pairHuntQueues({
-    humans: input.humans,
+    participants: [...input.humans, ...input.bots],
     duels: input.duels,
-    bots: input.bots,
     random: input.random,
   });
   const pairedAccountIds = input.humans

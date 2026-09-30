@@ -1,12 +1,9 @@
 import type { FightDuel } from "./fight-duel.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { botMeleeTarget } from "./melee-target.ts";
 import { dissolveDuelAt } from "./try-pair-hunt-queues.ts";
 
 export function peekWaitingEnemy(bots: readonly BotFighter[], enemyTeam: 1 | 2): BotFighter | null {
-  return (
-    bots.find((bot) => bot.waiting && bot.team === enemyTeam && botMeleeTarget(bot).alive) ?? null
-  );
+  return bots.find((bot) => bot.waiting && bot.team === enemyTeam && bot.alive) ?? null;
 }
 
 export function takeNextEnemyForHuman(
@@ -27,7 +24,7 @@ export function takeNextEnemyForHuman(
     if (!duel) throw new Error("Battle duel slot is empty");
     const enemy = livingEnemyInBotDuel(duel, input.bots, input.enemyTeam);
     if (!enemy || enemy.fightId === input.occupiedFightId) continue;
-    dissolveDuelAt(input.duels, index, [], input.bots, enemy.fightId);
+    dissolveDuelAt(input.duels, index, input.bots, enemy.fightId);
     return enemy;
   }
   return null;
@@ -42,7 +39,7 @@ function livingEnemyInBotDuel(
   const b = bots.find((bot) => bot.fightId === duel.bId);
   if (!a || !b) return null;
   for (const bot of [a, b]) {
-    if (bot.team === enemyTeam && botMeleeTarget(bot).alive) return bot;
+    if (bot.team === enemyTeam && bot.alive) return bot;
   }
   return null;
 }

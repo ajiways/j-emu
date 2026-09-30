@@ -2,7 +2,7 @@ import type { FightDuel } from "./fight-duel.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { HuntPairing } from "./battle-pairing.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { resolveMeleeTarget, type MeleeTarget } from "./melee-target.ts";
+import { duelFoe } from "./melee-target.ts";
 import { requireDuelContaining } from "./try-pair-hunt-queues.ts";
 
 export function requireBattleHuman(
@@ -37,20 +37,6 @@ export function huntPairingOf(
   return { duel, humans, pairedAccountId };
 }
 
-function resolveBattleMeleeTarget(
-  attacker: HumanFighter,
-  duel: FightDuel,
-  humans: readonly HumanFighter[],
-  bots: readonly BotFighter[],
-): MeleeTarget {
-  return resolveMeleeTarget({
-    attackerHeroId: attacker.heroId,
-    duel,
-    humans,
-    bots,
-  });
-}
-
 export function battlePairedOpponent(
   humans: readonly HumanFighter[],
   duels: readonly FightDuel[],
@@ -58,12 +44,7 @@ export function battlePairedOpponent(
   accountId: number,
 ): Readonly<{ kind: "human"; accountId: number } | { kind: "bot" }> {
   const human = requireBattleHuman(humans, accountId);
-  const target = resolveBattleMeleeTarget(
-    human,
-    requireDuelContaining(duels, human.heroId),
-    humans,
-    bots,
-  );
-  if (target.kind === "bot") return { kind: "bot" };
-  return { kind: "human", accountId: target.human.accountId };
+  const foe = duelFoe(requireDuelContaining(duels, human.heroId), [...humans, ...bots], human.id);
+  if (foe.fighterKind === "bot") return { kind: "bot" };
+  return { kind: "human", accountId: (foe as HumanFighter).accountId };
 }

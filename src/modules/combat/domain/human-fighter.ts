@@ -92,6 +92,10 @@ export class HumanFighter extends Participant {
     return this.leftLiveValue;
   }
 
+  protected override get departed(): boolean {
+    return this.leftLiveValue;
+  }
+
   override unpair(): void {
     super.unpair();
     this.endTurn();

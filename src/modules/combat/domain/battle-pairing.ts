@@ -4,7 +4,6 @@ import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import { peekWaitingEnemy, takeNextEnemyForHuman } from "./hunt-wait-queue.ts";
-import { botMeleeTarget, humanMeleeTarget } from "./melee-target.ts";
 import {
   PAIR_HITS_TO_SWITCH,
   planHuntShuffle,
@@ -22,14 +21,12 @@ export function livingWaiterOnTeam(
   humans: readonly HumanFighter[],
   team: 1 | 2,
 ): HumanFighter | undefined {
-  return humans.find(
-    (entry) => entry.waiting && humanMeleeTarget(entry).alive && entry.team === team,
-  );
+  return humans.find((entry) => entry.waiting && entry.alive && entry.team === team);
 }
 
 /** A mob of `team` that waits for a foe: an ally who may take over a duel. */
 function livingBotWaiterOnTeam(bots: readonly BotFighter[], team: 1 | 2): BotFighter | undefined {
-  return bots.find((entry) => entry.waiting && botMeleeTarget(entry).alive && entry.team === team);
+  return bots.find((entry) => entry.waiting && entry.alive && entry.team === team);
 }
 
 export function huntHumanOppNew(human: HumanFighter): BattleEvent {
@@ -216,11 +213,11 @@ function applyCrossSwap(
   actorBot: BotFighter,
 ): ShuffleOutcome {
   const otherHuman = humans.find(
-    (human) => other.has(human.heroId) && !human.waiting && humanMeleeTarget(human).alive,
+    (human) => other.has(human.heroId) && !human.waiting && human.alive,
   );
   if (!otherHuman) throw new Error("Shuffle cross-swap requires a living other human");
   const otherBot = bots.find((bot) => bot.fightId === other.otherId(otherHuman.heroId));
-  if (!otherBot || !botMeleeTarget(otherBot).alive) {
+  if (!otherBot || !otherBot.alive) {
     throw new Error("Shuffle cross-swap requires a living other bot");
   }
   const leftHp = actor.hp;
@@ -260,12 +257,10 @@ function otherHumanBotDuel(
 ): FightDuel | null {
   for (const duel of duels) {
     if (duel === actorDuel) continue;
-    const human = humans.find(
-      (entry) => duel.has(entry.heroId) && !entry.waiting && humanMeleeTarget(entry).alive,
-    );
+    const human = humans.find((entry) => duel.has(entry.heroId) && !entry.waiting && entry.alive);
     if (!human) continue;
     const bot = bots.find((entry) => entry.fightId === duel.otherId(human.heroId));
-    if (bot && botMeleeTarget(bot).alive) return duel;
+    if (bot?.alive) return duel;
   }
   return null;
 }

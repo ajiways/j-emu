@@ -29,7 +29,7 @@ export function hasBotDuels(state: BotDuelState): boolean {
   const isBot = (id: number) => state.bots.some((bot) => bot.fightId === id);
   return (
     state.duels.some((duel) => isBot(duel.aId) && isBot(duel.bId)) ||
-    hasPairableSeekers(state.humans, state.bots, state.duels)
+    hasPairableSeekers([...state.humans, ...state.bots], state.duels)
   );
 }
 
@@ -41,9 +41,8 @@ export function pairWaitingSeekers(
     state.humans.filter((human) => human.waiting).map((human) => human.accountId),
   );
   pairHuntQueues({
-    humans: state.humans,
+    participants: [...state.humans, ...state.bots],
     duels: state.duels,
-    bots: state.bots,
     random: state.random,
   });
   return state.humans

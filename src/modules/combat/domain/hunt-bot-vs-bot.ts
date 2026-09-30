@@ -8,7 +8,6 @@ import type { Fighter } from "./fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { strikeFighter } from "./melee-strike.ts";
-import { strikeStatsFromBot } from "./melee-outcome.ts";
 import { snapshotForBot } from "./combat-snapshot.ts";
 import type { RandomSource } from "./random-source.ts";
 
@@ -57,9 +56,9 @@ function meleeHit(
   const strike = strikeFighter({
     attacker: actor,
     attackerStrength: actor.meleeStrength(),
-    attackerStats: strikeStatsFromBot(actor),
+    attackerStats: actor.strikeStats(),
     target,
-    targetStats: strikeStatsFromBot(target),
+    targetStats: target.strikeStats(),
     random: input.random,
     rules: input.rules,
   });

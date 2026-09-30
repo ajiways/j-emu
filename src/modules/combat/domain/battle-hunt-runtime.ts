@@ -6,7 +6,7 @@ import type { FightDuel } from "./fight-duel.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { takeNextEnemyForHuman } from "./hunt-wait-queue.ts";
-import { botMeleeTarget, enemySideCleared, fightCombatants } from "./melee-target.ts";
+import { enemySideCleared } from "./melee-target.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveAiActorTurn } from "./resolve-ai-actor-turn.ts";
@@ -35,8 +35,8 @@ export function tickHuntRosterDuels(input: {
       ? input.bots.find((bot) => bot.fightId === duel.otherId(actor.fightId))
       : null;
     if (!actor || !target) continue;
-    if (!botMeleeTarget(actor).alive || !botMeleeTarget(target).alive) {
-      dissolveDuelAt(input.duels, index, input.humans, input.bots, null);
+    if (!actor.alive || !target.alive) {
+      dissolveDuelAt(input.duels, index, [...input.humans, ...input.bots], null);
       continue;
     }
     events.push(
@@ -54,11 +54,11 @@ export function tickHuntRosterDuels(input: {
         nowMs: input.nowMs,
       }).events,
     );
-    if (!botMeleeTarget(actor).alive || !botMeleeTarget(target).alive) {
-      dissolveDuelAt(input.duels, index, input.humans, input.bots, null);
+    if (!actor.alive || !target.alive) {
+      dissolveDuelAt(input.duels, index, [...input.humans, ...input.bots], null);
     }
   }
-  const combatants = fightCombatants(input.humans, input.bots);
+  const combatants = [...input.humans, ...input.bots];
   if (enemySideCleared(input.opener.team, combatants)) {
     events.push({
       type: "finished",
@@ -133,7 +133,7 @@ export function applyHuntBotHit(
   }
   const intervenor = livingWaiterOnTeam(input.humans, hitBot.team);
   if (!intervenor) {
-    dissolveDuelContaining(input.duels, input.humans, hitBot.fightId, input.bots);
+    dissolveDuelContaining(input.duels, [...input.humans, ...input.bots], hitBot.fightId);
     return { events: [{ type: "opponent-wait" }], finished: false };
   }
   retargetDuelTo({ duel: input.duel, fromHeroId: hitBot.fightId, waiter: intervenor });

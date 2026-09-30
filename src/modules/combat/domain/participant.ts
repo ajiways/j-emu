@@ -4,6 +4,7 @@ import type { FightEffectIds } from "./fight-effect-ids.ts";
 import { FighterEffects } from "./fighter-effects.ts";
 import type { Fighter, FighterKind } from "./fighter.ts";
 import type { MagStats } from "./mag-stats.ts";
+import { strikeStatsOf, type StrikeStats } from "./melee-outcome.ts";
 
 export type ParticipantInit = Readonly<{
   id: number;
@@ -110,9 +111,23 @@ export abstract class Participant implements Fighter {
   get mag(): MagStats {
     return { power: this.init.magPower, resist: this.init.magResist };
   }
+  /** What this participant strikes and defends with now. */
+  strikeStats(): StrikeStats {
+    return strikeStatsOf(this);
+  }
   meleeStrength(): number {
     return this.init.strength + this.effects.standingSkill("STR");
   }
+  /** Still in the fight and on his feet: not dead and not gone. */
+  get alive(): boolean {
+    return this.hpValue > 0 && !this.departed;
+  }
+
+  /** Left the fight for good; a player can, a mob cannot. */
+  protected get departed(): boolean {
+    return false;
+  }
+
   get waiting(): boolean {
     return this.waitingValue;
   }

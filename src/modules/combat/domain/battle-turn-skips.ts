@@ -4,7 +4,7 @@ import type { BattleRules } from "./battle-rules.ts";
 import { requireBattleHuman } from "./battle-lookups.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { enemySideCleared, fightCombatants } from "./melee-target.ts";
+import { enemySideCleared } from "./melee-target.ts";
 import { opposingTeam } from "./opposing-team.ts";
 import { timeoutHumanTurn, type HumanTimeout } from "./timeout-human-turn.ts";
 
@@ -22,7 +22,7 @@ export function timeoutBattleTurn(
   const human = requireBattleHuman(input.humans, input.accountId);
   const timeout = timeoutHumanTurn(human, input.rules.maxConsecutiveSkips);
   if (!timeout) return null;
-  if (!timeout.fell || !enemySideCleared(human.team, fightCombatants(input.humans, input.bots))) {
+  if (!timeout.fell || !enemySideCleared(human.team, [...input.humans, ...input.bots])) {
     return { timeout, finished: false };
   }
   const finished = {

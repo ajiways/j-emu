@@ -4,8 +4,8 @@ import type { BattleRules } from "./battle-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { strikeFighter } from "./melee-strike.ts";
-import { strikeStatsFromHuman } from "./melee-outcome.ts";
-import { enemySideCleared, fightCombatants, targetHp, type MeleeTarget } from "./melee-target.ts";
+import { enemySideCleared } from "./melee-target.ts";
+import type { Participant } from "./participant.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
 
@@ -15,7 +15,7 @@ export type PlayerMeleeResult =
 
 export function tryPairedMelee(
   attacker: HumanFighter,
-  target: MeleeTarget,
+  target: Participant,
   side: "left" | "center" | "right",
   input: Readonly<{
     finished: boolean;
@@ -37,23 +37,20 @@ export function tryPairedMelee(
   const turnElapsedMs = attacker.turnElapsedMs(input.nowMs, input.rules.turnTimeoutSeconds);
   attacker.endTurn();
   attacker.noteAction();
-  const victim = target.kind === "human" ? target.human : target.bot;
-  const context = { humans: input.humans, bots: input.bots };
-  requireRosterBot(target, context.bots);
+  const everyone = [...input.humans, ...input.bots];
+  requireRosterMember(target, everyone);
   const strike = strikeFighter({
     attacker,
     attackerStrength: attacker.meleeStrength(),
-    attackerStats: strikeStatsFromHuman(attacker),
-    target: victim,
-    targetStats: target.strikeStats,
+    attackerStats: attacker.strikeStats(),
+    target,
+    targetStats: target.strikeStats(),
     random: input.random,
     rules: input.rules,
   });
   const comboCp = attacker.casts.hits.length > 0 ? attacker.casts.advanceCombo(side) : undefined;
   const { extra, outcome, killed, drained, dRage } = strike;
-  const finished =
-    input.finished ||
-    (killed && enemySideCleared(target.team, fightCombatants(context.humans, context.bots)));
+  const finished = input.finished || (killed && enemySideCleared(target.team, everyone));
   const events: BattleEvent[] = [
     { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },
     {
@@ -79,7 +76,7 @@ export function tryPairedMelee(
   }
   const clock = advanceActionClock({
     attacker,
-    victim: target.kind === "human" ? target.human : target.bot,
+    victim: target,
     victimKilledByHit: killed,
     turnElapsedMs,
     nowMs: input.nowMs,
@@ -101,13 +98,10 @@ export function tryPairedMelee(
 }
 
 export function applyDamageToMeleeTarget(
-  attacker: HumanFighter,
-  target: MeleeTarget,
+  attacker: Participant,
+  target: Participant,
   damage: number,
-  context: Readonly<{
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
-  }>,
+  participants: readonly Participant[],
 ): Readonly<{
   killed: boolean;
   finished: boolean;
@@ -117,30 +111,25 @@ export function applyDamageToMeleeTarget(
   if (!Number.isInteger(damage) || damage < 1) {
     throw new Error("Melee damage must be a positive integer");
   }
-  requireLivingMeleeTarget(target);
-  requireRosterBot(target, context.bots);
-  const victim = target.kind === "human" ? target.human : target.bot;
-  const { killed } = resolveHpLoss(victim, damage, attacker);
+  if (target.hp === 0) throw new Error("Melee target is not a living opponent");
+  requireRosterMember(target, participants);
+  const { killed } = resolveHpLoss(target, damage, attacker);
   return {
     killed,
-    finished:
-      killed && enemySideCleared(target.team, fightCombatants(context.humans, context.bots)),
+    finished: killed && enemySideCleared(target.team, participants),
     targetId: target.id,
     targetMaxHp: target.maxHp,
   };
 }
 
-function requireRosterBot(target: MeleeTarget, bots: readonly BotFighter[]): void {
-  if (target.kind === "bot" && !bots.some((bot) => bot.fightId === target.id)) {
-    throw new Error(`Melee bot ${target.id} is missing from the roster`);
+function requireRosterMember(target: Participant, participants: readonly Participant[]): void {
+  if (!participants.some((entry) => entry.id === target.id)) {
+    throw new Error(`Melee target ${target.id} is missing from the roster`);
   }
 }
 
-function requireLivingMeleeTarget(target: MeleeTarget): void {
-  if (target.kind === "human" && target.human.waiting) {
-    throw new Error("Melee target is not a living paired opponent");
-  }
-  if (targetHp(target) === 0) {
+function requireLivingMeleeTarget(target: Participant): void {
+  if (target.waiting || target.hp === 0) {
     throw new Error("Melee target is not a living paired opponent");
   }
 }

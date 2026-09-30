@@ -379,7 +379,7 @@ export class Battle {
 
   dissolveDuelOf(accountId: number): void {
     const human = requireBattleHuman(this.humans, accountId);
-    dissolveDuelContaining(this.duels, this.humans, human.heroId, this.bots);
+    dissolveDuelContaining(this.duels, this.roster.all(), human.heroId);
   }
 
   private actionState() {
