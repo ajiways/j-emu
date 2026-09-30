@@ -50,7 +50,11 @@ export const SKILL_REGISTRY: Readonly<Record<string, SkillEntry>> = {
   MPMAX: skill("максимум маны, плоский", "name"),
   VIT: skill("неизвестно, описаний нет", "unknown"),
   pcVIT: skill("неизвестно, описаний нет", "unknown"),
-  LUCK: skill("инициатива: кто бьёт первым (у мобов в бестиарии называется так же)", "owner"),
+  LUCK: skill(
+    "инициатива: кто бьёт первым (у мобов в бестиарии называется так же)",
+    "owner",
+    "supported",
+  ),
   CR: skill(
     "шанс крита ближайшего удара: 1 = всегда, меньше 1 = абсолютный шанс",
     "spell-text",
@@ -59,11 +63,16 @@ export const SKILL_REGISTRY: Readonly<Record<string, SkillEntry>> = {
   pcCR: skill(
     "шанс крита, процентное изменение (минусы: «не соберётся с силами для мощного удара»)",
     "spell-text",
+    "supported",
   ),
-  CRBonus: skill("прибавка к шансу крита в процентных пунктах (27 = 27%)", "spell-text"),
-  pcCRBonus: skill("прибавка к криту, процентное изменение", "spell-text"),
+  CRBonus: skill(
+    "прибавка к шансу крита в процентных пунктах (27 = 27%)",
+    "spell-text",
+    "supported",
+  ),
+  pcCRBonus: skill("прибавка к криту, процентное изменение", "spell-text", "supported"),
   BR: skill("шанс заблокировать физический удар, доля (0.05 = 5%)", "spell-text", "supported"),
-  pcBR: skill("шанс блока у умений «Прикрытие», доля", "spell-text"),
+  pcBR: skill("шанс блока у умений «Прикрытие», доля", "spell-text", "supported"),
   DFR: skill(
     "доля физического урона, которую цель не получает (0.32 -> 68%, 1 -> неуязвим); по dmgMask",
     "spell-text",
@@ -93,14 +102,19 @@ export const SKILL_REGISTRY: Readonly<Record<string, SkillEntry>> = {
   RAGE_MOD: skill(
     "прибавка к накоплению ярости, процент; действует на следующее получение урона",
     "owner",
+    "supported",
   ),
   pcRAGE_MOD: skill("то же, процентное изменение", "owner"),
-  MAGSTR_ACD: skill("сила магии кислоты, плоская прибавка", "owner"),
-  MAGSTR_DRK: skill("сила магии тьмы, плоская прибавка", "owner"),
-  MAGSTR_FR: skill("сила магии огня, плоская прибавка (2000 в данных = «+25» в тексте)", "owner"),
-  MAGSTR_ICE: skill("сила магии льда, плоская прибавка", "owner"),
-  MAGSTR_LGH: skill("сила магии молнии, плоская прибавка", "owner"),
-  MAGSTR_LTN: skill("сила магии света, плоская прибавка", "owner"),
+  MAGSTR_ACD: skill("сила магии кислоты, плоская прибавка", "owner", "supported"),
+  MAGSTR_DRK: skill("сила магии тьмы, плоская прибавка", "owner", "supported"),
+  MAGSTR_FR: skill(
+    "сила магии огня, плоская прибавка (2000 в данных = «+25» в тексте)",
+    "owner",
+    "supported",
+  ),
+  MAGSTR_ICE: skill("сила магии льда, плоская прибавка", "owner", "supported"),
+  MAGSTR_LGH: skill("сила магии молнии, плоская прибавка", "owner", "supported"),
+  MAGSTR_LTN: skill("сила магии света, плоская прибавка", "owner", "supported"),
   pcPET_STR: skill("сила питомца, процент (питомцы не моделируются)", "name"),
 };
 

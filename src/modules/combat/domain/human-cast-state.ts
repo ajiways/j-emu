@@ -117,10 +117,11 @@ export class HumanCastState {
     return this.cp;
   }
 
-  awardIncomingRage(damage: number, maxHp: number): number {
+  awardIncomingRage(damage: number, maxHp: number, rageModPct: number): number {
     if (!Number.isInteger(damage) || damage < 0) throw new Error("Rage damage is invalid");
     if (!Number.isInteger(maxHp) || maxHp < 1) throw new Error("Rage maxHp is invalid");
-    const delta = (damage * 100) / (1.75 * maxHp);
+    if (!Number.isFinite(rageModPct)) throw new Error("Rage modifier is invalid");
+    const delta = ((damage * 100) / (1.75 * maxHp)) * Math.max(0, 1 + rageModPct / 100);
     this.rage = Math.min(100, this.rage + delta);
     return delta;
   }

@@ -1,6 +1,8 @@
 import type { BattleRules } from "./battle-rules.ts";
 import type { DamageTarget } from "./damage-target.ts";
 import type { CombatSpell } from "./combat-loadout.ts";
+import type { FighterEffects } from "./fighter-effects.ts";
+import { casterMagFor } from "./school-power.ts";
 import { magPowerForDmgType, magResistForDmgType, type MagStats } from "./mag-stats.ts";
 import { MELEE_REACT } from "./melee-outcome.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -62,10 +64,16 @@ export function kind1OverlayCharges(spell: CombatSpell): number {
   return 0;
 }
 
+/** Who casts a magic hit: his stats and what stands on him. */
+export type MagCaster = Readonly<{
+  mag: MagStats;
+  effects: Pick<FighterEffects, "standingSkill">;
+}>;
+
 export function magicHitFromKind1(
   spell: CombatSpell,
   casterStrength: number,
-  caster: MagStats,
+  caster: MagCaster,
   target: DamageTarget,
   random: RandomSource,
   rules: BattleRules,
@@ -76,11 +84,12 @@ export function magicHitFromKind1(
     throw new Error("Charging kind-1 overlay is not an instant magic hit");
   }
   const catalogAmount = numericAmount(kind1.amount);
+  const dmgType = kind1.dmgType ?? 1;
   return rollMagicHit({
-    caster,
+    caster: casterMagFor(caster, dmgType),
     target,
     casterStrength,
-    dmgType: kind1.dmgType ?? 1,
+    dmgType,
     ...(catalogAmount !== undefined ? { catalogAmount } : {}),
     catalogStr: spellSkillValue(kind1, "STR"),
     catalogPcStr: spellSkillValue(kind1, "pcSTR"),

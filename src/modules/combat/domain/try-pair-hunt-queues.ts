@@ -144,7 +144,7 @@ function huntSeekers(
       id: human.heroId,
       team: human.team,
       lastOpponentId: human.lastOpponentId,
-      initiative: human.initiative,
+      initiative: human.currentInitiative,
       kind: "human",
     });
   }
@@ -154,7 +154,7 @@ function huntSeekers(
       id: bot.fightId,
       team: bot.team,
       lastOpponentId: bot.lastOpponentId,
-      initiative: bot.initiative,
+      initiative: bot.currentInitiative,
       kind: "bot",
     });
   }

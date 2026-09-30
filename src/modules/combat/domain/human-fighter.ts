@@ -129,6 +129,14 @@ export class HumanFighter implements Fighter {
   get initiative(): number {
     return this.init.initiative;
   }
+  /** The initiative that opens a duel: the base stat and what `LUCK` effects add now. */
+  get currentInitiative(): number {
+    return this.stat(this.init.initiative, "LUCK");
+  }
+  /** Rage a received hit adds, more while a `RAGE_MOD` effect stands. Returns the rage gained. */
+  awardIncomingRage(damage: number): number {
+    return this.casts.awardIncomingRage(damage, this.maxHp, this.effects.standingSkill("RAGE_MOD"));
+  }
   get rageStat(): number {
     return this.stat(this.init.rage, "RAG");
   }

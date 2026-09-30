@@ -1,6 +1,7 @@
 import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { BotFighter } from "./bot-fighter.ts";
+import type { FighterEffects } from "./fighter-effects.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { RandomSource } from "./random-source.ts";
 
@@ -27,7 +28,33 @@ export type StrikeStats = Readonly<{
   dodgeRate: number;
   /** `BR`: an absolute chance to block, on top of the one the block stat gives. */
   blockRate: number;
+  /** What stands on the striker changes his usual crit chance (`pcCR`, `CRBonus`, `pcCRBonus`). */
+  critMod: CritMod;
 }>;
+
+export type CritMod = Readonly<{
+  /** `pcCR`: percent change of the usual crit chance. */
+  pcCr: number;
+  /** `CRBonus`: crit chance added in percentage points. */
+  bonus: number;
+  /** `pcCRBonus`: percent change of that added chance. */
+  pcBonus: number;
+}>;
+
+export const NO_CRIT_MOD: CritMod = { pcCr: 0, bonus: 0, pcBonus: 0 };
+
+function critModOf(effects: Pick<FighterEffects, "standingSkill">): CritMod {
+  return {
+    pcCr: effects.standingSkill("pcCR"),
+    bonus: effects.standingSkill("CRBonus"),
+    pcBonus: effects.standingSkill("pcCRBonus"),
+  };
+}
+
+/** `BR` and `pcBR` (the «Прикрытие» skills) are the same absolute block chance. */
+function blockRateOf(effects: Pick<FighterEffects, "standingMax">): number {
+  return Math.max(effects.standingMax("BR"), effects.standingMax("pcBR"));
+}
 
 export type MeleeOutcome = Readonly<{
   applied: number;
@@ -46,7 +73,8 @@ export function strikeStatsFromBot(bot: BotFighter): StrikeStats {
     block: bot.block,
     takePhysical: (raw) => bot.effects.takenDamage(raw, PHYSICAL_DMG_TYPE),
     dodgeRate: bot.effects.standingMax("DR"),
-    blockRate: bot.effects.standingMax("BR"),
+    blockRate: blockRateOf(bot.effects),
+    critMod: critModOf(bot.effects),
   };
 }
 
@@ -63,6 +91,7 @@ export function unpublishedBotStrikeStats(strength: number): StrikeStats {
     takePhysical: (raw) => raw,
     dodgeRate: 0,
     blockRate: 0,
+    critMod: NO_CRIT_MOD,
   };
 }
 
@@ -78,7 +107,8 @@ export function strikeStatsFromHuman(
     block: human.block,
     takePhysical: (raw) => human.effects.takenDamage(raw, PHYSICAL_DMG_TYPE),
     dodgeRate: human.effects.standingMax("DR"),
-    blockRate: human.effects.standingMax("BR"),
+    blockRate: blockRateOf(human.effects),
+    critMod: critModOf(human.effects),
   };
 }
 
@@ -120,7 +150,13 @@ export function rollMeleeOutcome(
     input.forceCrit ||
     (input.critChance > 0
       ? input.random.unit() < input.critChance
-      : rollCrit(input.attacker.rage, input.defender.dexterity, input.random, input.rules));
+      : rollCrit(
+          input.attacker.rage,
+          input.defender.dexterity,
+          input.attacker.critMod,
+          input.random,
+          input.rules,
+        ));
   const preMit = Math.max(1, Math.round(input.baseDamage * (crit ? input.rules.critMult : 1)));
   const mit = effectiveMitigation(input.attacker.rage, input.defender.defense, crit, input.rules);
   const unheld = Math.max(1, Math.round(preMit * (1 - mit)));
@@ -173,10 +209,14 @@ function rollDefense(
 function rollCrit(
   rage: number,
   defenderDexterity: number,
+  mod: CritMod,
   random: RandomSource,
   rules: BattleRules,
 ): boolean {
-  const chance = effectiveCritChance(rage, defenderDexterity, rules);
+  const usual =
+    effectiveCritChance(rage, defenderDexterity, rules) * Math.max(0, 1 + mod.pcCr / 100);
+  const added = (mod.bonus / 100) * Math.max(0, 1 + mod.pcBonus / 100);
+  const chance = Math.min(1, usual + added);
   if (chance <= 0) return false;
   return random.unit() < chance;
 }

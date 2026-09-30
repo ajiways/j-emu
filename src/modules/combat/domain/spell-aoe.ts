@@ -1,8 +1,7 @@
 import type { BattleRules } from "./battle-rules.ts";
 import type { CombatSpell } from "./combat-loadout.ts";
 import type { DamageTarget } from "./damage-target.ts";
-import type { MagStats } from "./mag-stats.ts";
-import { kind1Effect, magicHitFromKind1 } from "./magic-hit.ts";
+import { kind1Effect, magicHitFromKind1, type MagCaster } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
 import { shuffleInPlace } from "./shuffle-in-place.ts";
 
@@ -39,7 +38,7 @@ export function rollSpellDamage(
   input: Readonly<{
     spell: CombatSpell;
     casterStrength: number;
-    caster: MagStats;
+    caster: MagCaster;
     target: DamageTarget;
     random: RandomSource;
     rules: BattleRules;

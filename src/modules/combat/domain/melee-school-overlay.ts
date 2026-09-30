@@ -5,6 +5,7 @@ import type { DamageTarget } from "./damage-target.ts";
 import type { FighterEffects } from "./fighter-effects.ts";
 import type { MagStats } from "./mag-stats.ts";
 import { magicReact, rollMagicHit } from "./magic-hit.ts";
+import { casterMagFor } from "./school-power.ts";
 import type { RandomSource } from "./random-source.ts";
 
 export type OverlayRoll = Readonly<{
@@ -31,7 +32,7 @@ export function rollOverlayExtra(
   const { overlay } = taken;
   const purges = taken.purged.map((effectId) => ({ type: "effect-purge" as const, effectId }));
   const raw = rollMagicHit({
-    caster,
+    caster: casterMagFor({ mag: caster, effects }, overlay.dmgType),
     target,
     casterStrength: overlay.casterStrength,
     dmgType: overlay.dmgType,

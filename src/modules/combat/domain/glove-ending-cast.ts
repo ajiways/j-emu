@@ -160,7 +160,7 @@ function applyGloveKind1Hits(
       rollSpellDamage({
         spell,
         casterStrength: human.meleeStrength(),
-        caster: human.mag,
+        caster: human,
         target,
         random: input.random,
         rules: input.rules,

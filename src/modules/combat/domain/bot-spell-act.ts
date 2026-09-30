@@ -73,7 +73,7 @@ function instantKind1(
   const others = aoeOthers(actor, target, card, state);
   const { applied: damage, killed } = resolveHpLoss(
     target,
-    rollBotSpellDamage(actor.strength, card.spell, state.random, state.rules, actor.mag, target),
+    rollBotSpellDamage(actor.strength, card.spell, state.random, state.rules, actor, target),
     actor,
   );
   const hit: Extract<BattleEvent, { type: "damage" }> = {
@@ -99,7 +99,7 @@ function instantKind1(
       : [];
   const sideHits = others.map((other) => hitOther(actor, other, card, state));
   if (!isHuman(target)) return { events: [...ticks, hit], sideHits };
-  const dRage = damage < 1 ? 0 : target.casts.awardIncomingRage(damage, target.maxHp);
+  const dRage = damage < 1 ? 0 : target.awardIncomingRage(damage);
   const events: BattleEvent[] = [...ticks, { ...hit, dRage }];
   if (killed && !state.keepFightOnKill) {
     events.push({ type: "finished", winnerTeam: state.winnerTeam, fightId: state.fightId });
@@ -131,11 +131,10 @@ function hitOther(
 ): BotSideHit {
   const { applied, killed } = resolveHpLoss(
     other,
-    rollBotSpellDamage(actor.strength, card.spell, state.random, state.rules, actor.mag, other),
+    rollBotSpellDamage(actor.strength, card.spell, state.random, state.rules, actor, other),
     actor,
   );
-  const dRage =
-    applied < 1 || !isHuman(other) ? 0 : other.casts.awardIncomingRage(applied, other.maxHp);
+  const dRage = applied < 1 || !isHuman(other) ? 0 : other.awardIncomingRage(applied);
   return {
     targetId: other.id,
     killed,

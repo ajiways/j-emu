@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { MELEE_REACT, rollMeleeOutcome } from "../../../src/modules/combat/domain/melee-outcome.ts";
-import type { StrikeStats } from "../../../src/modules/combat/domain/melee-outcome.ts";
+import {
+  MELEE_REACT,
+  NO_CRIT_MOD,
+  rollMeleeOutcome,
+} from "../../../src/modules/combat/domain/melee-outcome.ts";
+import type { CritMod, StrikeStats } from "../../../src/modules/combat/domain/melee-outcome.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { FixedRandom } from "../../support/fakes/fixed-random.ts";
 
@@ -13,6 +17,7 @@ const PLAIN: StrikeStats = {
   takePhysical: (raw) => raw,
   dodgeRate: 0,
   blockRate: 0,
+  critMod: NO_CRIT_MOD,
 };
 
 function hit(defender: StrikeStats, unit = 0.5) {
@@ -45,5 +50,30 @@ describe("absolute defense rates", () => {
     expect(blocked.applied).toBe(0);
     expect(blocked.blocked).toBeGreaterThan(0);
     expect(hit({ ...PLAIN, blockRate: 0.15 }, 0.9).applied).toBeGreaterThan(0);
+  });
+});
+
+describe("crit chance skills of the striker", () => {
+  const strike = (critMod: CritMod, unit: number) =>
+    rollMeleeOutcome({
+      baseDamage: 10,
+      attacker: { ...PLAIN, critMod },
+      defender: PLAIN,
+      targetHp: 100,
+      forceCrit: false,
+      critChance: 0,
+      random: new FixedRandom(unit),
+      rules: UNIT_BATTLE_RULES,
+    }).react;
+
+  it("CRBonus adds percentage points on top of the usual chance", () => {
+    expect(strike(NO_CRIT_MOD, 0.2)).toBe(MELEE_REACT.hit);
+    expect(strike({ ...NO_CRIT_MOD, bonus: 27 }, 0.2)).toBe(MELEE_REACT.crit);
+    expect(strike({ ...NO_CRIT_MOD, bonus: 27 }, 0.3)).toBe(MELEE_REACT.hit);
+  });
+
+  it("pcCRBonus and pcCR cut what they change", () => {
+    expect(strike({ pcCr: 0, bonus: 27, pcBonus: -99 }, 0.2)).toBe(MELEE_REACT.hit);
+    expect(strike({ pcCr: -80, bonus: 27, pcBonus: 0 }, 0.2)).toBe(MELEE_REACT.crit);
   });
 });

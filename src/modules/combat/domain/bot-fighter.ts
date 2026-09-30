@@ -116,6 +116,11 @@ export class BotFighter implements Fighter {
     return Math.max(1, this.baseMaxHp + this.effects.standingSkill("HPMAX"));
   }
 
+  /** The initiative that opens a duel: the base stat and what `LUCK` effects add now. */
+  get currentInitiative(): number {
+    return Math.max(0, this.initiative + this.effects.standingSkill("LUCK"));
+  }
+
   get rageStat(): number {
     return Math.max(0, this.effects.standingSkill("RAG"));
   }

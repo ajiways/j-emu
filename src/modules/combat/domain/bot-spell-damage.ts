@@ -1,8 +1,7 @@
 import type { BattleRules } from "./battle-rules.ts";
 import type { CombatSpell } from "./combat-loadout.ts";
 import type { DamageTarget } from "./damage-target.ts";
-import type { MagStats } from "./mag-stats.ts";
-import { kind1Effect, kind1OverlayCharges } from "./magic-hit.ts";
+import { kind1Effect, kind1OverlayCharges, type MagCaster } from "./magic-hit.ts";
 import { rollSpellDamage } from "./spell-aoe.ts";
 import type { RandomSource } from "./random-source.ts";
 
@@ -11,7 +10,7 @@ export function rollBotSpellDamage(
   spell: CombatSpell,
   random: RandomSource,
   rules: BattleRules,
-  caster: MagStats,
+  caster: MagCaster,
   target: DamageTarget,
 ): number {
   if (!Number.isInteger(strength) || strength < 1) {

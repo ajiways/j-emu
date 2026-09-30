@@ -1,5 +1,6 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { Fighter } from "./fighter.ts";
+import { casterMagFor } from "./school-power.ts";
 import type { TimedSpellSource } from "./timed-spell.ts";
 import { spellSkillValue } from "./magic-hit.ts";
 
@@ -13,13 +14,14 @@ export function attachSpellTicks(
   const events: BattleEvent[] = [];
   for (const effect of card.spell.effects) {
     if (effect.kind !== 4 && effect.kind !== 5) continue;
+    const dmgType = requireTickField(card.artikulId, "dmgType", effect.dmgType);
     const snap = carrier.effects.attachTick({
       kind: effect.kind,
       sourceId: caster.id,
       artikulId: card.artikulId,
       title: card.title,
       img: card.picture,
-      dmgType: requireTickField(card.artikulId, "dmgType", effect.dmgType),
+      dmgType,
       ...(card.spell.groupId !== undefined ? { groupId: card.spell.groupId } : {}),
       durationSeconds: requireTickField(card.artikulId, "duration", effect.duration),
       periodSeconds: requireTickField(card.artikulId, "period", effect.period),
@@ -29,7 +31,7 @@ export function attachSpellTicks(
       catalogPcStr: spellSkillValue(effect, "pcSTR"),
       catalogStr: spellSkillValue(effect, "STR"),
       casterStrength: caster.strength,
-      casterMagPower: caster.mag.power,
+      casterMagPower: casterMagFor(caster, dmgType).power,
       casterMagResist: caster.mag.resist,
     });
     events.push({
