@@ -10,7 +10,10 @@ import {
   tryPairedMelee,
   applyDamageToMeleeTarget,
 } from "../../../src/modules/combat/domain/paired-melee.ts";
-import { strikeModsOfOverlay } from "../../../src/modules/combat/domain/strike-mods.ts";
+import {
+  NO_STRIKE_MODS,
+  strikeModsOfOverlay,
+} from "../../../src/modules/combat/domain/strike-mods.ts";
 import { schoolOverlayFromKind1 } from "../../../src/modules/combat/domain/school-overlay.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
@@ -44,6 +47,40 @@ function fighter(heroId: number, team: 1 | 2, hp: number, strength = 10): HumanF
 }
 
 describe("tryPairedMelee", () => {
+  it("gives the win to the swinger whose hit killed the last foe even when ANTIVAMP kills him too", () => {
+    const attacker = fighter(1, 1, 2);
+    attacker.beginTurn(0, 20);
+    attacker.effects.attachChargingKind3({
+      strike: { ...NO_STRIKE_MODS, drain: { healPct: 0, hurtPct: 1000 } },
+      sourceId: 1,
+      artikulId: 1,
+      title: "t",
+      img: "i.png",
+      dmgType: 1,
+      remainTurns: 1,
+    });
+    const defender = fighter(2, 2, 1);
+    const resolved = tryPairedMelee(attacker, humanMeleeTarget(defender), "center", {
+      finished: false,
+      rules: UNIT_BATTLE_RULES,
+      random: new SequenceRandom([1]),
+      fightId: "8",
+      humans: [attacker, defender],
+      bots: [],
+      nowMs: 0,
+    });
+    expect(attacker.hp).toBe(0);
+    expect(defender.hp).toBe(0);
+    expect(resolved.finished).toBe(true);
+    expect(resolved.result).toMatchObject({ kind: "resolved" });
+    const events = resolved.result.kind === "resolved" ? resolved.result.events : [];
+    expect(events.find((event) => event.type === "finished")).toMatchObject({ winnerTeam: 1 });
+    expect(events.filter((event) => event.type === "damage")).toMatchObject([
+      { targetId: 2, killed: true },
+      { targetId: 1, killed: true },
+    ]);
+  });
+
   it("hits the paired human and does not credit bot damage", () => {
     const attacker = fighter(1, 1, 27);
     attacker.beginTurn(0, 20);
