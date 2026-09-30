@@ -198,7 +198,7 @@ kind-3 (`charging` ходов, `groupId` 842, без bake STR — melee бону
 тратит. Повторный drink той же group снимает предыдущий standing.
 CEF 2026-09-17: орб 99 standing + `effPurge` на физ L/C/R. Glove AOE
 (`targetCount>=2`, «Волна света»): CEF 2026-09-17 урон по двум мобам и
-same-map HP. Bot kind-1 AOE — leftover.
+same-map HP. Bot kind-1 AOE бьёт тех же выбранных врагов (ADR-0021).
 Kind 11 HTTP
 `{rs:false, restriction:18}` — только если опубликованный spell kind 11
 (в текущем slice нет). CEF счётчиков пояса/перчатки/ярости не прогонялся.
@@ -382,8 +382,8 @@ dodge/block/crit — CMB-14. kind-1 overlay — CMB-15. Weapon DPS aparte от S
 читает catalog mid-fight. Пустая книга не зовёт `random.unit()` — Gryzl
 остаётся melee-only. Kind-1 урон =
 `max(1, round(STR/10 × (1+pcSTR/100) × [0.85…1.15]))`. Kind-2 heal есть;
-Glove kind-1 AOE landed (CMB-02). Bot kind-1 с `targetCount>=2` в catalog
-всё ещё бьёт одну цель пары — leftover. Огр **99** книга в каталоге DATA-03
+Glove kind-1 AOE landed (CMB-02). Bot kind-1 с `targetCount>=2` бьёт до
+`targetCount` живых врагов, урон каждому — отдельный бросок без деления (ADR-0021). Огр **99** книга в каталоге DATA-03
 (kind-2 heal на 40% HP). Kind-1+DoT (396): финишер HP, затем `effUse`
 kind-4 на охотнике (catalog title/img, group 845, overlay `durationTurns`
 3). Charging/self-buff, MAGSTR/MAGRES, virus, summon — вне боя: карточки
