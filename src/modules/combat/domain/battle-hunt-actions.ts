@@ -19,7 +19,6 @@ import type { Fallout } from "./settle-fallen.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { enemySideCleared } from "./melee-target.ts";
 import { persChangeForParticipants } from "./melee-pers-change.ts";
-import { opposingTeam } from "./opposing-team.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
 import { requireDuelContaining } from "./try-pair-hunt-queues.ts";
@@ -100,7 +99,6 @@ export function applyBattleGlove(
 export function applyBattleBotMelee(
   state: HuntActionState,
   accountId: number,
-  living: readonly HumanFighter[],
   nowMs: number,
 ): BotTurnResult {
   if (state.bots.length === 0) throw new Error("Human duel has no bot to take a turn");
@@ -108,7 +106,6 @@ export function applyBattleBotMelee(
   const target = requireBattleHuman(state.humans, accountId);
   const duel = requireDuelContaining(state.duels, target.heroId);
   const bot = requireFightBot(state.bots, duel.otherId(target.heroId));
-  const enemyTeam = state.fightRules.teamAssignment.enemyTeam;
   const result = resolveAiActorTurn({
     bot,
     duel,
@@ -117,15 +114,6 @@ export function applyBattleBotMelee(
     rules: state.rules,
     random: state.random,
     fightId: state.fightId,
-    keepFightOnKill: state.humans.some(
-      (entry) =>
-        entry.accountId !== target.accountId &&
-        entry.team === target.team &&
-        !entry.leftLive &&
-        entry.hp > 0,
-    ),
-    living,
-    winnerTeam: enemyTeam,
     nowMs,
   });
   const side = settleBotSideHits({
@@ -142,7 +130,9 @@ export function applyBattleBotMelee(
     ...result.events,
     ...(side.patch ? [side.patch] : []),
     ...botFellToTick(state, bot, target, duel, result),
-    ...(side.fallout.finished ? [side.fallout.finished] : []),
+    ...(side.fallout.finished && !result.events.some((event) => event.type === "finished")
+      ? [side.fallout.finished]
+      : []),
   ];
   return {
     events,
@@ -162,9 +152,7 @@ function botFellToTick(
   result: BotMeleeResult,
 ): readonly BattleEvent[] {
   if (bot.hp > 0 || result.killedPlayer) return [];
-  if (enemySideCleared(bot.team, [...state.humans, ...state.bots])) {
-    return [{ type: "finished", winnerTeam: opposingTeam(bot.team), fightId: state.fightId }];
-  }
+  if (enemySideCleared(bot.team, [...state.humans, ...state.bots])) return [];
   return applyHuntBotHit(false, {
     bots: state.bots,
     enemyTeam: state.fightRules.teamAssignment.enemyTeam,

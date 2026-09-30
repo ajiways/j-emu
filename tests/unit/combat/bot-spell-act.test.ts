@@ -68,10 +68,6 @@ describe("actBotSpellCard overkill", () => {
       {
         rules: UNIT_BATTLE_RULES,
         random: new SequenceRandom([8]),
-        fightId: "8",
-        keepFightOnKill: true,
-        living: [human],
-        winnerTeam: 2,
         nowMs: 0,
         enemies: [human],
       },
@@ -145,10 +141,6 @@ describe("actBotSpellCard overkill", () => {
       {
         rules: UNIT_BATTLE_RULES,
         random: new SequenceRandom([1]),
-        fightId: "8",
-        keepFightOnKill: true,
-        living: [human],
-        winnerTeam: 2,
         nowMs: 0,
         enemies: [human],
       },
@@ -232,10 +224,6 @@ describe("actBotSpellCard overkill", () => {
       {
         rules: UNIT_BATTLE_RULES,
         random: new SequenceRandom([1]),
-        fightId: "8",
-        keepFightOnKill: true,
-        living: [human],
-        winnerTeam: 2,
         nowMs: 0,
         enemies: [human],
       },

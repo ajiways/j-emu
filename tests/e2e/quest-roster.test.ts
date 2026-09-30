@@ -99,8 +99,14 @@ describe("quest fight roster", () => {
       ).toHaveLength(0);
       await client.pollFight();
       await harness.elapseCombat(1400);
-      const bot = await client.pollFight();
-      expect(framesIncludeFightFinish(bot)).toBe(true);
+      let frames = await client.pollFight();
+      // The hero falls first; the fight is lost when his ally falls too, on the fight's own clock.
+      for (let tick = 0; tick < 12 && !framesIncludeFightFinish(frames); tick += 1) {
+        await harness.elapseCombat(2600);
+        frames = await client.pollFight();
+      }
+      expect(framesIncludeFightFinish(frames)).toBe(true);
+      await harness.elapseCombat(5000);
       expect(chatMessages(await client.pollEsrv()).map((row) => String(row.msg))).toContain(
         "Ритуал ростера проигран.",
       );

@@ -91,9 +91,6 @@ describe("resolveAiActorTurn", () => {
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([2]),
       fightId: "1",
-      keepFightOnKill: true,
-      living: [],
-      winnerTeam: 1,
       nowMs: AUTH_NOW,
     });
     expect(vsBot.killedPlayer).toBe(false);
@@ -120,12 +117,9 @@ describe("resolveAiActorTurn", () => {
         rules: UNIT_BATTLE_RULES,
         random: new SequenceRandom([2]),
         fightId: "1",
-        keepFightOnKill: true,
-        living: [],
-        winnerTeam: 1,
         nowMs: AUTH_NOW,
       }),
-    ).toThrow(/Roster bot actor is dead/);
+    ).toThrow(/AI actor \d+ is dead/);
   });
 
   it("dissolves a dead extra duel on tick instead of resolving a dead actor", () => {

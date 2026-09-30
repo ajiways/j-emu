@@ -2,6 +2,7 @@ import type { BattleEvent, ExtraHit } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { settleDrain, type DrainOutcome } from "./drain.ts";
 import type { Fighter } from "./fighter.ts";
+import type { Participant } from "./participant.ts";
 import { rollMeleeOutcome, type MeleeOutcome, type StrikeStats } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -73,4 +74,40 @@ export function strikeFighter(
     dRage: dealt < 1 ? 0 : target.awardIncomingRage(dealt),
     purges: [...swing.purges, ...overlayPurges],
   };
+}
+
+/**
+ * What a strike shows: the hit itself (with the hit points it drained, the rage the target gained
+ * and the school float), the self-damage of a drain, and the charges that ran out. The same for
+ * every attacker; `comboCp` is the glove combo a player's strike advanced.
+ */
+export function strikeEvents(
+  input: Readonly<{
+    attacker: Participant;
+    target: Participant;
+    strike: FighterStrike;
+    animation: string;
+    comboCp?: number;
+  }>,
+): readonly BattleEvent[] {
+  const { strike, attacker, target } = input;
+  const { outcome, extra, drained } = strike;
+  return [
+    {
+      type: "damage",
+      sourceId: attacker.id,
+      targetId: target.id,
+      animation: input.animation,
+      hpChange: -outcome.applied,
+      targetMaxHp: target.maxHp,
+      killed: strike.killed,
+      react: outcome.react,
+      dRage: strike.dRage,
+      ...(input.comboCp !== undefined ? { comboCp: input.comboCp } : {}),
+      ...(drained.healed > 0 ? { drain: drained.healed, selfReact: drained.selfReact } : {}),
+      ...(extra ? { extraHits: [extra] } : {}),
+    },
+    ...(drained.hurtEvent ? [drained.hurtEvent] : []),
+    ...strike.purges,
+  ];
 }

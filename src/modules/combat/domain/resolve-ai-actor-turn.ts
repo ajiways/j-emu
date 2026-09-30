@@ -3,17 +3,17 @@ import type { BattleRules } from "./battle-rules.ts";
 import { advanceDuelClock, botActionJumpSeconds } from "./duel-clock.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import { resolveBotTurn } from "./hunt-bot-turn.ts";
-import { resolveRosterBotTurn } from "./hunt-bot-vs-bot.ts";
+import { resolveAiTurn } from "./ai-turn.ts";
+import { duelFoe, enemySideCleared } from "./melee-target.ts";
+import { opposingTeam } from "./opposing-team.ts";
 import type { BotMeleeResult } from "./hunt-melee.ts";
-import type { Fighter } from "./fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
+import type { Participant } from "./participant.ts";
 import type { RandomSource } from "./random-source.ts";
 
 /**
- * One AI-turn scheduler. Hit formulas stay split: bot→human is `resolveBotTurn`,
- * bot→bot is `resolveRosterBotTurn` (`keepFightOnKill: true` there so a bot kill
- * does not emit fight-finished). Either way the bot's action moves the duel clock.
+ * One AI turn in a duel, whoever the foe is: the brain acts, the duel's hit counter and clock
+ * move, and a side that has no one left standing ends the fight.
  */
 export function resolveAiActorTurn(
   input: Readonly<{
@@ -24,63 +24,37 @@ export function resolveAiActorTurn(
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
-    keepFightOnKill: boolean;
-    living: readonly HumanFighter[];
-    winnerTeam: 1 | 2;
     nowMs: number;
   }>,
 ): BotMeleeResult {
-  const otherId = input.duel.otherId(input.bot.fightId);
+  const everyone = [...input.humans, ...input.bots];
+  const foe = duelFoe(input.duel, everyone, input.bot.id);
+  if (!input.bot.alive) throw new Error(`AI actor ${input.bot.id} is dead`);
+  if (!foe.alive) throw new Error(`AI actor ${input.bot.id} has a dead foe`);
   const skipsTurn = input.bot.stunnedTurns > 0;
-  const human = input.humans.find((entry) => entry.heroId === otherId);
-  const enemies: readonly Fighter[] = [
-    ...input.humans.filter(
-      (entry) => entry.team !== input.bot.team && !entry.leftLive && entry.hp > 0,
-    ),
-    ...input.bots.filter((entry) => entry.team !== input.bot.team && entry.hp > 0),
-  ];
-  if (human) {
-    const result = resolveBotTurn(human, input.bot, {
-      rules: input.rules,
-      random: input.random,
-      fightId: input.fightId,
-      keepFightOnKill: input.keepFightOnKill,
-      living: input.living,
-      winnerTeam: input.winnerTeam,
-      nowMs: input.nowMs,
-      enemies,
-    });
-    if (!skipsTurn) input.duel.addHit(input.bot.fightId);
-    if (result.killedPlayer || input.bot.hp < 1) return result;
-    const ticks = botClockTicks(input, human);
-    const fell = human.hp < 1;
-    return {
-      events: [
-        ...result.events,
-        ...ticks,
-        ...(fell && !input.keepFightOnKill
-          ? [{ type: "finished" as const, winnerTeam: input.winnerTeam, fightId: input.fightId }]
-          : []),
-      ],
-      killedPlayer: fell,
-      sideHits: result.sideHits,
-    };
-  }
-  const target = input.bots.find((entry) => entry.fightId === otherId);
-  if (!target) {
-    throw new Error(`Duel opponent ${otherId} is neither a human nor a fight bot`);
-  }
-  const roster = resolveRosterBotTurn(input.bot, target, {
+  const turn = resolveAiTurn(input.bot, foe, {
     rules: input.rules,
     random: input.random,
     nowMs: input.nowMs,
-    enemies,
+    enemies: everyone.filter((entry) => entry.team !== input.bot.team && entry.alive),
   });
-  const events = [...roster.events];
-  if (!skipsTurn) input.duel.addHit(input.bot.fightId);
-  if (input.bot.hp > 0 && target.hp > 0) events.push(...botClockTicks(input, target));
-  if (target.hp > 0) input.duel.setNextActor(target.fightId);
-  return { events, killedPlayer: false, sideHits: roster.sideHits };
+  if (!skipsTurn) input.duel.addHit(input.bot.id);
+  const events = [...turn.events];
+  if (input.bot.alive && foe.alive) {
+    events.push(...botClockTicks(input, foe));
+    input.duel.setNextActor(foe.id);
+  }
+  const lost = [foe, input.bot].find(
+    (entry) => !entry.alive && enemySideCleared(entry.team, everyone),
+  );
+  if (lost) {
+    events.push({ type: "finished", winnerTeam: opposingTeam(lost.team), fightId: input.fightId });
+  }
+  return {
+    events,
+    killedPlayer: foe.fighterKind === "human" && !foe.alive,
+    sideHits: turn.sideHits,
+  };
 }
 
 function botClockTicks(
@@ -92,7 +66,7 @@ function botClockTicks(
     random: RandomSource;
     nowMs: number;
   }>,
-  other: HumanFighter | BotFighter,
+  other: Participant,
 ): readonly BattleEvent[] {
   return advanceDuelClock({
     fighters: [input.bot, other],

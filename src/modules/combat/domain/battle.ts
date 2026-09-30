@@ -262,7 +262,7 @@ export class Battle {
   }
 
   resolveBotMelee(accountId: number, nowMs: number): BotTurnResult {
-    const result = applyBattleBotMelee(this.actionState(), accountId, this.livingHumans(), nowMs);
+    const result = applyBattleBotMelee(this.actionState(), accountId, nowMs);
     if (result.finished) this.finishedValue = true;
     return result;
   }

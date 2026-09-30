@@ -7,7 +7,7 @@ import {
   rollBotSpellDamage,
 } from "./bot-spell-damage.ts";
 import type { HuntBotSpellCard } from "./hunt-bot-spell-book.ts";
-import type { HumanFighter } from "./human-fighter.ts";
+import type { Participant } from "./participant.ts";
 import { spellKind } from "./cast-state.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { magicReact } from "./magic-hit.ts";
@@ -22,10 +22,6 @@ import { pickSpellTargets, spellAoeTargetCount, spellKind1IsAoe } from "./spell-
 export type BotKindActState = Readonly<{
   rules: BattleRules;
   random: RandomSource;
-  fightId: string;
-  keepFightOnKill: boolean;
-  living: readonly HumanFighter[];
-  winnerTeam: 1 | 2;
   nowMs: number;
   /** Every living enemy of the bot, the aimed foe among them: who an AOE spell may reach. */
   enemies: readonly Fighter[];
@@ -43,7 +39,7 @@ const BOT_PRESENTATION: SpellPresentation = {
 
 export function actBotSpellCard(
   actor: BotFighter,
-  target: HumanFighter | BotFighter,
+  target: Participant,
   card: HuntBotSpellCard,
   state: BotKindActState,
 ): BotSpellAct {
@@ -66,7 +62,7 @@ export function actBotSpellCard(
 
 function instantKind1(
   actor: BotFighter,
-  target: HumanFighter | BotFighter,
+  target: Participant,
   card: HuntBotSpellCard,
   state: BotKindActState,
 ): BotSpellAct {
@@ -99,17 +95,13 @@ function instantKind1(
       : [];
   const sideHits = others.map((other) => hitOther(actor, other, card, state));
   const dRage = damage < 1 ? 0 : target.awardIncomingRage(damage);
-  const events: BattleEvent[] = [...ticks, { ...hit, dRage }];
-  if (killed && !state.keepFightOnKill) {
-    events.push({ type: "finished", winnerTeam: state.winnerTeam, fightId: state.fightId });
-  }
-  return { events, sideHits };
+  return { events: [...ticks, { ...hit, dRage }], sideHits };
 }
 
 /** The others an AOE spell reaches besides the aimed foe, picked before anyone is hit. */
 function aoeOthers(
   actor: BotFighter,
-  target: HumanFighter | BotFighter,
+  target: Participant,
   card: HuntBotSpellCard,
   state: BotKindActState,
 ): readonly Fighter[] {

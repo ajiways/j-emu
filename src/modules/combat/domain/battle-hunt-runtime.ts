@@ -39,21 +39,20 @@ export function tickHuntRosterDuels(input: {
       dissolveDuelAt(input.duels, index, [...input.humans, ...input.bots], null);
       continue;
     }
-    events.push(
-      ...resolveAiActorTurn({
-        bot: actor,
-        duel,
-        humans: input.humans,
-        bots: input.bots,
-        rules: input.rules,
-        random: input.random,
-        fightId: input.fightId,
-        keepFightOnKill: true,
-        living: [],
-        winnerTeam: 1,
-        nowMs: input.nowMs,
-      }).events,
-    );
+    const turn = resolveAiActorTurn({
+      bot: actor,
+      duel,
+      humans: input.humans,
+      bots: input.bots,
+      rules: input.rules,
+      random: input.random,
+      fightId: input.fightId,
+      nowMs: input.nowMs,
+    });
+    events.push(...turn.events);
+    if (turn.events.some((event) => event.type === "finished")) {
+      return { events, finished: true };
+    }
     if (!actor.alive || !target.alive) {
       dissolveDuelAt(input.duels, index, [...input.humans, ...input.bots], null);
     }
