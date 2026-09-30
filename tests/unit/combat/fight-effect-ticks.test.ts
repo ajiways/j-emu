@@ -166,7 +166,7 @@ describe("attachSpellTicks period", () => {
       hpPct: null,
       spell: { effects: [{ kind: 4, dmgType: 256, duration: 120 }] },
     };
-    expect(() => attachSpellTicks(carrier, caster, card, 0)).toThrow(
+    expect(() => attachSpellTicks(carrier, caster, { ...card, flags: 0 }, 0, true)).toThrow(
       /447 kind 4\/5 period is required/,
     );
   });

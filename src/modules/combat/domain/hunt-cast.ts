@@ -1,25 +1,37 @@
 import type { BattleEvent } from "./battle-event.ts";
-import type { CombatGloveSpell, CombatSpell } from "./combat-loadout.ts";
+import type { CombatSpell } from "./combat-loadout.ts";
 import { FightCastDenied } from "./fight-cast-denied.ts";
 import { requirePvpForSpell } from "./pvp-only-spell.ts";
 import type { Fighter } from "./fighter.ts";
-import { castGloveStun } from "./glove-stun-cast.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import { pocketHealAmount, spellCharging, spellKind } from "./human-cast-state.ts";
-import { applyPocketKind3, requirePocketOrb } from "./pocket-kind3-cast.ts";
+import { spellKind } from "./human-cast-state.ts";
+import { requirePocketOrb } from "./pocket-kind3-cast.ts";
+import { castSpell, type SpellPresentation } from "./spell-cast.ts";
 import { castChargingBuff } from "./charging-buff-cast.ts";
-import { castTimedSpell, isTimedSpell } from "./timed-spell.ts";
+import { isTimedSpell } from "./timed-spell.ts";
 import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
-import { pocketEffectUse } from "./pocket-effect-use.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { rageBonusPctFromFill } from "./rage-bonus.ts";
-import {
-  chargedSkills,
-  NO_STRIKE_MODS,
-  strikeModsFromSkills,
-  strikeModsOfOverlay,
-} from "./strike-mods.ts";
-import { schoolOverlayFromKind1 } from "./school-overlay.ts";
+import { NO_STRIKE_MODS } from "./strike-mods.ts";
+
+/** Live pocket elixirs: announced by their own `effUse`, always drunk by oneself, no trailing cast. */
+const POCKET_PRESENTATION: SpellPresentation = {
+  healAnimation: "botles_healself_grey",
+  effectAnimation: "",
+  castAnimation: "botles_strenght_grey",
+  announceHeal: true,
+  timedTrailingCast: false,
+  selfOnly: true,
+};
+
+const GLOVE_PRESENTATION: SpellPresentation = {
+  healAnimation: null,
+  effectAnimation: "",
+  castAnimation: "",
+  announceHeal: false,
+  timedTrailingCast: false,
+  selfOnly: false,
+};
 
 export type KeepTurnResult =
   | Readonly<{ kind: "ignored" }>
@@ -40,54 +52,28 @@ export function tryPocketCast(
     throw new FightCastDenied("cooldown", sequence);
   }
   if (spellKind(row.spell, 11)) throw new FightCastDenied("kind11", sequence);
-  const timedSelf = isTimedSpell(row.spell);
-  if (spellKind(row.spell, 3) && !timedSelf) requirePocketOrb(row);
+  if (spellKind(row.spell, 3) && !isTimedSpell(row.spell)) requirePocketOrb(row);
   const consumed = human.casts.consumePocket(itemId, nowMs);
-  if (timedSelf) {
-    return {
-      kind: "resolved",
-      consumePocketItemId: itemId,
-      events: castTimedSpell(
-        human,
-        human,
-        {
-          artikulId: consumed.artifactId,
-          title: consumed.title,
-          picture: consumed.picture,
-          spell: consumed.spell,
-          flags: pocketSpellWireFlags(consumed.spell.flags),
-        },
-        nowMs,
-      ),
-    };
+  const events = castSpell({
+    caster: human,
+    foe: () => {
+      throw new Error("A pocket item is used on oneself and has no foe");
+    },
+    source: {
+      artikulId: consumed.artifactId,
+      title: consumed.title,
+      picture: consumed.picture,
+      spell: consumed.spell,
+      flags: pocketSpellWireFlags(consumed.spell.flags),
+    },
+    nowMs,
+    presentation: POCKET_PRESENTATION,
+    endsTurn: false,
+  });
+  if (events === null) {
+    throw new Error(`Pocket artifact ${consumed.artifactId} has no supported fight effect`);
   }
-  if (spellKind(consumed.spell, 2)) {
-    const healed = human.applyHeal(pocketHealAmount(consumed.spell, human.maxHp));
-    return {
-      kind: "resolved",
-      consumePocketItemId: itemId,
-      events: [
-        pocketEffectUse(consumed, human.heroId, 2),
-        {
-          type: "damage",
-          sourceId: human.heroId,
-          targetId: human.heroId,
-          animation: consumed.spell.animData ?? "botles_healself_grey",
-          hpChange: healed,
-          targetMaxHp: human.maxHp,
-          killed: false,
-        },
-      ],
-    };
-  }
-  if (spellKind(consumed.spell, 3)) {
-    return {
-      kind: "resolved",
-      consumePocketItemId: itemId,
-      events: applyPocketKind3(human, consumed),
-    };
-  }
-  throw new Error(`Pocket artifact ${consumed.artifactId} has no supported fight effect`);
+  return { kind: "resolved", consumePocketItemId: itemId, events };
 }
 
 export function tryRageCast(human: HumanFighter): KeepTurnResult {
@@ -140,67 +126,30 @@ export function tryGloveKeepTurn(
   if (human.casts.cp < glove.cost) {
     return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };
   }
-  if (isTimedSpell(glove.spell)) {
-    if (human.casts.gloveCooldownLeftMs(glove, cast.nowMs) > 0) {
-      throw new FightCastDenied("cooldown", sequence);
-    }
-    const cp = human.casts.spendCombo(glove.cost);
-    human.casts.noteGloveUse(glove, cast.nowMs);
-    return {
-      kind: "resolved",
-      events: [
-        ...castTimedSpell(
-          human,
-          human,
-          {
-            artikulId: glove.artikulId,
-            title: glove.title,
-            picture: glove.picture,
-            spell: glove.spell,
-            flags: "262144",
-          },
-          cast.nowMs,
-        ),
-        { type: "pers-cp", cp },
-      ],
-    };
+  if (human.casts.gloveCooldownLeftMs(glove, cast.nowMs) > 0) {
+    throw new FightCastDenied("cooldown", sequence);
   }
-  if (spellKind(glove.spell, 18)) {
-    return {
-      kind: "resolved",
-      events: castGloveStun(human, glove, cast.foe(), cast.nowMs, sequence),
-    };
-  }
-  const cp = human.casts.spendCombo(glove.cost);
-  const overlay = schoolOverlayFromKind1(glove.spell, human.meleeStrength());
-  const charges = overlay ? overlay.charges : spellCharging(glove.spell) || 1;
-  return {
-    kind: "resolved",
-    events: castChargingBuff(human, {
+  const events = castSpell({
+    caster: human,
+    foe: cast.foe,
+    source: {
       artikulId: glove.artikulId,
       title: glove.title,
-      img: glove.picture,
-      dmgType: overlay ? overlay.dmgType : gloveDmgType(glove),
-      remainTurns: charges,
-      strike: overlay
-        ? strikeModsOfOverlay(overlay)
-        : strikeModsFromSkills(chargedSkills(glove.spell)),
-      ...(glove.spell.groupId !== undefined ? { groupId: glove.spell.groupId } : {}),
-      animation: glove.spell.animData ?? "",
+      picture: glove.picture,
+      spell: glove.spell,
       flags: "262144",
-      castAnimation: glove.spell.animData ?? "",
-      after: [{ type: "pers-cp", cp }],
-    }),
-  };
+    },
+    nowMs: cast.nowMs,
+    presentation: GLOVE_PRESENTATION,
+    endsTurn: false,
+  });
+  if (events === null) throw new Error(`Glove spell ${glove.artikulId} is not a keep-turn spell`);
+  const cp = human.casts.spendCombo(glove.cost);
+  human.casts.noteGloveUse(glove, cast.nowMs);
+  return { kind: "resolved", events: [...events, { type: "pers-cp", cp }] };
 }
 
 export function isEndingGlove(spell: CombatSpell): boolean {
   if (kind1OverlayCharges(spell) > 0) return false;
   return spell.endTurn === true || spellKind(spell, 1);
-}
-
-function gloveDmgType(glove: CombatGloveSpell): number {
-  const dmgType = glove.spell.effects.find((effect) => effect.dmgType !== undefined)?.dmgType;
-  if (dmgType === undefined) throw new Error(`Glove spell ${glove.artikulId} dmgType is required`);
-  return dmgType;
 }

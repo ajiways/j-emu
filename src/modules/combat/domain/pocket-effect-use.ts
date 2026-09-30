@@ -4,7 +4,7 @@ import type { FightEffectSnap } from "./standing-effect.ts";
 import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
 
 export function pocketEffectUse(
-  row: CombatPocketRow,
+  row: Pick<CombatPocketRow, "artifactId" | "title" | "picture" | "spell">,
   persId: number,
   kind: number,
   dmgType?: number,

@@ -5,13 +5,10 @@ import { actBotSpellCard } from "./bot-spell-act.ts";
 import { botSpellEndsTurn } from "./bot-spell-damage.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
-import { rollMeleeOutcome, strikeStatsFromBot } from "./melee-outcome.ts";
-import { rollOverlayExtra } from "./melee-school-overlay.ts";
-import { settleDrain } from "./drain.ts";
-import { rollSwing } from "./swing.ts";
+import { strikeFighter } from "./melee-strike.ts";
+import { strikeStatsFromBot } from "./melee-outcome.ts";
 import { snapshotForBot } from "./combat-snapshot.ts";
 import type { RandomSource } from "./random-source.ts";
-import { resolveHpLoss } from "./resolve-hp-loss.ts";
 
 export function resolveRosterBotTurn(
   actor: BotFighter,
@@ -52,30 +49,16 @@ function meleeHit(
   target: BotFighter,
   input: Readonly<{ rules: BattleRules; random: RandomSource }>,
 ): readonly BattleEvent[] {
-  const swing = rollSwing(actor.effects, actor.meleeStrength(), input.random, input.rules);
-  const outcome = rollMeleeOutcome({
-    baseDamage: swing.baseDamage,
-    attacker: strikeStatsFromBot(actor),
-    defender: strikeStatsFromBot(target),
-    targetHp: target.hp,
-    forceCrit: swing.forceCrit,
-    critChance: swing.critChance,
+  const strike = strikeFighter({
+    attacker: actor,
+    attackerStrength: actor.meleeStrength(),
+    attackerStats: strikeStatsFromBot(actor),
+    target,
+    targetStats: strikeStatsFromBot(target),
     random: input.random,
     rules: input.rules,
   });
-  const { extra, purges: overlayPurges } = rollOverlayExtra(
-    actor.effects,
-    actor.mag,
-    target,
-    outcome.applied < 1 ? target.hp : Math.max(0, target.hp - outcome.applied),
-    input.random,
-    input.rules,
-  );
-  resolveHpLoss(target, outcome.applied);
-  if (extra) resolveHpLoss(target, -extra.hpChange);
-  actor.creditDealtDamage(outcome.applied + (extra ? -extra.hpChange : 0));
-  const killed = target.hp === 0;
-  const drained = settleDrain(actor, outcome.applied + (extra ? -extra.hpChange : 0), swing.drain);
+  const { outcome, extra, drained, killed } = strike;
   return [
     {
       type: "damage",
@@ -90,7 +73,6 @@ function meleeHit(
       ...(extra ? { extraHits: [extra] } : {}),
     },
     ...(drained.hurtEvent ? [drained.hurtEvent] : []),
-    ...swing.purges,
-    ...overlayPurges,
+    ...strike.purges,
   ];
 }

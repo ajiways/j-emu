@@ -1,22 +1,21 @@
 import type { BattleEvent } from "./battle-event.ts";
-import { botSpellEndsTurn } from "./bot-spell-damage.ts";
 import type { Fighter } from "./fighter.ts";
-import type { HuntBotSpellCard } from "./hunt-bot-spell-book.ts";
-import type { BotFighter } from "./bot-fighter.ts";
+import type { TimedSpellSource } from "./timed-spell.ts";
 import { spellSkillValue } from "./magic-hit.ts";
 
 export function attachSpellTicks(
   carrier: Fighter,
-  caster: BotFighter,
-  card: HuntBotSpellCard,
+  caster: Fighter & Readonly<{ strength: number }>,
+  card: TimedSpellSource,
   nowMs: number,
+  endsTurn: boolean,
 ): readonly BattleEvent[] {
   const events: BattleEvent[] = [];
   for (const effect of card.spell.effects) {
     if (effect.kind !== 4 && effect.kind !== 5) continue;
     const snap = carrier.effects.attachTick({
       kind: effect.kind,
-      sourceId: caster.fightId,
+      sourceId: caster.id,
       artikulId: card.artikulId,
       title: card.title,
       img: card.picture,
@@ -25,13 +24,13 @@ export function attachSpellTicks(
       durationSeconds: requireTickField(card.artikulId, "duration", effect.duration),
       periodSeconds: requireTickField(card.artikulId, "period", effect.period),
       nowMs,
-      castEndsTurn: botSpellEndsTurn(card.spell),
+      castEndsTurn: endsTurn,
       ...(effect.amount !== undefined ? { amount: effect.amount } : {}),
       catalogPcStr: spellSkillValue(effect, "pcSTR"),
       catalogStr: spellSkillValue(effect, "STR"),
       casterStrength: caster.strength,
-      casterMagPower: caster.magPower,
-      casterMagResist: caster.magResist,
+      casterMagPower: caster.mag.power,
+      casterMagResist: caster.mag.resist,
     });
     events.push({
       type: "effect-use",
@@ -50,14 +49,14 @@ export function attachSpellTicks(
     });
   }
   if (events.length < 1) {
-    throw new Error(`Bot spell ${card.artikulId} kind 4/5 did not attach`);
+    throw new Error(`Spell ${card.artikulId} kind 4/5 did not attach`);
   }
   return events;
 }
 
 function requireTickField(artikulId: number, field: string, value: number | undefined): number {
   if (value === undefined) {
-    throw new Error(`Bot spell ${artikulId} kind 4/5 ${field} is required`);
+    throw new Error(`Spell ${artikulId} kind 4/5 ${field} is required`);
   }
   return value;
 }

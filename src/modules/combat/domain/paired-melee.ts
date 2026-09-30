@@ -3,10 +3,8 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { settleDrain } from "./drain.ts";
-import { rollSwing } from "./swing.ts";
-import { rollMeleeOutcome, strikeStatsFromHuman } from "./melee-outcome.ts";
-import { rollOverlayExtra } from "./melee-school-overlay.ts";
+import { strikeFighter } from "./melee-strike.ts";
+import { strikeStatsFromHuman } from "./melee-outcome.ts";
 import { enemySideCleared, fightCombatants, targetHp, type MeleeTarget } from "./melee-target.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
@@ -39,57 +37,32 @@ export function tryPairedMelee(
   const turnElapsedMs = attacker.turnElapsedMs(input.nowMs, input.rules.turnTimeoutSeconds);
   attacker.endTurn();
   attacker.noteAction();
-  const swing = rollSwing(attacker.effects, attacker.meleeStrength(), input.random, input.rules);
-  const outcome = rollMeleeOutcome({
-    baseDamage: swing.baseDamage,
-    attacker: strikeStatsFromHuman(attacker),
-    defender: target.strikeStats,
-    targetHp: targetHp(target),
-    forceCrit: swing.forceCrit,
-    critChance: swing.critChance,
+  const victim = target.kind === "human" ? target.human : target.bot;
+  const context = { humans: input.humans, bots: input.bots };
+  requireRosterBot(target, context.bots);
+  const strike = strikeFighter({
+    attacker,
+    attackerStrength: attacker.meleeStrength(),
+    attackerStats: strikeStatsFromHuman(attacker),
+    target: victim,
+    targetStats: target.strikeStats,
     random: input.random,
     rules: input.rules,
   });
   const comboCp = attacker.casts.hits.length > 0 ? attacker.casts.advanceCombo(side) : undefined;
-  const context = { humans: input.humans, bots: input.bots };
-  const hit =
-    outcome.applied < 1
-      ? {
-          killed: false,
-          finished: input.finished,
-          targetId: target.id,
-          targetMaxHp: target.maxHp,
-        }
-      : applyDamageToMeleeTarget(attacker, target, outcome.applied, context);
-  const { extra, purges: overlayPurges } = rollOverlayExtra(
-    attacker.effects,
-    attacker.mag,
-    target,
-    targetHp(target),
-    input.random,
-    input.rules,
-  );
-  let finished = hit.finished;
-  let killed = hit.killed;
-  if (extra) {
-    const extraHit = applyDamageToMeleeTarget(attacker, target, -extra.hpChange, context);
-    finished = extraHit.finished;
-    killed = extraHit.killed || hit.killed;
-  }
-  const drained = settleDrain(
-    attacker,
-    outcome.applied + (extra ? -extra.hpChange : 0),
-    swing.drain,
-  );
+  const { extra, outcome, killed, drained } = strike;
+  const finished =
+    input.finished ||
+    (killed && enemySideCleared(target.team, fightCombatants(context.humans, context.bots)));
   const events: BattleEvent[] = [
     { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },
     {
       type: "damage",
       sourceId: attacker.heroId,
-      targetId: hit.targetId,
+      targetId: target.id,
       animation: `attack_${side}`,
       hpChange: -outcome.applied,
-      targetMaxHp: hit.targetMaxHp,
+      targetMaxHp: target.maxHp,
       killed,
       react: outcome.react,
       ...(comboCp !== undefined ? { comboCp } : {}),
@@ -98,7 +71,7 @@ export function tryPairedMelee(
     },
   ];
   if (drained.hurtEvent) events.push(drained.hurtEvent);
-  events.push(...swing.purges, ...overlayPurges);
+  events.push(...strike.purges);
   if (finished) {
     events.push({ type: "finished", winnerTeam: attacker.team, fightId: input.fightId });
     return { result: { kind: "resolved", events }, finished };
@@ -144,9 +117,7 @@ export function applyDamageToMeleeTarget(
     throw new Error("Melee damage must be a positive integer");
   }
   requireLivingMeleeTarget(target);
-  if (target.kind === "bot" && !context.bots.some((bot) => bot.fightId === target.id)) {
-    throw new Error(`Melee bot ${target.id} is missing from the roster`);
-  }
+  requireRosterBot(target, context.bots);
   const victim = target.kind === "human" ? target.human : target.bot;
   const { killed } = resolveHpLoss(victim, damage, attacker);
   return {
@@ -156,6 +127,12 @@ export function applyDamageToMeleeTarget(
     targetId: target.id,
     targetMaxHp: target.maxHp,
   };
+}
+
+function requireRosterBot(target: MeleeTarget, bots: readonly BotFighter[]): void {
+  if (target.kind === "bot" && !bots.some((bot) => bot.fightId === target.id)) {
+    throw new Error(`Melee bot ${target.id} is missing from the roster`);
+  }
 }
 
 function requireLivingMeleeTarget(target: MeleeTarget): void {

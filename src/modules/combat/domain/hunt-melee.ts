@@ -2,12 +2,9 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { settleDrain } from "./drain.ts";
-import { rollSwing } from "./swing.ts";
-import { rollMeleeOutcome, strikeStatsFromHuman, strikeStatsFromBot } from "./melee-outcome.ts";
-import { rollOverlayExtra } from "./melee-school-overlay.ts";
+import { strikeFighter } from "./melee-strike.ts";
+import { strikeStatsFromHuman, strikeStatsFromBot } from "./melee-outcome.ts";
 import type { RandomSource } from "./random-source.ts";
-import { resolveHpLoss } from "./resolve-hp-loss.ts";
 
 export type BotMeleeResult = Readonly<{
   events: readonly BattleEvent[];
@@ -28,35 +25,18 @@ export function resolveBotMelee(
   if (human.waiting || human.hp === 0) {
     throw new Error("Paired hunter is not a bot melee target");
   }
-  const swing = rollSwing(input.bot.effects, input.bot.meleeStrength(), input.random, input.rules);
-  const outcome = rollMeleeOutcome({
-    baseDamage: swing.baseDamage,
-    attacker: strikeStatsFromBot(input.bot),
-    defender: strikeStatsFromHuman(human),
-    targetHp: human.hp,
-    forceCrit: swing.forceCrit,
-    critChance: swing.critChance,
+  const strike = strikeFighter({
+    attacker: input.bot,
+    attackerStrength: input.bot.meleeStrength(),
+    attackerStats: strikeStatsFromBot(input.bot),
+    target: human,
+    targetStats: strikeStatsFromHuman(human),
     random: input.random,
     rules: input.rules,
   });
-  const killedPlayer = resolveHpLoss(human, outcome.applied).killed;
-  const { extra, purges: overlayPurges } = rollOverlayExtra(
-    input.bot.effects,
-    input.bot.mag,
-    human,
-    human.hp,
-    input.random,
-    input.rules,
-  );
-  let overlayKilled = false;
-  if (extra) {
-    overlayKilled = resolveHpLoss(human, -extra.hpChange).killed;
-  }
-  const totalApplied = outcome.applied + (extra ? -extra.hpChange : 0);
-  input.bot.creditDealtDamage(totalApplied);
-  const dRage = totalApplied < 1 ? 0 : human.casts.awardIncomingRage(totalApplied, human.maxHp);
-  const dead = killedPlayer || overlayKilled;
-  const drained = settleDrain(input.bot, totalApplied, swing.drain);
+  const { outcome, extra, drained, dealt } = strike;
+  const dRage = dealt < 1 ? 0 : human.casts.awardIncomingRage(dealt, human.maxHp);
+  const dead = strike.killed;
   const events: BattleEvent[] = [
     {
       type: "damage",
@@ -72,8 +52,7 @@ export function resolveBotMelee(
       ...(extra ? { extraHits: [extra] } : {}),
     },
     ...(drained.hurtEvent ? [drained.hurtEvent] : []),
-    ...swing.purges,
-    ...overlayPurges,
+    ...strike.purges,
   ];
   if (dead && !input.keepFightOnKill) {
     events.push({ type: "finished", winnerTeam: input.winnerTeam, fightId: input.fightId });
