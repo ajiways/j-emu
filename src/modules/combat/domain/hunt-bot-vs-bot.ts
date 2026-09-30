@@ -7,6 +7,7 @@ import type { BotFighter } from "./bot-fighter.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { rollMeleeOutcome, strikeStatsFromBot } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
+import { settleDrain } from "./drain.ts";
 import { rollSwing } from "./swing.ts";
 import { snapshotForBot } from "./combat-snapshot.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -74,6 +75,7 @@ function meleeHit(
   if (extra) resolveHpLoss(target, -extra.hpChange);
   actor.creditDealtDamage(outcome.applied + (extra ? -extra.hpChange : 0));
   const killed = target.hp === 0;
+  const drained = settleDrain(actor, outcome.applied + (extra ? -extra.hpChange : 0), swing.drain);
   return [
     {
       type: "damage",
@@ -84,8 +86,10 @@ function meleeHit(
       targetMaxHp: target.maxHp,
       killed,
       react: outcome.react,
+      ...(drained.healed > 0 ? { drain: drained.healed, selfReact: drained.selfReact } : {}),
       ...(extra ? { extraHits: [extra] } : {}),
     },
+    ...(drained.hurtEvent ? [drained.hurtEvent] : []),
     ...swing.purges,
     ...overlayPurges,
   ];

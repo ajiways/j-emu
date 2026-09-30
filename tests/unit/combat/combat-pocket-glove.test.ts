@@ -195,7 +195,7 @@ describe("CombatService pocket glove rage", () => {
     expect(ending.some((event) => event.type === "effect-purge")).toBe(false);
   });
 
-  it("fails fast when a charged pocket orb has no pcSTR", async () => {
+  it("accepts a charged orb that carries no pcSTR: CR makes the next swing a crit", async () => {
     const { combat } = createCombatService({});
     await startHuntWithIssuedId(
       combat,
@@ -207,11 +207,11 @@ describe("CombatService pocket glove rage", () => {
               artifactId: 99,
               position: 1,
               count: 1,
-              title: "Малый усиливающий орб",
+              title: "Малый сокрушающий орб",
               picture: "bottles_sila1.png",
               spell: {
                 ...orbSpell,
-                effects: [{ kind: 3, charging: 1, skills: [{ skillId: "STR", value: 10 }] }],
+                effects: [{ kind: 3, charging: 1, skills: [{ skillId: "CR", value: 1 }] }],
               },
             },
           ],
@@ -220,9 +220,9 @@ describe("CombatService pocket glove rage", () => {
     );
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
     await combat.execute(1, { kind: "poll" });
-    await expect(
-      combat.execute(1, { kind: "pocket", itemId: 100_002, sequence: 2 }),
-    ).rejects.toThrow("Pocket artifact 99 kind-3 pcSTR is required");
+    await combat.execute(1, { kind: "pocket", itemId: 100_002, sequence: 2 });
+    const orb = await combat.execute(1, { kind: "poll" });
+    expect(orb.map((event) => event.type)).toEqual(["command-accepted", "effect-use", "buff-cast"]);
   });
 
   it("denies elixir 93 cooldown without poll events", async () => {

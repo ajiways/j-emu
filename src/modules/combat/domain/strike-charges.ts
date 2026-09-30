@@ -1,3 +1,4 @@
+import { addDrain, NO_DRAIN, type Drain } from "./drain.ts";
 import type { SchoolOverlay } from "./school-overlay.ts";
 import type { StandingEffect } from "./standing-effect.ts";
 import type { SpentStrike } from "./strike-mods.ts";
@@ -16,14 +17,16 @@ export function takeStrikeCharges(standing: StandingEffect[]): SpentStrike {
   const pcStrs: number[] = [];
   let strFlat = 0;
   let critChance = 0;
+  let drain: Drain = NO_DRAIN;
   for (const fx of [...standing]) {
     if (!fx.charging || !fx.strike || fx.strike.overlay !== null) continue;
     if (fx.strike.pcStr !== 0) pcStrs.push(fx.strike.pcStr);
     strFlat += fx.strike.strFlat;
     critChance = Math.max(critChance, fx.strike.critChance);
+    drain = addDrain(drain, fx.strike.drain);
     spendCharge(standing, fx, purged);
   }
-  return { pcStrs, strFlat, critChance, purged };
+  return { pcStrs, strFlat, critChance, drain, purged };
 }
 
 /**

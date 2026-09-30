@@ -68,5 +68,7 @@ export function applyStunSpell(
           { ...source, spell: { ...source.spell, effects: timed } },
           nowMs,
         );
+  // ANTI_STUN 100: immune while it stands; the rest of the spell still lands.
+  if (target.effects.standingMax("ANTI_STUN") >= 100) return lingering;
   return [...lingering, applyStun(caster, target, source)];
 }

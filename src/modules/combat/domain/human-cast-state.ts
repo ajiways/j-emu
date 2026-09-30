@@ -165,14 +165,6 @@ export function pocketHealAmount(spell: CombatSpell, maxHp: number): number {
   return Math.floor((maxHp * pct) / 100);
 }
 
-export function spellPcStr(spell: CombatSpell): number {
-  for (const effect of spell.effects) {
-    const skill = effect.skills?.find((entry) => entry.skillId === "pcSTR");
-    if (skill) return skill.value;
-  }
-  return 0;
-}
-
 export function spellCharging(spell: CombatSpell): number {
   for (const effect of spell.effects) {
     const value = effect.charging;

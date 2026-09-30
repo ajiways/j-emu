@@ -2,6 +2,7 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
+import { settleDrain } from "./drain.ts";
 import { rollSwing } from "./swing.ts";
 import { rollMeleeOutcome, strikeStatsFromHuman, strikeStatsFromBot } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
@@ -55,6 +56,7 @@ export function resolveBotMelee(
   input.bot.creditDealtDamage(totalApplied);
   const dRage = totalApplied < 1 ? 0 : human.casts.awardIncomingRage(totalApplied, human.maxHp);
   const dead = killedPlayer || overlayKilled;
+  const drained = settleDrain(input.bot, totalApplied, swing.drain);
   const events: BattleEvent[] = [
     {
       type: "damage",
@@ -66,8 +68,10 @@ export function resolveBotMelee(
       killed: dead,
       react: outcome.react,
       dRage,
+      ...(drained.healed > 0 ? { drain: drained.healed, selfReact: drained.selfReact } : {}),
       ...(extra ? { extraHits: [extra] } : {}),
     },
+    ...(drained.hurtEvent ? [drained.hurtEvent] : []),
     ...swing.purges,
     ...overlayPurges,
   ];

@@ -1,5 +1,6 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
+import { addDrain, type Drain } from "./drain.ts";
 import type { FighterEffects } from "./fighter-effects.ts";
 import { rollMeleeDamage } from "./melee-damage.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -8,6 +9,8 @@ export type Swing = Readonly<{
   baseDamage: number;
   forceCrit: boolean;
   critChance: number;
+  /** What the swing heals and costs the swinger, from charged and timed effects alike. */
+  drain: Drain;
   /** `effPurge` of the charged effects this swing spent the last charge of. */
   purges: readonly BattleEvent[];
 }>;
@@ -23,14 +26,16 @@ export function rollSwing(
   rules: BattleRules,
 ): Swing {
   const spent = effects.takeStrike();
+  const crit = Math.max(spent.critChance, effects.standingMax("CR"));
   let baseDamage = rollMeleeDamage(strength + spent.strFlat, random, rules);
   for (const pcStr of spent.pcStrs) {
     baseDamage = Math.max(1, Math.round(baseDamage * (1 + pcStr / 100)));
   }
   return {
     baseDamage,
-    forceCrit: spent.critChance >= 1,
-    critChance: spent.critChance < 1 ? spent.critChance : 0,
+    forceCrit: crit >= 1,
+    critChance: crit < 1 ? crit : 0,
+    drain: addDrain(spent.drain, effects.standingDrain()),
     purges: spent.purged.map((effectId) => ({ type: "effect-purge" as const, effectId })),
   };
 }

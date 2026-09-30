@@ -23,6 +23,10 @@ export type StrikeStats = Readonly<{
   block: number;
   /** What a physical hit of `raw` becomes under what stands on the fighter (DFR, ADFR, DMG_AMP). */
   takePhysical: (raw: number) => number;
+  /** `DR`: an absolute chance to dodge, used in place of the one the dexterity gives; 0 — none. */
+  dodgeRate: number;
+  /** `BR`: an absolute chance to block, on top of the one the block stat gives. */
+  blockRate: number;
 }>;
 
 export type MeleeOutcome = Readonly<{
@@ -41,6 +45,8 @@ export function strikeStatsFromBot(bot: BotFighter): StrikeStats {
     defense: bot.defense,
     block: bot.block,
     takePhysical: (raw) => bot.effects.takenDamage(raw, PHYSICAL_DMG_TYPE),
+    dodgeRate: bot.effects.standingMax("DR"),
+    blockRate: bot.effects.standingMax("BR"),
   };
 }
 
@@ -48,7 +54,16 @@ export function unpublishedBotStrikeStats(strength: number): StrikeStats {
   if (!Number.isInteger(strength) || strength < 1) {
     throw new Error("Bot strength must be a positive integer");
   }
-  return { strength, rage: 0, dexterity: 0, defense: 0, block: 0, takePhysical: (raw) => raw };
+  return {
+    strength,
+    rage: 0,
+    dexterity: 0,
+    defense: 0,
+    block: 0,
+    takePhysical: (raw) => raw,
+    dodgeRate: 0,
+    blockRate: 0,
+  };
 }
 
 export function strikeStatsFromHuman(
@@ -62,6 +77,8 @@ export function strikeStatsFromHuman(
     defense: human.defense,
     block: human.block,
     takePhysical: (raw) => human.effects.takenDamage(raw, PHYSICAL_DMG_TYPE),
+    dodgeRate: human.effects.standingMax("DR"),
+    blockRate: human.effects.standingMax("BR"),
   };
 }
 
@@ -87,12 +104,14 @@ export function rollMeleeOutcome(
   if (!Number.isInteger(input.targetHp) || input.targetHp < 0) {
     throw new Error("Melee target hp must be a non-negative integer");
   }
-  const dodgeChance = effectiveDodgeChance(
-    input.attacker.defense,
-    input.defender.dexterity,
-    input.rules,
-  );
-  const blockChance = blockChanceFromBlok(input.defender.block, input.rules);
+  const dodgeChance =
+    input.defender.dodgeRate > 0
+      ? Math.min(1, input.defender.dodgeRate)
+      : effectiveDodgeChance(input.attacker.defense, input.defender.dexterity, input.rules);
+  const blockChance =
+    1 -
+    (1 - blockChanceFromBlok(input.defender.block, input.rules)) *
+      (1 - Math.min(1, input.defender.blockRate));
   const defense = rollDefense(dodgeChance, blockChance, input.random);
   if (defense === "dodge") {
     return { applied: 0, raw: 0, react: MELEE_REACT.dodge, blocked: 0 };

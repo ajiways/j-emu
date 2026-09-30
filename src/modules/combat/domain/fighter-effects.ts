@@ -1,6 +1,7 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { takeOverlayCharge, takeStrikeCharges } from "./strike-charges.ts";
 import type { SpentStrike } from "./strike-mods.ts";
+import { addDrain, drainFromSkills, NO_DRAIN, type Drain } from "./drain.ts";
 import { takenDamage } from "./damage-intake.ts";
 import type { StatBase } from "./skill-bake.ts";
 import { timedBuffEffect, type TimedBuffInput } from "./timed-buff.ts";
@@ -57,6 +58,28 @@ export class FighterEffects {
   standingSkill(skillId: string): number {
     let total = 0;
     for (const fx of this.standing) total += fx.skills[skillId] ?? 0;
+    return total;
+  }
+
+  /** The largest value of a rate skill (DR, BR, CR, ANTI_STUN) over the timed effects standing on the fighter. */
+  standingMax(skillId: string): number {
+    let best = 0;
+    for (const fx of this.standing) {
+      if (!fx.charging) best = Math.max(best, fx.skills[skillId] ?? 0);
+    }
+    return best;
+  }
+
+  /** `VAMP` and `ANTIVAMP` of the timed effects standing on the fighter. */
+  standingDrain(): Drain {
+    let total = NO_DRAIN;
+    for (const fx of this.standing) {
+      if (!fx.charging)
+        total = addDrain(
+          total,
+          drainFromSkills((id) => fx.skills[id] ?? 0),
+        );
+    }
     return total;
   }
 

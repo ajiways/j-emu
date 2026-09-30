@@ -1,7 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { CombatPocketRow } from "./combat-loadout.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import { spellCharging, spellPcStr } from "./human-cast-state.ts";
+import { spellCharging } from "./human-cast-state.ts";
 import { castChargingBuff } from "./charging-buff-cast.ts";
 import { chargedSkills, strikeModsFromSkills } from "./strike-mods.ts";
 import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
@@ -9,9 +9,6 @@ import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
 export function requirePocketOrb(row: CombatPocketRow): void {
   if (spellCharging(row.spell) < 1) {
     throw new Error(`Pocket artifact ${row.artifactId} kind-3 charging is required`);
-  }
-  if (spellPcStr(row.spell) < 1) {
-    throw new Error(`Pocket artifact ${row.artifactId} kind-3 pcSTR is required`);
   }
 }
 

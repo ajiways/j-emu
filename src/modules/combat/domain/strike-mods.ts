@@ -1,3 +1,4 @@
+import { drainFromSkills, NO_DRAIN, type Drain } from "./drain.ts";
 import type { CombatSpell } from "./combat-loadout.ts";
 import type { SchoolOverlay } from "./school-overlay.ts";
 import type { SkillValue } from "./skill-bake.ts";
@@ -15,9 +16,17 @@ export type StrikeMods = Readonly<{
   critChance: number;
   /** A school float on the same target (kind-1 charging). */
   overlay: SchoolOverlay | null;
+  /** `VAMP`/`ANTIVAMP` of the charged effect. */
+  drain: Drain;
 }>;
 
-export const NO_STRIKE_MODS: StrikeMods = { pcStr: 0, strFlat: 0, critChance: 0, overlay: null };
+export const NO_STRIKE_MODS: StrikeMods = {
+  pcStr: 0,
+  strFlat: 0,
+  critChance: 0,
+  overlay: null,
+  drain: NO_DRAIN,
+};
 
 /** The skills of the charging kind-3 effects of a spell. */
 export function chargedSkills(spell: CombatSpell): readonly SkillValue[] {
@@ -32,6 +41,7 @@ export function strikeModsFromSkills(skills: readonly SkillValue[]): StrikeMods 
     pcStr: value("pcSTR"),
     strFlat: value("STR"),
     critChance: Math.max(value("CR"), 0),
+    drain: drainFromSkills(value),
   };
 }
 
@@ -46,6 +56,7 @@ export type SpentStrike = Readonly<{
   pcStrs: readonly number[];
   strFlat: number;
   critChance: number;
+  drain: Drain;
   /** Icons of the effects whose last charge this strike was. */
   purged: readonly number[];
 }>;

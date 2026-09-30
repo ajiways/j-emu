@@ -66,6 +66,9 @@ export type BattleEvent =
       dRage?: number;
       dmgType?: number;
       react?: number;
+      /** Hp the striker got back from this hit (`VAMP`), with its `selfReact`. */
+      drain?: number;
+      selfReact?: number;
       extraHits?: readonly ExtraHit[];
     }>
   | Readonly<{ type: "turn-granted"; timeoutSeconds: number }>

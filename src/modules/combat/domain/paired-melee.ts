@@ -3,6 +3,7 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
+import { settleDrain } from "./drain.ts";
 import { rollSwing } from "./swing.ts";
 import { rollMeleeOutcome, strikeStatsFromHuman } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
@@ -75,6 +76,11 @@ export function tryPairedMelee(
     finished = extraHit.finished;
     killed = extraHit.killed || hit.killed;
   }
+  const drained = settleDrain(
+    attacker,
+    outcome.applied + (extra ? -extra.hpChange : 0),
+    swing.drain,
+  );
   const events: BattleEvent[] = [
     { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },
     {
@@ -87,9 +93,11 @@ export function tryPairedMelee(
       killed,
       react: outcome.react,
       ...(comboCp !== undefined ? { comboCp } : {}),
+      ...(drained.healed > 0 ? { drain: drained.healed, selfReact: drained.selfReact } : {}),
       ...(extra ? { extraHits: [extra] } : {}),
     },
   ];
+  if (drained.hurtEvent) events.push(drained.hurtEvent);
   events.push(...swing.purges, ...overlayPurges);
   if (finished) {
     events.push({ type: "finished", winnerTeam: attacker.team, fightId: input.fightId });

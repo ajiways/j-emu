@@ -62,13 +62,13 @@ function hpChangeRow(event: DamageEvent, react: number, heal: boolean): Record<s
     dRage: event.dRage ?? 0,
     deflect: 0,
     dmgType: heal ? 0 : (event.dmgType ?? 1),
-    drain: 0,
+    drain: event.drain ?? 0,
     et: "hpChange",
     hp: event.hpChange,
     maxHp: event.targetMaxHp,
     persId: event.sourceId,
     react,
-    selfReact: 0,
+    selfReact: event.selfReact ?? 0,
     targetId: event.targetId,
   };
 }
