@@ -226,18 +226,13 @@ export class CombatMeleeLoop {
     events: readonly CombatEvent[],
   ): Promise<void> {
     if (this.applyShuffle(battle, accountId)) return;
-    const token = battle.delayTokenFor(accountId);
-    if (!token) return;
+    if (!battle.delayTokenFor(accountId)) return;
     const opponent = battle.pairedOpponent(accountId);
-    if (opponent.kind === "bot") {
-      if (events.some((event) => event.type === "opponent-new")) {
-        this.grantPairedBot(battle, accountId);
-        return;
-      }
-      this.scheduleBotAndGrant(battle, accountId);
+    if (opponent.kind === "bot" && events.some((event) => event.type === "opponent-new")) {
+      this.grantPairedBot(battle, accountId);
       return;
     }
-    if (events.some((event) => event.type === "opponent-new-human")) {
+    if (opponent.kind === "human" && events.some((event) => event.type === "opponent-new-human")) {
       const striker = battle.livingHumans().find((human) => human.accountId === accountId);
       if (!striker) throw new Error("Intervene striker is missing from the battle");
       this.enqueue(opponent.accountId, [
@@ -249,6 +244,18 @@ export class CombatMeleeLoop {
       ]);
       this.wakeAccount(opponent.accountId);
     }
+    this.passTurnToFoe(battle, accountId);
+  }
+
+  /**
+   * The turn goes to whoever stands across from `accountId`: a mob acts after a pause, a player
+   * is granted it. The one place a turn is handed on after an action, a stunned turn or a timeout.
+   */
+  private passTurnToFoe(battle: Battle, accountId: number): void {
+    const token = battle.delayTokenFor(accountId);
+    if (!token) return;
+    const opponent = battle.pairedOpponent(accountId);
+    if (opponent.kind === "bot") return this.scheduleBotAndGrant(battle, accountId);
     this.scheduler.schedule(token, battle.turnGrantDelayMs, () =>
       this.runGrant(battle.id, opponent.accountId),
     );
@@ -306,16 +313,6 @@ export class CombatMeleeLoop {
     this.scheduleBotAndGrant(battle, accountId);
   }
 
-  /** A stunned fighter's turn goes straight to his foe: the bot acts again, or the human foe is granted. */
-  private passStunnedTurn(battle: Battle, accountId: number): void {
-    const token = battle.delayTokenFor(accountId);
-    if (!token) return;
-    const opponent = battle.pairedOpponent(accountId);
-    if (opponent.kind === "bot") return this.scheduleBotAndGrant(battle, accountId);
-    const grant = () => this.runGrant(battle.id, opponent.accountId);
-    this.scheduler.schedule(token, battle.turnGrantDelayMs, grant);
-  }
-
   private runGrant(fightId: string, accountId: number): void {
     const battle = this.battleByFight.get(fightId);
     if (!battle || battle.finished) return;
@@ -323,7 +320,7 @@ export class CombatMeleeLoop {
     const skipped = battle.consumeStunSkip(accountId);
     if (skipped) {
       deliverEffects(battle, accountId, skipped, this.enqueue, this.wakeAccount);
-      return this.passStunnedTurn(battle, accountId);
+      return this.passTurnToFoe(battle, accountId);
     }
     const granted = battle.grantTurn(accountId, this.scheduler.now().getTime());
     if (!granted) return;
@@ -352,21 +349,13 @@ export class CombatMeleeLoop {
       if (this.applyShuffle(battle, accountId)) return;
       const botId = battle.aiFoeIdOf(accountId);
       const token = battle.delayTokenFor(accountId);
-      if (!token) return;
-      if (botId !== null) {
-        await this.aiDriver.run(
-          fightId,
-          botId,
-          token,
-          this.scheduler.now().getTime() + battle.turnGrantDelayMs,
-        );
+      if (botId !== null && token) {
+        // A turn that timed out is answered at once; the player's next one follows a full round.
+        const dueAt = this.scheduler.now().getTime() + battle.turnGrantDelayMs;
+        await this.aiDriver.run(fightId, botId, token, dueAt);
         return;
       }
-      const opponent = battle.pairedOpponent(accountId);
-      if (opponent.kind !== "human") return;
-      this.scheduler.schedule(token, battle.turnGrantDelayMs, () =>
-        this.runGrant(fightId, opponent.accountId),
-      );
+      this.passTurnToFoe(battle, accountId);
     });
   }
 
