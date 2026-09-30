@@ -37,7 +37,7 @@ import type { PlayerMeleeResult } from "./paired-melee.ts";
 import { tryPocketCast, tryRageCast, type KeepTurnResult } from "./hunt-cast.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import { tryHuntAggro, type HuntAggroResult } from "./hunt-aggro.ts";
-import { hasBotDuels, tickBotDuels } from "./battle-bot-duels.ts";
+import { hasBotDuels, pairWaitingSeekers, tickBotDuels } from "./battle-bot-duels.ts";
 import type { RandomSource } from "./random-source.ts";
 import { pairNextHuntWaiter, shuffleHuntAfterHits } from "./battle-pairing.ts";
 import { seedBattleParticipants } from "./battle-seed.ts";
@@ -270,6 +270,10 @@ export class Battle {
 
   hasBotDuels(): boolean {
     return hasBotDuels(this.actionState());
+  }
+
+  pairWaiting(): readonly number[] {
+    return this.finishedValue ? [] : pairWaitingSeekers(this.actionState());
   }
 
   nextEffectDueMs(): number | null {

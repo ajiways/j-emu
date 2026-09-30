@@ -45,6 +45,16 @@ export function pairHuntQueues(
   }
 }
 
+/** Whether a living waiting participant of each team is free to be paired. */
+export function hasPairableSeekers(
+  humans: readonly HumanFighter[],
+  bots: readonly BotFighter[],
+  duels: readonly FightDuel[],
+): boolean {
+  const seekers = huntSeekers(humans, bots, occupiedParticipantIds(duels));
+  return seekers.some((s) => s.team === 1) && seekers.some((s) => s.team === 2);
+}
+
 export function pickHuntPair(
   seekers: readonly HuntSeeker[],
   occupied: ReadonlySet<number>,

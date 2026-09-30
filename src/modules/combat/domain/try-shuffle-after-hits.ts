@@ -13,6 +13,7 @@ export type ShuffleOutcome =
       waiterAuthed: boolean;
       events: readonly BattleEvent[];
     }>
+  | Readonly<{ kind: "ally-handoff"; actorAccountId: number }>
   | Readonly<{
       kind: "cross-swap";
       leftAccountId: number;

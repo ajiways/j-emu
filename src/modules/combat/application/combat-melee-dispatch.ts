@@ -200,6 +200,73 @@ export function shuffleAffectedAccountIds(
   shuffle: Exclude<ShuffleOutcome, { kind: "none" }>,
 ): readonly number[] {
   if (shuffle.kind === "waiter-handoff") return [shuffle.actorAccountId, shuffle.waiterAccountId];
+  if (shuffle.kind === "ally-handoff") return [shuffle.actorAccountId];
   if (shuffle.kind === "reserve-swap") return [shuffle.accountId];
   return [shuffle.leftAccountId, shuffle.rightAccountId];
+}
+
+/** What each side of a finished shuffle is told, and whose turn is granted next. */
+export function deliverShuffle(
+  input: Readonly<{
+    battle: Battle;
+    shuffle: Exclude<ShuffleOutcome, { kind: "none" }>;
+    enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void;
+    wakeAccount: (accountId: number) => void;
+    grantAfterPair: (accountId: number) => void;
+    grantPairedBot: (accountId: number) => void;
+  }>,
+): void {
+  const { shuffle, enqueue, wakeAccount } = input;
+  const tell = (accountId: number, events: readonly CombatEvent[]) => {
+    enqueue(accountId, events);
+    wakeAccount(accountId);
+  };
+  if (shuffle.kind === "waiter-handoff" || shuffle.kind === "ally-handoff") {
+    tell(shuffle.actorAccountId, [{ type: "opponent-wait" }]);
+    if (shuffle.kind === "waiter-handoff" && shuffle.waiterAuthed) {
+      tell(shuffle.waiterAccountId, shuffle.events);
+      input.grantAfterPair(shuffle.waiterAccountId);
+    }
+    return;
+  }
+  if (shuffle.kind === "reserve-swap") {
+    tell(shuffle.accountId, [{ type: "opponent-new", bot: shuffle.bot }]);
+    input.grantPairedBot(shuffle.accountId);
+    return;
+  }
+  tell(shuffle.leftAccountId, [{ type: "opponent-new", bot: shuffle.leftBot }]);
+  tell(shuffle.rightAccountId, [{ type: "opponent-new", bot: shuffle.rightBot }]);
+  input.grantPairedBot(shuffle.leftAccountId);
+  input.grantPairedBot(shuffle.rightAccountId);
+}
+
+/**
+ * Waiting participants the fight clock has paired: a player with a mob foe is told about it and
+ * the first turn is arranged; a player with a player foe goes through the join announcement.
+ */
+export function deliverPairedWaiters(
+  input: Readonly<{
+    battle: Battle;
+    accountIds: readonly number[];
+    enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void;
+    wakeAccount: (accountId: number) => void;
+    grantPairedBot: (accountId: number) => void;
+    notifyJoinedPair: (accountId: number) => void;
+  }>,
+): void {
+  for (const accountId of input.accountIds) {
+    if (input.battle.pairedOpponent(accountId).kind === "human") {
+      input.notifyJoinedPair(accountId);
+      continue;
+    }
+    deliverAggroPairs({
+      battle: input.battle,
+      casterAccountId: accountId,
+      pairedAccountIds: [accountId],
+      roster: null,
+      enqueue: input.enqueue,
+      wakeAccount: input.wakeAccount,
+      grantPairedBot: input.grantPairedBot,
+    });
+  }
 }

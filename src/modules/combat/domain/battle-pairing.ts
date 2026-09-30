@@ -27,6 +27,11 @@ export function livingWaiterOnTeam(
   );
 }
 
+/** A mob of `team` that waits for a foe: an ally who may take over a duel. */
+function livingBotWaiterOnTeam(bots: readonly BotFighter[], team: 1 | 2): BotFighter | undefined {
+  return bots.find((entry) => entry.waiting && botMeleeTarget(entry).alive && entry.team === team);
+}
+
 export function huntHumanOppNew(human: HumanFighter): BattleEvent {
   return {
     type: "opponent-new-human",
@@ -62,7 +67,9 @@ export function shuffleHuntAfterHits(
   const plan = planHuntShuffle({
     humanHits: input.pairing.duel.hitsFor(actor.heroId),
     botHits: input.pairing.duel.hitsFor(foeBot.fightId),
-    hasLivingWaiter: livingWaiterOnTeam(input.pairing.humans, openerTeam) !== undefined,
+    hasLivingWaiter:
+      livingWaiterOnTeam(input.pairing.humans, openerTeam) !== undefined ||
+      livingBotWaiterOnTeam(input.bots, openerTeam) !== undefined,
     hasSwappableOther: swappable !== null,
     hasLivingReserve: peekWaitingEnemy(input.bots, input.enemyTeam) !== null,
     finished: input.finished || foeBot.hp === 0,
@@ -85,7 +92,7 @@ export function shuffleHuntAfterHits(
     return applyReserveSwap(input.pairing, input.bots, input.enemyTeam, input.duels, actor, foeBot);
   }
   const waiter = livingWaiterOnTeam(input.pairing.humans, openerTeam);
-  if (!waiter) throw new Error("Shuffle waiter-handoff requires a living waiter");
+  if (!waiter) return handOffToAllyBot(input, actor, foeBot, openerTeam);
   const actorHp = actor.hp;
   const waiterHp = waiter.hp;
   actor.unpair();
@@ -101,6 +108,27 @@ export function shuffleHuntAfterHits(
     waiterAuthed: waiter.authed,
     events: waiter.authed ? [{ type: "opponent-new", bot: foeBot.snap() }] : [],
   };
+}
+
+/** The duel goes on between the foe and a waiting ally mob; the hero steps out and waits. */
+function handOffToAllyBot(
+  input: Readonly<{ pairing: HuntPairing; bots: readonly BotFighter[] }>,
+  actor: HumanFighter,
+  foeBot: BotFighter,
+  team: 1 | 2,
+): ShuffleOutcome {
+  const ally = livingBotWaiterOnTeam(input.bots, team);
+  if (!ally) throw new Error("Shuffle waiter-handoff requires a living waiter");
+  const hp = [actor.hp, foeBot.hp, ally.hp];
+  actor.unpair();
+  ally.pair();
+  input.pairing.duel.replace(actor.heroId, ally.fightId);
+  input.pairing.duel.resetHits();
+  input.pairing.duel.setNextActor(ally.fightId);
+  if (actor.hp !== hp[0] || foeBot.hp !== hp[1] || ally.hp !== hp[2]) {
+    throw new Error("Shuffle must not change participant HP");
+  }
+  return { kind: "ally-handoff", actorAccountId: actor.accountId };
 }
 
 export function pairNextHuntWaiter(

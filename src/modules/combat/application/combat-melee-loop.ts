@@ -5,6 +5,8 @@ import {
   cancelDuel,
   deliverEffects,
   deliverAggroPairs,
+  deliverShuffle,
+  deliverPairedWaiters,
   deliverGloveSides,
   delayTokensByAccount,
   shuffleAffectedAccountIds,
@@ -54,6 +56,15 @@ export class CombatMeleeLoop {
       enqueue,
       wakeAccount,
       settleFinished,
+      (battle, accountIds) =>
+        deliverPairedWaiters({
+          battle,
+          accountIds,
+          enqueue,
+          wakeAccount,
+          grantPairedBot: (id) => this.grantPairedBot(battle, id),
+          notifyJoinedPair: (id) => this.notifyJoinedPair(battle, id),
+        }),
     );
   }
 
@@ -291,27 +302,15 @@ export class CombatMeleeLoop {
       const token = previousByAccount.get(id);
       if (token) this.scheduler.cancel(token);
     }
-    if (shuffle.kind === "waiter-handoff") {
-      this.enqueue(shuffle.actorAccountId, [{ type: "opponent-wait" }]);
-      this.wakeAccount(shuffle.actorAccountId);
-      if (!shuffle.waiterAuthed) return true;
-      this.enqueue(shuffle.waiterAccountId, shuffle.events);
-      this.wakeAccount(shuffle.waiterAccountId);
-      this.grantAfterPair(battle, shuffle.waiterAccountId);
-      return true;
-    }
-    if (shuffle.kind === "reserve-swap") {
-      this.enqueue(shuffle.accountId, [{ type: "opponent-new", bot: shuffle.bot }]);
-      this.wakeAccount(shuffle.accountId);
-      this.grantPairedBot(battle, shuffle.accountId);
-      return true;
-    }
-    this.enqueue(shuffle.leftAccountId, [{ type: "opponent-new", bot: shuffle.leftBot }]);
-    this.enqueue(shuffle.rightAccountId, [{ type: "opponent-new", bot: shuffle.rightBot }]);
-    this.wakeAccount(shuffle.leftAccountId);
-    this.wakeAccount(shuffle.rightAccountId);
-    this.grantPairedBot(battle, shuffle.leftAccountId);
-    this.grantPairedBot(battle, shuffle.rightAccountId);
+    deliverShuffle({
+      battle,
+      shuffle,
+      enqueue: this.enqueue,
+      wakeAccount: this.wakeAccount,
+      grantAfterPair: (id) => this.grantAfterPair(battle, id),
+      grantPairedBot: (id) => this.grantPairedBot(battle, id),
+    });
+    this.botDuelClock.arm(battle);
     return true;
   }
 

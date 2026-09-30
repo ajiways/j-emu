@@ -19,6 +19,7 @@ export class CombatBotDuelClock {
       events: readonly CombatEvent[],
       strikerAccountId: number | null,
     ) => Promise<void>,
+    private readonly announcePaired: (battle: Battle, accountIds: readonly number[]) => void,
   ) {}
 
   arm(battle: Battle): void {
@@ -31,6 +32,8 @@ export class CombatBotDuelClock {
   private async run(fightId: string): Promise<void> {
     const battle = this.battleByFight.get(fightId);
     if (!battle || battle.finished) return;
+    const paired = battle.pairWaiting();
+    if (paired.length > 0) this.announcePaired(battle, paired);
     const events = battle.tickRosterDuels(this.scheduler.now().getTime());
     const board = battle.boardParticipants();
     const patches = events.flatMap((event) =>
