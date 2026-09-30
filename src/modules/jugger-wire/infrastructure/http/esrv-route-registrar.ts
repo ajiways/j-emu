@@ -28,6 +28,17 @@ export class EsrvRouteRegistrar {
         );
       }
       const frames = await this.dependencies.esrvPoll.assemble(account.id);
+      const fightEnd = frames
+        .filter((frame) => frame.object && typeof frame.object === "object")
+        .map((frame) => ({
+          channel: frame.channel,
+          keys: Object.keys(frame.object as Record<string, unknown>).filter(
+            (key) => key.startsWith("fight|") || key === "common|window",
+          ),
+        }))
+        .filter((entry) => entry.keys.length > 0);
+      if (fightEnd.length > 0)
+        request.log.info({ accountId: account.id, fightEnd }, "esrv_fight_end");
       return reply.type("application/octet-stream").send(encodePlainFrames(frames));
     });
   }

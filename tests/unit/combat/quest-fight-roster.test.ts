@@ -137,6 +137,11 @@ describe("quest fight roster", () => {
       finished = seen.some((event) => event.type === "finished");
     }
     expect(finished).toBe(true);
+    // The fight ended on the clock while he waited dead: his exit comes one reveal delay later.
+    expect(await combat.takeExit(1)).toBeNull();
+    clock.advanceMs(2000);
+    await delay.fireDue(clock.now());
+    expect(await combat.takeExit(1)).toMatchObject({ fightId: start.fightId });
   });
 
   it("fails when a roster bot is missing from catalog", async () => {
