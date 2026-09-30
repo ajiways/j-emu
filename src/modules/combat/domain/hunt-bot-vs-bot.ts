@@ -1,3 +1,4 @@
+import { spendStunTurn } from "./apply-stun.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { actBotSpellCard } from "./bot-spell-act.ts";
@@ -24,8 +25,7 @@ export function resolveRosterBotTurn(
   if (actor.hp === 0) throw new Error("Roster bot actor is dead");
   if (target.hp === 0) throw new Error("Roster bot target is dead");
   if (actor.stunnedTurns > 0) {
-    actor.stunnedTurns -= 1;
-    return [];
+    return spendStunTurn(actor);
   }
   const decision = actor.brain.decide(snapshotForBot(actor, target), input.random);
   if (decision.kind === "melee") return [...meleeHit(actor, target, input)];

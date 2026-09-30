@@ -1,3 +1,4 @@
+import { spendStunTurn } from "./apply-stun.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { actBotSpellCard } from "./bot-spell-act.ts";
 import type { HumanFighter } from "./human-fighter.ts";
@@ -22,8 +23,7 @@ export function resolveBotTurn(
   }>,
 ): BotMeleeResult {
   if (bot.stunnedTurns > 0) {
-    bot.stunnedTurns -= 1;
-    return { events: [], killedPlayer: false };
+    return { events: spendStunTurn(bot), killedPlayer: false };
   }
   const decision = bot.brain.decide(snapshotForBot(bot, human), state.random);
   if (decision.kind === "melee") {

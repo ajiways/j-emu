@@ -21,6 +21,19 @@ export function fanoutRosterEffects(
   }
 }
 
+/** Sends the events to the acting fighter and shows their effect changes to everyone else. */
+export function deliverEffects(
+  battle: Battle,
+  accountId: number,
+  events: readonly CombatEvent[],
+  enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void,
+  wakeAccount: (accountId: number) => void,
+): void {
+  enqueue(accountId, events);
+  fanoutRosterEffects(battle, accountId, events, enqueue, wakeAccount);
+  wakeAccount(accountId);
+}
+
 export function delayTokensByAccount(battle: Battle): ReadonlyMap<number, string> {
   const tokens = new Map<number, string>();
   for (const accountId of battle.accountIds()) {

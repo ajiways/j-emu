@@ -310,7 +310,7 @@ export class Battle {
     return result ? result.timeout : null;
   }
 
-  consumeStunSkip(accountId: number): boolean {
+  consumeStunSkip(accountId: number): readonly BattleEvent[] | null {
     return consumeStunSkip(requireBattleHuman(this.humans, accountId));
   }
 

@@ -1,4 +1,4 @@
-import { stunTurns } from "./stun-turns.ts";
+import { applyStun } from "./apply-stun.ts";
 import { dispelTargetGroups } from "./dispel-target-groups.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import { castChargingBuff } from "./charging-buff-cast.ts";
@@ -47,8 +47,8 @@ export function actBotSpellCard(
     return purged.map((effectId) => ({ type: "effect-purge" as const, effectId }));
   }
   if (spellKind(card.spell, 18)) {
-    target.stunnedTurns += stunTurns(card.spell, card.artikulId);
     return [
+      applyStun(actor, target, card),
       {
         type: "buff-cast",
         animation: card.spell.animData ?? "magic_aoe",

@@ -4,6 +4,7 @@ import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { completeMeleeHunt } from "../support/harness/complete-melee-hunt.ts";
+import { FixedRandom } from "../support/fakes/fixed-random.ts";
 import { SequenceRandom } from "../support/fakes/sequence-random.ts";
 import { bagItemByArtikulId } from "../support/harness/wire-payload.ts";
 
@@ -15,6 +16,7 @@ describe("inventory durability death and repair", () => {
     harness = new ApplicationHarness(undefined, undefined, {
       lootRandom: new SequenceRandom(Array.from({ length: 64 }, () => 0)),
       combatBotStrength: 400,
+      combatRandom: new FixedRandom(),
     });
     application = await harness.start();
   });

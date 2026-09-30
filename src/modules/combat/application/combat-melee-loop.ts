@@ -3,6 +3,7 @@ import type { EndingGloveResult } from "../domain/glove-ending-cast.ts";
 import type { CombatEvent, FightExit } from "../ports/combat-port.ts";
 import {
   cancelDuel,
+  deliverEffects,
   deliverAggroPairs,
   deliverGloveSides,
   delayTokensByAccount,
@@ -338,7 +339,11 @@ export class CombatMeleeLoop {
     const battle = this.battleByFight.get(fightId);
     if (!battle || battle.finished) return;
     if (!battle.accountIds().includes(accountId)) return;
-    if (battle.consumeStunSkip(accountId)) return this.passStunnedTurn(battle, accountId);
+    const skipped = battle.consumeStunSkip(accountId);
+    if (skipped) {
+      deliverEffects(battle, accountId, skipped, this.enqueue, this.wakeAccount);
+      return this.passStunnedTurn(battle, accountId);
+    }
     const granted = battle.grantTurn(accountId, this.scheduler.now().getTime());
     if (!granted) return;
     this.enqueue(accountId, [granted]);
@@ -353,12 +358,9 @@ export class CombatMeleeLoop {
       if (!battle.livingHumans().some((entry) => entry.accountId === accountId)) return;
       const timeout = battle.timeoutTurn(accountId, this.scheduler.now().getTime());
       if (!timeout) return;
-      const events = timeout.events;
-      this.enqueue(accountId, events);
-      fanoutRosterEffects(battle, accountId, events, this.enqueue, this.wakeAccount);
-      this.wakeAccount(accountId);
+      deliverEffects(battle, accountId, timeout.events, this.enqueue, this.wakeAccount);
       if (battle.finished) {
-        await this.settleFinished(battle, events, accountId);
+        await this.settleFinished(battle, timeout.events, accountId);
         return;
       }
       if (timeout.fell) {

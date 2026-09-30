@@ -14,8 +14,9 @@ describe("vitest database configs", () => {
     expect(dbConfig.test?.setupFiles).toEqual([
       "./tests/support/postgres/require-test-database-url.setup.ts",
     ]);
+    expect(e2eConfig.test?.globalSetup).toEqual(["./tests/support/postgres/e2e-global-setup.ts"]);
     expect(e2eConfig.test?.setupFiles).toEqual([
-      "./tests/support/postgres/require-test-database-url.setup.ts",
+      "./tests/support/postgres/e2e-worker-database.setup.ts",
     ]);
   });
 

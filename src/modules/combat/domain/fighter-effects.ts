@@ -1,5 +1,10 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { bakeTimedStatPercents } from "./bake-timed-stat-percents.ts";
+import type {
+  ChargingKind3Input,
+  StunEffectInput,
+  TickEffectInput,
+} from "./fighter-effect-inputs.ts";
 import type { CombatGearSpell } from "./combat-loadout.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
 import {
@@ -64,6 +69,7 @@ type StandingEffect = {
   casterMagPower?: number;
   casterMagResist?: number;
   charging?: boolean;
+  stun?: boolean;
 };
 
 export class FighterEffects {
@@ -125,7 +131,7 @@ export class FighterEffects {
     const purged: number[] = [];
     const keep: StandingEffect[] = [];
     for (const fx of this.standing) {
-      if (fx.periodic || fx.charging) {
+      if (fx.periodic || fx.charging || fx.stun) {
         keep.push(fx);
         continue;
       }
@@ -259,17 +265,7 @@ export class FighterEffects {
     };
   }
 
-  attachChargingKind3(
-    input: Readonly<{
-      sourceId: number;
-      artikulId: number;
-      title: string;
-      img: string;
-      dmgType: number;
-      remainTurns: number;
-      groupId?: number;
-    }>,
-  ): FightEffectSnap {
+  attachChargingKind3(input: ChargingKind3Input): FightEffectSnap {
     requireWireIdentity(input.sourceId, "charging kind-3 source id");
     requireWireIdentity(input.artikulId, "charging kind-3 artikul id");
     if (!input.title) throw new Error("Charging kind-3 title is required");
@@ -300,27 +296,45 @@ export class FighterEffects {
     return snap;
   }
 
-  attachTick(
-    input: Readonly<{
-      kind: 4 | 5;
-      sourceId: number;
-      artikulId: number;
-      title: string;
-      img: string;
-      dmgType: number;
-      groupId?: number;
-      durationSeconds: number;
-      periodSeconds: number;
-      nowMs: number;
-      castEndsTurn: boolean;
-      amount?: number | string;
-      catalogPcStr: number;
-      catalogStr: number;
-      casterStrength: number;
-      casterMagPower: number;
-      casterMagResist: number;
-    }>,
-  ): FightEffectSnap {
+  /** The icon of a stun on its carrier; it stays until the stunned turns are spent. */
+  attachStun(input: StunEffectInput): FightEffectSnap {
+    requireWireIdentity(input.sourceId, "stun source id");
+    requireWireIdentity(input.artikulId, "stun artikul id");
+    if (!input.title) throw new Error("Stun title is required");
+    if (!input.img) throw new Error("Stun img is required");
+    if (!Number.isInteger(input.remainTurns) || input.remainTurns < 1) {
+      throw new Error("Stun remainTurns must be a positive integer");
+    }
+    const id = this.effectIds.take();
+    this.standing.push({
+      id,
+      kind: 18,
+      sourceId: input.sourceId,
+      artikulId: input.artikulId,
+      title: input.title,
+      img: input.img,
+      dmgType: 0,
+      ...(input.groupId !== undefined ? { groupId: input.groupId } : {}),
+      skills: {},
+      remainTurns: input.remainTurns,
+      expiresAtMs: Number.MAX_SAFE_INTEGER,
+      stun: true,
+    });
+    const snap = this.snapshot().find((fx) => fx.id === id);
+    if (!snap) throw new Error(`Stun ${id} did not snapshot`);
+    return snap;
+  }
+
+  /** Removes the stun icons; the ids to `effPurge`. */
+  clearStun(): readonly number[] {
+    const cleared = this.standing.filter((fx) => fx.stun).map((fx) => fx.id);
+    const keep = this.standing.filter((fx) => !fx.stun);
+    this.standing.length = 0;
+    this.standing.push(...keep);
+    return cleared;
+  }
+
+  attachTick(input: TickEffectInput): FightEffectSnap {
     if (!input.title) throw new Error(`Tick effect ${input.artikulId} title is required`);
     if (!input.img) throw new Error(`Tick effect ${input.artikulId} img is required`);
     const id = this.effectIds.take();

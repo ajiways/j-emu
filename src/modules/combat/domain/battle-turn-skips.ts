@@ -1,3 +1,5 @@
+import type { BattleEvent } from "./battle-event.ts";
+import { spendStunTurn } from "./apply-stun.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { requireBattleHuman } from "./battle-lookups.ts";
 import type { HumanFighter } from "./human-fighter.ts";
@@ -31,9 +33,8 @@ export function timeoutBattleTurn(
   return { timeout: { events: [...timeout.events, finished], fell: true }, finished: true };
 }
 
-/** A stunned human loses this turn instead of receiving it. */
-export function consumeStunSkip(human: HumanFighter): boolean {
-  if (human.stunnedTurns < 1 || human.waiting || human.hp === 0) return false;
-  human.stunnedTurns -= 1;
-  return true;
+/** A stunned human loses this turn instead of receiving it; the events purge the stun icon. */
+export function consumeStunSkip(human: HumanFighter): readonly BattleEvent[] | null {
+  if (human.stunnedTurns < 1 || human.waiting || human.hp === 0) return null;
+  return spendStunTurn(human);
 }

@@ -8,6 +8,7 @@ import { fightEventTypes, huntFightIdFrom } from "../support/harness/wire-payloa
 describe("scripted fight scenarios from chat", () => {
   let harness: ApplicationHarness;
   let application: Application;
+  let opened = "";
 
   beforeEach(async () => {
     harness = new ApplicationHarness(undefined, undefined, { combatRandom: new FixedRandom() });
@@ -73,6 +74,7 @@ describe("scripted fight scenarios from chat", () => {
 
   it("stun-by-glove: the glove stun keeps the turn and the bot loses two counters", async () => {
     const client = await startScenario("stun-by-glove");
+    expect(opened).toContain('"cooldown":300');
     let sq = 4;
     // A center strike earns the combo point; the bot answers and the turn comes back.
     await client.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: sq++ });
@@ -81,6 +83,7 @@ describe("scripted fight scenarios from chat", () => {
     await client.fight({ rc: "castSpell", srcType: 3, srcId: 6197, sq: sq++ });
     const stunFrames = fightEventTypes(await client.pollFight());
     expect(stunFrames).toContain("cast");
+    expect(stunFrames).toContain("effUse");
     expect(stunFrames).not.toContain("attackwait");
     // Two strikes in a row: the stunned bot never answers.
     for (let strike = 0; strike < 2; strike += 1) {
@@ -114,7 +117,7 @@ describe("scripted fight scenarios from chat", () => {
       sq: 2,
     });
     await client.fight({ rc: "auth", eid: huntFightIdFrom(sent), sq: 3 });
-    await client.pollFight();
+    opened = JSON.stringify(await client.pollFight());
     return client;
   }
 
