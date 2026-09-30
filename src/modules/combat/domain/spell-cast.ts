@@ -51,6 +51,15 @@ function castsOnSelf(spell: CombatSpell): boolean {
 }
 
 /**
+ * A spell the catalog forbids aiming at the opposing side («Дар неистовства», «Прикрытие») is an
+ * ally spell. Choosing allies is not modelled yet, so it lands on the caster, never on the foe.
+ */
+function aimsOnlyAtAllies(spell: CombatSpell): boolean {
+  const restriction = spell.targetRestr;
+  return restriction?.opp === false && restriction.oppTeam === false;
+}
+
+/**
  * The effects of a spell that are not an instant hit: buffs and debuffs (timed and charged),
  * heals, dispels, stuns, ticking poisons. One path for a player's pocket and glove and a bot's
  * card alike. Returns `null` for a spell whose effect is an instant kind-1 hit — the caller
@@ -72,7 +81,11 @@ export function castSpell(cast: SpellCast): readonly BattleEvent[] | null {
 }
 
 function carrierOf(cast: SpellCast): Fighter {
-  return cast.presentation.selfOnly || castsOnSelf(cast.source.spell) ? cast.caster : cast.foe();
+  return cast.presentation.selfOnly ||
+    castsOnSelf(cast.source.spell) ||
+    aimsOnlyAtAllies(cast.source.spell)
+    ? cast.caster
+    : cast.foe();
 }
 
 function animationOf(cast: SpellCast, fallback: string | null): string {

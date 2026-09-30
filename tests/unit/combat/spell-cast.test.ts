@@ -43,6 +43,20 @@ const CLEANSE: CombatGloveSpell = {
   },
 };
 
+/** «Дар неистовства»: aimed at allies only, so it stands on the caster. */
+const RALLY: CombatGloveSpell = {
+  artikulId: 7002,
+  cost: 1,
+  row: 1,
+  title: "Дар",
+  picture: "p.png",
+  spell: {
+    animData: "magic_baf_electro",
+    targetRestr: { self: false, opp: false, oppTeam: false },
+    effects: [{ kind: 3, duration: 40, skills: [{ skillId: "CRBonus", value: 27 }] }],
+  },
+};
+
 function hero(): HumanFighter {
   const human = new HumanFighter({
     accountId: 1,
@@ -60,7 +74,7 @@ function hero(): HumanFighter {
     startedAtMs: 0,
     loadout: {
       ...EMPTY_COMBAT_LOADOUT,
-      glove: { hits: [2, 2, 2, 2, 2, 2, 2, 2], spells: [CRUSH, CLEANSE] },
+      glove: { hits: [2, 2, 2, 2, 2, 2, 2, 2], spells: [CRUSH, CLEANSE, RALLY] },
     },
     appearance: UNIT_HUNT_APPEARANCE,
     effectIds: new FightEffectIds(),
@@ -134,5 +148,13 @@ describe("a player's glove spell goes through the same cast as a bot's", () => {
     foe.stunnedTurns = 1;
     tryGloveKeepTurn(human, 6197, 1, false, { nowMs: 0, foe: () => foe });
     expect(foe.stunnedTurns).toBe(1);
+  });
+
+  it("puts an ally-only buff on the caster, not on the foe", () => {
+    const human = hero();
+    const foe = bot();
+    tryGloveKeepTurn(human, 7002, 1, false, { nowMs: 0, foe: () => foe });
+    expect(foe.effects.standingSkill("CRBonus")).toBe(0);
+    expect(human.effects.standingSkill("CRBonus")).toBe(27);
   });
 });
