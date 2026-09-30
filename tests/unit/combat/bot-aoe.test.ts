@@ -53,7 +53,7 @@ describe("a bot's AOE spell", () => {
       type: "damage",
       sourceId: 1_000_000,
       targetId: ally?.heroId,
-      animation: "magic_aoe_light",
+      animation: "",
     });
     expect(turn.sideFallout.fallenAccountIds).toEqual([]);
   });

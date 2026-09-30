@@ -11,7 +11,7 @@
     {
       "botArtikulId": 6,
       "hp": 600,
-      "strength": 15,
+      "strength": 20,
       "nothingWeight": 0,
       "spells": [
         {
@@ -28,14 +28,14 @@
   "allies": [
     {
       "botArtikulId": 6,
-      "hp": 100,
+      "hp": 60,
       "strength": 1,
       "nothingWeight": 100,
       "spells": []
     },
     {
       "botArtikulId": 6,
-      "hp": 100,
+      "hp": 60,
       "strength": 1,
       "nothingWeight": 100,
       "spells": []
