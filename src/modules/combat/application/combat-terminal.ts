@@ -1,4 +1,5 @@
 import type { Battle } from "../domain/battle.ts";
+import { fightContinuesWithout } from "../domain/battle-lookups.ts";
 import type { FightLootBlock } from "../domain/fight-loot-block.ts";
 import { FinishedFightConflictError } from "../domain/finished-fight-conflict-error.ts";
 import { buildFightResultInfo, wireFightTypeOf } from "../domain/fight-result-info.ts";
@@ -61,8 +62,7 @@ export class CombatTerminal {
     const battle = this.byAccount.get(accountId);
     if (!battle || battle.finished) return;
     const wasPaired = battle.delayTokenFor(accountId) !== null;
-    const others = battle.livingHumans().filter((human) => human.accountId !== accountId);
-    if (others.length > 0) {
+    if (fightContinuesWithout(battle.boardParticipants().humans, battle.bots, accountId)) {
       if (wasPaired) {
         const token = battle.delayTokenFor(accountId);
         if (token) this.scheduler.cancel(token);

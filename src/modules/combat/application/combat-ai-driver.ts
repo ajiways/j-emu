@@ -116,6 +116,7 @@ export class CombatAiDriver {
         ? [persChangeForHit(board.humans, board.bots, event.sourceId, event.targetId)]
         : [],
     );
+    patches.push(...events.filter((event) => event.type === "pers-change"));
     if (patches.length === 0) return;
     for (const accountId of battle.authedAccountIds()) {
       this.deps.enqueue(accountId, patches);

@@ -48,3 +48,19 @@ export function battlePairedOpponent(
   if (foe.fighterKind === "bot") return { kind: "bot" };
   return { kind: "human", accountId: (foe as HumanFighter).accountId };
 }
+
+/**
+ * Whether the fight can go on after `accountId` leaves: another player is still in it, or someone
+ * of his own team is still standing (an ally mob). Otherwise his leaving ends it.
+ */
+export function fightContinuesWithout(
+  humans: readonly HumanFighter[],
+  bots: readonly BotFighter[],
+  accountId: number,
+): boolean {
+  const leaver = requireBattleHuman(humans, accountId);
+  const others = [...humans, ...bots].filter((entry) => entry.id !== leaver.id);
+  return others.some(
+    (entry) => entry.alive && (entry.fighterKind === "human" || entry.team === leaver.team),
+  );
+}

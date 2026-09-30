@@ -3,6 +3,7 @@ import {
   hasPairableWaiters,
   pairWaitingSeekers,
 } from "../../../src/modules/combat/domain/battle-ai-duels.ts";
+import { fightContinuesWithout } from "../../../src/modules/combat/domain/battle-lookups.ts";
 import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { FixedRandom } from "../../support/fakes/fixed-random.ts";
@@ -113,5 +114,16 @@ describe("a waiting ally mob takes a duel over", () => {
     expect(human.waiting).toBe(false);
     expect(foe.waiting).toBe(false);
     expect(hasPairableWaiters(state)).toBe(false);
+  });
+
+  it("lets a fight go on without a leaver while an ally mob stands, and ends it otherwise", () => {
+    const effectIds = new FightEffectIds();
+    const human = hero(effectIds);
+    const foe = mob(1_000_000, 1, effectIds);
+    const ally = mob(1_000_001, 2, effectIds);
+    expect(fightContinuesWithout([human], [foe], 1)).toBe(false);
+    expect(fightContinuesWithout([human], [foe, ally], 1)).toBe(true);
+    ally.applyDamage(ally.hp);
+    expect(fightContinuesWithout([human], [foe, ally], 1)).toBe(false);
   });
 });
