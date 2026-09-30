@@ -92,14 +92,18 @@ export class CombatAiDriver {
       deps.enqueue(foe, withActorPersChange(battle, result.events));
       fanoutHit(battle, foe, result.events, deps.enqueue, deps.wakeAccount);
       deps.wakeAccount(foe);
-    } else {
-      this.showHitPoints(battle, result.events);
     }
     if (battle.finished) {
+      if (foe === null) this.showHitPoints(battle, result.events, []);
       await deps.settleFinished(battle, result.events, foe);
       return;
     }
     await deps.settleFallout(battle, result.sideFallout);
+    if (foe === null) {
+      // Players a hit reached already got it with their own delivery, the blow before the bar.
+      const reached = result.sideFallout.deliveries.map((delivery) => delivery.accountId);
+      this.showHitPoints(battle, result.events, reached);
+    }
     if (foe !== null) {
       if (result.killedPlayer) await deps.handOff(battle, foe);
       else if (!deps.applyShuffle(battle, foe))
@@ -109,7 +113,11 @@ export class CombatAiDriver {
   }
 
   /** Players who watch a duel of mobs see the fresh hit points, not the strikes. */
-  private showHitPoints(battle: Battle, events: readonly CombatEvent[]): void {
+  private showHitPoints(
+    battle: Battle,
+    events: readonly CombatEvent[],
+    except: readonly number[],
+  ): void {
     const board = battle.boardParticipants();
     const patches = events.flatMap((event) =>
       event.type === "damage"
@@ -119,6 +127,7 @@ export class CombatAiDriver {
     patches.push(...events.filter((event) => event.type === "pers-change"));
     if (patches.length === 0) return;
     for (const accountId of battle.authedAccountIds()) {
+      if (except.includes(accountId)) continue;
       this.deps.enqueue(accountId, patches);
       this.deps.wakeAccount(accountId);
     }
