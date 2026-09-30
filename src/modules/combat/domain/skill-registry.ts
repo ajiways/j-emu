@@ -4,7 +4,8 @@
  * loads a spell that carries it, and the spell works without that part.
  */
 type SkillSupport = "supported" | "deferred";
-type SkillEvidence = "live" | "spell-text" | "old-server" | "name" | "unknown";
+/** `owner` — confirmed by the project owner from game knowledge; `spell-text` — the spell description. */
+type SkillEvidence = "live" | "owner" | "spell-text" | "old-server" | "name" | "unknown";
 
 type SkillEntry = Readonly<{
   meaning: string;
@@ -23,46 +24,64 @@ const skill = (
 ): SkillEntry => ({ meaning, buff, payload, evidence });
 
 export const SKILL_REGISTRY: Readonly<Record<string, SkillEntry>> = {
-  STR: skill("strength, flat", "live", "supported", "supported"),
-  pcSTR: skill("strength, percent", "live", "supported", "supported"),
-  DEX: skill("dexterity, flat (baked at cast, live 182: 19+23% -> 32)", "live"),
-  pcDEX: skill("dexterity, percent (sent as multiplier 1.23)", "live"),
-  DEF: skill("defense, flat", "name"),
-  pcDEF: skill("defense, percent", "name"),
-  RAG: skill("rage stat (crit rating), flat", "name"),
-  pcRAG: skill("rage stat, percent (old server: 183 87 -> +43)", "old-server"),
-  BLOK: skill("block, flat", "name"),
-  HPMAX: skill("max hp, flat (live 169: 35% of 111 -> +39, max 150)", "live"),
-  pcHPMAX: skill("max hp, percent (sent as multiplier 1.35)", "live"),
-  MPMAX: skill("max mana, flat", "name"),
-  VIT: skill("vitality", "unknown"),
-  pcVIT: skill("vitality, percent", "unknown"),
-  LUCK: skill("luck", "unknown"),
-  CR: skill("crit chance: 1 forces a crit, below 1 an absolute chance", "old-server"),
-  pcCR: skill("crit chance, percent", "name"),
-  CRBonus: skill("crit damage bonus, flat", "name"),
-  pcCRBonus: skill("crit damage bonus, percent", "name"),
-  BR: skill("unknown defensive rating", "unknown"),
-  pcBR: skill("BR, percent", "unknown"),
-  DFR: skill("damage taken factor: 0.4 means 60% taken (spell text of 6197)", "spell-text"),
-  MAG_DFR: skill("magic damage taken factor, like DFR", "name"),
-  ADFR: skill("unknown damage reduction variant", "unknown"),
-  DR: skill("unknown damage resistance", "unknown"),
-  DMG_AMP: skill("outgoing damage amplification", "name"),
-  pcDMG_AMP: skill("outgoing damage amplification, percent", "name"),
-  VAMP: skill("share of a hit healed to the attacker", "old-server"),
-  pcVAMP: skill("VAMP, percent", "name"),
-  ANTIVAMP: skill("share of a hit taken from the attacker", "old-server"),
-  ANTI_STUN: skill("stun resistance", "name"),
-  RAGE_MOD: skill("rage gain modifier", "name"),
-  pcRAGE_MOD: skill("rage gain modifier, percent", "name"),
-  MAGSTR_ACD: skill("acid school power", "name"),
-  MAGSTR_DRK: skill("dark school power", "name"),
-  MAGSTR_FR: skill("fire school power", "name"),
-  MAGSTR_ICE: skill("ice school power", "name"),
-  MAGSTR_LGH: skill("lightning school power", "name"),
-  MAGSTR_LTN: skill("light school power", "name"),
-  pcPET_STR: skill("pet strength, percent (pets are not modelled)", "name"),
+  STR: skill("Сила, плоская", "live", "supported", "supported"),
+  pcSTR: skill("Сила, процент", "live", "supported", "supported"),
+  DEX: skill("Ловкость, плоская; запекается при касте (live 182: 19 и 23% -> 32)", "live"),
+  pcDEX: skill("Ловкость, процент; на wire множителем 1.23", "live"),
+  DEF: skill("Стойкость (защита), плоская", "spell-text"),
+  pcDEF: skill("Стойкость, процент", "spell-text"),
+  RAG: skill("Неистовство (шанс крита), плоское", "spell-text"),
+  pcRAG: skill("Неистовство, процент (старый сервер: 183 87 -> +43)", "old-server"),
+  BLOK: skill("Блок, плоский показатель", "spell-text"),
+  HPMAX: skill(
+    "максимум и ТЕКУЩЕЕ HP растут на одну величину (лечит и поднимает максимум)",
+    "owner",
+  ),
+  pcHPMAX: skill("то же в процентах от максимума; на wire множителем 1.35", "owner"),
+  MPMAX: skill("максимум маны, плоский", "name"),
+  VIT: skill("неизвестно, описаний нет", "unknown"),
+  pcVIT: skill("неизвестно, описаний нет", "unknown"),
+  LUCK: skill("инициатива: кто бьёт первым (у мобов в бестиарии называется так же)", "owner"),
+  CR: skill("шанс крита ближайшего удара: 1 = всегда, меньше 1 = абсолютный шанс", "spell-text"),
+  pcCR: skill(
+    "шанс крита, процентное изменение (минусы: «не соберётся с силами для мощного удара»)",
+    "spell-text",
+  ),
+  CRBonus: skill("прибавка к шансу крита в процентных пунктах (27 = 27%)", "spell-text"),
+  pcCRBonus: skill("прибавка к криту, процентное изменение", "spell-text"),
+  BR: skill("шанс заблокировать физический удар, доля (0.05 = 5%)", "spell-text"),
+  pcBR: skill("шанс блока у умений «Прикрытие», доля", "spell-text"),
+  DFR: skill(
+    "доля физического урона, которую цель не получает (0.32 -> 68%, 1 -> неуязвим); по dmgMask",
+    "spell-text",
+  ),
+  MAG_DFR: skill("то же для магического урона", "spell-text"),
+  ADFR: skill(
+    "после всех расчётов итоговый входящий урон снижается на долю (1 = полностью)",
+    "owner",
+  ),
+  DR: skill("абсолютный шанс уклонения, вместо стандартного, от ловкости", "owner"),
+  DMG_AMP: skill("носитель получает больше урона на долю (0.23 = +23%)", "spell-text"),
+  pcDMG_AMP: skill("то же в процентах", "spell-text"),
+  VAMP: skill("лечение носителя на долю ИТОГОВОГО урона его удара; минус = самоурон", "owner"),
+  pcVAMP: skill("неизвестно (единичный спелл «Поцелуй бездны»)", "unknown"),
+  ANTIVAMP: skill(
+    "самоурон носителя на долю итогового урона его удара, ОТДЕЛЬНЫМ пакетом",
+    "owner",
+  ),
+  ANTI_STUN: skill("иммунитет к стану на срок эффекта (100 = 100%)", "spell-text"),
+  RAGE_MOD: skill(
+    "прибавка к накоплению ярости, процент; действует на следующее получение урона",
+    "owner",
+  ),
+  pcRAGE_MOD: skill("то же, процентное изменение", "owner"),
+  MAGSTR_ACD: skill("сила магии кислоты, плоская прибавка", "owner"),
+  MAGSTR_DRK: skill("сила магии тьмы, плоская прибавка", "owner"),
+  MAGSTR_FR: skill("сила магии огня, плоская прибавка (2000 в данных = «+25» в тексте)", "owner"),
+  MAGSTR_ICE: skill("сила магии льда, плоская прибавка", "owner"),
+  MAGSTR_LGH: skill("сила магии молнии, плоская прибавка", "owner"),
+  MAGSTR_LTN: skill("сила магии света, плоская прибавка", "owner"),
+  pcPET_STR: skill("сила питомца, процент (питомцы не моделируются)", "name"),
 };
 
 const BUFF_KIND = 3;
