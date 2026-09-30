@@ -1,0 +1,36 @@
+{
+  "description": "Проверка диспела бота на игроке. Ударьте по центру (получите очко комбо), скастуйте «Покров Тьмы I» (баф на вас, группа 852, иконка появится), больше не бейте и ждите ~20 секунд до конца хода: бот кастует диспел 2496, и иконка бафа должна исчезнуть (effPurge), а до этого он бьёт как обычно.",
+  "purpose": "hunt",
+  "hero": {
+    "hp": 10,
+    "glove": {
+      "hits": [2, 2, 2, 2, 2, 2, 2, 2],
+      "spells": [
+        {
+          "artikulId": 182,
+          "cost": 1,
+          "row": 1
+        }
+      ]
+    }
+  },
+  "enemies": [
+    {
+      "botArtikulId": 4,
+      "hp": 500,
+      "strength": 1,
+      "nothingWeight": 100,
+      "spells": [
+        {
+          "artikulId": 2496,
+          "slot": "prefer",
+          "weight": 0,
+          "maxCasts": null,
+          "gate": "foe_has_dispel_groups",
+          "hpPct": null
+        }
+      ]
+    }
+  ],
+  "allies": []
+}

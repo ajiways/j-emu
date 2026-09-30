@@ -96,6 +96,23 @@ describe("scripted fight scenarios from chat", () => {
     expect((await untilAttackNow(client)).filter((type) => type === "cast").length).toBe(2);
   });
 
+  it("dispel-on-hero: the bot dispels the buff the hero put on himself", async () => {
+    const client = await startScenario("dispel-on-hero");
+    let sq = 4;
+    await client.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: sq++ });
+    await untilAttackNow(client);
+    await client.fight({ rc: "castSpell", srcType: 3, srcId: 182, sq: sq++ });
+    const buffed = fightEventTypes(await client.pollFight());
+    expect(buffed).toContain("effUse");
+    // No strike: the turn runs out, the bot answers and dispels the buff.
+    const seen: string[] = [];
+    for (let second = 0; second < 30 && !seen.includes("effPurge"); second += 1) {
+      await harness.elapseCombat(1000);
+      seen.push(...fightEventTypes(await client.pollFight()));
+    }
+    expect(seen).toContain("effPurge");
+  });
+
   it("answers an unknown scenario with a system line and starts no fight", async () => {
     const client = await AuthenticatedClient.login(application);
     const sent = await client.objectAction({
