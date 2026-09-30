@@ -84,7 +84,7 @@ export class CombatTerminal {
       if (!waiter.authed) return;
       this.enqueue(waiter.accountId, waiter.events);
       this.wakeAccount(waiter.accountId);
-      this.melee.grantAfterPair(battle, waiter.accountId);
+      this.melee.giveTurn(battle, battle.heroIdFor(waiter.accountId));
       return;
     }
     const winnerTeam = battle.finishLeave();

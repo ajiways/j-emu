@@ -152,12 +152,15 @@ export class Battle {
     return fightDelayTokens(this.id, this.duels);
   }
 
-  nextActorAccountId(accountId: number): number {
+  /** The participant whose turn is next in the duel `accountId` stands in. */
+  nextActorIdOf(accountId: number): number {
     const human = requireBattleHuman(this.humans, accountId);
-    const actorId = requireDuelContaining(this.duels, human.heroId).nextActorId;
-    const actor = this.humans.find((entry) => entry.heroId === actorId);
-    if (!actor) throw new Error("Duel next actor is not a human in this battle");
-    return actor.accountId;
+    return requireDuelContaining(this.duels, human.heroId).nextActorId;
+  }
+
+  /** The account controlling participant `id`; `null` for an AI participant. */
+  accountOfParticipant(id: number): number | null {
+    return this.humans.find((human) => human.heroId === id)?.accountId ?? null;
   }
 
   pairedOpponent(
@@ -172,11 +175,6 @@ export class Battle {
       this.bots,
       requireDuelContaining(this.duels, human.heroId).otherId(human.heroId),
     ).snap();
-  }
-
-  humanOpensDuel(accountId: number): boolean {
-    const human = requireBattleHuman(this.humans, accountId);
-    return requireDuelContaining(this.duels, human.heroId).nextActorId === human.heroId;
   }
 
   addHuman(join: FightSetupJoin): BattleEvent {
@@ -277,10 +275,10 @@ export class Battle {
     return duel ? fightDuelDelayToken(this.id, duel) : null;
   }
 
-  aiFoeIdOf(accountId: number): number | null {
+  /** Whoever stands across from player `accountId`; `null` while he waits. */
+  foeIdOf(accountId: number): number | null {
     const heroId = requireBattleHuman(this.humans, accountId).heroId;
-    const foeId = this.duels.find((entry) => entry.has(heroId))?.otherId(heroId);
-    return this.bots.some((bot) => bot.fightId === foeId) ? (foeId ?? null) : null;
+    return this.duels.find((entry) => entry.has(heroId))?.otherId(heroId) ?? null;
   }
 
   nextEffectDueMs(): number | null {

@@ -105,8 +105,8 @@ describe("Battle 3↔3 shuffle", () => {
     expect(battle.foeBotSnap(1).id).toBe(rightBot);
     expect(battle.foeBotSnap(2).id).toBe(leftBot);
     expect(battle.foeBotSnap(1).id).not.toBe(battle.foeBotSnap(2).id);
-    expect(battle.humanOpensDuel(1)).toBe(true);
-    expect(battle.humanOpensDuel(2)).toBe(true);
+    expect(battle.nextActorIdOf(1)).toBe(battle.heroIdFor(1));
+    expect(battle.nextActorIdOf(2)).toBe(battle.heroIdFor(2));
     const after = battle.outcome("win", 1);
     expect(after.humans.find((human) => human.accountId === 1)?.hp).toBe(leftHp);
     expect(after.humans.find((human) => human.accountId === 2)?.hp).toBe(rightHp);
