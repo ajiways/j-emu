@@ -203,6 +203,7 @@ CRUD repository без конкурентного/транзакционного
 npm run test:unit
 npm run test:integration
 npm run test:e2e
+npm run test:e2e:combat
 npm run test:all
 npm run build
 npm run lint
@@ -212,9 +213,21 @@ npm run lint
 `npm run test:all`; он падает без безопасного `TEST_DATABASE_URL`, а не пропускает
 DB suite.
 
+`test:e2e` идёт параллельно на нескольких воркерах (`vitest.e2e.config.ts`, до 6):
+`globalSetup` (`e2e-global-setup.ts`) один раз пересоздаёт `TEST_DATABASE_URL`
+как шаблон (миграции + публикация контента) и клонирует из него по БД на
+воркер (`jemu_w<N>_test`, `CREATE DATABASE ... TEMPLATE`); `setupFiles`
+(`e2e-worker-database.setup.ts`) направляет `TEST_DATABASE_URL` файла на БД его
+воркера, а harness берёт из воркера и порт fight proxy (`harness.fightProxyPort`,
+33120 + номер воркера). Полный прогон ≈ 2 минуты вместо ≈ 6,5. Файл или
+подмножество: `npm run test:e2e -- tests/e2e/fight-join.test.ts` (setup всё равно
+пересоздаёт БД); бой целиком (`fight`, `fproxy`, `hunt`, `combat`, `dungeon`,
+`arena`) — `npm run test:e2e:combat`. Тест не должен ждать конкретный порт или
+id из общей БД.
+
 `test:integration` и `test:e2e` требуют `TEST_DATABASE_URL` на отдельную БД с
-суффиксом `_test`. Скрипты сначала вызывают `reset-test-database.ts`, который
-падает без URL. Сами suite падают через Vitest `setupFiles`
+суффиксом `_test`. `test:integration` сначала вызывает `reset-test-database.ts`, который
+падает без URL; для `test:e2e` то же делает `globalSetup`. Сами suite падают через Vitest `setupFiles`
 (`require-test-database-url.setup.ts`) до первого теста, если URL отсутствует,
 имя без `_test` или совпадает с `DATABASE_URL`. Конфиги `vitest.db.config.ts` и
 `vitest.e2e.config.ts` при импорте БД не требуют: `npm run dead-code` / Knip

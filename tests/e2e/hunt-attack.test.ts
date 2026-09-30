@@ -35,7 +35,7 @@ describe("hunt attack", () => {
       status: 100,
       conf: {
         bg: "2_1",
-        port: 33120,
+        port: harness.fightProxyPort,
         instance_id: "0",
         proxy: "https://s1.jugger.ru/fproxy//;",
         persSelf_sk: 1,

@@ -7,6 +7,7 @@ import type { AppConfig } from "../../../src/app/config.ts";
 import type { Clock } from "../../../src/shared/kernel/clock.ts";
 import { publishDevelopmentContent } from "../../../src/infrastructure/postgres/publish-development-content.ts";
 import { migrateDatabase } from "../../../src/infrastructure/postgres/migration-runner.ts";
+import { currentWorkerId } from "../postgres/worker-database.ts";
 import { writeClientStaticStubs } from "./client-static-stubs.ts";
 import { requireTestDatabaseUrl } from "../postgres/test-database-url.ts";
 import { FakeClock } from "../fake-clock.ts";
@@ -55,6 +56,11 @@ export class ApplicationHarness {
     this.clock = clock ?? new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     this.delay = delay;
     this.extras = { playerAttackPolicy: new AllowPlayerAttackPolicy(), ...extras };
+  }
+
+  /** Fight proxy port of this worker, so parallel e2e workers do not collide. */
+  get fightProxyPort(): number {
+    return 33120 + currentWorkerId();
   }
 
   async start(): Promise<Application> {
@@ -107,7 +113,7 @@ export class ApplicationHarness {
   private config(): AppConfig {
     return {
       host: "127.0.0.1",
-      port: 18080,
+      port: 18080 + currentWorkerId(),
       httpOnly: true,
       databaseUrl: testDatabaseUrl,
       pub1Dir: this.staticDirectory,
@@ -118,7 +124,7 @@ export class ApplicationHarness {
       gamePolicyFile: path.resolve(process.cwd(), "config/development.json"),
       fightProxyHost: "s1.jugger.ru",
       fightProxyPath: "https://s1.jugger.ru/fproxy//;",
-      fightProxyPort: 33120,
+      fightProxyPort: this.fightProxyPort,
       contentOperatorToken: "test-operator-token",
       fightScenariosDir: path.resolve("config/fight-scenarios"),
     };
