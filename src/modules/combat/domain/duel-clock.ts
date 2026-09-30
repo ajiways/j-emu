@@ -29,13 +29,14 @@ export function advanceDuelClock(
     jumpSeconds: number;
     random: RandomSource;
     rules: BattleRules;
+    sources: readonly Fighter[];
   }>,
 ): readonly BattleEvent[] {
   const events: BattleEvent[] = [];
   for (const fighter of input.fighters) {
     if (fighter.hp < 1) continue;
     const items = fighter.effects.advanceOnAction(input.nowMs, input.jumpSeconds);
-    events.push(...applyPeriodicItems(fighter, items, input.random, input.rules));
+    events.push(...applyPeriodicItems(fighter, items, input.random, input.rules, input.sources));
   }
   return events;
 }
@@ -50,6 +51,7 @@ export function advanceFightTimer(
     nowMs: number;
     random: RandomSource;
     rules: BattleRules;
+    sources: readonly Fighter[];
   }>,
 ): readonly FighterTimerTicks[] {
   const ticked: FighterTimerTicks[] = [];
@@ -59,7 +61,7 @@ export function advanceFightTimer(
     if (items.length === 0) continue;
     ticked.push({
       fighter,
-      events: applyPeriodicItems(fighter, items, input.random, input.rules),
+      events: applyPeriodicItems(fighter, items, input.random, input.rules, input.sources),
     });
   }
   return ticked;
@@ -96,6 +98,7 @@ export function advanceActionClock(
       jumpSeconds: slotJumpSeconds(input.rules, input.turnElapsedMs),
       random: input.random,
       rules: input.rules,
+      sources: [...input.humans, ...input.bots],
     }),
   ];
   const combatants = fightCombatants(input.humans, input.bots);

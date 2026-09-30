@@ -16,7 +16,7 @@
   },
   "enemies": [
     {
-      "botArtikulId": 4,
+      "botArtikulId": 6,
       "hp": 500,
       "strength": 1,
       "nothingWeight": 100,

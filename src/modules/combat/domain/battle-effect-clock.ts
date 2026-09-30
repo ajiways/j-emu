@@ -57,6 +57,7 @@ export function tickFightEffects(
     nowMs: input.nowMs,
     random: input.random,
     rules: input.rules,
+    sources: [...input.humans, ...input.bots],
   });
   const deliveries = ticked.flatMap((entry) => deliver(entry, input));
   const fallen = ticked.map((entry) => entry.fighter).filter((fighter) => fighter.hp < 1);
@@ -113,7 +114,10 @@ function deliver(
   const patch = persChangeForParticipants(
     input.humans,
     input.bots.map((bot) => bot.snap()),
-    [entry.fighter.id],
+    [
+      entry.fighter.id,
+      ...entry.events.flatMap((event) => (event.type === "damage" ? [event.sourceId] : [])),
+    ],
   );
   const involved = new Set<number>([entry.fighter.id]);
   const duel = input.duels.find((candidate) => candidate.has(entry.fighter.id));

@@ -16,6 +16,7 @@ export function applyPeriodicItems(
   items: readonly PeriodicItem[],
   random: RandomSource,
   rules: BattleRules,
+  sources: readonly Fighter[],
 ): readonly BattleEvent[] {
   const events: BattleEvent[] = [];
   for (const item of items) {
@@ -55,6 +56,7 @@ export function applyPeriodicItems(
         random,
         rules,
       }),
+      requireTickSource(sources, pulse.sourceId),
     );
     if (applied < 1) continue;
     events.push({
@@ -75,4 +77,11 @@ export function applyPeriodicItems(
 function healTick(amount: number | string, maxHp: number): number {
   if (typeof amount === "number") return amount;
   return pocketHealAmount({ effects: [{ kind: 2, amount }] }, maxHp);
+}
+
+/** The caster of a tick is credited with its damage; a caster missing from the roster is a bug. */
+function requireTickSource(sources: readonly Fighter[], sourceId: number): Fighter {
+  const source = sources.find((fighter) => fighter.id === sourceId);
+  if (!source) throw new Error(`Tick source ${sourceId} is not in the fight roster`);
+  return source;
 }

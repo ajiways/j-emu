@@ -77,6 +77,8 @@ export function resolveAiActorTurn(
 function botClockTicks(
   input: Readonly<{
     bot: BotFighter;
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
     rules: BattleRules;
     random: RandomSource;
     nowMs: number;
@@ -89,5 +91,6 @@ function botClockTicks(
     jumpSeconds: botActionJumpSeconds(input.rules),
     random: input.random,
     rules: input.rules,
+    sources: [...input.humans, ...input.bots],
   });
 }
