@@ -59,8 +59,8 @@ export function enqueuePlayerMelee(
     throw new Error("Player melee must emit turn-wait then damage");
   }
   enqueue(accountId, [
-    ...actorPersChange(battle, events),
     ...events.filter((event) => event.type !== "finished"),
+    ...actorPersChange(battle, events),
     { type: "command-accepted", sequence },
     ...events.filter((event) => event.type === "finished"),
   ]);
@@ -90,7 +90,8 @@ export function fanoutPersChange(
 
 /**
  * The acting client also needs the fresh hp and dealt-damage totals after a hit (the live server
- * sends them to everyone, actor included); the hit's own events do not carry them.
+ * sends them to everyone, actor included); the hit's own events do not carry them. They go after
+ * the swing: ahead of it the client would take the hp off before the blow lands.
  */
 function actorPersChange(battle: Battle, events: readonly CombatEvent[]): readonly CombatEvent[] {
   if (events.some((event) => event.type === "pers-change")) return [];
@@ -103,7 +104,11 @@ export function withActorPersChange(
   battle: Battle,
   events: readonly CombatEvent[],
 ): readonly CombatEvent[] {
-  return [...actorPersChange(battle, events), ...events];
+  return [
+    ...events.filter((event) => event.type !== "finished"),
+    ...actorPersChange(battle, events),
+    ...events.filter((event) => event.type === "finished"),
+  ];
 }
 
 function persChangeFromDamage(

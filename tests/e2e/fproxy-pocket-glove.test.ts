@@ -98,13 +98,7 @@ describe("fproxy pocket glove rage", () => {
     const melee = await client.pollFight();
     const meleeFrame = melee[0];
     if (meleeFrame === undefined) throw new Error("Melee poll did not return a frame");
-    expect(fightEventTypes([meleeFrame])).toEqual([
-      "attackwait",
-      "persChangeInfo",
-      "persChangeInfo",
-      "cast",
-      "effPurge",
-    ]);
+    expect(fightEventTypes([meleeFrame])).toEqual(["attackwait", "cast", "effPurge"]);
   });
 
   it("casts rage and aggro as rs then FX", async () => {
@@ -137,13 +131,7 @@ describe("fproxy pocket glove rage", () => {
     const first = await client.pollFight();
     const meleeFrame = first[0];
     if (meleeFrame === undefined) throw new Error("Melee poll did not return a frame");
-    expect(fightEventTypes([meleeFrame])).toEqual([
-      "attackwait",
-      "persChangeInfo",
-      "persChangeInfo",
-      "cast",
-      "persCP",
-    ]);
+    expect(fightEventTypes([meleeFrame])).toEqual(["attackwait", "cast", "persCP"]);
     expect(first.some((frame) => frame && typeof frame === "object" && "rs" in frame)).toBe(true);
     expect(await client.fight({ rc: "castSpell", srcType: 3, srcId: 9098, sq: 7 })).toHaveLength(0);
     const offTurn = await client.pollFight();

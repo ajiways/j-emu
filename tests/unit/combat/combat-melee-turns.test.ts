@@ -25,9 +25,9 @@ describe("CombatService melee turns", () => {
     await combat.execute(1, { kind: "strike", side: "left", sequence: 2 });
     const melee = await combat.execute(1, { kind: "poll" });
     expect(melee.map((event) => event.type)).toEqual([
-      "pers-change",
       "turn-wait",
       "damage",
+      "pers-change",
       "command-accepted",
     ]);
     expect(melee.some((event) => event.type === "turn-granted")).toBe(false);
@@ -36,8 +36,8 @@ describe("CombatService melee turns", () => {
     await delay.fireDue(clock.now());
     const bot = await combat.execute(1, { kind: "poll" });
     expect(bot).toHaveLength(2);
-    expect(bot[0]).toMatchObject({ type: "pers-change" });
-    expect(bot[1]).toMatchObject({
+    expect(bot[1]).toMatchObject({ type: "pers-change" });
+    expect(bot[0]).toMatchObject({
       type: "damage",
       animation: "attack_center",
       sourceId: 1_000_000,
@@ -103,13 +103,13 @@ describe("CombatService melee turns", () => {
     await combat.execute(1, { kind: "strike", side: "center", sequence: 3 });
     const melee = await combat.execute(1, { kind: "poll" });
     expect(melee.map((event) => event.type)).toEqual([
-      "pers-change",
       "turn-wait",
       "damage",
       "damage",
+      "pers-change",
       "command-accepted",
     ]);
-    expect(melee[3]).toMatchObject({
+    expect(melee[2]).toMatchObject({
       type: "damage",
       animation: "",
       sourceId: 1_000_000,
@@ -155,9 +155,9 @@ describe("CombatService melee turns", () => {
     await combat.execute(1, { kind: "strike", side: "right", sequence: 2 });
     const melee = await combat.execute(1, { kind: "poll" });
     expect(melee.map((event) => event.type)).toEqual([
-      "pers-change",
       "turn-wait",
       "damage",
+      "pers-change",
       "command-accepted",
       "finished",
     ]);
@@ -242,8 +242,8 @@ describe("CombatService melee turns", () => {
     await delay.fireDue(clock.now());
     const bot = await combat.execute(2, { kind: "poll" });
     expect(bot).toEqual([
-      expect.objectContaining({ type: "pers-change" }),
       expect.objectContaining({ type: "damage", sourceId: 1_000_001, animation: "attack_center" }),
+      expect.objectContaining({ type: "pers-change" }),
     ]);
 
     clock.advanceMs(1100);
@@ -362,9 +362,9 @@ describe("CombatService melee turns", () => {
     await combat.execute(1, { kind: "strike", side: "center", sequence: 2 });
     const melee = await combat.execute(1, { kind: "poll" });
     expect(melee.map((event) => event.type)).toEqual([
-      "pers-change",
       "turn-wait",
       "damage",
+      "pers-change",
       "command-accepted",
     ]);
     expect(melee.some((event) => event.type === "damage" && event.targetId === 2)).toBe(true);

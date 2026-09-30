@@ -163,10 +163,10 @@ describe("CombatService pocket glove rage", () => {
     await combat.execute(1, { kind: "strike", side: "center", sequence: 3 });
     const melee = await combat.execute(1, { kind: "poll" });
     expect(melee.map((event) => event.type)).toEqual([
-      "pers-change",
       "turn-wait",
       "damage",
       "effect-purge",
+      "pers-change",
       "command-accepted",
     ]);
     expect(melee.find((event) => event.type === "effect-purge")).toEqual({

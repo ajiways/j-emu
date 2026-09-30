@@ -57,13 +57,11 @@ describe("fproxy", () => {
       const melee = await client.pollFight();
       const meleeFrame = melee[0];
       if (meleeFrame === undefined) throw new Error("Melee poll did not return a frame");
-      expect(fightEventTypes([meleeFrame])).toEqual([
-        "attackwait",
-        "persChangeInfo",
-        "persChangeInfo",
-        "cast",
-      ]);
+      expect(fightEventTypes([meleeFrame])).toEqual(["attackwait", "cast"]);
       expect(castAnimation(meleeFrame)).toBe(side.animation);
+      // Fresh hp and dealt damage land after the swing, never ahead of it (the bar would drop early).
+      const order = fightEventTypes(melee);
+      expect(order.indexOf("persChangeInfo")).toBeGreaterThan(order.indexOf("cast"));
       expect(melee.some((frame) => frame && typeof frame === "object" && "rs" in frame)).toBe(true);
       expect(fightEventTypes(melee)).not.toContain("attacknow");
       if (framesIncludeFightFinish(melee)) {
