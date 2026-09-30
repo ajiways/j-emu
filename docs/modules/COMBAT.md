@@ -212,7 +212,9 @@ Kind 11 HTTP
 бот 2: `baseExp` 15, money 0.2–0.44, `lootNothingWeight` 3000,
 entries overlay 27 штук (включая **77 / 93 / 99**). `leaveFight` HTTP
 `{rs:true}`; last human — flee `type:2` без лута; союзник жив — только
-flee-exit, бой продолжается. Loss: HP 0, loot-блок с нулями, ghost/injury через character `noteDefeat`.
+flee-exit, бой продолжается. Погибший игрок при живой команде остаётся в бою: клиент получает
+`opponent-wait` (кнопки «выйти» / «остаться»; выйти можно только если `canLeave`), итог и
+loot приходят ему вместе со всеми, когда бой закончится (старый сервер, `flee`). Loss: HP 0, loot-блок с нулями, ghost/injury через character `noteDefeat`.
 CEF 2026-09-17: экран результата hunt открывается; CEF 2026-09-29: EXP и деньги
 обновляют HUD вместе с `fight|exit` (persist — одна UoW на RAM finish; wire — § Wire).
 

@@ -195,7 +195,8 @@ describe("CombatService melee turns", () => {
     clock.advanceMs(1400);
     await delay.fireDue(clock.now());
     const dead = await combat.execute(1, { kind: "poll" });
-    expect(dead.some((event) => event.type === "finished")).toBe(true);
+    expect(dead.some((event) => event.type === "opponent-wait")).toBe(true);
+    expect(dead.some((event) => event.type === "finished")).toBe(false);
     const waiter = await combat.execute(2, { kind: "poll" });
     expect(waiter.some((event) => event.type === "opponent-new")).toBe(true);
     expect(waiter.some((event) => event.type === "turn-granted")).toBe(false);

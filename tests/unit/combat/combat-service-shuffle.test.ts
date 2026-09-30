@@ -65,7 +65,8 @@ describe("CombatService 3↔3 shuffle", () => {
       const skipped = await combat.execute(1, { kind: "poll" });
       expect(skipped.some((event) => event.type === "turn-timeout")).toBe(true);
       if (round === 2) {
-        expect(skipped.some((event) => event.type === "finished")).toBe(true);
+        expect(skipped.some((event) => event.type === "opponent-wait")).toBe(true);
+        expect(skipped.some((event) => event.type === "finished")).toBe(false);
         break;
       }
       clock.advanceMs(2500);

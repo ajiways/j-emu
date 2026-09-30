@@ -87,8 +87,6 @@ export class CombatService implements CombatPort {
       (accountId) => this.wakeAccount(accountId),
       (battle, events, strikerAccountId) =>
         this.finish.settleFinished(battle, events, strikerAccountId),
-      (battle, accountId) => this.finish.departHuman(battle, accountId),
-      (accountId, fightId, exit) => this.finish.queueExit(accountId, fightId, exit),
     );
     this.finish = new CombatTerminal(
       this.byAccount,

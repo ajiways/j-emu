@@ -77,10 +77,10 @@ describe("CombatService lethal DoT tick on the striker", () => {
       "damage",
       "pers-change",
       "command-accepted",
-      "finished",
+      "opponent-wait",
     ]);
     expect(melee[2]).toMatchObject({ animation: "", targetId: 1, killed: true });
-    expect(melee[5]).toMatchObject({ type: "finished", winnerTeam: 2 });
+    expect(melee[5]).toMatchObject({ type: "opponent-wait" });
     const waiter = await combat.execute(2, { kind: "poll" });
     expect(waiter.some((event) => event.type === "opponent-new")).toBe(true);
     expect(await combat.hasFight(start.fightId)).toBe(true);

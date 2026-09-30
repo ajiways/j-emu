@@ -1,6 +1,6 @@
 import type { Battle } from "../domain/battle.ts";
 import type { EndingGloveResult } from "../domain/glove-ending-cast.ts";
-import type { CombatEvent, FightExit } from "../ports/combat-port.ts";
+import type { CombatEvent } from "../ports/combat-port.ts";
 import {
   cancelDuel,
   deliverEffects,
@@ -34,8 +34,6 @@ export class CombatMeleeLoop {
       events: readonly CombatEvent[],
       strikerAccountId: number | null,
     ) => Promise<void>,
-    private readonly departHuman: (battle: Battle, accountId: number) => Promise<void>,
-    private readonly queueExit: (accountId: number, fightId: string, exit: FightExit) => void,
   ) {
     this.effectClock = new CombatEffectClock(
       battleByFight,
@@ -268,11 +266,9 @@ export class CombatMeleeLoop {
 
   private async handOffToWaiter(battle: Battle, deadAccountId: number): Promise<void> {
     cancelDuel(this.scheduler, battle, deadAccountId);
-    const winnerTeam = battle.opposingTeamOf(deadAccountId);
-    this.enqueue(deadAccountId, [{ type: "finished", winnerTeam, fightId: battle.id }]);
-    await this.departHuman(battle, deadAccountId);
-    this.queueExit(deadAccountId, battle.id, { fightId: battle.id, winnerTeam });
-    this.byAccount.delete(deadAccountId);
+    // The fight goes on without him: he waits (and may leave where the fight allows it, old
+    // server `flee`) and gets the result with everyone else when it ends.
+    this.enqueue(deadAccountId, [{ type: "opponent-wait" }]);
     this.wakeAccount(deadAccountId);
     const waiter = battle.pairNextWaiter(deadAccountId);
     if (!waiter) {
