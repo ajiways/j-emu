@@ -3,7 +3,7 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { strikeFighter } from "./melee-strike.ts";
+import { strikeEvents, strikeFighter } from "./melee-strike.ts";
 import { enemySideCleared } from "./melee-target.ts";
 import type { Participant } from "./participant.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -49,27 +49,18 @@ export function tryPairedMelee(
     rules: input.rules,
   });
   const comboCp = attacker.casts.hits.length > 0 ? attacker.casts.advanceCombo(side) : undefined;
-  const { extra, outcome, killed, drained, dRage } = strike;
+  const { killed } = strike;
   const finished = input.finished || (killed && enemySideCleared(target.team, everyone));
   const events: BattleEvent[] = [
     { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },
-    {
-      type: "damage",
-      sourceId: attacker.heroId,
-      targetId: target.id,
+    ...strikeEvents({
+      attacker,
+      target,
+      strike,
       animation: `attack_${side}`,
-      hpChange: -outcome.applied,
-      targetMaxHp: target.maxHp,
-      killed,
-      react: outcome.react,
-      dRage,
       ...(comboCp !== undefined ? { comboCp } : {}),
-      ...(drained.healed > 0 ? { drain: drained.healed, selfReact: drained.selfReact } : {}),
-      ...(extra ? { extraHits: [extra] } : {}),
-    },
+    }),
   ];
-  if (drained.hurtEvent) events.push(drained.hurtEvent);
-  events.push(...strike.purges);
   if (finished) {
     events.push({ type: "finished", winnerTeam: attacker.team, fightId: input.fightId });
     return { result: { kind: "resolved", events }, finished };
