@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Application } from "../../src/app/application.ts";
 import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
+import { FixedRandom } from "../support/fakes/fixed-random.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { FakeClock } from "../support/fake-clock.ts";
 import { ManualCombatDelay } from "../support/fakes/manual-combat-delay.ts";
@@ -29,6 +30,7 @@ describe("dungeon clear bar coins and personal loot", () => {
     harness = new ApplicationHarness(clock, new ManualCombatDelay(), {
       combatBotStrength: 1,
       combatRules: { strPerDamagePoint: 1 },
+      combatRandom: new FixedRandom(0.5),
     });
     application = await harness.start();
   });

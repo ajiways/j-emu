@@ -41,12 +41,8 @@ export function actBotSpellCard(
     return [];
   }
   if (spellKind(card.spell, 8)) {
-    if (isHuman(target)) {
-      const groups = target.effects.standingGroups();
-      const purged = target.effects.dispelGroups(groups);
-      return purged.map((effectId) => ({ type: "effect-purge" as const, effectId }));
-    }
-    return [];
+    const purged = target.effects.dispelGroups(target.effects.standingGroups());
+    return purged.map((effectId) => ({ type: "effect-purge" as const, effectId }));
   }
   if (spellKind(card.spell, 18)) {
     const stun = card.spell.effects.find((effect) => effect.kind === 18);

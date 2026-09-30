@@ -1,3 +1,5 @@
+import type { BotBrain } from "./bot-brain.ts";
+import { SpellBookBotBrain } from "./spell-book-bot-brain.ts";
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { BotSnap } from "./battle-event.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
@@ -33,6 +35,7 @@ export class BotFighter implements Fighter {
   schoolOverlay: SchoolOverlay | null = null;
   stunnedTurns = 0;
   readonly effects: FighterEffects;
+  readonly brain: BotBrain;
 
   constructor(
     readonly fightId: number,
@@ -78,6 +81,7 @@ export class BotFighter implements Fighter {
     }
     requireHuntBotSpellBook(spellBook);
     this.hpValue = hp;
+    this.brain = new SpellBookBotBrain(spellBook);
     this.effects = new FighterEffects({
       heroId: fightId,
       strength,

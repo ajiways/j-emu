@@ -8,7 +8,7 @@ import { rollMeleeDamage } from "./melee-damage.ts";
 import { rollMeleeOutcome, unpublishedBotStrikeStats } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import { consumeOverlayCharge } from "./consume-overlay-charge.ts";
-import { noteCast, pickBotSpell } from "./pick-bot-spell.ts";
+import { snapshotForBot } from "./combat-snapshot.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
 
@@ -27,13 +27,9 @@ export function resolveRosterBotTurn(
     actor.stunnedTurns -= 1;
     return [];
   }
-  const card = pickBotSpell(
-    actor.spellBook,
-    { botHp: actor.hp, botMaxHp: actor.maxHp, casts: actor.casts },
-    input.random,
-  );
-  if (!card) return [...meleeHit(actor, target, input)];
-  noteCast(actor.casts, card.artikulId);
+  const decision = actor.brain.decide(snapshotForBot(actor, target), input.random);
+  if (decision.kind === "melee") return [...meleeHit(actor, target, input)];
+  const card = decision.card;
   const events = [
     ...actBotSpellCard(actor, target, card, {
       rules: input.rules,

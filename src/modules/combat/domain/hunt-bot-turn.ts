@@ -3,7 +3,7 @@ import { actBotSpellCard } from "./bot-spell-act.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { resolveBotMelee, type BotMeleeResult } from "./hunt-melee.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { noteCast, pickBotSpell } from "./pick-bot-spell.ts";
+import { snapshotForBot } from "./combat-snapshot.ts";
 import type { RandomSource } from "./random-source.ts";
 import { botSpellEndsTurn } from "./bot-spell-damage.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
@@ -25,20 +25,11 @@ export function resolveBotTurn(
     bot.stunnedTurns -= 1;
     return { events: [], killedPlayer: false };
   }
-  const card = pickBotSpell(
-    bot.spellBook,
-    {
-      botHp: bot.hp,
-      botMaxHp: bot.maxHp,
-      casts: bot.casts,
-      foeGroups: human.effects.standingGroups(),
-    },
-    state.random,
-  );
-  if (!card) {
+  const decision = bot.brain.decide(snapshotForBot(bot, human), state.random);
+  if (decision.kind === "melee") {
     return resolveBotMelee(human, { ...state, bot });
   }
-  noteCast(bot.casts, card.artikulId);
+  const card = decision.card;
   const events = [...actBotSpellCard(bot, human, card, { ...state, winnerTeam: state.winnerTeam })];
   const killedPlayer = events.some((event) => event.type === "damage" && event.killed);
   if (!killedPlayer && (kind1OverlayCharges(card.spell) > 0 || !botSpellEndsTurn(card.spell))) {
