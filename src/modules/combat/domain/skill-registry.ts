@@ -37,7 +37,10 @@ export const SKILL_REGISTRY: Readonly<Record<string, SkillEntry>> = {
     "максимум и ТЕКУЩЕЕ HP растут на одну величину (лечит и поднимает максимум)",
     "owner",
   ),
-  pcHPMAX: skill("то же в процентах от максимума; на wire множителем 1.35", "owner"),
+  pcHPMAX: skill(
+    "то же в процентах от базового максимума, запекается с округлением; на wire множителем 1.35",
+    "live",
+  ),
   MPMAX: skill("максимум маны, плоский", "name"),
   VIT: skill("неизвестно, описаний нет", "unknown"),
   pcVIT: skill("неизвестно, описаний нет", "unknown"),
