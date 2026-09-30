@@ -5,7 +5,7 @@ import type { CombatSpell } from "./combat-loadout.ts";
 import { dispelTargetGroups } from "./dispel-target-groups.ts";
 import type { Fighter } from "./fighter.ts";
 import { attachSpellTicks } from "./fight-effect-ticks.ts";
-import { pocketHealAmount, spellCharging, spellKind } from "./human-cast-state.ts";
+import { pocketHealAmount, spellCharging, spellKind } from "./cast-state.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
 import { schoolOverlayFromKind1 } from "./school-overlay.ts";

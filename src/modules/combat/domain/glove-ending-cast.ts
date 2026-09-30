@@ -15,7 +15,7 @@ import {
 import { advanceActionClock } from "./duel-clock.ts";
 import { isEndingGlove, type KeepTurnResult } from "./hunt-cast.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import { spellKind } from "./human-cast-state.ts";
+import { spellKind } from "./cast-state.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { magicReact } from "./magic-hit.ts";
 import {

@@ -10,7 +10,6 @@ function snapshot(overrides: Partial<CombatSnapshot> = {}): CombatSnapshot {
     selfMaxHp: 20,
     foeStandingGroups: [],
     foeStunned: false,
-    casts: new Map(),
     ...overrides,
   };
 }
@@ -21,13 +20,11 @@ describe("SpellBookBotBrain", () => {
     expect(brain.decide(snapshot(), new SequenceRandom([0.5]))).toEqual({ kind: "melee" });
   });
 
-  it("decides a cast and counts it in the actor's ledger", () => {
-    const card = { ...unitHuntSpellCard(), slot: "prefer" as const, weight: 0 };
+  it("decides a cast and counts it in its own ledger", () => {
+    const card = { ...unitHuntSpellCard(), slot: "prefer" as const, weight: 0, maxCasts: 1 };
     const brain = new SpellBookBotBrain({ nothingWeight: 100, spells: [card] });
-    const casts = new Map<number, number>();
-    const decision = brain.decide(snapshot({ casts }), new SequenceRandom([0.99]));
-    expect(decision).toEqual({ kind: "cast", card });
-    expect(casts.get(card.artikulId)).toBe(1);
+    expect(brain.decide(snapshot(), new SequenceRandom([0.99]))).toEqual({ kind: "cast", card });
+    expect(brain.decide(snapshot(), new SequenceRandom([0.99]))).toEqual({ kind: "melee" });
   });
 
   it("does not stun a foe that is already stunned", () => {

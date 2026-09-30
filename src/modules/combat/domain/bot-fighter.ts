@@ -5,9 +5,9 @@ import type { BotSnap } from "./battle-event.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
 import type { HuntBotSpellBook } from "./hunt-bot-spell-book.ts";
 import { requireHuntBotSpellBook } from "./hunt-bot-spell-book.ts";
-import { FighterEffects } from "./fighter-effects.ts";
-import type { Fighter, FighterKind } from "./fighter.ts";
-import type { MagStats } from "./mag-stats.ts";
+import { EMPTY_COMBAT_LOADOUT } from "./combat-loadout.ts";
+import type { FighterKind } from "./fighter.ts";
+import { Participant, type ParticipantInit } from "./participant.ts";
 
 export type BotFighterSeed = Readonly<{
   fightId: number;
@@ -25,70 +25,46 @@ export type BotFighterSeed = Readonly<{
   spellBook: HuntBotSpellBook;
 }>;
 
-export class BotFighter implements Fighter {
-  private hpValue: number;
-  private dealtDamageValue = 0;
-  private lastOpponentIdValue: number | null = null;
-  private waitingValue = false;
-  readonly casts = new Map<number, number>();
-  stunnedTurns = 0;
-  readonly effects: FighterEffects;
+export class BotFighter extends Participant {
   readonly brain: BotBrain;
 
   constructor(
     readonly fightId: number,
     readonly artikulId: number,
-    readonly nick: string,
-    readonly level: number,
+    nick: string,
+    level: number,
     readonly avatar: string,
     readonly sk: string,
     readonly body: string,
-    readonly team: 1 | 2,
-    readonly strength: number,
-    readonly initiative: number,
-    readonly magPower: number,
-    readonly magResist: number,
+    team: 1 | 2,
+    strength: number,
+    initiative: number,
+    magPower: number,
+    magResist: number,
     private readonly baseMaxHp: number,
     readonly spellBook: HuntBotSpellBook,
     hp: number,
     effectIds: FightEffectIds,
   ) {
-    requireWireIdentity(fightId, "roster bot fight id");
-    requireWireIdentity(artikulId, "roster bot artikul id");
-    if (fightId < 1_000_000) throw new Error("Fight bot id is below the ephemeral floor");
-    if (!nick) throw new Error("Roster bot nick is required");
-    if (!Number.isInteger(level) || level < 1) throw new Error("Roster bot level must be positive");
-    if (!avatar) throw new Error("Roster bot avatar is required");
-    if (!sk) throw new Error("Roster bot sk is required");
-    if (typeof body !== "string") throw new Error("Roster bot body is required");
-    if (!Number.isInteger(strength) || strength < 1) {
-      throw new Error("Roster bot strength must be positive");
-    }
-    if (!Number.isInteger(initiative) || initiative < 0) {
-      throw new Error("Roster bot initiative must be a non-negative integer");
-    }
-    if (!Number.isInteger(magPower) || magPower < 0) {
-      throw new Error("Roster bot mag power must be a non-negative integer");
-    }
-    if (!Number.isInteger(magResist) || magResist < 0) {
-      throw new Error("Roster bot mag resist must be a non-negative integer");
-    }
-    if (!Number.isInteger(baseMaxHp) || baseMaxHp < 1) {
-      throw new Error("Roster bot maxHp is invalid");
-    }
-    if (!Number.isInteger(hp) || hp < 0 || hp > baseMaxHp) {
-      throw new Error("Roster bot hp is invalid");
-    }
-    requireHuntBotSpellBook(spellBook);
-    this.hpValue = hp;
+    super(
+      botParticipantInit(fightId, artikulId, {
+        nick,
+        level,
+        avatar,
+        sk,
+        body,
+        team,
+        strength,
+        initiative,
+        magPower,
+        magResist,
+        baseMaxHp,
+        spellBook,
+        hp,
+        effectIds,
+      }),
+    );
     this.brain = new SpellBookBotBrain(spellBook);
-    this.effects = new FighterEffects({
-      heroId: fightId,
-      base: { STR: strength, DEX: 0, DEF: 0, RAG: 0, BLOK: 0, HPMAX: baseMaxHp },
-      startedAtMs: 0,
-      gearSpells: [],
-      effectIds,
-    });
   }
 
   static fromSeed(seed: BotFighterSeed, team: 1 | 2, effectIds: FightEffectIds): BotFighter {
@@ -112,78 +88,16 @@ export class BotFighter implements Fighter {
     );
   }
 
-  get maxHp(): number {
-    return Math.max(1, this.baseMaxHp + this.effects.standingSkill("HPMAX"));
-  }
-
-  /** The initiative that opens a duel: the base stat and what `LUCK` effects add now. */
-  get currentInitiative(): number {
-    return Math.max(0, this.initiative + this.effects.standingSkill("LUCK"));
-  }
-
-  get rageStat(): number {
-    return Math.max(0, this.effects.standingSkill("RAG"));
-  }
-
-  get dexterity(): number {
-    return Math.max(0, this.effects.standingSkill("DEX"));
-  }
-
-  get defense(): number {
-    return Math.max(0, this.effects.standingSkill("DEF"));
-  }
-
-  get block(): number {
-    return Math.max(0, this.effects.standingSkill("BLOK"));
-  }
-
-  meleeStrength(): number {
-    return this.strength + this.effects.standingSkill("STR");
-  }
-
-  get hp(): number {
-    return this.hpValue;
-  }
-
-  get id(): number {
-    return this.fightId;
-  }
-
   get fighterKind(): FighterKind {
     return "bot";
   }
 
-  get dealtDamage(): number {
-    return this.dealtDamageValue;
+  get magPower(): number {
+    return this.init.magPower;
   }
 
-  get lastOpponentId(): number | null {
-    return this.lastOpponentIdValue;
-  }
-
-  get waiting(): boolean {
-    return this.waitingValue;
-  }
-
-  get mag(): MagStats {
-    return { power: this.magPower, resist: this.magResist };
-  }
-
-  pair(): void {
-    if (!this.waitingValue) throw new Error("Hunt roster bot is already paired");
-    this.waitingValue = false;
-  }
-
-  unpair(): void {
-    if (this.waitingValue) throw new Error("Hunt roster bot is already waiting");
-    this.waitingValue = true;
-  }
-
-  markFought(opponentId: number): void {
-    if (!Number.isInteger(opponentId) || opponentId < 1) {
-      throw new Error("Last opponent id must be a positive integer");
-    }
-    this.lastOpponentIdValue = opponentId;
+  get magResist(): number {
+    return this.init.magResist;
   }
 
   cloneWithFightId(fightId: number): BotFighter {
@@ -207,58 +121,72 @@ export class BotFighter implements Fighter {
     );
   }
 
-  applyDamage(damage: number): boolean {
-    if (!Number.isInteger(damage) || damage < 1) {
-      throw new Error("Melee damage must be a positive integer");
-    }
-    this.hpValue = Math.max(0, this.hpValue - damage);
-    return this.hpValue === 0;
-  }
-
-  clampToMaxHp(): void {
-    this.hpValue = Math.min(this.hpValue, this.maxHp);
-  }
-
-  applyHeal(amount: number): number {
-    if (!Number.isInteger(amount) || amount < 0) {
-      throw new Error("Roster bot heal must be a non-negative integer");
-    }
-    const before = this.hpValue;
-    this.hpValue = Math.min(this.maxHp, this.hpValue + amount);
-    return this.hpValue - before;
-  }
-
-  creditDealt(amount: number): void {
-    this.creditDealtDamage(amount);
-  }
-
-  creditDealtDamage(amount: number): void {
-    if (!Number.isInteger(amount) || amount < 0) {
-      throw new Error("Roster bot dealt damage must be a non-negative integer");
-    }
-    this.dealtDamageValue += amount;
-  }
-
-  setHp(hp: number): void {
-    if (!Number.isInteger(hp) || hp < 0 || hp > this.maxHp) {
-      throw new Error("Roster bot hp is invalid");
-    }
-    this.hpValue = hp;
-  }
-
   snap(): BotSnap {
     return {
       id: this.fightId,
       nick: this.nick,
       level: this.level,
-      hp: this.hpValue,
+      hp: this.hp,
       maxHp: this.maxHp,
       artikulId: this.artikulId,
       avatar: this.avatar,
       sk: this.sk,
       body: this.body,
       team: this.team,
-      dealtDamage: this.dealtDamageValue,
+      dealtDamage: this.dealtDamage,
     };
   }
+}
+
+type BotParticipantFields = Readonly<{
+  nick: string;
+  level: number;
+  avatar: string;
+  sk: string;
+  body: string;
+  team: 1 | 2;
+  strength: number;
+  initiative: number;
+  magPower: number;
+  magResist: number;
+  baseMaxHp: number;
+  spellBook: HuntBotSpellBook;
+  hp: number;
+  effectIds: FightEffectIds;
+}>;
+
+/** A mob has a strength and hit points of its own; its other stats and its kit come from effects. */
+function botParticipantInit(
+  fightId: number,
+  artikulId: number,
+  bot: BotParticipantFields,
+): ParticipantInit {
+  requireWireIdentity(fightId, "roster bot fight id");
+  requireWireIdentity(artikulId, "roster bot artikul id");
+  if (fightId < 1_000_000) throw new Error("Fight bot id is below the ephemeral floor");
+  if (!bot.avatar) throw new Error("Roster bot avatar is required");
+  if (!bot.sk) throw new Error("Roster bot sk is required");
+  if (typeof bot.body !== "string") throw new Error("Roster bot body is required");
+  requireHuntBotSpellBook(bot.spellBook);
+  return {
+    id: fightId,
+    nick: bot.nick,
+    level: bot.level,
+    team: bot.team,
+    waiting: false,
+    hp: bot.hp,
+    maxHp: bot.baseMaxHp,
+    strength: bot.strength,
+    initiative: bot.initiative,
+    rage: 0,
+    dexterity: 0,
+    defense: 0,
+    block: 0,
+    aggroCharges: 0,
+    magPower: bot.magPower,
+    magResist: bot.magResist,
+    startedAtMs: 0,
+    loadout: EMPTY_COMBAT_LOADOUT,
+    effectIds: bot.effectIds,
+  };
 }

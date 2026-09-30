@@ -44,6 +44,10 @@ class FakeFighter implements Fighter {
     return healed;
   }
 
+  awardIncomingRage(): number {
+    return 0;
+  }
+
   creditDealt(amount: number, targetKind: FighterKind): void {
     this.credits.push({ amount, targetKind });
   }

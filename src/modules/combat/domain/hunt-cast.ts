@@ -4,7 +4,7 @@ import { FightCastDenied } from "./fight-cast-denied.ts";
 import { requirePvpForSpell } from "./pvp-only-spell.ts";
 import type { Fighter } from "./fighter.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import { spellKind } from "./human-cast-state.ts";
+import { spellKind } from "./cast-state.ts";
 import { requirePocketOrb } from "./pocket-kind3-cast.ts";
 import { castSpell, type SpellPresentation } from "./spell-cast.ts";
 import { castChargingBuff } from "./charging-buff-cast.ts";

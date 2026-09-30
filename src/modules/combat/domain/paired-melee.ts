@@ -50,7 +50,7 @@ export function tryPairedMelee(
     rules: input.rules,
   });
   const comboCp = attacker.casts.hits.length > 0 ? attacker.casts.advanceCombo(side) : undefined;
-  const { extra, outcome, killed, drained } = strike;
+  const { extra, outcome, killed, drained, dRage } = strike;
   const finished =
     input.finished ||
     (killed && enemySideCleared(target.team, fightCombatants(context.humans, context.bots)));
@@ -65,6 +65,7 @@ export function tryPairedMelee(
       targetMaxHp: target.maxHp,
       killed,
       react: outcome.react,
+      dRage,
       ...(comboCp !== undefined ? { comboCp } : {}),
       ...(drained.healed > 0 ? { drain: drained.healed, selfReact: drained.selfReact } : {}),
       ...(extra ? { extraHits: [extra] } : {}),

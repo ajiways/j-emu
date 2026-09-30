@@ -1,5 +1,5 @@
 import type { CombatPocketRow } from "./combat-loadout.ts";
-import { spellCharging } from "./human-cast-state.ts";
+import { spellCharging } from "./cast-state.ts";
 
 export function requirePocketOrb(row: CombatPocketRow): void {
   if (spellCharging(row.spell) < 1) {

@@ -8,7 +8,7 @@ import {
 } from "./bot-spell-damage.ts";
 import type { HuntBotSpellCard } from "./hunt-bot-spell-book.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import { spellKind } from "./human-cast-state.ts";
+import { spellKind } from "./cast-state.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { magicReact } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -98,7 +98,6 @@ function instantKind1(
         )
       : [];
   const sideHits = others.map((other) => hitOther(actor, other, card, state));
-  if (!isHuman(target)) return { events: [...ticks, hit], sideHits };
   const dRage = damage < 1 ? 0 : target.awardIncomingRage(damage);
   const events: BattleEvent[] = [...ticks, { ...hit, dRage }];
   if (killed && !state.keepFightOnKill) {
@@ -134,7 +133,7 @@ function hitOther(
     rollBotSpellDamage(actor.strength, card.spell, state.random, state.rules, actor, other),
     actor,
   );
-  const dRage = applied < 1 || !isHuman(other) ? 0 : other.awardIncomingRage(applied);
+  const dRage = applied < 1 ? 0 : other.awardIncomingRage(applied);
   return {
     targetId: other.id,
     killed,
@@ -151,8 +150,4 @@ function hitOther(
       dRage,
     },
   };
-}
-
-function isHuman(target: Fighter): target is HumanFighter {
-  return target.fighterKind === "human";
 }

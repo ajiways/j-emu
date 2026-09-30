@@ -63,7 +63,7 @@ function meleeHit(
     random: input.random,
     rules: input.rules,
   });
-  const { outcome, extra, drained, killed } = strike;
+  const { outcome, extra, drained, killed, dRage } = strike;
   return [
     {
       type: "damage",
@@ -74,6 +74,7 @@ function meleeHit(
       targetMaxHp: target.maxHp,
       killed,
       react: outcome.react,
+      dRage,
       ...(drained.healed > 0 ? { drain: drained.healed, selfReact: drained.selfReact } : {}),
       ...(extra ? { extraHits: [extra] } : {}),
     },

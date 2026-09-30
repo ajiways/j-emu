@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { HumanCastState } from "../../../src/modules/combat/domain/human-cast-state.ts";
+import { CastState } from "../../../src/modules/combat/domain/cast-state.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 
 const HITS = [1, 2, 3, 1, 2, 3, 1, 2];
 
-function stateWithGlove(): HumanCastState {
-  return new HumanCastState(
+function stateWithGlove(): CastState {
+  return new CastState(
     {
       ...EMPTY_COMBAT_LOADOUT,
       glove: {

@@ -37,8 +37,7 @@ export function resolveBotMelee(
     random: input.random,
     rules: input.rules,
   });
-  const { outcome, extra, drained, dealt } = strike;
-  const dRage = dealt < 1 ? 0 : human.awardIncomingRage(dealt);
+  const { outcome, extra, drained, dRage } = strike;
   const dead = strike.killed;
   const events: BattleEvent[] = [
     {

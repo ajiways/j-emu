@@ -22,6 +22,8 @@ export interface Fighter {
   applyHeal(amount: number): number;
   /** Pulls hp down to the max hp after a buff that raised it ran out. */
   clampToMaxHp(): void;
+  /** Rage a received hit of `damage` adds to this fighter; returns the rage gained. */
+  awardIncomingRage(damage: number): number;
   /** Books damage this fighter dealt to a target of the given kind. */
   creditDealt(amount: number, targetKind: FighterKind): void;
 }

@@ -1,11 +1,9 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { CombatLoadout } from "./combat-loadout.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
-import { HumanCastState } from "./human-cast-state.ts";
 import type { PocketCellSnapshot } from "./fight-outcome-snapshot.ts";
-import { FighterEffects } from "./fighter-effects.ts";
-import type { Fighter, FighterKind } from "./fighter.ts";
-import type { MagStats } from "./mag-stats.ts";
+import type { FighterKind } from "./fighter.ts";
+import { Participant, type ParticipantInit } from "./participant.ts";
 
 export type FighterAppearance = Readonly<{
   avatar: string;
@@ -53,159 +51,49 @@ type HumanFighterInit = Readonly<{
   effectIds: FightEffectIds;
 }>;
 
-export class HumanFighter implements Fighter {
+export class HumanFighter extends Participant {
   authed = false;
-  readonly casts: HumanCastState;
-  readonly effects: FighterEffects;
-  private waitingValue: boolean;
   private turnActiveValue = false;
   private turnDeadlineMsValue: number | null = null;
   private resumeBootstrapValue = false;
-  private hpValue: number;
-  private damageToBotValue = 0;
-  private damageToHumansValue = 0;
   private leftLiveValue = false;
   private skipStreakValue = 0;
-  private lastOpponentIdValue: number | null = null;
-  stunnedTurns = 0;
 
-  constructor(private readonly init: HumanFighterInit) {
-    requireHuntHumanInit(init);
-    this.waitingValue = init.waiting;
-    this.hpValue = init.hp;
-    this.casts = new HumanCastState(init.loadout, init.aggroCharges);
-    this.effects = new FighterEffects({
-      heroId: init.heroId,
-      base: {
-        STR: init.strength,
-        DEX: init.dexterity,
-        DEF: init.defense,
-        RAG: init.rage,
-        BLOK: init.block,
-        HPMAX: init.maxHp,
-      },
-      startedAtMs: init.startedAtMs,
-      gearSpells: init.loadout.gearSpells,
-      effectIds: init.effectIds,
-    });
+  constructor(private readonly human: HumanFighterInit) {
+    super(participantInitOf(human));
   }
 
-  get accountId(): number {
-    return this.init.accountId;
-  }
-  get heroId(): number {
-    return this.init.heroId;
-  }
-  get id(): number {
-    return this.init.heroId;
-  }
   get fighterKind(): FighterKind {
     return "human";
   }
-  get nick(): string {
-    return this.init.nick;
+
+  get accountId(): number {
+    return this.human.accountId;
   }
-  get level(): number {
-    return this.init.level;
+  get heroId(): number {
+    return this.human.heroId;
   }
   get kind(): number {
-    return this.init.kind;
-  }
-  get hp(): number {
-    return this.hpValue;
-  }
-  get maxHp(): number {
-    return Math.max(1, this.init.maxHp + this.effects.standingSkill("HPMAX"));
+    return this.human.kind;
   }
   get mp(): number {
-    return this.init.mp;
+    return this.human.mp;
   }
   get maxMp(): number {
-    return this.init.maxMp;
-  }
-  get strength(): number {
-    return this.init.strength;
-  }
-  get initiative(): number {
-    return this.init.initiative;
-  }
-  /** The initiative that opens a duel: the base stat and what `LUCK` effects add now. */
-  get currentInitiative(): number {
-    return this.stat(this.init.initiative, "LUCK");
-  }
-  /** Rage a received hit adds, more while a `RAGE_MOD` effect stands. Returns the rage gained. */
-  awardIncomingRage(damage: number): number {
-    return this.casts.awardIncomingRage(
-      damage,
-      this.maxHp,
-      this.effects.standingSkill("RAGE_MOD") + this.effects.standingSkill("pcRAGE_MOD"),
-    );
-  }
-  get rageStat(): number {
-    return this.stat(this.init.rage, "RAG");
-  }
-  get dexterity(): number {
-    return this.stat(this.init.dexterity, "DEX");
-  }
-  get defense(): number {
-    return this.stat(this.init.defense, "DEF");
-  }
-  get block(): number {
-    return this.stat(this.init.block, "BLOK");
-  }
-  get mag(): MagStats {
-    return { power: this.init.magPower, resist: this.init.magResist };
-  }
-  get lastOpponentId(): number | null {
-    return this.lastOpponentIdValue;
-  }
-  meleeStrength(): number {
-    return this.init.strength + this.effects.standingSkill("STR");
-  }
-
-  /** A stat with the flat skills of every standing effect, never below zero. */
-  private stat(base: number, skillId: string): number {
-    return Math.max(0, base + this.effects.standingSkill(skillId));
-  }
-  markFought(opponentId: number): void {
-    if (!Number.isInteger(opponentId) || opponentId < 1) {
-      throw new Error("Last opponent id must be a positive integer");
-    }
-    this.lastOpponentIdValue = opponentId;
-  }
-  get team(): 1 | 2 {
-    return this.init.team;
+    return this.human.maxMp;
   }
   get appearance(): FighterAppearance {
-    return this.init.appearance;
-  }
-  get waiting(): boolean {
-    return this.waitingValue;
+    return this.human.appearance;
   }
   get turnActive(): boolean {
     return this.turnActiveValue;
-  }
-  get damageToBot(): number {
-    return this.damageToBotValue;
-  }
-  get damageToHumans(): number {
-    return this.damageToHumansValue;
-  }
-  get dealtDamage(): number {
-    return this.damageToBotValue + this.damageToHumansValue;
   }
   get leftLive(): boolean {
     return this.leftLiveValue;
   }
 
-  pair(): void {
-    if (!this.waitingValue) throw new Error("Hunt human is already paired");
-    this.waitingValue = false;
-  }
-
-  unpair(): void {
-    if (this.waitingValue) throw new Error("Hunt human is already waiting");
-    this.waitingValue = true;
+  override unpair(): void {
+    super.unpair();
     this.endTurn();
   }
 
@@ -264,29 +152,10 @@ export class HumanFighter implements Fighter {
 
   markLeft(): void {
     this.leftLiveValue = true;
-    this.waitingValue = false;
+    this.clearWaiting();
     this.turnActiveValue = false;
     this.turnDeadlineMsValue = null;
     this.resumeBootstrapValue = false;
-  }
-
-  creditDealt(amount: number, targetKind: FighterKind): void {
-    if (targetKind === "bot") this.creditDamageToBot(amount);
-    else this.creditDamageToHumans(amount);
-  }
-
-  creditDamageToBot(amount: number): void {
-    if (!Number.isInteger(amount) || amount < 0) {
-      throw new Error("Hunt human damage to bot must be a non-negative integer");
-    }
-    this.damageToBotValue += amount;
-  }
-
-  creditDamageToHumans(amount: number): void {
-    if (!Number.isInteger(amount) || amount < 0) {
-      throw new Error("Hunt human damage to humans must be a non-negative integer");
-    }
-    this.damageToHumansValue += amount;
   }
 
   pocketCells(): readonly PocketCellSnapshot[] {
@@ -299,7 +168,7 @@ export class HumanFighter implements Fighter {
       nick: this.nick,
       level: this.level,
       kind: this.kind,
-      hp: this.hpValue,
+      hp: this.hp,
       maxHp: this.maxHp,
       mp: this.mp,
       maxMp: this.maxMp,
@@ -307,33 +176,17 @@ export class HumanFighter implements Fighter {
       dealtDamage: this.dealtDamage,
     };
   }
-
-  applyDamage(amount: number): boolean {
-    if (!Number.isInteger(amount) || amount < 0) {
-      throw new Error("Hunt human damage must be a non-negative integer");
-    }
-    this.hpValue = Math.max(0, this.hpValue - amount);
-    return this.hpValue === 0;
-  }
-
-  clampToMaxHp(): void {
-    this.hpValue = Math.min(this.hpValue, this.maxHp);
-  }
-
-  applyHeal(amount: number): number {
-    if (!Number.isInteger(amount) || amount < 0) {
-      throw new Error("Hunt human heal must be a non-negative integer");
-    }
-    const before = this.hpValue;
-    this.hpValue = Math.min(this.maxHp, this.hpValue + amount);
-    return this.hpValue - before;
-  }
 }
 
 function requireAppearance(appearance: FighterAppearance): void {
   if (!appearance.avatar) throw new Error("Hunt human avatar is required");
   if (typeof appearance.body !== "string") throw new Error("Hunt human body is required");
   if (!appearance.sk) throw new Error("Hunt human sk is required");
+}
+
+function participantInitOf(init: HumanFighterInit): ParticipantInit {
+  requireHuntHumanInit(init);
+  return { ...init, id: init.heroId };
 }
 
 function requireHuntHumanInit(init: HumanFighterInit): void {

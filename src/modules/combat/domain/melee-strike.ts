@@ -18,6 +18,8 @@ export type FighterStrike = Readonly<{
   /** The target is down after the whole strike. */
   killed: boolean;
   drained: DrainOutcome;
+  /** Rage the target gained from the hit and the float. */
+  dRage: number;
   /** `effPurge` of every charge the strike spent the last of. */
   purges: readonly BattleEvent[];
 }>;
@@ -68,6 +70,7 @@ export function strikeFighter(
     dealt,
     killed: target.hp === 0,
     drained: settleDrain(attacker, dealt, swing.drain),
+    dRage: dealt < 1 ? 0 : target.awardIncomingRage(dealt),
     purges: [...swing.purges, ...overlayPurges],
   };
 }

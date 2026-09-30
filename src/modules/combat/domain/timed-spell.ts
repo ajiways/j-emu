@@ -1,7 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { CombatSpell } from "./combat-loadout.ts";
 import type { Fighter } from "./fighter.ts";
-import { pocketHealAmount } from "./human-cast-state.ts";
+import { pocketHealAmount } from "./cast-state.ts";
 
 /** Wire `hpChange.react` of a heal (live 169: the elixir heal, like a HoT tick). */
 const HEAL_REACT = 32;

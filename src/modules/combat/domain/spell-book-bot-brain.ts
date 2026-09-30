@@ -6,6 +6,9 @@ import type { RandomSource } from "./random-source.ts";
 
 /** The catalog spell book as a brain: fight-start, prefer, then weighted roulette. */
 export class SpellBookBotBrain implements BotBrain {
+  /** How many times this brain has cast each spell: what `maxCasts` and `once` count. */
+  private readonly casts = new Map<number, number>();
+
   constructor(private readonly book: HuntBotSpellBook) {}
 
   decide(snapshot: CombatSnapshot, random: RandomSource): BotDecision {
@@ -14,14 +17,14 @@ export class SpellBookBotBrain implements BotBrain {
       {
         botHp: snapshot.selfHp,
         botMaxHp: snapshot.selfMaxHp,
-        casts: snapshot.casts,
+        casts: this.casts,
         foeGroups: snapshot.foeStandingGroups,
         foeStunned: snapshot.foeStunned,
       },
       random,
     );
     if (!card) return { kind: "melee" };
-    noteCast(snapshot.casts, card.artikulId);
+    noteCast(this.casts, card.artikulId);
     return { kind: "cast", card };
   }
 }
