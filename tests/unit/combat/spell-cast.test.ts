@@ -127,4 +127,12 @@ describe("a player's glove spell goes through the same cast as a bot's", () => {
     expect(foe.stunnedTurns).toBe(0);
     expect(foe.effects.takenDamage(10, 1)).toBe(6);
   });
+
+  it("does not pile a stun on one that is still running", () => {
+    const human = hero();
+    const foe = bot();
+    foe.stunnedTurns = 1;
+    tryGloveKeepTurn(human, 6197, 1, false, { nowMs: 0, foe: () => foe });
+    expect(foe.stunnedTurns).toBe(1);
+  });
 });

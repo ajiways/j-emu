@@ -78,5 +78,7 @@ export function applyStunSpell(
         );
   // ANTI_STUN: immune while it stands; the rest of the spell still lands.
   if (stunImmunity(target.effects.standingMax("ANTI_STUN")) >= 1) return lingering;
+  // A stun does not pile on one that is still running.
+  if (target.stunnedTurns > 0) return lingering;
   return [...lingering, applyStun(caster, target, source)];
 }

@@ -9,6 +9,7 @@ function snapshot(overrides: Partial<CombatSnapshot> = {}): CombatSnapshot {
     selfHp: 20,
     selfMaxHp: 20,
     foeStandingGroups: [],
+    foeStunned: false,
     casts: new Map(),
     ...overrides,
   };
@@ -27,5 +28,20 @@ describe("SpellBookBotBrain", () => {
     const decision = brain.decide(snapshot({ casts }), new SequenceRandom([0.99]));
     expect(decision).toEqual({ kind: "cast", card });
     expect(casts.get(card.artikulId)).toBe(1);
+  });
+
+  it("does not stun a foe that is already stunned", () => {
+    const stun = unitHuntSpellCard({
+      slot: "prefer",
+      spell: {
+        animData: "magic_baf_stun",
+        effects: [{ kind: 18, duration: 2, durationInTurns: true }],
+      },
+    });
+    const brain = new SpellBookBotBrain({ nothingWeight: 100, spells: [stun] });
+    expect(brain.decide(snapshot({ foeStunned: true }), new SequenceRandom([0.5]))).toEqual({
+      kind: "melee",
+    });
+    expect(brain.decide(snapshot(), new SequenceRandom([0.5]))).toMatchObject({ kind: "cast" });
   });
 });

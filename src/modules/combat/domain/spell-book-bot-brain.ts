@@ -16,6 +16,7 @@ export class SpellBookBotBrain implements BotBrain {
         botMaxHp: snapshot.selfMaxHp,
         casts: snapshot.casts,
         foeGroups: snapshot.foeStandingGroups,
+        foeStunned: snapshot.foeStunned,
       },
       random,
     );

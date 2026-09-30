@@ -9,6 +9,8 @@ export type CombatSnapshot = Readonly<{
   selfHp: number;
   selfMaxHp: number;
   foeStandingGroups: readonly number[];
+  /** The foe is stunned now: a stun would not add anything. */
+  foeStunned: boolean;
   casts: Map<number, number>;
 }>;
 
@@ -17,6 +19,7 @@ export function snapshotForBot(self: BotFighter, foe: Fighter): CombatSnapshot {
     selfHp: self.hp,
     selfMaxHp: self.maxHp,
     foeStandingGroups: foe.effects.standingGroups(),
+    foeStunned: foe.stunnedTurns > 0,
     casts: self.casts,
   };
 }

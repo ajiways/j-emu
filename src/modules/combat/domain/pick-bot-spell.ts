@@ -9,6 +9,7 @@ export function pickBotSpell(
     botMaxHp: number;
     casts: Map<number, number>;
     foeGroups?: readonly number[];
+    foeStunned?: boolean;
   }>,
   random: RandomSource,
 ): HuntBotSpellCard | null {
@@ -49,11 +50,15 @@ function canCast(
     botMaxHp: number;
     casts: Map<number, number>;
     foeGroups?: readonly number[];
+    foeStunned?: boolean;
   }>,
 ): boolean {
   if (card.slot === "never") return false;
   if (!supportedBotSpell(card)) return false;
   if (card.spell.effects.some((effect) => effect.kind === 10)) return false;
+  if (input.foeStunned === true && card.spell.effects.some((effect) => effect.kind === 18)) {
+    return false;
+  }
   if (card.gate === "foe_has_dispel_groups") {
     const wanted = new Set(dispelTargetGroups(card.spell));
     if (!(input.foeGroups ?? []).some((group) => wanted.has(group))) return false;
