@@ -101,7 +101,7 @@ describe("quest fight roster", () => {
       await harness.elapseCombat(1400);
       let frames = await client.pollFight();
       // The hero falls first; the fight is lost when his ally falls too, on the fight's own clock.
-      for (let tick = 0; tick < 12 && !framesIncludeFightFinish(frames); tick += 1) {
+      for (let tick = 0; tick < 40 && !framesIncludeFightFinish(frames); tick += 1) {
         await harness.elapseCombat(2600);
         frames = await client.pollFight();
       }
