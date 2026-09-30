@@ -1,0 +1,25 @@
+{
+  "description": "Бот при старте плюёт ядом (396), у героя 3 HP: после пары ходов герой должен умереть именно от тика DoT (hpChange перед fightFinish), а не от удара бота.",
+  "hero": {
+    "hp": 3
+  },
+  "enemies": [
+    {
+      "botArtikulId": 4,
+      "hp": 500,
+      "strength": 1,
+      "nothingWeight": 100,
+      "spells": [
+        {
+          "artikulId": 396,
+          "slot": "fight_start",
+          "weight": 0,
+          "maxCasts": 1,
+          "gate": null,
+          "hpPct": null
+        }
+      ]
+    }
+  ],
+  "allies": []
+}

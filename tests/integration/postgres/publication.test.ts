@@ -283,6 +283,7 @@ describe("content publication", () => {
             fightProxyPath: "https://s1.jugger.ru/fproxy//;",
             fightProxyPort: 33120,
             contentOperatorToken: "test-operator-token",
+            fightScenariosDir: null,
           }),
         ).rejects.toThrow(/published content/);
       } finally {

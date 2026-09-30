@@ -358,6 +358,7 @@ export class JuggerWireModule {
         craft,
         quests,
         ambushRandom,
+        config.fightScenariosDir,
       );
       const { http, fightTcp } = await startJuggerServers({
         config,

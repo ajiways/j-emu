@@ -16,6 +16,7 @@ const complete = {
   FIGHT_PROXY_PATH: "https://s1.jugger.ru/fproxy//;",
   FIGHT_PROXY_PORT: "33120",
   CONTENT_OPERATOR_TOKEN: "test-operator-token",
+  FIGHT_SCENARIOS_DIR: "",
 };
 
 describe("loadConfig", () => {
@@ -30,6 +31,19 @@ describe("loadConfig", () => {
   it("does not invent an operator token", () => {
     expect(() => loadConfig({ ...complete, CONTENT_OPERATOR_TOKEN: undefined })).toThrow(
       /CONTENT_OPERATOR_TOKEN/,
+    );
+  });
+
+  it("does not invent a scenarios directory", () => {
+    expect(() => loadConfig({ ...complete, FIGHT_SCENARIOS_DIR: undefined })).toThrow(
+      /FIGHT_SCENARIOS_DIR/,
+    );
+  });
+
+  it("switches scenarios off only by an explicitly empty directory", () => {
+    expect(loadConfig(complete).fightScenariosDir).toBeNull();
+    expect(loadConfig({ ...complete, FIGHT_SCENARIOS_DIR: "./x" }, "/root").fightScenariosDir).toBe(
+      "/root/x",
     );
   });
 });

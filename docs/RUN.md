@@ -5,6 +5,9 @@
 `.env` читается из каталога `package.json`, не из `cwd` и не из `dist/`. Обязательные переменные перечислены в `.env.example`; defaults нет.
 `CONTENT_OPERATOR_TOKEN` обязателен (Bearer для `/operator/content/*` и
 `/operator/hero/*`); без него процесс не стартует.
+`FIGHT_SCENARIOS_DIR` обязателен: каталог JSON-сценариев боя для ручной проверки
+(`config/fight-scenarios`, сообщение `/scenario <имя>` в чате); пустое значение
+выключает сценарии. Формат — в [CEF_MANUAL](migration/CEF_MANUAL.md).
 
 Перед первым клиентским запуском:
 

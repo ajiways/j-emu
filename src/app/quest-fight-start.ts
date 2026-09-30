@@ -18,7 +18,7 @@ import {
 import { QuestDeniedError } from "../modules/quests/domain/quest-denied-error.ts";
 import type { QuestStartFightOpDocument } from "../modules/content/domain/content-quest.ts";
 
-type FightStartDeps = Readonly<{
+export type FightStartDeps = Readonly<{
   catalog: Catalog;
   world: WorldService;
   inventory: InventoryService;
@@ -65,10 +65,34 @@ async function startAuthoredHunt(
     chatLose: string;
   }>,
 ): Promise<FightStart> {
-  if (hero.ghost || hero.hp < 1) throw new QuestDeniedError("нельзя атаковать");
   const enemies = await loadRosterBots(deps.catalog, input.enemies);
-  const primary = enemies[0];
-  if (!primary) throw new Error("START_FIGHT requires an enemy");
+  if (enemies.length === 0) throw new Error("START_FIGHT requires an enemy");
+  return startHuntWithRoster(hero, deps, {
+    purpose: input.purpose,
+    heroHp: hero.hp,
+    enemies,
+    allies: await loadRosterBots(deps.catalog, input.allies),
+    chatWin: input.chatWin,
+    chatLose: input.chatLose,
+  });
+}
+
+/** Starts a hunt against an already-built roster; the first enemy opens as the primary bot. */
+export async function startHuntWithRoster(
+  hero: Hero,
+  deps: FightStartDeps,
+  input: Readonly<{
+    purpose: "hunt" | "quest";
+    heroHp: number;
+    enemies: readonly HuntRosterBotInput[];
+    allies: readonly HuntRosterBotInput[];
+    chatWin: string;
+    chatLose: string;
+  }>,
+): Promise<FightStart> {
+  if (hero.ghost || hero.hp < 1) throw new QuestDeniedError("нельзя атаковать");
+  const primary = input.enemies[0];
+  if (!primary) throw new Error("A hunt requires an enemy");
   const area = await deps.world.area(hero.areaId);
   await deps.inventory.ensureStarterInventory(hero.id);
   const loadout = await new HuntCombatLoadout(deps.inventory, deps.catalog).snapshot(hero.id);
@@ -79,7 +103,7 @@ async function startAuthoredHunt(
     heroNick: hero.nick,
     heroLevel: hero.level,
     heroKind: hero.kind,
-    heroHp: hero.hp,
+    heroHp: input.heroHp,
     heroMaxHp: hero.maxHp,
     heroMp: hero.mp,
     heroMaxMp: hero.maxMp,
@@ -103,8 +127,8 @@ async function startAuthoredHunt(
     loadout,
     botSpellBook: primary.spellBook,
     purpose: input.purpose,
-    extraEnemies: enemies.slice(1),
-    allies: await loadRosterBots(deps.catalog, input.allies),
+    extraEnemies: input.enemies.slice(1),
+    allies: input.allies,
     chatWin: input.chatWin,
     chatLose: input.chatLose,
   });

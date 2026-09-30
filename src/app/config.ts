@@ -16,6 +16,8 @@ const schema = z.object({
   FIGHT_PROXY_PATH: z.string().min(1),
   FIGHT_PROXY_PORT: z.coerce.number().int().positive(),
   CONTENT_OPERATOR_TOKEN: z.string().min(1),
+  /** Directory of scripted fight scenarios; an explicitly empty value switches them off. */
+  FIGHT_SCENARIOS_DIR: z.string(),
 });
 
 export type AppConfig = {
@@ -33,6 +35,7 @@ export type AppConfig = {
   fightProxyPath: string;
   fightProxyPort: number;
   contentOperatorToken: string;
+  fightScenariosDir: string | null;
 };
 
 export function loadConfig(
@@ -55,5 +58,7 @@ export function loadConfig(
     fightProxyPath: value.FIGHT_PROXY_PATH,
     fightProxyPort: value.FIGHT_PROXY_PORT,
     contentOperatorToken: value.CONTENT_OPERATOR_TOKEN,
+    fightScenariosDir:
+      value.FIGHT_SCENARIOS_DIR === "" ? null : path.resolve(root, value.FIGHT_SCENARIOS_DIR),
   };
 }

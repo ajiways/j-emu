@@ -22,6 +22,7 @@ import type { AuctionTenderSell } from "../../../app/auction-tender-sell.ts";
 import type { AuctionTenderCancel } from "../../../app/auction-tender-cancel.ts";
 import type { TradeDesk } from "../../../app/trade-desk.ts";
 import type { ChatDesk } from "../../../app/chat-desk.ts";
+import { createScenarioDesk } from "../../../app/scenarios/create-scenario-desk.ts";
 import { PartyDesk } from "../../../app/party-desk.ts";
 import type { PartyBagOps } from "../../../app/party-bag-ops.ts";
 import type { PartyNotify } from "../../../app/party-notify.ts";
@@ -159,6 +160,7 @@ export class JuggerCommandModule {
     craft: CraftService,
     quests: QuestService,
     ambushRandom: RandomSource,
+    scenariosDir: string | null,
   ) {
     this.fightWire = fightWire;
     const travel = new ComeInTravel(characters, inventory, world, combat, clock, instanceDesk);
@@ -245,7 +247,19 @@ export class JuggerCommandModule {
       new FriendlyDuelAcceptCommand(accept),
       new FriendlyDuelDeclineCommand(decline),
       new ChatConfCommand(bootstrap, sheet),
-      new ChatAddCommand(chat, bootstrap),
+      new ChatAddCommand(
+        chat,
+        bootstrap,
+        createScenarioDesk(scenariosDir, {
+          characters,
+          catalog,
+          world,
+          inventory,
+          combat,
+          chat,
+          fightWire,
+        }),
+      ),
       new EmptyCollectionOaCommand("companion|list_user_companions", "companions", bootstrap),
       new EmptyCollectionOaCommand("battlepass|list", "list", bootstrap),
       new EmptyCollectionOaCommand("jail|list", "punishments", bootstrap),

@@ -571,6 +571,7 @@ describe("module factories", () => {
           fightProxyPath: "https://s1.jugger.ru/fproxy//;",
           fightProxyPort: 33120,
           contentOperatorToken: "test-operator-token",
+          fightScenariosDir: null,
         },
         identity: {} as IdentityService,
         registration: {} as PlayableAccountRegistration,
