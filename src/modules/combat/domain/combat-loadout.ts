@@ -7,6 +7,7 @@ type CombatSpellEffect = Readonly<{
   charging?: number;
   capacity?: number;
   targetCount?: number;
+  targetEffectGroupId?: number;
   duration?: number;
   period?: number;
   forceSelfTargeting?: boolean;

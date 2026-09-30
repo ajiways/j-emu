@@ -19,6 +19,9 @@ export function toCombatSpell(spell: ArtifactSpell): CombatSpell {
       ...(effect.charging !== undefined ? { charging: effect.charging } : {}),
       ...(effect.capacity !== undefined ? { capacity: effect.capacity } : {}),
       ...(effect.targetCount !== undefined ? { targetCount: effect.targetCount } : {}),
+      ...(effect.targetEffectGroupId !== undefined
+        ? { targetEffectGroupId: effect.targetEffectGroupId }
+        : {}),
       ...(effect.duration !== undefined ? { duration: effect.duration } : {}),
       ...(effect.period !== undefined ? { period: effect.period } : {}),
       ...(effect.forceSelfTargeting !== undefined

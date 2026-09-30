@@ -1,3 +1,4 @@
+import { dispelTargetGroups } from "./dispel-target-groups.ts";
 import type { HuntBotSpellBook, HuntBotSpellCard } from "./hunt-bot-spell-book.ts";
 import type { RandomSource } from "./random-source.ts";
 
@@ -54,8 +55,8 @@ function canCast(
   if (!supportedBotSpell(card)) return false;
   if (card.spell.effects.some((effect) => effect.kind === 10)) return false;
   if (card.gate === "foe_has_dispel_groups") {
-    const groups = input.foeGroups ?? [];
-    if (groups.length < 1) return false;
+    const wanted = new Set(dispelTargetGroups(card.spell));
+    if (!(input.foeGroups ?? []).some((group) => wanted.has(group))) return false;
   }
   if (card.gate === "once" && castCount(input.casts, card.artikulId) >= (card.maxCasts ?? 1)) {
     return false;

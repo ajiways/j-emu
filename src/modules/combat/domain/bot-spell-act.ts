@@ -1,3 +1,4 @@
+import { dispelTargetGroups } from "./dispel-target-groups.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import { castChargingBuff } from "./charging-buff-cast.ts";
 import type { BattleRules } from "./battle-rules.ts";
@@ -41,7 +42,7 @@ export function actBotSpellCard(
     return [];
   }
   if (spellKind(card.spell, 8)) {
-    const purged = target.effects.dispelGroups(target.effects.standingGroups());
+    const purged = target.effects.dispelGroups(dispelTargetGroups(card.spell));
     return purged.map((effectId) => ({ type: "effect-purge" as const, effectId }));
   }
   if (spellKind(card.spell, 18)) {

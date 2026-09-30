@@ -85,19 +85,26 @@ describe("pickBotSpell", () => {
     expect(casts.get(10)).toBe(1);
   });
 
-  it("holds foe_has_dispel_groups until the foe has a standing group", () => {
+  it("holds foe_has_dispel_groups until the foe has a group the spell dispels", () => {
     const dispel: HuntBotSpellBook["spells"][number] = {
       ...spit,
       artikulId: 8,
       slot: "prefer",
       weight: 0,
       gate: "foe_has_dispel_groups",
-      spell: { animData: "magic_baf", effects: [{ kind: 8 }] },
+      spell: { animData: "magic_baf", effects: [{ kind: 8, targetEffectGroupId: 936 }] },
     };
     expect(
       pickBotSpell(
         { nothingWeight: 0, spells: [dispel] },
         { botHp: 20, botMaxHp: 20, casts: new Map() },
+        new SequenceRandom([0.99]),
+      ),
+    ).toBeNull();
+    expect(
+      pickBotSpell(
+        { nothingWeight: 0, spells: [dispel] },
+        { botHp: 20, botMaxHp: 20, casts: new Map(), foeGroups: [845] },
         new SequenceRandom([0.99]),
       ),
     ).toBeNull();

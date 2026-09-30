@@ -35,8 +35,9 @@ describe("CombatService AFK skips", () => {
     clock.advanceMs(20_000);
     await delay.fireDue(clock.now());
     const last = await combat.execute(1, { kind: "poll" });
-    expect(last.map((event) => event.type)).toEqual(["turn-timeout", "finished"]);
-    expect(last[1]).toMatchObject({ winnerTeam: 2 });
+    expect(last.map((event) => event.type)).toEqual(["turn-timeout", "damage", "finished"]);
+    expect(last[1]).toMatchObject({ killed: true, animation: "", react: 10 });
+    expect(last[2]).toMatchObject({ winnerTeam: 2 });
     expect(await combat.hasFight(start.fightId)).toBe(false);
   });
 
