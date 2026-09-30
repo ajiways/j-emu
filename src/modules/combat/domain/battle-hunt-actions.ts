@@ -6,6 +6,7 @@ import { applyPairedGloveEnding, applyPairedMelee } from "./battle-strikes.ts";
 import { rosterIsPvp } from "./roster-pvp.ts";
 import { requireFightBot } from "./fight-bots.ts";
 import { resolveAiActorTurn } from "./resolve-ai-actor-turn.ts";
+import type { Fighter } from "./fighter.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
@@ -66,7 +67,10 @@ export function applyBattleGlove(
   nowMs: number,
 ): Readonly<{ result: KeepTurnResult | EndingGloveResult; finished: boolean }> {
   const human = requireAuthedHuman(state.humans, accountId);
-  const keep = tryGloveKeepTurn(human, spellId, sequence, rosterIsPvp(state.humans));
+  const keep = tryGloveKeepTurn(human, spellId, sequence, rosterIsPvp(state.humans), {
+    nowMs,
+    foe: () => duelFoe(state, human),
+  });
   if (keep.kind !== "ignored") return { result: keep, finished: state.finished };
   const duel = requireDuelContaining(state.duels, human.heroId);
   const ending = applyPairedGloveEnding({
@@ -226,4 +230,9 @@ function hitInput(
     opener: human,
     humans: state.humans,
   };
+}
+
+function duelFoe(state: HuntActionState, human: HumanFighter): Fighter {
+  const foeId = requireDuelContaining(state.duels, human.heroId).otherId(human.heroId);
+  return state.humans.find((entry) => entry.heroId === foeId) ?? requireFightBot(state.bots, foeId);
 }

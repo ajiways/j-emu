@@ -23,6 +23,7 @@ export function toCombatSpell(spell: ArtifactSpell): CombatSpell {
         ? { targetEffectGroupId: effect.targetEffectGroupId }
         : {}),
       ...(effect.duration !== undefined ? { duration: effect.duration } : {}),
+      ...(effect.durationInTurns !== undefined ? { durationInTurns: effect.durationInTurns } : {}),
       ...(effect.period !== undefined ? { period: effect.period } : {}),
       ...(effect.forceSelfTargeting !== undefined
         ? { forceSelfTargeting: effect.forceSelfTargeting }

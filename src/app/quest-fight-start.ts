@@ -5,6 +5,7 @@ import type {
   FightStart,
   HuntRosterBotInput,
 } from "../modules/combat/ports/combat-port.ts";
+import type { CombatGloveLoadout } from "../modules/combat/domain/combat-loadout.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
 import type { WorldService } from "../modules/world/domain/world-service.ts";
 import { HuntCombatLoadout } from "../modules/jugger-wire/application/hunt-combat-loadout.ts";
@@ -70,6 +71,7 @@ async function startAuthoredHunt(
   return startHuntWithRoster(hero, deps, {
     purpose: input.purpose,
     heroHp: hero.hp,
+    gloveOverride: null,
     enemies,
     allies: await loadRosterBots(deps.catalog, input.allies),
     chatWin: input.chatWin,
@@ -84,6 +86,8 @@ export async function startHuntWithRoster(
   input: Readonly<{
     purpose: "hunt" | "quest";
     heroHp: number;
+    /** A glove for this fight instead of the equipped one; `null` keeps the hero's own loadout. */
+    gloveOverride: CombatGloveLoadout | null;
     enemies: readonly HuntRosterBotInput[];
     allies: readonly HuntRosterBotInput[];
     chatWin: string;
@@ -95,7 +99,9 @@ export async function startHuntWithRoster(
   if (!primary) throw new Error("A hunt requires an enemy");
   const area = await deps.world.area(hero.areaId);
   await deps.inventory.ensureStarterInventory(hero.id);
-  const loadout = await new HuntCombatLoadout(deps.inventory, deps.catalog).snapshot(hero.id);
+  const equipped = await new HuntCombatLoadout(deps.inventory, deps.catalog).snapshot(hero.id);
+  const loadout =
+    input.gloveOverride === null ? equipped : { ...equipped, glove: input.gloveOverride };
   const fightId = await deps.combat.nextFightId();
   return deps.combat.startHunt({
     accountId: hero.accountId,

@@ -1,6 +1,10 @@
 import type { Catalog } from "../../modules/catalog/ports/catalog.ts";
 import type { CharacterService } from "../../modules/character/application/character-service.ts";
 import type { HuntRosterBotInput } from "../../modules/combat/ports/combat-port.ts";
+import type {
+  CombatGloveLoadout,
+  CombatGloveSpell,
+} from "../../modules/combat/domain/combat-loadout.ts";
 import type { HuntBotSpellBook } from "../../modules/combat/domain/hunt-bot-spell-book.ts";
 import { unpublishedBotFightStats } from "../../modules/combat/domain/combatant-fight-stats.ts";
 import type { FightWireMapper } from "../../modules/jugger-wire/application/fight-wire-mapper.ts";
@@ -55,6 +59,7 @@ export class ScenarioDesk {
     const started = await startHuntWithRoster(hero, this.deps.start, {
       purpose: scenario.purpose,
       heroHp: scenario.hero.hp,
+      gloveOverride: await this.glove(scenario),
       enemies: await this.roster(scenario, scenario.enemies),
       allies: await this.roster(scenario, scenario.allies),
       chatWin: "",
@@ -72,6 +77,27 @@ export class ScenarioDesk {
     return `Использование: /scenario <имя>. Доступны: ${listed
       .map((entry) => entry.name)
       .join(", ")}.`;
+  }
+
+  private async glove(scenario: FightScenario): Promise<CombatGloveLoadout | null> {
+    const glove = scenario.hero.glove;
+    if (glove === null) return null;
+    const spells: CombatGloveSpell[] = [];
+    for (const entry of glove.spells) {
+      const artifact = await this.deps.start.catalog.artifact(entry.artikulId);
+      if (!artifact?.extra.spell) {
+        throw new Error(`Scenario ${scenario.name}: glove spell ${entry.artikulId} has no spell`);
+      }
+      spells.push({
+        artikulId: artifact.id,
+        cost: entry.cost,
+        row: entry.row,
+        title: artifact.title,
+        picture: artifact.picture,
+        spell: toCombatSpell(artifact.extra.spell),
+      });
+    }
+    return { hits: glove.hits, spells };
   }
 
   private async roster(

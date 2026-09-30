@@ -87,7 +87,7 @@ describe("CombatService stun", () => {
       spell: {
         animData: "magic_aoe",
         endTurn: true,
-        effects: [{ kind: 18, dmgType: 0, duration: 2 }],
+        effects: [{ kind: 18, dmgType: 0, duration: 2, durationInTurns: true }],
       },
     });
     const start = await startHuntWithIssuedId(

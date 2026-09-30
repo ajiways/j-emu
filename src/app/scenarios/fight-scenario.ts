@@ -13,6 +13,16 @@ const spellCard = z
   })
   .strict();
 
+const heroGlove = z
+  .object({
+    /** The eight L/C/R combo steps (1 left, 2 center, 3 right) that earn combo points. */
+    hits: z.array(z.number().int().min(1).max(3)).length(8),
+    spells: z
+      .array(z.object({ artikulId: positiveInt, cost: positiveInt, row: positiveInt }).strict())
+      .min(1),
+  })
+  .strict();
+
 const scenarioBot = z
   .object({
     /** Catalog bot that supplies the look (title, level, avatar); stats below replace its own. */
@@ -29,7 +39,8 @@ const scenarioSchema = z
     description: z.string().min(1),
     /** `hunt` is one bot against the hero; a roster with allies or several enemies is a `quest` fight. */
     purpose: z.enum(["hunt", "quest"]),
-    hero: z.object({ hp: positiveInt }).strict(),
+    /** `glove` replaces the hero's equipped glove for this fight; `null` keeps his own. */
+    hero: z.object({ hp: positiveInt, glove: heroGlove.nullable() }).strict(),
     enemies: z.array(scenarioBot).min(1),
     allies: z.array(scenarioBot),
   })

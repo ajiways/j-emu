@@ -1,3 +1,4 @@
+import { stunTurns } from "./stun-turns.ts";
 import { dispelTargetGroups } from "./dispel-target-groups.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import { castChargingBuff } from "./charging-buff-cast.ts";
@@ -46,11 +47,7 @@ export function actBotSpellCard(
     return purged.map((effectId) => ({ type: "effect-purge" as const, effectId }));
   }
   if (spellKind(card.spell, 18)) {
-    const stun = card.spell.effects.find((effect) => effect.kind === 18);
-    if (!stun || stun.duration === undefined) {
-      throw new Error(`Bot stun ${card.artikulId} duration is required`);
-    }
-    target.stunnedTurns += Math.max(1, stun.duration);
+    target.stunnedTurns += stunTurns(card.spell, card.artikulId);
     return [
       {
         type: "buff-cast",

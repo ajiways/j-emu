@@ -11,7 +11,13 @@ const bot = {
   nothingWeight: 100,
   spells: [],
 };
-const valid = { description: "d", purpose: "hunt", hero: { hp: 3 }, enemies: [bot], allies: [] };
+const valid = {
+  description: "d",
+  purpose: "hunt",
+  hero: { hp: 3, glove: null },
+  enemies: [bot],
+  allies: [],
+};
 
 function directoryWith(files: Record<string, string>): string {
   const directory = mkdtempSync(path.join(tmpdir(), "scenarios-"));

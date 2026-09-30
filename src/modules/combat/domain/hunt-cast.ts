@@ -2,6 +2,8 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { CombatGloveSpell, CombatSpell } from "./combat-loadout.ts";
 import { FightCastDenied } from "./fight-cast-denied.ts";
 import { requirePvpForSpell } from "./pvp-only-spell.ts";
+import type { Fighter } from "./fighter.ts";
+import { castGloveStun } from "./glove-stun-cast.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { pocketHealAmount, spellCharging, spellKind } from "./human-cast-state.ts";
 import { applyPocketKind3, requirePocketOrb } from "./pocket-kind3-cast.ts";
@@ -100,6 +102,7 @@ export function tryGloveKeepTurn(
   spellId: number,
   sequence: string | number,
   pvp: boolean,
+  cast: Readonly<{ nowMs: number; foe: () => Fighter }>,
 ): KeepTurnResult {
   if (!human.authed || human.waiting || human.hp === 0) return { kind: "ignored" };
   const glove = human.casts.gloveSpell(spellId);
@@ -109,6 +112,12 @@ export function tryGloveKeepTurn(
   if (isEndingGlove(glove.spell)) return { kind: "ignored" };
   if (human.casts.cp < glove.cost) {
     return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };
+  }
+  if (spellKind(glove.spell, 18)) {
+    return {
+      kind: "resolved",
+      events: castGloveStun(human, glove, cast.foe(), cast.nowMs, sequence),
+    };
   }
   const cp = human.casts.spendCombo(glove.cost);
   const overlay = schoolOverlayFromKind1(glove.spell, human.meleeStrength());

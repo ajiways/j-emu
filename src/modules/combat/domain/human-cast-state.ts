@@ -26,6 +26,7 @@ export class HumanCastState {
   schoolOverlay: SchoolOverlay | null = null;
   private readonly pockets = new Map<number, PocketRuntime>();
   private readonly groupLastUseAt = new Map<number, number>();
+  private readonly gloveLastUseAt = new Map<number, number>();
 
   constructor(
     readonly loadout: CombatLoadout,
@@ -85,6 +86,17 @@ export class HumanCastState {
 
   gloveSpell(artikulId: number): CombatGloveSpell | null {
     return this.loadout.glove?.spells.find((spell) => spell.artikulId === artikulId) ?? null;
+  }
+
+  gloveCooldownLeftMs(glove: CombatGloveSpell, nowMs: number): number {
+    const cooldownSec = glove.spell.cooldown;
+    const last = this.gloveLastUseAt.get(glove.artikulId);
+    if (!cooldownSec || cooldownSec <= 0 || last === undefined) return 0;
+    return Math.max(0, cooldownSec * 1000 - (nowMs - last));
+  }
+
+  noteGloveUse(glove: CombatGloveSpell, nowMs: number): void {
+    this.gloveLastUseAt.set(glove.artikulId, nowMs);
   }
 
   get hits(): readonly number[] {
