@@ -1,0 +1,25 @@
+{
+  "description": "Жертвенный орб (2950, ANTIVAMP 30): у героя 1 хп, у бота 5. Выпейте орб и ударьте: удар убивает бота, самоурон убивает вас. Победа должна достаться вам (ваш удар убил последнего врага), но вы тоже погибаете.",
+  "purpose": "hunt",
+  "hero": {
+    "hp": 1,
+    "maxHp": null,
+    "glove": null,
+    "pocket": [
+      {
+        "artikulId": 2950,
+        "count": 1
+      }
+    ]
+  },
+  "enemies": [
+    {
+      "botArtikulId": 6,
+      "hp": 5,
+      "strength": 1,
+      "nothingWeight": 100,
+      "spells": []
+    }
+  ],
+  "allies": []
+}

@@ -1,0 +1,44 @@
+{
+  "description": "Бот бьёт «Кольцом тьмы IV» (13816, до 5 целей) каждым ходом: урон получают герой и оба союзника-бота, у союзников падают хп. Проверь: цифры урона по всем трём, хп союзников в списке, при гибели союзника бой продолжается, при гибели всех — поражение.",
+  "purpose": "quest",
+  "hero": {
+    "hp": 60,
+    "maxHp": null,
+    "glove": null,
+    "pocket": []
+  },
+  "enemies": [
+    {
+      "botArtikulId": 6,
+      "hp": 400,
+      "strength": 40,
+      "nothingWeight": 0,
+      "spells": [
+        {
+          "artikulId": 13816,
+          "slot": "prefer",
+          "weight": 100,
+          "maxCasts": null,
+          "gate": null,
+          "hpPct": null
+        }
+      ]
+    }
+  ],
+  "allies": [
+    {
+      "botArtikulId": 6,
+      "hp": 100,
+      "strength": 1,
+      "nothingWeight": 100,
+      "spells": []
+    },
+    {
+      "botArtikulId": 6,
+      "hp": 100,
+      "strength": 1,
+      "nothingWeight": 100,
+      "spells": []
+    }
+  ]
+}
