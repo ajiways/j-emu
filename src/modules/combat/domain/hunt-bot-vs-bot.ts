@@ -6,7 +6,7 @@ import { botSpellEndsTurn } from "./bot-spell-damage.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { rollMeleeDamage } from "./melee-damage.ts";
-import { rollMeleeOutcome, unpublishedBotStrikeStats } from "./melee-outcome.ts";
+import { rollMeleeOutcome, strikeStatsFromBot } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import { consumeOverlayCharge } from "./consume-overlay-charge.ts";
 import { snapshotForBot } from "./combat-snapshot.ts";
@@ -52,11 +52,11 @@ function meleeHit(
   target: BotFighter,
   input: Readonly<{ rules: BattleRules; random: RandomSource }>,
 ): readonly BattleEvent[] {
-  const baseDamage = rollMeleeDamage(actor.strength, input.random, input.rules);
+  const baseDamage = rollMeleeDamage(actor.meleeStrength(), input.random, input.rules);
   const outcome = rollMeleeOutcome({
     baseDamage,
-    attacker: unpublishedBotStrikeStats(actor.strength),
-    defender: unpublishedBotStrikeStats(target.strength),
+    attacker: strikeStatsFromBot(actor),
+    defender: strikeStatsFromBot(target),
     targetHp: target.hp,
     forceCrit: false,
     random: input.random,

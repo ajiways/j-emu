@@ -12,6 +12,7 @@ import { kind1OverlayCharges, magicReact } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
 import { schoolOverlayFromKind1 } from "./school-overlay.ts";
+import { castTimedSpell, isTimedSpell } from "./timed-spell.ts";
 import { attachSpellTicks } from "./fight-effect-ticks.ts";
 
 export type BotKindActState = Readonly<{
@@ -36,6 +37,7 @@ export function actBotSpellCard(
   if (spellKind(card.spell, 1)) {
     return instantKind1(actor, target, card, state);
   }
+  if (isTimedSpell(card.spell)) return castTimed(actor, target, card, state.nowMs);
   if (spellKind(card.spell, 2)) {
     return healActor(actor, card);
   }
@@ -91,6 +93,36 @@ export function actBotSpellCard(
     return [];
   }
   throw new Error(`Bot spell ${card.artikulId} has no supported CMB-15 effect`);
+}
+
+/** A timed buff or debuff: on the bot itself when the spell is cast on oneself, else on its foe. */
+function castTimed(
+  actor: BotFighter,
+  foe: HumanFighter | BotFighter,
+  card: HuntBotSpellCard,
+  nowMs: number,
+): readonly BattleEvent[] {
+  const { spell } = card;
+  const carrier = castsOnSelf(spell) ? actor : foe;
+  return [
+    ...castTimedSpell(
+      actor,
+      carrier,
+      { artikulId: card.artikulId, title: card.title, picture: card.picture, spell, flags: 0 },
+      nowMs,
+    ),
+    {
+      type: "buff-cast",
+      animation: botSpellAnimation(spell, card.artikulId),
+      sourceId: actor.fightId,
+      targetId: carrier.id,
+      maxHp: carrier.maxHp,
+    },
+  ];
+}
+
+function castsOnSelf(spell: HuntBotSpellCard["spell"]): boolean {
+  return spell.targetRestr?.self === true || spell.effects.some((e) => e.forceSelfTargeting);
 }
 
 function attachKind1Overlay(actor: BotFighter, card: HuntBotSpellCard): readonly BattleEvent[] {

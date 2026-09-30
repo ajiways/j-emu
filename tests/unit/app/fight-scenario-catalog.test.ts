@@ -14,7 +14,7 @@ const bot = {
 const valid = {
   description: "d",
   purpose: "hunt",
-  hero: { hp: 3, glove: null },
+  hero: { hp: 3, maxHp: null, glove: null, pocket: [] },
   enemies: [bot],
   allies: [],
 };

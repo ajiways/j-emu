@@ -4,11 +4,7 @@ import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { consumeOverlayCharge } from "./consume-overlay-charge.ts";
 import { rollMeleeDamage } from "./melee-damage.ts";
-import {
-  rollMeleeOutcome,
-  strikeStatsFromHuman,
-  unpublishedBotStrikeStats,
-} from "./melee-outcome.ts";
+import { rollMeleeOutcome, strikeStatsFromHuman, strikeStatsFromBot } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
@@ -32,10 +28,10 @@ export function resolveBotMelee(
   if (human.waiting || human.hp === 0) {
     throw new Error("Paired hunter is not a bot melee target");
   }
-  const baseDamage = rollMeleeDamage(input.bot.strength, input.random, input.rules);
+  const baseDamage = rollMeleeDamage(input.bot.meleeStrength(), input.random, input.rules);
   const outcome = rollMeleeOutcome({
     baseDamage,
-    attacker: unpublishedBotStrikeStats(input.bot.strength),
+    attacker: strikeStatsFromBot(input.bot),
     defender: strikeStatsFromHuman(human),
     targetHp: human.hp,
     forceCrit: false,

@@ -3,7 +3,9 @@
   "purpose": "hunt",
   "hero": {
     "hp": 3,
-    "glove": null
+    "maxHp": null,
+    "glove": null,
+    "pocket": []
   },
   "enemies": [
     {

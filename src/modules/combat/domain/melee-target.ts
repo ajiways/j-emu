@@ -2,7 +2,7 @@ import type { Combatant } from "./combatant.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { strikeStatsFromHuman, unpublishedBotStrikeStats } from "./melee-outcome.ts";
+import { strikeStatsFromBot, strikeStatsFromHuman } from "./melee-outcome.ts";
 
 export type MeleeTarget =
   | Readonly<{ kind: "human"; human: HumanFighter } & Combatant>
@@ -29,7 +29,7 @@ export function botMeleeTarget(bot: BotFighter): MeleeTarget {
     team: bot.team,
     maxHp: bot.maxHp,
     mag: bot.mag,
-    strikeStats: unpublishedBotStrikeStats(bot.strength),
+    strikeStats: strikeStatsFromBot(bot),
     alive: bot.hp > 0,
   };
 }

@@ -8,7 +8,7 @@ import type { HumanFighter } from "./human-fighter.ts";
 import { pocketHealAmount, spellCharging, spellKind } from "./human-cast-state.ts";
 import { applyPocketKind3, requirePocketOrb } from "./pocket-kind3-cast.ts";
 import { castChargingBuff } from "./charging-buff-cast.ts";
-import { castTimedSelfSpell, isTimedSelfSpell } from "./timed-self-spell.ts";
+import { castTimedSpell, isTimedSpell } from "./timed-spell.ts";
 import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
@@ -34,14 +34,15 @@ export function tryPocketCast(
     throw new FightCastDenied("cooldown", sequence);
   }
   if (spellKind(row.spell, 11)) throw new FightCastDenied("kind11", sequence);
-  const timedSelf = isTimedSelfSpell(row.spell);
+  const timedSelf = isTimedSpell(row.spell);
   if (spellKind(row.spell, 3) && !timedSelf) requirePocketOrb(row);
   const consumed = human.casts.consumePocket(itemId, nowMs);
   if (timedSelf) {
     return {
       kind: "resolved",
       consumePocketItemId: itemId,
-      events: castTimedSelfSpell(
+      events: castTimedSpell(
+        human,
         human,
         {
           artikulId: consumed.artifactId,
@@ -133,7 +134,7 @@ export function tryGloveKeepTurn(
   if (human.casts.cp < glove.cost) {
     return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };
   }
-  if (isTimedSelfSpell(glove.spell)) {
+  if (isTimedSpell(glove.spell)) {
     if (human.casts.gloveCooldownLeftMs(glove, cast.nowMs) > 0) {
       throw new FightCastDenied("cooldown", sequence);
     }
@@ -142,7 +143,8 @@ export function tryGloveKeepTurn(
     return {
       kind: "resolved",
       events: [
-        ...castTimedSelfSpell(
+        ...castTimedSpell(
+          human,
           human,
           {
             artikulId: glove.artikulId,

@@ -50,7 +50,7 @@ export class BotFighter implements Fighter {
     readonly initiative: number,
     readonly magPower: number,
     readonly magResist: number,
-    readonly maxHp: number,
+    private readonly baseMaxHp: number,
     readonly spellBook: HuntBotSpellBook,
     hp: number,
     effectIds: FightEffectIds,
@@ -75,8 +75,10 @@ export class BotFighter implements Fighter {
     if (!Number.isInteger(magResist) || magResist < 0) {
       throw new Error("Roster bot mag resist must be a non-negative integer");
     }
-    if (!Number.isInteger(maxHp) || maxHp < 1) throw new Error("Roster bot maxHp is invalid");
-    if (!Number.isInteger(hp) || hp < 0 || hp > maxHp) {
+    if (!Number.isInteger(baseMaxHp) || baseMaxHp < 1) {
+      throw new Error("Roster bot maxHp is invalid");
+    }
+    if (!Number.isInteger(hp) || hp < 0 || hp > baseMaxHp) {
       throw new Error("Roster bot hp is invalid");
     }
     requireHuntBotSpellBook(spellBook);
@@ -84,7 +86,7 @@ export class BotFighter implements Fighter {
     this.brain = new SpellBookBotBrain(spellBook);
     this.effects = new FighterEffects({
       heroId: fightId,
-      base: { STR: strength, DEX: 0, DEF: 0, RAG: 0, BLOK: 0, HPMAX: maxHp },
+      base: { STR: strength, DEX: 0, DEF: 0, RAG: 0, BLOK: 0, HPMAX: baseMaxHp },
       startedAtMs: 0,
       gearSpells: [],
       effectIds,
@@ -110,6 +112,30 @@ export class BotFighter implements Fighter {
       seed.hp,
       effectIds,
     );
+  }
+
+  get maxHp(): number {
+    return Math.max(1, this.baseMaxHp + this.effects.standingSkill("HPMAX"));
+  }
+
+  get rageStat(): number {
+    return Math.max(0, this.effects.standingSkill("RAG"));
+  }
+
+  get dexterity(): number {
+    return Math.max(0, this.effects.standingSkill("DEX"));
+  }
+
+  get defense(): number {
+    return Math.max(0, this.effects.standingSkill("DEF"));
+  }
+
+  get block(): number {
+    return Math.max(0, this.effects.standingSkill("BLOK"));
+  }
+
+  meleeStrength(): number {
+    return this.strength + this.effects.standingSkill("STR");
   }
 
   get hp(): number {
@@ -171,9 +197,9 @@ export class BotFighter implements Fighter {
       this.initiative,
       this.magPower,
       this.magResist,
-      this.maxHp,
+      this.baseMaxHp,
       this.spellBook,
-      this.maxHp,
+      this.baseMaxHp,
       this.effects.effectIds,
     );
   }

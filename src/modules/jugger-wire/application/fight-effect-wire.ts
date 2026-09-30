@@ -5,7 +5,8 @@ type EffectUse = Extract<CombatEvent, { type: "effect-use" }>;
 type EffectPurge = Extract<CombatEvent, { type: "effect-purge" }>;
 type BuffCast = Extract<CombatEvent, { type: "buff-cast" }>;
 
-function fightPersEffEvent(
+/** The `persEff` event of a query: the list alone, the live server sends no `effUse` with it. */
+export function fightPersEffEvent(
   persId: number,
   effects: readonly FightEffectSnap[],
 ): Readonly<Record<string, unknown>> {

@@ -115,8 +115,9 @@ describe("scripted fight scenarios from chat", () => {
     expect(seen).toContain("effPurge");
   });
 
-  it("dex-buff-glove: the glove buff arrives with the skills baked against the hero's stats", async () => {
-    const client = await startScenario("dex-buff-glove");
+  it("stat-buffs: the glove buff arrives baked and the elixir raises the max hp and heals", async () => {
+    const client = await startScenario("stat-buffs");
+    expect(opened).toContain('"artikulId":169');
     let sq = 4;
     await client.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: sq++ });
     await untilAttackNow(client);
@@ -126,6 +127,12 @@ describe("scripted fight scenarios from chat", () => {
     expect(cast).toContain('"pcDEX":1.23');
     expect(cast).toContain('"remainTime":400');
     expect(cast).toMatch(/"DEX":\d+/);
+    const elixir = /"artikulId":169[\s\S]*?"srcId":(\d+),"srcType":2/.exec(opened);
+    if (!elixir?.[1]) throw new Error("Elixir 169 is not in the pocket");
+    await client.fight({ rc: "castSpell", srcType: 2, srcId: Number(elixir[1]), sq: sq++ });
+    const drunk = JSON.stringify(await client.pollFight());
+    expect(drunk).toContain('"HPMAX":39');
+    expect(drunk).toContain('"maxHp":150');
   });
 
   it("answers an unknown scenario with a system line and starts no fight", async () => {

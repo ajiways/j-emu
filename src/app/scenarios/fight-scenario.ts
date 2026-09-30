@@ -23,6 +23,20 @@ const heroGlove = z
   })
   .strict();
 
+const heroSchema = z
+  .object({
+    hp: positiveInt,
+    /** Max hp for this fight; `null` keeps the hero's own. Baking of hp buffs starts from it. */
+    maxHp: positiveInt.nullable(),
+    glove: heroGlove.nullable(),
+    /** Pocket items the hero is given (real items, put in his pocket) before the fight. */
+    pocket: z.array(z.object({ artikulId: positiveInt, count: positiveInt }).strict()),
+  })
+  .strict()
+  .refine((hero) => hero.maxHp === null || hero.hp <= hero.maxHp, {
+    message: "hero.hp must not exceed hero.maxHp",
+  });
+
 const scenarioBot = z
   .object({
     /** Catalog bot that supplies the look (title, level, avatar); stats below replace its own. */
@@ -40,7 +54,7 @@ const scenarioSchema = z
     /** `hunt` is one bot against the hero; a roster with allies or several enemies is a `quest` fight. */
     purpose: z.enum(["hunt", "quest"]),
     /** `glove` replaces the hero's equipped glove for this fight; `null` keeps his own. */
-    hero: z.object({ hp: positiveInt, glove: heroGlove.nullable() }).strict(),
+    hero: heroSchema,
     enemies: z.array(scenarioBot).min(1),
     allies: z.array(scenarioBot),
   })

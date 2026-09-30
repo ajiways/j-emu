@@ -3,10 +3,7 @@ import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-
 import type { CombatSpell } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
-import {
-  castTimedSelfSpell,
-  isTimedSelfSpell,
-} from "../../../src/modules/combat/domain/timed-self-spell.ts";
+import { castTimedSpell, isTimedSpell } from "../../../src/modules/combat/domain/timed-spell.ts";
 import { UNIT_HUNT_APPEARANCE, unitHuntHumanStats } from "../../support/hunt-start-input.ts";
 
 /** Покров Тьмы I, artikul 182, as the catalog has it. */
@@ -71,18 +68,18 @@ const source = (artikulId: number, title: string, spell: CombatSpell) => ({
   flags: "262144",
 });
 
-describe("timed self spells", () => {
+describe("timed spells", () => {
   it("recognizes timed buffs and heals but not charged orbs or strikes", () => {
-    expect(isTimedSelfSpell(DARK_VEIL)).toBe(true);
-    expect(isTimedSelfSpell(HERO_ELIXIR)).toBe(true);
-    expect(isTimedSelfSpell({ effects: [{ kind: 3, charging: 1 }] })).toBe(false);
-    expect(isTimedSelfSpell({ effects: [{ kind: 3 }, { kind: 1 }] })).toBe(false);
-    expect(isTimedSelfSpell({ effects: [{ kind: 2, amount: 15 }] })).toBe(false);
+    expect(isTimedSpell(DARK_VEIL)).toBe(true);
+    expect(isTimedSpell(HERO_ELIXIR)).toBe(true);
+    expect(isTimedSpell({ effects: [{ kind: 3, charging: 1 }] })).toBe(false);
+    expect(isTimedSpell({ effects: [{ kind: 3 }, { kind: 1 }] })).toBe(false);
+    expect(isTimedSpell({ effects: [{ kind: 2, amount: 15 }] })).toBe(false);
   });
 
   it("raises dexterity by the baked amount for 400 fight seconds (live 182)", () => {
     const human = hero();
-    const events = castTimedSelfSpell(human, source(182, "Покров Тьмы I", DARK_VEIL), 0);
+    const events = castTimedSpell(human, human, source(182, "Покров Тьмы I", DARK_VEIL), 0);
     expect(events).toEqual([
       expect.objectContaining({
         type: "effect-use",
@@ -106,8 +103,8 @@ describe("timed self spells", () => {
 
   it("replaces an earlier buff of the same group", () => {
     const human = hero();
-    castTimedSelfSpell(human, source(182, "Покров Тьмы I", DARK_VEIL), 0);
-    const again = castTimedSelfSpell(human, source(182, "Покров Тьмы I", DARK_VEIL), 0);
+    castTimedSpell(human, human, source(182, "Покров Тьмы I", DARK_VEIL), 0);
+    const again = castTimedSpell(human, human, source(182, "Покров Тьмы I", DARK_VEIL), 0);
     expect(again[0]).toEqual({ type: "effect-purge", effectId: 1 });
     expect(human.dexterity).toBe(68);
     expect(human.effects.snapshot()).toHaveLength(1);
@@ -115,7 +112,12 @@ describe("timed self spells", () => {
 
   it("raises the maximum first and heals the new maximum (live 169: 93/111 -> 132/150)", () => {
     const human = hero();
-    const events = castTimedSelfSpell(human, source(169, "Малый эликсир богатыря", HERO_ELIXIR), 0);
+    const events = castTimedSpell(
+      human,
+      human,
+      source(169, "Малый эликсир богатыря", HERO_ELIXIR),
+      0,
+    );
     expect(events).toEqual([
       expect.objectContaining({
         type: "effect-use",
@@ -131,7 +133,7 @@ describe("timed self spells", () => {
 
   it("pulls hp back under the old maximum when a max hp buff is replaced or ends", () => {
     const human = hero({ hp: 111 });
-    castTimedSelfSpell(human, source(169, "Малый эликсир богатыря", HERO_ELIXIR), 0);
+    castTimedSpell(human, human, source(169, "Малый эликсир богатыря", HERO_ELIXIR), 0);
     expect(human.hp).toBe(150);
     human.effects.dispelGroups([843]);
     human.clampToMaxHp();
@@ -150,7 +152,7 @@ describe("timed self spells", () => {
       ],
     };
     const human = hero();
-    const events = castTimedSelfSpell(human, source(1014, "Малый эликсир Титана", titan), 0);
+    const events = castTimedSpell(human, human, source(1014, "Малый эликсир Титана", titan), 0);
     expect(events.filter((event) => event.type === "effect-use")).toHaveLength(1);
     expect(human.effects.snapshot()).toHaveLength(1);
     expect(human.meleeStrength()).toBeGreaterThan(53);

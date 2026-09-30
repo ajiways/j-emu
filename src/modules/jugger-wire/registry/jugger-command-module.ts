@@ -258,6 +258,7 @@ export class JuggerCommandModule {
           combat,
           chat,
           fightWire,
+          unitOfWork,
         }),
       ),
       new EmptyCollectionOaCommand("companion|list_user_companions", "companions", bootstrap),

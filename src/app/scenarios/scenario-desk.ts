@@ -12,6 +12,7 @@ import { heroFightConfLook } from "../../modules/jugger-wire/application/hero-fi
 import { toCombatSpell } from "../../modules/jugger-wire/application/to-combat-spell.ts";
 import type { ChatDesk } from "../chat-desk.ts";
 import { startHuntWithRoster, type FightStartDeps } from "../quest-fight-start.ts";
+import { provisionPocket } from "./scenario-hero-pocket.ts";
 import type { FightScenario, FightScenarioBot } from "./fight-scenario.ts";
 import type { FightScenarioCatalog } from "./fight-scenario-catalog.ts";
 
@@ -23,6 +24,7 @@ type ScenarioDeskDeps = Readonly<{
   chat: ChatDesk;
   fightWire: FightWireMapper;
   start: FightStartDeps;
+  pocket: Parameters<typeof provisionPocket>[2];
 }>;
 
 /**
@@ -49,16 +51,19 @@ export class ScenarioDesk {
     }
     const hero = await this.deps.characters.getByAccountId(accountId);
     if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
-    if (scenario.hero.hp > hero.maxHp) {
+    const maxHp = scenario.hero.maxHp ?? hero.maxHp;
+    if (scenario.hero.hp > maxHp) {
       await this.deps.chat.deliverSystem(
         accountId,
-        `Сценарий «${name}» требует ${scenario.hero.hp} HP, у героя максимум ${hero.maxHp}.`,
+        `Сценарий «${name}» требует ${scenario.hero.hp} HP, у героя максимум ${maxHp}.`,
       );
       return {};
     }
+    await provisionPocket(hero, scenario.hero.pocket, this.deps.pocket);
     const started = await startHuntWithRoster(hero, this.deps.start, {
       purpose: scenario.purpose,
       heroHp: scenario.hero.hp,
+      heroMaxHp: maxHp,
       gloveOverride: await this.glove(scenario),
       enemies: await this.roster(scenario, scenario.enemies),
       allies: await this.roster(scenario, scenario.allies),

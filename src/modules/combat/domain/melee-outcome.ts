@@ -1,5 +1,6 @@
 import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { BattleRules } from "./battle-rules.ts";
+import type { BotFighter } from "./bot-fighter.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { RandomSource } from "./random-source.ts";
 
@@ -26,6 +27,17 @@ export type MeleeOutcome = Readonly<{
   react: number;
   blocked: number;
 }>;
+
+/** A bot has only strength of its own; its other stats come from the effects standing on it. */
+export function strikeStatsFromBot(bot: BotFighter): StrikeStats {
+  return {
+    strength: bot.meleeStrength(),
+    rage: bot.rageStat,
+    dexterity: bot.dexterity,
+    defense: bot.defense,
+    block: bot.block,
+  };
+}
 
 export function unpublishedBotStrikeStats(strength: number): StrikeStats {
   if (!Number.isInteger(strength) || strength < 1) {

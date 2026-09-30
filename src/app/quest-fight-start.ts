@@ -71,6 +71,7 @@ async function startAuthoredHunt(
   return startHuntWithRoster(hero, deps, {
     purpose: input.purpose,
     heroHp: hero.hp,
+    heroMaxHp: hero.maxHp,
     gloveOverride: null,
     enemies,
     allies: await loadRosterBots(deps.catalog, input.allies),
@@ -86,6 +87,7 @@ export async function startHuntWithRoster(
   input: Readonly<{
     purpose: "hunt" | "quest";
     heroHp: number;
+    heroMaxHp: number;
     /** A glove for this fight instead of the equipped one; `null` keeps the hero's own loadout. */
     gloveOverride: CombatGloveLoadout | null;
     enemies: readonly HuntRosterBotInput[];
@@ -110,7 +112,7 @@ export async function startHuntWithRoster(
     heroLevel: hero.level,
     heroKind: hero.kind,
     heroHp: input.heroHp,
-    heroMaxHp: hero.maxHp,
+    heroMaxHp: input.heroMaxHp,
     heroMp: hero.mp,
     heroMaxMp: hero.maxMp,
     ...huntHeroStatFields(await deps.combatFightStats(hero.id)),

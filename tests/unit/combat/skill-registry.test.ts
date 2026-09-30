@@ -66,11 +66,6 @@ describe("unsupportedSkillsOf", () => {
         { kind: 1, skills: [{ skillId: "pcSTR", value: 10 }] },
       ],
     };
-    expect(unsupportedSkillsOf(spell, "human")).toEqual([{ skillId: "VIT", effectKind: 3 }]);
-    expect(unsupportedSkillsOf(spell, "bot")).toEqual([
-      { skillId: "DEX", effectKind: 3 },
-      { skillId: "pcDEX", effectKind: 3 },
-      { skillId: "VIT", effectKind: 3 },
-    ]);
+    expect(unsupportedSkillsOf(spell)).toEqual([{ skillId: "VIT", effectKind: 3 }]);
   });
 });

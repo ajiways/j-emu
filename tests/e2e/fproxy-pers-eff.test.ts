@@ -81,8 +81,11 @@ describe("fproxy persEff roster inspect", () => {
     expect(await b.fight({ rc: "persEff", persId: heroA, sq: 4 })).toHaveLength(0);
     const inspect = await b.pollFight();
     expect(inspect[0]).toEqual({ rs: true, sq: 4 });
-    expect(fightEventTypes(inspect)).toEqual(["persEff", "effUse"]);
+    // The live server answers a persEff query with the list alone; a repeated effUse would show
+    // the buff as freshly applied again.
+    expect(fightEventTypes(inspect)).toEqual(["persEff"]);
     expect(persEffPacket(inspect)).toMatchObject({ et: "persEff", persId: heroA });
+    expect(JSON.stringify(persEffPacket(inspect))).toContain("99");
   });
 });
 

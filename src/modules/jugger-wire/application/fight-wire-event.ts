@@ -5,7 +5,7 @@ import {
   fightEffectPurgeEvent,
   fightEffectUseEvent,
   fightPersCpEvent,
-  fightPersEffSnapshotEvents,
+  fightPersEffEvent,
 } from "./fight-effect-wire.ts";
 import { fightEventMap } from "./fight-event-map.ts";
 import { huntFightBootstrapEvents, huntFightRosterEvents } from "./hunt-fight-bootstrap-wire.ts";
@@ -69,7 +69,7 @@ export function encodeFightWireEvent(event: CombatEvent): FightWireFrame {
     case "pers-change":
       return fightEventMap(huntPersChangeEvents(event));
     case "pers-effects":
-      return fightEventMap(fightPersEffSnapshotEvents(event.persId, event.effects));
+      return fightEventMap([fightPersEffEvent(event.persId, event.effects)]);
     case "finished":
       return fightEventMap([{ et: "fightFinish", winner: event.winnerTeam }]);
   }
