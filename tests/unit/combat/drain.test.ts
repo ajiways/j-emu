@@ -41,7 +41,7 @@ describe("settleDrain", () => {
     expect(settleDrain(nearFull, 20, { healPct: 30, hurtPct: 0 }).healed).toBe(2);
   });
 
-  it("hurts the swinger with a separate hit and never kills him", () => {
+  it("hurts the swinger with a separate hit that can kill him", () => {
     const bot = swinger(50);
     const outcome = settleDrain(bot, 20, { healPct: 0, hurtPct: 30 });
     expect(outcome.healed).toBe(0);
@@ -54,8 +54,9 @@ describe("settleDrain", () => {
     });
     expect(bot.hp).toBe(44);
     const low = swinger(3);
-    settleDrain(low, 100, { healPct: 0, hurtPct: 90 });
-    expect(low.hp).toBe(1);
+    const lethal = settleDrain(low, 100, { healPct: 0, hurtPct: 90 });
+    expect(lethal.hurtEvent).toMatchObject({ killed: true, hpChange: -3 });
+    expect(low.hp).toBe(0);
   });
 
   it("lets heal and hurt both apply to one hit and does nothing for a hit that dealt nothing", () => {
