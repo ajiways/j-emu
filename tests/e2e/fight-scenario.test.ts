@@ -56,6 +56,41 @@ describe("scripted fight scenarios from chat", () => {
     expect(sawTickBeforeFinish).toBe(true);
   });
 
+  it("stun-by-bot skips the hero's next two turns while the bot keeps striking", async () => {
+    const client = await startScenario("stun-by-bot");
+    await client.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: 4 });
+    const seen: string[][] = [];
+    for (let second = 0; second < 15; second += 1) {
+      await harness.elapseCombat(1000);
+      const types = fightEventTypes(await client.pollFight());
+      if (types.length > 0) seen.push(types);
+      if (types.includes("attacknow")) break;
+    }
+    expect(seen.at(-1)).toEqual(["attacknow"]);
+    const botCasts = seen.filter((types) => types.includes("cast")).length;
+    expect(botCasts).toBeGreaterThanOrEqual(4);
+  });
+
+  it("dispel-bot-vs-bot applies a DoT to the ally bot and then purges it", async () => {
+    const client = await startScenario("dispel-bot-vs-bot");
+    const seen: string[] = [];
+    let ready = true;
+    let sq = 4;
+    for (let second = 0; second < 12 && !seen.includes("effPurge"); second += 1) {
+      if (ready) {
+        await client.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq });
+        sq += 1;
+        ready = false;
+      }
+      await harness.elapseCombat(1000);
+      const types = fightEventTypes(await client.pollFight());
+      seen.push(...types);
+      if (types.includes("attacknow")) ready = true;
+    }
+    expect(seen.indexOf("effUse")).toBeGreaterThanOrEqual(0);
+    expect(seen.indexOf("effPurge")).toBeGreaterThan(seen.indexOf("effUse"));
+  });
+
   it("answers an unknown scenario with a system line and starts no fight", async () => {
     const client = await AuthenticatedClient.login(application);
     const sent = await client.objectAction({
@@ -67,4 +102,17 @@ describe("scripted fight scenarios from chat", () => {
     expect(sent["chat|add"]).toEqual({ status: 100 });
     expect(sent["fight|conf"]).toBeUndefined();
   });
+
+  async function startScenario(name: string): Promise<AuthenticatedClient> {
+    const client = await AuthenticatedClient.login(application);
+    const sent = await client.objectAction({
+      object: "chat",
+      action: "add",
+      form: { message: `/scenario ${name}`, type: "main" },
+      sq: 2,
+    });
+    await client.fight({ rc: "auth", eid: huntFightIdFrom(sent), sq: 3 });
+    await client.pollFight();
+    return client;
+  }
 });

@@ -27,6 +27,8 @@ const scenarioBot = z
 const scenarioSchema = z
   .object({
     description: z.string().min(1),
+    /** `hunt` is one bot against the hero; a roster with allies or several enemies is a `quest` fight. */
+    purpose: z.enum(["hunt", "quest"]),
     hero: z.object({ hp: positiveInt }).strict(),
     enemies: z.array(scenarioBot).min(1),
     allies: z.array(scenarioBot),
@@ -44,5 +46,9 @@ export function parseFightScenario(name: string, raw: unknown): FightScenario {
       .join("; ");
     throw new Error(`Fight scenario ${name} is invalid: ${issues}`);
   }
-  return { name, ...parsed.data };
+  const data = parsed.data;
+  if (data.purpose === "hunt" && (data.enemies.length > 1 || data.allies.length > 0)) {
+    throw new Error(`Fight scenario ${name}: a hunt scenario takes one enemy and no allies`);
+  }
+  return { name, ...data };
 }

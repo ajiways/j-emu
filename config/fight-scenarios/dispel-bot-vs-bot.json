@@ -1,0 +1,49 @@
+{
+  "description": "Кроме вашего бота в бою пара ботов: вражеский Лангерд плюёт ядом 396 на союзного бота, затем диспелом 2496 снимает яд (effPurge). Смотри fight_wire: события бота против бота должны дойти до вас, а диспел — сработать только когда на союзном боте есть эффект.",
+  "purpose": "quest",
+  "hero": {
+    "hp": 10
+  },
+  "enemies": [
+    {
+      "botArtikulId": 4,
+      "hp": 500,
+      "strength": 1,
+      "nothingWeight": 100,
+      "spells": []
+    },
+    {
+      "botArtikulId": 353,
+      "hp": 500,
+      "strength": 1,
+      "nothingWeight": 100,
+      "spells": [
+        {
+          "artikulId": 396,
+          "slot": "fight_start",
+          "weight": 0,
+          "maxCasts": 1,
+          "gate": null,
+          "hpPct": null
+        },
+        {
+          "artikulId": 2496,
+          "slot": "prefer",
+          "weight": 0,
+          "maxCasts": null,
+          "gate": "foe_has_dispel_groups",
+          "hpPct": null
+        }
+      ]
+    }
+  ],
+  "allies": [
+    {
+      "botArtikulId": 4,
+      "hp": 500,
+      "strength": 1,
+      "nothingWeight": 100,
+      "spells": []
+    }
+  ]
+}

@@ -53,7 +53,7 @@ export class ScenarioDesk {
       return {};
     }
     const started = await startHuntWithRoster(hero, this.deps.start, {
-      purpose: "hunt",
+      purpose: scenario.purpose,
       heroHp: scenario.hero.hp,
       enemies: await this.roster(scenario, scenario.enemies),
       allies: await this.roster(scenario, scenario.allies),

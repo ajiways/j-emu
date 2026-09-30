@@ -11,7 +11,7 @@ const bot = {
   nothingWeight: 100,
   spells: [],
 };
-const valid = { description: "d", hero: { hp: 3 }, enemies: [bot], allies: [] };
+const valid = { description: "d", purpose: "hunt", hero: { hp: 3 }, enemies: [bot], allies: [] };
 
 function directoryWith(files: Record<string, string>): string {
   const directory = mkdtempSync(path.join(tmpdir(), "scenarios-"));
@@ -34,6 +34,14 @@ describe("FightScenarioCatalog", () => {
     expect(() =>
       FightScenarioCatalog.load(directoryWith({ "bad.json": JSON.stringify(incomplete) })),
     ).toThrow(/allies/);
+  });
+
+  it("rejects a hunt scenario that carries a roster", () => {
+    expect(() =>
+      FightScenarioCatalog.load(
+        directoryWith({ "bad.json": JSON.stringify({ ...valid, allies: [bot] }) }),
+      ),
+    ).toThrow(/one enemy and no allies/);
   });
 
   it("fails on an unknown field", () => {
