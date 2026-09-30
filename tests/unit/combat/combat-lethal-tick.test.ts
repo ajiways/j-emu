@@ -35,14 +35,15 @@ describe("CombatService lethal DoT tick on the striker", () => {
     await combat.execute(1, { kind: "strike", side: "center", sequence: 3 });
     const melee = await combat.execute(1, { kind: "poll" });
     expect(melee.map((event) => event.type)).toEqual([
+      "pers-change",
       "turn-wait",
       "damage",
       "damage",
       "command-accepted",
       "finished",
     ]);
-    expect(melee[2]).toMatchObject({ animation: "", targetId: 1, hpChange: -1, killed: true });
-    expect(melee[4]).toMatchObject({ type: "finished", winnerTeam: 2 });
+    expect(melee[3]).toMatchObject({ animation: "", targetId: 1, hpChange: -1, killed: true });
+    expect(melee[5]).toMatchObject({ type: "finished", winnerTeam: 2 });
     expect(await combat.hasFight(start.fightId)).toBe(false);
   });
 
@@ -71,14 +72,15 @@ describe("CombatService lethal DoT tick on the striker", () => {
     await combat.execute(1, { kind: "strike", side: "center", sequence: 3 });
     const melee = await combat.execute(1, { kind: "poll" });
     expect(melee.map((event) => event.type)).toEqual([
+      "pers-change",
       "turn-wait",
       "damage",
       "damage",
       "command-accepted",
       "finished",
     ]);
-    expect(melee[2]).toMatchObject({ animation: "", targetId: 1, killed: true });
-    expect(melee[4]).toMatchObject({ type: "finished", winnerTeam: 2 });
+    expect(melee[3]).toMatchObject({ animation: "", targetId: 1, killed: true });
+    expect(melee[5]).toMatchObject({ type: "finished", winnerTeam: 2 });
     const waiter = await combat.execute(2, { kind: "poll" });
     expect(waiter.some((event) => event.type === "opponent-new")).toBe(true);
     expect(await combat.hasFight(start.fightId)).toBe(true);

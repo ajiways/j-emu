@@ -11,6 +11,7 @@ import {
   enqueuePlayerMelee,
   fanoutPersChange,
   fanoutRosterEffects,
+  withActorPersChange,
 } from "./combat-melee-dispatch.ts";
 import { CombatEffectClock } from "./combat-effect-clock.ts";
 import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
@@ -66,7 +67,7 @@ export class CombatMeleeLoop {
         this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
         return;
       }
-      enqueuePlayerMelee(this.enqueue, accountId, sequence, resolved.events);
+      enqueuePlayerMelee(this.enqueue, battle, accountId, sequence, resolved.events);
       fanoutPersChange(battle, accountId, resolved.events, this.enqueue, this.wakeAccount);
       fanoutRosterEffects(battle, accountId, resolved.events, this.enqueue, this.wakeAccount);
       if (battle.finished) {
@@ -243,7 +244,7 @@ export class CombatMeleeLoop {
       if (!battle || battle.finished) return;
       if (!battle.accountIds().includes(targetAccountId)) return;
       const result = battle.resolveBotMelee(targetAccountId, this.scheduler.now().getTime());
-      this.enqueue(targetAccountId, result.events);
+      this.enqueue(targetAccountId, withActorPersChange(battle, result.events));
       fanoutPersChange(battle, targetAccountId, result.events, this.enqueue, this.wakeAccount);
       fanoutRosterEffects(battle, targetAccountId, result.events, this.enqueue, this.wakeAccount);
       this.wakeAccount(targetAccountId);
@@ -330,9 +331,8 @@ export class CombatMeleeLoop {
     if (!token) return;
     const opponent = battle.pairedOpponent(accountId);
     if (opponent.kind === "bot") return this.scheduleBotAndGrant(battle, accountId);
-    this.scheduler.schedule(token, battle.turnGrantDelayMs, () =>
-      this.runGrant(battle.id, opponent.accountId),
-    );
+    const grant = () => this.runGrant(battle.id, opponent.accountId);
+    this.scheduler.schedule(token, battle.turnGrantDelayMs, grant);
   }
 
   private runGrant(fightId: string, accountId: number): void {

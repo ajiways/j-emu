@@ -50,6 +50,7 @@ export function cancelDuel(scheduler: HuntMeleeScheduler, battle: Battle, accoun
 
 export function enqueuePlayerMelee(
   enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void,
+  battle: Battle,
   accountId: number,
   sequence: string | number,
   events: readonly CombatEvent[],
@@ -58,6 +59,7 @@ export function enqueuePlayerMelee(
     throw new Error("Player melee must emit turn-wait then damage");
   }
   enqueue(accountId, [
+    ...actorPersChange(battle, events),
     ...events.filter((event) => event.type !== "finished"),
     { type: "command-accepted", sequence },
     ...events.filter((event) => event.type === "finished"),
@@ -84,6 +86,24 @@ export function fanoutPersChange(
     enqueue(accountId, [patch], "head");
     wakeAccount(accountId);
   }
+}
+
+/**
+ * The acting client also needs the fresh hp and dealt-damage totals after a hit (the live server
+ * sends them to everyone, actor included); the hit's own events do not carry them.
+ */
+function actorPersChange(battle: Battle, events: readonly CombatEvent[]): readonly CombatEvent[] {
+  if (events.some((event) => event.type === "pers-change")) return [];
+  const hit = events.find((event) => event.type === "damage" && event.animation !== "");
+  const patch = persChangeFromDamage(battle, hit);
+  return patch ? [patch] : [];
+}
+
+export function withActorPersChange(
+  battle: Battle,
+  events: readonly CombatEvent[],
+): readonly CombatEvent[] {
+  return [...actorPersChange(battle, events), ...events];
 }
 
 function persChangeFromDamage(

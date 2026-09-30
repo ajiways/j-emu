@@ -106,6 +106,7 @@ export class HumanCastState {
   advanceCombo(side: "left" | "center" | "right"): number {
     const hits = this.hits;
     if (hits.length === 0) return this.cp;
+    if (this.cp >= hits.length) return this.cp;
     const expected = hits[this.cp];
     const code = side === "left" ? 1 : side === "center" ? 2 : 3;
     if (expected === code) {

@@ -78,14 +78,17 @@ describe("CombatService effect clock", () => {
       rounds.push({ strike: labels(strike), counter: labels(counter) });
     }
     expect(rounds).toEqual([
-      { strike: ["turn-wait", "damage", "command-accepted"], counter: ["effect-use", "damage"] },
       {
-        strike: ["turn-wait", "damage", "command-accepted"],
-        counter: ["damage", "damage:tick"],
+        strike: ["pers-change", "turn-wait", "damage", "command-accepted"],
+        counter: ["pers-change", "effect-use", "damage"],
       },
       {
-        strike: ["turn-wait", "damage", "command-accepted"],
-        counter: ["damage", "damage:tick", "effect-purge"],
+        strike: ["pers-change", "turn-wait", "damage", "command-accepted"],
+        counter: ["pers-change", "damage", "damage:tick"],
+      },
+      {
+        strike: ["pers-change", "turn-wait", "damage", "command-accepted"],
+        counter: ["pers-change", "damage", "damage:tick", "effect-purge"],
       },
     ]);
   });

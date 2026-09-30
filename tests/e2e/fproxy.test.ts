@@ -57,7 +57,12 @@ describe("fproxy", () => {
       const melee = await client.pollFight();
       const meleeFrame = melee[0];
       if (meleeFrame === undefined) throw new Error("Melee poll did not return a frame");
-      expect(fightEventTypes([meleeFrame])).toEqual(["attackwait", "cast"]);
+      expect(fightEventTypes([meleeFrame])).toEqual([
+        "attackwait",
+        "persChangeInfo",
+        "persChangeInfo",
+        "cast",
+      ]);
       expect(castAnimation(meleeFrame)).toBe(side.animation);
       expect(melee.some((frame) => frame && typeof frame === "object" && "rs" in frame)).toBe(true);
       expect(fightEventTypes(melee)).not.toContain("attacknow");

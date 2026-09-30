@@ -23,7 +23,7 @@ describe("fproxy gear spell 20546", () => {
     let application: Application;
 
     beforeEach(async () => {
-      harness = new ApplicationHarness();
+      harness = new ApplicationHarness(undefined, undefined, { combatRandom: new FixedRandom() });
       application = await harness.start();
     });
 
@@ -95,7 +95,12 @@ describe("fproxy gear spell 20546", () => {
       const melee = await client.pollFight();
       const meleeFrame = melee[0];
       if (meleeFrame === undefined) throw new Error("Melee poll did not return a frame");
-      expect(fightEventTypes([meleeFrame])).toEqual(["attackwait", "cast"]);
+      expect(fightEventTypes([meleeFrame])).toEqual([
+        "attackwait",
+        "persChangeInfo",
+        "persChangeInfo",
+        "cast",
+      ]);
       expect(fightEventTypes(melee)).not.toContain("effUse");
       expect(fightEventTypes(melee)).not.toContain("persEff");
       expect(melee.some((frame) => frame && typeof frame === "object" && "rs" in frame)).toBe(true);
@@ -214,9 +219,15 @@ describe("fproxy gear spell 20546", () => {
         expect(types).toContain("cast");
         expect(types).not.toContain("timeAdvance");
         if (strike < 7) {
-          expect(types).toEqual(["attackwait", "cast"]);
+          expect(types).toEqual(["attackwait", "persChangeInfo", "persChangeInfo", "cast"]);
         } else {
-          expect(types).toEqual(["attackwait", "cast", "effPurge"]);
+          expect(types).toEqual([
+            "attackwait",
+            "persChangeInfo",
+            "persChangeInfo",
+            "cast",
+            "effPurge",
+          ]);
           expect(purgeEffectId(meleeFrame)).toBe(1);
         }
         expect(melee.some((frame) => frame && typeof frame === "object" && "rs" in frame)).toBe(

@@ -117,9 +117,9 @@ describe("CombatService stun", () => {
     expect(seen).toEqual([
       ["effect-use", "buff-cast"],
       [],
-      ["bot-hit"],
+      ["pers-change", "bot-hit"],
       ["effect-purge"],
-      ["bot-hit"],
+      ["pers-change", "bot-hit"],
       [{ type: "turn-granted", timeoutSeconds: 20 }].map((event) => event.type),
     ]);
   });
