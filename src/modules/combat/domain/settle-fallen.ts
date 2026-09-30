@@ -1,5 +1,5 @@
 import type { BattleEvent } from "./battle-event.ts";
-import { applyHuntBotHit } from "./battle-hunt-runtime.ts";
+import { settleAfterMobFell } from "./battle-runtime.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
 import type { Fighter } from "./fighter.ts";
@@ -7,7 +7,7 @@ import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { enemySideCleared } from "./melee-target.ts";
 import { opposingTeam } from "./opposing-team.ts";
-import { dissolveDuelContaining } from "./try-pair-hunt-queues.ts";
+import { dissolveDuelContaining } from "./pairing.ts";
 
 export type FalloutDelivery = Readonly<{ accountId: number; events: readonly BattleEvent[] }>;
 
@@ -59,7 +59,7 @@ export function settleFallen(
     }
     const duel = input.duels.find((entry) => entry.has(fighter.id));
     if (!duel) continue;
-    const next = applyHuntBotHit(false, {
+    const next = settleAfterMobFell(false, {
       bots: input.bots,
       enemyTeam: input.fightRules.teamAssignment.enemyTeam,
       duel,

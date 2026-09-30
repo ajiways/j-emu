@@ -3,7 +3,7 @@ import type {
   FightStart,
   HuntStartInput,
 } from "../modules/combat/ports/combat-port.ts";
-import { HuntJoinDenied } from "../modules/combat/domain/hunt-join-denied.ts";
+import { JoinDenied } from "../modules/combat/domain/join-denied.ts";
 import type { DungeonHuntWorld } from "../modules/instance/application/dungeon-hunt-world.ts";
 import { ProtocolError } from "../modules/jugger-wire/application/protocol-error.ts";
 
@@ -65,7 +65,7 @@ export class DungeonHuntMapAttack {
       await this.fanout.wakeArea(input.areaId, input.copyId);
       return fight;
     } catch (error) {
-      if (error instanceof HuntJoinDenied) throw new ProtocolError(203, error.message);
+      if (error instanceof JoinDenied) throw new ProtocolError(203, error.message);
       throw error;
     }
   }

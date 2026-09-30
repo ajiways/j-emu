@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   PAIR_HITS_TO_SWITCH,
-  planHuntShuffle,
+  planShuffle,
 } from "../../../src/modules/combat/domain/try-shuffle-after-hits.ts";
 
-describe("planHuntShuffle", () => {
+describe("planShuffle", () => {
   it("rotates at 3↔3 when a waiter, other 3↔3 pair, or reserve exists", () => {
     expect(PAIR_HITS_TO_SWITCH).toBe(3);
     expect(
-      planHuntShuffle({
+      planShuffle({
         humanHits: 3,
         botHits: 3,
         hasLivingWaiter: true,
@@ -18,7 +18,7 @@ describe("planHuntShuffle", () => {
       }),
     ).toBe("waiter-handoff");
     expect(
-      planHuntShuffle({
+      planShuffle({
         humanHits: 3,
         botHits: 3,
         hasLivingWaiter: false,
@@ -28,7 +28,7 @@ describe("planHuntShuffle", () => {
       }),
     ).toBe("none");
     expect(
-      planHuntShuffle({
+      planShuffle({
         humanHits: 3,
         botHits: 3,
         hasLivingWaiter: false,
@@ -38,7 +38,7 @@ describe("planHuntShuffle", () => {
       }),
     ).toBe("cross-swap");
     expect(
-      planHuntShuffle({
+      planShuffle({
         humanHits: 3,
         botHits: 3,
         hasLivingWaiter: false,
@@ -48,7 +48,7 @@ describe("planHuntShuffle", () => {
       }),
     ).toBe("reserve-swap");
     expect(
-      planHuntShuffle({
+      planShuffle({
         humanHits: 2,
         botHits: 3,
         hasLivingWaiter: true,
@@ -58,7 +58,7 @@ describe("planHuntShuffle", () => {
       }),
     ).toBe("none");
     expect(
-      planHuntShuffle({
+      planShuffle({
         humanHits: 3,
         botHits: 3,
         hasLivingWaiter: true,

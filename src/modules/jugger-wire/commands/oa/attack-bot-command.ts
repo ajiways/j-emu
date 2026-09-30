@@ -23,7 +23,7 @@ import type { PartyService } from "../../../party/application/party-service.ts";
 import { HuntCombatLoadout } from "../../application/hunt-combat-loadout.ts";
 import { heroFightAppearance, heroFightConfLook } from "../../application/hero-fight-appearance.ts";
 import { huntBotSpellBookFromCatalog } from "../../application/hunt-bot-spell-book-from-catalog.ts";
-import { huntFightTitle } from "../../../chat/domain/fight-macro.ts";
+import { fightTitle } from "../../../chat/domain/fight-macro.ts";
 import { HuntMapAttack } from "../../application/hunt-map-attack.ts";
 import { huntHeroStatFields } from "../../../combat/domain/combatant-fight-stats.ts";
 import { unpublishedBotFightStats } from "../../../combat/domain/combatant-fight-stats.ts";
@@ -165,7 +165,7 @@ export class AttackBotCommand implements OaCommand {
               mem.party.id,
               hero,
               fight.fightId,
-              huntFightTitle(hero.nick, bot.title),
+              fightTitle(hero.nick, bot.title),
             );
           }
         }

@@ -6,10 +6,10 @@ import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-
 import { requireFightBot, seedFightBots } from "../../../src/modules/combat/domain/fight-bots.ts";
 import type { BotFighterSeed } from "../../../src/modules/combat/domain/bot-fighter.ts";
 import {
-  pairHuntHumanQueues,
-  pairHuntQueues,
-  pickHuntPair,
-} from "../../../src/modules/combat/domain/try-pair-hunt-queues.ts";
+  pairHumanQueues,
+  pairQueues,
+  pickPair,
+} from "../../../src/modules/combat/domain/pairing.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { unitFightBots } from "../../support/fight-bots.ts";
 import {
@@ -64,17 +64,13 @@ function botsWith(extraEnemies: readonly BotFighterSeed[], allies: readonly BotF
   return unitFightBots({ extraEnemies, allies });
 }
 
-describe("pairHuntHumanQueues", () => {
+describe("pairHumanQueues", () => {
   it("pairs living waiters across teams and leaves a bot pair alone", () => {
     const opener = human({ accountId: 1, heroId: 1, team: 1, waiting: false });
     const waiter = human({ accountId: 2, heroId: 2, team: 1, waiting: true });
     const intervenor = human({ accountId: 3, heroId: 3, team: 2, waiting: true });
     const duels = [new FightDuel(1, 1_000_000, 1)];
-    const created = pairHuntHumanQueues(
-      [opener, waiter, intervenor],
-      duels,
-      new SequenceRandom([0.4]),
-    );
+    const created = pairHumanQueues([opener, waiter, intervenor], duels, new SequenceRandom([0.4]));
     expect(created).toMatchObject({ aId: 2, bId: 3, nextActorId: 2 });
     expect(waiter.waiting).toBe(false);
     expect(intervenor.waiting).toBe(false);
@@ -86,7 +82,7 @@ describe("pairHuntHumanQueues", () => {
     const opener = human({ accountId: 1, heroId: 1, team: 1, waiting: false });
     const intervenor = human({ accountId: 2, heroId: 2, team: 2, waiting: true });
     const duels = [new FightDuel(1, 1_000_000, 1)];
-    expect(pairHuntHumanQueues([opener, intervenor], duels, new SequenceRandom([0.4]))).toBeNull();
+    expect(pairHumanQueues([opener, intervenor], duels, new SequenceRandom([0.4]))).toBeNull();
     expect(intervenor.waiting).toBe(true);
     expect(duels).toHaveLength(1);
   });
@@ -94,11 +90,11 @@ describe("pairHuntHumanQueues", () => {
 
 describe("one hunt pairing engine", () => {
   it("returns null when the wait queue is empty", () => {
-    expect(pickHuntPair([], new Set(), new SequenceRandom([0.4]))).toBeNull();
+    expect(pickPair([], new Set(), new SequenceRandom([0.4]))).toBeNull();
     const opener = human({ accountId: 1, heroId: 1, team: 1, waiting: false });
     const duels = [new FightDuel(1, 1_000_000, 1)];
     expect(
-      pairHuntQueues({
+      pairQueues({
         participants: [opener],
         duels,
         random: new SequenceRandom([0.4]),
@@ -112,7 +108,7 @@ describe("one hunt pairing engine", () => {
     const waiter = human({ accountId: 2, heroId: 2, team: 1, waiting: true });
     const bots = botsWith([botSeed(1_000_001)]);
     const duels = [new FightDuel(1, 1_000_000, 1)];
-    const created = pairHuntQueues({
+    const created = pairQueues({
       participants: [opener, waiter, ...bots],
       duels,
       random: new SequenceRandom([0.4]),
@@ -129,7 +125,7 @@ describe("one hunt pairing engine", () => {
     const opener = human({ accountId: 1, heroId: 1, team: 1, waiting: false });
     const bots = botsWith([botSeed(1_000_001)], [botSeed(1_000_002)]);
     const duels = [new FightDuel(1, 1_000_000, 1)];
-    const created = pairHuntQueues({
+    const created = pairQueues({
       participants: [opener, ...bots],
       duels,
       random: new SequenceRandom([0.4]),
@@ -157,7 +153,7 @@ describe("one hunt pairing engine", () => {
   });
 });
 
-describe("pickHuntPair last-foe", () => {
+describe("pickPair last-foe", () => {
   it("prefers a foe who is not the last opponent", () => {
     const seekers = [
       { id: 1, team: 1 as const, lastOpponentId: 3, initiative: 0, kind: "human" as const },
@@ -165,7 +161,7 @@ describe("pickHuntPair last-foe", () => {
       { id: 3, team: 2 as const, lastOpponentId: 1, initiative: 0, kind: "bot" as const },
       { id: 4, team: 2 as const, lastOpponentId: null, initiative: 0, kind: "bot" as const },
     ];
-    expect(pickHuntPair(seekers, new Set(), new SequenceRandom([0, 0, 0.4]))).toEqual({
+    expect(pickPair(seekers, new Set(), new SequenceRandom([0, 0, 0.4]))).toEqual({
       aId: 2,
       bId: 4,
     });

@@ -1,6 +1,6 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
-import { applyHuntBotHit, applyHuntPlayerHit } from "./battle-hunt-runtime.ts";
+import { settleAfterMobFell, settleAfterPlayerHit } from "./battle-runtime.ts";
 import { requireAuthedHuman, requireBattleHuman } from "./battle-lookups.ts";
 import { applyPairedGloveEnding, applyPairedMelee } from "./battle-strikes.ts";
 import { rosterIsPvp } from "./roster-pvp.ts";
@@ -10,10 +10,10 @@ import type { Fighter } from "./fighter.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
-import type { KeepTurnResult } from "./hunt-cast.ts";
-import { tryGloveKeepTurn } from "./hunt-cast.ts";
+import type { KeepTurnResult } from "./player-casts.ts";
+import { tryGloveKeepTurn } from "./player-casts.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import type { BotMeleeResult } from "./hunt-melee.ts";
+import type { BotMeleeResult } from "./turn-grant.ts";
 import { settleBotSideHits } from "./bot-side-hits.ts";
 import type { Fallout } from "./settle-fallen.ts";
 import type { BotFighter } from "./bot-fighter.ts";
@@ -21,7 +21,7 @@ import { enemySideCleared } from "./melee-target.ts";
 import { persChangeForParticipants } from "./melee-pers-change.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
-import { requireDuelContaining } from "./try-pair-hunt-queues.ts";
+import { requireDuelContaining } from "./pairing.ts";
 
 /** A bot's turn, with what its AOE spell did to the others it reached. */
 export type BotTurnResult = BotMeleeResult & Readonly<{ finished: boolean; sideFallout: Fallout }>;
@@ -60,7 +60,7 @@ export function applyBattlePlayerMelee(
     duel,
     nowMs,
   });
-  return applyHuntPlayerHit(resolved, hitInput(state, human, duel));
+  return settleAfterPlayerHit(resolved, hitInput(state, human, duel));
 }
 
 export function applyBattleGlove(
@@ -153,7 +153,7 @@ function botFellToTick(
 ): readonly BattleEvent[] {
   if (bot.hp > 0 || result.killedPlayer) return [];
   if (enemySideCleared(bot.team, [...state.humans, ...state.bots])) return [];
-  return applyHuntBotHit(false, {
+  return settleAfterMobFell(false, {
     bots: state.bots,
     enemyTeam: state.fightRules.teamAssignment.enemyTeam,
     duel,
@@ -175,7 +175,7 @@ function settleGloveHits(
   }>,
 ): EndingGloveResult {
   if (ending.selfKilled) return ending;
-  const primary = applyHuntBotHit(ending.finished, input);
+  const primary = settleAfterMobFell(ending.finished, input);
   const sideHits = ending.sideNotifies.map((notify) => {
     if (!input.bots.some((bot) => bot.fightId === notify.targetId)) {
       return { notify, extra: [] as const };
@@ -183,7 +183,7 @@ function settleGloveHits(
     const duel = requireDuelContaining(input.duels, notify.targetId);
     const owner = input.humans.find((human) => duel.has(human.heroId));
     if (!owner) throw new Error(`AOE extra bot ${notify.targetId} has no paired human`);
-    const extra = applyHuntBotHit(primary.finished, {
+    const extra = settleAfterMobFell(primary.finished, {
       ...input,
       duel,
       opener: owner,

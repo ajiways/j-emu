@@ -3,14 +3,14 @@ import type { FightLootBlock } from "../domain/fight-loot-block.ts";
 import { FinishedFightConflictError } from "../domain/finished-fight-conflict-error.ts";
 import { buildFightResultInfo, wireFightTypeOf } from "../domain/fight-result-info.ts";
 import type { FightResultInfo } from "../domain/fight-result-info.ts";
-import { huntFightTitle } from "../domain/hunt-fight-title.ts";
+import { fightTitle } from "../domain/fight-title.ts";
 import type { CombatEvent, FightExit } from "../ports/combat-port.ts";
 import type { FightSettlement } from "../ports/fight-settlement.ts";
 import type { FightTerminalObserver } from "../ports/fight-terminal-observer.ts";
 import type { CombatMeleeLoop } from "./combat-melee-loop.ts";
 import type { FinishedFightRecorder } from "./finished-fight-recorder.ts";
 import type { HistoryWriteObserver } from "./history-write-observer.ts";
-import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
+import type { FightScheduler } from "./fight-scheduler.ts";
 
 type FinishKind = "win" | "loss" | "last-leave";
 
@@ -31,7 +31,7 @@ export class CombatTerminal {
     private readonly pendingFightInfo: Map<number, FightResultInfo>,
     private readonly settledFights: Set<string>,
     private readonly exitSent: Set<string>,
-    private readonly scheduler: HuntMeleeScheduler,
+    private readonly scheduler: FightScheduler,
     private readonly melee: CombatMeleeLoop,
     private readonly history: FinishedFightRecorder,
     private readonly historyWrites: HistoryWriteObserver,
@@ -237,12 +237,12 @@ export class CombatTerminal {
   private resultTitle(battle: Battle, humans: readonly { nick: string; team: 1 | 2 }[]): string {
     if (battle.hasBots) {
       const history = battle.huntHistory();
-      return huntFightTitle(history.heroNick, history.botNick);
+      return fightTitle(history.heroNick, history.botNick);
     }
     const team1 = humans.find((human) => human.team === 1);
     const team2 = humans.find((human) => human.team === 2);
     if (!team1 || !team2) throw new Error(`Fight ${battle.id} is missing a team`);
-    return huntFightTitle(team1.nick, team2.nick);
+    return fightTitle(team1.nick, team2.nick);
   }
 
   private async notifyFinished(

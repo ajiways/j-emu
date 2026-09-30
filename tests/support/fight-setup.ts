@@ -7,7 +7,7 @@ import type {
   FightSetupHuman,
   FightSetupJoin,
 } from "../../src/modules/combat/domain/fight-setup.ts";
-import type { HuntBotSpellBook } from "../../src/modules/combat/domain/hunt-bot-spell-book.ts";
+import type { MobSpellBook } from "../../src/modules/combat/domain/mob-spell-book.ts";
 import type { FighterAppearance } from "../../src/modules/combat/domain/human-fighter.ts";
 import type { BotFighterSeed } from "../../src/modules/combat/domain/bot-fighter.ts";
 import {
@@ -52,7 +52,7 @@ export type UnitHuntFightSetupOverlay = {
   botInitiative?: number;
   botMagPower?: number;
   botMagResist?: number;
-  botSpellBook?: HuntBotSpellBook;
+  botSpellBook?: MobSpellBook;
   arena?: string;
   areaId?: string;
   instanceCopyId?: number | null;

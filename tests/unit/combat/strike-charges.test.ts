@@ -4,7 +4,7 @@ import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { FighterEffects } from "../../../src/modules/combat/domain/fighter-effects.ts";
 import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
-import { tryGloveKeepTurn } from "../../../src/modules/combat/domain/hunt-cast.ts";
+import { tryGloveKeepTurn } from "../../../src/modules/combat/domain/player-casts.ts";
 import { FixedRandom } from "../../support/fakes/fixed-random.ts";
 import { rollSwing } from "../../../src/modules/combat/domain/swing.ts";
 import {

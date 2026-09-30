@@ -6,7 +6,7 @@ import type { HumanFighter } from "./human-fighter.ts";
 import { resolveAiTurn } from "./ai-turn.ts";
 import { duelFoe, enemySideCleared } from "./melee-target.ts";
 import { opposingTeam } from "./opposing-team.ts";
-import type { BotMeleeResult } from "./hunt-melee.ts";
+import type { BotMeleeResult } from "./turn-grant.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { Participant } from "./participant.ts";
 import type { RandomSource } from "./random-source.ts";

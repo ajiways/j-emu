@@ -1,4 +1,4 @@
-import { HuntJoinDenied } from "../modules/combat/domain/hunt-join-denied.ts";
+import { JoinDenied } from "../modules/combat/domain/join-denied.ts";
 import type { PlayerAttackPolicy } from "../modules/combat/ports/player-attack-policy.ts";
 
 /**
@@ -7,6 +7,6 @@ import type { PlayerAttackPolicy } from "../modules/combat/ports/player-attack-p
  */
 export class RadwayPlayerAttackPolicy implements PlayerAttackPolicy {
   requireAllowed(): void {
-    throw new HuntJoinDenied("на этой территории нельзя нападать на игроков");
+    throw new JoinDenied("на этой территории нельзя нападать на игроков");
   }
 }

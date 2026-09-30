@@ -3,7 +3,7 @@ import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { tryPairedMelee, type PlayerMeleeResult } from "./paired-melee.ts";
 import { resolveGloveFinisher, type EndingGloveResult } from "./glove-ending-cast.ts";
-import type { KeepTurnResult } from "./hunt-cast.ts";
+import type { KeepTurnResult } from "./player-casts.ts";
 import type { RandomSource } from "./random-source.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { duelFoe } from "./melee-target.ts";

@@ -7,7 +7,7 @@ import {
 import { expandEmoFlavor } from "../../../src/modules/chat/domain/expand-emo.ts";
 import { EMO_TEMPLATES } from "../../../src/modules/chat/domain/emo-templates.ts";
 import { expandSmileTags } from "../../../src/modules/chat/domain/expand-smiles.ts";
-import { buildFightMacro, huntFightTitle } from "../../../src/modules/chat/domain/fight-macro.ts";
+import { buildFightMacro, fightTitle } from "../../../src/modules/chat/domain/fight-macro.ts";
 import { buildArtifactItemMacro } from "../../../src/modules/chat/domain/artifact-item-macro.ts";
 import { buildArtifactMacro } from "../../../src/modules/chat/domain/artifact-macro.ts";
 import { deathDurabilityMessage } from "../../../src/modules/chat/domain/death-durability-message.ts";
@@ -57,12 +57,12 @@ describe("chat macros", () => {
   });
 
   it("builds hunt fight title and money macro without fallbacks", () => {
-    expect(huntFightTitle("Ann", "Грызль")).toBe("Нападение Ann на Грызль");
+    expect(fightTitle("Ann", "Грызль")).toBe("Нападение Ann на Грызль");
     const fight = buildFightMacro({
       fightId: "12",
       areaId: "503",
       areaTitle: "Радвей",
-      fightTitle: huntFightTitle("Ann", "Грызль"),
+      fightTitle: fightTitle("Ann", "Грызль"),
     });
     expect(fight.macro.area_id).toBe(503);
     expect(fight.macro.fight_title).toBe("Нападение Ann на Грызль");

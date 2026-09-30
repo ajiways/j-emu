@@ -1,9 +1,9 @@
 import { dispelTargetGroups } from "./dispel-target-groups.ts";
-import type { HuntBotSpellBook, HuntBotSpellCard } from "./hunt-bot-spell-book.ts";
+import type { MobSpellBook, MobSpellCard } from "./mob-spell-book.ts";
 import type { RandomSource } from "./random-source.ts";
 
 export function pickBotSpell(
-  book: HuntBotSpellBook,
+  book: MobSpellBook,
   input: Readonly<{
     botHp: number;
     botMaxHp: number;
@@ -12,7 +12,7 @@ export function pickBotSpell(
     foeStunned?: boolean;
   }>,
   random: RandomSource,
-): HuntBotSpellCard | null {
+): MobSpellCard | null {
   if (book.spells.length === 0) return null;
 
   for (const card of book.spells) {
@@ -44,7 +44,7 @@ function castCount(casts: Map<number, number>, artikulId: number): number {
 }
 
 function canCast(
-  card: HuntBotSpellCard,
+  card: MobSpellCard,
   input: Readonly<{
     botHp: number;
     botMaxHp: number;
@@ -78,15 +78,15 @@ function canCast(
 
 const SUPPORTED_BOT_KINDS = new Set([1, 2, 3, 4, 5, 8, 11, 18]);
 
-function supportedBotSpell(card: HuntBotSpellCard): boolean {
+function supportedBotSpell(card: MobSpellCard): boolean {
   return card.spell.effects.some((effect) => SUPPORTED_BOT_KINDS.has(effect.kind));
 }
 
 function rollWeighted(
-  cards: readonly HuntBotSpellCard[],
+  cards: readonly MobSpellCard[],
   nothingWeight: number,
   random: RandomSource,
-): HuntBotSpellCard | null {
+): MobSpellCard | null {
   let pool = 0;
   for (const card of cards) pool += card.weight;
   const nothing = Math.max(0, nothingWeight);

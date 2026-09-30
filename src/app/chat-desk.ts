@@ -18,7 +18,7 @@ import {
   type ChatMessageBlock,
   type ChatMessageDraft,
 } from "../modules/chat/domain/chat-message.ts";
-import { buildFightMacro, huntFightTitle } from "../modules/chat/domain/fight-macro.ts";
+import { buildFightMacro, fightTitle } from "../modules/chat/domain/fight-macro.ts";
 import { buildMoneyMacro } from "../modules/chat/domain/money-macro.ts";
 import { smileCatalogFromChrome } from "../modules/chat/domain/expand-smiles.ts";
 import type { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.ts";
@@ -185,7 +185,7 @@ export class ChatDesk {
       fightId: input.fightId,
       areaId: area.id,
       areaTitle: area.title,
-      fightTitle: huntFightTitle(input.heroNick, input.botNick),
+      fightTitle: fightTitle(input.heroNick, input.botNick),
     });
     await this.deliverSystem(input.accountId, `Начался бой ${fight.token}.`, {
       [fight.key]: fight.macro,
@@ -211,7 +211,7 @@ export class ChatDesk {
       fightId: outcome.fightId,
       areaId: area.id,
       areaTitle: area.title,
-      fightTitle: huntFightTitle(hero.nick, bot.title),
+      fightTitle: fightTitle(hero.nick, bot.title),
     });
     for (const human of outcome.humans) {
       await this.deliverSystem(human.accountId, `Окончен бой ${fight.token}.`, {

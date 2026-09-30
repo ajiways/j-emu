@@ -3,7 +3,7 @@ import type { EndingGloveResult } from "../domain/glove-ending-cast.ts";
 import { persChangeForHit } from "../domain/melee-pers-change.ts";
 import type { ShuffleOutcome } from "../domain/try-shuffle-after-hits.ts";
 import type { CombatEvent } from "../ports/combat-port.ts";
-import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
+import type { FightScheduler } from "./fight-scheduler.ts";
 
 export function fanoutRosterEffects(
   battle: Battle,
@@ -43,7 +43,7 @@ export function delayTokensByAccount(battle: Battle): ReadonlyMap<number, string
   return tokens;
 }
 
-export function cancelDuel(scheduler: HuntMeleeScheduler, battle: Battle, accountId: number): void {
+export function cancelDuel(scheduler: FightScheduler, battle: Battle, accountId: number): void {
   const token = battle.delayTokenFor(accountId);
   if (token) scheduler.cancel(token);
 }
@@ -178,7 +178,7 @@ export function deliverGloveSides(
   input: Readonly<{
     battle: Battle;
     ending: EndingGloveResult;
-    scheduler: HuntMeleeScheduler;
+    scheduler: FightScheduler;
     enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void;
     wakeAccount: (accountId: number) => void;
     grantPairedBot: (accountId: number) => void;

@@ -1,18 +1,18 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
-import { huntHumanOppNew, livingWaiterOnTeam } from "./battle-pairing.ts";
-import { dissolveDuelAt, dissolveDuelContaining } from "./try-pair-hunt-queues.ts";
+import { humanOpponentNew, livingWaiterOnTeam } from "./battle-pairing.ts";
+import { dissolveDuelAt, dissolveDuelContaining } from "./pairing.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { takeNextEnemyForHuman } from "./hunt-wait-queue.ts";
+import { takeNextEnemyForHuman } from "./wait-queue.ts";
 import { enemySideCleared } from "./melee-target.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveAiActorTurn } from "./resolve-ai-actor-turn.ts";
 import { retargetDuelTo } from "./retarget-duel.ts";
 
-export function tickHuntRosterDuels(input: {
+export function tickBotDuelsOf(input: {
   bots: readonly BotFighter[];
   enemyTeam: 1 | 2;
   duels: FightDuel[];
@@ -77,7 +77,7 @@ export function tickHuntRosterDuels(input: {
   return { events, finished: false };
 }
 
-export function applyHuntPlayerHit(
+export function settleAfterPlayerHit(
   resolved: Readonly<{
     result: PlayerMeleeResult;
     finished: boolean;
@@ -94,7 +94,7 @@ export function applyHuntPlayerHit(
   if (resolved.result.kind !== "resolved" || resolved.result.selfKilled) {
     return { result: resolved.result, finished: resolved.finished };
   }
-  const extra = applyHuntBotHit(resolved.finished, input);
+  const extra = settleAfterMobFell(resolved.finished, input);
   if (extra.events.length === 0) {
     return { result: resolved.result, finished: extra.finished };
   }
@@ -104,7 +104,7 @@ export function applyHuntPlayerHit(
   };
 }
 
-export function applyHuntBotHit(
+export function settleAfterMobFell(
   finished: boolean,
   input: Readonly<{
     bots: readonly BotFighter[];
@@ -136,5 +136,5 @@ export function applyHuntBotHit(
     return { events: [{ type: "opponent-wait" }], finished: false };
   }
   retargetDuelTo({ duel: input.duel, fromHeroId: hitBot.fightId, waiter: intervenor });
-  return { events: [huntHumanOppNew(intervenor)], finished: false };
+  return { events: [humanOpponentNew(intervenor)], finished: false };
 }

@@ -4,9 +4,9 @@ import type { FightDuel } from "./fight-duel.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { RandomSource } from "./random-source.ts";
-import { pairHuntQueues } from "./try-pair-hunt-queues.ts";
+import { pairQueues } from "./pairing.ts";
 
-export type HuntAggroResult =
+export type AggroResult =
   | Readonly<{ kind: "ignored" }>
   | Readonly<{
       kind: "resolved";
@@ -14,7 +14,7 @@ export type HuntAggroResult =
       pairedAccountIds: readonly number[];
     }>;
 
-export function tryHuntAggro(
+export function tryAggro(
   input: Readonly<{
     canAggro: boolean;
     finished: boolean;
@@ -28,12 +28,12 @@ export function tryHuntAggro(
     targetId: number;
     allocateBotId: () => number;
   }>,
-): HuntAggroResult {
+): AggroResult {
   const human = input.humans.find((entry) => entry.accountId === input.accountId);
   if (!human || !human.authed || human.hp === 0 || input.finished) {
     return { kind: "ignored" };
   }
-  const deny = (): HuntAggroResult => ({
+  const deny = (): AggroResult => ({
     kind: "resolved",
     pairedAccountIds: [],
     events: [
@@ -70,7 +70,7 @@ export function tryHuntAggro(
     input.enemyTeam,
     input.addBot,
   );
-  pairHuntQueues({
+  pairQueues({
     participants: [...input.humans, ...input.bots],
     duels: input.duels,
     random: input.random,

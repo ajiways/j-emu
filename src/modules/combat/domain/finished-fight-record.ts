@@ -6,7 +6,7 @@ import {
   type FinishedFightTeams,
 } from "./finished-fight-teams.ts";
 import { practiceFinishedFightTeams } from "./practice-finished-fight-teams.ts";
-import { huntFightTitle } from "./hunt-fight-title.ts";
+import { fightTitle } from "./fight-title.ts";
 
 /** Hunt / BG PvP `fight.type` from live fight_info dump `type:"1"`. */
 const HUNT_FIGHT_TYPE = 1;
@@ -69,7 +69,7 @@ export function huntFinishedFightRecord(input: {
     id: parseDecimalId(input.fightId, "fight id"),
     accountId: input.accountId,
     heroId: input.heroId,
-    title: huntFightTitle(input.heroNick, input.botNick),
+    title: fightTitle(input.heroNick, input.botNick),
     type: HUNT_FIGHT_TYPE,
     timeout: input.timeout,
     levelMin,
@@ -132,7 +132,7 @@ export function practiceFinishedFightRecord(input: {
     id: parseDecimalId(input.fightId, "fight id"),
     accountId: input.accountId,
     heroId: input.heroId,
-    title: huntFightTitle(input.challengerNick, input.acceptorNick),
+    title: fightTitle(input.challengerNick, input.acceptorNick),
     type: PRACTICE_FIGHT_TYPE,
     timeout: input.timeout,
     levelMin,

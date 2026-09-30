@@ -4,15 +4,15 @@ import { primaryEnemyBot } from "./fight-bots.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
 import type { FightRules } from "./fight-rules.ts";
-import { huntBotSnap } from "./hunt-bot-snap.ts";
+import { botSnapOf } from "./bot-snap-of.ts";
 import type { FightSetupJoin } from "./fight-setup.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { RandomSource } from "./random-source.ts";
 import { requireFightSetupJoin } from "./require-fight-setup.ts";
-import { pairHuntQueues } from "./try-pair-hunt-queues.ts";
+import { pairQueues } from "./pairing.ts";
 
-export function huntHistoryOf(opener: HumanFighter, primary: BotFighter) {
+export function historyOf(opener: HumanFighter, primary: BotFighter) {
   return {
     accountId: opener.accountId,
     heroId: opener.heroId,
@@ -69,7 +69,7 @@ export function joinBattleHuman(input: {
               `Unknown human join mode: ${String((join as { mode?: unknown }).mode)}`,
             );
           })();
-  pairHuntQueues({
+  pairQueues({
     participants: [...input.humans, ...input.bots],
     duels: input.duels,
     random: input.random,
@@ -100,7 +100,7 @@ function addHuntHuman(input: {
   return {
     type: "roster-updated",
     humans: input.humans.map((entry) => entry.snapshot()),
-    bot: huntBotSnap(primary, primary.hp, input.enemyTeam),
+    bot: botSnapOf(primary, primary.hp, input.enemyTeam),
     joined: human.snapshot(),
   };
 }

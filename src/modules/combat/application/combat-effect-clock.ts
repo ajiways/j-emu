@@ -2,13 +2,13 @@ import type { Battle } from "../domain/battle.ts";
 import type { Fallout } from "../domain/settle-fallen.ts";
 import { fightEffectClockToken } from "../domain/fight-delay-token.ts";
 import type { CombatEvent } from "../ports/combat-port.ts";
-import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
+import type { FightScheduler } from "./fight-scheduler.ts";
 
 /** One battle timer wakes at the earliest DoT/HoT threshold or expiry of any fighter. */
 export class CombatEffectClock {
   constructor(
     private readonly battleByFight: Map<string, Battle>,
-    private readonly scheduler: HuntMeleeScheduler,
+    private readonly scheduler: FightScheduler,
     private readonly enqueue: (accountId: number, events: readonly CombatEvent[]) => void,
     private readonly wakeAccount: (accountId: number) => void,
     private readonly settleFinished: (

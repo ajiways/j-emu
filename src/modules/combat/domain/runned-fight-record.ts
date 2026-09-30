@@ -3,7 +3,7 @@ import type { Battle } from "./battle.ts";
 import type { BotSnap } from "./battle-event.ts";
 import { fightStartedLabel } from "./fight-started-label.ts";
 import { wireFightTypeOf } from "./fight-result-info.ts";
-import { huntFightTitle } from "./hunt-fight-title.ts";
+import { fightTitle } from "./fight-title.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 
 const HUNT_FIGHT_TYPE = 1;
@@ -85,7 +85,7 @@ export function runnedFightRecordOf(battle: Battle, now: Date): RunnedFightRecor
   const range = botLevelMax !== botLevelMin ? `${botLevelMin}-${botLevelMax}` : String(botLevelMin);
   return {
     id: parseDecimalId(battle.id, "fight id"),
-    title: huntFightTitle(lead.nick, foe.nick),
+    title: fightTitle(lead.nick, foe.nick),
     type,
     timeout: battle.turnTimeoutSeconds,
     levelMin,

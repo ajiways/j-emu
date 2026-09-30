@@ -19,13 +19,13 @@ import {
 } from "./combat-melee-dispatch.ts";
 import { CombatBotDuelClock } from "./combat-bot-duel-clock.ts";
 import { CombatEffectClock } from "./combat-effect-clock.ts";
-import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
+import type { FightScheduler } from "./fight-scheduler.ts";
 
 export class CombatMeleeLoop {
   constructor(
     private readonly byAccount: Map<number, Battle>,
     private readonly battleByFight: Map<string, Battle>,
-    private readonly scheduler: HuntMeleeScheduler,
+    private readonly scheduler: FightScheduler,
     private readonly enqueue: (
       accountId: number,
       events: readonly CombatEvent[],

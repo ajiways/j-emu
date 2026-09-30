@@ -2,7 +2,7 @@ import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
 import type { Catalog } from "../../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../../character/application/character-service.ts";
 import type { CombatPort } from "../../../combat/ports/combat-port.ts";
-import { HuntJoinDenied } from "../../../combat/domain/hunt-join-denied.ts";
+import { JoinDenied } from "../../../combat/domain/join-denied.ts";
 import type { InventoryService } from "../../../inventory/domain/inventory-service.ts";
 import type {
   BootstrapReadModel,
@@ -57,7 +57,7 @@ export class FightJoinCommand implements OaCommand {
       return { kind: "help", nick };
     }
     const fightId = String(fields["fight"] ?? fields["fight_id"] ?? "");
-    if (!fightId) throw asHelpFightError(new HuntJoinDenied("бой не найден"));
+    if (!fightId) throw asHelpFightError(new JoinDenied("бой не найден"));
     const rawTeam = fields["team"];
     if (rawTeam === undefined || rawTeam === null || rawTeam === "") {
       throw new ProtocolError(203, "FIGHT_JOIN requires team");
@@ -144,11 +144,11 @@ export class FightJoinCommand implements OaCommand {
 
   private async helpTarget(nick: string): Promise<Readonly<{ fightId: string; team: 1 | 2 }>> {
     const target = await this.characters.getByNick(nick);
-    if (!target) throw new HuntJoinDenied("игрок не в бою");
+    if (!target) throw new JoinDenied("игрок не в бою");
     const fightId = await this.combat.activeFightId(target.accountId);
-    if (fightId === null) throw new HuntJoinDenied("игрок не в бою");
+    if (fightId === null) throw new JoinDenied("игрок не в бою");
     const team = await this.combat.participantTeam(target.accountId);
-    if (team === null) throw new HuntJoinDenied("игрок не в бою");
+    if (team === null) throw new JoinDenied("игрок не в бою");
     return { fightId, team };
   }
 }

@@ -7,7 +7,7 @@ import { requireFightBot } from "../../../src/modules/combat/domain/fight-bots.t
 import type { BotFighterSeed } from "../../../src/modules/combat/domain/bot-fighter.ts";
 import { pairLeftoverRosterBots } from "../../../src/modules/combat/domain/pair-leftover-roster-bots.ts";
 import { resolveAiActorTurn } from "../../../src/modules/combat/domain/resolve-ai-actor-turn.ts";
-import { tickHuntRosterDuels } from "../../../src/modules/combat/domain/battle-hunt-runtime.ts";
+import { tickBotDuelsOf } from "../../../src/modules/combat/domain/battle-runtime.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { unitFightBots } from "../../support/fight-bots.ts";
@@ -130,7 +130,7 @@ describe("resolveAiActorTurn", () => {
     requireFightBot(bots, extra.nextActorId).setHp(0);
     const duels = [new FightDuel(1, 1_000_000, 1), extra];
     const opener = openerHuman();
-    const ticked = tickHuntRosterDuels({
+    const ticked = tickBotDuelsOf({
       bots,
       enemyTeam: 2,
       duels,

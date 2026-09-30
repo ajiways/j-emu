@@ -1,5 +1,5 @@
 import type { CombatPort, FightStart, HuntStartInput } from "../../combat/ports/combat-port.ts";
-import { HuntJoinDenied } from "../../combat/domain/hunt-join-denied.ts";
+import { JoinDenied } from "../../combat/domain/join-denied.ts";
 import type { WorldService } from "../../world/domain/world-service.ts";
 import { ProtocolError } from "./protocol-error.ts";
 
@@ -58,7 +58,7 @@ export class HuntMapAttack {
       await this.fanout.wakeArea(input.areaId);
       return fight;
     } catch (error) {
-      if (error instanceof HuntJoinDenied) throw new ProtocolError(203, error.message);
+      if (error instanceof JoinDenied) throw new ProtocolError(203, error.message);
       throw error;
     }
   }

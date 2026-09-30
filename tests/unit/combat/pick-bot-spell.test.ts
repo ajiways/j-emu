@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { HuntBotSpellBook } from "../../../src/modules/combat/domain/hunt-bot-spell-book.ts";
+import type { MobSpellBook } from "../../../src/modules/combat/domain/mob-spell-book.ts";
 import { pickBotSpell } from "../../../src/modules/combat/domain/pick-bot-spell.ts";
 import { unitHuntSpellCard } from "../../support/hunt-start-input.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
@@ -18,7 +18,7 @@ describe("pickBotSpell", () => {
   });
 
   it("picks a prefer card before roulette", () => {
-    const prefer: HuntBotSpellBook["spells"][number] = {
+    const prefer: MobSpellBook["spells"][number] = {
       ...spit,
       artikulId: 1,
       slot: "prefer",
@@ -52,7 +52,7 @@ describe("pickBotSpell", () => {
   });
 
   it("skips leftover kinds that CMB-15 cannot cast", () => {
-    const buff: HuntBotSpellBook["spells"][number] = {
+    const buff: MobSpellBook["spells"][number] = {
       ...spit,
       artikulId: 400,
       spell: { animData: "magic_baf", effects: [{ kind: 99 }] },
@@ -67,7 +67,7 @@ describe("pickBotSpell", () => {
   });
 
   it("burns an uncastable fight_start opener", () => {
-    const opener: HuntBotSpellBook["spells"][number] = {
+    const opener: MobSpellBook["spells"][number] = {
       ...spit,
       artikulId: 10,
       slot: "fight_start",
@@ -86,7 +86,7 @@ describe("pickBotSpell", () => {
   });
 
   it("holds foe_has_dispel_groups until the foe has a group the spell dispels", () => {
-    const dispel: HuntBotSpellBook["spells"][number] = {
+    const dispel: MobSpellBook["spells"][number] = {
       ...spit,
       artikulId: 8,
       slot: "prefer",
@@ -117,7 +117,7 @@ describe("pickBotSpell", () => {
   });
 
   it("burns fight_start kind-10 summon without casting", () => {
-    const summon: HuntBotSpellBook["spells"][number] = {
+    const summon: MobSpellBook["spells"][number] = {
       ...spit,
       artikulId: 632,
       slot: "fight_start",

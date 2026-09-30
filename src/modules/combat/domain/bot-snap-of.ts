@@ -1,7 +1,7 @@
 import type { BotSnap } from "./battle-event.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 
-export function huntBotSnap(bot: BotFighter, hp: number, enemyTeam: 1 | 2): BotSnap {
+export function botSnapOf(bot: BotFighter, hp: number, enemyTeam: 1 | 2): BotSnap {
   return {
     id: bot.fightId,
     nick: bot.nick,

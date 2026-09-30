@@ -1,5 +1,5 @@
 import type { BattleEvent, BotSnap } from "./battle-event.ts";
-import { huntBotSnap } from "./hunt-bot-snap.ts";
+import { botSnapOf } from "./bot-snap-of.ts";
 import { primaryEnemyBot, requireFightBot } from "./fight-bots.ts";
 import type { FightEffectSnap } from "./standing-effect.ts";
 import type { HumanFighter } from "./human-fighter.ts";
@@ -160,7 +160,7 @@ export function authenticateFighter(
   const pairedBot =
     otherId !== undefined && humanOpponent === null ? requireFightBot(input.bots, otherId) : null;
   const primary = primaryEnemyBot(input.bots, input.enemyTeam);
-  const bot = pairedBot ? pairedBot.snap() : huntBotSnap(primary, primary.hp, input.enemyTeam);
+  const bot = pairedBot ? pairedBot.snap() : botSnapOf(primary, primary.hp, input.enemyTeam);
   return huntAuthenticateEvents({
     human,
     allies: input.humans,

@@ -27,7 +27,7 @@ export type ShuffleOutcome =
       bot: BotSnap;
     }>;
 
-export function planHuntShuffle(
+export function planShuffle(
   input: Readonly<{
     humanHits: number;
     botHits: number;

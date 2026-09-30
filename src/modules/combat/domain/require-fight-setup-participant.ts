@@ -1,7 +1,7 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { requireCombatLoadout } from "./combat-loadout.ts";
 import { isFightSetupAi, isFightSetupHuman, type FightSetupParticipant } from "./fight-setup.ts";
-import { requireHuntBotSpellBook } from "./hunt-bot-spell-book.ts";
+import { requireMobSpellBook } from "./mob-spell-book.ts";
 
 export function requireFightSetupParticipant(participant: FightSetupParticipant): void {
   if (isFightSetupHuman(participant)) {
@@ -81,5 +81,5 @@ function requireAi(ai: Extract<FightSetupParticipant, { controller: "ai" }>): vo
   if (!ai.avatar) throw new Error("Battle bot avatar is required");
   if (!ai.sk) throw new Error("Battle bot sk is required");
   if (typeof ai.body !== "string") throw new Error("Battle bot body is required");
-  requireHuntBotSpellBook(ai.spellBook);
+  requireMobSpellBook(ai.spellBook);
 }

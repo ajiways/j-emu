@@ -5,7 +5,7 @@ const BOT_SPELL_SLOTS = ["fight_start", "prefer", "turn_roulette", "never"] as c
 
 type BotSpellSlot = (typeof BOT_SPELL_SLOTS)[number];
 
-export type HuntBotSpellCard = Readonly<{
+export type MobSpellCard = Readonly<{
   artikulId: number;
   title: string;
   picture: string;
@@ -17,12 +17,12 @@ export type HuntBotSpellCard = Readonly<{
   spell: CombatSpell;
 }>;
 
-export type HuntBotSpellBook = Readonly<{
+export type MobSpellBook = Readonly<{
   nothingWeight: number;
-  spells: readonly HuntBotSpellCard[];
+  spells: readonly MobSpellCard[];
 }>;
 
-export function requireHuntBotSpellBook(book: HuntBotSpellBook): void {
+export function requireMobSpellBook(book: MobSpellBook): void {
   if (!Number.isInteger(book.nothingWeight) || book.nothingWeight < 0) {
     throw new Error("Bot spell book nothingWeight must be a non-negative integer");
   }

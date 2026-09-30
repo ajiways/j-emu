@@ -6,7 +6,7 @@ import {
 import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { FixedRandom } from "../../support/fakes/fixed-random.ts";
-import { shuffleHuntAfterHits } from "../../../src/modules/combat/domain/battle-pairing.ts";
+import { shuffleAfterHits } from "../../../src/modules/combat/domain/battle-pairing.ts";
 import { BotFighter } from "../../../src/modules/combat/domain/bot-fighter.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { FightDuel } from "../../../src/modules/combat/domain/fight-duel.ts";
@@ -75,7 +75,7 @@ describe("a waiting ally mob takes a duel over", () => {
       duel.addHit(human.heroId);
       duel.addHit(foe.fightId);
     }
-    const outcome = shuffleHuntAfterHits({
+    const outcome = shuffleAfterHits({
       pairing: { duel, humans: [human], pairedAccountId: human.accountId },
       openerTeam: 2,
       enemyTeam: 1,

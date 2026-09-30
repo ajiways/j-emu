@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { RadwayPlayerAttackPolicy } from "../../../src/app/radway-player-attack-policy.ts";
-import { HuntJoinDenied } from "../../../src/modules/combat/domain/hunt-join-denied.ts";
+import { JoinDenied } from "../../../src/modules/combat/domain/join-denied.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { createCombatService } from "../../support/create-combat-service.ts";
 import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
@@ -30,7 +30,7 @@ describe("CombatService player attack policy", () => {
     const start = await startHuntWithIssuedId(combat, unitHuntStart());
     await expect(
       combat.joinHunt(unitHuntJoin({ fightId: start.fightId, team: 2 })),
-    ).rejects.toBeInstanceOf(HuntJoinDenied);
+    ).rejects.toBeInstanceOf(JoinDenied);
     expect(await combat.activeFightId(2)).toBeNull();
     await combat.joinHunt(unitHuntJoin({ fightId: start.fightId, team: 1 }));
     expect(await combat.participantTeam(2)).toBe(1);

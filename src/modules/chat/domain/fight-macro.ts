@@ -13,7 +13,7 @@ export type FightMacroToken = Readonly<{
   }>;
 }>;
 
-export function huntFightTitle(heroNick: string, foeNick: string): string {
+export function fightTitle(heroNick: string, foeNick: string): string {
   if (!heroNick) throw new Error("Hunt fight title requires the hero nick");
   if (!foeNick) throw new Error("Hunt fight title requires the foe nick");
   return `Нападение ${heroNick} на ${foeNick}`;

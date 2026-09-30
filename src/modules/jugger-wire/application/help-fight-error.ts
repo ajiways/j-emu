@@ -1,4 +1,4 @@
-import { HuntJoinDenied } from "../../combat/domain/hunt-join-denied.ts";
+import { JoinDenied } from "../../combat/domain/join-denied.ts";
 import { ProtocolError } from "./protocol-error.ts";
 
 function helpFightError(internal: string): ProtocolError {
@@ -19,6 +19,6 @@ function helpFightError(internal: string): ProtocolError {
 
 export function asHelpFightError(error: unknown): ProtocolError {
   if (error instanceof ProtocolError) return error;
-  if (error instanceof HuntJoinDenied) return helpFightError(error.message);
+  if (error instanceof JoinDenied) return helpFightError(error.message);
   throw error;
 }

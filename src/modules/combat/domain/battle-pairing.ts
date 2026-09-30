@@ -1,17 +1,13 @@
 import type { BattleEvent } from "./battle-event.ts";
-import { huntBotSnap } from "./hunt-bot-snap.ts";
+import { botSnapOf } from "./bot-snap-of.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { FightDuel } from "./fight-duel.ts";
-import { peekWaitingEnemy, takeNextEnemyForHuman } from "./hunt-wait-queue.ts";
-import {
-  PAIR_HITS_TO_SWITCH,
-  planHuntShuffle,
-  type ShuffleOutcome,
-} from "./try-shuffle-after-hits.ts";
+import { peekWaitingEnemy, takeNextEnemyForHuman } from "./wait-queue.ts";
+import { PAIR_HITS_TO_SWITCH, planShuffle, type ShuffleOutcome } from "./try-shuffle-after-hits.ts";
 import { retargetDuelTo } from "./retarget-duel.ts";
 
-export type HuntPairing = {
+export type DuelPairing = {
   duel: FightDuel;
   humans: HumanFighter[];
   pairedAccountId: number;
@@ -29,7 +25,7 @@ function livingBotWaiterOnTeam(bots: readonly BotFighter[], team: 1 | 2): BotFig
   return bots.find((entry) => entry.waiting && entry.alive && entry.team === team);
 }
 
-export function huntHumanOppNew(human: HumanFighter): BattleEvent {
+export function humanOpponentNew(human: HumanFighter): BattleEvent {
   return {
     type: "opponent-new-human",
     human: human.snapshot(),
@@ -37,9 +33,9 @@ export function huntHumanOppNew(human: HumanFighter): BattleEvent {
   };
 }
 
-export function shuffleHuntAfterHits(
+export function shuffleAfterHits(
   input: Readonly<{
-    pairing: HuntPairing;
+    pairing: DuelPairing;
     openerTeam: 1 | 2;
     enemyTeam: 1 | 2;
     bots: readonly BotFighter[];
@@ -61,7 +57,7 @@ export function shuffleHuntAfterHits(
     partner && partner.hitsA >= PAIR_HITS_TO_SWITCH && partner.hitsB >= PAIR_HITS_TO_SWITCH
       ? partner
       : null;
-  const plan = planHuntShuffle({
+  const plan = planShuffle({
     humanHits: input.pairing.duel.hitsFor(actor.heroId),
     botHits: input.pairing.duel.hitsFor(foeBot.fightId),
     hasLivingWaiter:
@@ -109,7 +105,7 @@ export function shuffleHuntAfterHits(
 
 /** The duel goes on between the foe and a waiting ally mob; the hero steps out and waits. */
 function handOffToAllyBot(
-  input: Readonly<{ pairing: HuntPairing; bots: readonly BotFighter[] }>,
+  input: Readonly<{ pairing: DuelPairing; bots: readonly BotFighter[] }>,
   actor: HumanFighter,
   foeBot: BotFighter,
   team: 1 | 2,
@@ -128,9 +124,9 @@ function handOffToAllyBot(
   return { kind: "ally-handoff", actorAccountId: actor.accountId };
 }
 
-export function pairNextHuntWaiter(
+export function pairNextWaiter(
   input: Readonly<{
-    pairing: HuntPairing;
+    pairing: DuelPairing;
     primary: BotFighter;
     openerTeam: 1 | 2;
     enemyTeam: 1 | 2;
@@ -157,7 +153,7 @@ export function pairNextHuntWaiter(
       events: [
         {
           type: "opponent-new",
-          bot: huntBotSnap(input.primary, input.botHp, input.enemyTeam),
+          bot: botSnapOf(input.primary, input.botHp, input.enemyTeam),
         },
       ],
     };
@@ -168,12 +164,12 @@ export function pairNextHuntWaiter(
   return {
     accountId: waiter.accountId,
     authed: true,
-    events: [huntHumanOppNew(opponent)],
+    events: [humanOpponentNew(opponent)],
   };
 }
 
 function applyReserveSwap(
-  pairing: HuntPairing,
+  pairing: DuelPairing,
   bots: readonly BotFighter[],
   enemyTeam: 1 | 2,
   duels: FightDuel[],
@@ -205,7 +201,7 @@ function applyReserveSwap(
 }
 
 function applyCrossSwap(
-  leftPairing: HuntPairing,
+  leftPairing: DuelPairing,
   other: FightDuel,
   humans: readonly HumanFighter[],
   bots: readonly BotFighter[],
@@ -265,7 +261,7 @@ function otherHumanBotDuel(
   return null;
 }
 
-function requirePaired(pairing: HuntPairing): HumanFighter {
+function requirePaired(pairing: DuelPairing): HumanFighter {
   const human = pairing.humans.find((entry) => entry.accountId === pairing.pairedAccountId);
   if (!human) throw new Error(`Human account ${pairing.pairedAccountId} is not in this battle`);
   return human;

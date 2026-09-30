@@ -2,18 +2,15 @@ import type { CombatPort } from "../../src/modules/combat/ports/combat-port.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../src/modules/combat/domain/combat-loadout.ts";
 import { unpublishedBotFightStats } from "../../src/modules/combat/domain/combatant-fight-stats.ts";
 import { FightEffectIds } from "../../src/modules/combat/domain/fight-effect-ids.ts";
-import type {
-  HuntBotSpellBook,
-  HuntBotSpellCard,
-} from "../../src/modules/combat/domain/hunt-bot-spell-book.ts";
+import type { MobSpellBook, MobSpellCard } from "../../src/modules/combat/domain/mob-spell-book.ts";
 import { BotFighter, type BotFighterSeed } from "../../src/modules/combat/domain/bot-fighter.ts";
 
-export const EMPTY_HUNT_BOT_SPELL_BOOK: HuntBotSpellBook = {
+export const EMPTY_HUNT_BOT_SPELL_BOOK: MobSpellBook = {
   nothingWeight: 100,
   spells: [],
 };
 
-export function unitHuntSpellCard(overrides: Partial<HuntBotSpellCard> = {}): HuntBotSpellCard {
+export function unitHuntSpellCard(overrides: Partial<MobSpellCard> = {}): MobSpellCard {
   return {
     artikulId: 396,
     title: "Ядовитый плевок",
@@ -31,7 +28,7 @@ export function unitHuntSpellCard(overrides: Partial<HuntBotSpellCard> = {}): Hu
 /** Hissa 396 as the catalog ships it (81/40); pass a faster DoT to see ticks sooner. */
 export function unitHissaSpitBook(
   poison: Readonly<{ duration: number; period: number }> = { duration: 81, period: 40 },
-): HuntBotSpellBook {
+): MobSpellBook {
   return {
     nothingWeight: 100,
     spells: [

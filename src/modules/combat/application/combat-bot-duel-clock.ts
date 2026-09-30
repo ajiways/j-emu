@@ -2,7 +2,7 @@ import type { Battle } from "../domain/battle.ts";
 import { botDuelClockToken } from "../domain/fight-delay-token.ts";
 import { persChangeForHit } from "../domain/melee-pers-change.ts";
 import type { CombatEvent } from "../ports/combat-port.ts";
-import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
+import type { FightScheduler } from "./fight-scheduler.ts";
 
 /**
  * Duels of two mobs move on the fight's own clock, not on a player's click: one action of each,
@@ -11,7 +11,7 @@ import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
 export class CombatBotDuelClock {
   constructor(
     private readonly battleByFight: Map<string, Battle>,
-    private readonly scheduler: HuntMeleeScheduler,
+    private readonly scheduler: FightScheduler,
     private readonly enqueue: (accountId: number, events: readonly CombatEvent[]) => void,
     private readonly wakeAccount: (accountId: number) => void,
     private readonly settleFinished: (

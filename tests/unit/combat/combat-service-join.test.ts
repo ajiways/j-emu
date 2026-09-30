@@ -48,9 +48,9 @@ describe("CombatService hunt join", () => {
     const start = await startHuntWithIssuedId(combat, unitHuntStart({ heroStrength: 200 }));
     await expect(
       combat.joinHunt(unitHuntJoin({ accountId: 1, heroId: 1, fightId: start.fightId })),
-    ).rejects.toMatchObject({ name: "HuntJoinDenied", message: "уже в бою" });
+    ).rejects.toMatchObject({ name: "JoinDenied", message: "уже в бою" });
     await expect(combat.joinHunt(unitHuntJoin({ fightId: "9" }))).rejects.toMatchObject({
-      name: "HuntJoinDenied",
+      name: "JoinDenied",
       message: "бой не найден",
     });
     await expect(
@@ -90,7 +90,7 @@ describe("CombatService hunt join", () => {
     );
     await expect(
       combat.joinHunt(unitHuntJoin({ fightId: start.fightId, instanceCopyId: 8, team: 2 })),
-    ).rejects.toMatchObject({ name: "HuntJoinDenied", message: "бой в другой локации" });
+    ).rejects.toMatchObject({ name: "JoinDenied", message: "бой в другой локации" });
     const joined = await combat.joinHunt(
       unitHuntJoin({ fightId: start.fightId, instanceCopyId: 7, team: 2 }),
     );
@@ -262,7 +262,7 @@ describe("CombatService PvP join", () => {
         unitHuntJoin({ accountId: 3, heroId: 3, fightId: duel.fightId, areaId: "503" }),
       ),
     ).rejects.toMatchObject({
-      name: "HuntJoinDenied",
+      name: "JoinDenied",
       message: "нельзя вмешаться в дуэль",
     });
     const pvpCombat = service();
@@ -278,7 +278,7 @@ describe("CombatService PvP join", () => {
           team: 1,
         }),
       ),
-    ).rejects.toMatchObject({ name: "HuntJoinDenied", message: "бой в другой локации" });
+    ).rejects.toMatchObject({ name: "JoinDenied", message: "бой в другой локации" });
   });
 });
 

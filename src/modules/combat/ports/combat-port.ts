@@ -1,6 +1,6 @@
 import type { BattleEvent } from "../domain/battle-event.ts";
 import type { CombatLoadout } from "../domain/combat-loadout.ts";
-import type { HuntBotSpellBook } from "../domain/hunt-bot-spell-book.ts";
+import type { MobSpellBook } from "../domain/mob-spell-book.ts";
 import type { FightInfoCard } from "../domain/fight-info-card.ts";
 import type { FightResultInfo } from "../domain/fight-result-info.ts";
 import type { FightLootBlock } from "../domain/fight-loot-block.ts";
@@ -72,7 +72,7 @@ export type HuntStartInput = Readonly<{
   instanceCopyId: number | null;
   appearance: FighterAppearance;
   loadout: CombatLoadout;
-  botSpellBook: HuntBotSpellBook;
+  botSpellBook: MobSpellBook;
   purpose: "hunt" | "quest";
   extraEnemies: readonly HuntRosterBotInput[];
   allies: readonly HuntRosterBotInput[];
@@ -92,7 +92,7 @@ export type HuntRosterBotInput = Readonly<{
   avatar: string;
   sk: string;
   body: string;
-  spellBook: HuntBotSpellBook;
+  spellBook: MobSpellBook;
 }>;
 
 export type HuntJoinInput = Readonly<{

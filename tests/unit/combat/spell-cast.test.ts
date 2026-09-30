@@ -11,7 +11,7 @@ import {
 } from "../../support/hunt-start-input.ts";
 
 import { castTimedSpell } from "../../../src/modules/combat/domain/timed-spell.ts";
-import { tryGloveKeepTurn } from "../../../src/modules/combat/domain/hunt-cast.ts";
+import { tryGloveKeepTurn } from "../../../src/modules/combat/domain/player-casts.ts";
 
 const CRUSH: CombatGloveSpell = {
   artikulId: 6197,

@@ -3,8 +3,8 @@ import { SpellBookBotBrain } from "./spell-book-bot-brain.ts";
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import type { BotSnap } from "./battle-event.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
-import type { HuntBotSpellBook } from "./hunt-bot-spell-book.ts";
-import { requireHuntBotSpellBook } from "./hunt-bot-spell-book.ts";
+import type { MobSpellBook } from "./mob-spell-book.ts";
+import { requireMobSpellBook } from "./mob-spell-book.ts";
 import { EMPTY_COMBAT_LOADOUT } from "./combat-loadout.ts";
 import type { FighterKind } from "./fighter.ts";
 import { Participant, type ParticipantInit } from "./participant.ts";
@@ -22,7 +22,7 @@ export type BotFighterSeed = Readonly<{
   avatar: string;
   sk: string;
   body: string;
-  spellBook: HuntBotSpellBook;
+  spellBook: MobSpellBook;
 }>;
 
 export class BotFighter extends Participant {
@@ -42,7 +42,7 @@ export class BotFighter extends Participant {
     magPower: number,
     magResist: number,
     private readonly baseMaxHp: number,
-    readonly spellBook: HuntBotSpellBook,
+    readonly spellBook: MobSpellBook,
     hp: number,
     effectIds: FightEffectIds,
   ) {
@@ -150,7 +150,7 @@ type BotParticipantFields = Readonly<{
   magPower: number;
   magResist: number;
   baseMaxHp: number;
-  spellBook: HuntBotSpellBook;
+  spellBook: MobSpellBook;
   hp: number;
   effectIds: FightEffectIds;
 }>;
@@ -167,7 +167,7 @@ function botParticipantInit(
   if (!bot.avatar) throw new Error("Roster bot avatar is required");
   if (!bot.sk) throw new Error("Roster bot sk is required");
   if (typeof bot.body !== "string") throw new Error("Roster bot body is required");
-  requireHuntBotSpellBook(bot.spellBook);
+  requireMobSpellBook(bot.spellBook);
   return {
     id: fightId,
     nick: bot.nick,

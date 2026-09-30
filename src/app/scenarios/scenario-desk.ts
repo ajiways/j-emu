@@ -5,7 +5,7 @@ import type {
   CombatGloveLoadout,
   CombatGloveSpell,
 } from "../../modules/combat/domain/combat-loadout.ts";
-import type { HuntBotSpellBook } from "../../modules/combat/domain/hunt-bot-spell-book.ts";
+import type { MobSpellBook } from "../../modules/combat/domain/mob-spell-book.ts";
 import { unpublishedBotFightStats } from "../../modules/combat/domain/combatant-fight-stats.ts";
 import type { FightWireMapper } from "../../modules/jugger-wire/application/fight-wire-mapper.ts";
 import { heroFightConfLook } from "../../modules/jugger-wire/application/hero-fight-appearance.ts";
@@ -155,7 +155,7 @@ async function spellBook(
   catalog: Catalog,
   scenario: string,
   entry: FightScenarioBot,
-): Promise<HuntBotSpellBook> {
+): Promise<MobSpellBook> {
   const spells = [];
   for (const card of entry.spells) {
     const artifact = await catalog.artifact(card.artikulId);

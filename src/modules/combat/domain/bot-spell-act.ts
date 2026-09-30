@@ -6,7 +6,7 @@ import {
   botSpellKind1DmgType,
   rollBotSpellDamage,
 } from "./bot-spell-damage.ts";
-import type { HuntBotSpellCard } from "./hunt-bot-spell-book.ts";
+import type { MobSpellCard } from "./mob-spell-book.ts";
 import type { Participant } from "./participant.ts";
 import { spellKind } from "./cast-state.ts";
 import type { BotFighter } from "./bot-fighter.ts";
@@ -40,7 +40,7 @@ const BOT_PRESENTATION: SpellPresentation = {
 export function actBotSpellCard(
   actor: BotFighter,
   target: Participant,
-  card: HuntBotSpellCard,
+  card: MobSpellCard,
   state: BotKindActState,
 ): BotSpellAct {
   const events = castSpell({
@@ -63,7 +63,7 @@ export function actBotSpellCard(
 function instantKind1(
   actor: BotFighter,
   target: Participant,
-  card: HuntBotSpellCard,
+  card: MobSpellCard,
   state: BotKindActState,
 ): BotSpellAct {
   const others = aoeOthers(actor, target, card, state);
@@ -102,7 +102,7 @@ function instantKind1(
 function aoeOthers(
   actor: BotFighter,
   target: Participant,
-  card: HuntBotSpellCard,
+  card: MobSpellCard,
   state: BotKindActState,
 ): readonly Fighter[] {
   if (!spellKind1IsAoe(card.spell)) return [];
@@ -117,7 +117,7 @@ function aoeOthers(
 function hitOther(
   actor: BotFighter,
   other: Fighter,
-  card: HuntBotSpellCard,
+  card: MobSpellCard,
   state: BotKindActState,
 ): BotSideHit {
   const { applied, killed } = resolveHpLoss(

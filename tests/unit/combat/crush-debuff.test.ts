@@ -3,7 +3,7 @@ import { BotFighter } from "../../../src/modules/combat/domain/bot-fighter.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import type { CombatGloveSpell } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
-import { tryGloveKeepTurn } from "../../../src/modules/combat/domain/hunt-cast.ts";
+import { tryGloveKeepTurn } from "../../../src/modules/combat/domain/player-casts.ts";
 import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
 import {
   EMPTY_HUNT_BOT_SPELL_BOOK,

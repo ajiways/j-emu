@@ -6,18 +6,18 @@ import {
 } from "./battle-effect-clock.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { authenticateFighter } from "./battle-authenticate.ts";
-import { huntHistoryOf, joinBattleHuman } from "./battle-hunt-join.ts";
+import { historyOf, joinBattleHuman } from "./battle-join.ts";
 import { practiceHistoryOf } from "./practice-fight-history.ts";
 import {
   applyBattleBotMelee,
   applyBattleGlove,
   applyBattlePlayerMelee,
   type BotTurnResult,
-} from "./battle-hunt-actions.ts";
+} from "./battle-actions.ts";
 import {
   battleOpener,
   battlePairedOpponent,
-  huntPairingOf,
+  duelPairingOf,
   requireAuthedHuman,
   requireBattleHuman,
 } from "./battle-lookups.ts";
@@ -29,23 +29,23 @@ import { Roster } from "./roster.ts";
 import { primaryEnemyBot, requireFightBot, requireFightBots } from "./fight-bots.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import { grantTurn as grantHumanTurn } from "./hunt-melee.ts";
+import { grantTurn as grantHumanTurn } from "./turn-grant.ts";
 import { opposingTeam } from "./opposing-team.ts";
 import { rosterIsPvp } from "./roster-pvp.ts";
 import { consumeStunSkip, timeoutBattleTurn } from "./battle-turn-skips.ts";
 import type { HumanTimeout } from "./timeout-human-turn.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
-import { tryPocketCast, tryRageCast, type KeepTurnResult } from "./hunt-cast.ts";
+import { tryPocketCast, tryRageCast, type KeepTurnResult } from "./player-casts.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
-import { tryHuntAggro, type HuntAggroResult } from "./hunt-aggro.ts";
+import { tryAggro, type AggroResult } from "./aggro.ts";
 import { hasBotDuels, pairWaitingSeekers, tickBotDuels } from "./battle-bot-duels.ts";
 import type { RandomSource } from "./random-source.ts";
-import { pairNextHuntWaiter, shuffleHuntAfterHits } from "./battle-pairing.ts";
+import { pairNextWaiter, shuffleAfterHits } from "./battle-pairing.ts";
 import { seedBattleParticipants } from "./battle-seed.ts";
 import { battleOutcomeSnapshot, leaveWinnerTeam } from "./battle-outcome.ts";
 import type { FightOutcomeKind, FightOutcomeSnapshot } from "./fight-outcome-snapshot.ts";
 import type { ShuffleOutcome } from "./try-shuffle-after-hits.ts";
-import { dissolveDuelContaining, requireDuelContaining } from "./try-pair-hunt-queues.ts";
+import { dissolveDuelContaining, requireDuelContaining } from "./pairing.ts";
 
 export class Battle {
   readonly id: string;
@@ -119,7 +119,7 @@ export class Battle {
   }
 
   huntHistory() {
-    return huntHistoryOf(
+    return historyOf(
       battleOpener(this.humans),
       primaryEnemyBot(this.bots, this.fightRules.teamAssignment.enemyTeam),
     );
@@ -238,8 +238,8 @@ export class Battle {
     return tryRageCast(requireAuthedHuman(this.humans, accountId));
   }
 
-  tryAggro(accountId: number, targetId: number, allocateBotId: () => number): HuntAggroResult {
-    return tryHuntAggro({
+  tryAggro(accountId: number, targetId: number, allocateBotId: () => number): AggroResult {
+    return tryAggro({
       ...this.actionState(),
       canAggro: this.fightRules.canAggro,
       enemyTeam: this.fightRules.teamAssignment.enemyTeam,
@@ -296,8 +296,8 @@ export class Battle {
     const human = requireBattleHuman(this.humans, accountId);
     const duel = this.duels.find((entry) => entry.has(human.heroId));
     if (!duel) return { kind: "none" };
-    return shuffleHuntAfterHits({
-      pairing: huntPairingOf(duel, this.humans, accountId),
+    return shuffleAfterHits({
+      pairing: duelPairingOf(duel, this.humans, accountId),
       openerTeam: this.fightRules.teamAssignment.openerTeam,
       enemyTeam: this.fightRules.teamAssignment.enemyTeam,
       bots: this.bots,
@@ -367,8 +367,8 @@ export class Battle {
     const duel = this.duels.find((entry) => entry.has(previous.heroId));
     if (!duel) return null;
     const primary = primaryEnemyBot(this.bots, this.fightRules.teamAssignment.enemyTeam);
-    return pairNextHuntWaiter({
-      pairing: huntPairingOf(duel, this.humans, previousAccountId),
+    return pairNextWaiter({
+      pairing: duelPairingOf(duel, this.humans, previousAccountId),
       primary,
       openerTeam: this.fightRules.teamAssignment.openerTeam,
       enemyTeam: this.fightRules.teamAssignment.enemyTeam,

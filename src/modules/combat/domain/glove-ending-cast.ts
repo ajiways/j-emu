@@ -13,7 +13,7 @@ import {
   spellKind1IsAoe,
 } from "./spell-aoe.ts";
 import { advanceActionClock } from "./duel-clock.ts";
-import { isEndingGlove, type KeepTurnResult } from "./hunt-cast.ts";
+import { isEndingGlove, type KeepTurnResult } from "./player-casts.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { spellKind } from "./cast-state.ts";
 import type { BotFighter } from "./bot-fighter.ts";

@@ -1,13 +1,13 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { battleOpener } from "./battle-lookups.ts";
-import { tickHuntRosterDuels } from "./battle-hunt-runtime.ts";
+import { tickBotDuelsOf } from "./battle-runtime.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { RandomSource } from "./random-source.ts";
-import { hasPairableSeekers, pairHuntQueues } from "./try-pair-hunt-queues.ts";
+import { hasPairableSeekers, pairQueues } from "./pairing.ts";
 
 type BotDuelState = Readonly<{
   fightRules: FightRules;
@@ -40,7 +40,7 @@ export function pairWaitingSeekers(
   const waitingBefore = new Set(
     state.humans.filter((human) => human.waiting).map((human) => human.accountId),
   );
-  pairHuntQueues({
+  pairQueues({
     participants: [...state.humans, ...state.bots],
     duels: state.duels,
     random: state.random,
@@ -55,7 +55,7 @@ export function tickBotDuels(
   state: BotDuelState & Readonly<{ duels: FightDuel[] }>,
   nowMs: number,
 ): Readonly<{ events: readonly BattleEvent[]; finished: boolean }> {
-  return tickHuntRosterDuels({
+  return tickBotDuelsOf({
     bots: state.bots,
     enemyTeam: state.fightRules.teamAssignment.enemyTeam,
     duels: state.duels,

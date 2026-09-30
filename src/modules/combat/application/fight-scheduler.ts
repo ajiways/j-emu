@@ -2,7 +2,7 @@ import type { Clock } from "../../../shared/kernel/clock.ts";
 import { requirePresent } from "../../../shared/kernel/require-present.ts";
 import type { CombatDelay } from "../ports/combat-delay.ts";
 
-export class HuntMeleeScheduler {
+export class FightScheduler {
   constructor(
     private readonly delay: CombatDelay,
     private readonly clock: Clock,

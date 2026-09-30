@@ -5,7 +5,7 @@ import type { RandomSource } from "./random-source.ts";
 import { rollOpensFirst } from "./roll-opens-first.ts";
 import { shuffleInPlace } from "./shuffle-in-place.ts";
 
-export type HuntSeeker = Readonly<{
+export type Seeker = Readonly<{
   id: number;
   team: 1 | 2;
   lastOpponentId: number | null;
@@ -18,15 +18,15 @@ export function requireDuelContaining(duels: readonly FightDuel[], id: number): 
   return duel;
 }
 
-export function pairHuntHumanQueues(
+export function pairHumanQueues(
   humans: readonly HumanFighter[],
   duels: FightDuel[],
   random: RandomSource,
 ): FightDuel | null {
-  return pairHuntQueues({ participants: humans, duels, random });
+  return pairQueues({ participants: humans, duels, random });
 }
 
-export function pairHuntQueues(
+export function pairQueues(
   input: Readonly<{
     participants: readonly Participant[];
     duels: FightDuel[];
@@ -50,8 +50,8 @@ export function hasPairableSeekers(
   return seekers.some((s) => s.team === 1) && seekers.some((s) => s.team === 2);
 }
 
-export function pickHuntPair(
-  seekers: readonly HuntSeeker[],
+export function pickPair(
+  seekers: readonly Seeker[],
   occupied: ReadonlySet<number>,
   random: RandomSource,
 ): Readonly<{ aId: number; bId: number }> | null {
@@ -115,7 +115,7 @@ function pairOneHuntQueue(
 ): FightDuel | null {
   const occupied = occupiedParticipantIds(input.duels);
   const seekers = huntSeekers(input.participants, occupied);
-  const picked = pickHuntPair(seekers, occupied, input.random);
+  const picked = pickPair(seekers, occupied, input.random);
   if (!picked) return null;
   if (occupied.has(picked.aId) || occupied.has(picked.bId)) {
     throw new Error(`Hunt pair collides with occupied id ${picked.aId}/${picked.bId}`);
@@ -137,7 +137,7 @@ function pairOneHuntQueue(
 function huntSeekers(
   participants: readonly Participant[],
   occupied: ReadonlySet<number>,
-): HuntSeeker[] {
+): Seeker[] {
   return participants
     .filter((member) => member.alive && member.waiting && !occupied.has(member.id))
     .map((member) => ({
@@ -157,7 +157,7 @@ function occupiedParticipantIds(duels: readonly FightDuel[]): Set<number> {
   return occupied;
 }
 
-function pairSeeker(participants: readonly Participant[], seeker: HuntSeeker): void {
+function pairSeeker(participants: readonly Participant[], seeker: Seeker): void {
   requireParticipant(participants, seeker.id, "Hunt seeker").pair();
 }
 
@@ -176,7 +176,7 @@ function requireParticipant(
   return member;
 }
 
-function requireSeeker(seekers: readonly HuntSeeker[], id: number): HuntSeeker {
+function requireSeeker(seekers: readonly Seeker[], id: number): Seeker {
   const seeker = seekers.find((entry) => entry.id === id);
   if (!seeker) throw new Error(`Hunt seeker ${id} is missing`);
   return seeker;

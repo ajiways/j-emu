@@ -16,7 +16,7 @@ describe("quest fight terminal hook", () => {
       unitHuntStart({ purpose: "quest", heroStrength: 200 }),
     );
     await expect(combat.joinHunt(unitHuntJoin({ fightId: start.fightId }))).rejects.toMatchObject({
-      name: "HuntJoinDenied",
+      name: "JoinDenied",
       message: "нельзя вмешаться в квестовый бой",
     });
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });

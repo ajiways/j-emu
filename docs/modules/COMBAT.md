@@ -1096,7 +1096,7 @@ fail-fast, а уходит в `Math.random`; e2e с точной долей ур
 `ORDER BY time_finish` индекса нет (есть только `uniqueIndex(copy_id)`).
 
 **Хардкод контента в domain.** ID ярости `212` и группа `844` с title и png
-лежат в `hunt-cast.ts` и дублируются в `hunt-native-pers-spells.ts`;
+лежат в `player-casts.ts` и дублируются в `hunt-native-pers-spells.ts`;
 `DOT_DURATION_TURNS` держит override спелла `396`. Должно приходить из
 каталога.
 

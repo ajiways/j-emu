@@ -7,7 +7,7 @@ export type PlayerAttackAttempt = Readonly<{
 }>;
 
 /**
- * Who may attack whom, and where (factions, location). Throws `HuntJoinDenied` when the
+ * Who may attack whom, and where (factions, location). Throws `JoinDenied` when the
  * attack is not allowed; joining a fight without making it PvP never asks.
  */
 export interface PlayerAttackPolicy {

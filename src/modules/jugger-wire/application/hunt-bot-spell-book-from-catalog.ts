@@ -1,8 +1,5 @@
 import type { BotSpellBook } from "../../catalog/domain/bot-spell-book.ts";
-import type {
-  HuntBotSpellBook,
-  HuntBotSpellCard,
-} from "../../combat/domain/hunt-bot-spell-book.ts";
+import type { MobSpellBook, MobSpellCard } from "../../combat/domain/mob-spell-book.ts";
 import { toCombatSpell } from "./to-combat-spell.ts";
 
 export type BotSpellArtikulIdentity = Readonly<{
@@ -12,8 +9,8 @@ export type BotSpellArtikulIdentity = Readonly<{
 export async function huntBotSpellBookFromCatalog(
   book: BotSpellBook,
   catalog: BotSpellArtikulIdentity,
-): Promise<HuntBotSpellBook> {
-  const spells: HuntBotSpellCard[] = [];
+): Promise<MobSpellBook> {
+  const spells: MobSpellCard[] = [];
   for (const card of book.spells) {
     const artifact = await catalog.artifact(card.artikulId);
     if (!artifact) {

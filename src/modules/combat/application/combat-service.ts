@@ -5,7 +5,7 @@ import { parseDecimalId, requireWireIdentity } from "../../../shared/kernel/deci
 import type { Battle } from "../domain/battle.ts";
 import type { BattleRules } from "../domain/battle-rules.ts";
 import { EphemeralBotFightIds } from "../domain/ephemeral-bot-fight-ids.ts";
-import { HuntJoinDenied } from "../domain/hunt-join-denied.ts";
+import { JoinDenied } from "../domain/join-denied.ts";
 import { FIGHT_LEAVE_DENIED } from "../domain/fight-leave-denied.ts";
 import type { RandomSource } from "../domain/random-source.ts";
 import type { CombatDelay } from "../ports/combat-delay.ts";
@@ -22,7 +22,7 @@ import type { HistoryWriteObserver } from "./history-write-observer.ts";
 import { CombatMeleeLoop } from "./combat-melee-loop.ts";
 import { CombatTerminal } from "./combat-terminal.ts";
 import { createHuntBattle } from "./create-hunt-battle.ts";
-import { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
+import { FightScheduler } from "./fight-scheduler.ts";
 import { startHumanDuelBattle } from "./start-human-duel.ts";
 import { fightStartOf } from "./fight-start-of.ts";
 import { fightSetupJoinFromInput } from "./fight-setup-human-from-join.ts";
@@ -58,7 +58,7 @@ export class CombatService implements CombatPort {
   private readonly settledFights = new Set<string>();
   private readonly exitSent = new Set<string>();
   private readonly botFightIds = new EphemeralBotFightIds();
-  private readonly scheduler: HuntMeleeScheduler;
+  private readonly scheduler: FightScheduler;
   private readonly melee: CombatMeleeLoop;
   private readonly finish: CombatTerminal;
   private terminal: FightTerminalObserver | undefined;
@@ -78,7 +78,7 @@ export class CombatService implements CombatPort {
     private readonly diagnostics: CombatDiagnostics,
     private readonly testBotStrength?: number,
   ) {
-    this.scheduler = new HuntMeleeScheduler(delay, clock);
+    this.scheduler = new FightScheduler(delay, clock);
     this.melee = new CombatMeleeLoop(
       this.byAccount,
       this.battleByFight,
@@ -200,17 +200,17 @@ export class CombatService implements CombatPort {
     requireWireIdentity(input.accountId, "account id");
     requireWireIdentity(input.heroId, "hero id");
     if (input.team !== 1 && input.team !== 2) throw new Error("Hunt join team must be 1 or 2");
-    if (this.byAccount.has(input.accountId)) throw new HuntJoinDenied("уже в бою");
+    if (this.byAccount.has(input.accountId)) throw new JoinDenied("уже в бою");
     const fightId = requireFightId(input.fightId);
     const battle = this.battleByFight.get(fightId);
-    if (!battle || battle.finished) throw new HuntJoinDenied("бой не найден");
+    if (!battle || battle.finished) throw new JoinDenied("бой не найден");
     const join = battle.fightRules.humanJoin;
-    if (join.mode === "denied") throw new HuntJoinDenied(join.reason);
+    if (join.mode === "denied") throw new JoinDenied(join.reason);
     if (battle.areaId !== input.areaId || battle.instanceCopyId !== input.instanceCopyId) {
-      throw new HuntJoinDenied("бой в другой локации");
+      throw new JoinDenied("бой в другой локации");
     }
     if (battle.hasHuman(input.accountId, input.heroId)) {
-      throw new HuntJoinDenied("вы уже участвовали в этом бою");
+      throw new JoinDenied("вы уже участвовали в этом бою");
     }
     const humans = battle.boardParticipants().humans;
     if (

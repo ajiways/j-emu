@@ -1,6 +1,6 @@
 import type { CombatLoadout } from "./combat-loadout.ts";
 import type { FightKind } from "./fight-rules.ts";
-import type { HuntBotSpellBook } from "./hunt-bot-spell-book.ts";
+import type { MobSpellBook } from "./mob-spell-book.ts";
 import type { FighterAppearance } from "./human-fighter.ts";
 
 export type FightSetupHuman = Readonly<{
@@ -41,7 +41,7 @@ export type FightSetupAi = Readonly<{
   avatar: string;
   sk: string;
   body: string;
-  spellBook: HuntBotSpellBook;
+  spellBook: MobSpellBook;
 }>;
 
 export type FightSetupParticipant = FightSetupHuman | FightSetupAi;
