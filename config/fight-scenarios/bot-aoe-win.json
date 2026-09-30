@@ -1,0 +1,44 @@
+{
+  "description": "Для сравнения с bot-aoe: враг слабый, союзники сильные. Не ходите (или ударьте пару раз) — после трёх ударов враг перейдёт к ждущему союзнику и вас оставят без противника, союзники добьют его, вы победите живым. Засеките, через сколько секунд после конца боя (сообщение в чате) придёт окно результата.",
+  "purpose": "quest",
+  "hero": {
+    "hp": 42,
+    "maxHp": null,
+    "glove": null,
+    "pocket": []
+  },
+  "enemies": [
+    {
+      "botArtikulId": 6,
+      "hp": 60,
+      "strength": 3,
+      "nothingWeight": 0,
+      "spells": [
+        {
+          "artikulId": 13816,
+          "slot": "prefer",
+          "weight": 100,
+          "maxCasts": null,
+          "gate": null,
+          "hpPct": null
+        }
+      ]
+    }
+  ],
+  "allies": [
+    {
+      "botArtikulId": 6,
+      "hp": 100,
+      "strength": 60,
+      "nothingWeight": 100,
+      "spells": []
+    },
+    {
+      "botArtikulId": 6,
+      "hp": 100,
+      "strength": 60,
+      "nothingWeight": 100,
+      "spells": []
+    }
+  ]
+}
