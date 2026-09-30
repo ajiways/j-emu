@@ -1,4 +1,5 @@
 import type { BattleEvent } from "./battle-event.ts";
+import type { StrikeMods } from "./strike-mods.ts";
 import type { Fighter } from "./fighter.ts";
 
 export type ChargingBuffCast = Readonly<{
@@ -8,6 +9,8 @@ export type ChargingBuffCast = Readonly<{
   dmgType: number;
   remainTurns: number;
   groupId?: number;
+  /** What the strikes that spend this effect get from it. */
+  strike: StrikeMods;
   /** Wire `effUse` presentation; the spell's own animation and flags. */
   animation: string;
   flags: string | number;
@@ -34,6 +37,7 @@ export function castChargingBuff(carrier: Fighter, cast: ChargingBuffCast): read
     img: cast.img,
     dmgType: cast.dmgType,
     remainTurns: cast.remainTurns,
+    strike: cast.strike,
     ...(cast.groupId !== undefined ? { groupId: cast.groupId } : {}),
   });
   return [

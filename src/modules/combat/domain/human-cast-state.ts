@@ -6,7 +6,6 @@ import {
   type CombatSpell,
 } from "./combat-loadout.ts";
 import type { PocketCellSnapshot } from "./fight-outcome-snapshot.ts";
-import type { SchoolOverlay } from "./school-overlay.ts";
 
 type PocketRuntime = {
   readonly row: CombatPocketRow;
@@ -18,12 +17,6 @@ export class HumanCastState {
   cp = 0;
   rage = 0;
   aggro: number;
-  private orbHits = 0;
-  private orbPcStr = 0;
-  private gloveCritHits = 0;
-  private rageHits = 0;
-  private ragePcStr = 0;
-  schoolOverlay: SchoolOverlay | null = null;
   private readonly pockets = new Map<number, PocketRuntime>();
   private readonly groupLastUseAt = new Map<number, number>();
   private readonly gloveLastUseAt = new Map<number, number>();
@@ -122,47 +115,6 @@ export class HumanCastState {
     if (this.cp < cost) throw new Error("Glove combo cost exceeds current cp");
     this.cp -= cost;
     return this.cp;
-  }
-
-  armOrb(pcStr: number, hits: number): void {
-    this.orbPcStr = pcStr;
-    this.orbHits = hits;
-  }
-
-  takeOrbPcStr(): number {
-    if (this.orbHits < 1) return 0;
-    this.orbHits -= 1;
-    const value = this.orbPcStr;
-    if (this.orbHits === 0) this.orbPcStr = 0;
-    return value;
-  }
-
-  armGloveCrit(hits: number): void {
-    this.gloveCritHits = hits;
-  }
-
-  takeGloveCrit(): boolean {
-    if (this.gloveCritHits < 1) return false;
-    this.gloveCritHits -= 1;
-    return true;
-  }
-
-  hasRageBuff(): boolean {
-    return this.rageHits > 0;
-  }
-
-  armRage(pcStr: number): void {
-    if (!(pcStr > 0)) throw new Error("Rage pcSTR must be positive");
-    this.ragePcStr = pcStr;
-    this.rageHits = 1;
-  }
-
-  takeRagePcStr(): number {
-    if (this.rageHits < 1) return 0;
-    this.rageHits -= 1;
-    const value = this.ragePcStr;
-    if (this.rageHits === 0) this.ragePcStr = 0;
-    return value;
   }
 
   awardIncomingRage(damage: number, maxHp: number): number {

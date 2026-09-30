@@ -1,3 +1,4 @@
+import { NO_STRIKE_MODS } from "../../../src/modules/combat/domain/strike-mods.ts";
 import { unitStatBase } from "../../support/stat-base.ts";
 import { describe, expect, it } from "vitest";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
@@ -29,6 +30,7 @@ describe("snapshotFightEffects", () => {
       effectIds: ids,
     });
     human.effects.attachChargingKind3({
+      strike: NO_STRIKE_MODS,
       sourceId: 1,
       artikulId: 99,
       title: "Малый усиливающий орб",
@@ -48,6 +50,7 @@ describe("snapshotFightEffects", () => {
     expect(snapshotFightEffects([human], [emptyBot], 1, 0)).toEqual(human.effects.snapshot());
     expect(snapshotFightEffects([human], [emptyBot], 1_000_000, 0)).toEqual([]);
     botEffects.attachChargingKind3({
+      strike: NO_STRIKE_MODS,
       sourceId: 1_000_000,
       artikulId: 397,
       title: "Смертельное прикосновение",

@@ -3,6 +3,7 @@ import type { CombatPocketRow } from "./combat-loadout.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { spellCharging, spellPcStr } from "./human-cast-state.ts";
 import { castChargingBuff } from "./charging-buff-cast.ts";
+import { chargedSkills, strikeModsFromSkills } from "./strike-mods.ts";
 import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
 
 export function requirePocketOrb(row: CombatPocketRow): void {
@@ -19,7 +20,6 @@ export function applyPocketKind3(
   consumed: CombatPocketRow,
 ): readonly BattleEvent[] {
   const hits = spellCharging(consumed.spell);
-  human.casts.armOrb(spellPcStr(consumed.spell), hits);
   const purges: BattleEvent[] = [];
   if (consumed.spell.groupId !== undefined) {
     for (const effectId of human.effects.dispelGroups([consumed.spell.groupId])) {
@@ -32,6 +32,7 @@ export function applyPocketKind3(
     img: consumed.picture,
     dmgType: 1,
     remainTurns: hits,
+    strike: strikeModsFromSkills(chargedSkills(consumed.spell)),
     ...(consumed.spell.groupId !== undefined ? { groupId: consumed.spell.groupId } : {}),
     animation: consumed.spell.animData ?? "",
     flags: pocketSpellWireFlags(consumed.spell.flags),

@@ -1,4 +1,8 @@
+import type { StrikeMods } from "./strike-mods.ts";
+
 export type ChargingKind3Input = Readonly<{
+  /** What the strikes that spend this effect get from it. */
+  strike: StrikeMods;
   sourceId: number;
   artikulId: number;
   title: string;

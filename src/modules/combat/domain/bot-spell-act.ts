@@ -6,7 +6,8 @@ import type { BattleRules } from "./battle-rules.ts";
 import { botSpellAnimation, botSpellKind1DmgType, rollBotSpellDamage } from "./bot-spell-damage.ts";
 import type { HuntBotSpellCard } from "./hunt-bot-spell-book.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import { pocketHealAmount, spellKind } from "./human-cast-state.ts";
+import { pocketHealAmount, spellCharging, spellKind } from "./human-cast-state.ts";
+import { chargedSkills, strikeModsFromSkills, strikeModsOfOverlay } from "./strike-mods.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { kind1OverlayCharges, magicReact } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -73,22 +74,7 @@ export function actBotSpellCard(
       },
     ];
   }
-  if (spellKind(card.spell, 3)) {
-    const overlay = schoolOverlayFromKind1(
-      { ...card.spell, effects: card.spell.effects },
-      actor.strength,
-    );
-    if (overlay) actor.schoolOverlay = overlay;
-    return [
-      {
-        type: "buff-cast",
-        animation: card.spell.animData ?? "magic_baf",
-        sourceId: actor.fightId,
-        targetId: actor.fightId,
-        maxHp: actor.maxHp,
-      },
-    ];
-  }
+  if (spellKind(card.spell, 3)) return attachChargedKind3(actor, card);
   if (spellKind(card.spell, 11)) {
     return [];
   }
@@ -128,7 +114,6 @@ function castsOnSelf(spell: HuntBotSpellCard["spell"]): boolean {
 function attachKind1Overlay(actor: BotFighter, card: HuntBotSpellCard): readonly BattleEvent[] {
   const overlay = schoolOverlayFromKind1(card.spell, actor.strength);
   if (!overlay) throw new Error(`Bot spell ${card.artikulId} overlay charges are required`);
-  actor.schoolOverlay = overlay;
   const animation = botSpellAnimation(card.spell, card.artikulId);
   return castChargingBuff(actor, {
     artikulId: card.artikulId,
@@ -136,6 +121,24 @@ function attachKind1Overlay(actor: BotFighter, card: HuntBotSpellCard): readonly
     img: card.picture,
     dmgType: overlay.dmgType,
     remainTurns: overlay.charges,
+    strike: strikeModsOfOverlay(overlay),
+    ...(card.spell.groupId !== undefined ? { groupId: card.spell.groupId } : {}),
+    animation,
+    flags: 0,
+    castAnimation: animation,
+  });
+}
+
+/** A charged kind-3 spell of a bot (an orb, a rage): spent by its next swings like a player's. */
+function attachChargedKind3(actor: BotFighter, card: HuntBotSpellCard): readonly BattleEvent[] {
+  const animation = card.spell.animData ?? "magic_baf";
+  return castChargingBuff(actor, {
+    artikulId: card.artikulId,
+    title: card.title,
+    img: card.picture,
+    dmgType: card.spell.effects.find((effect) => effect.kind === 3)?.dmgType ?? 1,
+    remainTurns: spellCharging(card.spell) || 1,
+    strike: strikeModsFromSkills(chargedSkills(card.spell)),
     ...(card.spell.groupId !== undefined ? { groupId: card.spell.groupId } : {}),
     animation,
     flags: 0,

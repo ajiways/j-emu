@@ -27,13 +27,3 @@ export function schoolOverlayFromKind1(
     casterStrength,
   };
 }
-
-export function takeSchoolOverlay(owner: {
-  schoolOverlay: SchoolOverlay | null;
-}): SchoolOverlay | null {
-  const overlay = owner.schoolOverlay;
-  if (!overlay) return null;
-  const next = overlay.charges - 1;
-  owner.schoolOverlay = next < 1 ? null : { ...overlay, charges: next };
-  return overlay;
-}

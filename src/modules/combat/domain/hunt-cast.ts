@@ -13,6 +13,12 @@ import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { rageBonusPctFromFill } from "./rage-bonus.ts";
+import {
+  chargedSkills,
+  NO_STRIKE_MODS,
+  strikeModsFromSkills,
+  strikeModsOfOverlay,
+} from "./strike-mods.ts";
 import { schoolOverlayFromKind1 } from "./school-overlay.ts";
 
 export type KeepTurnResult =
@@ -93,13 +99,12 @@ export function tryRageCast(human: HumanFighter): KeepTurnResult {
     targetId: human.heroId,
     maxHp: human.maxHp,
   };
-  if (human.casts.hasRageBuff() || human.effects.snapshot().some((fx) => fx.artikulId === 212)) {
+  if (human.effects.snapshot().some((fx) => fx.artikulId === 212)) {
     return { kind: "resolved", events: [fury] };
   }
   const fill = human.casts.spendRage();
   const pcSTR = rageBonusPctFromFill(fill);
   if (pcSTR <= 0) return { kind: "resolved", events: [fury] };
-  human.casts.armRage(pcSTR);
   return {
     kind: "resolved",
     events: castChargingBuff(human, {
@@ -108,6 +113,7 @@ export function tryRageCast(human: HumanFighter): KeepTurnResult {
       img: "rageeffect_2702.png",
       dmgType: 1,
       remainTurns: 1,
+      strike: { ...NO_STRIKE_MODS, pcStr: pcSTR },
       groupId: 844,
       animation: "fury",
       flags: "0",
@@ -168,11 +174,6 @@ export function tryGloveKeepTurn(
   const cp = human.casts.spendCombo(glove.cost);
   const overlay = schoolOverlayFromKind1(glove.spell, human.meleeStrength());
   const charges = overlay ? overlay.charges : spellCharging(glove.spell) || 1;
-  if (overlay) {
-    human.casts.schoolOverlay = overlay;
-  } else {
-    human.casts.armGloveCrit(charges);
-  }
   return {
     kind: "resolved",
     events: castChargingBuff(human, {
@@ -181,6 +182,9 @@ export function tryGloveKeepTurn(
       img: glove.picture,
       dmgType: overlay ? overlay.dmgType : gloveDmgType(glove),
       remainTurns: charges,
+      strike: overlay
+        ? strikeModsOfOverlay(overlay)
+        : strikeModsFromSkills(chargedSkills(glove.spell)),
       ...(glove.spell.groupId !== undefined ? { groupId: glove.spell.groupId } : {}),
       animation: glove.spell.animData ?? "",
       flags: "262144",

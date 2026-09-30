@@ -5,10 +5,9 @@ import { actBotSpellCard } from "./bot-spell-act.ts";
 import { botSpellEndsTurn } from "./bot-spell-damage.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
-import { rollMeleeDamage } from "./melee-damage.ts";
 import { rollMeleeOutcome, strikeStatsFromBot } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
-import { consumeOverlayCharge } from "./consume-overlay-charge.ts";
+import { rollSwing } from "./swing.ts";
 import { snapshotForBot } from "./combat-snapshot.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
@@ -52,19 +51,19 @@ function meleeHit(
   target: BotFighter,
   input: Readonly<{ rules: BattleRules; random: RandomSource }>,
 ): readonly BattleEvent[] {
-  const baseDamage = rollMeleeDamage(actor.meleeStrength(), input.random, input.rules);
+  const swing = rollSwing(actor.effects, actor.meleeStrength(), input.random, input.rules);
   const outcome = rollMeleeOutcome({
-    baseDamage,
+    baseDamage: swing.baseDamage,
     attacker: strikeStatsFromBot(actor),
     defender: strikeStatsFromBot(target),
     targetHp: target.hp,
-    forceCrit: false,
+    forceCrit: swing.forceCrit,
+    critChance: swing.critChance,
     random: input.random,
     rules: input.rules,
   });
-  const overlayBefore = actor.schoolOverlay;
-  const extra = rollOverlayExtra(
-    actor,
+  const { extra, purges: overlayPurges } = rollOverlayExtra(
+    actor.effects,
     actor.mag,
     target,
     outcome.applied < 1 ? target.hp : Math.max(0, target.hp - outcome.applied),
@@ -87,6 +86,7 @@ function meleeHit(
       react: outcome.react,
       ...(extra ? { extraHits: [extra] } : {}),
     },
-    ...consumeOverlayCharge(actor, overlayBefore),
+    ...swing.purges,
+    ...overlayPurges,
   ];
 }

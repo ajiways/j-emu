@@ -8,7 +8,6 @@ import { requireHuntBotSpellBook } from "./hunt-bot-spell-book.ts";
 import { FighterEffects } from "./fighter-effects.ts";
 import type { Fighter, FighterKind } from "./fighter.ts";
 import type { MagStats } from "./mag-stats.ts";
-import type { SchoolOverlay } from "./school-overlay.ts";
 
 export type BotFighterSeed = Readonly<{
   fightId: number;
@@ -32,7 +31,6 @@ export class BotFighter implements Fighter {
   private lastOpponentIdValue: number | null = null;
   private waitingValue = false;
   readonly casts = new Map<number, number>();
-  schoolOverlay: SchoolOverlay | null = null;
   stunnedTurns = 0;
   readonly effects: FighterEffects;
   readonly brain: BotBrain;

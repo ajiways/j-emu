@@ -10,6 +10,7 @@ import {
   tryPairedMelee,
   applyDamageToMeleeTarget,
 } from "../../../src/modules/combat/domain/paired-melee.ts";
+import { strikeModsOfOverlay } from "../../../src/modules/combat/domain/strike-mods.ts";
 import { schoolOverlayFromKind1 } from "../../../src/modules/combat/domain/school-overlay.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
@@ -166,7 +167,7 @@ describe("tryPairedMelee", () => {
   it("does not apply overlay after a killing physical hit", () => {
     const attacker = fighter(1, 1, 27);
     attacker.beginTurn(0, 20);
-    attacker.casts.schoolOverlay = schoolOverlayFromKind1(
+    const overlay = schoolOverlayFromKind1(
       {
         animData: "magic_baf",
         effects: [
@@ -180,7 +181,16 @@ describe("tryPairedMelee", () => {
       },
       15,
     );
-    const overlay = attacker.casts.schoolOverlay;
+    if (!overlay) throw new Error("Expected an overlay");
+    attacker.effects.attachChargingKind3({
+      strike: strikeModsOfOverlay(overlay),
+      sourceId: 1,
+      artikulId: 397,
+      title: "Смертельное прикосновение",
+      img: "hissa_magic1.png",
+      dmgType: 64,
+      remainTurns: 1,
+    });
     const bot = unitRosterBot({ hp: 1 });
     const resolved = tryPairedMelee(attacker, botMeleeTarget(bot), "center", {
       finished: false,
@@ -193,7 +203,7 @@ describe("tryPairedMelee", () => {
     });
     expect(bot.hp).toBe(0);
     expect(attacker.damageToBot).toBe(1);
-    expect(attacker.casts.schoolOverlay).toBe(overlay);
+    expect(attacker.effects.snapshot()).toHaveLength(1);
     expect(resolved.finished).toBe(true);
   });
 

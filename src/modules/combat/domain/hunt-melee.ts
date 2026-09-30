@@ -2,8 +2,7 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { consumeOverlayCharge } from "./consume-overlay-charge.ts";
-import { rollMeleeDamage } from "./melee-damage.ts";
+import { rollSwing } from "./swing.ts";
 import { rollMeleeOutcome, strikeStatsFromHuman, strikeStatsFromBot } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -28,20 +27,20 @@ export function resolveBotMelee(
   if (human.waiting || human.hp === 0) {
     throw new Error("Paired hunter is not a bot melee target");
   }
-  const baseDamage = rollMeleeDamage(input.bot.meleeStrength(), input.random, input.rules);
+  const swing = rollSwing(input.bot.effects, input.bot.meleeStrength(), input.random, input.rules);
   const outcome = rollMeleeOutcome({
-    baseDamage,
+    baseDamage: swing.baseDamage,
     attacker: strikeStatsFromBot(input.bot),
     defender: strikeStatsFromHuman(human),
     targetHp: human.hp,
-    forceCrit: false,
+    forceCrit: swing.forceCrit,
+    critChance: swing.critChance,
     random: input.random,
     rules: input.rules,
   });
   const killedPlayer = resolveHpLoss(human, outcome.applied).killed;
-  const overlayBefore = input.bot.schoolOverlay;
-  const extra = rollOverlayExtra(
-    input.bot,
+  const { extra, purges: overlayPurges } = rollOverlayExtra(
+    input.bot.effects,
     input.bot.mag,
     human,
     human.hp,
@@ -69,7 +68,8 @@ export function resolveBotMelee(
       dRage,
       ...(extra ? { extraHits: [extra] } : {}),
     },
-    ...consumeOverlayCharge(input.bot, overlayBefore),
+    ...swing.purges,
+    ...overlayPurges,
   ];
   if (dead && !input.keepFightOnKill) {
     events.push({ type: "finished", winnerTeam: input.winnerTeam, fightId: input.fightId });

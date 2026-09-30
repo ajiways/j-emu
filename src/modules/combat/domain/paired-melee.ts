@@ -3,7 +3,7 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { rollMeleeDamage } from "./melee-damage.ts";
+import { rollSwing } from "./swing.ts";
 import { rollMeleeOutcome, strikeStatsFromHuman } from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import { enemySideCleared, fightCombatants, targetHp, type MeleeTarget } from "./melee-target.ts";
@@ -38,19 +38,14 @@ export function tryPairedMelee(
   const turnElapsedMs = attacker.turnElapsedMs(input.nowMs, input.rules.turnTimeoutSeconds);
   attacker.endTurn();
   attacker.noteAction();
-  let baseDamage = rollMeleeDamage(attacker.meleeStrength(), input.random, input.rules);
-  const orb = attacker.casts.takeOrbPcStr();
-  const rage = attacker.casts.takeRagePcStr();
-  if (orb > 0) baseDamage = Math.max(1, Math.round(baseDamage * (1 + orb / 100)));
-  if (rage > 0) baseDamage = Math.max(1, Math.round(baseDamage * (1 + rage / 100)));
-  const gloveCrit = attacker.casts.takeGloveCrit();
-  const overlayBefore = attacker.casts.schoolOverlay;
+  const swing = rollSwing(attacker.effects, attacker.meleeStrength(), input.random, input.rules);
   const outcome = rollMeleeOutcome({
-    baseDamage,
+    baseDamage: swing.baseDamage,
     attacker: strikeStatsFromHuman(attacker),
     defender: target.strikeStats,
     targetHp: targetHp(target),
-    forceCrit: gloveCrit,
+    forceCrit: swing.forceCrit,
+    critChance: swing.critChance,
     random: input.random,
     rules: input.rules,
   });
@@ -65,8 +60,8 @@ export function tryPairedMelee(
           targetMaxHp: target.maxHp,
         }
       : applyDamageToMeleeTarget(attacker, target, outcome.applied, context);
-  const extra = rollOverlayExtra(
-    attacker.casts,
+  const { extra, purges: overlayPurges } = rollOverlayExtra(
+    attacker.effects,
     attacker.mag,
     target,
     targetHp(target),
@@ -95,11 +90,7 @@ export function tryPairedMelee(
       ...(extra ? { extraHits: [extra] } : {}),
     },
   ];
-  if (orb > 0 || rage > 0 || gloveCrit || overlayBefore !== attacker.casts.schoolOverlay) {
-    for (const effectId of attacker.effects.consumeChargingHit()) {
-      events.push({ type: "effect-purge", effectId });
-    }
-  }
+  events.push(...swing.purges, ...overlayPurges);
   if (finished) {
     events.push({ type: "finished", winnerTeam: attacker.team, fightId: input.fightId });
     return { result: { kind: "resolved", events }, finished };

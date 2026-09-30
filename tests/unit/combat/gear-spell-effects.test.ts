@@ -1,3 +1,4 @@
+import { NO_STRIKE_MODS } from "../../../src/modules/combat/domain/strike-mods.ts";
 import { describe, expect, it } from "vitest";
 import { bakeSkills } from "../../../src/modules/combat/domain/skill-bake.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
@@ -117,6 +118,7 @@ describe("FighterEffects", () => {
     });
     expect(
       effects.attachChargingKind3({
+        strike: NO_STRIKE_MODS,
         sourceId: 1,
         artikulId: 99,
         title: "Малый усиливающий орб",
@@ -135,7 +137,7 @@ describe("FighterEffects", () => {
     });
     expect(effects.standingSkill("STR")).toBe(0);
     expect(effects.snapshot()).toHaveLength(1);
-    expect(effects.consumeChargingHit()).toEqual([1]);
+    expect(effects.takeStrike().purged).toEqual([1]);
     expect(effects.snapshot()).toEqual([]);
   });
 });

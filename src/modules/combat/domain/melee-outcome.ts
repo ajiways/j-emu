@@ -72,6 +72,8 @@ export function rollMeleeOutcome(
     defender: StrikeStats;
     targetHp: number;
     forceCrit: boolean;
+    /** Absolute crit chance of a charged effect (`CR` below 1); 0 — the usual roll. */
+    critChance: number;
     random: RandomSource;
     rules: BattleRules;
   }>,
@@ -97,7 +99,9 @@ export function rollMeleeOutcome(
   }
   const crit =
     input.forceCrit ||
-    rollCrit(input.attacker.rage, input.defender.dexterity, input.random, input.rules);
+    (input.critChance > 0
+      ? input.random.unit() < input.critChance
+      : rollCrit(input.attacker.rage, input.defender.dexterity, input.random, input.rules));
   const preMit = Math.max(1, Math.round(input.baseDamage * (crit ? input.rules.critMult : 1)));
   const mit = effectiveMitigation(input.attacker.rage, input.defender.defense, crit, input.rules);
   const unheld = Math.max(1, Math.round(preMit * (1 - mit)));

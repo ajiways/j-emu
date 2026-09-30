@@ -1,4 +1,6 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
+import { takeOverlayCharge, takeStrikeCharges } from "./strike-charges.ts";
+import type { SpentStrike } from "./strike-mods.ts";
 import { takenDamage } from "./damage-intake.ts";
 import type { StatBase } from "./skill-bake.ts";
 import { timedBuffEffect, type TimedBuffInput } from "./timed-buff.ts";
@@ -75,24 +77,14 @@ export class FighterEffects {
     return this.standing.map((fx) => snapOf(fx, nowMs));
   }
 
-  consumeChargingHit(): readonly number[] {
-    const purged: number[] = [];
-    const keep: StandingEffect[] = [];
-    for (const fx of this.standing) {
-      if (!fx.charging) {
-        keep.push(fx);
-        continue;
-      }
-      fx.remainTurns -= 1;
-      if (fx.remainTurns <= 0) {
-        purged.push(fx.id);
-        continue;
-      }
-      keep.push(fx);
-    }
-    this.standing.length = 0;
-    this.standing.push(...keep);
-    return purged;
+  /** One physical swing: spends a charge of every swing-changing charged effect. */
+  takeStrike(): SpentStrike {
+    return takeStrikeCharges(this.standing);
+  }
+
+  /** The school float that rides on a swing that landed; see `takeOverlayCharge`. */
+  takeOverlay(): ReturnType<typeof takeOverlayCharge> {
+    return takeOverlayCharge(this.standing);
   }
 
   standingGroups(): readonly number[] {
@@ -214,6 +206,7 @@ export class FighterEffects {
       remainTurns: input.remainTurns,
       expiresAtMs: Number.MAX_SAFE_INTEGER,
       charging: true,
+      strike: input.strike,
     });
     const snap = this.snapshot().find((fx) => fx.id === id);
     if (!snap) throw new Error(`Charging kind-3 ${id} did not snapshot`);

@@ -1,3 +1,4 @@
+import type { StrikeMods } from "./strike-mods.ts";
 import { remainingSeconds, type PeriodicState } from "./periodic-effect.ts";
 
 const TURN_SECONDS = 40;
@@ -54,6 +55,8 @@ export type StandingEffect = {
   casterMagPower?: number;
   casterMagResist?: number;
   charging?: boolean;
+  /** Set on a charging effect: what the strikes that spend it get. */
+  strike?: StrikeMods;
   stun?: boolean;
   /** No duration in the data: lasts to the end of the fight, `remainTime` is left off the wire. */
   fightLong?: boolean;

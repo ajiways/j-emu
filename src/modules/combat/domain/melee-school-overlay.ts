@@ -1,25 +1,35 @@
 import { appliedHpLoss } from "./applied-hp-loss.ts";
-import type { ExtraHit } from "./battle-event.ts";
+import type { BattleEvent, ExtraHit } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { DamageTarget } from "./damage-target.ts";
+import type { FighterEffects } from "./fighter-effects.ts";
 import type { MagStats } from "./mag-stats.ts";
 import { magicReact, rollMagicHit } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
-import { takeSchoolOverlay, type SchoolOverlay } from "./school-overlay.ts";
 
-export type OverlayOwner = { schoolOverlay: SchoolOverlay | null };
+export type OverlayRoll = Readonly<{
+  extra: ExtraHit | null;
+  /** `effPurge` for the charged effect this float was the last charge of. */
+  purges: readonly BattleEvent[];
+}>;
 
+/**
+ * The school float a charged overlay adds to a landed swing. A target already down keeps the
+ * charge for the next one; otherwise the charge is spent even when the float deals nothing.
+ */
 export function rollOverlayExtra(
-  owner: OverlayOwner,
+  effects: FighterEffects,
   caster: MagStats,
   target: DamageTarget,
   targetHp: number,
   random: RandomSource,
   rules: BattleRules,
-): ExtraHit | null {
-  if (targetHp < 1) return null;
-  const overlay = takeSchoolOverlay(owner);
-  if (!overlay) return null;
+): OverlayRoll {
+  if (targetHp < 1) return { extra: null, purges: [] };
+  const taken = effects.takeOverlay();
+  if (!taken) return { extra: null, purges: [] };
+  const { overlay } = taken;
+  const purges = taken.purged.map((effectId) => ({ type: "effect-purge" as const, effectId }));
   const raw = rollMagicHit({
     caster,
     target,
@@ -32,12 +42,10 @@ export function rollOverlayExtra(
     rules,
   });
   const applied = appliedHpLoss(raw, targetHp);
-  if (applied < 1) return null;
+  if (applied < 1) return { extra: null, purges };
   const killed = applied >= targetHp;
   return {
-    hpChange: -applied,
-    dmgType: overlay.dmgType,
-    react: magicReact(killed),
-    killed,
+    extra: { hpChange: -applied, dmgType: overlay.dmgType, react: magicReact(killed), killed },
+    purges,
   };
 }

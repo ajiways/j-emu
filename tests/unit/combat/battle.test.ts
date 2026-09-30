@@ -1,3 +1,4 @@
+import { NO_STRIKE_MODS } from "../../../src/modules/combat/domain/strike-mods.ts";
 import { describe, expect, it } from "vitest";
 import { requireFightBot } from "../../../src/modules/combat/domain/fight-bots.ts";
 import type { Battle } from "../../../src/modules/combat/domain/battle.ts";
@@ -269,6 +270,7 @@ describe("Battle", () => {
     battle.authenticate(1, AUTH_NOW);
     const bot = requireFightBot(battle.bots, 1_000_000);
     bot.effects.attachChargingKind3({
+      strike: NO_STRIKE_MODS,
       sourceId: 1_000_000,
       artikulId: 397,
       title: "Смертельное прикосновение",

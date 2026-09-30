@@ -250,6 +250,6 @@ describe("actBotSpellCard overkill", () => {
       { type: "buff-cast", animation: "magic_baf", sourceId: 1_000_000, targetId: 1_000_000 },
     ]);
     expect(actor.effects.snapshot()).toMatchObject([{ artikulId: 397, kind: 3 }]);
-    expect(actor.schoolOverlay?.charges).toBe(1);
+    expect(actor.effects.takeOverlay()?.overlay.charges).toBe(1);
   });
 });
