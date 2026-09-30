@@ -1022,8 +1022,7 @@ layout — [INVENTORY.md](INVENTORY.md), travel — [WORLD.md](WORLD.md).
 `humanJoin` `hunt-roster` / `pvp-humans` / `denied`+причина; `canLeave` и
 `canAggro` (у hunt пекутся из `instanceCopyId === null`); `skipQuestKills`
 (квест с одним ботом кредитует киллы, с несколькими — нет: стартовый
-`botCount > 1`, не live roster); `allowsSideBots`; `shufflesAfterHits`
-(quest выключен); `pairsNextWaiter` (очередь паринга, не боты: у quest join
+`botCount > 1`, не live roster); `allowsSideBots`; `pairsNextWaiter` (очередь паринга, не боты: у quest join
 запрещён, значение ненаблюдаемо); `hasEnemyBots` (ходы бота, title
 результата, botId в notice; `historyRow` `"hunt-bot"` выводится из него);
 `awardsHonor` / `restoresFighters`; `historyRow` (`hunt-bot` /

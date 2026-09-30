@@ -288,7 +288,6 @@ export class Battle {
   }
 
   tryShuffleAfterHits(accountId: number): ShuffleOutcome {
-    if (!this.fightRules.shufflesAfterHits) return { kind: "none" };
     const human = requireBattleHuman(this.humans, accountId);
     const duel = this.duels.find((entry) => entry.has(human.heroId));
     if (!duel) return { kind: "none" };
