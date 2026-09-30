@@ -7,18 +7,24 @@ import { requirePvpForSpell } from "./pvp-only-spell.ts";
 import { rosterIsPvp } from "./roster-pvp.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import {
-  aoeKind1Damage,
-  gloveAoeTargetCount,
-  gloveKind1IsAoe,
-  pickGloveAoeTargets,
-} from "./glove-aoe-targets.ts";
+  pickSpellTargets,
+  rollSpellDamage,
+  spellAoeTargetCount,
+  spellKind1IsAoe,
+} from "./spell-aoe.ts";
 import { advanceActionClock } from "./duel-clock.ts";
 import { isEndingGlove, type KeepTurnResult } from "./hunt-cast.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { spellKind } from "./human-cast-state.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { magicHitFromKind1, magicReact } from "./magic-hit.ts";
-import { botMeleeTarget, resolveMeleeTarget, targetHp, type MeleeTarget } from "./melee-target.ts";
+import { magicReact } from "./magic-hit.ts";
+import {
+  botMeleeTarget,
+  humanMeleeTarget,
+  resolveMeleeTarget,
+  targetHp,
+  type MeleeTarget,
+} from "./melee-target.ts";
 import { applyDamageToMeleeTarget } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
 
@@ -70,13 +76,11 @@ export function resolveGloveFinisher(
     humans: input.humans,
     bots: input.bots,
   });
-  const targets = gloveKind1IsAoe(glove.spell)
-    ? pickGloveAoeTargets({
-        caster: human,
-        primary,
-        humans: input.humans,
-        bots: input.bots,
-        count: gloveAoeTargetCount(glove.spell),
+  const targets = spellKind1IsAoe(glove.spell)
+    ? pickSpellTargets({
+        primaryId: primary.id,
+        enemies: livingEnemies(human, input.humans, input.bots),
+        count: spellAoeTargetCount(glove.spell),
         random: input.random,
       })
     : [primary];
@@ -148,20 +152,21 @@ function applyGloveKind1Hits(
     rules: BattleRules;
   }>,
 ): readonly GloveKind1Hit[] {
-  const aoe = gloveKind1IsAoe(spell);
   const hits: GloveKind1Hit[] = [];
   for (const listed of targets) {
     const target = livingTarget(listed, input.bots);
     const foeHp = targetHp(target);
-    const full = magicHitFromKind1(
-      spell,
-      human.meleeStrength(),
-      human.mag,
-      target,
-      input.random,
-      input.rules,
+    const damage = appliedHpLoss(
+      rollSpellDamage({
+        spell,
+        casterStrength: human.meleeStrength(),
+        caster: human.mag,
+        target,
+        random: input.random,
+        rules: input.rules,
+      }),
+      foeHp,
     );
-    const damage = appliedHpLoss(aoe ? aoeKind1Damage(full) : full, foeHp);
     const hit = applyDamageToMeleeTarget(human, target, damage, {
       humans: input.humans,
       bots: input.bots,
@@ -175,6 +180,19 @@ function applyGloveKind1Hits(
     });
   }
   return hits;
+}
+
+function livingEnemies(
+  caster: HumanFighter,
+  humans: readonly HumanFighter[],
+  bots: readonly BotFighter[],
+): readonly MeleeTarget[] {
+  return [
+    ...bots.filter((bot) => bot.team !== caster.team && bot.hp > 0).map(botMeleeTarget),
+    ...humans
+      .filter((human) => human.team !== caster.team && !human.leftLive && human.hp > 0)
+      .map(humanMeleeTarget),
+  ];
 }
 
 function livingTarget(listed: MeleeTarget, bots: readonly BotFighter[]): MeleeTarget {

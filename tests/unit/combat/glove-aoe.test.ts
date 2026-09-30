@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import type { CombatLoadout } from "../../../src/modules/combat/domain/combat-loadout.ts";
-import {
-  aoeKind1Damage,
-  gloveKind1IsAoe,
-} from "../../../src/modules/combat/domain/glove-aoe-targets.ts";
+import { aoeKind1Damage, spellKind1IsAoe } from "../../../src/modules/combat/domain/spell-aoe.ts";
 import { startHuntWithIssuedId } from "../../support/combat-start-hunt.ts";
 import { createCombatService } from "../../support/create-combat-service.ts";
 import { createUnitBattle } from "../../support/fight-rules.ts";
@@ -84,12 +81,12 @@ describe("glove AOE leftover", () => {
     expect(aoeKind1Damage(8)).toBe(4);
     expect(aoeKind1Damage(1)).toBe(1);
     expect(
-      gloveKind1IsAoe({
+      spellKind1IsAoe({
         effects: [{ kind: 1, targetCount: 2 }],
       }),
     ).toBe(true);
     expect(
-      gloveKind1IsAoe({
+      spellKind1IsAoe({
         effects: [{ kind: 1, dmgType: 128 }],
       }),
     ).toBe(false);

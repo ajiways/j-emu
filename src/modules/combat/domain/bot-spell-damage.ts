@@ -2,7 +2,8 @@ import type { BattleRules } from "./battle-rules.ts";
 import type { CombatSpell } from "./combat-loadout.ts";
 import type { DamageTarget } from "./damage-target.ts";
 import type { MagStats } from "./mag-stats.ts";
-import { kind1Effect, kind1OverlayCharges, magicHitFromKind1 } from "./magic-hit.ts";
+import { kind1Effect, kind1OverlayCharges } from "./magic-hit.ts";
+import { rollSpellDamage } from "./spell-aoe.ts";
 import type { RandomSource } from "./random-source.ts";
 
 export function rollBotSpellDamage(
@@ -19,7 +20,7 @@ export function rollBotSpellDamage(
   if (kind1OverlayCharges(spell) > 0) {
     throw new Error("Charging bot spells apply a school overlay, not an instant hit");
   }
-  return magicHitFromKind1(spell, strength, caster, target, random, rules);
+  return rollSpellDamage({ spell, casterStrength: strength, caster, target, random, rules });
 }
 
 export function botSpellAnimation(spell: CombatSpell, artikulId: number): string {
