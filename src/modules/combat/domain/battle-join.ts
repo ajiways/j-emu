@@ -1,3 +1,4 @@
+import type { Roster } from "./roster.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import { seedJoiner } from "./battle-fighters.ts";
 import { primaryEnemyBot } from "./fight-bots.ts";
@@ -28,8 +29,7 @@ export function historyOf(opener: HumanFighter, primary: BotFighter) {
 export function joinBattleHuman(input: {
   fightRules: FightRules;
   finished: boolean;
-  humans: readonly HumanFighter[];
-  bots: readonly BotFighter[];
+  roster: Roster;
   enemyTeam: 1 | 2;
   join: FightSetupJoin;
   hasHuman: (accountId: number, heroId: number) => boolean;
@@ -47,7 +47,7 @@ export function joinBattleHuman(input: {
     join.mode === "pvp-humans"
       ? addPvpHuman({
           finished: input.finished,
-          humans: input.humans,
+          roster: input.roster,
           add: input.add,
           join: input.join,
           hasHuman: input.hasHuman,
@@ -56,9 +56,8 @@ export function joinBattleHuman(input: {
       : join.mode === "hunt-roster"
         ? addHuntHuman({
             finished: input.finished,
-            humans: input.humans,
+            roster: input.roster,
             add: input.add,
-            bots: input.bots,
             enemyTeam: input.enemyTeam,
             join: input.join,
             hasHuman: input.hasHuman,
@@ -70,7 +69,7 @@ export function joinBattleHuman(input: {
             );
           })();
   pairQueues({
-    participants: [...input.humans, ...input.bots],
+    participants: input.roster.all(),
     duels: input.duels,
     random: input.random,
   });
@@ -79,9 +78,8 @@ export function joinBattleHuman(input: {
 
 function addHuntHuman(input: {
   finished: boolean;
-  humans: readonly HumanFighter[];
+  roster: Roster;
   add: (participant: HumanFighter) => void;
-  bots: readonly BotFighter[];
   enemyTeam: 1 | 2;
   join: FightSetupJoin;
   hasHuman: (accountId: number, heroId: number) => boolean;
@@ -91,15 +89,15 @@ function addHuntHuman(input: {
   if (input.hasHuman(input.join.accountId, input.join.heroId)) {
     throw new Error("Human is already in this battle");
   }
-  if (input.bots.some((bot) => bot.fightId === input.join.heroId)) {
+  if (input.roster.bots.some((bot) => bot.fightId === input.join.heroId)) {
     throw new Error("Fight bot id collides with the human participant id");
   }
   const human = seedJoiner(input.join, input.effectIds);
   input.add(human);
-  const primary = primaryEnemyBot(input.bots, input.enemyTeam);
+  const primary = primaryEnemyBot(input.roster.bots, input.enemyTeam);
   return {
     type: "roster-updated",
-    humans: input.humans.map((entry) => entry.snapshot()),
+    humans: input.roster.humans.map((entry) => entry.snapshot()),
     bot: botSnapOf(primary, primary.hp, input.enemyTeam),
     joined: human.snapshot(),
   };
@@ -107,7 +105,7 @@ function addHuntHuman(input: {
 
 function addPvpHuman(input: {
   finished: boolean;
-  humans: readonly HumanFighter[];
+  roster: Roster;
   add: (participant: HumanFighter) => void;
   join: FightSetupJoin;
   hasHuman: (accountId: number, heroId: number) => boolean;
@@ -121,7 +119,7 @@ function addPvpHuman(input: {
   input.add(human);
   return {
     type: "roster-updated",
-    humans: input.humans.map((entry) => entry.snapshot()),
+    humans: input.roster.humans.map((entry) => entry.snapshot()),
     joined: human.snapshot(),
     rosterBots: [],
   };

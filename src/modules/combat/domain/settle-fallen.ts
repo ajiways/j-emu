@@ -1,10 +1,10 @@
+import type { Roster } from "./roster.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import { settleAfterMobFell } from "./battle-runtime.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
 import type { Fighter } from "./fighter.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import type { BotFighter } from "./bot-fighter.ts";
 import { enemySideCleared } from "./melee-target.ts";
 import { opposingTeam } from "./opposing-team.ts";
 import { dissolveDuelContaining } from "./pairing.ts";
@@ -28,14 +28,13 @@ export type Fallout = Readonly<{
 export function settleFallen(
   fallen: readonly Fighter[],
   input: Readonly<{
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
+    roster: Roster;
     duels: FightDuel[];
     fightRules: FightRules;
     fightId: string;
   }>,
 ): Fallout {
-  const combatants = [...input.humans, ...input.bots];
+  const combatants = input.roster.all();
   const lost = fallen.find((fighter) => enemySideCleared(fighter.team, combatants));
   if (lost) {
     const finished = {
@@ -49,23 +48,22 @@ export function settleFallen(
   const reassigned: FalloutDelivery[] = [];
   for (const fighter of fallen) {
     if (fighter.fighterKind === "human") {
-      fallenAccountIds.push(humanOf(input.humans, fighter.id).accountId);
+      fallenAccountIds.push(humanOf(input.roster.humans, fighter.id).accountId);
       continue;
     }
     const hunter = pairedHuman(input, fighter.id);
     if (!hunter) {
-      dissolveDuelContaining(input.duels, [...input.humans, ...input.bots], fighter.id);
+      dissolveDuelContaining(input.duels, input.roster.all(), fighter.id);
       continue;
     }
     const duel = input.duels.find((entry) => entry.has(fighter.id));
     if (!duel) continue;
     const next = settleAfterMobFell(false, {
-      bots: input.bots,
+      roster: input.roster,
       enemyTeam: input.fightRules.teamAssignment.enemyTeam,
       duel,
       duels: input.duels,
       opener: hunter,
-      humans: input.humans,
     });
     if (hunter.authed) reassigned.push({ accountId: hunter.accountId, events: next.events });
   }
@@ -78,13 +76,13 @@ export function settleFallen(
 }
 
 function pairedHuman(
-  input: Readonly<{ humans: readonly HumanFighter[]; duels: FightDuel[] }>,
+  input: Readonly<{ roster: Roster; duels: FightDuel[] }>,
   botId: number,
 ): HumanFighter | undefined {
   const duel = input.duels.find((entry) => entry.has(botId));
   if (!duel) return undefined;
   const otherId = duel.otherId(botId);
-  return input.humans.find((human) => human.heroId === otherId);
+  return input.roster.humans.find((human) => human.heroId === otherId);
 }
 
 function humanOf(humans: readonly HumanFighter[], id: number): HumanFighter {

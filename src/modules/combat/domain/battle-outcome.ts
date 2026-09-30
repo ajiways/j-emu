@@ -1,3 +1,4 @@
+import type { Roster } from "./roster.ts";
 import { practiceRestoreFrom } from "./battle-fighters.ts";
 import type { FightRules } from "./fight-rules.ts";
 import {
@@ -21,11 +22,11 @@ export function battleOutcomeSnapshot(
     fightId: string;
     kind: FightOutcomeKind;
     winnerTeam: 1 | 2;
-    humans: readonly HumanFighter[];
+    roster: Roster;
     fightRules: FightRules;
   }>,
 ): FightOutcomeSnapshot {
-  const humans = input.humans.map((human) => ({
+  const humans = input.roster.humans.map((human) => ({
     accountId: human.accountId,
     characterId: human.heroId,
     team: human.team,

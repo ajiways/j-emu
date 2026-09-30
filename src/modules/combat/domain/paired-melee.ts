@@ -1,8 +1,8 @@
+import type { Roster } from "./roster.ts";
 import { advanceActionClock } from "./duel-clock.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import type { BotFighter } from "./bot-fighter.ts";
 import { strikeEvents, strikeFighter } from "./melee-strike.ts";
 import { enemySideCleared } from "./melee-target.ts";
 import type { Participant } from "./participant.ts";
@@ -22,8 +22,7 @@ export function tryPairedMelee(
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
+    roster: Roster;
     nowMs: number;
   }>,
 ): Readonly<{
@@ -37,7 +36,7 @@ export function tryPairedMelee(
   const turnElapsedMs = attacker.turnElapsedMs(input.nowMs, input.rules.turnTimeoutSeconds);
   attacker.endTurn();
   attacker.noteAction();
-  const everyone = [...input.humans, ...input.bots];
+  const everyone = input.roster.all();
   requireRosterMember(target, everyone);
   const strike = strikeFighter({
     attacker,
@@ -73,8 +72,7 @@ export function tryPairedMelee(
     nowMs: input.nowMs,
     rules: input.rules,
     random: input.random,
-    humans: input.humans,
-    bots: input.bots,
+    roster: input.roster,
     fightId: input.fightId,
   });
   events.push(...clock.events);

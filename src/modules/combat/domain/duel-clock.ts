@@ -1,9 +1,9 @@
+import type { Roster } from "./roster.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { applyPeriodicItems } from "./apply-periodic-items.ts";
 import type { Fighter } from "./fighter.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import type { BotFighter } from "./bot-fighter.ts";
 import { enemySideCleared } from "./melee-target.ts";
 import { opposingTeam } from "./opposing-team.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -86,8 +86,7 @@ export function advanceActionClock(
     nowMs: number;
     rules: BattleRules;
     random: RandomSource;
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
+    roster: Roster;
     fightId: string;
   }>,
 ): ActionClockResult {
@@ -98,10 +97,10 @@ export function advanceActionClock(
       jumpSeconds: slotJumpSeconds(input.rules, input.turnElapsedMs),
       random: input.random,
       rules: input.rules,
-      sources: [...input.humans, ...input.bots],
+      sources: input.roster.all(),
     }),
   ];
-  const combatants = [...input.humans, ...input.bots];
+  const combatants = input.roster.all();
   const victimFellToTick = !input.victimKilledByHit && input.victim.hp === 0;
   if (victimFellToTick && enemySideCleared(input.victim.team, combatants)) {
     events.push({ type: "finished", winnerTeam: input.attacker.team, fightId: input.fightId });

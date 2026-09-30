@@ -1,3 +1,4 @@
+import type { Roster } from "./roster.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import { enqueueAggroClone } from "./fight-bots.ts";
 import type { FightDuel } from "./fight-duel.ts";
@@ -18,9 +19,8 @@ export function tryAggro(
   input: Readonly<{
     canAggro: boolean;
     finished: boolean;
-    humans: readonly HumanFighter[];
+    roster: Roster;
     duels: FightDuel[];
-    bots: readonly BotFighter[];
     addBot: (bot: BotFighter) => void;
     enemyTeam: 1 | 2;
     random: RandomSource;
@@ -29,7 +29,7 @@ export function tryAggro(
     allocateBotId: () => number;
   }>,
 ): AggroResult {
-  const human = input.humans.find((entry) => entry.accountId === input.accountId);
+  const human = input.roster.humans.find((entry) => entry.accountId === input.accountId);
   if (!human || !human.authed || human.hp === 0 || input.finished) {
     return { kind: "ignored" };
   }
@@ -57,25 +57,25 @@ export function tryAggro(
     return deny();
   }
   if (human.casts.aggro < 1) return deny();
-  const source = aggroSourceBot(human, input.bots, input.targetId);
+  const source = aggroSourceBot(human, input.roster.bots, input.targetId);
   if (!source) return deny();
   const waitingBefore = new Set(
-    input.humans.filter((entry) => entry.waiting).map((entry) => entry.accountId),
+    input.roster.humans.filter((entry) => entry.waiting).map((entry) => entry.accountId),
   );
   const count = human.casts.spendAggro();
   const clone = enqueueAggroClone(
-    input.bots,
+    input.roster.bots,
     source.fightId,
     input.allocateBotId(),
     input.enemyTeam,
     input.addBot,
   );
   pairQueues({
-    participants: [...input.humans, ...input.bots],
+    participants: input.roster.all(),
     duels: input.duels,
     random: input.random,
   });
-  const pairedAccountIds = input.humans
+  const pairedAccountIds = input.roster.humans
     .filter((entry) => waitingBefore.has(entry.accountId) && !entry.waiting)
     .map((entry) => entry.accountId);
   return {
@@ -91,10 +91,10 @@ export function tryAggro(
       },
       {
         type: "roster-updated",
-        humans: input.humans.map((entry) => entry.snapshot()),
+        humans: input.roster.humans.map((entry) => entry.snapshot()),
         bot: clone.snap(),
         joined: human.snapshot(),
-        rosterBots: input.bots.map((bot) => bot.snap()),
+        rosterBots: input.roster.bots.map((bot) => bot.snap()),
       },
     ],
   };

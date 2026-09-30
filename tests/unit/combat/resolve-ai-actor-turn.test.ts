@@ -1,4 +1,5 @@
 import { resolveBotMelee } from "../../support/ai-turn.ts";
+import { rosterOf } from "../../support/roster-of.ts";
 import { describe, expect, it } from "vitest";
 import { requireFightBot } from "../../../src/modules/combat/domain/fight-bots.ts";
 import type { BotFighterSeed } from "../../../src/modules/combat/domain/bot-fighter.ts";
@@ -56,8 +57,7 @@ describe("resolveAiActorTurn", () => {
     const vsBot = resolveAiActorTurn({
       bot: actor,
       duel: extra,
-      humans: [],
-      bots,
+      roster: rosterOf([], bots),
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([2]),
       fightId: "1",
@@ -82,8 +82,7 @@ describe("resolveAiActorTurn", () => {
       resolveAiActorTurn({
         bot: actor,
         duel: extra,
-        humans: [],
-        bots,
+        roster: rosterOf([], bots),
         rules: UNIT_BATTLE_RULES,
         random: new SequenceRandom([2]),
         fightId: "1",

@@ -1,8 +1,8 @@
+import type { Roster } from "./roster.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { advanceDuelClock, botActionJumpSeconds } from "./duel-clock.ts";
 import type { FightDuel } from "./fight-duel.ts";
-import type { HumanFighter } from "./human-fighter.ts";
 import { resolveAiTurn } from "./ai-turn.ts";
 import { duelFoe, enemySideCleared } from "./melee-target.ts";
 import { opposingTeam } from "./opposing-team.ts";
@@ -19,15 +19,14 @@ export function resolveAiActorTurn(
   input: Readonly<{
     bot: BotFighter;
     duel: FightDuel;
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
+    roster: Roster;
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
     nowMs: number;
   }>,
 ): BotMeleeResult {
-  const everyone = [...input.humans, ...input.bots];
+  const everyone = input.roster.all();
   const foe = duelFoe(input.duel, everyone, input.bot.id);
   if (!input.bot.alive) throw new Error(`AI actor ${input.bot.id} is dead`);
   if (!foe.alive) throw new Error(`AI actor ${input.bot.id} has a dead foe`);
@@ -60,8 +59,7 @@ export function resolveAiActorTurn(
 function botClockTicks(
   input: Readonly<{
     bot: BotFighter;
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
+    roster: Roster;
     rules: BattleRules;
     random: RandomSource;
     nowMs: number;
@@ -74,6 +72,6 @@ function botClockTicks(
     jumpSeconds: botActionJumpSeconds(input.rules),
     random: input.random,
     rules: input.rules,
-    sources: [...input.humans, ...input.bots],
+    sources: input.roster.all(),
   });
 }

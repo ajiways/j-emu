@@ -388,9 +388,8 @@ export class Battle {
     return {
       fightRules: this.fightRules,
       finished: this.finishedValue,
-      humans: this.humans,
+      roster: this.roster,
       duels: this.duels,
-      bots: this.bots,
       rules: this.rules,
       random: this.random,
       fightId: this.id,

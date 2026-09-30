@@ -1,3 +1,4 @@
+import { rosterOf } from "../../support/roster-of.ts";
 import { describe, expect, it } from "vitest";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
@@ -61,8 +62,7 @@ describe("tryPairedMelee", () => {
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([1]),
       fightId: "8",
-      humans: [attacker, defender],
-      bots: [],
+      roster: rosterOf([attacker, defender], []),
       nowMs: 0,
     });
     expect(attacker.hp).toBe(0);
@@ -86,8 +86,7 @@ describe("tryPairedMelee", () => {
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([1]),
       fightId: "8",
-      humans: [attacker, defender],
-      bots: [],
+      roster: rosterOf([attacker, defender], []),
       nowMs: 0,
     });
     expect(resolved).toMatchObject({
@@ -111,8 +110,7 @@ describe("tryPairedMelee", () => {
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([1]),
       fightId: "8",
-      humans: [attacker, defender],
-      bots: [unitRosterBot({ hp: 10 })],
+      roster: rosterOf([attacker, defender], [unitRosterBot({ hp: 10 })]),
       nowMs: 0,
     });
     expect(resolved.finished).toBe(false);
@@ -139,8 +137,7 @@ describe("tryPairedMelee", () => {
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([8]),
       fightId: "8",
-      humans: [attacker, defender],
-      bots: [],
+      roster: rosterOf([attacker, defender], []),
       nowMs: 0,
     });
     expect(resolved.finished).toBe(true);
@@ -167,8 +164,7 @@ describe("tryPairedMelee", () => {
         rules: UNIT_BATTLE_RULES,
         random: new SequenceRandom([1]),
         fightId: "8",
-        humans: [attacker, defender],
-        bots: [],
+        roster: rosterOf([attacker, defender], []),
         nowMs: 0,
       }),
     ).toThrow(/not a living paired opponent/);
@@ -184,8 +180,7 @@ describe("tryPairedMelee", () => {
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([1]),
       fightId: "8",
-      humans: [attacker],
-      bots: [bot],
+      roster: rosterOf([attacker], [bot]),
       nowMs: 0,
     });
     expect(resolved.finished).toBe(false);
@@ -227,8 +222,7 @@ describe("tryPairedMelee", () => {
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([1]),
       fightId: "8",
-      humans: [attacker],
-      bots: [bot],
+      roster: rosterOf([attacker], [bot]),
       nowMs: 0,
     });
     expect(bot.hp).toBe(0);

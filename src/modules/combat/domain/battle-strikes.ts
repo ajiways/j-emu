@@ -1,6 +1,6 @@
+import type { Roster } from "./roster.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import type { BotFighter } from "./bot-fighter.ts";
 import { tryPairedMelee, type PlayerMeleeResult } from "./paired-melee.ts";
 import { resolveGloveFinisher, type EndingGloveResult } from "./glove-ending-cast.ts";
 import type { KeepTurnResult } from "./player-casts.ts";
@@ -16,8 +16,7 @@ export function applyPairedMelee(
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
+    roster: Roster;
     duel: FightDuel;
     nowMs: number;
   }>,
@@ -30,15 +29,14 @@ export function applyPairedMelee(
   }
   const resolved = tryPairedMelee(
     input.attacker,
-    duelFoe(input.duel, [...input.humans, ...input.bots], input.attacker.id),
+    duelFoe(input.duel, input.roster.all(), input.attacker.id),
     input.side,
     {
       finished: input.finished,
       rules: input.rules,
       random: input.random,
       fightId: input.fightId,
-      humans: input.humans,
-      bots: input.bots,
+      roster: input.roster,
       nowMs: input.nowMs,
     },
   );
@@ -55,8 +53,7 @@ export function applyPairedGloveEnding(
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
+    roster: Roster;
     duel: FightDuel;
     duels: readonly FightDuel[];
     nowMs: number;
@@ -67,8 +64,7 @@ export function applyPairedGloveEnding(
     rules: input.rules,
     random: input.random,
     fightId: input.fightId,
-    humans: input.humans,
-    bots: input.bots,
+    roster: input.roster,
     duel: input.duel,
     duels: input.duels,
     nowMs: input.nowMs,

@@ -1,10 +1,9 @@
+import type { Roster } from "./roster.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { advanceFightTimer, type FighterTimerTicks } from "./duel-clock.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
 import type { Fighter } from "./fighter.ts";
-import type { HumanFighter } from "./human-fighter.ts";
-import type { BotFighter } from "./bot-fighter.ts";
 import { persChangeForParticipants } from "./melee-pers-change.ts";
 import type { RandomSource } from "./random-source.ts";
 import { settleFallen, type Fallout, type FalloutDelivery } from "./settle-fallen.ts";
@@ -24,8 +23,7 @@ export function nextEffectDueMs(fighters: readonly Fighter[]): number | null {
 /** The battle timer fired: real time for every effect, ticks for paired carriers, then fallout. */
 export function tickFightEffects(
   input: Readonly<{
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
+    roster: Roster;
     duels: FightDuel[];
     fightRules: FightRules;
     rules: BattleRules;
@@ -35,8 +33,8 @@ export function tickFightEffects(
   }>,
 ): EffectClockOutcome {
   const fighters: readonly Fighter[] = [
-    ...input.humans.filter((human) => !human.leftLive),
-    ...input.bots,
+    ...input.roster.humans.filter((human) => !human.leftLive),
+    ...input.roster.bots,
   ];
   const ticked = advanceFightTimer({
     fighters,
@@ -44,7 +42,7 @@ export function tickFightEffects(
     nowMs: input.nowMs,
     random: input.random,
     rules: input.rules,
-    sources: [...input.humans, ...input.bots],
+    sources: input.roster.all(),
   });
   const deliveries = ticked.flatMap((entry) => deliver(entry, input));
   const fallen = ticked.map((entry) => entry.fighter).filter((fighter) => fighter.hp < 1);
@@ -55,14 +53,13 @@ export function tickFightEffects(
 function deliver(
   entry: FighterTimerTicks,
   input: Readonly<{
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
+    roster: Roster;
     duels: FightDuel[];
   }>,
 ): readonly FalloutDelivery[] {
   const patch = persChangeForParticipants(
-    input.humans,
-    input.bots.map((bot) => bot.snap()),
+    input.roster.humans,
+    input.roster.bots.map((bot) => bot.snap()),
     [
       entry.fighter.id,
       ...entry.events.flatMap((event) => (event.type === "damage" ? [event.sourceId] : [])),
@@ -71,7 +68,7 @@ function deliver(
   const involved = new Set<number>([entry.fighter.id]);
   const duel = input.duels.find((candidate) => candidate.has(entry.fighter.id));
   if (duel) involved.add(duel.otherId(entry.fighter.id));
-  return input.humans
+  return input.roster.humans
     .filter((human) => human.authed)
     .map((human) => ({
       accountId: human.accountId,

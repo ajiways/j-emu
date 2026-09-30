@@ -1,3 +1,4 @@
+import type { Roster } from "./roster.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { settleAfterMobFell, settleAfterPlayerHit } from "./battle-runtime.ts";
@@ -35,9 +36,8 @@ export type BotTurnResult = BotMeleeResult &
 type HuntActionState = Readonly<{
   fightRules: FightRules;
   finished: boolean;
-  humans: HumanFighter[];
+  roster: Roster;
   duels: FightDuel[];
-  bots: BotFighter[];
   rules: BattleRules;
   random: RandomSource;
   fightId: string;
@@ -49,7 +49,7 @@ export function applyBattlePlayerMelee(
   side: "left" | "center" | "right",
   nowMs: number,
 ): Readonly<{ result: PlayerMeleeResult; finished: boolean }> {
-  const human = requireAuthedHuman(state.humans, accountId);
+  const human = requireAuthedHuman(state.roster.humans, accountId);
   if (human.waiting || !human.turnActive || state.finished) {
     return { result: { kind: "ignored" }, finished: state.finished };
   }
@@ -61,8 +61,7 @@ export function applyBattlePlayerMelee(
     rules: state.rules,
     random: state.random,
     fightId: state.fightId,
-    humans: state.humans,
-    bots: state.bots,
+    roster: state.roster,
     duel,
     nowMs,
   });
@@ -76,15 +75,11 @@ export function applyBattleGlove(
   sequence: string | number,
   nowMs: number,
 ): Readonly<{ result: KeepTurnResult | EndingGloveResult; finished: boolean }> {
-  const human = requireAuthedHuman(state.humans, accountId);
-  const keep = tryGloveKeepTurn(human, spellId, sequence, rosterIsPvp(state.humans), {
+  const human = requireAuthedHuman(state.roster.humans, accountId);
+  const keep = tryGloveKeepTurn(human, spellId, sequence, rosterIsPvp(state.roster.humans), {
     nowMs,
     foe: () =>
-      duelFoe(
-        requireDuelContaining(state.duels, human.heroId),
-        [...state.humans, ...state.bots],
-        human.id,
-      ),
+      duelFoe(requireDuelContaining(state.duels, human.heroId), state.roster.all(), human.id),
   });
   if (keep.kind !== "ignored") return { result: keep, finished: state.finished };
   const duel = requireDuelContaining(state.duels, human.heroId);
@@ -96,8 +91,7 @@ export function applyBattleGlove(
     rules: state.rules,
     random: state.random,
     fightId: state.fightId,
-    humans: state.humans,
-    bots: state.bots,
+    roster: state.roster,
     duel,
     duels: state.duels,
     nowMs,
@@ -113,15 +107,14 @@ export function applyBattleAiTurn(
   nowMs: number,
 ): BotTurnResult {
   if (state.finished) throw new Error("Cannot resolve an AI turn on a finished battle");
-  const bot = requireFightBot(state.bots, botId);
+  const bot = requireFightBot(state.roster.bots, botId);
   const duel = requireDuelContaining(state.duels, bot.id);
-  const everyone = [...state.humans, ...state.bots];
+  const everyone = state.roster.all();
   const foe = duelFoe(duel, everyone, bot.id);
   const result = resolveAiActorTurn({
     bot,
     duel,
-    humans: state.humans,
-    bots: state.bots,
+    roster: state.roster,
     rules: state.rules,
     random: state.random,
     fightId: state.fightId,
@@ -135,8 +128,7 @@ export function applyBattleAiTurn(
     sideHits: result.sideHits,
     bot,
     aimed: foe,
-    humans: state.humans,
-    bots: state.bots,
+    roster: state.roster,
     duels: state.duels,
     fightRules: state.fightRules,
     fightId: state.fightId,
@@ -168,41 +160,39 @@ function botFellInTurn(
   result: BotMeleeResult,
 ): readonly BattleEvent[] {
   if (bot.alive || result.killedPlayer) return [];
-  const everyone = [...state.humans, ...state.bots];
+  const everyone = state.roster.all();
   if (enemySideCleared(bot.team, everyone)) return [];
   if (foe.fighterKind !== "human") {
     dissolveDuelContaining(state.duels, everyone, bot.id);
     return [];
   }
   return settleAfterMobFell(false, {
-    bots: state.bots,
+    roster: state.roster,
     enemyTeam: state.fightRules.teamAssignment.enemyTeam,
     duel,
     duels: state.duels,
     opener: foe as HumanFighter,
-    humans: state.humans,
   }).events;
 }
 
 function settleGloveHits(
   ending: EndingGloveResult,
   input: Readonly<{
-    bots: readonly BotFighter[];
+    roster: Roster;
     enemyTeam: 1 | 2;
     duel: FightDuel;
     duels: FightDuel[];
     opener: HumanFighter;
-    humans: readonly HumanFighter[];
   }>,
 ): EndingGloveResult {
   if (ending.selfKilled) return ending;
   const primary = settleAfterMobFell(ending.finished, input);
   const sideHits = ending.sideNotifies.map((notify) => {
-    if (!input.bots.some((bot) => bot.fightId === notify.targetId)) {
+    if (!input.roster.bots.some((bot) => bot.fightId === notify.targetId)) {
       return { notify, extra: [] as const };
     }
     const duel = requireDuelContaining(input.duels, notify.targetId);
-    const owner = input.humans.find((human) => duel.has(human.heroId));
+    const owner = input.roster.humans.find((human) => duel.has(human.heroId));
     if (!owner) throw new Error(`AOE extra bot ${notify.targetId} has no paired human`);
     const extra = settleAfterMobFell(primary.finished, {
       ...input,
@@ -225,8 +215,8 @@ function settleGloveHits(
   if (!damage || damage.type !== "damage") {
     throw new Error("Glove ending is missing a damage event");
   }
-  const bots = input.bots.map((bot) => bot.snap());
-  const patch = persChangeForParticipants(input.humans, bots, [
+  const bots = input.roster.bots.map((bot) => bot.snap());
+  const patch = persChangeForParticipants(input.roster.humans, bots, [
     damage.sourceId,
     ...ending.hitTargetIds,
   ]);
@@ -246,19 +236,17 @@ function hitInput(
   human: HumanFighter,
   duel: FightDuel,
 ): Readonly<{
-  bots: readonly BotFighter[];
+  roster: Roster;
   enemyTeam: 1 | 2;
   duel: FightDuel;
   duels: FightDuel[];
   opener: HumanFighter;
-  humans: readonly HumanFighter[];
 }> {
   return {
-    bots: state.bots,
+    roster: state.roster,
     enemyTeam: state.fightRules.teamAssignment.enemyTeam,
     duel,
     duels: state.duels,
     opener: human,
-    humans: state.humans,
   };
 }

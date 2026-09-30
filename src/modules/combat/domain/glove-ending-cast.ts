@@ -1,3 +1,4 @@
+import type { Roster } from "./roster.ts";
 import { appliedHpLoss } from "./applied-hp-loss.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
@@ -16,7 +17,6 @@ import { advanceActionClock } from "./duel-clock.ts";
 import { isEndingGlove, type KeepTurnResult } from "./player-casts.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { spellKind } from "./cast-state.ts";
-import type { BotFighter } from "./bot-fighter.ts";
 import { magicReact } from "./magic-hit.ts";
 import { duelFoe } from "./melee-target.ts";
 import type { Participant } from "./participant.ts";
@@ -47,8 +47,7 @@ export function resolveGloveFinisher(
     rules: BattleRules;
     random: RandomSource;
     fightId: string;
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
+    roster: Roster;
     duel: FightDuel;
     duels: readonly FightDuel[];
     nowMs: number;
@@ -57,7 +56,7 @@ export function resolveGloveFinisher(
   if (!human.authed || input.finished) return { kind: "ignored" };
   const glove = human.casts.gloveSpell(spellId);
   if (!glove || !isEndingGlove(glove.spell)) return { kind: "ignored" };
-  requirePvpForSpell(glove.spell, rosterIsPvp(input.humans), sequence);
+  requirePvpForSpell(glove.spell, rosterIsPvp(input.roster.humans), sequence);
   if (spellKind(glove.spell, 11)) throw new FightCastDenied("kind11", sequence);
   if (human.waiting || !human.turnActive) {
     return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };
@@ -65,7 +64,7 @@ export function resolveGloveFinisher(
   if (human.casts.cp < glove.cost) {
     return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };
   }
-  const everyone = [...input.humans, ...input.bots];
+  const everyone = input.roster.all();
   const primary = duelFoe(input.duel, everyone, human.id);
   const targets = spellKind1IsAoe(glove.spell)
     ? pickSpellTargets({
@@ -105,8 +104,7 @@ export function resolveGloveFinisher(
       nowMs: input.nowMs,
       rules: input.rules,
       random: input.random,
-      humans: input.humans,
-      bots: input.bots,
+      roster: input.roster,
       fightId: input.fightId,
     });
     events.push(...clock.events);
@@ -201,7 +199,7 @@ function sideNotifiesForHits(
   hits: readonly GloveKind1Hit[],
   input: Readonly<{
     rules: BattleRules;
-    humans: readonly HumanFighter[];
+    roster: Roster;
     duels: readonly FightDuel[];
   }>,
   dmgType: number | undefined,
@@ -222,10 +220,10 @@ function sideNotifiesForHits(
 function notifyAccountIds(
   casterAccountId: number,
   targetId: number,
-  input: Readonly<{ humans: readonly HumanFighter[]; duels: readonly FightDuel[] }>,
+  input: Readonly<{ roster: Roster; duels: readonly FightDuel[] }>,
 ): readonly number[] {
   const ids: number[] = [];
-  for (const human of input.humans) {
+  for (const human of input.roster.humans) {
     if (human.accountId === casterAccountId || !human.authed) continue;
     if (human.heroId === targetId) {
       ids.push(human.accountId);

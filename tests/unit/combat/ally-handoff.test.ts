@@ -1,3 +1,4 @@
+import { rosterOf } from "../../support/roster-of.ts";
 import { describe, expect, it } from "vitest";
 import {
   hasPairableWaiters,
@@ -101,9 +102,8 @@ describe("a waiting ally mob takes a duel over", () => {
     const state = {
       fightRules: FightRules.for({ kind: "quest", botCount: 1 }),
       finished: false,
-      humans: [human],
+      roster: rosterOf([human], [foe]),
       duels: [] as FightDuel[],
-      bots: [foe],
       rules: UNIT_BATTLE_RULES,
       random: new FixedRandom(0.5),
       fightId: "8",

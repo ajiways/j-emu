@@ -1,4 +1,5 @@
 import { NO_STRIKE_MODS } from "../../../src/modules/combat/domain/strike-mods.ts";
+import { rosterOf } from "../../support/roster-of.ts";
 import { describe, expect, it } from "vitest";
 import { bakeSkills } from "../../../src/modules/combat/domain/skill-bake.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
@@ -187,8 +188,7 @@ describe("gear-spell melee STR", () => {
       rules: UNIT_BATTLE_RULES,
       random: new SequenceRandom([7]),
       fightId: "8",
-      humans: [attacker, defender],
-      bots: [],
+      roster: rosterOf([attacker, defender], []),
       nowMs: 0,
     });
     expect(resolved.result).toMatchObject({

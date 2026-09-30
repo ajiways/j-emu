@@ -1,9 +1,9 @@
+import type { Roster } from "./roster.ts";
 import type { BattleEvent, BotSnap } from "./battle-event.ts";
 import { botSnapOf } from "./bot-snap-of.ts";
 import { primaryEnemyBot, requireFightBot } from "./fight-bots.ts";
 import type { FightEffectSnap } from "./standing-effect.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import type { BotFighter } from "./bot-fighter.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import { requireBattleHuman } from "./battle-lookups.ts";
 import { rosterIsPvp } from "./roster-pvp.ts";
@@ -119,9 +119,8 @@ function friendlyAuthenticateEvents(
 export function authenticateFighter(
   input: Readonly<{
     finished: boolean;
-    humans: readonly HumanFighter[];
+    roster: Roster;
     duels: readonly FightDuel[];
-    bots: readonly BotFighter[];
     enemyTeam: 1 | 2;
     timeoutSeconds: number;
     accountId: number;
@@ -129,22 +128,22 @@ export function authenticateFighter(
   }>,
 ): readonly BattleEvent[] {
   if (input.finished) throw new Error("Cannot authenticate a finished battle");
-  const human = requireBattleHuman(input.humans, input.accountId);
+  const human = requireBattleHuman(input.roster.humans, input.accountId);
   if (human.authed) throw new Error("Fight session is already authenticated");
   const resume = human.takeResume();
   human.authed = true;
-  if (input.bots.length === 0) {
+  if (input.roster.bots.length === 0) {
     const duel = input.duels.find((entry) => entry.has(human.heroId));
     const opponent =
       duel === undefined
         ? undefined
-        : input.humans.find((entry) => entry.heroId === duel.otherId(human.heroId));
+        : input.roster.humans.find((entry) => entry.heroId === duel.otherId(human.heroId));
     if (!human.waiting && opponent === undefined) {
       throw new Error("Paired human duel fighter is missing an opponent");
     }
     return friendlyAuthenticateEvents({
       human,
-      allies: input.humans.filter(
+      allies: input.roster.humans.filter(
         (entry) => entry.heroId !== human.heroId && entry.heroId !== opponent?.heroId,
       ),
       ...(opponent ? { opponent } : {}),
@@ -156,19 +155,23 @@ export function authenticateFighter(
   const duel = input.duels.find((entry) => entry.has(human.heroId));
   const otherId = duel?.otherId(human.heroId);
   const humanOpponent =
-    otherId === undefined ? null : (input.humans.find((entry) => entry.heroId === otherId) ?? null);
+    otherId === undefined
+      ? null
+      : (input.roster.humans.find((entry) => entry.heroId === otherId) ?? null);
   const pairedBot =
-    otherId !== undefined && humanOpponent === null ? requireFightBot(input.bots, otherId) : null;
-  const primary = primaryEnemyBot(input.bots, input.enemyTeam);
+    otherId !== undefined && humanOpponent === null
+      ? requireFightBot(input.roster.bots, otherId)
+      : null;
+  const primary = primaryEnemyBot(input.roster.bots, input.enemyTeam);
   const bot = pairedBot ? pairedBot.snap() : botSnapOf(primary, primary.hp, input.enemyTeam);
   return huntAuthenticateEvents({
     human,
-    allies: input.humans,
+    allies: input.roster.humans,
     bot,
-    rosterBots: input.bots.map((entry) => entry.snap()),
+    rosterBots: input.roster.bots.map((entry) => entry.snap()),
     botEffects: pairedBot ? pairedBot.effects.snapshot(input.nowMs) : [],
     humanOpponent,
-    pvp: rosterIsPvp(input.humans),
+    pvp: rosterIsPvp(input.roster.humans),
     nextActorId: duel?.nextActorId ?? human.heroId,
     resume,
     timeoutSeconds: input.timeoutSeconds,

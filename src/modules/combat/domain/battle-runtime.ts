@@ -1,9 +1,9 @@
+import type { Roster } from "./roster.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import { humanOpponentNew, livingWaiterOnTeam } from "./battle-pairing.ts";
 import { dissolveDuelContaining } from "./pairing.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import type { BotFighter } from "./bot-fighter.ts";
 import { takeNextEnemyForHuman } from "./wait-queue.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
 import { retargetDuelTo } from "./retarget-duel.ts";
@@ -14,12 +14,11 @@ export function settleAfterPlayerHit(
     finished: boolean;
   }>,
   input: Readonly<{
-    bots: readonly BotFighter[];
+    roster: Roster;
     enemyTeam: 1 | 2;
     duel: FightDuel;
     duels: FightDuel[];
     opener: HumanFighter;
-    humans: readonly HumanFighter[];
   }>,
 ): Readonly<{ result: PlayerMeleeResult; finished: boolean }> {
   if (resolved.result.kind !== "resolved" || resolved.result.selfKilled) {
@@ -38,19 +37,20 @@ export function settleAfterPlayerHit(
 export function settleAfterMobFell(
   finished: boolean,
   input: Readonly<{
-    bots: readonly BotFighter[];
+    roster: Roster;
     enemyTeam: 1 | 2;
     duel: FightDuel;
     duels: FightDuel[];
     opener: HumanFighter;
-    humans: readonly HumanFighter[];
   }>,
 ): Readonly<{ events: readonly BattleEvent[]; finished: boolean }> {
   if (finished) return { events: [], finished: true };
-  const hitBot = input.bots.find((bot) => bot.fightId === input.duel.otherId(input.opener.heroId));
+  const hitBot = input.roster.bots.find(
+    (bot) => bot.fightId === input.duel.otherId(input.opener.heroId),
+  );
   if (!hitBot || hitBot.hp > 0) return { events: [], finished: false };
   const next = takeNextEnemyForHuman({
-    bots: input.bots,
+    bots: input.roster.bots,
     enemyTeam: input.enemyTeam,
     duels: input.duels,
     occupiedFightId: hitBot.fightId,
@@ -61,9 +61,9 @@ export function settleAfterMobFell(
     input.duel.setNextActor(input.opener.heroId);
     return { events: [{ type: "opponent-new", bot: next.snap() }], finished: false };
   }
-  const intervenor = livingWaiterOnTeam(input.humans, hitBot.team);
+  const intervenor = livingWaiterOnTeam(input.roster.humans, hitBot.team);
   if (!intervenor) {
-    dissolveDuelContaining(input.duels, [...input.humans, ...input.bots], hitBot.fightId);
+    dissolveDuelContaining(input.duels, input.roster.all(), hitBot.fightId);
     return { events: [{ type: "opponent-wait" }], finished: false };
   }
   retargetDuelTo({ duel: input.duel, fromHeroId: hitBot.fightId, waiter: intervenor });

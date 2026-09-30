@@ -1,9 +1,9 @@
+import type { Roster } from "./roster.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import { spendStunTurn } from "./apply-stun.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { requireBattleHuman } from "./battle-lookups.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import type { BotFighter } from "./bot-fighter.ts";
 import { enemySideCleared } from "./melee-target.ts";
 import { opposingTeam } from "./opposing-team.ts";
 import { timeoutHumanTurn, type HumanTimeout } from "./timeout-human-turn.ts";
@@ -11,18 +11,17 @@ import { timeoutHumanTurn, type HumanTimeout } from "./timeout-human-turn.ts";
 /** The turn timed out; an AFK fighter at the skip limit dies, and the fight ends if he was the last. */
 export function timeoutBattleTurn(
   input: Readonly<{
-    humans: readonly HumanFighter[];
-    bots: readonly BotFighter[];
+    roster: Roster;
     rules: BattleRules;
     fightId: string;
     accountId: number;
     nowMs: number;
   }>,
 ): Readonly<{ timeout: HumanTimeout; finished: boolean }> | null {
-  const human = requireBattleHuman(input.humans, input.accountId);
+  const human = requireBattleHuman(input.roster.humans, input.accountId);
   const timeout = timeoutHumanTurn(human, input.rules.maxConsecutiveSkips);
   if (!timeout) return null;
-  if (!timeout.fell || !enemySideCleared(human.team, [...input.humans, ...input.bots])) {
+  if (!timeout.fell || !enemySideCleared(human.team, input.roster.all())) {
     return { timeout, finished: false };
   }
   const finished = {
