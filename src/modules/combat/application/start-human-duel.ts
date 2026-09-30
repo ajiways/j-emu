@@ -5,6 +5,8 @@ import type { BattleRules } from "../domain/battle-rules.ts";
 import { FightRules } from "../domain/fight-rules.ts";
 import type { RandomSource } from "../domain/random-source.ts";
 import type { FightStart, FriendlyDuelStartInput } from "../ports/combat-port.ts";
+import type { CombatDiagnostics } from "../ports/combat-diagnostics.ts";
+import { reportUnsupportedSkills } from "./report-unsupported-skills.ts";
 import { fightSetupFromHumanDuel } from "./fight-setup-from-human-duel.ts";
 
 export function startHumanDuelBattle(
@@ -16,6 +18,7 @@ export function startHumanDuelBattle(
     rules: BattleRules;
     random: RandomSource;
     now: Date;
+    diagnostics: CombatDiagnostics;
     requireFightId: (fightId: string) => string;
   }>,
 ): FightStart {
@@ -38,6 +41,10 @@ export function startHumanDuelBattle(
   deps.byAccount.set(input.challenger.accountId, battle);
   deps.byAccount.set(input.acceptor.accountId, battle);
   deps.battleByFight.set(fightId, battle);
+  reportUnsupportedSkills(deps.diagnostics, fightId, {
+    humans: battle.boardParticipants().humans,
+    bots: [],
+  });
   return fightStartOf(battle, input.acceptor.heroId);
 }
 

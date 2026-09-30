@@ -1,3 +1,4 @@
+import { RecordingCombatDiagnostics } from "../../support/fakes/recording-combat-diagnostics.ts";
 import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
 import { describe, expect, it } from "vitest";
 import { CombatService } from "../../../src/modules/combat/application/combat-service.ts";
@@ -110,6 +111,7 @@ describe("CombatService hunt join", () => {
       new RecordingHistoryWriteObserver(),
       delay,
       new AllowPlayerAttackPolicy(),
+      new RecordingCombatDiagnostics(),
     );
     const start = await startHuntWithIssuedId(combat, unitHuntStart({ heroStrength: 200 }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
@@ -145,6 +147,7 @@ describe("CombatService hunt join", () => {
       new RecordingHistoryWriteObserver(),
       delay,
       new AllowPlayerAttackPolicy(),
+      new RecordingCombatDiagnostics(),
     );
     const start = await startHuntWithIssuedId(combat, unitHuntStart());
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
@@ -197,6 +200,7 @@ describe("CombatService PvP join", () => {
       new RecordingHistoryWriteObserver(),
       delay,
       new AllowPlayerAttackPolicy(),
+      new RecordingCombatDiagnostics(),
     );
     const start = await combat.startPvp(unitPvpStart("1"));
     expect(start.purpose).toBe("pvp");
@@ -291,6 +295,7 @@ function service(
     new RecordingHistoryWriteObserver(),
     delay,
     new AllowPlayerAttackPolicy(),
+    new RecordingCombatDiagnostics(),
   );
 }
 

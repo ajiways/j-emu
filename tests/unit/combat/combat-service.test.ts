@@ -1,3 +1,4 @@
+import { RecordingCombatDiagnostics } from "../../support/fakes/recording-combat-diagnostics.ts";
 import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
 import { describe, expect, it } from "vitest";
 import { CombatService } from "../../../src/modules/combat/application/combat-service.ts";
@@ -163,6 +164,7 @@ describe("CombatService history", () => {
       writes,
       delay,
       new AllowPlayerAttackPolicy(),
+      new RecordingCombatDiagnostics(),
     );
     const start = await startHuntWithIssuedId(combat, huntInput({ heroStrength: 200 }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
@@ -212,6 +214,7 @@ function service(
     writes,
     delay,
     new AllowPlayerAttackPolicy(),
+    new RecordingCombatDiagnostics(),
   );
 }
 

@@ -7,7 +7,7 @@
 3. [ADR-0019: wire dispatch и acceptance](ADR-0019-wire-dispatch-and-acceptance.md)
 4. [ADR-0020: ephemeral active combat](ADR-0020-ephemeral-combat.md)
 
-План (Proposed, не реализовано): [ADR-0021: слой навыков эффектов боя](ADR-0021-effect-skills-layer.md).
+План (принят, реализуется по этапам): [ADR-0021: слой навыков эффектов боя](ADR-0021-effect-skills-layer.md).
 
 ADR отвечает на вопрос «почему принято долгоживущее решение». Текущий
 продуктовый статус находится в `docs/CAPABILITIES.md`, порядок переноса — в

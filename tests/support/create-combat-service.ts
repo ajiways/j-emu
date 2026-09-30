@@ -9,6 +9,7 @@ import { ManualCombatDelay } from "./fakes/manual-combat-delay.ts";
 import { MonotonicFightIdSource } from "./fakes/monotonic-fight-id-source.ts";
 import { MutableClock } from "./fakes/mutable-clock.ts";
 import { RecordingFinishedFightStore } from "./fakes/recording-finished-fight-store.ts";
+import { RecordingCombatDiagnostics } from "./fakes/recording-combat-diagnostics.ts";
 import { RecordingHistoryWriteObserver } from "./fakes/recording-history-write-observer.ts";
 import { SequenceRandom } from "./fakes/sequence-random.ts";
 import type { RandomSource } from "../../src/modules/combat/domain/random-source.ts";
@@ -29,17 +30,20 @@ export function createCombatService(input: {
   writes?: HistoryWriteObserver;
   fightId?: number;
   attackPolicy?: PlayerAttackPolicy;
+  diagnostics?: RecordingCombatDiagnostics;
 }): Readonly<{
   combat: CombatService;
   clock: Clock;
   delay: ManualCombatDelay;
   history: FinishedFightStore;
   writes: HistoryWriteObserver;
+  diagnostics: RecordingCombatDiagnostics;
 }> {
   const clock = input.clock ?? new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
   const delay = input.delay ?? new ManualCombatDelay();
   const history = input.history ?? new RecordingFinishedFightStore();
   const writes = input.writes ?? new RecordingHistoryWriteObserver();
+  const diagnostics = input.diagnostics ?? new RecordingCombatDiagnostics();
   const combat = new CombatService(
     new MonotonicFightIdSource(input.fightId ?? 1),
     input.random ?? new SequenceRandom([8, 2]),
@@ -49,7 +53,8 @@ export function createCombatService(input: {
     writes,
     delay,
     input.attackPolicy ?? new AllowPlayerAttackPolicy(),
+    diagnostics,
   );
   combat.bindHistoryList(new FinishedFightList(history, clock));
-  return { combat, clock, delay, history, writes };
+  return { combat, clock, delay, history, writes, diagnostics };
 }

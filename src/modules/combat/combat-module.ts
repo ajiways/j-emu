@@ -1,3 +1,4 @@
+import { StructuredCombatDiagnostics } from "./infrastructure/structured-combat-diagnostics.ts";
 import type { PostgresDatabase } from "../../infrastructure/postgres/database.ts";
 import type { Clock } from "../../shared/kernel/clock.ts";
 import { requirePresent } from "../../shared/kernel/require-present.ts";
@@ -59,6 +60,9 @@ export class CombatModule {
       historyWrites,
       delay,
       requirePresent(input.playerAttackPolicy, "Combat module requires a player attack policy"),
+      new StructuredCombatDiagnostics((entry) => {
+        process.stderr.write(`${JSON.stringify(entry)}\n`);
+      }),
       input.testBotStrength,
     );
     runtime.bindHistoryList(new FinishedFightList(history, clock));

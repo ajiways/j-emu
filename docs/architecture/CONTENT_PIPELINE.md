@@ -359,3 +359,13 @@ Import release:
 ограничения существующих release/draft tables дают необходимую атомарность без
 распределённой инфраструктуры. EDT-01 добавляет publication audit на activate
 candidate; export/rollback — не этот срез.
+
+## Навыки эффектов
+
+`npm run content:skills-report` печатает по каждому навыку каталога (`effects[].skills`)
+число эффектов и спеллов, статус (`supported`/`deferred`), уровень доказательства и
+пример; в конце — сколько спеллов несут неподдержанный навык. Реестр —
+`src/modules/combat/domain/skill-registry.ts` (ADR-0021); новый навык в каталоге
+без записи в реестре роняет unit-тест `skill-registry.test.ts`. При входе бойца в
+бой неподдержанные навыки его спеллов пишутся в stderr строкой
+`{"event":"unsupported_skill",...}`.

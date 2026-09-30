@@ -1,3 +1,4 @@
+import { RecordingCombatDiagnostics } from "../../support/fakes/recording-combat-diagnostics.ts";
 import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { PostgresDatabase } from "../../../src/infrastructure/postgres/database.ts";
@@ -54,6 +55,7 @@ describe("finished fight history storage", () => {
       new RecordingHistoryWriteObserver(),
       new ManualCombatDelay(),
       new AllowPlayerAttackPolicy(),
+      new RecordingCombatDiagnostics(),
     );
     const start = await startHuntWithIssuedId(combat, {
       accountId: account.id,

@@ -38,7 +38,9 @@ import type {
   HuntStartInput,
 } from "../ports/combat-port.ts";
 import type { FightIdSource } from "../ports/fight-id-source.ts";
+import type { CombatDiagnostics } from "../ports/combat-diagnostics.ts";
 import type { PlayerAttackPolicy } from "../ports/player-attack-policy.ts";
+import { reportUnsupportedSkills } from "./report-unsupported-skills.ts";
 import { rosterIsPvp } from "../domain/roster-pvp.ts";
 import type { FightSettlement } from "../ports/fight-settlement.ts";
 import type { FightTerminalObserver } from "../ports/fight-terminal-observer.ts";
@@ -73,6 +75,7 @@ export class CombatService implements CombatPort {
     historyWrites: HistoryWriteObserver,
     delay: CombatDelay,
     private readonly attackPolicy: PlayerAttackPolicy,
+    private readonly diagnostics: CombatDiagnostics,
     private readonly testBotStrength?: number,
   ) {
     this.scheduler = new HuntMeleeScheduler(delay, clock);
@@ -180,6 +183,10 @@ export class CombatService implements CombatPort {
     );
     this.byAccount.set(input.accountId, battle);
     this.battleByFight.set(fightId, battle);
+    reportUnsupportedSkills(this.diagnostics, fightId, {
+      humans: battle.boardParticipants().humans,
+      bots: battle.bots,
+    });
     return fightStartOf(battle, input.heroId);
   }
 
@@ -222,6 +229,10 @@ export class CombatService implements CombatPort {
     }
     const roster = battle.addHuman(fightSetupJoinFromInput(input, this.scheduler.now().getTime()));
     this.byAccount.set(input.accountId, battle);
+    reportUnsupportedSkills(this.diagnostics, battle.id, {
+      humans: battle.boardParticipants().humans.filter((human) => human.heroId === input.heroId),
+      bots: [],
+    });
     for (const accountId of battle.authedAccountIds()) {
       if (accountId === input.accountId) continue;
       this.enqueue(accountId, [roster]);
@@ -364,6 +375,7 @@ export class CombatService implements CombatPort {
       rules: this.rules,
       random: this.random,
       now: this.scheduler.now(),
+      diagnostics: this.diagnostics,
       requireFightId,
     });
   }
