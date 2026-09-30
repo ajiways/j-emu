@@ -3,6 +3,7 @@ import type { BattleRules } from "./battle-rules.ts";
 import { actBotSpellCard } from "./bot-spell-act.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { resolveBotMelee, type BotMeleeResult } from "./hunt-melee.ts";
+import type { Fighter } from "./fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { snapshotForBot } from "./combat-snapshot.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -20,24 +21,30 @@ export function resolveBotTurn(
     living: readonly HumanFighter[];
     winnerTeam: 1 | 2;
     nowMs: number;
+    enemies: readonly Fighter[];
   }>,
 ): BotMeleeResult {
   if (bot.stunnedTurns > 0) {
-    return { events: spendStunTurn(bot), killedPlayer: false };
+    return { events: spendStunTurn(bot), killedPlayer: false, sideHits: [] };
   }
   const decision = bot.brain.decide(snapshotForBot(bot, human), state.random);
   if (decision.kind === "melee") {
     return resolveBotMelee(human, { ...state, bot });
   }
   const card = decision.card;
-  const events = [...actBotSpellCard(bot, human, card, { ...state, winnerTeam: state.winnerTeam })];
+  const act = actBotSpellCard(bot, human, card, state);
+  const events = [...act.events];
   const killedPlayer = events.some((event) => event.type === "damage" && event.killed);
   if (!killedPlayer && (kind1OverlayCharges(card.spell) > 0 || !botSpellEndsTurn(card.spell))) {
     const melee = resolveBotMelee(human, {
       ...state,
       bot,
     });
-    return { events: [...events, ...melee.events], killedPlayer: melee.killedPlayer };
+    return {
+      events: [...events, ...melee.events],
+      killedPlayer: melee.killedPlayer,
+      sideHits: act.sideHits,
+    };
   }
-  return { events, killedPlayer };
+  return { events, killedPlayer, sideHits: act.sideHits };
 }

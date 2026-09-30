@@ -15,6 +15,9 @@ import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
 import { attachSpellTicks } from "./fight-effect-ticks.ts";
 import { castSpell, type SpellPresentation } from "./spell-cast.ts";
+import type { BotSideHit, BotSpellAct } from "./bot-side-hit.ts";
+import type { Fighter } from "./fighter.ts";
+import { pickSpellTargets, spellAoeTargetCount, spellKind1IsAoe } from "./spell-aoe.ts";
 
 export type BotKindActState = Readonly<{
   rules: BattleRules;
@@ -24,6 +27,8 @@ export type BotKindActState = Readonly<{
   living: readonly HumanFighter[];
   winnerTeam: 1 | 2;
   nowMs: number;
+  /** Every living enemy of the bot, the aimed foe among them: who an AOE spell may reach. */
+  enemies: readonly Fighter[];
 }>;
 
 /** A bot shows every spell with its own catalog animation: there is no fallback to fill in. */
@@ -41,7 +46,7 @@ export function actBotSpellCard(
   target: HumanFighter | BotFighter,
   card: HuntBotSpellCard,
   state: BotKindActState,
-): readonly BattleEvent[] {
+): BotSpellAct {
   const events = castSpell({
     caster: actor,
     foe: () => target,
@@ -56,7 +61,7 @@ export function actBotSpellCard(
     presentation: BOT_PRESENTATION,
     endsTurn: botSpellEndsTurn(card.spell),
   });
-  return events ?? instantKind1(actor, target, card, state);
+  return events === null ? instantKind1(actor, target, card, state) : { events, sideHits: [] };
 }
 
 function instantKind1(
@@ -64,7 +69,8 @@ function instantKind1(
   target: HumanFighter | BotFighter,
   card: HuntBotSpellCard,
   state: BotKindActState,
-): readonly BattleEvent[] {
+): BotSpellAct {
+  const others = aoeOthers(actor, target, card, state);
   const { applied: damage, killed } = resolveHpLoss(
     target,
     rollBotSpellDamage(actor.strength, card.spell, state.random, state.rules, actor.mag, target),
@@ -91,15 +97,63 @@ function instantKind1(
           botSpellEndsTurn(card.spell),
         )
       : [];
-  if (!isHuman(target)) return [...ticks, hit];
+  const sideHits = others.map((other) => hitOther(actor, other, card, state));
+  if (!isHuman(target)) return { events: [...ticks, hit], sideHits };
   const dRage = damage < 1 ? 0 : target.casts.awardIncomingRage(damage, target.maxHp);
   const events: BattleEvent[] = [...ticks, { ...hit, dRage }];
   if (killed && !state.keepFightOnKill) {
     events.push({ type: "finished", winnerTeam: state.winnerTeam, fightId: state.fightId });
   }
-  return events;
+  return { events, sideHits };
 }
 
-function isHuman(target: HumanFighter | BotFighter): target is HumanFighter {
-  return "heroId" in target;
+/** The others an AOE spell reaches besides the aimed foe, picked before anyone is hit. */
+function aoeOthers(
+  actor: BotFighter,
+  target: HumanFighter | BotFighter,
+  card: HuntBotSpellCard,
+  state: BotKindActState,
+): readonly Fighter[] {
+  if (!spellKind1IsAoe(card.spell)) return [];
+  return pickSpellTargets({
+    primaryId: target.id,
+    enemies: state.enemies,
+    count: spellAoeTargetCount(card.spell),
+    random: state.random,
+  }).filter((other) => other.id !== target.id);
+}
+
+function hitOther(
+  actor: BotFighter,
+  other: Fighter,
+  card: HuntBotSpellCard,
+  state: BotKindActState,
+): BotSideHit {
+  const { applied, killed } = resolveHpLoss(
+    other,
+    rollBotSpellDamage(actor.strength, card.spell, state.random, state.rules, actor.mag, other),
+    actor,
+  );
+  const dRage =
+    applied < 1 || !isHuman(other) ? 0 : other.casts.awardIncomingRage(applied, other.maxHp);
+  return {
+    targetId: other.id,
+    killed,
+    event: {
+      type: "damage",
+      sourceId: actor.fightId,
+      targetId: other.id,
+      animation: botSpellAnimation(card.spell, card.artikulId),
+      hpChange: -applied,
+      targetMaxHp: other.maxHp,
+      killed,
+      dmgType: botSpellKind1DmgType(card.spell),
+      react: magicReact(killed),
+      dRage,
+    },
+  };
+}
+
+function isHuman(target: Fighter): target is HumanFighter {
+  return target.fighterKind === "human";
 }

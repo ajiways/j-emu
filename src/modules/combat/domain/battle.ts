@@ -12,6 +12,7 @@ import {
   applyBattleBotMelee,
   applyBattleGlove,
   applyBattlePlayerMelee,
+  type BotTurnResult,
 } from "./battle-hunt-actions.ts";
 import {
   battleOpener,
@@ -27,7 +28,7 @@ import type { FightSetup, FightSetupJoin } from "./fight-setup.ts";
 import { primaryEnemyBot, requireFightBot, requireFightBots } from "./fight-bots.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import { grantTurn as grantHumanTurn, type BotMeleeResult } from "./hunt-melee.ts";
+import { grantTurn as grantHumanTurn } from "./hunt-melee.ts";
 import { opposingTeam } from "./opposing-team.ts";
 import { rosterIsPvp } from "./roster-pvp.ts";
 import { consumeStunSkip, timeoutBattleTurn } from "./battle-turn-skips.ts";
@@ -255,7 +256,7 @@ export class Battle {
     return applied.result;
   }
 
-  resolveBotMelee(accountId: number, nowMs: number): BotMeleeResult {
+  resolveBotMelee(accountId: number, nowMs: number): BotTurnResult {
     const result = applyBattleBotMelee(this.actionState(), accountId, this.livingHumans(), nowMs);
     if (result.finished) this.finishedValue = true;
     return result;

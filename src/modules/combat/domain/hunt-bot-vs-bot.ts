@@ -3,6 +3,8 @@ import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { actBotSpellCard } from "./bot-spell-act.ts";
 import { botSpellEndsTurn } from "./bot-spell-damage.ts";
+import type { BotMeleeResult } from "./hunt-melee.ts";
+import type { Fighter } from "./fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { strikeFighter } from "./melee-strike.ts";
@@ -17,31 +19,34 @@ export function resolveRosterBotTurn(
     rules: BattleRules;
     random: RandomSource;
     nowMs: number;
+    enemies: readonly Fighter[];
   }>,
-): readonly BattleEvent[] {
+): BotMeleeResult {
   if (actor.hp === 0) throw new Error("Roster bot actor is dead");
   if (target.hp === 0) throw new Error("Roster bot target is dead");
   if (actor.stunnedTurns > 0) {
-    return spendStunTurn(actor);
+    return { events: spendStunTurn(actor), killedPlayer: false, sideHits: [] };
   }
   const decision = actor.brain.decide(snapshotForBot(actor, target), input.random);
-  if (decision.kind === "melee") return [...meleeHit(actor, target, input)];
+  if (decision.kind === "melee") {
+    return { events: [...meleeHit(actor, target, input)], killedPlayer: false, sideHits: [] };
+  }
   const card = decision.card;
-  const events = [
-    ...actBotSpellCard(actor, target, card, {
-      rules: input.rules,
-      random: input.random,
-      fightId: "roster",
-      keepFightOnKill: true,
-      living: [],
-      winnerTeam: 1,
-      nowMs: input.nowMs,
-    }),
-  ];
+  const act = actBotSpellCard(actor, target, card, {
+    rules: input.rules,
+    random: input.random,
+    fightId: "roster",
+    keepFightOnKill: true,
+    living: [],
+    winnerTeam: 1,
+    nowMs: input.nowMs,
+    enemies: input.enemies,
+  });
+  const events = [...act.events];
   if (target.hp > 0 && (kind1OverlayCharges(card.spell) > 0 || !botSpellEndsTurn(card.spell))) {
     events.push(...meleeHit(actor, target, input));
   }
-  return events;
+  return { events, killedPlayer: false, sideHits: act.sideHits };
 }
 
 function meleeHit(

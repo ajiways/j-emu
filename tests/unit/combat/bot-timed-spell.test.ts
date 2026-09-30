@@ -21,6 +21,7 @@ const STATE = {
   living: [],
   winnerTeam: 2 as const,
   nowMs: 0,
+  enemies: [],
 };
 
 function bot(): BotFighter {
@@ -102,7 +103,7 @@ describe("bot timed spells", () => {
         ],
       }),
       STATE,
-    );
+    ).events;
     expect(events.map((event) => event.type)).toEqual(["effect-use", "buff-cast"]);
     expect(events[0]).toMatchObject({ persId: 1_000_000, skills: { DEX: 20, HPMAX: 25 } });
     expect(actor.dexterity).toBe(20);
@@ -121,7 +122,7 @@ describe("bot timed spells", () => {
         effects: [{ kind: 3, duration: 400, skills: [{ skillId: "pcDEX", value: -50 }] }],
       }),
       STATE,
-    );
+    ).events;
     expect(events[0]).toMatchObject({ type: "effect-use", persId: 1, sourceId: 1_000_000 });
     expect(foe.dexterity).toBe(20);
   });

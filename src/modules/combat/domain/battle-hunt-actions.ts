@@ -14,6 +14,8 @@ import type { KeepTurnResult } from "./hunt-cast.ts";
 import { tryGloveKeepTurn } from "./hunt-cast.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotMeleeResult } from "./hunt-melee.ts";
+import { settleBotSideHits } from "./bot-side-hits.ts";
+import type { Fallout } from "./settle-fallen.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { enemySideCleared, fightCombatants } from "./melee-target.ts";
 import { persChangeForParticipants } from "./melee-pers-change.ts";
@@ -21,6 +23,9 @@ import { opposingTeam } from "./opposing-team.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
 import { requireDuelContaining } from "./try-pair-hunt-queues.ts";
+
+/** A bot's turn, with what its AOE spell did to the others it reached. */
+export type BotTurnResult = BotMeleeResult & Readonly<{ finished: boolean; sideFallout: Fallout }>;
 
 type HuntActionState = Readonly<{
   fightRules: FightRules;
@@ -97,7 +102,7 @@ export function applyBattleBotMelee(
   accountId: number,
   living: readonly HumanFighter[],
   nowMs: number,
-): BotMeleeResult & Readonly<{ finished: boolean }> {
+): BotTurnResult {
   if (state.bots.length === 0) throw new Error("Human duel has no bot to take a turn");
   if (state.finished) throw new Error("Cannot resolve bot melee on a finished battle");
   const target = requireBattleHuman(state.humans, accountId);
@@ -123,10 +128,27 @@ export function applyBattleBotMelee(
     winnerTeam: enemyTeam,
     nowMs,
   });
-  const events = [...result.events, ...botFellToTick(state, bot, target, duel, result)];
+  const side = settleBotSideHits({
+    sideHits: result.sideHits,
+    bot,
+    aimed: target,
+    humans: state.humans,
+    bots: state.bots,
+    duels: state.duels,
+    fightRules: state.fightRules,
+    fightId: state.fightId,
+  });
+  const events = [
+    ...result.events,
+    ...(side.patch ? [side.patch] : []),
+    ...botFellToTick(state, bot, target, duel, result),
+    ...(side.fallout.finished ? [side.fallout.finished] : []),
+  ];
   return {
     events,
     killedPlayer: result.killedPlayer,
+    sideHits: result.sideHits,
+    sideFallout: side.fallout,
     finished: events.some((event) => event.type === "finished"),
   };
 }

@@ -73,8 +73,9 @@ describe("actBotSpellCard overkill", () => {
         living: [human],
         winnerTeam: 2,
         nowMs: 0,
+        enemies: [human],
       },
-    );
+    ).events;
     expect(events).toMatchObject([
       { type: "damage", hpChange: -3, killed: true, animation: "magic_direct" },
     ]);
@@ -149,8 +150,9 @@ describe("actBotSpellCard overkill", () => {
         living: [human],
         winnerTeam: 2,
         nowMs: 0,
+        enemies: [human],
       },
-    );
+    ).events;
     expect(events).toMatchObject([
       {
         type: "effect-use",
@@ -235,8 +237,9 @@ describe("actBotSpellCard overkill", () => {
         living: [human],
         winnerTeam: 2,
         nowMs: 0,
+        enemies: [human],
       },
-    );
+    ).events;
     expect(events).toMatchObject([
       {
         type: "effect-use",

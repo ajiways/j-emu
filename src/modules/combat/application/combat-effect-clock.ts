@@ -1,4 +1,5 @@
 import type { Battle } from "../domain/battle.ts";
+import type { Fallout } from "../domain/settle-fallen.ts";
 import { fightEffectClockToken } from "../domain/fight-delay-token.ts";
 import type { CombatEvent } from "../ports/combat-port.ts";
 import type { HuntMeleeScheduler } from "./hunt-melee-scheduler.ts";
@@ -32,16 +33,26 @@ export class CombatEffectClock {
     const battle = this.battleByFight.get(fightId);
     if (!battle || battle.finished) return;
     const outcome = battle.tickDueEffects(this.scheduler.now().getTime());
+    if (outcome.finished) {
+      this.deliver(outcome);
+      await this.settleFinished(battle, [outcome.finished], null);
+      return;
+    }
+    await this.settleFallout(battle, outcome);
+    this.arm(battle);
+  }
+
+  /** Who fell or was left without a foe outside a swing: their streams, hand-offs and next foes. */
+  async settleFallout(battle: Battle, outcome: Fallout): Promise<void> {
+    this.deliver(outcome);
+    for (const accountId of outcome.reassignedAccountIds) this.regrant(battle, accountId);
+    for (const accountId of outcome.fallenAccountIds) await this.handOff(battle, accountId);
+  }
+
+  private deliver(outcome: Fallout): void {
     for (const delivery of outcome.deliveries) {
       this.enqueue(delivery.accountId, delivery.events);
       this.wakeAccount(delivery.accountId);
     }
-    if (outcome.finished) {
-      await this.settleFinished(battle, [outcome.finished], null);
-      return;
-    }
-    for (const accountId of outcome.reassignedAccountIds) this.regrant(battle, accountId);
-    for (const accountId of outcome.fallenAccountIds) await this.handOff(battle, accountId);
-    this.arm(battle);
   }
 }

@@ -10,6 +10,7 @@ import {
   shuffleAffectedAccountIds,
   enqueuePlayerMelee,
   fanoutPersChange,
+  fanoutHit,
   fanoutRosterEffects,
   enqueueKeepTurn,
   withActorPersChange,
@@ -69,8 +70,7 @@ export class CombatMeleeLoop {
         return;
       }
       enqueuePlayerMelee(this.enqueue, battle, accountId, sequence, resolved.events);
-      fanoutPersChange(battle, accountId, resolved.events, this.enqueue, this.wakeAccount);
-      fanoutRosterEffects(battle, accountId, resolved.events, this.enqueue, this.wakeAccount);
+      fanoutHit(battle, accountId, resolved.events, this.enqueue, this.wakeAccount);
       if (battle.finished) {
         await this.settleFinished(battle, resolved.events, accountId);
         return;
@@ -245,13 +245,13 @@ export class CombatMeleeLoop {
       if (!battle.accountIds().includes(targetAccountId)) return;
       const result = battle.resolveBotMelee(targetAccountId, this.scheduler.now().getTime());
       this.enqueue(targetAccountId, withActorPersChange(battle, result.events));
-      fanoutPersChange(battle, targetAccountId, result.events, this.enqueue, this.wakeAccount);
-      fanoutRosterEffects(battle, targetAccountId, result.events, this.enqueue, this.wakeAccount);
+      fanoutHit(battle, targetAccountId, result.events, this.enqueue, this.wakeAccount);
       this.wakeAccount(targetAccountId);
       if (battle.finished) {
         await this.settleFinished(battle, result.events, targetAccountId);
         return;
       }
+      await this.effectClock.settleFallout(battle, result.sideFallout);
       if (!result.killedPlayer) {
         const extra = battle.tickRosterDuels(this.scheduler.now().getTime());
         if (extra.length > 0) this.enqueue(targetAccountId, extra);

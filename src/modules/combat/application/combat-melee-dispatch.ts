@@ -66,6 +66,18 @@ export function enqueuePlayerMelee(
   ]);
 }
 
+/** What a hit shows the rest of the roster: fresh hp and the effects that appeared or went. */
+export function fanoutHit(
+  battle: Battle,
+  actorAccountId: number,
+  events: readonly CombatEvent[],
+  enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void,
+  wakeAccount: (accountId: number) => void,
+): void {
+  fanoutPersChange(battle, actorAccountId, events, enqueue, wakeAccount);
+  fanoutRosterEffects(battle, actorAccountId, events, enqueue, wakeAccount);
+}
+
 export function fanoutPersChange(
   battle: Battle,
   actorAccountId: number,

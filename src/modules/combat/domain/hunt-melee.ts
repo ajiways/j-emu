@@ -1,4 +1,5 @@
 import type { BattleEvent } from "./battle-event.ts";
+import type { BotSideHit } from "./bot-side-hit.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
@@ -9,6 +10,8 @@ import type { RandomSource } from "./random-source.ts";
 export type BotMeleeResult = Readonly<{
   events: readonly BattleEvent[];
   killedPlayer: boolean;
+  /** Hits of an AOE spell on fighters other than the aimed foe. */
+  sideHits: readonly BotSideHit[];
 }>;
 
 export function resolveBotMelee(
@@ -57,7 +60,7 @@ export function resolveBotMelee(
   if (dead && !input.keepFightOnKill) {
     events.push({ type: "finished", winnerTeam: input.winnerTeam, fightId: input.fightId });
   }
-  return { events, killedPlayer: dead };
+  return { events, killedPlayer: dead, sideHits: [] };
 }
 
 export function grantTurn(
