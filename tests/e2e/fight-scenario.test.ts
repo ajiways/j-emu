@@ -98,6 +98,8 @@ describe("scripted fight scenarios from chat", () => {
 
   it("dispel-on-hero: the bot dispels the buff the hero put on himself", async () => {
     const client = await startScenario("dispel-on-hero");
+    // Разбойник's catalog body carries rand[...] picks the client cannot read.
+    expect(opened).not.toContain("rand[");
     let sq = 4;
     await client.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: sq++ });
     await untilAttackNow(client);

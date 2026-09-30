@@ -2,6 +2,7 @@ import { Battle } from "../domain/battle.ts";
 import type { BattleRules } from "../domain/battle-rules.ts";
 import type { EphemeralBotFightIds } from "../domain/ephemeral-bot-fight-ids.ts";
 import { FightRules } from "../domain/fight-rules.ts";
+import { resolveBotBody } from "../domain/bot-body-macros.ts";
 import type { BotFighterSeed } from "../domain/bot-fighter.ts";
 import type { RandomSource } from "../domain/random-source.ts";
 import type { HuntStartInput } from "../ports/combat-port.ts";
@@ -21,12 +22,19 @@ export function createHuntBattle(
     throw new Error("Hunt fights cannot include a quest roster");
   }
   const primaryStrength = appliedStrength(input.botStrength, testBotStrength);
+  const primaryBody = resolveBotBody(input.botBody, random);
   const primaryFightId = botFightIds.allocate(input.heroId);
-  const extraEnemies = seedRoster(input.extraEnemies, input.heroId, botFightIds, testBotStrength);
-  const allies = seedRoster(input.allies, input.heroId, botFightIds, testBotStrength);
+  const extraEnemies = seedRoster(
+    input.extraEnemies,
+    input.heroId,
+    botFightIds,
+    testBotStrength,
+    random,
+  );
+  const allies = seedRoster(input.allies, input.heroId, botFightIds, testBotStrength, random);
   return new Battle(
     fightSetupFromHuntStart(
-      { ...input, botStrength: primaryStrength },
+      { ...input, botStrength: primaryStrength, botBody: primaryBody },
       accessKey,
       primaryFightId,
       startedAt,
@@ -58,6 +66,7 @@ function seedRoster(
   heroId: number,
   botFightIds: EphemeralBotFightIds,
   testBotStrength: number | undefined,
+  random: RandomSource,
 ): readonly BotFighterSeed[] {
   return bots.map((bot) => ({
     fightId: botFightIds.allocate(heroId),
@@ -71,7 +80,7 @@ function seedRoster(
     magResist: bot.magResist,
     avatar: bot.avatar,
     sk: bot.sk,
-    body: bot.body,
+    body: resolveBotBody(bot.body, random),
     spellBook: bot.spellBook,
   }));
 }
