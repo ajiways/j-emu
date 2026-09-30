@@ -1,5 +1,6 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
-import { bakeTimedStatPercents } from "./bake-timed-stat-percents.ts";
+import type { StatBase } from "./skill-bake.ts";
+import { timedBuffEffect, type TimedBuffInput } from "./timed-buff.ts";
 import type {
   ChargingKind3Input,
   StunEffectInput,
@@ -8,78 +9,29 @@ import type {
 import type { CombatGearSpell } from "./combat-loadout.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
 import {
+  snapOf,
+  type FightEffectSnap,
+  type FightTickPulse,
+  type PeriodicItem,
+  type StandingEffect,
+} from "./standing-effect.ts";
+import {
   nextPeriodicDueMs,
-  remainingSeconds,
   startPeriodic,
   stepPeriodicOnAction,
   stepPeriodicOnTimer,
   type PeriodicState,
 } from "./periodic-effect.ts";
 
-const TURN_SECONDS = 40;
-
-export type FightTickPulse = Readonly<{
-  effectId: number;
-  kind: number;
-  sourceId: number;
-  dmgType: number;
-  amount?: number | string;
-  catalogPcStr: number;
-  catalogStr: number;
-  casterStrength: number;
-  casterMagPower: number;
-  casterMagResist: number;
-}>;
-
-/** What one clock step did to the effects: a tick to apply, or an effect that ran out. */
-export type PeriodicItem =
-  | Readonly<{ kind: "tick"; pulse: FightTickPulse }>
-  | Readonly<{ kind: "expire"; effectId: number }>;
-
-export type FightEffectSnap = Readonly<{
-  id: number;
-  kind: number;
-  sourceId: number;
-  artikulId: number;
-  title: string;
-  img: string;
-  dmgType: number;
-  remainTime: number;
-  groupId?: number;
-  skills: Readonly<Record<string, number>>;
-}>;
-
-type StandingEffect = {
-  id: number;
-  kind: number;
-  sourceId: number;
-  artikulId: number;
-  title: string;
-  img: string;
-  dmgType: number;
-  groupId?: number;
-  skills: Readonly<Record<string, number>>;
-  remainTurns: number;
-  expiresAtMs: number;
-  periodic?: PeriodicState;
-  tickAmount?: number | string;
-  catalogPcStr?: number;
-  catalogStr?: number;
-  casterStrength?: number;
-  casterMagPower?: number;
-  casterMagResist?: number;
-  charging?: boolean;
-  stun?: boolean;
-};
-
 export class FighterEffects {
   readonly effectIds: FightEffectIds;
+  private readonly base: StatBase;
   private readonly standing: StandingEffect[] = [];
 
   constructor(
     input: Readonly<{
       heroId: number;
-      strength: number;
+      base: StatBase;
       startedAtMs: number;
       gearSpells: readonly CombatGearSpell[];
       effectIds: FightEffectIds;
@@ -89,6 +41,7 @@ export class FighterEffects {
     if (!Number.isInteger(input.startedAtMs) || input.startedAtMs < 0) {
       throw new Error("Gear-spell attach clock must be a non-negative integer");
     }
+    this.base = input.base;
     this.effectIds = input.effectIds;
     for (const gear of input.gearSpells) {
       for (const effect of gear.spell.effects) {
@@ -97,58 +50,23 @@ export class FighterEffects {
     }
   }
 
-  standingStrength(): number {
-    let bonus = 0;
-    for (const fx of this.standing) {
-      const str = fx.skills.STR;
-      if (str !== undefined) bonus += str;
-    }
-    return bonus;
+  /** The sum of one baked flat skill over everything standing on the fighter. */
+  standingSkill(skillId: string): number {
+    let total = 0;
+    for (const fx of this.standing) total += fx.skills[skillId] ?? 0;
+    return total;
+  }
+
+  /** A kind-3 buff that lives on the fight clock (or the whole fight); baked against the fighter's stats. */
+  attachTimedBuff(input: Omit<TimedBuffInput, "base">): FightEffectSnap {
+    const fx = timedBuffEffect(this.effectIds.take(), { ...input, base: this.base });
+    this.standing.push(fx);
+    return snapOf(fx);
   }
 
   /** With `nowMs` a periodic effect reports the time left at that instant, not at its last step. */
   snapshot(nowMs?: number): readonly FightEffectSnap[] {
-    return this.standing.map((fx) => ({
-      id: fx.id,
-      kind: fx.kind,
-      sourceId: fx.sourceId,
-      artikulId: fx.artikulId,
-      title: fx.title,
-      img: fx.img,
-      dmgType: fx.dmgType,
-      remainTime: fx.periodic
-        ? Math.ceil(remainingSeconds(fx.periodic, nowMs))
-        : fx.remainTurns * TURN_SECONDS,
-      ...(fx.groupId !== undefined ? { groupId: fx.groupId } : {}),
-      skills: fx.skills,
-    }));
-  }
-
-  onActorEndingTurn(nowMs: number): readonly number[] {
-    if (!Number.isInteger(nowMs) || nowMs < 0) {
-      throw new Error("Gear-spell expire clock must be a non-negative integer");
-    }
-    const purged: number[] = [];
-    const keep: StandingEffect[] = [];
-    for (const fx of this.standing) {
-      if (fx.periodic || fx.charging || fx.stun) {
-        keep.push(fx);
-        continue;
-      }
-      if (nowMs >= fx.expiresAtMs) {
-        purged.push(fx.id);
-        continue;
-      }
-      fx.remainTurns -= 1;
-      if (fx.remainTurns <= 0) {
-        purged.push(fx.id);
-        continue;
-      }
-      keep.push(fx);
-    }
-    this.standing.length = 0;
-    this.standing.push(...keep);
-    return purged;
+    return this.standing.map((fx) => snapOf(fx, nowMs));
   }
 
   consumeChargingHit(): readonly number[] {
@@ -364,7 +282,7 @@ export class FighterEffects {
   }
 
   private attach(
-    input: Readonly<{ heroId: number; strength: number; startedAtMs: number }>,
+    input: Readonly<{ heroId: number; startedAtMs: number }>,
     gear: CombatGearSpell,
     effect: CombatGearSpell["spell"]["effects"][number],
   ): void {
@@ -380,18 +298,17 @@ export class FighterEffects {
     if (gear.spell.onlyPvP !== undefined) {
       throw new Error(`Gear spell ${gear.artikulId} must not have onlyPvP`);
     }
-    this.standing.push({
-      id: this.effectIds.take(),
-      kind: 3,
+    this.attachTimedBuff({
       sourceId: input.heroId,
       artikulId: gear.artikulId,
       title: gear.title,
       img: gear.picture,
       dmgType: effect.dmgType === undefined ? 0 : effect.dmgType,
       ...(gear.spell.groupId !== undefined ? { groupId: gear.spell.groupId } : {}),
-      skills: bakeTimedStatPercents(input.strength, effect.skills ?? []),
-      remainTurns: Math.max(1, Math.round(effect.duration / TURN_SECONDS)),
-      expiresAtMs: input.startedAtMs + effect.duration * 1000,
+      skills: effect.skills ?? [],
+      durationSeconds: effect.duration,
+      nowMs: input.startedAtMs,
+      castEndsTurn: false,
     });
   }
 }

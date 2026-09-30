@@ -95,9 +95,6 @@ export function tryPairedMelee(
       ...(extra ? { extraHits: [extra] } : {}),
     },
   ];
-  for (const effectId of attacker.effects.onActorEndingTurn(input.nowMs)) {
-    events.push({ type: "effect-purge", effectId });
-  }
   if (orb > 0 || rage > 0 || gloveCrit || overlayBefore !== attacker.casts.schoolOverlay) {
     for (const effectId of attacker.effects.consumeChargingHit()) {
       events.push({ type: "effect-purge", effectId });

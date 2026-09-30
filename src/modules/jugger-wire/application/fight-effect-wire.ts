@@ -1,5 +1,5 @@
 import type { CombatEvent } from "../../combat/ports/combat-port.ts";
-import type { FightEffectSnap } from "../../combat/domain/fighter-effects.ts";
+import type { FightEffectSnap } from "../../combat/domain/standing-effect.ts";
 
 type EffectUse = Extract<CombatEvent, { type: "effect-use" }>;
 type EffectPurge = Extract<CombatEvent, { type: "effect-purge" }>;
@@ -20,7 +20,7 @@ function fightPersEffEvent(
       title: fx.title,
       img: fx.img,
       dmgType: fx.dmgType,
-      remainTime: fx.remainTime,
+      ...(fx.remainTime !== undefined ? { remainTime: fx.remainTime } : {}),
       ...(fx.groupId !== undefined ? { groupId: fx.groupId } : {}),
     };
   }
@@ -52,7 +52,7 @@ function fightStandingEffectUseEvent(
     kind: fx.kind,
     flags: 0,
     dmgType: fx.dmgType,
-    remainTime: fx.remainTime,
+    ...(fx.remainTime !== undefined ? { remainTime: fx.remainTime } : {}),
     ...(fx.groupId !== undefined ? { groupId: fx.groupId } : {}),
     skills: fx.skills,
   };

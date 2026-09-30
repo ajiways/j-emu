@@ -100,6 +100,20 @@ function actorPersChange(battle: Battle, events: readonly CombatEvent[]): readon
   return patch ? [patch] : [];
 }
 
+/** A cast that keeps the turn: accepted, the events, the fresh totals, and the effects shown to others. */
+export function enqueueKeepTurn(
+  enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void,
+  wakeAccount: (accountId: number) => void,
+  battle: Battle | undefined,
+  accountId: number,
+  sequence: string | number,
+  events: readonly CombatEvent[],
+): void {
+  const shown = battle ? withActorPersChange(battle, events) : events;
+  enqueue(accountId, [{ type: "command-accepted", sequence }, ...shown]);
+  if (battle) fanoutRosterEffects(battle, accountId, events, enqueue, wakeAccount);
+}
+
 export function withActorPersChange(
   battle: Battle,
   events: readonly CombatEvent[],

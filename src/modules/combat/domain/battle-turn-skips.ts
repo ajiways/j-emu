@@ -20,7 +20,7 @@ export function timeoutBattleTurn(
   }>,
 ): Readonly<{ timeout: HumanTimeout; finished: boolean }> | null {
   const human = requireBattleHuman(input.humans, input.accountId);
-  const timeout = timeoutHumanTurn(human, input.nowMs, input.rules.maxConsecutiveSkips);
+  const timeout = timeoutHumanTurn(human, input.rules.maxConsecutiveSkips);
   if (!timeout) return null;
   if (!timeout.fell || !enemySideCleared(human.team, fightCombatants(input.humans, input.bots))) {
     return { timeout, finished: false };

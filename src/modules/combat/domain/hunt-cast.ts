@@ -8,6 +8,8 @@ import type { HumanFighter } from "./human-fighter.ts";
 import { pocketHealAmount, spellCharging, spellKind } from "./human-cast-state.ts";
 import { applyPocketKind3, requirePocketOrb } from "./pocket-kind3-cast.ts";
 import { castChargingBuff } from "./charging-buff-cast.ts";
+import { castTimedSelfSpell, isTimedSelfSpell } from "./timed-self-spell.ts";
+import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { rageBonusPctFromFill } from "./rage-bonus.ts";
@@ -32,8 +34,26 @@ export function tryPocketCast(
     throw new FightCastDenied("cooldown", sequence);
   }
   if (spellKind(row.spell, 11)) throw new FightCastDenied("kind11", sequence);
-  if (spellKind(row.spell, 3)) requirePocketOrb(row);
+  const timedSelf = isTimedSelfSpell(row.spell);
+  if (spellKind(row.spell, 3) && !timedSelf) requirePocketOrb(row);
   const consumed = human.casts.consumePocket(itemId, nowMs);
+  if (timedSelf) {
+    return {
+      kind: "resolved",
+      consumePocketItemId: itemId,
+      events: castTimedSelfSpell(
+        human,
+        {
+          artikulId: consumed.artifactId,
+          title: consumed.title,
+          picture: consumed.picture,
+          spell: consumed.spell,
+          flags: pocketSpellWireFlags(consumed.spell.flags),
+        },
+        nowMs,
+      ),
+    };
+  }
   if (spellKind(consumed.spell, 2)) {
     const healed = human.applyHeal(pocketHealAmount(consumed.spell, human.maxHp));
     return {
@@ -112,6 +132,30 @@ export function tryGloveKeepTurn(
   if (isEndingGlove(glove.spell)) return { kind: "ignored" };
   if (human.casts.cp < glove.cost) {
     return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };
+  }
+  if (isTimedSelfSpell(glove.spell)) {
+    if (human.casts.gloveCooldownLeftMs(glove, cast.nowMs) > 0) {
+      throw new FightCastDenied("cooldown", sequence);
+    }
+    const cp = human.casts.spendCombo(glove.cost);
+    human.casts.noteGloveUse(glove, cast.nowMs);
+    return {
+      kind: "resolved",
+      events: [
+        ...castTimedSelfSpell(
+          human,
+          {
+            artikulId: glove.artikulId,
+            title: glove.title,
+            picture: glove.picture,
+            spell: glove.spell,
+            flags: "262144",
+          },
+          cast.nowMs,
+        ),
+        { type: "pers-cp", cp },
+      ],
+    };
   }
   if (spellKind(glove.spell, 18)) {
     return {

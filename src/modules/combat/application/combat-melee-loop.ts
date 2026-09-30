@@ -11,6 +11,7 @@ import {
   enqueuePlayerMelee,
   fanoutPersChange,
   fanoutRosterEffects,
+  enqueueKeepTurn,
   withActorPersChange,
 } from "./combat-melee-dispatch.ts";
 import { CombatEffectClock } from "./combat-effect-clock.ts";
@@ -83,9 +84,8 @@ export class CombatMeleeLoop {
   }
 
   keepTurn(accountId: number, sequence: string | number, events: readonly CombatEvent[]): void {
-    this.enqueue(accountId, [{ type: "command-accepted", sequence }, ...events]);
     const battle = this.byAccount.get(accountId);
-    if (battle) fanoutRosterEffects(battle, accountId, events, this.enqueue, this.wakeAccount);
+    enqueueKeepTurn(this.enqueue, this.wakeAccount, battle, accountId, sequence, events);
   }
 
   async endingGlove(

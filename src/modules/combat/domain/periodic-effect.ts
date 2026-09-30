@@ -1,5 +1,6 @@
 /**
- * Fight-clock state of one kind-4/5 (DoT/HoT) effect. Age is real time plus the
+ * Fight-clock state of one timed effect: kind-4/5 (DoT/HoT) ticks, kind-3 buffs only expire
+ * (`periodSeconds` null). Age is real time plus the
  * `timeAdvance` jump of every action in its carrier's duel. Ticks fire when age crosses
  * `k * period`: on an action (at most one per effect, backlog waits for the next action) or,
  * strictly before expiry, on the real-time timer. Fit to the live trace pinned in
@@ -10,7 +11,8 @@ const CLOCK_EPSILON_SECONDS = 1e-6;
 
 export type PeriodicState = {
   readonly durationSeconds: number;
-  readonly periodSeconds: number;
+  /** `null`: no ticks, the effect only ages and expires (a timed buff). */
+  readonly periodSeconds: number | null;
   ageSeconds: number;
   ticksDone: number;
   syncedAtMs: number;
@@ -23,13 +25,14 @@ export type PeriodicStep = Readonly<{ tick: boolean; expired: boolean }>;
 export function startPeriodic(
   input: Readonly<{
     durationSeconds: number;
-    periodSeconds: number;
+    periodSeconds: number | null;
     nowMs: number;
     castEndsTurn: boolean;
   }>,
 ): PeriodicState {
   requirePositiveInteger(input.durationSeconds, "Periodic effect duration");
-  requirePositiveInteger(input.periodSeconds, "Periodic effect period");
+  if (input.periodSeconds !== null)
+    requirePositiveInteger(input.periodSeconds, "Periodic effect period");
   return {
     durationSeconds: input.durationSeconds,
     periodSeconds: input.periodSeconds,
@@ -56,7 +59,8 @@ export function stepPeriodicOnAction(
   state.skipNextJump = false;
   state.syncedAtMs = nowMs;
   const reach = Math.min(state.ageSeconds, state.durationSeconds);
-  const tick = state.ticksDone < Math.floor(reach / state.periodSeconds);
+  const tick =
+    state.periodSeconds !== null && state.ticksDone < Math.floor(reach / state.periodSeconds);
   if (tick) state.ticksDone += 1;
   return { tick, expired: state.ageSeconds >= state.durationSeconds };
 }
@@ -73,10 +77,12 @@ export function stepPeriodicOnTimer(
   const before = state.ageSeconds;
   const after = before + realSecondsSince(state, nowMs);
   let ticks = 0;
+  const period = state.periodSeconds;
   for (
-    let k = Math.max(state.ticksDone + 1, Math.floor(before / state.periodSeconds) + 1);
-    k * state.periodSeconds < state.durationSeconds &&
-    k * state.periodSeconds <= after + CLOCK_EPSILON_SECONDS;
+    let k = period === null ? 0 : Math.max(state.ticksDone + 1, Math.floor(before / period) + 1);
+    period !== null &&
+    k * period < state.durationSeconds &&
+    k * period <= after + CLOCK_EPSILON_SECONDS;
     k += 1
   ) {
     if (!inDuel) continue;
@@ -91,9 +97,11 @@ export function stepPeriodicOnTimer(
 /** Wall-clock time of the next threshold or expiry; the timer wakes there whoever is paired. */
 export function nextPeriodicDueMs(state: PeriodicState): number {
   const expiryMs = state.syncedAtMs + (state.durationSeconds - state.ageSeconds) * 1000;
-  const k = Math.max(state.ticksDone + 1, Math.floor(state.ageSeconds / state.periodSeconds) + 1);
-  if (k * state.periodSeconds >= state.durationSeconds) return expiryMs;
-  const thresholdMs = state.syncedAtMs + (k * state.periodSeconds - state.ageSeconds) * 1000;
+  const period = state.periodSeconds;
+  if (period === null) return expiryMs;
+  const k = Math.max(state.ticksDone + 1, Math.floor(state.ageSeconds / period) + 1);
+  if (k * period >= state.durationSeconds) return expiryMs;
+  const thresholdMs = state.syncedAtMs + (k * period - state.ageSeconds) * 1000;
   return Math.min(thresholdMs, expiryMs);
 }
 

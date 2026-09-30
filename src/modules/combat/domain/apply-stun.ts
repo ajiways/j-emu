@@ -34,7 +34,7 @@ export function applyStun(caster: Fighter, target: Fighter, source: StunSource):
     dmgType: 0,
     id: standing.id,
     sourceId: standing.sourceId,
-    remainTime: standing.remainTime,
+    ...(standing.remainTime !== undefined ? { remainTime: standing.remainTime } : {}),
     ...(standing.groupId !== undefined ? { groupId: standing.groupId } : {}),
   };
 }

@@ -3,7 +3,8 @@
  * ADR-0021: an id missing here is a content error; a known but `deferred` one is logged when a fight
  * loads a spell that carries it, and the spell works without that part.
  */
-type SkillSupport = "supported" | "deferred";
+/** `humans`: applied to players only (bots have no stats beyond strength yet). */
+type SkillSupport = "supported" | "humans" | "deferred";
 /** `owner` — confirmed by the project owner from game knowledge; `spell-text` — the spell description. */
 type SkillEvidence = "live" | "owner" | "spell-text" | "old-server" | "name" | "unknown";
 
@@ -26,20 +27,26 @@ const skill = (
 export const SKILL_REGISTRY: Readonly<Record<string, SkillEntry>> = {
   STR: skill("Сила, плоская", "live", "supported", "supported"),
   pcSTR: skill("Сила, процент", "live", "supported", "supported"),
-  DEX: skill("Ловкость, плоская; запекается при касте (live 182: 19 и 23% -> 32)", "live"),
-  pcDEX: skill("Ловкость, процент; на wire множителем 1.23", "live"),
-  DEF: skill("Стойкость (защита), плоская", "spell-text"),
-  pcDEF: skill("Стойкость, процент", "spell-text"),
-  RAG: skill("Неистовство (шанс крита), плоское", "spell-text"),
-  pcRAG: skill("Неистовство, процент (старый сервер: 183 87 -> +43)", "old-server"),
-  BLOK: skill("Блок, плоский показатель", "spell-text"),
+  DEX: skill(
+    "Ловкость, плоская; запекается при касте (live 182: 19 и 23% -> 32)",
+    "live",
+    "humans",
+  ),
+  pcDEX: skill("Ловкость, процент; на wire множителем 1.23", "live", "humans"),
+  DEF: skill("Стойкость (защита), плоская", "spell-text", "humans"),
+  pcDEF: skill("Стойкость, процент", "spell-text", "humans"),
+  RAG: skill("Неистовство (шанс крита), плоское", "spell-text", "humans"),
+  pcRAG: skill("Неистовство, процент (старый сервер: 183 87 -> +43)", "old-server", "humans"),
+  BLOK: skill("Блок, плоский показатель", "spell-text", "humans"),
   HPMAX: skill(
-    "максимум и ТЕКУЩЕЕ HP растут на одну величину (лечит и поднимает максимум)",
-    "owner",
+    "поднимает максимум HP; текущее растёт от лечения kind 2 того же спелла (live 169: HPMAX 39, heal 26% нового максимума 150 = 39)",
+    "live",
+    "humans",
   ),
   pcHPMAX: skill(
     "то же в процентах от базового максимума, запекается с округлением; на wire множителем 1.35",
     "live",
+    "humans",
   ),
   MPMAX: skill("максимум маны, плоский", "name"),
   VIT: skill("неизвестно, описаний нет", "unknown"),

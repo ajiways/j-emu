@@ -1,7 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import type { Fighter } from "./fighter.ts";
-import type { PeriodicItem } from "./fighter-effects.ts";
+import type { PeriodicItem } from "./standing-effect.ts";
 import { pocketHealAmount } from "./human-cast-state.ts";
 import { magicReact, rollMagicHit } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
@@ -22,6 +22,7 @@ export function applyPeriodicItems(
   for (const item of items) {
     if (item.kind === "expire") {
       events.push({ type: "effect-purge", effectId: item.effectId });
+      fighter.clampToMaxHp();
       continue;
     }
     const { pulse } = item;

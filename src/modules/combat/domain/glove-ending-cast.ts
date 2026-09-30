@@ -97,9 +97,6 @@ export function resolveGloveFinisher(
     { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },
     gloveDamageEvent(human.heroId, glove.spell, primaryHit, cp, dmgType),
   ];
-  for (const effectId of human.effects.onActorEndingTurn(input.nowMs)) {
-    events.push({ type: "effect-purge", effectId });
-  }
   let finished = hits.some((hit) => hit.finished);
   if (finished) {
     events.push({ type: "finished", winnerTeam: human.team, fightId: input.fightId });

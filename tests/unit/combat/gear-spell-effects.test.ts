@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { bakeTimedStatPercents } from "../../../src/modules/combat/domain/bake-timed-stat-percents.ts";
+import { bakeSkills } from "../../../src/modules/combat/domain/skill-bake.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
 import { FighterEffects } from "../../../src/modules/combat/domain/fighter-effects.ts";
 import { humanMeleeTarget } from "../../../src/modules/combat/domain/melee-target.ts";
 import { tryPairedMelee } from "../../../src/modules/combat/domain/paired-melee.ts";
+import { unitStatBase } from "../../support/stat-base.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { UNIT_HUNT_APPEARANCE, unitHuntHumanStats } from "../../support/hunt-start-input.ts";
@@ -31,17 +32,42 @@ const GEAR = {
   },
 } as const;
 
-describe("bakeTimedStatPercents", () => {
-  it("folds pcSTR into flat STR like jgr-emu timed kind-3", () => {
-    expect(bakeTimedStatPercents(53, [{ skillId: "pcSTR", value: 10 }])).toEqual({ STR: 5 });
+describe("bakeSkills", () => {
+  it("folds pcSTR into flat STR and drops the multiplier", () => {
+    expect(bakeSkills([{ skillId: "pcSTR", value: 10 }], unitStatBase(53))).toEqual({ STR: 5 });
+  });
+
+  it("bakes live 182 against the hero's own dexterity: 36 with 19 and 23% gives 32 and 1.23", () => {
+    const skills = [
+      { skillId: "DEX", value: 19 },
+      { skillId: "pcDEX", value: 23 },
+    ];
+    expect(bakeSkills(skills, unitStatBase(5, { DEX: 36 }))).toEqual({ DEX: 32, pcDEX: 1.23 });
+  });
+
+  it("bakes live 169: 35% of 111 max hp gives HPMAX 39 and 1.35", () => {
+    const baked = bakeSkills([{ skillId: "pcHPMAX", value: 35 }], unitStatBase(5, { HPMAX: 111 }));
+    expect(baked).toEqual({ HPMAX: 39, pcHPMAX: 1.35 });
+  });
+
+  it("folds RAG like the old server (183: 87 with 19 and 23% gives 43) and drops the multiplier", () => {
+    const skills = [
+      { skillId: "RAG", value: 19 },
+      { skillId: "pcRAG", value: 23 },
+    ];
+    expect(bakeSkills(skills, unitStatBase(5, { RAG: 87 }))).toEqual({ RAG: 43 });
+  });
+
+  it("passes skills it does not bake through untouched", () => {
+    expect(bakeSkills([{ skillId: "DFR", value: 0.4 }], unitStatBase(5))).toEqual({ DFR: 0.4 });
   });
 });
 
 describe("FighterEffects", () => {
-  it("snapshots remainTime 320 and purges on the 8th ending turn", () => {
+  it("ages a gear buff on the fight clock: 320 s, purged by the action that reaches it", () => {
     const effects = new FighterEffects({
       heroId: 1,
-      strength: 53,
+      base: unitStatBase(53),
       startedAtMs: 0,
       gearSpells: [GEAR],
       effectIds: new FightEffectIds(),
@@ -60,31 +86,31 @@ describe("FighterEffects", () => {
         skills: { STR: 5 },
       },
     ]);
-    expect(effects.standingStrength()).toBe(5);
-    for (let turn = 1; turn <= 7; turn += 1) {
-      expect(effects.onActorEndingTurn(turn)).toEqual([]);
-      expect(effects.snapshot()[0]?.remainTime).toBe((8 - turn) * 40);
+    expect(effects.standingSkill("STR")).toBe(5);
+    for (let action = 1; action <= 7; action += 1) {
+      expect(effects.advanceOnAction(0, 40)).toEqual([]);
+      expect(effects.snapshot()[0]?.remainTime).toBe(320 - action * 40);
     }
-    expect(effects.onActorEndingTurn(8)).toEqual([1]);
+    expect(effects.advanceOnAction(0, 40)).toEqual([{ kind: "expire", effectId: 1 }]);
     expect(effects.snapshot()).toEqual([]);
   });
 
-  it("purges on wall-clock expiresAtMs even if turns remain", () => {
+  it("also ends a gear buff on real time alone", () => {
     const effects = new FighterEffects({
       heroId: 1,
-      strength: 53,
+      base: unitStatBase(53),
       startedAtMs: 0,
       gearSpells: [GEAR],
       effectIds: new FightEffectIds(),
     });
-    expect(effects.onActorEndingTurn(320_000)).toEqual([1]);
+    expect(effects.advanceOnTimer(320_000, false)).toEqual([{ kind: "expire", effectId: 1 }]);
     expect(effects.snapshot()).toEqual([]);
   });
 
   it("attaches pocket charging kind-3 without STR bake and purges on a physical hit, not an ending turn", () => {
     const effects = new FighterEffects({
       heroId: 1,
-      strength: 53,
+      base: unitStatBase(53),
       startedAtMs: 0,
       gearSpells: [],
       effectIds: new FightEffectIds(),
@@ -107,8 +133,7 @@ describe("FighterEffects", () => {
       groupId: 842,
       skills: {},
     });
-    expect(effects.standingStrength()).toBe(0);
-    expect(effects.onActorEndingTurn(0)).toEqual([]);
+    expect(effects.standingSkill("STR")).toBe(0);
     expect(effects.snapshot()).toHaveLength(1);
     expect(effects.consumeChargingHit()).toEqual([1]);
     expect(effects.snapshot()).toEqual([]);

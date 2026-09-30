@@ -76,7 +76,14 @@ export class HumanFighter implements Fighter {
     this.casts = new HumanCastState(init.loadout, init.aggroCharges);
     this.effects = new FighterEffects({
       heroId: init.heroId,
-      strength: init.strength,
+      base: {
+        STR: init.strength,
+        DEX: init.dexterity,
+        DEF: init.defense,
+        RAG: init.rage,
+        BLOK: init.block,
+        HPMAX: init.maxHp,
+      },
       startedAtMs: init.startedAtMs,
       gearSpells: init.loadout.gearSpells,
       effectIds: init.effectIds,
@@ -108,7 +115,7 @@ export class HumanFighter implements Fighter {
     return this.hpValue;
   }
   get maxHp(): number {
-    return this.init.maxHp;
+    return Math.max(1, this.init.maxHp + this.effects.standingSkill("HPMAX"));
   }
   get mp(): number {
     return this.init.mp;
@@ -123,16 +130,16 @@ export class HumanFighter implements Fighter {
     return this.init.initiative;
   }
   get rageStat(): number {
-    return this.init.rage;
+    return this.stat(this.init.rage, "RAG");
   }
   get dexterity(): number {
-    return this.init.dexterity;
+    return this.stat(this.init.dexterity, "DEX");
   }
   get defense(): number {
-    return this.init.defense;
+    return this.stat(this.init.defense, "DEF");
   }
   get block(): number {
-    return this.init.block;
+    return this.stat(this.init.block, "BLOK");
   }
   get mag(): MagStats {
     return { power: this.init.magPower, resist: this.init.magResist };
@@ -141,7 +148,12 @@ export class HumanFighter implements Fighter {
     return this.lastOpponentIdValue;
   }
   meleeStrength(): number {
-    return this.init.strength + this.effects.standingStrength();
+    return this.init.strength + this.effects.standingSkill("STR");
+  }
+
+  /** A stat with the flat skills of every standing effect, never below zero. */
+  private stat(base: number, skillId: string): number {
+    return Math.max(0, base + this.effects.standingSkill(skillId));
   }
   markFought(opponentId: number): void {
     if (!Number.isInteger(opponentId) || opponentId < 1) {
@@ -290,6 +302,10 @@ export class HumanFighter implements Fighter {
     }
     this.hpValue = Math.max(0, this.hpValue - amount);
     return this.hpValue === 0;
+  }
+
+  clampToMaxHp(): void {
+    this.hpValue = Math.min(this.hpValue, this.maxHp);
   }
 
   applyHeal(amount: number): number {

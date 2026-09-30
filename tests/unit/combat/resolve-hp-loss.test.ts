@@ -1,3 +1,4 @@
+import { unitStatBase } from "../../support/stat-base.ts";
 import { describe, expect, it } from "vitest";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { FighterEffects } from "../../../src/modules/combat/domain/fighter-effects.ts";
@@ -11,7 +12,7 @@ class FakeFighter implements Fighter {
   stunnedTurns = 0;
   readonly effects = new FighterEffects({
     heroId: 1,
-    strength: 1,
+    base: unitStatBase(1),
     startedAtMs: 0,
     gearSpells: [],
     effectIds: new FightEffectIds(),
@@ -31,6 +32,10 @@ class FakeFighter implements Fighter {
     this.applyCalls += 1;
     this.hp = Math.max(0, this.hp - amount);
     return this.hp === 0;
+  }
+
+  clampToMaxHp(): void {
+    this.hp = Math.min(this.hp, this.maxHp);
   }
 
   applyHeal(amount: number): number {

@@ -22,7 +22,8 @@ export function reportUnsupportedSkills(
     ...fighters.humans.flatMap(humanSpells),
     ...fighters.bots.flatMap(botSpells),
   ]) {
-    for (const { skillId, effectKind } of unsupportedSkillsOf(source.spell)) {
+    const carrier = source.source === "bot" ? "bot" : "human";
+    for (const { skillId, effectKind } of unsupportedSkillsOf(source.spell, carrier)) {
       diagnostics.unsupportedSkill({
         fightId,
         source: source.source,

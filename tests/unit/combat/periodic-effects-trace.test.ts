@@ -1,9 +1,8 @@
+import { unitStatBase } from "../../support/stat-base.ts";
 import { describe, expect, it } from "vitest";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
-import {
-  FighterEffects,
-  type PeriodicItem,
-} from "../../../src/modules/combat/domain/fighter-effects.ts";
+import { FighterEffects } from "../../../src/modules/combat/domain/fighter-effects.ts";
+import type { PeriodicItem } from "../../../src/modules/combat/domain/standing-effect.ts";
 import {
   EXPECTED_REMAIN_TIME,
   EXPECTED_TICKS,
@@ -35,7 +34,7 @@ class TraceRun {
         id,
         new FighterEffects({
           heroId: heroId++,
-          strength: 10,
+          base: unitStatBase(10),
           startedAtMs: 0,
           gearSpells: [],
           effectIds: this.effectIds,
@@ -49,7 +48,7 @@ class TraceRun {
     const nowMs = Math.round(atSeconds * 1000);
     for (const fx of this.fighters.values()) {
       const found = fx.snapshot(nowMs).find((snap) => this.names.get(snap.id) === effect);
-      if (found) return found.remainTime;
+      if (found?.remainTime !== undefined) return found.remainTime;
     }
     throw new Error(`Effect ${effect} is gone`);
   }

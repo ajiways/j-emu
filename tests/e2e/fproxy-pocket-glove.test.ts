@@ -35,7 +35,8 @@ describe("fproxy pocket glove rage", () => {
     ).toHaveLength(0);
     const poll = await client.pollFight();
     expect(poll[0]).toEqual({ rs: true, sq: 6 });
-    expect(fightEventTypes(poll)).toEqual(["effUse", "cast"]);
+    // The heal also brings the fresh hp totals (live 169 does the same).
+    expect(fightEventTypes(poll)).toEqual(["effUse", "cast", "persChangeInfo"]);
     expect(poll.some((frame) => hasRestriction(frame))).toBe(false);
 
     const denied = await client.fight({ rc: "castSpell", srcType: 2, srcId: elixirId, sq: 7 });

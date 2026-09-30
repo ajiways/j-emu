@@ -14,6 +14,8 @@ export function toCombatSpell(spell: ArtifactSpell): CombatSpell {
     ...(spell.onlyPvP !== undefined ? { onlyPvP: spell.onlyPvP } : {}),
     effects: spell.effects.map((effect) => ({
       kind: effect.kind,
+      ...(effect.order !== undefined ? { order: effect.order } : {}),
+      ...(effect.hidden !== undefined ? { hidden: effect.hidden } : {}),
       ...(effect.amount !== undefined ? { amount: effect.amount } : {}),
       ...(effect.dmgType !== undefined ? { dmgType: effect.dmgType } : {}),
       ...(effect.charging !== undefined ? { charging: effect.charging } : {}),

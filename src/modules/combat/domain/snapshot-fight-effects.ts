@@ -1,5 +1,5 @@
 import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
-import type { FightEffectSnap } from "./fighter-effects.ts";
+import type { FightEffectSnap } from "./standing-effect.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 
 export function snapshotFightEffects(

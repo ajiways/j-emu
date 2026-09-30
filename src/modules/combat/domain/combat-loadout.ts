@@ -2,6 +2,8 @@ import { requireFightSafeItemId, requireWireIdentity } from "../../../shared/ker
 
 type CombatSpellEffect = Readonly<{
   kind: number;
+  order?: number;
+  hidden?: number;
   amount?: number | string;
   dmgType?: number;
   charging?: number;

@@ -1,5 +1,5 @@
 import type { CombatLoadout } from "./combat-loadout.ts";
-import type { FightEffectSnap } from "./fighter-effects.ts";
+import type { FightEffectSnap } from "./standing-effect.ts";
 import type { FighterAppearance, HumanSnap } from "./human-fighter.ts";
 
 export type ExtraHit = Readonly<{

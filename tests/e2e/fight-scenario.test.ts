@@ -115,6 +115,19 @@ describe("scripted fight scenarios from chat", () => {
     expect(seen).toContain("effPurge");
   });
 
+  it("dex-buff-glove: the glove buff arrives with the skills baked against the hero's stats", async () => {
+    const client = await startScenario("dex-buff-glove");
+    let sq = 4;
+    await client.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: sq++ });
+    await untilAttackNow(client);
+    await client.fight({ rc: "castSpell", srcType: 3, srcId: 182, sq: sq++ });
+    const cast = JSON.stringify(await client.pollFight());
+    expect(cast).toContain('"artikulId":182');
+    expect(cast).toContain('"pcDEX":1.23');
+    expect(cast).toContain('"remainTime":400');
+    expect(cast).toMatch(/"DEX":\d+/);
+  });
+
   it("answers an unknown scenario with a system line and starts no fight", async () => {
     const client = await AuthenticatedClient.login(application);
     const sent = await client.objectAction({

@@ -8,13 +8,14 @@ import {
   UNIT_HUNT_APPEARANCE,
   unitHuntHumanStats,
 } from "../../support/hunt-start-input.ts";
+import { unitStatBase } from "../../support/stat-base.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { FighterEffects } from "../../../src/modules/combat/domain/fighter-effects.ts";
 
 function effectsWithPoison(durationSeconds: number, periodSeconds: number, castEndsTurn = false) {
   const effects = new FighterEffects({
     heroId: 1,
-    strength: 10,
+    base: unitStatBase(10),
     startedAtMs: 0,
     gearSpells: [],
     effectIds: new FightEffectIds(),
@@ -87,7 +88,7 @@ describe("FighterEffects periodic effects", () => {
   it("rejects a tick without catalog img", () => {
     const effects = new FighterEffects({
       heroId: 1,
-      strength: 10,
+      base: unitStatBase(10),
       startedAtMs: 0,
       gearSpells: [],
       effectIds: new FightEffectIds(),

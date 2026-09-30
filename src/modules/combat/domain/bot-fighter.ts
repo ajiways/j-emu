@@ -84,7 +84,7 @@ export class BotFighter implements Fighter {
     this.brain = new SpellBookBotBrain(spellBook);
     this.effects = new FighterEffects({
       heroId: fightId,
-      strength,
+      base: { STR: strength, DEX: 0, DEF: 0, RAG: 0, BLOK: 0, HPMAX: maxHp },
       startedAtMs: 0,
       gearSpells: [],
       effectIds,
@@ -184,6 +184,10 @@ export class BotFighter implements Fighter {
     }
     this.hpValue = Math.max(0, this.hpValue - damage);
     return this.hpValue === 0;
+  }
+
+  clampToMaxHp(): void {
+    this.hpValue = Math.min(this.hpValue, this.maxHp);
   }
 
   applyHeal(amount: number): number {

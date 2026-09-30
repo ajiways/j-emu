@@ -45,7 +45,7 @@ export function attachSpellTicks(
       dmgType: snap.dmgType,
       id: snap.id,
       sourceId: snap.sourceId,
-      remainTime: snap.remainTime,
+      ...(snap.remainTime !== undefined ? { remainTime: snap.remainTime } : {}),
       ...(snap.groupId !== undefined ? { groupId: snap.groupId } : {}),
     });
   }

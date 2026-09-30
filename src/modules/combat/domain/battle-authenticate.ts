@@ -1,7 +1,7 @@
 import type { BattleEvent, BotSnap } from "./battle-event.ts";
 import { huntBotSnap } from "./hunt-bot-snap.ts";
 import { primaryEnemyBot, requireFightBot } from "./fight-bots.ts";
-import type { FightEffectSnap } from "./fighter-effects.ts";
+import type { FightEffectSnap } from "./standing-effect.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { FightDuel } from "./fight-duel.ts";

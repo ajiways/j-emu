@@ -1,6 +1,6 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { CombatPocketRow } from "./combat-loadout.ts";
-import type { FightEffectSnap } from "./fighter-effects.ts";
+import type { FightEffectSnap } from "./standing-effect.ts";
 import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
 
 export function pocketEffectUse(
@@ -22,7 +22,11 @@ export function pocketEffectUse(
     ...(row.spell.groupId !== undefined ? { groupId: row.spell.groupId } : {}),
     ...(dmgType !== undefined ? { dmgType } : {}),
     ...(standing !== undefined
-      ? { id: standing.id, remainTime: standing.remainTime, sourceId: standing.sourceId }
+      ? {
+          id: standing.id,
+          sourceId: standing.sourceId,
+          ...(standing.remainTime !== undefined ? { remainTime: standing.remainTime } : {}),
+        }
       : {}),
   };
 }

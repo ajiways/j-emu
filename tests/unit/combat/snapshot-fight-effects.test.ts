@@ -1,3 +1,4 @@
+import { unitStatBase } from "../../support/stat-base.ts";
 import { describe, expect, it } from "vitest";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { snapshotFightEffects } from "../../../src/modules/combat/domain/snapshot-fight-effects.ts";
@@ -38,7 +39,7 @@ describe("snapshotFightEffects", () => {
     });
     const botEffects = new FighterEffects({
       heroId: 1_000_000,
-      strength: 15,
+      base: unitStatBase(15),
       startedAtMs: 0,
       gearSpells: [],
       effectIds: ids,

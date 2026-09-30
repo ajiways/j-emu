@@ -124,12 +124,12 @@ describe("fproxy gear spell 20546", () => {
       expect(await client.fight({ rc: "auth", eid: fightId, sq: 22 })).toHaveLength(0);
       const again = await client.pollFight();
       expect(nestedPersEff(again, equipped.heroId)).toMatchObject({
-        remainTime: 280,
+        remainTime: 300,
         artikulId: TYRANT_GLOVE,
         img: PICTURE,
       });
       expect(standingEffUse(again, equipped.heroId)).toMatchObject({
-        remainTime: 280,
+        remainTime: 300,
         skills: { STR: 5 },
         img: PICTURE,
       });
@@ -182,7 +182,7 @@ describe("fproxy gear spell 20546", () => {
       await harness.stop();
     });
 
-    it("emits effPurge in the 8th melee poll after cast", async () => {
+    it("purges the gear buff on the fight clock in the 8th bot counter", async () => {
       const client = await AuthenticatedClient.login(application);
       const equipped = await equipTyrantGlove(application, client);
       const start = await client.objectAction({
@@ -213,17 +213,15 @@ describe("fproxy gear spell 20546", () => {
         expect(types[0]).toBe("attackwait");
         expect(types).toContain("cast");
         expect(types).not.toContain("timeAdvance");
-        if (strike < 7) {
-          expect(types).toEqual(["attackwait", "cast"]);
-        } else {
-          expect(types).toEqual(["attackwait", "cast", "effPurge"]);
-          expect(purgeEffectId(meleeFrame)).toBe(1);
-        }
+        expect(types).toEqual(["attackwait", "cast"]);
         expect(melee.some((frame) => frame && typeof frame === "object" && "rs" in frame)).toBe(
           true,
         );
         await harness.elapseCombat(1400);
-        await client.pollFight();
+        // 320 s of buff: each round costs about 41 s of fight clock, so the 8th counter ends it.
+        const counter = await client.pollFight();
+        const purged = fightEventTypes(counter).includes("effPurge");
+        expect(purged, `round ${strike + 1}`).toBe(strike === 7);
         await harness.elapseCombat(1100);
         await client.pollFight();
       }
@@ -276,12 +274,6 @@ function standingEffUse(events: readonly AmfValue[], persId: number): Record<str
     "effUse",
     (item) => item.persId === persId && item.artikulId === TYRANT_GLOVE,
   );
-}
-
-function purgeEffectId(frame: AmfValue): number {
-  const packet = fightPacket([frame], "effPurge", () => true);
-  if (typeof packet.effectId !== "number") throw new Error("effPurge effectId is missing");
-  return packet.effectId;
 }
 
 function fightPacket(

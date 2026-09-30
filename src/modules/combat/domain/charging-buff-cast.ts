@@ -50,7 +50,9 @@ export function castChargingBuff(carrier: Fighter, cast: ChargingBuffCast): read
       dmgType: standing.dmgType,
       id: standing.id,
       sourceId: standing.sourceId,
-      remainTime: cast.remainTime ?? standing.remainTime,
+      ...((cast.remainTime ?? standing.remainTime) !== undefined
+        ? { remainTime: cast.remainTime ?? standing.remainTime }
+        : {}),
       ...(standing.groupId !== undefined ? { groupId: standing.groupId } : {}),
       ...(cast.skills !== undefined ? { skills: cast.skills } : {}),
     },
