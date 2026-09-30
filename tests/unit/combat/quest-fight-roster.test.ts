@@ -116,6 +116,29 @@ describe("quest fight roster", () => {
     expect(spirit?.hp).toBe(0);
   });
 
+  it("plays a roster out on the fight clock after the idle hero falls, mob against mob", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat, delay } = createCombatService({ clock, random: new FixedRandom(0.5) });
+    const start = await startHuntWithIssuedId(
+      combat,
+      rosterStart({
+        heroStrength: 1,
+        botStrength: 270,
+        botHp: 50,
+        extraEnemies: [rosterBot(32, "Spirit", { hp: 30, strength: 29 })],
+      }),
+    );
+    await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    let finished = false;
+    for (let tick = 0; tick < 60 && !finished; tick += 1) {
+      clock.advanceMs(2600);
+      await delay.fireDue(clock.now());
+      const seen = await combat.execute(1, { kind: "poll" });
+      finished = seen.some((event) => event.type === "finished");
+    }
+    expect(finished).toBe(true);
+  });
+
   it("fails when a roster bot is missing from catalog", async () => {
     await expect(
       startQuestFight(

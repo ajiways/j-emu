@@ -1,3 +1,4 @@
+import { FixedRandom } from "../support/fakes/fixed-random.ts";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Application } from "../../src/app/application.ts";
 import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
@@ -78,7 +79,10 @@ describe("quest fight roster", () => {
     let application: Application;
 
     beforeEach(async () => {
-      harness = new ApplicationHarness(undefined, undefined, { combatBotStrength: 270 });
+      harness = new ApplicationHarness(undefined, undefined, {
+        combatBotStrength: 270,
+        combatRandom: new FixedRandom(0.5),
+      });
       application = await harness.start();
     });
 

@@ -128,7 +128,8 @@ export function applyBattleAiTurn(
     nowMs,
   });
   if (foe.fighterKind !== "human" && !foe.alive) {
-    dissolveDuelContaining(state.duels, everyone, bot.id);
+    // The dead foe stays in the dissolved duel; the mob that struck him is freed to wait.
+    dissolveDuelContaining(state.duels, everyone, foe.id);
   }
   const side = settleBotSideHits({
     sideHits: result.sideHits,
