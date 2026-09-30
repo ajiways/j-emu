@@ -1,12 +1,11 @@
 import type { BattleEvent } from "./battle-event.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { settleAfterMobFell, settleAfterPlayerHit } from "./battle-runtime.ts";
-import { requireAuthedHuman, requireBattleHuman } from "./battle-lookups.ts";
+import { requireAuthedHuman } from "./battle-lookups.ts";
 import { applyPairedGloveEnding, applyPairedMelee } from "./battle-strikes.ts";
 import { rosterIsPvp } from "./roster-pvp.ts";
 import { requireFightBot } from "./fight-bots.ts";
 import { resolveAiActorTurn } from "./resolve-ai-actor-turn.ts";
-import type { Fighter } from "./fighter.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
@@ -17,14 +16,21 @@ import type { BotMeleeResult } from "./turn-grant.ts";
 import { settleBotSideHits } from "./bot-side-hits.ts";
 import type { Fallout } from "./settle-fallen.ts";
 import type { BotFighter } from "./bot-fighter.ts";
-import { enemySideCleared } from "./melee-target.ts";
+import { duelFoe, enemySideCleared } from "./melee-target.ts";
+import type { Participant } from "./participant.ts";
 import { persChangeForParticipants } from "./melee-pers-change.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
-import { requireDuelContaining } from "./pairing.ts";
+import { dissolveDuelContaining, requireDuelContaining } from "./pairing.ts";
 
 /** A bot's turn, with what its AOE spell did to the others it reached. */
-export type BotTurnResult = BotMeleeResult & Readonly<{ finished: boolean; sideFallout: Fallout }>;
+export type BotTurnResult = BotMeleeResult &
+  Readonly<{
+    finished: boolean;
+    sideFallout: Fallout;
+    /** The account of the player across from the bot; `null` when the foe is a mob. */
+    foeAccountId: number | null;
+  }>;
 
 type HuntActionState = Readonly<{
   fightRules: FightRules;
@@ -73,7 +79,12 @@ export function applyBattleGlove(
   const human = requireAuthedHuman(state.humans, accountId);
   const keep = tryGloveKeepTurn(human, spellId, sequence, rosterIsPvp(state.humans), {
     nowMs,
-    foe: () => duelFoe(state, human),
+    foe: () =>
+      duelFoe(
+        requireDuelContaining(state.duels, human.heroId),
+        [...state.humans, ...state.bots],
+        human.id,
+      ),
   });
   if (keep.kind !== "ignored") return { result: keep, finished: state.finished };
   const duel = requireDuelContaining(state.duels, human.heroId);
@@ -96,16 +107,16 @@ export function applyBattleGlove(
   return { result: settle, finished: settle.finished };
 }
 
-export function applyBattleBotMelee(
+export function applyBattleAiTurn(
   state: HuntActionState,
-  accountId: number,
+  botId: number,
   nowMs: number,
 ): BotTurnResult {
-  if (state.bots.length === 0) throw new Error("Human duel has no bot to take a turn");
-  if (state.finished) throw new Error("Cannot resolve bot melee on a finished battle");
-  const target = requireBattleHuman(state.humans, accountId);
-  const duel = requireDuelContaining(state.duels, target.heroId);
-  const bot = requireFightBot(state.bots, duel.otherId(target.heroId));
+  if (state.finished) throw new Error("Cannot resolve an AI turn on a finished battle");
+  const bot = requireFightBot(state.bots, botId);
+  const duel = requireDuelContaining(state.duels, bot.id);
+  const everyone = [...state.humans, ...state.bots];
+  const foe = duelFoe(duel, everyone, bot.id);
   const result = resolveAiActorTurn({
     bot,
     duel,
@@ -116,10 +127,13 @@ export function applyBattleBotMelee(
     fightId: state.fightId,
     nowMs,
   });
+  if (foe.fighterKind !== "human" && !foe.alive) {
+    dissolveDuelContaining(state.duels, everyone, bot.id);
+  }
   const side = settleBotSideHits({
     sideHits: result.sideHits,
     bot,
-    aimed: target,
+    aimed: foe,
     humans: state.humans,
     bots: state.bots,
     duels: state.duels,
@@ -129,7 +143,7 @@ export function applyBattleBotMelee(
   const events = [
     ...result.events,
     ...(side.patch ? [side.patch] : []),
-    ...botFellToTick(state, bot, target, duel, result),
+    ...botFellInTurn(state, bot, foe, duel, result),
     ...(side.fallout.finished && !result.events.some((event) => event.type === "finished")
       ? [side.fallout.finished]
       : []),
@@ -140,25 +154,31 @@ export function applyBattleBotMelee(
     sideHits: result.sideHits,
     sideFallout: side.fallout,
     finished: events.some((event) => event.type === "finished"),
+    foeAccountId: foe.fighterKind === "human" ? (foe as HumanFighter).accountId : null,
   };
 }
 
-/** A DoT tick emptied the bot during its own action: end the fight or bring the next foe. */
-function botFellToTick(
+/** The bot fell during its own turn (a tick, a drain): the fight goes on, so its foe is freed. */
+function botFellInTurn(
   state: HuntActionState,
   bot: BotFighter,
-  hunter: HumanFighter,
+  foe: Participant,
   duel: FightDuel,
   result: BotMeleeResult,
 ): readonly BattleEvent[] {
-  if (bot.hp > 0 || result.killedPlayer) return [];
-  if (enemySideCleared(bot.team, [...state.humans, ...state.bots])) return [];
+  if (bot.alive || result.killedPlayer) return [];
+  const everyone = [...state.humans, ...state.bots];
+  if (enemySideCleared(bot.team, everyone)) return [];
+  if (foe.fighterKind !== "human") {
+    dissolveDuelContaining(state.duels, everyone, bot.id);
+    return [];
+  }
   return settleAfterMobFell(false, {
     bots: state.bots,
     enemyTeam: state.fightRules.teamAssignment.enemyTeam,
     duel,
     duels: state.duels,
-    opener: hunter,
+    opener: foe as HumanFighter,
     humans: state.humans,
   }).events;
 }
@@ -240,9 +260,4 @@ function hitInput(
     opener: human,
     humans: state.humans,
   };
-}
-
-function duelFoe(state: HuntActionState, human: HumanFighter): Fighter {
-  const foeId = requireDuelContaining(state.duels, human.heroId).otherId(human.heroId);
-  return state.humans.find((entry) => entry.heroId === foeId) ?? requireFightBot(state.bots, foeId);
 }

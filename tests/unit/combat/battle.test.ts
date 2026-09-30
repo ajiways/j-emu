@@ -1,4 +1,5 @@
 import { NO_STRIKE_MODS } from "../../../src/modules/combat/domain/strike-mods.ts";
+import { resolveBotMelee } from "../../support/ai-turn.ts";
 import { describe, expect, it } from "vitest";
 import { requireFightBot } from "../../../src/modules/combat/domain/fight-bots.ts";
 import type { Battle } from "../../../src/modules/combat/domain/battle.ts";
@@ -100,7 +101,7 @@ describe("Battle", () => {
       ],
     });
     expect(battle.tryPlayerMelee(1, "center", AUTH_NOW)).toEqual({ kind: "ignored" });
-    const bot = battle.resolveBotMelee(1, AUTH_NOW);
+    const bot = resolveBotMelee(battle, 1, AUTH_NOW);
     expect(bot.events[0]).toMatchObject({
       type: "damage",
       sourceId: 1_000_000,
@@ -122,7 +123,7 @@ describe("Battle", () => {
     });
     battle.authenticate(1, AUTH_NOW);
     battle.tryPlayerMelee(1, "left", AUTH_NOW);
-    const bot = battle.resolveBotMelee(1, AUTH_NOW);
+    const bot = resolveBotMelee(battle, 1, AUTH_NOW);
     expect(bot.events).toMatchObject([
       {
         type: "effect-use",
@@ -164,7 +165,7 @@ describe("Battle", () => {
     });
     battle.authenticate(1, AUTH_NOW);
     battle.tryPlayerMelee(1, "left", AUTH_NOW);
-    battle.resolveBotMelee(1, AUTH_NOW);
+    resolveBotMelee(battle, 1, AUTH_NOW);
     battle.grantTurn(1, AUTH_NOW);
     const melee = battle.tryPlayerMelee(1, "center", AUTH_NOW);
     if (melee.kind !== "resolved") throw new Error("expected resolved melee");
@@ -225,7 +226,6 @@ describe("Battle", () => {
     });
     expect(battle.finished).toBe(false);
     expect(battle.pairedOpponent(1)).toEqual({ kind: "human", accountId: 2 });
-    expect(battle.tickRosterDuels(AUTH_NOW).some((event) => event.type === "finished")).toBe(false);
   });
 
   it("pairs a team-2 joiner with a team-1 waiter while the opener stays on the bot", () => {

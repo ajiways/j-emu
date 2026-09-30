@@ -4,6 +4,7 @@ import type { BotFighter } from "./bot-fighter.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
+import type { Participant } from "./participant.ts";
 import { persChangeForParticipants } from "./melee-pers-change.ts";
 import { settleFallen, type Fallout } from "./settle-fallen.ts";
 
@@ -29,7 +30,7 @@ export function settleBotSideHits(
   input: Readonly<{
     sideHits: readonly BotSideHit[];
     bot: BotFighter;
-    aimed: HumanFighter;
+    aimed: Participant;
     humans: readonly HumanFighter[];
     bots: readonly BotFighter[];
     duels: FightDuel[];
@@ -41,7 +42,7 @@ export function settleBotSideHits(
   const patch = persChangeForParticipants(
     input.humans,
     input.bots.map((bot) => bot.snap()),
-    [input.bot.fightId, input.aimed.heroId, ...input.sideHits.map((hit) => hit.targetId)],
+    [input.bot.fightId, input.aimed.id, ...input.sideHits.map((hit) => hit.targetId)],
   );
   const hitDeliveries = input.sideHits.flatMap((hit) => {
     const human = input.humans.find((entry) => entry.heroId === hit.targetId);

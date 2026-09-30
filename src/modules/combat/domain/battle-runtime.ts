@@ -1,81 +1,12 @@
 import type { BattleEvent } from "./battle-event.ts";
-import type { BattleRules } from "./battle-rules.ts";
 import { humanOpponentNew, livingWaiterOnTeam } from "./battle-pairing.ts";
-import { dissolveDuelAt, dissolveDuelContaining } from "./pairing.ts";
+import { dissolveDuelContaining } from "./pairing.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { takeNextEnemyForHuman } from "./wait-queue.ts";
-import { enemySideCleared } from "./melee-target.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
-import type { RandomSource } from "./random-source.ts";
-import { resolveAiActorTurn } from "./resolve-ai-actor-turn.ts";
 import { retargetDuelTo } from "./retarget-duel.ts";
-
-export function tickBotDuelsOf(input: {
-  bots: readonly BotFighter[];
-  enemyTeam: 1 | 2;
-  duels: FightDuel[];
-  finished: boolean;
-  opener: HumanFighter;
-  humans: readonly HumanFighter[];
-  fightId: string;
-  rules: BattleRules;
-  random: RandomSource;
-  nowMs: number;
-}): Readonly<{ events: readonly BattleEvent[]; finished: boolean }> {
-  if (input.finished) return { events: [], finished: true };
-  if (input.bots.length === 0) return { events: [], finished: false };
-  const events: BattleEvent[] = [];
-  for (let index = input.duels.length - 1; index >= 0; index -= 1) {
-    const duel = input.duels[index];
-    if (!duel) throw new Error("Battle duel slot is empty");
-    const actor = input.bots.find((bot) => bot.fightId === duel.nextActorId);
-    const target = actor
-      ? input.bots.find((bot) => bot.fightId === duel.otherId(actor.fightId))
-      : null;
-    if (!actor || !target) continue;
-    if (!actor.alive || !target.alive) {
-      dissolveDuelAt(input.duels, index, [...input.humans, ...input.bots], null);
-      continue;
-    }
-    const turn = resolveAiActorTurn({
-      bot: actor,
-      duel,
-      humans: input.humans,
-      bots: input.bots,
-      rules: input.rules,
-      random: input.random,
-      fightId: input.fightId,
-      nowMs: input.nowMs,
-    });
-    events.push(...turn.events);
-    if (turn.events.some((event) => event.type === "finished")) {
-      return { events, finished: true };
-    }
-    if (!actor.alive || !target.alive) {
-      dissolveDuelAt(input.duels, index, [...input.humans, ...input.bots], null);
-    }
-  }
-  const combatants = [...input.humans, ...input.bots];
-  if (enemySideCleared(input.opener.team, combatants)) {
-    events.push({
-      type: "finished",
-      winnerTeam: input.enemyTeam,
-      fightId: input.fightId,
-    });
-    return { events, finished: true };
-  }
-  if (enemySideCleared(input.enemyTeam, combatants)) {
-    events.push({
-      type: "finished",
-      winnerTeam: input.opener.team,
-      fightId: input.fightId,
-    });
-    return { events, finished: true };
-  }
-  return { events, finished: false };
-}
 
 export function settleAfterPlayerHit(
   resolved: Readonly<{

@@ -69,7 +69,9 @@ describe("quest leftover duels in Battle.duels", () => {
     expect(seed.duels[1]?.has(1_000_002)).toBe(true);
     expect(seed.duels[1]?.nextActorId).toBe(1_000_002);
     const battle = createUnitBattle(setup, new SequenceRandom([2]));
-    const events = battle.tickRosterDuels(Date.parse("2026-09-07T12:00:00.000Z"));
+    const { turns } = battle.startIdleWork();
+    expect(turns.map((turn) => turn.botId)).toEqual([1_000_002]);
+    const events = battle.resolveAiTurn(1_000_002, Date.parse("2026-09-07T12:00:00.000Z")).events;
     expect(events).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  hasBotDuels,
+  hasPairableWaiters,
   pairWaitingSeekers,
-} from "../../../src/modules/combat/domain/battle-bot-duels.ts";
+} from "../../../src/modules/combat/domain/battle-ai-duels.ts";
 import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { FixedRandom } from "../../support/fakes/fixed-random.ts";
@@ -107,11 +107,11 @@ describe("a waiting ally mob takes a duel over", () => {
       random: new FixedRandom(0.5),
       fightId: "8",
     };
-    expect(hasBotDuels(state)).toBe(true);
+    expect(hasPairableWaiters(state)).toBe(true);
     expect(pairWaitingSeekers(state)).toEqual([1]);
     expect(state.duels).toHaveLength(1);
     expect(human.waiting).toBe(false);
     expect(foe.waiting).toBe(false);
-    expect(hasBotDuels(state)).toBe(false);
+    expect(hasPairableWaiters(state)).toBe(false);
   });
 });

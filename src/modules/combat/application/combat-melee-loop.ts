@@ -15,9 +15,8 @@ import {
   fanoutHit,
   fanoutRosterEffects,
   enqueueKeepTurn,
-  withActorPersChange,
 } from "./combat-melee-dispatch.ts";
-import { CombatBotDuelClock } from "./combat-bot-duel-clock.ts";
+import { CombatAiDriver } from "./combat-ai-driver.ts";
 import { CombatEffectClock } from "./combat-effect-clock.ts";
 import type { FightScheduler } from "./fight-scheduler.ts";
 
@@ -50,13 +49,24 @@ export class CombatMeleeLoop {
       },
       (battle, accountId) => this.handOffToWaiter(battle, accountId),
     );
-    this.botDuelClock = new CombatBotDuelClock(
+    this.aiDriver = new CombatAiDriver({
       battleByFight,
       scheduler,
       enqueue,
       wakeAccount,
       settleFinished,
-      (battle, accountIds) =>
+      settleFallout: (battle, fallout) => this.effectClock.settleFallout(battle, fallout),
+      handOff: (battle, accountId) => this.handOffToWaiter(battle, accountId),
+      applyShuffle: (battle, accountId) => this.applyShuffle(battle, accountId),
+      grantPlayer: (battle, accountId, delayMs) => {
+        const token = battle.delayTokenFor(accountId);
+        if (!token) return;
+        // A turn that ran late owes its player no further wait: the round is already over.
+        if (delayMs < 1) this.runGrant(battle.id, accountId);
+        else scheduler.schedule(token, delayMs, () => this.runGrant(battle.id, accountId));
+      },
+      armEffects: (battle) => this.effectClock.arm(battle),
+      announcePaired: (battle, accountIds) =>
         deliverPairedWaiters({
           battle,
           accountIds,
@@ -65,11 +75,11 @@ export class CombatMeleeLoop {
           grantPairedBot: (id) => this.grantPairedBot(battle, id),
           notifyJoinedPair: (id) => this.notifyJoinedPair(battle, id),
         }),
-    );
+    });
   }
 
   private readonly effectClock: CombatEffectClock;
-  private readonly botDuelClock: CombatBotDuelClock;
+  private readonly aiDriver: CombatAiDriver;
 
   async strike(
     accountId: number,
@@ -152,7 +162,7 @@ export class CombatMeleeLoop {
 
   /** Arms what runs without a click: mob duels already standing when a player arrives. */
   armFightClocks(battle: Battle): void {
-    this.botDuelClock.arm(battle);
+    this.aiDriver.arm(battle);
   }
 
   armTurnTimeout(battle: Battle, accountId: number): void {
@@ -244,37 +254,11 @@ export class CombatMeleeLoop {
     );
   }
 
+  /** The mob across from `strikerAccountId` acts next; his turn then passes back to the player. */
   private scheduleBotAndGrant(battle: Battle, strikerAccountId: number): void {
-    const token = battle.delayTokenFor(strikerAccountId);
-    if (!token) throw new Error("Cannot schedule a bot follow-up without a live duel");
-    const fightId = battle.id;
-    this.scheduler.schedule(token, battle.meleeBotCounterMs, () =>
-      this.runBotCounter(fightId, strikerAccountId),
-    );
-    this.scheduler.schedule(token, battle.turnGrantDelayMs, () =>
-      this.runGrant(fightId, strikerAccountId),
-    );
-  }
-
-  private async runBotCounter(fightId: string, targetAccountId: number): Promise<void> {
-    await this.armAfter(this.battleByFight.get(fightId), async (battle) => {
-      if (!battle || battle.finished) return;
-      if (!battle.accountIds().includes(targetAccountId)) return;
-      const result = battle.resolveBotMelee(targetAccountId, this.scheduler.now().getTime());
-      this.enqueue(targetAccountId, withActorPersChange(battle, result.events));
-      fanoutHit(battle, targetAccountId, result.events, this.enqueue, this.wakeAccount);
-      this.wakeAccount(targetAccountId);
-      if (battle.finished) {
-        await this.settleFinished(battle, result.events, targetAccountId);
-        return;
-      }
-      await this.effectClock.settleFallout(battle, result.sideFallout);
-      if (!result.killedPlayer) {
-        this.applyShuffle(battle, targetAccountId);
-        return;
-      }
-      await this.handOffToWaiter(battle, targetAccountId);
-    });
+    const botId = battle.aiFoeIdOf(strikerAccountId);
+    if (botId === null) throw new Error("Cannot schedule a mob turn without a mob foe");
+    this.aiDriver.schedule(battle, botId);
   }
 
   private async handOffToWaiter(battle: Battle, deadAccountId: number): Promise<void> {
@@ -310,7 +294,7 @@ export class CombatMeleeLoop {
       grantAfterPair: (id) => this.grantAfterPair(battle, id),
       grantPairedBot: (id) => this.grantPairedBot(battle, id),
     });
-    this.botDuelClock.arm(battle);
+    this.aiDriver.arm(battle);
     return true;
   }
 
@@ -366,19 +350,20 @@ export class CombatMeleeLoop {
       }
       battle.countPairHit(accountId);
       if (this.applyShuffle(battle, accountId)) return;
-      const opponent = battle.pairedOpponent(accountId);
-      if (opponent.kind === "bot") {
-        await this.runBotCounter(fightId, accountId);
-        if (battle.finished || !battle.accountIds().includes(accountId)) return;
-        const token = battle.delayTokenFor(accountId);
-        if (!token) return;
-        this.scheduler.schedule(token, battle.turnGrantDelayMs, () =>
-          this.runGrant(fightId, accountId),
+      const botId = battle.aiFoeIdOf(accountId);
+      const token = battle.delayTokenFor(accountId);
+      if (!token) return;
+      if (botId !== null) {
+        await this.aiDriver.run(
+          fightId,
+          botId,
+          token,
+          this.scheduler.now().getTime() + battle.turnGrantDelayMs,
         );
         return;
       }
-      const token = battle.delayTokenFor(accountId);
-      if (!token) return;
+      const opponent = battle.pairedOpponent(accountId);
+      if (opponent.kind !== "human") return;
       this.scheduler.schedule(token, battle.turnGrantDelayMs, () =>
         this.runGrant(fightId, opponent.accountId),
       );
@@ -393,6 +378,6 @@ export class CombatMeleeLoop {
     await work(battle);
     if (!battle || battle.finished) return;
     this.effectClock.arm(battle);
-    this.botDuelClock.arm(battle);
+    this.aiDriver.arm(battle);
   }
 }

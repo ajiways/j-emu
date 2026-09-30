@@ -1,3 +1,4 @@
+import { resolveBotMelee } from "../../support/ai-turn.ts";
 import { describe, expect, it } from "vitest";
 import { createUnitBattle } from "../../support/fight-rules.ts";
 import { unitDuelFightSetup } from "../../support/fight-setup.ts";
@@ -30,6 +31,6 @@ describe("friendly duel Battle", () => {
     battle.grantTurn(2, AUTH_NOW);
     expect(battle.tryPlayerMelee(2, "left", AUTH_NOW).kind).toBe("resolved");
     expect(battle.pairedOpponent(1)).toEqual({ kind: "human", accountId: 2 });
-    expect(() => battle.resolveBotMelee(1, AUTH_NOW)).toThrow(/no bot to take a turn/);
+    expect(() => resolveBotMelee(battle, 1, AUTH_NOW)).toThrow(/no bot to take a turn/);
   });
 });

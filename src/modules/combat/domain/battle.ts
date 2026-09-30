@@ -9,7 +9,7 @@ import { authenticateFighter } from "./battle-authenticate.ts";
 import { historyOf, joinBattleHuman } from "./battle-join.ts";
 import { practiceHistoryOf } from "./practice-fight-history.ts";
 import {
-  applyBattleBotMelee,
+  applyBattleAiTurn,
   applyBattleGlove,
   applyBattlePlayerMelee,
   type BotTurnResult,
@@ -38,7 +38,7 @@ import type { PlayerMeleeResult } from "./paired-melee.ts";
 import { tryPocketCast, tryRageCast, type KeepTurnResult } from "./player-casts.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import { tryAggro, type AggroResult } from "./aggro.ts";
-import { hasBotDuels, pairWaitingSeekers, tickBotDuels } from "./battle-bot-duels.ts";
+import { aiOnlyDuelTurns, pairWaitingSeekers, type AiDuelTurn } from "./battle-ai-duels.ts";
 import type { RandomSource } from "./random-source.ts";
 import { pairNextWaiter, shuffleAfterHits } from "./battle-pairing.ts";
 import { seedBattleParticipants } from "./battle-seed.ts";
@@ -145,9 +145,7 @@ export class Battle {
   }
 
   delayTokenFor(accountId: number): string | null {
-    const human = requireBattleHuman(this.humans, accountId);
-    const duel = this.duels.find((entry) => entry.has(human.heroId));
-    return duel ? fightDuelDelayToken(this.id, duel) : null;
+    return this.duelTokenOfParticipant(requireBattleHuman(this.humans, accountId).heroId);
   }
 
   delayTokens(): readonly string[] {
@@ -261,24 +259,28 @@ export class Battle {
     return applied.result;
   }
 
-  resolveBotMelee(accountId: number, nowMs: number): BotTurnResult {
-    const result = applyBattleBotMelee(this.actionState(), accountId, nowMs);
+  resolveAiTurn(botId: number, nowMs: number): BotTurnResult {
+    const result = applyBattleAiTurn(this.actionState(), botId, nowMs);
     if (result.finished) this.finishedValue = true;
     return result;
   }
 
-  tickRosterDuels(nowMs: number): readonly BattleEvent[] {
-    const ticked = tickBotDuels(this.actionState(), nowMs);
-    if (ticked.finished) this.finishedValue = true;
-    return ticked.events;
+  /** What starts without a click: the waiting paired now, and the turns of mob-only duels. */
+  startIdleWork(): Readonly<{ paired: readonly number[]; turns: readonly AiDuelTurn[] }> {
+    if (this.finishedValue) return { paired: [], turns: [] };
+    const paired = pairWaitingSeekers(this.actionState());
+    return { paired, turns: aiOnlyDuelTurns(this.actionState()) };
   }
 
-  hasBotDuels(): boolean {
-    return hasBotDuels(this.actionState());
+  duelTokenOfParticipant(participantId: number): string | null {
+    const duel = this.duels.find((entry) => entry.has(participantId));
+    return duel ? fightDuelDelayToken(this.id, duel) : null;
   }
 
-  pairWaiting(): readonly number[] {
-    return this.finishedValue ? [] : pairWaitingSeekers(this.actionState());
+  aiFoeIdOf(accountId: number): number | null {
+    const heroId = requireBattleHuman(this.humans, accountId).heroId;
+    const foeId = this.duels.find((entry) => entry.has(heroId))?.otherId(heroId);
+    return this.bots.some((bot) => bot.fightId === foeId) ? (foeId ?? null) : null;
   }
 
   nextEffectDueMs(): number | null {

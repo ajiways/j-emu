@@ -1,3 +1,4 @@
+import { resolveBotMelee } from "../../support/ai-turn.ts";
 import { describe, expect, it } from "vitest";
 import type { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { createUnitBattle } from "../../support/fight-rules.ts";
@@ -39,7 +40,7 @@ describe("a bot's AOE spell", () => {
   it("hits the ally of the aimed hero too and sends that hunter his own hit", () => {
     const battle = pairedHunt();
     const before = battle.livingHumans().map((human) => human.hp);
-    const turn = battle.resolveBotMelee(1, NOW + 1000);
+    const turn = resolveBotMelee(battle, 1, NOW + 1000);
     const [aimed, ally] = battle.livingHumans();
     expect(turn.sideHits).toHaveLength(1);
     expect(turn.sideHits[0]).toMatchObject({ targetId: ally?.heroId, killed: false });
@@ -62,7 +63,7 @@ describe("a bot's AOE spell", () => {
     const ally = battle.livingHumans()[1];
     if (!ally) throw new Error("ally is missing");
     ally.applyDamage(ally.hp - 1);
-    const turn = battle.resolveBotMelee(1, NOW + 1000);
+    const turn = resolveBotMelee(battle, 1, NOW + 1000);
     expect(turn.sideHits[0]).toMatchObject({ killed: true });
     expect(turn.sideFallout.fallenAccountIds).toEqual([2]);
     expect(turn.finished).toBe(false);
@@ -71,7 +72,7 @@ describe("a bot's AOE spell", () => {
   it("ends the fight when the same spell downs the whole side", () => {
     const battle = pairedHunt();
     for (const human of battle.livingHumans()) human.applyDamage(human.hp - 1);
-    const turn = battle.resolveBotMelee(1, NOW + 1000);
+    const turn = resolveBotMelee(battle, 1, NOW + 1000);
     expect(turn.finished).toBe(true);
     expect(turn.events.filter((event) => event.type === "finished")).toHaveLength(1);
   });

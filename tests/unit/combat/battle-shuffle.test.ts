@@ -1,3 +1,4 @@
+import { resolveBotMelee } from "../../support/ai-turn.ts";
 import { describe, expect, it } from "vitest";
 import { createUnitBattle } from "../../support/fight-rules.ts";
 import { unitFightJoin, unitHuntFightSetup } from "../../support/fight-setup.ts";
@@ -27,7 +28,7 @@ describe("Battle 3↔3 shuffle", () => {
     battle.authenticate(2, AUTH_NOW);
     for (let round = 0; round < 3; round += 1) {
       expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");
-      const bot = battle.resolveBotMelee(1, AUTH_NOW);
+      const bot = resolveBotMelee(battle, 1, AUTH_NOW);
       expect(bot.killedPlayer).toBe(false);
       if (round < 2) battle.grantTurn(1, AUTH_NOW);
     }
@@ -53,7 +54,7 @@ describe("Battle 3↔3 shuffle", () => {
     battle.authenticate(1, AUTH_NOW);
     for (let round = 0; round < 3; round += 1) {
       expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");
-      battle.resolveBotMelee(1, AUTH_NOW);
+      resolveBotMelee(battle, 1, AUTH_NOW);
       if (round < 2) battle.grantTurn(1, AUTH_NOW);
     }
     expect(battle.tryShuffleAfterHits(1)).toEqual({ kind: "none" });
@@ -83,13 +84,13 @@ describe("Battle 3↔3 shuffle", () => {
     battle.grantTurn(2, AUTH_NOW);
     for (let round = 0; round < 3; round += 1) {
       expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");
-      expect(battle.resolveBotMelee(1, AUTH_NOW).killedPlayer).toBe(false);
+      expect(resolveBotMelee(battle, 1, AUTH_NOW).killedPlayer).toBe(false);
       if (round < 2) battle.grantTurn(1, AUTH_NOW);
     }
     expect(battle.tryShuffleAfterHits(1)).toEqual({ kind: "none" });
     for (let round = 0; round < 3; round += 1) {
       expect(battle.tryPlayerMelee(2, "center", AUTH_NOW).kind).toBe("resolved");
-      expect(battle.resolveBotMelee(2, AUTH_NOW).killedPlayer).toBe(false);
+      expect(resolveBotMelee(battle, 2, AUTH_NOW).killedPlayer).toBe(false);
       if (round < 2) battle.grantTurn(2, AUTH_NOW);
     }
     const leftHp = battle.outcome("win", 1).humans.find((human) => human.accountId === 1)?.hp;
