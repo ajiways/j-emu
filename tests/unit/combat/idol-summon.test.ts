@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CombatIdolRow } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
+import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
 import { FightCastDenied } from "../../../src/modules/combat/domain/fight-cast-denied.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { HumanFighter } from "../../../src/modules/combat/domain/human-fighter.ts";
@@ -64,6 +65,7 @@ function cast(human: HumanFighter) {
     itemId: 100_001,
     sequence: 1,
     roster,
+    fightRules: FightRules.forHunt(null),
     finished: false,
     allocateBotId: () => 1_000_007,
   });

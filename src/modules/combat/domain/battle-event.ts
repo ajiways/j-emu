@@ -38,7 +38,8 @@ export type BattleEvent =
       cp: number;
       cpHits: readonly number[];
       rage: number;
-      aggro: number;
+      /** The charges of the aggro button; `null` in a fight that has no such button. */
+      aggro: number | null;
       loadout: CombatLoadout;
       heroEffects: readonly FightEffectSnap[];
       botEffects: readonly FightEffectSnap[];
@@ -98,7 +99,8 @@ export type BattleEvent =
       cp: number;
       cpHits: readonly number[];
       rage: number;
-      aggro: number;
+      /** The charges of the aggro button; `null` in a fight that has no such button. */
+      aggro: number | null;
       loadout: CombatLoadout;
       heroEffects: readonly FightEffectSnap[];
       otherEffects: readonly Readonly<{
@@ -142,7 +144,7 @@ export type BattleEvent =
   | Readonly<{
       type: "native-count";
       srcId: number;
-      count: number;
+      count: number | null;
       title: string;
       loadout: CombatLoadout;
     }>;

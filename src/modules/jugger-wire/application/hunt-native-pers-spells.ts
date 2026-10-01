@@ -1,6 +1,6 @@
 /** Live native melee pack for hunt bootstrap (`jgr-emu` `buildPersSpellsEvent` without pocket/glove). */
-export function huntNativePersSpells(aggroCount: number): Readonly<Record<string, unknown>> {
-  if (!Number.isInteger(aggroCount) || aggroCount < 0) {
+export function huntNativePersSpells(aggroCount: number | null): Readonly<Record<string, unknown>> {
+  if (aggroCount !== null && (!Number.isInteger(aggroCount) || aggroCount < 0)) {
     throw new Error("Hunt aggro count must be a non-negative integer");
   }
   const spells: readonly Readonly<Record<string, unknown>>[] = [
@@ -50,14 +50,18 @@ export function huntNativePersSpells(aggroCount: number): Readonly<Record<string
       targetRestr: { dead: false },
       title: "Удар в спину",
     },
-    {
-      count: aggroCount,
-      persRestr: { dead: false },
-      srcId: 7,
-      srcType: 1,
-      targetRestr: { dead: false, oppTeam: true },
-      title: "Разозлить",
-    },
+    ...(aggroCount === null
+      ? []
+      : [
+          {
+            count: aggroCount,
+            persRestr: { dead: false },
+            srcId: 7,
+            srcType: 1,
+            targetRestr: { dead: false, oppTeam: true },
+            title: "Разозлить",
+          },
+        ]),
   ];
   const ev: Record<string, unknown> = { et: "persSpells" };
   spells.forEach((spell, index) => {

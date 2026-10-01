@@ -47,7 +47,7 @@ export function tryAggro(
       {
         type: "native-count",
         srcId: 7,
-        count: human.casts.aggro,
+        count: input.canAggro ? human.casts.aggro : null,
         title: "Разозлить",
         loadout: human.casts.wireLoadout(),
       },
@@ -109,6 +109,6 @@ function aggroSourceBot(
     throw new Error("Hunt aggro target id must be a positive integer");
   }
   const bot = bots.find((entry) => entry.fightId === targetId);
-  if (!bot || bot.team === human.team) return null;
+  if (!bot || bot.team === human.team || bot.summoned) return null;
   return bot;
 }

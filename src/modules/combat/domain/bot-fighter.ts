@@ -27,6 +27,8 @@ export type BotFighterSeed = Readonly<{
 
 export class BotFighter extends Participant {
   readonly brain: BotBrain;
+  /** Called into the fight by a summon (an idol): nobody may anger it into a clone. */
+  summoned = false;
 
   constructor(
     readonly fightId: number,

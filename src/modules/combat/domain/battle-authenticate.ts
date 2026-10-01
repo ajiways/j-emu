@@ -6,6 +6,8 @@ import type { FightEffectSnap } from "./standing-effect.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import { requireBattleHuman } from "./battle-lookups.ts";
+import { aggroOffer } from "./aggro-offer.ts";
+import type { FightRules } from "./fight-rules.ts";
 import { rosterIsPvp } from "./roster-pvp.ts";
 
 function huntAuthenticateEvents(
@@ -19,6 +21,7 @@ function huntAuthenticateEvents(
     pvp: boolean;
     nextActorId: number;
     resume: boolean;
+    fightRules: FightRules;
     timeoutSeconds: number;
     nowMs: number;
   }>,
@@ -49,7 +52,7 @@ function huntAuthenticateEvents(
       cp: human.casts.cp,
       cpHits: human.casts.hits,
       rage: human.casts.rage,
-      aggro: human.casts.aggro,
+      aggro: aggroOffer(human, input.fightRules),
       loadout: human.casts.wireLoadout(),
       heroEffects: human.effects.snapshot(input.nowMs),
       botEffects: input.botEffects,
@@ -73,6 +76,7 @@ function friendlyAuthenticateEvents(
     allies: readonly HumanFighter[];
     opponent?: HumanFighter;
     nextActorId?: number;
+    fightRules: FightRules;
     timeoutSeconds: number;
     nowMs: number;
   }>,
@@ -104,7 +108,7 @@ function friendlyAuthenticateEvents(
       cp: human.casts.cp,
       cpHits: human.casts.hits,
       rage: human.casts.rage,
-      aggro: human.casts.aggro,
+      aggro: aggroOffer(human, input.fightRules),
       loadout: human.casts.wireLoadout(),
       heroEffects: human.effects.snapshot(input.nowMs),
       otherEffects: standingEffectsOf(input.allies, input.nowMs),
@@ -119,6 +123,7 @@ function friendlyAuthenticateEvents(
 export function authenticateFighter(
   input: Readonly<{
     finished: boolean;
+    fightRules: FightRules;
     roster: Roster;
     duels: readonly FightDuel[];
     enemyTeam: 1 | 2;
@@ -148,6 +153,7 @@ export function authenticateFighter(
       ),
       ...(opponent ? { opponent } : {}),
       ...(duel ? { nextActorId: duel.nextActorId } : {}),
+      fightRules: input.fightRules,
       timeoutSeconds: input.timeoutSeconds,
       nowMs: input.nowMs,
     });
@@ -174,6 +180,7 @@ export function authenticateFighter(
     pvp: rosterIsPvp(input.roster.humans),
     nextActorId: duel?.nextActorId ?? human.heroId,
     resume,
+    fightRules: input.fightRules,
     timeoutSeconds: input.timeoutSeconds,
     nowMs: input.nowMs,
   });

@@ -130,7 +130,7 @@ describe("hunt aggro clone", () => {
       pairedAccountIds: [],
       events: [
         { type: "buff-cast", animation: "fury", sourceId: 1, targetId: 1 },
-        { type: "native-count", srcId: 7, count: 1 },
+        { type: "native-count", srcId: 7, count: null },
       ],
     });
     const copy = createUnitBattle(huntInit({ instanceCopyId: 7 }), new SequenceRandom([0.4]));
@@ -139,7 +139,7 @@ describe("hunt aggro clone", () => {
       kind: "resolved",
       events: [
         { type: "buff-cast", animation: "fury", sourceId: 1, targetId: 1 },
-        { type: "native-count", srcId: 7, count: 1 },
+        { type: "native-count", srcId: 7, count: null },
       ],
     });
     const empty = createUnitBattle(huntInit({ heroAggroCharges: 0 }), new SequenceRandom([0.4]));

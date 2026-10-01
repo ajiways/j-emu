@@ -11,7 +11,7 @@ const MELEE_STRIKES = 3;
 
 export function huntPersSpellsEvent(
   loadout: CombatLoadout,
-  aggroCount: number,
+  aggroCount: number | null,
 ): Readonly<Record<string, unknown>> {
   const native = huntNativePersSpells(aggroCount);
   const melee = Object.keys(native)

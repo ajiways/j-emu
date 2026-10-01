@@ -1,7 +1,9 @@
+import { aggroOffer } from "./aggro-offer.ts";
 import { BotFighter } from "./bot-fighter.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import { unpublishedBotFightStats } from "./combatant-fight-stats.ts";
 import type { CombatIdolRow, PhantomTemplate } from "./combat-loadout.ts";
+import type { FightRules } from "./fight-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { KeepTurnResult } from "./player-casts.ts";
 import type { Roster } from "./roster.ts";
@@ -32,6 +34,7 @@ export function tryIdolCast(
     itemId: number;
     sequence: string | number;
     roster: Roster;
+    fightRules: FightRules;
     finished: boolean;
     allocateBotId: () => number;
   }>,
@@ -54,6 +57,7 @@ export function tryIdolCast(
   human.casts.consumeIdol(input.itemId);
   const mana = payMana(human, row.spell);
   const phantom = summon(human, row.phantom, stats, input);
+  phantom.summoned = true;
   input.roster.add(phantom);
   phantom.unpair();
   const events: BattleEvent[] = [
@@ -61,7 +65,7 @@ export function tryIdolCast(
     {
       type: "native-count",
       srcId: 7,
-      count: human.casts.aggro,
+      count: aggroOffer(human, input.fightRules),
       title: "Разозлить",
       loadout: human.casts.wireLoadout(),
     },
