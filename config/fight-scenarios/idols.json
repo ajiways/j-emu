@@ -8,7 +8,8 @@
     "pocket": [{ "artikulId": 169, "count": 1 }],
     "idols": [
       { "artikulId": 305, "count": 2 },
-      { "artikulId": 3806, "count": 2 }
+      { "artikulId": 3806, "count": 2 },
+      { "artikulId": 3809, "count": 1 }
     ]
   },
   "enemies": [

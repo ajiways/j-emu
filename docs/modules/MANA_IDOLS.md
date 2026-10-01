@@ -57,7 +57,10 @@ artifact_artikul_*.amf`, live-дамп `_research/giga_dump_2026-08-11/_timeline
   Нехватка — `FightCastDenied("mana")` до расхода предмета. В бою мана не восстанавливается;
   остаток пишется в героя при завершении боя (`persistFightResources`: мана первой, затем hp/смерть).
   Wire: `mpChange` + `persChangeInfo` кастера. Мана ботов 0, спеллы мобов без `mpCost`.
-- **Идолы.** Все идолы мешка (`kindId 35`, `extra.spell` с kind 10) входят в `CombatLoadout.idols`
+- **Идолы.** Клиент рисует идолов в «правом кармане» (`PocketTypes.RIGHT`): его слоты строятся из
+  предметов мешка с `show_extern` (разбор `pocket.swf`), а `persSpells` лишь обновляет слоты по
+  `srcId`. Поэтому мешок отдаёт `show_extern: true` для идолов (`isIdolArtifact`: kind 35 +
+  спелл с kind 10; среди живых kind-35 предметов true был только у идола). Все идолы мешка (`kindId 35`, `extra.spell` с kind 10) входят в `CombatLoadout.idols`
   и в `persSpells` как `srcType 4` (`flags "48"`, `mpCost`, `count`). `castSpell srcType 4`
   → `Battle.tryIdol` → `tryIdolCast`: списывает ману, добавляет `BotFighter` фантома в команду
   кастера (id из эфемерного диапазона), ждёт врага как обычный моб; `roster-updated` показывает

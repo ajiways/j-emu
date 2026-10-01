@@ -2,6 +2,7 @@ import type { ArtifactDefinition } from "../../catalog/domain/artifact-definitio
 import type { Catalog } from "../../catalog/ports/catalog.ts";
 import { bagActionsFor } from "../../inventory/domain/bag-actions.ts";
 import { instanceDurability, isBroken } from "../../inventory/domain/durability.ts";
+import { isIdolArtifact } from "../../inventory/domain/idol-artifact.ts";
 import { noweightWire } from "../../inventory/domain/artifact-flags.ts";
 import { canItemBeUpgraded } from "../../inventory/domain/gear-upgrade.ts";
 import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
@@ -32,6 +33,8 @@ export type BagItemBlock = Readonly<{
   actions: number;
   flags: number;
   noweight: 0 | 1;
+  /** The client's right pocket lists the bag items with this set (idols). */
+  show_extern: boolean;
   price: number;
   sell_price: number;
   upgrade_id: number;
@@ -81,6 +84,7 @@ export async function buildBagItemBlock(
     ),
     flags: overlay.flags,
     noweight: noweightWire(definition.flags),
+    show_extern: isIdolArtifact(definition),
     price: moneyNumberFromMinorUnits(definition.priceMinor),
     sell_price: moneyNumberFromMinorUnits(sellPriceMinor(definition.priceMinor)),
     upgrade_id: overlay.upgrade_id,

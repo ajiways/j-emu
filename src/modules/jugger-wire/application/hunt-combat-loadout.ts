@@ -9,11 +9,11 @@ import type {
 } from "../../combat/domain/combat-loadout.ts";
 import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
+import { isIdolArtifact } from "../../inventory/domain/idol-artifact.ts";
 import { isRolledGloveInstance } from "../../inventory/domain/item-instance-data.ts";
 import { toCombatSpell } from "./to-combat-spell.ts";
 
 const GLOVE_SLOT = 32;
-const IDOL_KIND_ID = 35;
 
 export class HuntCombatLoadout {
   constructor(
@@ -57,7 +57,7 @@ export class HuntCombatLoadout {
       if (item.location.kind !== "bag") continue;
       const definition = await this.requireArtifact(item.artifactId);
       const spell = definition.extra.spell;
-      if (definition.kindId !== IDOL_KIND_ID || !spell) continue;
+      if (!isIdolArtifact(definition) || !spell) continue;
       const combatSpell = toCombatSpell(spell);
       const summon = combatSpell.effects.find((effect) => effect.kind === 10);
       if (summon?.botArtikulId === undefined) {

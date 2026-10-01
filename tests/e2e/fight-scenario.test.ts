@@ -139,7 +139,7 @@ describe("scripted fight scenarios from chat", () => {
 
   it("idols: the bag idols are listed, a cast spends mana, calls the phantom and uses up the item", async () => {
     const client = await startScenario("idols");
-    expect(opened.match(/"srcType":4/g)).toHaveLength(2);
+    expect(opened.match(/"srcType":4/g)).toHaveLength(3);
     expect(opened).toContain('"mpCost":12');
     const idol = /"artikulId":305[\s\S]*?"srcId":(\d+),"srcType":4/.exec(opened);
     if (!idol?.[1]) throw new Error("Idol 305 is not in the fight spell list");
