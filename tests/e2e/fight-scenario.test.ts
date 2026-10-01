@@ -153,7 +153,10 @@ describe("scripted fight scenarios from chat", () => {
     expect(cast).toContain('"delta":-12');
     expect(cast).toContain("Фантом Грызла");
     expect(cast).not.toContain('"aggressive":true');
-    expect(cast).toContain('"artikulId":305,"count":1');
+    // One phantom per fight: no idol is offered any more, and a second cast is refused.
+    expect(cast).not.toContain('"srcType":4');
+    await client.fight({ rc: "castSpell", srcType: 4, srcId: Number(idol[1]), targetId: 1, sq: 5 });
+    expect(JSON.stringify(await client.pollFight())).not.toContain('"et":"mpChange"');
     // The phantom (id 1000002) takes the second mob across from it and fights it on its own (its dealt damage grows).
     const seen: string[] = [];
     for (let second = 0; second < 10; second += 1) {

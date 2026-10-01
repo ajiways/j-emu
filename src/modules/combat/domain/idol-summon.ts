@@ -3,6 +3,7 @@ import { BotFighter } from "./bot-fighter.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import { unpublishedBotFightStats } from "./combatant-fight-stats.ts";
 import type { CombatIdolRow, PhantomTemplate } from "./combat-loadout.ts";
+import { FightCastDenied } from "./fight-cast-denied.ts";
 import type { FightRules } from "./fight-rules.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { KeepTurnResult } from "./player-casts.ts";
@@ -50,6 +51,7 @@ export function tryIdolCast(
       `Idol ${row.artifactId} summons mob ${summonedBot(row)}, absent from the catalog`,
     );
   }
+  if (human.casts.hasCalledPhantom()) throw new FightCastDenied("phantom", input.sequence);
   requireMana(human, row.spell, input.sequence);
   const range = manaRange(row.spell);
   const spent = Math.min(human.mp, range.max);

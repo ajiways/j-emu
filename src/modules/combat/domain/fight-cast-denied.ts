@@ -1,6 +1,6 @@
 export class FightCastDenied extends Error {
   constructor(
-    readonly deny: "cooldown" | "kind11" | "pvp-only" | "mana" | "target",
+    readonly deny: "cooldown" | "kind11" | "pvp-only" | "mana" | "target" | "phantom",
     readonly sequence: string | number,
   ) {
     super(DENY_MESSAGES[deny]);
@@ -14,4 +14,5 @@ const DENY_MESSAGES = {
   "pvp-only": "spell is only for PvP fights",
   mana: "not enough mana",
   target: "the spell cannot be cast on that target",
+  phantom: "a phantom has already been called in this fight",
 } as const;

@@ -21,6 +21,7 @@ export class CastState {
   private readonly pockets = new Map<number, PocketRuntime>();
   private readonly idolCounts = new Map<number, number>();
   private concentrationUsedAtMs: number | null = null;
+  private phantomCalled = false;
   private readonly groupLastUseAt = new Map<number, number>();
   private readonly gloveLastUseAt = new Map<number, number>();
 
@@ -55,10 +56,16 @@ export class CastState {
     return this.loadout.idols.find((idol) => idol.itemId === itemId) ?? null;
   }
 
+  /** One phantom per fight: once an idol has been cast, no idol can be cast again. */
+  hasCalledPhantom(): boolean {
+    return this.phantomCalled;
+  }
+
   consumeIdol(itemId: number): CombatIdolRow {
     const row = this.idolRow(itemId);
     if (!row) throw new Error(`Idol item ${itemId} is not available in the fight`);
     this.idolCounts.set(itemId, (this.idolCounts.get(itemId) ?? 0) - 1);
+    this.phantomCalled = true;
     return row;
   }
 
@@ -178,6 +185,7 @@ export class CastState {
       }),
       concentration: this.loadout.concentration,
       idols: this.loadout.idols.flatMap((idol) => {
+        if (this.phantomCalled) return [];
         const count = this.idolCounts.get(idol.itemId) ?? 0;
         return count > 0 ? [{ ...idol, count }] : [];
       }),

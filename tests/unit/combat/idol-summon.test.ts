@@ -97,6 +97,27 @@ describe("idol summon", () => {
     expect(human.casts.idolRow(100_001)).not.toBeNull();
   });
 
+  it("calls only one phantom per fight, even from a stack of idols, and hides the idols after", () => {
+    const stack: CombatIdolRow = { ...idol(FIXED, PHANTOM), count: 2 };
+    const human = hero(stack, 40);
+    const roster = rosterOf([human], []);
+    const call = (sequence: number) =>
+      tryIdolCast({
+        human,
+        itemId: 100_001,
+        sequence,
+        roster,
+        fightRules: FightRules.forHunt(null),
+        finished: false,
+        allocateBotId: () => 1_000_007 + sequence,
+      });
+    expect(call(1)).toMatchObject({ kind: "resolved" });
+    expect(human.casts.wireLoadout().idols).toEqual([]);
+    expect(() => call(2)).toThrow(FightCastDenied);
+    expect(human.mp).toBe(20);
+    expect(roster.bots).toHaveLength(1);
+  });
+
   it("fails loudly when the catalog has no mob for the idol", () => {
     const human = hero(idol(FIXED, null), 30);
     expect(() => cast(human)).toThrow(/absent from the catalog/);
