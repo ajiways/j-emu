@@ -136,8 +136,11 @@ export class Battle {
     return this.humans.map((human) => human.accountId);
   }
 
+  /** Players who take part in the fight's wire: connected, and not walked out of it. */
   authedAccountIds(): readonly number[] {
-    return this.humans.filter((human) => human.authed).map((human) => human.accountId);
+    return this.humans
+      .filter((human) => human.authed && !human.leftLive)
+      .map((human) => human.accountId);
   }
 
   hasHuman(accountId: number, heroId: number): boolean {

@@ -114,3 +114,15 @@ describe("Battle 3↔3 shuffle", () => {
     expect(rightHp).toBe(24);
   });
 });
+
+describe("Battle wire audience", () => {
+  it("stops addressing a player who left the fight", () => {
+    const battle = createUnitBattle(huntInit(), new SequenceRandom([1]));
+    battle.authenticate(1, AUTH_NOW);
+    battle.addHuman(joinTeam1());
+    battle.authenticate(2, AUTH_NOW);
+    expect(battle.authedAccountIds()).toEqual([1, 2]);
+    battle.markHumanLeft(1);
+    expect(battle.authedAccountIds()).toEqual([2]);
+  });
+});
