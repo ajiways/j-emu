@@ -102,6 +102,7 @@ export function strikeEvents(
       targetMaxHp: target.maxHp,
       killed: strike.killed,
       react: outcome.react,
+      ...(outcome.blocked > 0 ? { blocked: outcome.blocked } : {}),
       dRage: strike.dRage,
       ...(input.comboCp !== undefined ? { comboCp: input.comboCp } : {}),
       ...(drained.healed > 0 ? { drain: drained.healed, selfReact: drained.selfReact } : {}),

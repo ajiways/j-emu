@@ -13,6 +13,7 @@ export function fightCastEvent(event: DamageEvent): Readonly<Record<string, unkn
     dRage: 0,
     et: "cast",
     react,
+    ...(event.blocked ? { blocked: event.blocked } : {}),
     hpSelf: 0,
     hp: 0,
     ev: extraHits(event),
@@ -68,6 +69,7 @@ function hpChangeRow(event: DamageEvent, react: number, heal: boolean): Record<s
     maxHp: event.targetMaxHp,
     persId: event.sourceId,
     react,
+    ...(event.blocked ? { blocked: event.blocked } : {}),
     selfReact: event.selfReact ?? 0,
     targetId: event.targetId,
   };

@@ -91,7 +91,13 @@ export class ScenarioDesk {
       `Сценарий «${name}»: ${scenario.description} Боевой карман: ${pocket}.`,
     );
     return {
-      "fight|conf": this.deps.fightWire.fightConfiguration(started, heroFightConfLook(hero)),
+      "fight|conf": this.deps.fightWire.fightConfiguration(
+        started,
+        // A quest fight shows no way out, as the quest fights of the game do.
+        scenario.purpose === "quest"
+          ? { ...heroFightConfLook(hero), flags: "8", canLeave: 0 }
+          : heroFightConfLook(hero),
+      ),
     };
   }
 

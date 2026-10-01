@@ -24,6 +24,7 @@ describe("fight result info", () => {
       startedAt: new Date("2026-09-16T12:00:00"),
       now: new Date("2026-09-16T12:00:03"),
       winnerTeam: 1,
+      fightOver: true,
       humans: [
         {
           accountId: 7,
@@ -101,6 +102,40 @@ describe("fight result info", () => {
     expect(requireRecord(macroses[shareKey], "SHARE").link).toBe("/fight_info.php?fight_id=12");
   });
 
+  it("marks a fight finished when it is over even though its only player had left", () => {
+    const info = buildFightResultInfo({
+      fightId: "9",
+      title: "t",
+      type: "1",
+      areaId: "503",
+      timeout: 20,
+      startedAt: new Date(0),
+      now: new Date(5000),
+      winnerTeam: 2,
+      fightOver: true,
+      humans: [
+        {
+          accountId: 1,
+          heroId: 1,
+          nick: "H",
+          level: 1,
+          kind: 1,
+          team: 2,
+          hp: 0,
+          maxHp: 10,
+          mp: 0,
+          maxMp: 10,
+          damageToBot: 0,
+          damageToHumans: 0,
+          leftLive: true,
+        },
+      ],
+      bots: [],
+      lootByAccount: new Map(),
+    });
+    expect(info.finished).toBe(1);
+  });
+
   it("marks a last-leave snapshot unfinished and without a kill", () => {
     const info = buildFightResultInfo({
       fightId: "12",
@@ -111,6 +146,7 @@ describe("fight result info", () => {
       startedAt: new Date("2026-09-16T12:00:00"),
       now: new Date("2026-09-16T12:00:00"),
       winnerTeam: 2,
+      fightOver: false,
       humans: [
         {
           accountId: 7,

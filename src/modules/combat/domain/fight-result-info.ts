@@ -75,6 +75,8 @@ export function buildFightResultInfo(input: {
   startedAt: Date;
   now: Date;
   winnerTeam: 1 | 2;
+  /** Whether the fight is decided; a fight the players walked out of while it runs is not. */
+  fightOver: boolean;
   humans: readonly FightResultHumanInput[];
   bots: readonly BotSnap[];
   lootByAccount: ReadonlyMap<number, FightLootBlock>;
@@ -90,7 +92,6 @@ export function buildFightResultInfo(input: {
     1,
     Math.floor((input.now.getTime() - input.startedAt.getTime()) / 1000),
   );
-  const allFled = input.humans.every((human) => human.leftLive);
   const enemyDead = input.bots.some((bot) => bot.hp <= 0);
   const users: FightResultUser[] = [];
   for (const human of input.humans) {
@@ -156,7 +157,7 @@ export function buildFightResultInfo(input: {
     duration: String(durationSec),
     timeout: input.timeout,
     areaId: input.areaId,
-    finished: allFled ? 0 : 1,
+    finished: input.fightOver ? 1 : 0,
     winnerTeam: input.winnerTeam === 1 ? "1" : "2",
     users,
   };

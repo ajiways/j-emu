@@ -43,6 +43,8 @@ describe("CombatService leaveFight", () => {
     });
     expect(await combat.hasFight(start.fightId)).toBe(true);
     expect(await combat.activeFightId(2)).toBe(start.fightId);
+    // The one who walked out gets a result to look at at once, of a fight that still runs.
+    expect(await combat.lastFightInfo(1)).toMatchObject({ fightId: start.fightId, finished: 0 });
   });
 
   it("denies leave on a quest fight without fleeing", async () => {

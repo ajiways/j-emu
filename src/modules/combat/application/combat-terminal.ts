@@ -68,6 +68,12 @@ export class CombatTerminal {
         if (token) this.scheduler.cancel(token);
       }
       await this.departHuman(battle, accountId);
+      // The client asks for the result as soon as it walks out; the fight goes on without it.
+      const winnerOnLeave = battle.opposingTeamOf(accountId);
+      this.pendingFightInfo.set(
+        accountId,
+        this.resultInfo(battle, winnerOnLeave, new Map(), false),
+      );
       this.queueExit(accountId, battle.id, {
         fightId: battle.id,
         winnerTeam: battle.opposingTeamOf(accountId),
@@ -183,7 +189,7 @@ export class CombatTerminal {
       : new Map<number, FightLootBlock>();
     this.settledFights.add(battle.id);
     await this.recordHistory(battle, winnerTeam);
-    const info = this.resultInfo(battle, winnerTeam, lootByAccount);
+    const info = this.resultInfo(battle, winnerTeam, lootByAccount, kind !== "last-leave");
     const flee = kind === "last-leave";
     const exit: FightExit = flee
       ? { fightId: battle.id, winnerTeam, flee: true }
@@ -218,6 +224,7 @@ export class CombatTerminal {
     battle: Battle,
     winnerTeam: 1 | 2,
     lootByAccount: ReadonlyMap<number, FightLootBlock>,
+    fightOver: boolean,
   ): FightResultInfo {
     const { humans, bots } = battle.boardParticipants();
     return buildFightResultInfo({
@@ -229,6 +236,7 @@ export class CombatTerminal {
       startedAt: battle.startedAt,
       now: this.scheduler.now(),
       winnerTeam,
+      fightOver,
       humans,
       bots,
       lootByAccount,

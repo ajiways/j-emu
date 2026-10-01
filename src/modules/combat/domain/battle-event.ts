@@ -66,6 +66,8 @@ export type BattleEvent =
       dRage?: number;
       dmgType?: number;
       react?: number;
+      /** Damage a block took away (the hit then does none); the client shows the block. */
+      blocked?: number;
       /** Hp the striker got back from this hit (`VAMP`), with its `selfReact`. */
       drain?: number;
       selfReact?: number;
