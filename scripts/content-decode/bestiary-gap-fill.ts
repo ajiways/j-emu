@@ -29,6 +29,10 @@ function botFromGapRecord(id: number, raw: Record<string, unknown>): BotSource {
   if (level < 1) throw new Error(`bestiary-bots.json bot ${id} level must be positive`);
   const skills = isRecord(raw.skills) ? raw.skills : {};
   const strength = amfOmittedZeroInteger(raw.str ?? skills.STR, `bestiary-bots.json bot ${id} STR`);
+  const initiative = amfOmittedZeroInteger(
+    raw.luck ?? skills.LUCK,
+    `bestiary-bots.json bot ${id} LUCK`,
+  );
   const maxHp = amfOmittedZeroInteger(raw.vit ?? skills.VIT, `bestiary-bots.json bot ${id} VIT`);
   if (maxHp < 1) throw new Error(`bestiary-bots.json bot ${id} VIT must be positive`);
   const sk = stringField(raw.sk, `bestiary-bots.json bot ${id} sk`);
@@ -41,6 +45,7 @@ function botFromGapRecord(id: number, raw: Record<string, unknown>): BotSource {
     level,
     maxHp,
     strength,
+    initiative,
     sk,
     avatar,
     body,

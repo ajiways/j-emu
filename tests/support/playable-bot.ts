@@ -59,6 +59,7 @@ function botDefinitionFromDocument(document: BotDocument): BotDefinition {
     document.level,
     document.maxHp,
     document.strength,
+    document.initiative,
     new HuntLook(
       document.hunt.nick,
       document.hunt.swf,

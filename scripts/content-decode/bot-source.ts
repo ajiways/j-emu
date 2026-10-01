@@ -17,6 +17,8 @@ export type BotSource = Readonly<{
   level: number;
   maxHp: number;
   strength: number;
+  /** The bestiary `LUCK`: the first-strike weight of the mob. */
+  initiative: number;
   sk: string;
   avatar: string;
   body: string;

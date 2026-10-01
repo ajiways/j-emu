@@ -178,6 +178,8 @@ export type BotDocument = Readonly<{
   level: number;
   maxHp: number;
   strength: number;
+  /** The first-strike weight (`LUCK`). */
+  initiative: number;
   hunt: HuntLookDocument;
   baseExp: number;
   moneyMin: number;

@@ -75,6 +75,8 @@ export type PhantomTemplate = Readonly<{
   nick: string;
   level: number;
   strength: number;
+  /** The first-strike weight the mob is called with (the mob's `LUCK`). */
+  initiative: number;
   maxHp: number;
   avatar: string;
   sk: string;

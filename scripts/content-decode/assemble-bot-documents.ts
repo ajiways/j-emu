@@ -7,6 +7,7 @@ export type GeneratedBotDocument = Readonly<{
   level: number;
   maxHp: number;
   strength: number;
+  initiative: number;
   hunt: BotSource["hunt"];
   baseExp: number;
   moneyMin: number;
@@ -32,6 +33,7 @@ export function botDocumentsFromSources(bots: readonly BotSource[]): GeneratedBo
       level: bot.level,
       maxHp: bot.maxHp,
       strength: bot.strength,
+      initiative: bot.initiative,
       hunt: bot.hunt,
       baseExp: bot.baseExp,
       moneyMin: bot.moneyMin,

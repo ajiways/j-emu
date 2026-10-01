@@ -32,6 +32,7 @@ export type OverlayBot = Readonly<{
   moneyMin: number;
   moneyMax: number;
   strength: number;
+  initiative: number;
   maxHp: number;
   dropIds: readonly number[];
   hunt: BotHuntLook | null;
@@ -85,6 +86,7 @@ function overlayToSource(row: OverlayBot, previous: BotSource | undefined): BotS
     level: row.level,
     maxHp: row.maxHp,
     strength: row.strength,
+    initiative: row.initiative,
     sk: row.sk,
     avatar: row.avatar,
     body: row.body,
@@ -134,6 +136,7 @@ function overlayBotFromRecord(key: string, raw: unknown): OverlayBot {
     moneyMin: amfNumber(raw.money_min ?? raw.moneyMin, `bots-overlay.json bot ${id} money_min`),
     moneyMax: amfNumber(raw.money_max ?? raw.moneyMax, `bots-overlay.json bot ${id} money_max`),
     strength: amfOmittedZeroInteger(raw.str ?? skills.STR, `bots-overlay.json bot ${id} STR`),
+    initiative: amfOmittedZeroInteger(raw.luck ?? skills.LUCK, `bots-overlay.json bot ${id} LUCK`),
     maxHp,
     dropIds: idMapToList(raw.drop_artikul_ids ?? raw.drop, `bots-overlay.json bot ${id} drop`),
     hunt: huntFromExtra(id, nick, extra),

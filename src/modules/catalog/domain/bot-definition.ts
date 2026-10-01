@@ -9,6 +9,8 @@ export class BotDefinition {
     readonly level: number,
     readonly maxHp: number,
     readonly strength: number,
+    /** The first-strike weight (`LUCK`); 0 for a mob without one. */
+    readonly initiative: number,
     readonly hunt: HuntLook,
     readonly reward: BotReward,
     readonly spellBook: BotSpellBook,
@@ -19,6 +21,9 @@ export class BotDefinition {
     if (!Number.isInteger(maxHp) || maxHp < 1) throw new Error(`Bot ${id} maxHp is invalid`);
     if (!Number.isInteger(strength) || strength < 0) {
       throw new Error(`Bot ${id} strength is invalid`);
+    }
+    if (!Number.isInteger(initiative) || initiative < 0) {
+      throw new Error(`Bot ${id} initiative is invalid`);
     }
   }
 }

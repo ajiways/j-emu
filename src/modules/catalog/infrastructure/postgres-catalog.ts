@@ -100,6 +100,7 @@ export class PostgresCatalog implements Catalog {
       row.level,
       row.maxHp,
       row.strength,
+      row.initiative,
       new HuntLook(
         row.huntNick,
         row.huntSwf,

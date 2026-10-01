@@ -34,6 +34,7 @@ function botFromAmfRecord(mapKey: string, raw: unknown): BotSource {
   if (level < 1) throw new Error(`bestiary bot ${id} level must be positive`);
   const skills = isRecord(raw.skills) ? raw.skills : {};
   const strength = amfOmittedZeroInteger(skills.STR, `bestiary bot ${id} STR`);
+  const initiative = amfOmittedZeroInteger(skills.LUCK, `bestiary bot ${id} LUCK`);
   const maxHp = amfOmittedZeroInteger(skills.VIT, `bestiary bot ${id} VIT`);
   if (maxHp < 1) throw new Error(`bestiary bot ${id} VIT must be positive`);
   const sk = amfString(raw.sk, `bestiary bot ${id} sk`);
@@ -47,6 +48,7 @@ function botFromAmfRecord(mapKey: string, raw: unknown): BotSource {
     level,
     maxHp,
     strength,
+    initiative,
     sk,
     avatar,
     body,

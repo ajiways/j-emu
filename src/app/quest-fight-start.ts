@@ -162,7 +162,7 @@ async function loadRosterBots(
         level: bot.level,
         hp: bot.maxHp,
         strength: bot.strength,
-        initiative: unpublishedBotFightStats(bot.strength).initiative,
+        initiative: bot.initiative,
         magPower: unpublishedBotFightStats(bot.strength).mag.power,
         magResist: unpublishedBotFightStats(bot.strength).mag.resist,
         avatar: bot.hunt.avatar,

@@ -14,6 +14,7 @@ const PHANTOM = {
   nick: "Стойкий фантом Гарпины",
   level: 15,
   strength: 200,
+  initiative: 25,
   maxHp: 300,
   avatar: "avatar_garpina1_sm.jpg",
   sk: "52",
@@ -80,6 +81,7 @@ describe("idol summon", () => {
     expect(result).toMatchObject({ kind: "resolved", consumeBagItemId: 100_001 });
     expect(roster.bots).toHaveLength(1);
     expect(roster.bots[0]).toMatchObject({ team: 1, fightId: 1_000_007, hp: 300, strength: 200 });
+    expect(roster.bots[0]?.initiative).toBe(25);
     expect(roster.bots[0]?.waiting).toBe(true);
     expect(human.casts.idolRow(100_001)).toBeNull();
   });

@@ -63,6 +63,7 @@ export const botDocumentSchema = z
     level: z.number().int().positive(),
     maxHp: z.number().int().positive(),
     strength: z.number().int().nonnegative(),
+    initiative: z.number().int().nonnegative(),
     hunt: huntLookSchema,
     baseExp: z.number().int().nonnegative(),
     moneyMin: z.number().nonnegative(),

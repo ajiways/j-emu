@@ -173,6 +173,7 @@ async function insertBots(
     level: bot.level,
     maxHp: bot.maxHp,
     strength: bot.strength,
+    initiative: bot.initiative,
     huntNick: bot.hunt.nick,
     huntSwf: bot.hunt.swf,
     huntScale: bot.hunt.scale,

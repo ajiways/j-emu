@@ -96,6 +96,7 @@ export class HuntCombatLoadout {
       nick: bot.hunt.nick,
       level: bot.level,
       strength: bot.strength,
+      initiative: bot.initiative,
       maxHp: bot.maxHp,
       avatar: bot.hunt.avatar,
       sk: bot.hunt.sk,

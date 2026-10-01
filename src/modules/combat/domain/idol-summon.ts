@@ -106,7 +106,7 @@ function summon(
       level: template.level,
       hp: stats.maxHp,
       strength: stats.strength,
-      initiative: fight.initiative,
+      initiative: template.initiative,
       magPower: fight.mag.power,
       magResist: fight.mag.resist,
       avatar: template.avatar,

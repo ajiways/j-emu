@@ -127,7 +127,7 @@ export class AttackBotCommand implements OaCommand {
       botLevel: bot.level,
       botHp: bot.maxHp,
       botStrength: bot.strength,
-      botInitiative: unpublishedBotFightStats(bot.strength).initiative,
+      botInitiative: bot.initiative,
       botMagPower: unpublishedBotFightStats(bot.strength).mag.power,
       botMagResist: unpublishedBotFightStats(bot.strength).mag.resist,
       botAvatar: bot.hunt.avatar,

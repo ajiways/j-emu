@@ -644,7 +644,7 @@ HP без сброса. Shuffle отменяет delay token **только за
 
 Новая пара из `tryPairQueues` — `rollOpensFirst` (LUCK, `INITIATIVE_SOFT_C=80`,
 `legacy behavior`). Стартовая opener↔spawn-bot пара открывает opener.
-Unpublished bot initiative = `0` (нет LUCK в `BotDefinition`). Delay token
+Инициатива моба — его `LUCK` из бестиария/оверлея (`BotDefinition.initiative`, колонка `catalog.bots.initiative`); у фантома идола — LUCK предмета (у «до N маны» 0). Моб без LUCK — `0`. Формула `rollOpensFirst` вероятностная: вес `ini/(ini+80)`, но при `0` вес нулевой, и любой ненулевой LUCK выигрывает всегда. Delay token
 `${fightId}:{min}:{max}`.
 
 Не в срезе: dodge/crit (CMB-14), magic kinds (CMB-15), BG JOIN, assault/`FightRules`.
