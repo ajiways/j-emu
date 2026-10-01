@@ -268,7 +268,7 @@ export class CombatService implements CombatPort {
     }
     if (command.kind === "leave") {
       const battle = this.byAccount.get(accountId);
-      if (battle && !battle.finished && !battle.fightRules.canLeave) {
+      if (battle && !battle.leaveAllowed(accountId)) {
         return [
           { type: "command-denied" as const, sequence: command.sequence, err: FIGHT_LEAVE_DENIED },
         ];

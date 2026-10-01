@@ -206,7 +206,9 @@ export function shuffleAffectedAccountIds(
   if (shuffle.kind === "waiter-handoff") return [shuffle.actorAccountId, shuffle.waiterAccountId];
   if (shuffle.kind === "ally-handoff") return [shuffle.actorAccountId];
   if (shuffle.kind === "reserve-swap") return [shuffle.accountId];
-  return [shuffle.leftAccountId, shuffle.rightAccountId];
+  return shuffle.rightAccountId === null
+    ? [shuffle.leftAccountId]
+    : [shuffle.leftAccountId, shuffle.rightAccountId];
 }
 
 /** What each side of a finished shuffle is told, and whose turn is granted next. */
@@ -239,8 +241,10 @@ export function deliverShuffle(
     return;
   }
   tell(shuffle.leftAccountId, [{ type: "opponent-new", bot: shuffle.leftBot }]);
-  tell(shuffle.rightAccountId, [{ type: "opponent-new", bot: shuffle.rightBot }]);
   input.grantPairedBot(shuffle.leftAccountId);
+  // An ally mob on the other side needs no word: its duel goes on by the fight clock.
+  if (shuffle.rightAccountId === null) return;
+  tell(shuffle.rightAccountId, [{ type: "opponent-new", bot: shuffle.rightBot }]);
   input.grantPairedBot(shuffle.rightAccountId);
 }
 

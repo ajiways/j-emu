@@ -345,6 +345,12 @@ export class Battle {
     return this.humans.filter((human) => !human.leftLive && human.hp > 0);
   }
 
+  /** A fallen player may always walk out; the ban of a fight holds for those still fighting. */
+  leaveAllowed(accountId: number): boolean {
+    const fighting = this.livingHumans().some((human) => human.accountId === accountId);
+    return this.finishedValue || this.fightRules.canLeave || !fighting;
+  }
+
   markHumanLeft(accountId: number): HumanFighter {
     const human = requireBattleHuman(this.humans, accountId);
     human.markLeft();

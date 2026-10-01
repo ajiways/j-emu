@@ -17,7 +17,8 @@ export type ShuffleOutcome =
   | Readonly<{
       kind: "cross-swap";
       leftAccountId: number;
-      rightAccountId: number;
+      /** `null` when the other side of the swap is a mob. */
+      rightAccountId: number | null;
       leftBot: BotSnap;
       rightBot: BotSnap;
     }>

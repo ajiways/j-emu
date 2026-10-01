@@ -158,6 +158,24 @@ describe("scripted fight scenarios from chat", () => {
     expect(seen.join("")).toMatch(/"dealtDamage":[1-9]\d*,"faction":0,"hp":\d+,"id":1000002/);
   });
 
+  it("idols: after 3↔3 the hero and the phantom swap their mobs", async () => {
+    const client = await startScenario("idols");
+    const idol = /"artikulId":305[\s\S]*?"srcId":(\d+),"srcType":4/.exec(opened);
+    if (!idol?.[1]) throw new Error("Idol 305 is not in the fight spell list");
+    await client.fight({ rc: "castSpell", srcType: 4, srcId: Number(idol[1]), targetId: 1, sq: 4 });
+    await client.pollFight();
+    const foes = new Set<string>(["1000000"]);
+    let sq = 5;
+    for (let turn = 0; turn < 8; turn += 1) {
+      await harness.elapseCombat(3000);
+      const frames = JSON.stringify(await client.pollFight());
+      for (const match of frames.matchAll(/"et":"oppnew"[^}]*?"id":(\d+)/g))
+        foes.add(match[1] ?? "");
+      await client.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: sq++ });
+    }
+    expect(foes.size).toBeGreaterThan(1);
+  });
+
   it("answers an unknown scenario with a system line and starts no fight", async () => {
     const client = await AuthenticatedClient.login(application);
     const sent = await client.objectAction({

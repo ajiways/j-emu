@@ -1,6 +1,7 @@
 import type { BattleEvent } from "./battle-event.ts";
 import { botSnapOf } from "./bot-snap-of.ts";
 import type { HumanFighter } from "./human-fighter.ts";
+import type { Participant } from "./participant.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import { peekWaitingEnemy, takeNextEnemyForHuman } from "./wait-queue.ts";
@@ -47,11 +48,12 @@ export function shuffleAfterHits(
   const foeBot = input.bots.find((bot) => bot.fightId === input.pairing.duel.otherId(actor.heroId));
   if (!foeBot) return { kind: "none" };
   const openerTeam = input.openerTeam;
-  const partner = otherHumanBotDuel(
+  const partner = otherAllyDuel(
     input.duels,
     input.pairing.duel,
     input.pairing.humans,
     input.bots,
+    actor.team,
   );
   const swappable =
     partner && partner.hitsA >= PAIR_HITS_TO_SWITCH && partner.hitsB >= PAIR_HITS_TO_SWITCH
@@ -208,11 +210,9 @@ function applyCrossSwap(
   actor: HumanFighter,
   actorBot: BotFighter,
 ): ShuffleOutcome {
-  const otherHuman = humans.find(
-    (human) => other.has(human.heroId) && !human.waiting && human.alive,
-  );
-  if (!otherHuman) throw new Error("Shuffle cross-swap requires a living other human");
-  const otherBot = bots.find((bot) => bot.fightId === other.otherId(otherHuman.heroId));
+  const otherHuman = livingAllyIn(other, humans, bots, actor.team);
+  if (!otherHuman) throw new Error("Shuffle cross-swap requires a living other ally");
+  const otherBot = bots.find((bot) => bot.fightId === other.otherId(otherHuman.id));
   if (!otherBot || !otherBot.alive) {
     throw new Error("Shuffle cross-swap requires a living other bot");
   }
@@ -221,13 +221,13 @@ function applyCrossSwap(
   const leftBotHp = actorBot.hp;
   const rightBotHp = otherBot.hp;
   otherHuman.markFought(otherBot.fightId);
-  otherBot.markFought(otherHuman.heroId);
+  otherBot.markFought(otherHuman.id);
   leftPairing.duel.replace(actorBot.fightId, otherBot.fightId);
   other.replace(otherBot.fightId, actorBot.fightId);
   leftPairing.duel.resetHits();
   other.resetHits();
   leftPairing.duel.setNextActor(actor.heroId);
-  other.setNextActor(otherHuman.heroId);
+  other.setNextActor(otherHuman.id);
   if (
     actor.hp !== leftHp ||
     otherHuman.hp !== rightHp ||
@@ -239,26 +239,46 @@ function applyCrossSwap(
   return {
     kind: "cross-swap",
     leftAccountId: actor.accountId,
-    rightAccountId: otherHuman.accountId,
+    rightAccountId: otherHuman.fighterKind === "human" ? humanAccountOf(humans, otherHuman) : null,
     leftBot: otherBot.snap(),
     rightBot: actorBot.snap(),
   };
 }
 
-function otherHumanBotDuel(
+/** The living, fighting ally of `team` (a player or a mob) who stands in `duel` against a mob. */
+function humanAccountOf(humans: readonly HumanFighter[], participant: Participant): number {
+  const human = humans.find((entry) => entry.id === participant.id);
+  if (!human) throw new Error(`Participant ${participant.id} is not a player`);
+  return human.accountId;
+}
+
+function livingAllyIn(
+  duel: FightDuel,
+  humans: readonly HumanFighter[],
+  bots: readonly BotFighter[],
+  team: 1 | 2,
+): Participant | undefined {
+  const ally = [...humans, ...bots].find(
+    (entry) => entry.team === team && duel.has(entry.id) && !entry.waiting && entry.alive,
+  );
+  if (!ally) return undefined;
+  const foe = bots.find((entry) => entry.fightId === duel.otherId(ally.id));
+  return foe?.alive && foe.team !== team ? ally : undefined;
+}
+
+/** Another duel of an ally of `team` against a mob: the one an actor may swap foes with. */
+function otherAllyDuel(
   duels: readonly FightDuel[],
   actorDuel: FightDuel,
   humans: readonly HumanFighter[],
   bots: readonly BotFighter[],
+  team: 1 | 2,
 ): FightDuel | null {
-  for (const duel of duels) {
-    if (duel === actorDuel) continue;
-    const human = humans.find((entry) => duel.has(entry.heroId) && !entry.waiting && entry.alive);
-    if (!human) continue;
-    const bot = bots.find((entry) => entry.fightId === duel.otherId(human.heroId));
-    if (bot?.alive) return duel;
-  }
-  return null;
+  return (
+    duels.find(
+      (duel) => duel !== actorDuel && livingAllyIn(duel, humans, bots, team) !== undefined,
+    ) ?? null
+  );
 }
 
 function requirePaired(pairing: DuelPairing): HumanFighter {
