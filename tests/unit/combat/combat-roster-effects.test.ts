@@ -25,6 +25,7 @@ const orbLoadout: CombatLoadout = {
     },
   ],
   idols: [],
+  concentration: null,
   glove: null,
   gearSpells: [],
 };

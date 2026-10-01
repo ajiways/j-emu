@@ -64,8 +64,6 @@ const schema = z.object({
     turnGrantDelayMs: z.number().int().positive(),
     maxConsecutiveSkips: z.number().int().positive(),
     resultRevealDelayMs: z.number().int().positive(),
-    concentrationCooldownSeconds: z.number().int().positive(),
-    concentrationMaxDamage: z.number().int().positive(),
     damageProvenance: z.literal("legacy behavior"),
     combatSoftC: z.literal(600),
     combatChanceCap: z.literal(0.4),

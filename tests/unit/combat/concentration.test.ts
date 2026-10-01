@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { concentrate } from "../../../src/modules/combat/domain/concentration.ts";
+import type { CombatSpell } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
@@ -13,7 +14,16 @@ import {
 } from "../../support/hunt-start-input.ts";
 import { rosterOf } from "../../support/roster-of.ts";
 
-function waitingHero(): HumanFighter {
+/** The cataloged «Удар в спину» (artikul 487): a hit of the hero's strength cut by `pcSTR -90`. */
+const SPELL: CombatSpell = {
+  animData: "magic_backstab",
+  cooldown: 90,
+  persRestr: { dead: false, noopp: true },
+  targetRestr: { dead: false },
+  effects: [{ kind: 1, dmgType: 256, order: 1, skills: [{ skillId: "pcSTR", value: -90 }] }],
+};
+
+function waitingHero(strength = 10): HumanFighter {
   const human = new HumanFighter({
     accountId: 1,
     heroId: 1,
@@ -26,9 +36,9 @@ function waitingHero(): HumanFighter {
     maxMp: 5,
     team: 1,
     waiting: true,
-    ...unitHuntHumanStats(10),
+    ...unitHuntHumanStats(strength),
     startedAtMs: 0,
-    loadout: EMPTY_COMBAT_LOADOUT,
+    loadout: { ...EMPTY_COMBAT_LOADOUT, concentration: SPELL },
     appearance: UNIT_HUNT_APPEARANCE,
     effectIds: new FightEffectIds(),
   });
@@ -36,7 +46,7 @@ function waitingHero(): HumanFighter {
   return human;
 }
 
-function use(hero: HumanFighter, bot = unitRosterBot({ hp: 20 }), draws = [0, 0.99], nowMs = 0) {
+function use(hero: HumanFighter, bot = unitRosterBot({ hp: 20 }), draws = [0, 1], nowMs = 0) {
   const roster = rosterOf([hero], [bot]);
   const result = concentrate({
     actor: hero,
@@ -52,22 +62,45 @@ function use(hero: HumanFighter, bot = unitRosterBot({ hp: 20 }), draws = [0, 0.
 }
 
 describe("concentration", () => {
-  it("deals 1 to the max damage to a random enemy and books it as the hero's own", () => {
-    const hero = waitingHero();
-    const { result, bot } = use(hero, unitRosterBot({ hp: 20 }), [0, 0.99]);
+  it("hits for a tenth of a strike of his strength, at least 1, and books it as his own", () => {
+    const weak = waitingHero(10);
+    const { result, bot } = use(weak, unitRosterBot({ hp: 20 }), [0, 1]);
     expect(result?.events[0]).toMatchObject({
       type: "damage",
       sourceId: 1,
       animation: "magic_backstab",
-      hpChange: -6,
+      dmgType: 256,
+      hpChange: -1,
     });
-    expect(bot.hp).toBe(14);
-    expect(hero.damageToBot).toBe(6);
+    expect(bot.hp).toBe(19);
+    expect(weak.damageToBot).toBe(1);
+    const strong = waitingHero(400);
+    // A strength of 400 makes a hit of 40, a tenth of it is 4, spread over 3..5.
+    expect(use(strong, unitRosterBot({ hp: 50 }), [0, 4]).bot.hp).toBe(46);
   });
 
-  it("deals at least 1", () => {
-    const { bot } = use(waitingHero(), unitRosterBot({ hp: 20 }), [0, 0]);
-    expect(bot.hp).toBe(19);
+  it("does nothing for a fighter without the spell", () => {
+    const hero = waitingHero();
+    const bare = new HumanFighter({
+      accountId: 2,
+      heroId: 2,
+      nick: "H2",
+      level: 3,
+      kind: 1,
+      hp: 30,
+      maxHp: 30,
+      mp: 5,
+      maxMp: 5,
+      team: 1,
+      waiting: true,
+      ...unitHuntHumanStats(10),
+      startedAtMs: 0,
+      loadout: EMPTY_COMBAT_LOADOUT,
+      appearance: UNIT_HUNT_APPEARANCE,
+      effectIds: new FightEffectIds(),
+    });
+    expect(use(bare).result).toBeNull();
+    expect(use(hero).result).not.toBeNull();
   });
 
   it("waits out its cooldown", () => {
@@ -81,7 +114,7 @@ describe("concentration", () => {
         fightRules: FightRules.forHunt(null),
         fightId: "9",
         rules: UNIT_BATTLE_RULES,
-        random: new SequenceRandom([0, 0.5, 0, 0.5]),
+        random: new SequenceRandom([0, 1, 0, 1]),
         nowMs,
       });
     expect(fire(0)).not.toBeNull();
@@ -96,7 +129,7 @@ describe("concentration", () => {
   });
 
   it("ends the fight when it takes down the last enemy", () => {
-    const { result } = use(waitingHero(), unitRosterBot({ hp: 1 }), [0, 0]);
+    const { result } = use(waitingHero(), unitRosterBot({ hp: 1 }), [0, 1]);
     expect(result?.fallout.finished).toMatchObject({ type: "finished", winnerTeam: 1 });
     expect(result?.events.at(-1)).toMatchObject({ type: "finished" });
   });

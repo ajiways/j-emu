@@ -1139,11 +1139,12 @@ Combat получает immutable combat-ready snapshots через public ports
 
 ## «Концентрация» (native «Удар в спину», `srcId 5`)
 
-Клиентская метка `fightBackstabLabel` = «Концентрация»; по описанию с офсайта: пока герой жив и
-ждёт противника, он периодически бьёт случайного живого врага на 1–N урона, очки урона идут в
-опыт и героизм боя. Реализовано: `castSpell srcType 1 srcId 5` → `concentrate` (`domain/
-concentration.ts`): только для ждущего (без дуэли) живого участника, кулдаун
-`combat.concentrationCooldownSeconds` (90, как `cooldown` в `persSpells`), урон `1..
-combat.concentrationMaxDamage` (6), `cast` с `animData magic_backstab`, урон засчитан как свой
-(`damageToBot`), убитый врага разбирает `settleFallen` (бой может закончиться). Ход не тратится.
-Бот-контроллер её пока не использует (правила общие, политики для ИИ нет).
+Клиентская метка `fightBackstabLabel` = «Концентрация»; по офсайту: пока герой жив и ждёт
+противника, он периодически бьёт случайного живого врага; очки урона идут в опыт и героизм.
+Что делает спелл, сказано в мете артикула 487: kind 1, `dmgType 256`, `pcSTR −90`, `cooldown 90`,
+`persRestr noopp` (только без противника). Реализация: `castSpell srcType 1 srcId 5` → `concentrate`
+(`domain/concentration.ts`): спелл берётся из каталога и кладётся в `CombatLoadout.concentration`
+(нет артикула 487 — бой не стартует); ждущий живой участник бьёт случайного живого врага тем же
+magic-hit, что и любой kind-1 спелл (сила × 0.1, разброс, min 1), `cast animData magic_backstab`;
+урон засчитан как свой (`damageToBot`/`damageToHumans`, из них опыт и PvP-героизм), убитого
+разбирает `settleFallen`. Ход не тратится. У ботов `concentration: null` — её нет.

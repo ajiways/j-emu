@@ -15,6 +15,7 @@ const AUTH_NOW = Date.parse("2026-09-07T12:00:00.000Z");
 const aoeLoadout: CombatLoadout = {
   pocket: [],
   idols: [],
+  concentration: null,
   glove: {
     hits: [2, 3, 2, 3, 1, 2, 3, 1],
     spells: [

@@ -115,8 +115,6 @@
     "turnGrantDelayMs": 2500,
     "maxConsecutiveSkips": 3,
     "resultRevealDelayMs": 1800,
-    "concentrationCooldownSeconds": 90,
-    "concentrationMaxDamage": 6,
     "damageProvenance": "legacy behavior",
     "combatSoftC": 600,
     "combatChanceCap": 0.4,

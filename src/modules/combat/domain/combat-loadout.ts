@@ -96,6 +96,8 @@ export type CombatIdolRow = Readonly<{
 export type CombatLoadout = Readonly<{
   pocket: readonly CombatPocketRow[];
   idols: readonly CombatIdolRow[];
+  /** The native «Удар в спину» spell (artikul 487) of a player; `null` for one who has none. */
+  concentration: CombatSpell | null;
   glove: CombatGloveLoadout | null;
   gearSpells: readonly CombatGearSpell[];
 }>;
@@ -103,6 +105,7 @@ export type CombatLoadout = Readonly<{
 export const EMPTY_COMBAT_LOADOUT: CombatLoadout = {
   pocket: [],
   idols: [],
+  concentration: null,
   glove: null,
   gearSpells: [],
 };

@@ -176,6 +176,7 @@ export class CastState {
         }
         return count > 0 ? [{ ...row, count }] : [];
       }),
+      concentration: this.loadout.concentration,
       idols: this.loadout.idols.flatMap((idol) => {
         const count = this.idolCounts.get(idol.itemId) ?? 0;
         return count > 0 ? [{ ...idol, count }] : [];

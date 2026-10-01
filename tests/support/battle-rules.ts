@@ -9,8 +9,6 @@ export const UNIT_BATTLE_RULES: BattleRules = {
   turnGrantDelayMs: 2500,
   maxConsecutiveSkips: 3,
   resultRevealDelayMs: 1800,
-  concentrationCooldownSeconds: 90,
-  concentrationMaxDamage: 6,
   combatSoftC: 600,
   combatChanceCap: 0.4,
   critMult: 2.35,

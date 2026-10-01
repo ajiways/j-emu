@@ -5,6 +5,7 @@ import type {
   CombatGloveLoadout,
   CombatIdolRow,
   CombatLoadout,
+  CombatSpell,
   PhantomTemplate,
 } from "../../combat/domain/combat-loadout.ts";
 import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
@@ -14,6 +15,7 @@ import { isRolledGloveInstance } from "../../inventory/domain/item-instance-data
 import { toCombatSpell } from "./to-combat-spell.ts";
 
 const GLOVE_SLOT = 32;
+const CONCENTRATION_ARTIKUL_ID = 487;
 
 export class HuntCombatLoadout {
   constructor(
@@ -45,9 +47,19 @@ export class HuntCombatLoadout {
     return {
       pocket,
       idols: await this.idolsFrom(items),
+      concentration: await this.concentrationSpell(),
       glove: await this.gloveFrom(items),
       gearSpells: await this.gearSpellsFrom(items),
     };
+  }
+
+  /** «Концентрация» is the cataloged native spell «Удар в спину»; a fight without it is invalid. */
+  private async concentrationSpell(): Promise<CombatSpell> {
+    const definition = await this.requireArtifact(CONCENTRATION_ARTIKUL_ID);
+    if (!definition.extra.spell) {
+      throw new Error(`Artifact ${CONCENTRATION_ARTIKUL_ID} (concentration) has no spell`);
+    }
+    return toCombatSpell(definition.extra.spell);
   }
 
   /** Every idol in the bag: the fight lists them all, the summon checks its mob when cast. */
