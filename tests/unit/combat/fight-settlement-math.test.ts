@@ -48,10 +48,15 @@ describe("fight money", () => {
 
 describe("split fight experience", () => {
   it("gives remainder to the top damager and the smaller id on a tie", () => {
-    const split = splitFightExperience(15, 1, [
-      { characterId: 2, damage: 10, level: 1 },
-      { characterId: 1, damage: 10, level: 1 },
-    ]);
+    const split = splitFightExperience(
+      15,
+      1,
+      [
+        { characterId: 2, damage: 10, level: 1 },
+        { characterId: 1, damage: 10, level: 1 },
+      ],
+      [],
+    );
     expect(
       rankDamageShares([
         { characterId: 2, damage: 10, level: 1 },
@@ -84,5 +89,20 @@ describe("fight loot block", () => {
       loot: [],
       artikul_list: [],
     });
+  });
+});
+
+describe("split fight experience with allied mobs", () => {
+  const hero = { characterId: 1, damage: 10, level: 1 };
+
+  it("leaves an allied mob's share of the experience unpaid", () => {
+    const split = splitFightExperience(100, 1, [hero], [30]);
+    expect(split.get(1)).toBe(25);
+  });
+
+  it("gives the rounding dust to the hero only when he out-damaged every allied mob", () => {
+    expect(splitFightExperience(10, 1, [hero], [10]).get(1)).toBe(5);
+    expect(splitFightExperience(11, 1, [hero], [11]).get(1)).toBe(5);
+    expect(splitFightExperience(11, 1, [{ ...hero, damage: 11 }], [10]).get(1)).toBe(6);
   });
 });

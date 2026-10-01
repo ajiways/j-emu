@@ -23,7 +23,7 @@ import {
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 import { rollBotLoot } from "../modules/combat/domain/roll-bot-loot.ts";
 import {
-  rankDamageShares,
+  rewardedTopDamager,
   splitFightExperience,
 } from "../modules/combat/domain/split-fight-experience.ts";
 import type {
@@ -115,12 +115,9 @@ export class HuntFightSettlement implements FightSettlement {
       level: human.level,
     }));
     const experience = win
-      ? splitFightExperience(bot.reward.baseExp, outcome.botLevel, shares)
+      ? splitFightExperience(bot.reward.baseExp, outcome.botLevel, shares, outcome.alliedBotDamage)
       : new Map<number, number>();
-    const top = win ? rankDamageShares(shares)[0] : undefined;
-    if (win && top === undefined) {
-      throw new Error("Hunt win is missing a top damager");
-    }
+    const top = win ? rewardedTopDamager(shares, outcome.alliedBotDamage) : undefined;
     const over = top ? overlevel(top.level, outcome.botLevel) : 0;
     let moneyMinor = 0;
     let rolled: readonly { artikulId: number; quantity: number }[] = [];

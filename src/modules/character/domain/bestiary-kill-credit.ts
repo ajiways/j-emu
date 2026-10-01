@@ -8,7 +8,8 @@ export function bestiaryCreditHeroIds(
 ): readonly number[] {
   if (input.kind !== "win") return [];
   const topId = input.topCharacterId;
-  if (topId === null) throw new Error("Hunt win is missing a top damager for bestiary credit");
+  // A mob of the heroes' own side did the most: nobody is credited with the kill.
+  if (topId === null) return [];
   if (!input.humanIds.includes(topId)) {
     throw new Error(`Hunt win top damager ${topId} is missing from the fight`);
   }

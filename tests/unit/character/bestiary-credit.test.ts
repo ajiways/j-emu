@@ -42,13 +42,14 @@ describe("bestiary credit and wire", () => {
     expect(() => bestiaryInfoWire([{ botId: 2, winCnt: 0 }])).toThrow(
       "Bestiary win_cnt for bot 2 is missing",
     );
-    expect(() =>
+    // A mob of the heroes' own side did the most: no hero is credited.
+    expect(
       bestiaryCreditHeroIds({
         kind: "win",
         topCharacterId: null,
         humanIds: [1],
         partyMemberIds: null,
       }),
-    ).toThrow("Hunt win is missing a top damager for bestiary credit");
+    ).toEqual([]);
   });
 });

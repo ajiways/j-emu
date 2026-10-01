@@ -73,5 +73,8 @@ export function battleOutcomeSnapshot(
     winnerTeam: input.winnerTeam,
     kind: input.kind,
     humans,
+    alliedBotDamage: input.roster.bots
+      .filter((bot) => bot.team === input.fightRules.teamAssignment.openerTeam)
+      .map((bot) => bot.damageToBot),
   };
 }

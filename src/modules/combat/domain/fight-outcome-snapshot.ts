@@ -37,6 +37,8 @@ type HuntFightOutcomeSnapshot = Readonly<{
   winnerTeam: 1 | 2;
   kind: FightOutcomeKind;
   humans: readonly FightHumanOutcome[];
+  /** What each allied mob (an idol's phantom, a scripted helper) dealt to the enemy mobs. */
+  alliedBotDamage: readonly number[];
 }>;
 
 export type PracticeFightOutcomeSnapshot = Readonly<{

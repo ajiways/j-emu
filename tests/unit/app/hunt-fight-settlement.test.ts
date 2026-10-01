@@ -154,6 +154,48 @@ describe("HuntFightSettlement", () => {
     expect(inventory.grants).toEqual([]);
   });
 
+  it("pays no money or loot when a mob of his own side did the most, and only his share of EXP", async () => {
+    const characters = recordingCharacters();
+    const inventory = recordingInventory();
+    const settlement = new HuntFightSettlement(
+      identityUow(),
+      fakeCatalog(),
+      characters,
+      inventory,
+      new SequenceRandom([0, 0, 0, 0]),
+      { routeFor: async () => null },
+      { deposit: async () => undefined },
+      { notify: async () => undefined },
+      recordingBestiary(),
+      unlimitedLoot(),
+      HEROISM_RULES,
+      new PvpFightHonorCache(),
+      silentDungeonGrant(),
+    );
+    const bot = playableHuntBot();
+    const alone = splitFightExperience(
+      bot.reward.baseExp,
+      bot.level,
+      [{ characterId: 1, damage: 10, level: 1 }],
+      [],
+    );
+    const result = await settlement.persistFinished({
+      mode: "hunt",
+      fightId: "9",
+      botId: bot.id,
+      botLevel: bot.level,
+      winnerTeam: 1,
+      kind: "win",
+      humans: [human(10, 1, 10)],
+      alliedBotDamage: [90],
+    });
+    const mine = result.get(10);
+    expect(characters.credits).toEqual([]);
+    expect(inventory.grants).toEqual([]);
+    expect(mine).toMatchObject({ money: "0" });
+    expect(Number(mine?.experience ?? 0)).toBeLessThan(alone.get(1) ?? 1);
+  });
+
   it("splits EXP by damage and gives loot only to the top damager", async () => {
     const characters = recordingCharacters();
     const settlement = new HuntFightSettlement(
@@ -179,11 +221,17 @@ describe("HuntFightSettlement", () => {
       winnerTeam: 1,
       kind: "win",
       humans: [human(10, 1, 10), { ...human(11, 2, 5), damageToBot: 5 }],
+      alliedBotDamage: [],
     });
-    const experience = splitFightExperience(bot.reward.baseExp, bot.level, [
-      { characterId: 1, damage: 10, level: 1 },
-      { characterId: 2, damage: 5, level: 1 },
-    ]);
+    const experience = splitFightExperience(
+      bot.reward.baseExp,
+      bot.level,
+      [
+        { characterId: 1, damage: 10, level: 1 },
+        { characterId: 2, damage: 5, level: 1 },
+      ],
+      [],
+    );
     expect(characters.grants).toEqual([
       { characterId: 1, operationId: "fight:9:1", amount: experience.get(1) },
       { characterId: 2, operationId: "fight:9:2", amount: experience.get(2) },
@@ -219,6 +267,7 @@ describe("HuntFightSettlement", () => {
       winnerTeam: 1,
       kind: "win",
       humans: [human(10, 1, 20), { ...human(11, 2, 0), team: 2, hp: 19 }],
+      alliedBotDamage: [],
     });
     expect(characters.notes).toEqual([
       { characterId: 1, hp: 27 },
@@ -348,6 +397,7 @@ function outcome(kind: "win" | "loss", hp: number, damageToBot: number): FightOu
     winnerTeam: kind === "win" ? 1 : 2,
     kind,
     humans: [human(10, 1, damageToBot, hp)],
+    alliedBotDamage: [],
   };
 }
 
