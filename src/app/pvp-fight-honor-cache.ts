@@ -11,9 +11,7 @@ export class PvpFightHonorCache {
 
   remember(fightId: string, shares: readonly PvpHonorShare[]): void {
     if (!fightId) throw new Error("PvP honor fight id is required");
-    if (shares.length !== 2) {
-      throw new Error(`PvP honor cache for ${fightId} must cover both humans`);
-    }
+    if (shares.length === 0) throw new Error(`PvP honor cache for ${fightId} has no humans`);
     const existing = this.shares.get(fightId);
     if (existing) return;
     this.shares.set(fightId, shares);

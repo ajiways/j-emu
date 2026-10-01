@@ -18,7 +18,13 @@ export type FightCommand =
       side: "left" | "center" | "right";
       sequence: CommandSequence;
     }>
-  | Readonly<{ kind: "pocket"; itemId: number; sequence: CommandSequence }>
+  | Readonly<{
+      kind: "pocket";
+      itemId: number;
+      /** The unit the player clicked, when the client sent one. */
+      targetId: number | null;
+      sequence: CommandSequence;
+    }>
   | Readonly<{ kind: "idol"; itemId: number; sequence: CommandSequence }>
   | Readonly<{
       kind: "glove";

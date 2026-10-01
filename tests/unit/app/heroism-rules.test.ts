@@ -71,11 +71,26 @@ describe("rawHonorFromVictims", () => {
       { dmgToVictim: 111, victimLevel: 7, victimHpMax: 111 },
     ];
     // (15 + 16) × 1.4 = 43.4; rounding each victim first would give 21 + 22 = 43.
-    expect(rawHonorFromVictims(victims, true, HEROISM_RULES)).toBe(43);
-    expect(rawHonorFromVictims(victims, false, HEROISM_RULES)).toBe(25);
+    expect(rawHonorFromVictims(victims, true, HEROISM_RULES, [])).toBe(43);
+    expect(rawHonorFromVictims(victims, false, HEROISM_RULES, [])).toBe(25);
   });
 
   it("is nothing without a human victim", () => {
-    expect(rawHonorFromVictims([], true, HEROISM_RULES)).toBe(0);
+    expect(rawHonorFromVictims([], true, HEROISM_RULES, [])).toBe(0);
+  });
+});
+
+describe("heroism of healing", () => {
+  const healed = [{ dmgToVictim: 400, victimLevel: 7, victimHpMax: 80 }];
+
+  it("pays half of what the same amount of damage pays", () => {
+    // Base 16 × 400 / 80 = 80, times 1.4 for a win: 112 for damage, 56 for healing.
+    expect(rawHonorFromVictims(healed, true, HEROISM_RULES, [])).toBe(112);
+    expect(rawHonorFromVictims([], true, HEROISM_RULES, healed)).toBe(56);
+    expect(rawHonorFromVictims([], false, HEROISM_RULES, healed)).toBe(32);
+  });
+
+  it("adds to the damage before one rounding", () => {
+    expect(rawHonorFromVictims(healed, true, HEROISM_RULES, healed)).toBe(168);
   });
 });

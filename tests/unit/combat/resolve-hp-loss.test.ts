@@ -57,6 +57,8 @@ class FakeFighter implements Fighter {
     this.killedBy = killerId;
   }
 
+  creditHealed(): void {}
+
   creditDealt(amount: number, target: { fighterKind: FighterKind }): void {
     this.credits.push({ amount, targetKind: target.fighterKind });
   }

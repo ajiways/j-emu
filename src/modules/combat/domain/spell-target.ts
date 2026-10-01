@@ -6,12 +6,12 @@ import type { Roster } from "./roster.ts";
 import { shuffleInPlace } from "./shuffle-in-place.ts";
 
 /**
- * A spell the catalog forbids aiming at the opposing side («Дар неистовства», «Прикрытие»)
- * is an ally spell: its carrier is the ally the player clicks.
+ * A spell the catalog forbids aiming at the opposing side («Дар неистовства», «Прикрытие»,
+ * «Знак жизни») is an ally spell: its carrier is the one of one's own side the player clicks.
  */
-export function aimsOnlyAtAllies(spell: CombatSpell): boolean {
+export function aimsAtOwnSide(spell: CombatSpell): boolean {
   const restriction = spell.targetRestr;
-  return restriction?.opp === false && restriction.oppTeam === false;
+  return restriction?.oppTeam === false && restriction.opp !== true;
 }
 
 type AllyAim = Readonly<{
@@ -47,7 +47,7 @@ function mayCarry(spell: CombatSpell, caster: Participant, member: Participant):
  */
 export function allyTargetsOf(input: AllyAim): readonly Participant[] {
   const { spell, caster, sequence } = input;
-  if (!aimsOnlyAtAllies(spell) || spell.targetRestr?.self === true) return [];
+  if (!aimsAtOwnSide(spell) || spell.targetRestr?.self === true) return [];
   const clicked = input.targetId === null ? undefined : input.roster.find(input.targetId);
   if (!clicked || !mayCarry(spell, caster, clicked)) throw new FightCastDenied("target", sequence);
   const count = Math.max(1, ...spell.effects.map((effect) => effect.targetCount ?? 1));

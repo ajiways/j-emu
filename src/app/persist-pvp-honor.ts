@@ -33,7 +33,20 @@ export async function persistPvpHonor(input: {
       }
       return { dmgToVictim: dealt.damage, victimLevel: victim.level, victimHpMax: victim.maxHp };
     });
-    const raw = rawHonorFromVictims(victims, human.team === input.outcome.winnerTeam, input.rules);
+    // What he healed in the other humans is rated by the one healed (never his own heals).
+    const healed = human.healedByTarget.map((restored) => {
+      const target = input.outcome.humans.find((row) => row.characterId === restored.targetId);
+      if (!target) {
+        throw new Error(`PvP snapshot ${input.outcome.fightId} has no healed ${restored.targetId}`);
+      }
+      return { dmgToVictim: restored.amount, victimLevel: target.level, victimHpMax: target.maxHp };
+    });
+    const raw = rawHonorFromVictims(
+      victims,
+      human.team === input.outcome.winnerTeam,
+      input.rules,
+      healed,
+    );
     let rank: string;
     if (raw > 0) {
       const granted = await input.characters.grantHonor({

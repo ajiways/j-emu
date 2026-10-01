@@ -37,6 +37,7 @@ export function battleOutcomeSnapshot(
     damageToBot: human.damageToBot,
     damageToHumans: human.damageToHumans,
     damageByVictim: human.damageToHumansByVictim(),
+    healedByTarget: human.healedHumansByTarget(),
     leftLive: human.leftLive,
     pocket: human.pocketCells(),
   }));

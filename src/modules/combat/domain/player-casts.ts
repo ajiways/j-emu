@@ -49,6 +49,7 @@ export function tryPocketCast(
   nowMs: number,
   sequence: string | number,
   pvp: boolean,
+  allies: (spell: CombatSpell) => readonly Fighter[],
 ): KeepTurnResult {
   if (!human.authed || human.waiting || human.hp === 0) return { kind: "ignored" };
   const row = human.casts.pocketRow(itemId);
@@ -60,13 +61,15 @@ export function tryPocketCast(
   if (spellKind(row.spell, 11)) throw new FightCastDenied("kind11", sequence);
   requireMana(human, row.spell, sequence);
   if (spellKind(row.spell, 3) && !isTimedSpell(row.spell)) requirePocketOrb(row);
+  // An item for one's own side goes to the one clicked (a teammate, or oneself); asked first.
+  const carriers = allies(row.spell);
   const consumed = human.casts.consumePocket(itemId, nowMs);
   const events = castSpell({
     caster: human,
     foe: () => {
       throw new Error("A pocket item is used on oneself and has no foe");
     },
-    allies: [human],
+    allies: carriers.length > 0 ? carriers : [human],
     source: {
       artikulId: consumed.artifactId,
       title: consumed.title,

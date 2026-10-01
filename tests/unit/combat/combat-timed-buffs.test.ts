@@ -81,7 +81,7 @@ async function startedFight() {
 describe("timed buffs through a fight", () => {
   it("drinks the hero elixir: max hp up, hp healed, the new totals shown", async () => {
     const { combat } = await startedFight();
-    await combat.execute(1, { kind: "pocket", itemId: 100_001, sequence: 2 });
+    await combat.execute(1, { kind: "pocket", targetId: null, itemId: 100_001, sequence: 2 });
     expect(combat.takePocketConsume(1)).toBe(100_001);
     const events = await combat.execute(1, { kind: "poll" });
     expect(events.map((event) => event.type)).toEqual([

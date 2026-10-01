@@ -52,7 +52,7 @@ describe("CombatService roster effects", () => {
     }
     expect(bootstrap.otherEffects).toEqual([{ persId: 1, effects: [] }]);
 
-    await combat.execute(1, { kind: "pocket", itemId: 100_002, sequence: 2 });
+    await combat.execute(1, { kind: "pocket", targetId: null, itemId: 100_002, sequence: 2 });
     await combat.execute(1, { kind: "poll" });
     const ally = await combat.execute(2, { kind: "poll" });
     expect(ally).toEqual(

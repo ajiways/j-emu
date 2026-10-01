@@ -64,10 +64,7 @@ async function castFightSpecial(
     return;
   }
   if (command.kind === "pocket") {
-    finishKeepTurn(
-      input,
-      battle.tryPocket(accountId, command.itemId, input.nowMs, command.sequence),
-    );
+    finishKeepTurn(input, battle.tryPocket(accountId, command, input.nowMs));
     return;
   }
   if (command.kind === "idol") {

@@ -63,6 +63,8 @@ export type FightResultHumanInput = Readonly<{
   maxMp: number;
   damageToBot: number;
   damageToHumans: number;
+  /** What he restored in others, for the heal column. */
+  healedOthers: number;
   leftLive: boolean;
 }>;
 
@@ -114,7 +116,7 @@ export function buildFightResultInfo(input: {
       exp: loot?.experience ?? 0,
       honor: 0,
       dmg: human.damageToBot + human.damageToHumans,
-      heal: 0,
+      heal: human.healedOthers,
       dead: human.hp <= 0,
       offline: 1,
       hp: human.hp,

@@ -2,6 +2,8 @@ export type HeroismRules = Readonly<{
   baseByLevel: readonly number[];
   winMultiplier: 1.4;
   loseMultiplier: 0.8;
+  /** Heroism of a healed hit point against one of damage: 10 damage pay 2, 10 healed pay 1. */
+  healShare: 0.5;
 }>;
 
 export const HEROISM_RULES: HeroismRules = {
@@ -11,6 +13,7 @@ export const HEROISM_RULES: HeroismRules = {
   ],
   winMultiplier: 1.4,
   loseMultiplier: 0.8,
+  healShare: 0.5,
 };
 
 export type HonorVictim = Readonly<{
@@ -19,19 +22,28 @@ export type HonorVictim = Readonly<{
   victimHpMax: number;
 }>;
 
-/** Heroism of one fighter for a fight: the damage he dealt to each human, rated per victim. */
+/**
+ * Heroism of one fighter for a fight: the damage he dealt to each human, rated per victim, plus
+ * what he healed in the other humans (`dmgToVictim` is the healed amount there) at `healShare`.
+ */
 export function rawHonorFromVictims(
   victims: readonly HonorVictim[],
   won: boolean,
   rules: HeroismRules,
+  healed: readonly HonorVictim[],
 ): number {
   if (rules.baseByLevel.length !== 35) {
     throw new Error("HeroismRules.baseByLevel must have 35 entries for levels 1..35");
   }
   if (rules.winMultiplier !== 1.4) throw new Error("HeroismRules.winMultiplier must be 1.4");
   if (rules.loseMultiplier !== 0.8) throw new Error("HeroismRules.loseMultiplier must be 0.8");
+  if (rules.healShare !== 0.5) throw new Error("HeroismRules.healShare must be 0.5");
   let sum = 0;
-  for (const victim of victims) {
+  const rated = [
+    ...victims.map((victim) => ({ ...victim, share: 1 })),
+    ...healed.map((victim) => ({ ...victim, share: rules.healShare })),
+  ];
+  for (const victim of rated) {
     if (
       !Number.isInteger(victim.victimLevel) ||
       victim.victimLevel < 1 ||
@@ -49,7 +61,7 @@ export function rawHonorFromVictims(
     if (base === undefined) {
       throw new Error(`Heroism base for level ${victim.victimLevel} is missing`);
     }
-    sum += (base * victim.dmgToVictim) / victim.victimHpMax;
+    sum += (victim.share * base * victim.dmgToVictim) / victim.victimHpMax;
   }
   return Math.round(sum * (won ? rules.winMultiplier : rules.loseMultiplier));
 }
@@ -64,5 +76,5 @@ export function rawHonorFromDamage(
   }>,
   rules: HeroismRules,
 ): number {
-  return rawHonorFromVictims([opts], opts.won, rules);
+  return rawHonorFromVictims([opts], opts.won, rules, []);
 }

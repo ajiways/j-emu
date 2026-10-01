@@ -11,7 +11,7 @@ import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import type { KeepTurnResult } from "./player-casts.ts";
-import { tryGloveKeepTurn } from "./player-casts.ts";
+import { tryGloveKeepTurn, tryPocketCast } from "./player-casts.ts";
 import { allyTargetsOf } from "./spell-target.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotMeleeResult } from "./turn-grant.ts";
@@ -70,6 +70,38 @@ export function applyBattlePlayerMelee(
     nowMs,
   });
   return settleAfterPlayerHit(resolved, hitInput(state, human, duel));
+}
+
+/** A pocket item the player uses: the item and the unit he clicked. */
+export type PocketCast = Readonly<{
+  itemId: number;
+  targetId: number | null;
+  sequence: string | number;
+}>;
+
+export function applyBattlePocket(
+  state: HuntActionState,
+  accountId: number,
+  pocket: PocketCast,
+  nowMs: number,
+): KeepTurnResult {
+  const human = requireAuthedHuman(state.roster.humans, accountId);
+  return tryPocketCast(
+    human,
+    pocket.itemId,
+    nowMs,
+    pocket.sequence,
+    rosterIsPvp(state.roster.humans),
+    (spell) =>
+      allyTargetsOf({
+        spell,
+        caster: human,
+        roster: state.roster,
+        targetId: pocket.targetId,
+        sequence: pocket.sequence,
+        random: state.random,
+      }),
+  );
 }
 
 /** A glove spell the player casts: what he clicked and the command it came with. */

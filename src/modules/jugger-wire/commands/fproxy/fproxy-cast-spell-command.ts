@@ -29,13 +29,15 @@ export class FproxyCastSpellCommand implements FproxyCommand {
     if (typeof sourceId !== "number" || !Number.isInteger(sourceId)) {
       throw new ProtocolError(203, "Fight source id is invalid");
     }
-    if (sourceType === 2) return { kind: "pocket", itemId: sourceId, sequence };
+    const targetId = record["targetId"];
+    if (targetId !== undefined && (typeof targetId !== "number" || !Number.isInteger(targetId))) {
+      throw new ProtocolError(203, "Fight target id is invalid");
+    }
+    if (sourceType === 2) {
+      return { kind: "pocket", itemId: sourceId, targetId: targetId ?? null, sequence };
+    }
     if (sourceType === 4) return { kind: "idol", itemId: sourceId, sequence };
     if (sourceType === 3) {
-      const targetId = record["targetId"];
-      if (targetId !== undefined && (typeof targetId !== "number" || !Number.isInteger(targetId))) {
-        throw new ProtocolError(203, "Fight target id is invalid");
-      }
       return { kind: "glove", spellId: sourceId, targetId: targetId ?? null, sequence };
     }
     if (sourceType !== 1) {

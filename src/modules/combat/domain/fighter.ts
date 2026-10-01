@@ -31,4 +31,6 @@ export interface Fighter {
   markKilledBy(killerId: number): void;
   /** Books damage this fighter dealt to a target; a human target is booked by his id. */
   creditDealt(amount: number, target: Readonly<{ id: number; fighterKind: FighterKind }>): void;
+  /** Books hit points this fighter restored to someone else; healing oneself is not booked. */
+  creditHealed(amount: number, target: Readonly<{ id: number; fighterKind: FighterKind }>): void;
 }

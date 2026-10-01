@@ -110,7 +110,7 @@ describe("CombatService pocket glove rage", () => {
     await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
     await combat.execute(1, { kind: "poll" });
-    await combat.execute(1, { kind: "pocket", itemId: 100_001, sequence: 2 });
+    await combat.execute(1, { kind: "pocket", targetId: null, itemId: 100_001, sequence: 2 });
     expect(combat.takePocketConsume(1)).toBe(100_001);
     expect((await combat.execute(1, { kind: "poll" })).map((event) => event.type)).toEqual([
       "command-accepted",
@@ -118,7 +118,7 @@ describe("CombatService pocket glove rage", () => {
       "damage",
       "pers-change",
     ]);
-    await combat.execute(1, { kind: "pocket", itemId: 100_002, sequence: 3 });
+    await combat.execute(1, { kind: "pocket", targetId: null, itemId: 100_002, sequence: 3 });
     const orb = await combat.execute(1, { kind: "poll" });
     expect(orb.map((event) => event.type)).toEqual(["command-accepted", "effect-use", "buff-cast"]);
     expect(orb.some((event) => event.type === "native-count")).toBe(false);
@@ -138,9 +138,9 @@ describe("CombatService pocket glove rage", () => {
     await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
     await combat.execute(1, { kind: "poll" });
-    await combat.execute(1, { kind: "pocket", itemId: 100_001, sequence: 2 });
+    await combat.execute(1, { kind: "pocket", targetId: null, itemId: 100_001, sequence: 2 });
     await combat.execute(1, { kind: "poll" });
-    await combat.execute(1, { kind: "pocket", itemId: 100_002, sequence: 3 });
+    await combat.execute(1, { kind: "pocket", targetId: null, itemId: 100_002, sequence: 3 });
     await combat.execute(1, { kind: "poll" });
     await combat.resumeFight(1);
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 4 });
@@ -162,7 +162,7 @@ describe("CombatService pocket glove rage", () => {
     await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
     await combat.execute(1, { kind: "poll" });
-    await combat.execute(1, { kind: "pocket", itemId: 100_002, sequence: 2 });
+    await combat.execute(1, { kind: "pocket", targetId: null, itemId: 100_002, sequence: 2 });
     await combat.execute(1, { kind: "poll" });
     await combat.execute(1, { kind: "strike", side: "center", sequence: 3 });
     const melee = await combat.execute(1, { kind: "poll" });
@@ -190,7 +190,7 @@ describe("CombatService pocket glove rage", () => {
     await combat.execute(1, { kind: "poll" });
     await strikeAndLoop(combat, delay, clock, "center", 2);
     await strikeAndLoop(combat, delay, clock, "right", 3);
-    await combat.execute(1, { kind: "pocket", itemId: 100_002, sequence: 4 });
+    await combat.execute(1, { kind: "pocket", targetId: null, itemId: 100_002, sequence: 4 });
     await combat.execute(1, { kind: "poll" });
     await combat.execute(1, { kind: "glove", targetId: null, spellId: 9098, sequence: 5 });
     const ending = await combat.execute(1, { kind: "poll" });
@@ -223,7 +223,7 @@ describe("CombatService pocket glove rage", () => {
     );
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
     await combat.execute(1, { kind: "poll" });
-    await combat.execute(1, { kind: "pocket", itemId: 100_002, sequence: 2 });
+    await combat.execute(1, { kind: "pocket", targetId: null, itemId: 100_002, sequence: 2 });
     const orb = await combat.execute(1, { kind: "poll" });
     expect(orb.map((event) => event.type)).toEqual(["command-accepted", "effect-use", "buff-cast"]);
   });
@@ -234,10 +234,10 @@ describe("CombatService pocket glove rage", () => {
     await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
     await combat.execute(1, { kind: "poll" });
-    await combat.execute(1, { kind: "pocket", itemId: 100_001, sequence: 2 });
+    await combat.execute(1, { kind: "pocket", targetId: null, itemId: 100_001, sequence: 2 });
     await combat.execute(1, { kind: "poll" });
     await expect(
-      combat.execute(1, { kind: "pocket", itemId: 100_001, sequence: 3 }),
+      combat.execute(1, { kind: "pocket", targetId: null, itemId: 100_001, sequence: 3 }),
     ).rejects.toBeInstanceOf(FightCastDenied);
     expect(await combat.execute(1, { kind: "poll" })).toEqual([]);
   });
@@ -262,7 +262,7 @@ describe("CombatService pocket glove rage", () => {
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
     await combat.execute(1, { kind: "poll" });
     await expect(
-      combat.execute(1, { kind: "pocket", itemId: 100_003, sequence: 2 }),
+      combat.execute(1, { kind: "pocket", targetId: null, itemId: 100_003, sequence: 2 }),
     ).rejects.toMatchObject({ deny: "pvp-only" });
     expect(await combat.execute(1, { kind: "poll" })).toEqual([]);
   });
@@ -426,7 +426,7 @@ describe("CombatService pocket glove rage", () => {
     await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
     await combat.execute(1, { kind: "poll" });
     await expect(
-      combat.execute(1, { kind: "pocket", itemId: 100_011, sequence: 2 }),
+      combat.execute(1, { kind: "pocket", targetId: null, itemId: 100_011, sequence: 2 }),
     ).rejects.toMatchObject({ deny: "kind11" });
     expect(await combat.execute(1, { kind: "poll" })).toEqual([]);
   });

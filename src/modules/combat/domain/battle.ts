@@ -13,9 +13,11 @@ import { huntHistoryOf, practiceHistoryOfRules, questChatOf } from "./battle-his
 import {
   applyBattleAiTurn,
   applyBattleGlove,
+  applyBattlePocket,
   applyBattlePlayerMelee,
   type BotTurnResult,
   type GloveCast,
+  type PocketCast,
 } from "./battle-actions.ts";
 import {
   battleOpener,
@@ -33,12 +35,11 @@ import type { BotFighter } from "./bot-fighter.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { grantTurn as grantHumanTurn } from "./turn-grant.ts";
 import { opposingTeam } from "./opposing-team.ts";
-import { rosterIsPvp } from "./roster-pvp.ts";
 import { consumeStunSkip, timeoutBattleTurn } from "./battle-turn-skips.ts";
 import type { HumanTimeout } from "./timeout-human-turn.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
 import { tryIdolCast } from "./idol-summon.ts";
-import { tryPocketCast, tryRageCast, type KeepTurnResult } from "./player-casts.ts";
+import { tryRageCast, type KeepTurnResult } from "./player-casts.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import { tryAggro, type AggroResult } from "./aggro.ts";
 import { aiOnlyDuelTurns, pairWaitingSeekers, type AiDuelTurn } from "./battle-ai-duels.ts";
@@ -221,14 +222,8 @@ export class Battle {
     return applied.result;
   }
 
-  tryPocket(
-    accountId: number,
-    itemId: number,
-    nowMs: number,
-    sequence: string | number,
-  ): KeepTurnResult {
-    const human = requireAuthedHuman(this.humans, accountId);
-    return tryPocketCast(human, itemId, nowMs, sequence, rosterIsPvp(this.humans));
+  tryPocket(accountId: number, pocket: PocketCast, nowMs: number): KeepTurnResult {
+    return applyBattlePocket(this.actionState(), accountId, pocket, nowMs);
   }
 
   tryIdol(

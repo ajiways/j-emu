@@ -48,6 +48,8 @@ export abstract class Participant implements Fighter {
   private killedByValue: number | null = null;
   private damageToHumansValue = 0;
   private readonly damageToHumanById = new Map<number, number>();
+  private healedOthersValue = 0;
+  private readonly healedHumanById = new Map<number, number>();
   private lastOpponentIdValue: number | null = null;
 
   protected constructor(protected readonly init: ParticipantInit) {
@@ -150,6 +152,27 @@ export abstract class Participant implements Fighter {
   get damageToBot(): number {
     return this.damageToBotValue;
   }
+  /** The hit points this fighter restored to others (his own heals are not counted). */
+  get healedOthers(): number {
+    return this.healedOthersValue;
+  }
+
+  /** What this fighter healed in each human other than himself, by the id of the one healed. */
+  healedHumansByTarget(): readonly Readonly<{ targetId: number; amount: number }>[] {
+    return [...this.healedHumanById].map(([targetId, amount]) => ({ targetId, amount }));
+  }
+
+  creditHealed(amount: number, target: Readonly<{ id: number; fighterKind: FighterKind }>): void {
+    if (!Number.isInteger(amount) || amount < 0) {
+      throw new Error("Healed hit points must be a non-negative integer");
+    }
+    if (amount === 0 || target.id === this.id) return;
+    this.healedOthersValue += amount;
+    if (target.fighterKind === "human") {
+      this.healedHumanById.set(target.id, (this.healedHumanById.get(target.id) ?? 0) + amount);
+    }
+  }
+
   /** What this fighter dealt to each human, by the id of the one who took it. */
   damageToHumansByVictim(): readonly Readonly<{ victimId: number; damage: number }>[] {
     return [...this.damageToHumanById].map(([victimId, damage]) => ({ victimId, damage }));

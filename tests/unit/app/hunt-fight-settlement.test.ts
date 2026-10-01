@@ -360,6 +360,7 @@ describe("HuntFightSettlement", () => {
           maxHp: 111,
           damageToHumans: 350,
           damageByVictim: [{ victimId: 2, damage: 350 }],
+          healedByTarget: [],
         },
         {
           ...human(11, 2, 0, 0),
@@ -368,6 +369,7 @@ describe("HuntFightSettlement", () => {
           maxHp: 108,
           damageToHumans: 222,
           damageByVictim: [{ victimId: 1, damage: 222 }],
+          healedByTarget: [],
         },
       ],
     };
@@ -386,6 +388,39 @@ describe("HuntFightSettlement", () => {
     characters.honorGrants.length = 0;
     await settlement.persistFinished(snapshot);
     expect(characters.honorGrants).toEqual([]);
+  });
+
+  it("pays PvP heroism for healing a teammate and nothing for the hero's own heals", async () => {
+    const characters = recordingCharacters();
+    const settlement = new HuntFightSettlement(
+      identityUow(),
+      fakeCatalog(),
+      characters,
+      recordingInventory(),
+      new SequenceRandom([0, 0, 0, 0]),
+      { routeFor: async () => null },
+      { deposit: async () => undefined },
+      { notify: async () => undefined },
+      recordingBestiary(),
+      unlimitedLoot(),
+      HEROISM_RULES,
+      new PvpFightHonorCache(),
+      silentDungeonGrant(),
+    );
+    const healer = { ...human(10, 1, 0, 50), team: 1 as const, level: 7, maxHp: 111 };
+    const mate = { ...human(11, 2, 0, 50), team: 1 as const, level: 7, maxHp: 111 };
+    const foe = { ...human(12, 3, 0, 0), team: 2 as const, level: 7, maxHp: 111 };
+    await settlement.persistFinished({
+      mode: "pvp",
+      fightId: "45",
+      winnerTeam: 1,
+      kind: "win",
+      humans: [{ ...healer, healedByTarget: [{ targetId: 2, amount: 111 }] }, mate, foe],
+    });
+    // 0.5 × Base 16 × 111 / 111 × 1.4 = 11.2.
+    expect(characters.honorGrants).toEqual([
+      { characterId: 1, operationId: "pvp:45:1", amount: 11 },
+    ]);
   });
 });
 
@@ -420,6 +455,7 @@ function human(
     damageToBot,
     damageToHumans: 0,
     damageByVictim: [],
+    healedByTarget: [],
     leftLive: false,
     pocket: [],
   };

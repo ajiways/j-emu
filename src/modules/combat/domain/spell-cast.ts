@@ -10,7 +10,7 @@ import { pocketHealAmount, spellCharging, spellKind } from "./cast-state.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
 import { manaToSpend, payMana } from "./spell-mana.ts";
-import { aimsOnlyAtAllies } from "./spell-target.ts";
+import { aimsAtOwnSide } from "./spell-target.ts";
 import { schoolOverlayFromKind1 } from "./school-overlay.ts";
 import { chargedSkills, strikeModsFromSkills, strikeModsOfOverlay } from "./strike-mods.ts";
 import { castTimedSpell, isTimedSpell, type TimedSpellSource } from "./timed-spell.ts";
@@ -86,12 +86,15 @@ function castEffects(cast: SpellCast): readonly BattleEvent[] | null {
 }
 
 function carriersOf(cast: SpellCast): readonly Fighter[] {
-  if (cast.presentation.selfOnly || castsOnSelf(cast.source.spell)) return [cast.caster];
-  if (!aimsOnlyAtAllies(cast.source.spell)) return [cast.foe()];
-  if (cast.allies.length === 0) {
-    throw new Error(`Spell ${cast.source.artikulId} needs an ally to land on`);
+  const { spell } = cast.source;
+  if (castsOnSelf(spell)) return [cast.caster];
+  if (aimsAtOwnSide(spell)) {
+    if (cast.allies.length === 0) {
+      throw new Error(`Spell ${cast.source.artikulId} needs an ally to land on`);
+    }
+    return cast.allies;
   }
-  return cast.allies;
+  return cast.presentation.selfOnly ? [cast.caster] : [cast.foe()];
 }
 
 function animationOf(cast: SpellCast, fallback: string | null): string {
@@ -172,19 +175,20 @@ function castStun(cast: SpellCast): readonly BattleEvent[] {
   ];
 }
 
+/** A poison (kind 4) lands on the foe, a healing sign (kind 5) on the carriers of one's side. */
 function castTicks(cast: SpellCast): readonly BattleEvent[] {
   const { caster, source } = cast;
-  const foe = cast.foe();
-  return [
-    ...attachSpellTicks(foe, caster, source, cast.nowMs, cast.endsTurn),
+  const carriers = spellKind(source.spell, 5) ? carriersOf(cast) : [cast.foe()];
+  return carriers.flatMap((carrier) => [
+    ...attachSpellTicks(carrier, caster, source, cast.nowMs, cast.endsTurn),
     {
-      type: "buff-cast",
+      type: "buff-cast" as const,
       animation: animationOf(cast, null),
       sourceId: caster.id,
-      targetId: foe.id,
-      maxHp: foe.maxHp,
+      targetId: carrier.id,
+      maxHp: carrier.maxHp,
     },
-  ];
+  ]);
 }
 
 function castOverlay(cast: SpellCast): readonly BattleEvent[] {

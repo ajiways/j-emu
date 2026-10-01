@@ -31,6 +31,7 @@ export function applyPeriodicItems(
       const healed = fighter.applyHeal(
         pulse.amount === undefined ? 0 : healTick(pulse.amount, fighter.maxHp),
       );
+      requireTickSource(sources, pulse.sourceId).creditHealed(healed, fighter);
       events.push({
         type: "damage",
         sourceId: pulse.sourceId,
