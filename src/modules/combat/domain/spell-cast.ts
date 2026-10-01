@@ -4,16 +4,18 @@ import { castChargingBuff } from "./charging-buff-cast.ts";
 import type { CombatSpell } from "./combat-loadout.ts";
 import { dispelTargetGroups } from "./dispel-target-groups.ts";
 import type { Fighter } from "./fighter.ts";
+import type { Participant } from "./participant.ts";
 import { attachSpellTicks } from "./fight-effect-ticks.ts";
 import { pocketHealAmount, spellCharging, spellKind } from "./cast-state.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
+import { manaToSpend, payMana } from "./spell-mana.ts";
 import { schoolOverlayFromKind1 } from "./school-overlay.ts";
 import { chargedSkills, strikeModsFromSkills, strikeModsOfOverlay } from "./strike-mods.ts";
 import { castTimedSpell, isTimedSpell, type TimedSpellSource } from "./timed-spell.ts";
 
 /** What casts: a fighter with the strength its spells are baked from. */
-type SpellCaster = Fighter & Readonly<{ strength: number }>;
+type SpellCaster = Participant & Fighter & Readonly<{ strength: number }>;
 
 /**
  * How a spell shows on the wire where the catalog is silent (`null` — the spell must carry it).
@@ -66,6 +68,15 @@ function aimsOnlyAtAllies(spell: CombatSpell): boolean {
  * picks the targets and settles the damage.
  */
 export function castSpell(cast: SpellCast): readonly BattleEvent[] | null {
+  const { spell } = cast.source;
+  manaToSpend(spell, cast.caster.mp);
+  const events = castEffects(cast);
+  if (events === null) return null;
+  const mana = payMana(cast.caster, spell);
+  return mana ? [mana, ...events] : events;
+}
+
+function castEffects(cast: SpellCast): readonly BattleEvent[] | null {
   const { spell } = cast.source;
   if (kind1OverlayCharges(spell) > 0) return castOverlay(cast);
   if (spellKind(spell, 1)) return null;

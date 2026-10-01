@@ -34,6 +34,10 @@ class FakeFighter implements Fighter {
     return this.hp === 0;
   }
 
+  clampToMaxMp(): void {
+    // A fake has no mana.
+  }
+
   clampToMaxHp(): void {
     this.hp = Math.min(this.hp, this.maxHp);
   }

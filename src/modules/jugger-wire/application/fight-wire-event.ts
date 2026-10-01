@@ -47,6 +47,8 @@ export function encodeFightWireEvent(event: CombatEvent): FightWireFrame {
       return fightEventMap([fightEffectPurgeEvent(event)]);
     case "buff-cast":
       return fightEventMap([fightBuffCastEvent(event)]);
+    case "mp-change":
+      return fightEventMap([{ et: "mpChange", delta: event.delta, persId: event.targetId }]);
     case "pers-cp":
       return fightEventMap([fightPersCpEvent(event.cp)]);
     case "native-count":

@@ -13,6 +13,7 @@ export type FightHumanOutcome = Readonly<{
   level: number;
   hp: number;
   maxHp: number;
+  mp: number;
   damageToBot: number;
   damageToHumans: number;
   leftLive: boolean;

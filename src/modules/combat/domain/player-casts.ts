@@ -6,6 +6,7 @@ import type { Fighter } from "./fighter.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { spellKind } from "./cast-state.ts";
 import { requirePocketOrb } from "./pocket-kind3-cast.ts";
+import { requireMana } from "./spell-mana.ts";
 import { castSpell, type SpellPresentation } from "./spell-cast.ts";
 import { castChargingBuff } from "./charging-buff-cast.ts";
 import { isTimedSpell } from "./timed-spell.ts";
@@ -52,6 +53,7 @@ export function tryPocketCast(
     throw new FightCastDenied("cooldown", sequence);
   }
   if (spellKind(row.spell, 11)) throw new FightCastDenied("kind11", sequence);
+  requireMana(human, row.spell, sequence);
   if (spellKind(row.spell, 3) && !isTimedSpell(row.spell)) requirePocketOrb(row);
   const consumed = human.casts.consumePocket(itemId, nowMs);
   const events = castSpell({
@@ -126,6 +128,7 @@ export function tryGloveKeepTurn(
   if (human.casts.cp < glove.cost) {
     return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };
   }
+  requireMana(human, glove.spell, sequence);
   if (human.casts.gloveCooldownLeftMs(glove, cast.nowMs) > 0) {
     throw new FightCastDenied("cooldown", sequence);
   }

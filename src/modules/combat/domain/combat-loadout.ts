@@ -16,6 +16,10 @@ type CombatSpellEffect = Readonly<{
   period?: number;
   forceSelfTargeting?: boolean;
   realStartTime?: boolean;
+  /** Kind 10: the mob artikul this effect summons. */
+  botArtikulId?: number;
+  /** Kind 10 with a spend range: mana above `mpCost` that strengthens the summon. */
+  manaCost?: number;
   skills?: readonly Readonly<{ skillId: string; value: number }>[];
 }>;
 
@@ -23,6 +27,8 @@ export type CombatSpell = Readonly<{
   animData?: string;
   groupId?: number;
   cooldown?: number;
+  /** Mana the cast takes; a spell with a spend range takes up to this plus its `manaCost`. */
+  mpCost?: number;
   endTurn?: boolean;
   flags?: string;
   persRestr?: Readonly<Record<string, unknown>>;

@@ -50,6 +50,7 @@ export function castTimedSpell(
       events.push({ type: "effect-purge", effectId });
     }
     target.clampToMaxHp();
+    target.clampToMaxMp();
   }
   const ordered = [...spell.effects].sort((left, right) => (left.order ?? 0) - (right.order ?? 0));
   // One spell shows one icon, however many kind-3 effects carry its skills.

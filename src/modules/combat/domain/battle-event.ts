@@ -136,6 +136,7 @@ export type BattleEvent =
       maxHp: number;
     }>
   | Readonly<{ type: "pers-cp"; cp: number }>
+  | Readonly<{ type: "mp-change"; targetId: number; delta: number }>
   | Readonly<{
       type: "native-count";
       srcId: number;

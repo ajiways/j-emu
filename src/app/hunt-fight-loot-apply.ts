@@ -9,16 +9,19 @@ import type { QuestLootNeeded } from "../modules/quests/ports/quest-loot-needed.
 type SettlementCharacters = Readonly<{
   noteDefeat(input: { characterId: number; hp: 0 }): Promise<unknown>;
   noteHp(input: { characterId: number; hp: number }): Promise<unknown>;
+  noteMp(input: { characterId: number; mp: number }): Promise<unknown>;
   lockById(characterId: number): Promise<Hero>;
 }>;
 
-export function persistFightHp(
+/** Mana goes first: a defeated hero becomes a ghost, and a ghost takes no resource updates. */
+export async function persistFightResources(
   characters: SettlementCharacters,
-  characterId: number,
-  hp: number,
-): Promise<unknown> {
-  if (hp === 0) return characters.noteDefeat({ characterId, hp: 0 });
-  return characters.noteHp({ characterId, hp });
+  resources: Readonly<{ characterId: number; hp: number; mp: number }>,
+): Promise<void> {
+  const { characterId, hp, mp } = resources;
+  await characters.noteMp({ characterId, mp });
+  if (hp === 0) await characters.noteDefeat({ characterId, hp: 0 });
+  else await characters.noteHp({ characterId, hp });
 }
 
 function artikulListEntry(definition: ArtifactDefinition): FightArtikulListWire {

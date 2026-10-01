@@ -23,6 +23,7 @@ export function applyPeriodicItems(
     if (item.kind === "expire") {
       events.push({ type: "effect-purge", effectId: item.effectId });
       fighter.clampToMaxHp();
+      fighter.clampToMaxMp();
       continue;
     }
     const { pulse } = item;

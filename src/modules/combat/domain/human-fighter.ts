@@ -76,12 +76,6 @@ export class HumanFighter extends Participant {
   get kind(): number {
     return this.human.kind;
   }
-  get mp(): number {
-    return this.human.mp;
-  }
-  get maxMp(): number {
-    return this.human.maxMp;
-  }
   get appearance(): FighterAppearance {
     return this.human.appearance;
   }

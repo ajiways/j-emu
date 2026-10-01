@@ -45,7 +45,7 @@ import { persistPvpHonor } from "./persist-pvp-honor.ts";
 import type { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 import type { DungeonPersonalGrant } from "./dungeon-personal-grant.ts";
 import { FightProgressLog, type FightProgressUp } from "./fight-progress-log.ts";
-import { capRolledDrops, loadArtikulList, persistFightHp } from "./hunt-fight-loot-apply.ts";
+import { capRolledDrops, loadArtikulList, persistFightResources } from "./hunt-fight-loot-apply.ts";
 
 type SettlementCharacters = CharacterResources &
   CharacterProgression &
@@ -82,7 +82,7 @@ export class HuntFightSettlement implements FightSettlement {
     if (this.left.has(key)) return Promise.resolve();
     this.left.add(key);
     return this.unitOfWork.run(async () => {
-      await persistFightHp(this.characters, snapshot.characterId, snapshot.hp);
+      await persistFightResources(this.characters, snapshot);
       await this.applyDeathIfDefeated(
         snapshot.fightId,
         snapshot.accountId,
@@ -187,7 +187,11 @@ export class HuntFightSettlement implements FightSettlement {
         const mine = personal.find((row) => row.characterId === human.characterId);
         const extra = mine === undefined ? [] : mine.items;
         if (!human.leftLive) {
-          await persistFightHp(this.characters, human.characterId, human.hp);
+          await persistFightResources(this.characters, {
+            characterId: human.characterId,
+            hp: human.hp,
+            mp: human.mp,
+          });
           await this.applyDeathIfDefeated(
             outcome.fightId,
             human.accountId,
@@ -307,7 +311,11 @@ export class HuntFightSettlement implements FightSettlement {
     const honor = await this.unitOfWork.run(async () => {
       for (const human of outcome.humans) {
         if (human.leftLive) continue;
-        await persistFightHp(this.characters, human.characterId, human.hp);
+        await persistFightResources(this.characters, {
+          characterId: human.characterId,
+          hp: human.hp,
+          mp: human.mp,
+        });
         await this.inventory.refillPocketAfterFight({
           characterId: human.characterId,
           cells: human.pocket,

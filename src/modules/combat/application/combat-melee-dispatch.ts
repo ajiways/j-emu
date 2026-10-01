@@ -1,6 +1,6 @@
 import type { Battle } from "../domain/battle.ts";
 import type { EndingGloveResult } from "../domain/glove-ending-cast.ts";
-import { persChangeForHit } from "../domain/melee-pers-change.ts";
+import { persChangeForHit, persChangeForParticipants } from "../domain/melee-pers-change.ts";
 import type { ShuffleOutcome } from "../domain/try-shuffle-after-hits.ts";
 import type { CombatEvent } from "../ports/combat-port.ts";
 import type { FightScheduler } from "./fight-scheduler.ts";
@@ -109,7 +109,11 @@ function actorPersChange(battle: Battle, events: readonly CombatEvent[]): readon
   if (events.some((event) => event.type === "pers-change")) return [];
   const hit = events.find((event) => event.type === "damage" && event.animation !== "");
   const patch = persChangeFromDamage(battle, hit);
-  return patch ? [patch] : [];
+  if (patch) return [patch];
+  const spent = events.find((event) => event.type === "mp-change");
+  if (!spent) return [];
+  const roster = battle.boardParticipants();
+  return [persChangeForParticipants(roster.humans, roster.bots, [spent.targetId])];
 }
 
 /** A cast that keeps the turn: accepted, the events, the fresh totals, and the effects shown to others. */

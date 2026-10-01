@@ -47,7 +47,11 @@ export const SKILL_REGISTRY: Readonly<Record<string, SkillEntry>> = {
     "live",
     "supported",
   ),
-  MPMAX: skill("максимум маны, плоский; мана в бою ещё не моделируется (владелец: нужна)", "name"),
+  MPMAX: skill(
+    "максимум маны в бою, плоский; тратится спеллами и идолами, в бою не восстанавливается",
+    "name",
+    "supported",
+  ),
   VIT: skill("неизвестно, описаний нет", "unknown"),
   pcVIT: skill("неизвестно, описаний нет", "unknown"),
   LUCK: skill(

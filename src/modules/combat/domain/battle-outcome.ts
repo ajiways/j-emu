@@ -33,6 +33,7 @@ export function battleOutcomeSnapshot(
     level: human.level,
     hp: human.hp,
     maxHp: human.maxHp,
+    mp: human.mp,
     damageToBot: human.damageToBot,
     damageToHumans: human.damageToHumans,
     leftLive: human.leftLive,

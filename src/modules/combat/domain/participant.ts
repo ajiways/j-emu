@@ -14,6 +14,8 @@ export type ParticipantInit = Readonly<{
   waiting: boolean;
   hp: number;
   maxHp: number;
+  mp: number;
+  maxMp: number;
   strength: number;
   initiative: number;
   rage: number;
@@ -40,6 +42,7 @@ export abstract class Participant implements Fighter {
   readonly effects: FighterEffects;
   stunnedTurns = 0;
   private hpValue: number;
+  private mpValue: number;
   private waitingValue: boolean;
   private damageToBotValue = 0;
   private damageToHumansValue = 0;
@@ -48,6 +51,7 @@ export abstract class Participant implements Fighter {
   protected constructor(protected readonly init: ParticipantInit) {
     requireParticipantInit(init);
     this.hpValue = init.hp;
+    this.mpValue = init.mp;
     this.waitingValue = init.waiting;
     this.casts = new CastState(init.loadout, init.aggroCharges);
     this.effects = new FighterEffects({
@@ -85,6 +89,13 @@ export abstract class Participant implements Fighter {
   }
   get maxHp(): number {
     return Math.max(1, this.init.maxHp + this.effects.standingSkill("HPMAX"));
+  }
+  /** Mana left; spent by casts, never regained in a fight. */
+  get mp(): number {
+    return this.mpValue;
+  }
+  get maxMp(): number {
+    return Math.max(0, this.init.maxMp + this.effects.standingSkill("MPMAX"));
   }
   get strength(): number {
     return this.init.strength;
@@ -209,6 +220,22 @@ export abstract class Participant implements Fighter {
     return this.hpValue - before;
   }
 
+  /** Takes `amount` mana; a cast the caster cannot pay for is refused, not trimmed. */
+  spendMana(amount: number): void {
+    if (!Number.isInteger(amount) || amount < 1) {
+      throw new Error("Mana to spend must be a positive integer");
+    }
+    if (amount > this.mpValue) {
+      throw new Error(`Participant ${this.id} has ${this.mpValue} mana, ${amount} needed`);
+    }
+    this.mpValue -= amount;
+  }
+
+  /** Pulls mana down to the max after a buff that raised it ran out. */
+  clampToMaxMp(): void {
+    this.mpValue = Math.min(this.mpValue, this.maxMp);
+  }
+
   /** Sets hit points outright: a scenario or a restore, not a hit. */
   setHp(hp: number): void {
     if (!Number.isInteger(hp) || hp < 0 || hp > this.maxHp) {
@@ -230,6 +257,7 @@ function requireParticipantInit(init: ParticipantInit): void {
   if (!Number.isInteger(init.hp) || init.hp < 0 || init.hp > init.maxHp) {
     throw new Error("Participant hp is invalid");
   }
+  if (init.mp > init.maxMp) throw new Error("Participant mp is above maxMp");
   if (!Number.isInteger(init.strength) || init.strength < 1) {
     throw new Error("Participant strength must be positive");
   }
@@ -240,6 +268,8 @@ function requireParticipantInit(init: ParticipantInit): void {
     ["defense", init.defense],
     ["block", init.block],
     ["aggro charges", init.aggroCharges],
+    ["mp", init.mp],
+    ["maxMp", init.maxMp],
     ["mag power", init.magPower],
     ["mag resist", init.magResist],
   ] as const) {

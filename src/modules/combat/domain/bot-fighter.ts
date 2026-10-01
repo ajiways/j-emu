@@ -176,6 +176,8 @@ function botParticipantInit(
     waiting: false,
     hp: bot.hp,
     maxHp: bot.baseMaxHp,
+    mp: 0,
+    maxMp: 0,
     strength: bot.strength,
     initiative: bot.initiative,
     rage: 0,

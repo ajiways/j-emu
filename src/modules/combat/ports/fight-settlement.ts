@@ -6,6 +6,7 @@ export type HumanLeftSnapshot = Readonly<{
   accountId: number;
   characterId: number;
   hp: number;
+  mp: number;
   pocket: FightHumanOutcome["pocket"];
 }>;
 

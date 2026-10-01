@@ -364,6 +364,7 @@ function human(
     level: 1,
     hp,
     maxHp: 27,
+    mp: 10,
     damageToBot,
     damageToHumans: 0,
     leftLive: false,

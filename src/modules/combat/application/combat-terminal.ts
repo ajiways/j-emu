@@ -100,6 +100,7 @@ export class CombatTerminal {
       accountId: human.accountId,
       characterId: human.heroId,
       hp: human.hp,
+      mp: human.mp,
       pocket: human.pocketCells(),
     });
   }
