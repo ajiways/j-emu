@@ -93,6 +93,7 @@ describe("fight bots on Battle", () => {
       effectIds: new FightEffectIds(),
       enemyTeam: 2,
       openerTeam: 1,
+      primaryWaits: false,
     });
     const primary = bots[0];
     if (!primary) throw new Error("expected a seeded enemy bot");

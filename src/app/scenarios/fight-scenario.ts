@@ -57,6 +57,8 @@ const scenarioSchema = z
     purpose: z.enum(["hunt", "quest"]),
     /** `glove` replaces the hero's equipped glove for this fight; `null` keeps his own. */
     hero: heroSchema,
+    /** Changes to the fight's rules for a drill: the hero starts waiting, duels do not rotate. */
+    drill: z.object({ openerWaits: z.boolean(), rotatesDuels: z.boolean() }).strict().nullable(),
     enemies: z.array(scenarioBot).min(1),
     allies: z.array(scenarioBot),
   })

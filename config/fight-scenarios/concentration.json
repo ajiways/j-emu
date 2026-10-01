@@ -1,0 +1,14 @@
+{
+  "description": "Концентрация: вы стоите без противника (союзник дерётся с мобом, смена противников выключена). Кнопка «Удар в спину»/«Концентрация» бьёт случайного врага: сила героя ×0.1, не меньше 1, раз в 90 секунд. Очки урона пойдут в опыт. Моб крепкий, союзник тоже.",
+  "purpose": "quest",
+  "drill": { "openerWaits": true, "rotatesDuels": false },
+  "hero": {
+    "hp": 10,
+    "maxHp": null,
+    "glove": null,
+    "pocket": [],
+    "idols": []
+  },
+  "enemies": [{ "botArtikulId": 6, "hp": 400, "strength": 2, "nothingWeight": 100, "spells": [] }],
+  "allies": [{ "botArtikulId": 6, "hp": 400, "strength": 2, "nothingWeight": 100, "spells": [] }]
+}

@@ -6,6 +6,7 @@ import type {
   HuntRosterBotInput,
 } from "../modules/combat/ports/combat-port.ts";
 import type { CombatGloveLoadout } from "../modules/combat/domain/combat-loadout.ts";
+import type { ScenarioDrill } from "../modules/combat/domain/fight-rules.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
 import type { WorldService } from "../modules/world/domain/world-service.ts";
 import { HuntCombatLoadout } from "../modules/jugger-wire/application/hunt-combat-loadout.ts";
@@ -70,6 +71,7 @@ async function startAuthoredHunt(
   if (enemies.length === 0) throw new Error("START_FIGHT requires an enemy");
   return startHuntWithRoster(hero, deps, {
     purpose: input.purpose,
+    drill: null,
     heroHp: hero.hp,
     heroMaxHp: hero.maxHp,
     gloveOverride: null,
@@ -86,6 +88,8 @@ export async function startHuntWithRoster(
   deps: FightStartDeps,
   input: Readonly<{
     purpose: "hunt" | "quest";
+    /** Changes of a manual-test scenario to the fight rules; `null` for a real fight. */
+    drill: ScenarioDrill | null;
     heroHp: number;
     heroMaxHp: number;
     /** A glove for this fight instead of the equipped one; `null` keeps the hero's own loadout. */
@@ -135,6 +139,7 @@ export async function startHuntWithRoster(
     loadout,
     botSpellBook: primary.spellBook,
     purpose: input.purpose,
+    drill: input.drill,
     extraEnemies: input.enemies.slice(1),
     allies: input.allies,
     chatWin: input.chatWin,

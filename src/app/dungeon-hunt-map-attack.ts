@@ -7,7 +7,7 @@ import { JoinDenied } from "../modules/combat/domain/join-denied.ts";
 import type { DungeonHuntWorld } from "../modules/instance/application/dungeon-hunt-world.ts";
 import { ProtocolError } from "../modules/jugger-wire/application/protocol-error.ts";
 
-export type DungeonHuntAttackInput = Omit<HuntStartInput, "fightId" | "purpose"> &
+export type DungeonHuntAttackInput = Omit<HuntStartInput, "fightId" | "purpose" | "drill"> &
   Readonly<{
     copyId: number;
     spawnId: number;
@@ -134,6 +134,7 @@ export class DungeonHuntMapAttack {
         chatWin: "",
         chatLose: "",
         purpose: "hunt",
+        drill: null,
       });
       await this.fanout.wakeArea(input.areaId, input.copyId);
       return fight;

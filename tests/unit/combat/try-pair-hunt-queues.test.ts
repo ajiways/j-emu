@@ -148,6 +148,7 @@ describe("one hunt pairing engine", () => {
         effectIds: new FightEffectIds(),
         enemyTeam: 2,
         openerTeam: 1,
+        primaryWaits: false,
       }),
     ).toThrow(/Fight bot id 1000000 collides/);
   });

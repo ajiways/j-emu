@@ -5,6 +5,7 @@ import type { FightInfoCard } from "../domain/fight-info-card.ts";
 import type { FightResultInfo } from "../domain/fight-result-info.ts";
 import type { FightLootBlock } from "../domain/fight-loot-block.ts";
 import type { FinishedFightListQuery, FinishedFightPage } from "../domain/finished-fight-page.ts";
+import type { ScenarioDrill } from "../domain/fight-rules.ts";
 import type { FighterAppearance } from "../domain/human-fighter.ts";
 import type { RunnedFightPage } from "../domain/runned-fight-record.ts";
 
@@ -72,6 +73,8 @@ export type HuntStartInput = Readonly<{
   arena: string;
   areaId: string;
   instanceCopyId: number | null;
+  /** Changes of a manual-test scenario to the rules of the fight; `null` for every real one. */
+  drill: ScenarioDrill | null;
   appearance: FighterAppearance;
   loadout: CombatLoadout;
   botSpellBook: MobSpellBook;
@@ -133,6 +136,8 @@ export type FightExit = Readonly<{
   fightId: string;
   winnerTeam: 1 | 2;
   flee?: true;
+  /** The player walked out while the fight runs on for the others. */
+  fightGoesOn?: true;
 }>;
 
 export type FriendlyDuelStartInput = Readonly<{

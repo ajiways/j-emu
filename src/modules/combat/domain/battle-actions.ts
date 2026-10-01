@@ -146,7 +146,7 @@ export function applyBattleAiTurn(
   ];
   const rotatedIn = events.some((event) => event.type === "finished")
     ? null
-    : rotateBotDuel({ bot, foe, duel, roster: state.roster });
+    : rotateBotDuel({ bot, foe, duel, roster: state.roster, fightRules: state.fightRules });
   return {
     events,
     rotatedInAccountId:

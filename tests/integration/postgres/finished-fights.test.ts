@@ -78,6 +78,7 @@ describe("finished fight history storage", () => {
       arena: "1_1",
       areaId: hero.areaId,
       instanceCopyId: null,
+      drill: null,
       appearance: UNIT_HUNT_APPEARANCE,
       loadout: EMPTY_COMBAT_LOADOUT,
       botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,

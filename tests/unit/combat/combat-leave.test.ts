@@ -40,6 +40,7 @@ describe("CombatService leaveFight", () => {
       fightId: start.fightId,
       winnerTeam: 2,
       flee: true,
+      fightGoesOn: true,
     });
     expect(await combat.hasFight(start.fightId)).toBe(true);
     expect(await combat.activeFightId(2)).toBe(start.fightId);

@@ -27,7 +27,13 @@ type FightRulesFields = Readonly<{
   restoresFighters: boolean;
   historyRow: FightHistoryRow;
   includesQuestChat: boolean;
+  /** After 3↔3 a waiting ally takes over a duel, and duels may swap foes. */
+  rotatesDuels: boolean;
+  /** The player starts without a foe and waits, as a late joiner does (drills of the manual tests). */
+  openerWaits: boolean;
 }>;
+
+export type ScenarioDrill = Readonly<{ openerWaits: boolean; rotatesDuels: boolean }>;
 
 type FightRulesContext =
   | Readonly<{ kind: "hunt"; instanceCopyId: number | null }>
@@ -56,6 +62,8 @@ export class FightRules implements FightRulesFields {
   readonly restoresFighters!: boolean;
   readonly historyRow!: FightHistoryRow;
   readonly includesQuestChat!: boolean;
+  readonly rotatesDuels!: boolean;
+  readonly openerWaits!: boolean;
 
   private constructor(fields: FightRulesFields) {
     assertFightRules(fields);
@@ -71,6 +79,11 @@ export class FightRules implements FightRulesFields {
 
   static create(fields: FightRulesFields): FightRules {
     return new FightRules(fields);
+  }
+
+  /** The same rules, with the manual-test drill's changes. */
+  drilled(drill: ScenarioDrill): FightRules {
+    return FightRules.create({ ...this, ...drill });
   }
 
   static for(context: FightRulesContext): FightRules {
@@ -107,6 +120,8 @@ export class FightRules implements FightRulesFields {
       awardsHonor: false,
       restoresFighters: false,
       includesQuestChat: false,
+      rotatesDuels: true,
+      openerWaits: false,
       ...enemyBotsHistory(true),
     });
   }
@@ -127,6 +142,8 @@ export class FightRules implements FightRulesFields {
       awardsHonor: false,
       restoresFighters: false,
       includesQuestChat: true,
+      rotatesDuels: true,
+      openerWaits: false,
       ...enemyBotsHistory(true),
     });
   }
@@ -144,6 +161,8 @@ export class FightRules implements FightRulesFields {
       awardsHonor: false,
       restoresFighters: true,
       includesQuestChat: false,
+      rotatesDuels: true,
+      openerWaits: false,
       ...enemyBotsHistory(false, "practice-humans"),
     });
   }
@@ -161,6 +180,8 @@ export class FightRules implements FightRulesFields {
       awardsHonor: true,
       restoresFighters: false,
       includesQuestChat: false,
+      rotatesDuels: true,
+      openerWaits: false,
       ...enemyBotsHistory(false, "none"),
     });
   }
@@ -216,6 +237,8 @@ function assertFightRules(fields: FightRulesFields): void {
   requireFlag(fields.awardsHonor, "awardsHonor");
   requireFlag(fields.restoresFighters, "restoresFighters");
   requireFlag(fields.includesQuestChat, "includesQuestChat");
+  requireFlag(fields.rotatesDuels, "rotatesDuels");
+  requireFlag(fields.openerWaits, "openerWaits");
   if (
     fields.historyRow !== "hunt-bot" &&
     fields.historyRow !== "practice-humans" &&

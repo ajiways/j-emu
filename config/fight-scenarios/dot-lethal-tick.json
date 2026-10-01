@@ -1,6 +1,7 @@
 {
   "description": "Бот при старте плюёт ядом (396), у героя 3 HP: после пары ходов герой должен умереть именно от тика DoT (hpChange перед fightFinish), а не от удара бота.",
   "purpose": "hunt",
+  "drill": null,
   "hero": {
     "hp": 3,
     "maxHp": null,

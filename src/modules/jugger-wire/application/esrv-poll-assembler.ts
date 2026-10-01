@@ -76,7 +76,11 @@ export class EsrvPollAssembler {
     if (loot) mergeChannel(pending, personal, { "fight|loot": loot });
     const exit = await this.combat.takeExit(accountId);
     if (exit) mergeChannel(pending, personal, { "fight|exit": this.fightWire.exit(exit) });
-    if (loot || exit) mergeChannel(pending, personal, await this.hud.fragment(accountId));
+    // A walk-out from a fight that goes on is a bare `fight|exit`, as live sends it: the client
+    // asks for the result right after it, and the HUD comes with that answer.
+    if (loot || (exit && !exit.fightGoesOn)) {
+      mergeChannel(pending, personal, await this.hud.fragment(accountId));
+    }
     flushChannel(frames, pending, personal, ctime);
     for (const channel of pending.keys()) {
       flushChannel(frames, pending, channel, ctime);

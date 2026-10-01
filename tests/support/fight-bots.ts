@@ -41,5 +41,6 @@ export function unitFightBots(
     effectIds: input.effectIds ?? new FightEffectIds(),
     enemyTeam: teamAssignment.enemyTeam,
     openerTeam: teamAssignment.openerTeam,
+    primaryWaits: false,
   });
 }

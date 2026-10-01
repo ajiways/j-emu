@@ -78,6 +78,7 @@ export class ScenarioDesk {
     await provisionIdols(hero, scenario.hero.idols, this.deps.pocket);
     const started = await startHuntWithRoster(hero, this.deps.start, {
       purpose: scenario.purpose,
+      drill: scenario.drill,
       heroHp: scenario.hero.hp,
       heroMaxHp: maxHp,
       gloveOverride: await this.glove(scenario),

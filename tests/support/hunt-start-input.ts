@@ -95,6 +95,7 @@ export function unitHuntStart(
     arena: "1_1",
     areaId: "503",
     instanceCopyId: null,
+    drill: null,
     appearance: UNIT_HUNT_APPEARANCE,
     loadout: EMPTY_COMBAT_LOADOUT,
     botSpellBook: EMPTY_HUNT_BOT_SPELL_BOOK,

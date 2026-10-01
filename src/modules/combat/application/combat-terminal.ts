@@ -78,6 +78,7 @@ export class CombatTerminal {
         fightId: battle.id,
         winnerTeam: battle.opposingTeamOf(accountId),
         flee: true,
+        fightGoesOn: true,
       });
       this.byAccount.delete(accountId);
       this.wakeAccount(accountId);

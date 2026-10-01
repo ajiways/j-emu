@@ -1,6 +1,7 @@
 import type { FightDuel } from "./fight-duel.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { Participant } from "./participant.ts";
+import type { FightRules } from "./fight-rules.ts";
 import type { Roster } from "./roster.ts";
 import { PAIR_HITS_TO_SWITCH } from "./try-shuffle-after-hits.ts";
 
@@ -15,9 +16,11 @@ export function rotateBotDuel(
     foe: Participant;
     duel: FightDuel;
     roster: Roster;
+    fightRules: FightRules;
   }>,
 ): Participant | null {
   const { bot, foe, duel } = input;
+  if (!input.fightRules.rotatesDuels) return null;
   if (foe.fighterKind !== "bot" || !foe.alive || !bot.alive) return null;
   if (duel.hitsA < PAIR_HITS_TO_SWITCH || duel.hitsB < PAIR_HITS_TO_SWITCH) return null;
   const waiter = input.roster

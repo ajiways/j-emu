@@ -51,12 +51,16 @@ export function seedFightBots(
     effectIds: FightEffectIds;
     enemyTeam: 1 | 2;
     openerTeam: 1 | 2;
+    /** The primary enemy starts without a foe (the player waits instead). */
+    primaryWaits: boolean;
   }>,
 ): BotFighter[] {
   const seen = new Set<number>(input.occupiedIds);
   const bots: BotFighter[] = [];
   for (const [index, seed] of input.enemyAis.entries()) {
-    bots.push(createFightBot(seed, input.enemyTeam, input.effectIds, seen, index > 0));
+    bots.push(
+      createFightBot(seed, input.enemyTeam, input.effectIds, seen, index > 0 || input.primaryWaits),
+    );
   }
   for (const seed of input.openerAis) {
     bots.push(createFightBot(seed, input.openerTeam, input.effectIds, seen, true));

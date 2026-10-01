@@ -203,6 +203,22 @@ describe("scripted fight scenarios from chat", () => {
     expect(backAgain).toBe(true);
   });
 
+  it("concentration: a hero who waits strikes a random enemy, then waits out the cooldown", async () => {
+    const client = await startScenario("concentration");
+    // He starts without a foe: the ally is already fighting the mob.
+    expect(opened).toContain('"et":"oppwait"');
+    await client.fight({ rc: "castSpell", srcType: 1, srcId: 5, sq: 4 });
+    const first = JSON.stringify(await client.pollFight());
+    expect(first).toContain("magic_backstab");
+    await client.fight({ rc: "castSpell", srcType: 1, srcId: 5, sq: 5 });
+    expect(JSON.stringify(await client.pollFight())).not.toContain("magic_backstab");
+    // 90 s later it works again; the duels do not rotate, so he keeps waiting.
+    await harness.elapseCombat(91_000);
+    await client.pollFight();
+    await client.fight({ rc: "castSpell", srcType: 1, srcId: 5, sq: 6 });
+    expect(JSON.stringify(await client.pollFight())).toContain("magic_backstab");
+  });
+
   it("answers an unknown scenario with a system line and starts no fight", async () => {
     const client = await AuthenticatedClient.login(application);
     const sent = await client.objectAction({

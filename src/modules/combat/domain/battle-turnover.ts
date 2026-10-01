@@ -22,6 +22,7 @@ export type NextWaiter = Readonly<{
 
 /** The shuffle of the duel `accountId` stands in, once its hits ran out. */
 export function shuffleOfBattle(state: TurnoverState, accountId: number): ShuffleOutcome {
+  if (!state.fightRules.rotatesDuels) return { kind: "none" };
   const human = requireBattleHuman(state.roster.humans, accountId);
   const duel = state.duels.find((entry) => entry.has(human.heroId));
   if (!duel) return { kind: "none" };

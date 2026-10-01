@@ -17,7 +17,7 @@ export function createHuntBattle(
   rules: BattleRules,
   random: RandomSource,
 ): Battle {
-  const fightRules = huntFightRules(input);
+  const fightRules = drilledRules(huntFightRules(input), input);
   if (!fightRules.allowsSideBots && (input.extraEnemies.length > 0 || input.allies.length > 0)) {
     throw new Error("Hunt fights cannot include a quest roster");
   }
@@ -46,6 +46,10 @@ export function createHuntBattle(
     fightRules,
     random,
   );
+}
+
+function drilledRules(rules: FightRules, input: HuntStartInput): FightRules {
+  return input.drill === null ? rules : rules.drilled(input.drill);
 }
 
 function huntFightRules(input: HuntStartInput): FightRules {

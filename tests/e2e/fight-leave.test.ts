@@ -57,8 +57,10 @@ describe("walking out of a fight that goes on", () => {
     await a.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: sqA + 2 });
     await a.pollFight();
     expect(await a.fight({ rc: "leaveFight", sq: sqA + 3 })).toEqual([{ rs: true, sq: sqA + 3 }]);
-    const exit = personalEsrvObject(await a.pollEsrv())["fight|exit"];
-    expect(exit).toMatchObject({ flee: true, status: 100 });
+    const left = personalEsrvObject(await a.pollEsrv());
+    // No HUD with it, as live sends it: the client asks for the result right after.
+    expect(Object.keys(left)).not.toContain("user|unitframe");
+    expect(left["fight|exit"]).toEqual({ flee: true, status: 100, type: 2 });
     const info = await a.objectAction({ object: "fight", action: "finish", sq: sqA + 4 });
     expect(Object.keys(info)).toContain("fight|info");
     // Attacking the same mob again does not put him back into the fight he left.

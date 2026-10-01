@@ -33,7 +33,7 @@ export function seedBattleParticipants(
   const { openerTeam, enemyTeam } = fightRules.teamAssignment;
   const humans = [
     ...fightSetupTeamHumans(setup, openerTeam).map((human) =>
-      seedHuman(human, openerTeam, false, startedAtMs, effectIds),
+      seedHuman(human, openerTeam, fightRules.openerWaits, startedAtMs, effectIds),
     ),
     ...fightSetupTeamHumans(setup, enemyTeam).map((human) =>
       seedHuman(human, enemyTeam, false, startedAtMs, effectIds),
@@ -60,13 +60,16 @@ export function seedBattleParticipants(
     effectIds,
     enemyTeam,
     openerTeam,
+    primaryWaits: fightRules.openerWaits,
   });
   return {
     bots,
     pairedAccountId: opener.accountId,
     humans,
     duels: [
-      new FightDuel(opener.heroId, primary.fightId, opener.heroId),
+      ...(fightRules.openerWaits
+        ? []
+        : [new FightDuel(opener.heroId, primary.fightId, opener.heroId)]),
       ...pairLeftoverRosterBots(bots, fightRules.teamAssignment),
     ],
   };
