@@ -26,7 +26,7 @@
   },
   "regen": {
     "k": 250,
-    "mpK": 3300,
+    "mpK": 500,
     "provenance": "legacy behavior / empirical"
   },
   "starterItems": [

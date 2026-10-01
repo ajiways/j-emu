@@ -30,6 +30,10 @@ export async function piggybackQuestFight(
 ): Promise<Readonly<Record<string, unknown>>> {
   const fight = mutation.effects.find((effect) => effect.type === "START_FIGHT");
   if (!fight || fight.type !== "START_FIGHT") return {};
+  const known = await deps.characters.getByAccountId(accountId);
+  if (!known) throw new Error(`Hero for account ${accountId} is missing`);
+  // The fight starts with the hit points and mana regained since they were last counted.
+  await deps.characters.syncResources({ characterId: known.id });
   const hero = await deps.characters.getByAccountId(accountId);
   if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
   const startDeps = {

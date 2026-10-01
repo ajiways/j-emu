@@ -50,6 +50,10 @@ export class ScenarioDesk {
       );
       return {};
     }
+    const known = await this.deps.characters.getByAccountId(accountId);
+    if (!known) throw new Error(`Hero for account ${accountId} is missing`);
+    // The fight starts with the hit points and mana regained since the last time they were counted.
+    await this.deps.characters.syncResources({ characterId: known.id });
     const hero = await this.deps.characters.getByAccountId(accountId);
     if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
     const maxHp = scenario.hero.maxHp ?? hero.maxHp;
