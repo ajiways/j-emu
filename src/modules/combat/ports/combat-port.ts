@@ -21,6 +21,7 @@ export type FightCommand =
   | Readonly<{ kind: "idol"; itemId: number; sequence: CommandSequence }>
   | Readonly<{ kind: "glove"; spellId: number; sequence: CommandSequence }>
   | Readonly<{ kind: "rage"; sequence: CommandSequence }>
+  | Readonly<{ kind: "concentrate"; sequence: CommandSequence }>
   | Readonly<{ kind: "aggro"; targetId: number; sequence: CommandSequence }>
   | Readonly<{ kind: "leave"; sequence: CommandSequence }>
   | Readonly<{ kind: "pers-info"; sequence: CommandSequence }>

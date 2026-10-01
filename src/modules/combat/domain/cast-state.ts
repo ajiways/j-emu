@@ -20,6 +20,7 @@ export class CastState {
   aggro: number;
   private readonly pockets = new Map<number, PocketRuntime>();
   private readonly idolCounts = new Map<number, number>();
+  private concentrationUsedAtMs: number | null = null;
   private readonly groupLastUseAt = new Map<number, number>();
   private readonly gloveLastUseAt = new Map<number, number>();
 
@@ -36,6 +37,16 @@ export class CastState {
       this.pockets.set(row.itemId, { row, count: row.count, lastUseAt: 0 });
     }
     for (const idol of loadout.idols) this.idolCounts.set(idol.itemId, idol.count);
+  }
+
+  /** Milliseconds until «Концентрация» may be used again; 0 when it may. */
+  concentrationLeftMs(cooldownSeconds: number, nowMs: number): number {
+    if (this.concentrationUsedAtMs === null) return 0;
+    return Math.max(0, this.concentrationUsedAtMs + cooldownSeconds * 1000 - nowMs);
+  }
+
+  noteConcentration(nowMs: number): void {
+    this.concentrationUsedAtMs = nowMs;
   }
 
   idolRow(itemId: number): CombatIdolRow | null {

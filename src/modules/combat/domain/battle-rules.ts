@@ -6,6 +6,10 @@ export type BattleRules = Readonly<{
   turnGrantDelayMs: number;
   maxConsecutiveSkips: number;
   resultRevealDelayMs: number;
+  /** «Концентрация»: seconds between two uses by a participant waiting for a foe. */
+  concentrationCooldownSeconds: number;
+  /** «Концентрация»: the most damage one use deals (the least is 1). */
+  concentrationMaxDamage: number;
   combatSoftC: number;
   combatChanceCap: number;
   critMult: number;

@@ -107,6 +107,11 @@ export class CompositionRoot {
             extras.combatRules?.maxConsecutiveSkips ?? policy.combat.maxConsecutiveSkips,
           resultRevealDelayMs:
             extras.combatRules?.resultRevealDelayMs ?? policy.combat.resultRevealDelayMs,
+          concentrationCooldownSeconds:
+            extras.combatRules?.concentrationCooldownSeconds ??
+            policy.combat.concentrationCooldownSeconds,
+          concentrationMaxDamage:
+            extras.combatRules?.concentrationMaxDamage ?? policy.combat.concentrationMaxDamage,
           combatSoftC: extras.combatRules?.combatSoftC ?? policy.combat.combatSoftC,
           combatChanceCap: extras.combatRules?.combatChanceCap ?? policy.combat.combatChanceCap,
           critMult: extras.combatRules?.critMult ?? policy.combat.critMult,

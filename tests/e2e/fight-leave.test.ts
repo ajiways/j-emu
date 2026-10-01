@@ -81,4 +81,27 @@ describe("walking out of a fight that goes on", () => {
     expect(JSON.stringify(packets)).toContain("Окончен бой");
     expect(paid["fight|loot"]).toMatchObject({ status: 100, experience: 8 });
   });
+
+  it("lets a player who waits for a foe use «Концентрация» on the mob, once per cooldown", async () => {
+    const a = await createIsolatedHero(application);
+    const b = await createIsolatedHero(application);
+    await a.objectAction({ object: "common", action: "init", sq: 1 });
+    await b.objectAction({ object: "common", action: "init", sq: 1 });
+    const attack = { code: "ATTACK_BOT", bot_id: MAP_HUNT_SPAWN_ID };
+    const start = await a.objectAction({ object: "common", action: "object", form: attack, sq: 2 });
+    const fightId = huntFightIdFrom(start);
+    await a.fight({ rc: "auth", eid: fightId, sq: 3 });
+    await a.pollFight();
+    await b.objectAction({ object: "common", action: "object", form: attack, sq: 2 });
+    await b.fight({ rc: "auth", eid: fightId, sq: 3 });
+    await b.pollFight();
+    // «Удар в спину» (srcId 5) is the native «Концентрация»: b has no foe yet.
+    await b.fight({ rc: "castSpell", srcType: 1, srcId: 5, sq: 4 });
+    const first = JSON.stringify(await b.pollFight());
+    expect(first).toContain("magic_backstab");
+    await b.fight({ rc: "castSpell", srcType: 1, srcId: 5, sq: 5 });
+    expect(JSON.stringify(await b.pollFight())).not.toContain("magic_backstab");
+    // The others see the mob's hit points drop.
+    expect(JSON.stringify(await a.pollFight())).toContain('"et":"persChangeInfo"');
+  });
 });

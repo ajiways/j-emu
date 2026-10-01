@@ -1136,3 +1136,14 @@ Combat получает immutable combat-ready snapshots через public ports
 - Кнопка «Разозлить» (`srcId 7`) есть в `persSpells` только там, где `FightRules.canAggro`
   (охота в мире); в квестовом, дуэли и PvP её нет. Призванного (идол, позже спутник) разозлить
   нельзя никогда (`BotFighter.summoned`), как и моба своей команды.
+
+## «Концентрация» (native «Удар в спину», `srcId 5`)
+
+Клиентская метка `fightBackstabLabel` = «Концентрация»; по описанию с офсайта: пока герой жив и
+ждёт противника, он периодически бьёт случайного живого врага на 1–N урона, очки урона идут в
+опыт и героизм боя. Реализовано: `castSpell srcType 1 srcId 5` → `concentrate` (`domain/
+concentration.ts`): только для ждущего (без дуэли) живого участника, кулдаун
+`combat.concentrationCooldownSeconds` (90, как `cooldown` в `persSpells`), урон `1..
+combat.concentrationMaxDamage` (6), `cast` с `animData magic_backstab`, урон засчитан как свой
+(`damageToBot`), убитый врага разбирает `settleFallen` (бой может закончиться). Ход не тратится.
+Бот-контроллер её пока не использует (правила общие, политики для ИИ нет).

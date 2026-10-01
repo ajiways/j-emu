@@ -10,7 +10,17 @@ export async function finishFightCommand(
     accountId: number;
     command: Extract<
       FightCommand,
-      { kind: "pocket" | "idol" | "glove" | "rage" | "aggro" | "pers-info" | "pers-effects" }
+      {
+        kind:
+          | "pocket"
+          | "idol"
+          | "glove"
+          | "rage"
+          | "aggro"
+          | "concentrate"
+          | "pers-info"
+          | "pers-effects";
+      }
     >;
     battle: Battle | undefined;
     nowMs: number;
@@ -36,7 +46,10 @@ export async function finishFightCommand(
 async function castFightSpecial(
   input: Readonly<{
     accountId: number;
-    command: Extract<FightCommand, { kind: "pocket" | "idol" | "glove" | "rage" | "aggro" }>;
+    command: Extract<
+      FightCommand,
+      { kind: "pocket" | "idol" | "glove" | "rage" | "aggro" | "concentrate" }
+    >;
     battle: Battle | undefined;
     nowMs: number;
     botFightIds: EphemeralBotFightIds;
@@ -63,6 +76,10 @@ async function castFightSpecial(
     );
     finishKeepTurn(input, resolved);
     if (resolved.kind === "resolved") input.melee.notifySummon(battle, accountId, resolved.events);
+    return;
+  }
+  if (command.kind === "concentrate") {
+    await input.melee.concentrate(battle, accountId, command.sequence, input.nowMs);
     return;
   }
   if (command.kind === "rage") {
@@ -96,7 +113,10 @@ async function castFightSpecial(
 function finishKeepTurn(
   input: Readonly<{
     accountId: number;
-    command: Extract<FightCommand, { kind: "pocket" | "idol" | "glove" | "rage" | "aggro" }>;
+    command: Extract<
+      FightCommand,
+      { kind: "pocket" | "idol" | "glove" | "rage" | "aggro" | "concentrate" }
+    >;
     melee: CombatMeleeLoop;
     pendingConsume: PendingConsumes;
     enqueue: (accountId: number, events: readonly CombatEvent[]) => void;

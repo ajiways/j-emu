@@ -111,6 +111,28 @@ export class CombatMeleeLoop {
     });
   }
 
+  async concentrate(
+    battle: Battle,
+    accountId: number,
+    sequence: string | number,
+    nowMs: number,
+  ): Promise<void> {
+    await this.armAfter(battle, async () => {
+      const result = battle.tryConcentration(accountId, nowMs);
+      if (result === null) {
+        this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
+        return;
+      }
+      this.keepTurn(accountId, sequence, result.events);
+      fanoutPersChange(battle, accountId, result.events, this.enqueue, this.wakeAccount);
+      if (battle.finished) {
+        await this.settleFinished(battle, result.events, accountId);
+        return;
+      }
+      await this.effectClock.settleFallout(battle, result.fallout);
+    });
+  }
+
   keepTurn(accountId: number, sequence: string | number, events: readonly CombatEvent[]): void {
     const battle = this.byAccount.get(accountId);
     enqueueKeepTurn(this.enqueue, this.wakeAccount, battle, accountId, sequence, events);
@@ -215,7 +237,6 @@ export class CombatMeleeLoop {
     this.giveTurn(battle, opener);
   }
 
-  /** An idol's phantom joined: the others see the new roster, and whoever is waiting gets paired. */
   notifySummon(battle: Battle, casterAccountId: number, events: readonly CombatEvent[]): void {
     const roster = events.find((event) => event.type === "roster-updated");
     if (!roster) throw new Error("An idol cast must report the roster update");

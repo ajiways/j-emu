@@ -1,3 +1,4 @@
+import { concentrate, type ConcentrationResult } from "./concentration.ts";
 import { killCountsOf } from "./kill-counts.ts";
 import type { BattleEvent, BotSnap } from "./battle-event.ts";
 import {
@@ -7,8 +8,8 @@ import {
 } from "./battle-effect-clock.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { authenticateFighter } from "./battle-authenticate.ts";
-import { historyOf, joinBattleHuman } from "./battle-join.ts";
-import { practiceHistoryOf } from "./practice-fight-history.ts";
+import { joinBattleHuman } from "./battle-join.ts";
+import { huntHistoryOf, practiceHistoryOfRules, questChatOf } from "./battle-history.ts";
 import {
   applyBattleAiTurn,
   applyBattleGlove,
@@ -26,7 +27,7 @@ import { fightDelayTokens, fightDuelDelayToken } from "./fight-delay-token.ts";
 import { FightRules } from "./fight-rules.ts";
 import type { FightSetup, FightSetupJoin } from "./fight-setup.ts";
 import { Roster } from "./roster.ts";
-import { primaryEnemyBot, requireFightBot, requireFightBots } from "./fight-bots.ts";
+import { requireFightBot, requireFightBots } from "./fight-bots.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { grantTurn as grantHumanTurn } from "./turn-grant.ts";
@@ -116,24 +117,15 @@ export class Battle {
   }
 
   questChat(): Readonly<{ chatWin: string; chatLose: string }> {
-    if (!this.fightRules.includesQuestChat) {
-      throw new Error("Quest chat requires FightRules.includesQuestChat");
-    }
-    return { chatWin: this.setup.meta.chatWin, chatLose: this.setup.meta.chatLose };
+    return questChatOf(this.setup, this.fightRules);
   }
 
   huntHistory() {
-    return historyOf(
-      battleOpener(this.humans),
-      primaryEnemyBot(this.bots, this.fightRules.teamAssignment.enemyTeam),
-    );
+    return huntHistoryOf(this.humans, this.bots, this.fightRules);
   }
 
   practiceHistory() {
-    if (this.fightRules.historyRow !== "practice-humans") {
-      throw new Error("Practice history is only available for a friendly duel");
-    }
-    return practiceHistoryOf(this.humans);
+    return practiceHistoryOfRules(this.humans, this.fightRules);
   }
 
   accountIds(): readonly number[] {
@@ -244,6 +236,14 @@ export class Battle {
   ): KeepTurnResult {
     const human = requireAuthedHuman(this.humans, accountId);
     return tryIdolCast({ ...this.actionState(), human, itemId, sequence, allocateBotId });
+  }
+
+  /** «Концентрация» of a player who waits for a foe; `null` while it cannot be used. */
+  tryConcentration(accountId: number, nowMs: number): ConcentrationResult | null {
+    const actor = requireAuthedHuman(this.humans, accountId);
+    const result = concentrate({ ...this.actionState(), actor, nowMs });
+    if (result?.fallout.finished) this.finishedValue = true;
+    return result;
   }
 
   tryRage(accountId: number): KeepTurnResult {

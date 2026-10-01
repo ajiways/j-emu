@@ -45,6 +45,7 @@ export class FproxyCastSpellCommand implements FproxyCommand {
       return { kind: "strike", side: "right", sequence };
     }
     if (sourceId === 6) return { kind: "rage", sequence };
+    if (sourceId === 5) return { kind: "concentrate", sequence };
     if (sourceId === 7) {
       const targetId = record["targetId"];
       if (typeof targetId !== "number" || !Number.isInteger(targetId) || targetId < 1) {
