@@ -181,6 +181,28 @@ describe("scripted fight scenarios from chat", () => {
     expect(foes.size).toBeGreaterThan(1);
   });
 
+  it("idol-rotation: the phantom takes the mob over after 3↔3, and gives it back after its own", async () => {
+    const client = await startScenario("idol-rotation");
+    const idol = /"artikulId":305[\s\S]*?"srcId":(\d+),"srcType":4/.exec(opened);
+    if (!idol?.[1]) throw new Error("Idol 305 is not in the fight spell list");
+    await client.fight({ rc: "castSpell", srcType: 4, srcId: Number(idol[1]), targetId: 1, sq: 4 });
+    await client.pollFight();
+    let sq = 5;
+    let waited = false;
+    let backAgain = false;
+    for (let step = 0; step < 80 && !backAgain; step += 1) {
+      await client.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: sq++ });
+      await client.pollFight();
+      await harness.elapseCombat(3000);
+      const frames = await client.pollFight();
+      const types = fightEventTypes(frames);
+      if (types.includes("oppwait")) waited = true;
+      if (waited && types.includes("oppnew")) backAgain = true;
+    }
+    expect(waited).toBe(true);
+    expect(backAgain).toBe(true);
+  });
+
   it("answers an unknown scenario with a system line and starts no fight", async () => {
     const client = await AuthenticatedClient.login(application);
     const sent = await client.objectAction({

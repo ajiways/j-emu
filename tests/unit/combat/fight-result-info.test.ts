@@ -25,6 +25,7 @@ describe("fight result info", () => {
       now: new Date("2026-09-16T12:00:03"),
       winnerTeam: 1,
       fightOver: true,
+      kills: new Map([[100, 1]]),
       humans: [
         {
           accountId: 7,
@@ -114,6 +115,7 @@ describe("fight result info", () => {
       now: new Date(5000),
       winnerTeam: 2,
       fightOver: true,
+      kills: new Map([[1_000_003, 1]]),
       humans: [
         {
           accountId: 1,
@@ -135,6 +137,8 @@ describe("fight result info", () => {
       lootByAccount: new Map(),
     });
     expect(info.finished).toBe(1);
+    // The kill was a mob of his side's (id 1000003), not his.
+    expect(info.users[0]?.killCount).toBe(0);
   });
 
   it("marks a last-leave snapshot unfinished and without a kill", () => {
@@ -148,6 +152,7 @@ describe("fight result info", () => {
       now: new Date("2026-09-16T12:00:00"),
       winnerTeam: 2,
       fightOver: false,
+      kills: new Map(),
       humans: [
         {
           accountId: 7,

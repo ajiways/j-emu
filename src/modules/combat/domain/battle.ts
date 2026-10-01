@@ -1,3 +1,4 @@
+import { killCountsOf } from "./kill-counts.ts";
 import type { BattleEvent, BotSnap } from "./battle-event.ts";
 import {
   nextEffectDueMs,
@@ -139,7 +140,6 @@ export class Battle {
     return this.humans.map((human) => human.accountId);
   }
 
-  /** Players who take part in the fight's wire: connected, and not walked out of it. */
   authedAccountIds(): readonly number[] {
     return this.humans
       .filter((human) => human.authed && !human.leftLive)
@@ -348,6 +348,10 @@ export class Battle {
     bots: readonly BotSnap[];
   }> {
     return { humans: this.humans, bots: this.bots.map((bot) => bot.snap()) };
+  }
+
+  killCounts(): ReadonlyMap<number, number> {
+    return killCountsOf(this.roster.all());
   }
 
   livingHumans(): readonly HumanFighter[] {

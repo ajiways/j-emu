@@ -14,6 +14,7 @@ import type { KeepTurnResult } from "./player-casts.ts";
 import { tryGloveKeepTurn } from "./player-casts.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotMeleeResult } from "./turn-grant.ts";
+import { rotateBotDuel } from "./rotate-bot-duel.ts";
 import { settleBotSideHits } from "./bot-side-hits.ts";
 import type { Fallout } from "./settle-fallen.ts";
 import type { BotFighter } from "./bot-fighter.ts";
@@ -31,6 +32,8 @@ export type BotTurnResult = BotMeleeResult &
     sideFallout: Fallout;
     /** The account of the player across from the bot; `null` when the foe is a mob. */
     foeAccountId: number | null;
+    /** The account of a player who took the place of this mob in a duel of mobs; else `null`. */
+    rotatedInAccountId: number | null;
   }>;
 
 type HuntActionState = Readonly<{
@@ -141,8 +144,15 @@ export function applyBattleAiTurn(
       ? [side.fallout.finished]
       : []),
   ];
+  const rotatedIn = events.some((event) => event.type === "finished")
+    ? null
+    : rotateBotDuel({ bot, foe, duel, roster: state.roster });
   return {
     events,
+    rotatedInAccountId:
+      rotatedIn !== null && rotatedIn.fighterKind === "human"
+        ? (rotatedIn as HumanFighter).accountId
+        : null,
     killedPlayer: result.killedPlayer,
     sideHits: result.sideHits,
     sideFallout: side.fallout,

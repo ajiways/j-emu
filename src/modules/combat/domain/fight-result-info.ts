@@ -77,6 +77,8 @@ export function buildFightResultInfo(input: {
   winnerTeam: 1 | 2;
   /** Whether the fight is decided; a fight the players walked out of while it runs is not. */
   fightOver: boolean;
+  /** Kills by the id of the participant who dealt the final blow. */
+  kills: ReadonlyMap<number, number>;
   humans: readonly FightResultHumanInput[];
   bots: readonly BotSnap[];
   lootByAccount: ReadonlyMap<number, FightLootBlock>;
@@ -92,7 +94,6 @@ export function buildFightResultInfo(input: {
     1,
     Math.floor((input.now.getTime() - input.startedAt.getTime()) / 1000),
   );
-  const enemyDead = input.bots.some((bot) => bot.hp <= 0);
   const users: FightResultUser[] = [];
   for (const human of input.humans) {
     const loot = input.lootByAccount.get(human.accountId);
@@ -109,7 +110,7 @@ export function buildFightResultInfo(input: {
       flee: human.leftLive,
       loot: lootItemCount(loot),
       injury: 0,
-      killCount: input.winnerTeam === human.team && enemyDead && !human.leftLive ? 1 : 0,
+      killCount: input.kills.get(human.heroId) ?? 0,
       exp: loot?.experience ?? 0,
       honor: 0,
       dmg: human.damageToBot + human.damageToHumans,

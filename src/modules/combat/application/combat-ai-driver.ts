@@ -109,6 +109,9 @@ export class CombatAiDriver {
       else if (!deps.applyShuffle(battle, foe))
         deps.grantPlayer(battle, foe, grantAtMs - deps.scheduler.now().getTime());
     }
+    if (result.rotatedInAccountId !== null) {
+      deps.announcePaired(battle, [result.rotatedInAccountId]);
+    }
     this.arm(battle);
   }
 

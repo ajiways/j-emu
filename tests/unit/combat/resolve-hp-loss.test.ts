@@ -19,6 +19,7 @@ class FakeFighter implements Fighter {
   });
   readonly credits: { amount: number; targetKind: FighterKind }[] = [];
   applyCalls = 0;
+  killedBy: number | null = null;
 
   constructor(
     readonly id: number,
@@ -52,6 +53,10 @@ class FakeFighter implements Fighter {
     return 0;
   }
 
+  markKilledBy(killerId: number): void {
+    this.killedBy = killerId;
+  }
+
   creditDealt(amount: number, targetKind: FighterKind): void {
     this.credits.push({ amount, targetKind });
   }
@@ -71,6 +76,14 @@ describe("resolveHpLoss", () => {
     const target = new FakeFighter(2, "human", 5);
     expect(resolveHpLoss(target, 50, dealer)).toEqual({ applied: 5, killed: true });
     expect(dealer.credits).toEqual([{ amount: 5, targetKind: "human" }]);
+    expect(target.killedBy).toBe(1);
+  });
+
+  it("names no killer for a hit that leaves the target standing", () => {
+    const dealer = new FakeFighter(1, "human", 30);
+    const target = new FakeFighter(2, "human", 9);
+    resolveHpLoss(target, 3, dealer);
+    expect(target.killedBy).toBeNull();
   });
 
   it("changes nothing for a fighter already at 0 hp", () => {

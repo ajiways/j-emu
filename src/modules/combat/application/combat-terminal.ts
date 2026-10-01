@@ -237,6 +237,7 @@ export class CombatTerminal {
       now: this.scheduler.now(),
       winnerTeam,
       fightOver,
+      kills: battle.killCounts(),
       humans,
       bots,
       lootByAccount,

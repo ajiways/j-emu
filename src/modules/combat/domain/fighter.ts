@@ -26,6 +26,9 @@ export interface Fighter {
   clampToMaxMp(): void;
   /** Rage a received hit of `damage` adds to this fighter; returns the rage gained. */
   awardIncomingRage(damage: number): number;
+  /** Who dealt the blow that dropped this fighter to 0 hp; `null` while he stands. */
+  readonly killedBy: number | null;
+  markKilledBy(killerId: number): void;
   /** Books damage this fighter dealt to a target of the given kind. */
   creditDealt(amount: number, targetKind: FighterKind): void;
 }

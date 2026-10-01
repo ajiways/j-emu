@@ -45,6 +45,7 @@ export abstract class Participant implements Fighter {
   private mpValue: number;
   private waitingValue: boolean;
   private damageToBotValue = 0;
+  private killedByValue: number | null = null;
   private damageToHumansValue = 0;
   private lastOpponentIdValue: number | null = null;
 
@@ -189,6 +190,14 @@ export abstract class Participant implements Fighter {
       throw new Error("Last opponent id must be a positive integer");
     }
     this.lastOpponentIdValue = opponentId;
+  }
+
+  get killedBy(): number | null {
+    return this.killedByValue;
+  }
+
+  markKilledBy(killerId: number): void {
+    this.killedByValue = killerId;
   }
 
   creditDealt(amount: number, targetKind: FighterKind): void {

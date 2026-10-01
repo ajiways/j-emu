@@ -12,5 +12,7 @@ export function resolveHpLoss(target: Fighter, requested: number, dealer?: Fight
   const applied = appliedHpLoss(requested, target.hp);
   if (applied < 1) return { applied: 0, killed: target.hp === 0 };
   dealer?.creditDealt(applied, target.fighterKind);
-  return { applied, killed: target.applyDamage(applied) };
+  const killed = target.applyDamage(applied);
+  if (killed && dealer) target.markKilledBy(dealer.id);
+  return { applied, killed };
 }
