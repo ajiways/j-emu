@@ -179,6 +179,12 @@ export class ChatDesk {
     );
   }
 
+  /** A system line as the answer to the player's own chat message: the client draws the answer, not a queued line. */
+  async systemReply(accountId: number, msg: string): Promise<ChatMessageBlock> {
+    const hero = await this.requireHero(accountId);
+    return this.message({ type: "system", msg, lng: hero.language });
+  }
+
   async notifyHuntStarted(input: HuntStartChatInput): Promise<void> {
     const area = await this.deps.world.area(input.areaId);
     const fight = buildFightMacro({

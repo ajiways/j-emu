@@ -226,12 +226,14 @@ describe("scripted fight scenarios from chat", () => {
     expect(await client.fight({ rc: "leaveFight", sq: 4 })).toEqual([
       { rs: false, err: "нельзя выйти из боя", sq: 4 },
     ]);
-    await client.objectAction({
+    const stopped = await client.objectAction({
       object: "chat",
       action: "add",
       form: { message: "/scenario stop", type: "main" },
       sq: 5,
     });
+    // The line is the answer to the message: without it the client draws an empty one.
+    expect(stopped["chat|message"]).toMatchObject({ message: { msg: "Вы вышли из боя." } });
     // He is out: the same scenario can start again, which a hero in a fight cannot do.
     const again = await client.objectAction({
       object: "chat",
@@ -251,6 +253,9 @@ describe("scripted fight scenarios from chat", () => {
       sq: 2,
     });
     expect(sent["chat|add"]).toEqual({ status: 100 });
+    expect(sent["chat|message"]).toMatchObject({
+      message: { type: "system", msg: expect.stringContaining("не найден") },
+    });
     expect(sent["fight|conf"]).toBeUndefined();
   });
 

@@ -41,25 +41,16 @@ export class ScenarioDesk {
     const [command, name, ...rest] = text.split(/\s+/);
     if (command !== COMMAND) return null;
     if (name === undefined || rest.length > 0) {
-      await this.deps.chat.deliverSystem(accountId, this.usage());
-      return {};
+      return this.reply(accountId, this.usage());
     }
     if (name === STOP) {
       const fighting = (await this.deps.start.combat.activeFightId(accountId)) !== null;
       await this.deps.start.combat.abandonFight(accountId);
-      await this.deps.chat.deliverSystem(
-        accountId,
-        fighting ? "Вы вышли из боя." : "Вы сейчас не в бою.",
-      );
-      return {};
+      return this.reply(accountId, fighting ? "Вы вышли из боя." : "Вы сейчас не в бою.");
     }
     const scenario = this.deps.scenarios.find(name);
     if (!scenario) {
-      await this.deps.chat.deliverSystem(
-        accountId,
-        `Сценарий «${name}» не найден. ${this.usage()}`,
-      );
-      return {};
+      return this.reply(accountId, `Сценарий «${name}» не найден. ${this.usage()}`);
     }
     const known = await this.deps.characters.getByAccountId(accountId);
     if (!known) throw new Error(`Hero for account ${accountId} is missing`);
@@ -69,22 +60,20 @@ export class ScenarioDesk {
     if (!hero) throw new Error(`Hero for account ${accountId} is missing`);
     const maxHp = scenario.hero.maxHp ?? hero.maxHp;
     if (scenario.hero.hp > maxHp) {
-      await this.deps.chat.deliverSystem(
+      return this.reply(
         accountId,
         `Сценарий «${name}» требует ${scenario.hero.hp} HP, у героя максимум ${maxHp}.`,
       );
-      return {};
     }
     let pocket: string;
     try {
       pocket = await provisionPocket(hero, scenario.hero.pocket, this.deps.pocket);
     } catch (error) {
       if (!(error instanceof PocketDeniedError)) throw error;
-      await this.deps.chat.deliverSystem(
+      return this.reply(
         accountId,
         `Сценарий «${name}» не запущен: в боевом кармане нет места, освободите ячейки.`,
       );
-      return {};
     }
     await provisionIdols(hero, scenario.hero.idols, this.deps.pocket);
     const started = await startHuntWithRoster(hero, this.deps.start, {
@@ -98,11 +87,11 @@ export class ScenarioDesk {
       chatWin: "",
       chatLose: "",
     });
-    await this.deps.chat.deliverSystem(
-      accountId,
-      `Сценарий «${name}»: ${scenario.description} Боевой карман: ${pocket}.`,
-    );
     return {
+      ...(await this.reply(
+        accountId,
+        `Сценарий «${name}»: ${scenario.description} Боевой карман: ${pocket}.`,
+      )),
       "fight|conf": this.deps.fightWire.fightConfiguration(
         started,
         // A quest fight shows no way out, as the quest fights of the game do.
@@ -111,6 +100,11 @@ export class ScenarioDesk {
           : heroFightConfLook(hero),
       ),
     };
+  }
+
+  /** The line goes in the answer to the message: the client draws an empty line without it. */
+  private async reply(accountId: number, text: string): Promise<Record<string, unknown>> {
+    return { "chat|message": await this.deps.chat.systemReply(accountId, text) };
   }
 
   private usage(): string {
