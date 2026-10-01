@@ -13,7 +13,7 @@ import { toCombatSpell } from "../../modules/jugger-wire/application/to-combat-s
 import type { ChatDesk } from "../chat-desk.ts";
 import { startHuntWithRoster, type FightStartDeps } from "../quest-fight-start.ts";
 import { PocketDeniedError } from "../../modules/inventory/domain/pocket-denied-error.ts";
-import { provisionPocket } from "./scenario-hero-pocket.ts";
+import { provisionIdols, provisionPocket } from "./scenario-hero-pocket.ts";
 import type { FightScenario, FightScenarioBot } from "./fight-scenario.ts";
 import type { FightScenarioCatalog } from "./fight-scenario-catalog.ts";
 
@@ -71,6 +71,7 @@ export class ScenarioDesk {
       );
       return {};
     }
+    await provisionIdols(hero, scenario.hero.idols, this.deps.pocket);
     const started = await startHuntWithRoster(hero, this.deps.start, {
       purpose: scenario.purpose,
       heroHp: scenario.hero.hp,

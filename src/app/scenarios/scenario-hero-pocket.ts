@@ -47,6 +47,25 @@ export async function provisionPocket(
   return pocketSummary(await deps.inventory.list(hero.id), deps.catalog);
 }
 
+/** Tops the bag up to the scenario's idols; the fight lists every idol of the bag. */
+export async function provisionIdols(
+  hero: Hero,
+  entries: readonly Readonly<{ artikulId: number; count: number }>[],
+  deps: PocketDeps,
+): Promise<void> {
+  for (const entry of entries) {
+    await deps.unitOfWork.run(async () => {
+      const missing = entry.count - bagCount(await deps.inventory.list(hero.id), entry.artikulId);
+      if (missing <= 0) return;
+      await deps.inventory.grantToBag({
+        characterId: hero.id,
+        artifactId: entry.artikulId,
+        quantity: missing,
+      });
+    });
+  }
+}
+
 /** What the hero carries in the pocket now, cell by cell, for the chat line that starts the fight. */
 async function pocketSummary(
   items: Awaited<ReturnType<InventoryService["list"]>>,

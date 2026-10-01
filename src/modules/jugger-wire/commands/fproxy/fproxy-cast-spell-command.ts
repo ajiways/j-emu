@@ -30,6 +30,7 @@ export class FproxyCastSpellCommand implements FproxyCommand {
       throw new ProtocolError(203, "Fight source id is invalid");
     }
     if (sourceType === 2) return { kind: "pocket", itemId: sourceId, sequence };
+    if (sourceType === 4) return { kind: "idol", itemId: sourceId, sequence };
     if (sourceType === 3) return { kind: "glove", spellId: sourceId, sequence };
     if (sourceType !== 1) {
       throw new ProtocolError(203, `Fight source type ${String(sourceType)} is unsupported`);

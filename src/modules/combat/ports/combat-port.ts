@@ -18,6 +18,7 @@ export type FightCommand =
       sequence: CommandSequence;
     }>
   | Readonly<{ kind: "pocket"; itemId: number; sequence: CommandSequence }>
+  | Readonly<{ kind: "idol"; itemId: number; sequence: CommandSequence }>
   | Readonly<{ kind: "glove"; spellId: number; sequence: CommandSequence }>
   | Readonly<{ kind: "rage"; sequence: CommandSequence }>
   | Readonly<{ kind: "aggro"; targetId: number; sequence: CommandSequence }>
@@ -178,6 +179,7 @@ export interface CombatPort {
   participantTeam(accountId: number): Promise<1 | 2 | null>;
   execute(accountId: number, command: FightCommand): Promise<readonly CombatEvent[]>;
   takePocketConsume(accountId: number): number | null;
+  takeBagConsume(accountId: number): number | null;
   activeFightId(accountId: number): Promise<string | null>;
   resumeFight(accountId: number): Promise<FightStart | null>;
   accountForFight(fightId: string): Promise<number | null>;

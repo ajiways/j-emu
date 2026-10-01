@@ -215,6 +215,18 @@ export class CombatMeleeLoop {
     this.giveTurn(battle, opener);
   }
 
+  /** An idol's phantom joined: the others see the new roster, and whoever is waiting gets paired. */
+  notifySummon(battle: Battle, casterAccountId: number, events: readonly CombatEvent[]): void {
+    const roster = events.find((event) => event.type === "roster-updated");
+    if (!roster) throw new Error("An idol cast must report the roster update");
+    for (const accountId of battle.authedAccountIds()) {
+      if (accountId === casterAccountId) continue;
+      this.enqueue(accountId, [roster]);
+      this.wakeAccount(accountId);
+    }
+    this.aiDriver.arm(battle);
+  }
+
   notifyAggroPairs(
     battle: Battle,
     casterAccountId: number,

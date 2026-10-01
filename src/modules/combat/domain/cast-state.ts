@@ -1,6 +1,7 @@
 import {
   requireCombatLoadout,
   type CombatGloveSpell,
+  type CombatIdolRow,
   type CombatLoadout,
   type CombatPocketRow,
   type CombatSpell,
@@ -18,6 +19,7 @@ export class CastState {
   rage = 0;
   aggro: number;
   private readonly pockets = new Map<number, PocketRuntime>();
+  private readonly idolCounts = new Map<number, number>();
   private readonly groupLastUseAt = new Map<number, number>();
   private readonly gloveLastUseAt = new Map<number, number>();
 
@@ -33,6 +35,20 @@ export class CastState {
     for (const row of loadout.pocket) {
       this.pockets.set(row.itemId, { row, count: row.count, lastUseAt: 0 });
     }
+    for (const idol of loadout.idols) this.idolCounts.set(idol.itemId, idol.count);
+  }
+
+  idolRow(itemId: number): CombatIdolRow | null {
+    const left = this.idolCounts.get(itemId);
+    if (left === undefined || left < 1) return null;
+    return this.loadout.idols.find((idol) => idol.itemId === itemId) ?? null;
+  }
+
+  consumeIdol(itemId: number): CombatIdolRow {
+    const row = this.idolRow(itemId);
+    if (!row) throw new Error(`Idol item ${itemId} is not available in the fight`);
+    this.idolCounts.set(itemId, (this.idolCounts.get(itemId) ?? 0) - 1);
+    return row;
   }
 
   pocketRow(itemId: number): CombatPocketRow | null {
@@ -148,6 +164,10 @@ export class CastState {
           throw new Error(`Pocket item ${row.itemId} remaining count is invalid`);
         }
         return count > 0 ? [{ ...row, count }] : [];
+      }),
+      idols: this.loadout.idols.flatMap((idol) => {
+        const count = this.idolCounts.get(idol.itemId) ?? 0;
+        return count > 0 ? [{ ...idol, count }] : [];
       }),
       glove: this.loadout.glove,
       gearSpells: this.loadout.gearSpells,

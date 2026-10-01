@@ -137,6 +137,20 @@ describe("scripted fight scenarios from chat", () => {
     expect(drunk).toContain('"maxHp":150');
   });
 
+  it("idols: the bag idols are listed, a cast spends mana, calls the phantom and uses up the item", async () => {
+    const client = await startScenario("idols");
+    expect(opened.match(/"srcType":4/g)).toHaveLength(2);
+    expect(opened).toContain('"mpCost":12');
+    const idol = /"artikulId":305[\s\S]*?"srcId":(\d+),"srcType":4/.exec(opened);
+    if (!idol?.[1]) throw new Error("Idol 305 is not in the fight spell list");
+    await client.fight({ rc: "castSpell", srcType: 4, srcId: Number(idol[1]), targetId: 1, sq: 4 });
+    const cast = JSON.stringify(await client.pollFight());
+    expect(cast).toContain('"et":"mpChange"');
+    expect(cast).toContain('"delta":-12');
+    expect(cast).toContain("Фантом Грызла");
+    expect(cast).toContain('"artikulId":305,"count":1');
+  });
+
   it("answers an unknown scenario with a system line and starts no fight", async () => {
     const client = await AuthenticatedClient.login(application);
     const sent = await client.objectAction({

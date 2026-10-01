@@ -18,9 +18,9 @@ describe("Pub1 generated bot corpus", () => {
   const bookById = new Map(books.map((row) => [row.botId, row]));
 
   it("keeps wire IDs of e2e bots", () => {
-    expect(bots).toHaveLength(164);
-    expect(loot).toHaveLength(164);
-    expect(books).toHaveLength(164);
+    expect(bots).toHaveLength(229);
+    expect(loot).toHaveLength(229);
+    expect(books).toHaveLength(229);
     for (const id of E2E_BOT_IDS) {
       expect(byId.get(id)?.id, `missing bot ${id}`).toBe(id);
     }

@@ -115,6 +115,7 @@ describe("FightWireMapper keep-turn frames", () => {
         loadout: {
           pocket: [],
           gearSpells: [],
+          idols: [],
           glove: {
             hits: [2, 3, 2],
             spells: [

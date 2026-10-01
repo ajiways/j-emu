@@ -28,6 +28,7 @@ const orbSpell = {
 
 function dumpLoadout(overrides: Partial<CombatLoadout> = {}): CombatLoadout {
   return {
+    idols: [],
     pocket: [
       {
         itemId: 100_001,
@@ -412,6 +413,7 @@ describe("CombatService pocket glove rage", () => {
               },
             },
           ],
+          idols: [],
           glove: null,
           gearSpells: [],
         },

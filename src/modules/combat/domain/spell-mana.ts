@@ -4,7 +4,7 @@ import { FightCastDenied } from "./fight-cast-denied.ts";
 import type { Participant } from "./participant.ts";
 
 /** A spell with a spend range takes whatever mana its caster has, up to `mpCost + manaCost`. */
-function manaRange(spell: CombatSpell): Readonly<{ min: number; max: number }> {
+export function manaRange(spell: CombatSpell): Readonly<{ min: number; max: number }> {
   const min = spell.mpCost ?? 0;
   const extra = spell.effects.reduce((sum, effect) => sum + (effect.manaCost ?? 0), 0);
   return { min, max: min + extra };

@@ -1,6 +1,6 @@
-# Мана в бою и идолы (исследование 2026-10-01, реализации нет)
+# Мана в бою и идолы
 
-Статус: **план и свидетельства**; в runtime мана боя не тратится, идолы не кастуются.
+Статус: **реализовано** (раздел «Реализация»); остальное — исследование 2026-10-01 и открытые вопросы.
 Источники: каталог Pub1 (`content/pub1-items.generated.json`), тексты `images/locale/ru/amf/
 artifact_artikul_*.amf`, live-дамп `_research/giga_dump_2026-08-11/_timeline.json` (PvP, hero
 `ajiwaysss`, идол 3809) и `_research/new_usable_session/`. Старый `../server` идолы игрока не
@@ -49,3 +49,28 @@ artifact_artikul_*.amf`, live-дамп `_research/giga_dump_2026-08-11/_timeline
   `manaCost` у зарядных заклинаний (Град выстрелов).
 - Wire: `mpChange` (delta, persId) всем, `persChangeInfo` с `mp`, `persList`/`persChangeInfo` нового
   моба, `oppnew` паре, `persSpells` без потраченного идола.
+
+## Реализация
+
+- **Мана.** `Participant.mp/maxMp` (`MPMAX` — поддержанный навык). Тратят `castSpell` и мгновенные
+  касты (`spell-mana.ts`): `mpCost` спелла, у «до N» — всё доступное до `mpCost + Σ manaCost`.
+  Нехватка — `FightCastDenied("mana")` до расхода предмета. В бою мана не восстанавливается;
+  остаток пишется в героя при завершении боя (`persistFightResources`: мана первой, затем hp/смерть).
+  Wire: `mpChange` + `persChangeInfo` кастера. Мана ботов 0, спеллы мобов без `mpCost`.
+- **Идолы.** Все идолы мешка (`kindId 35`, `extra.spell` с kind 10) входят в `CombatLoadout.idols`
+  и в `persSpells` как `srcType 4` (`flags "48"`, `mpCost`, `count`). `castSpell srcType 4`
+  → `Battle.tryIdol` → `tryIdolCast`: списывает ману, добавляет `BotFighter` фантома в команду
+  кастера (id из эфемерного диапазона), ждёт врага как обычный моб; `roster-updated` показывает
+  всем нового участника, `armFightClocks` парует ждущих. Предмет мешка тратится через
+  `consumeBagItem` в HTTP-команде (как карман).
+- **Фантомы** — боты `bots-overlay.json` с id = `botArtikulId` идола. Фиксированные идолы: STR/VIT
+  предмета. «До N»: полная сила = `5.7·STR` и `7.5·VIT` на ману (по живой точке 21 маны → hp 158),
+  в бою масштаб `потрачено / (mpCost+manaCost)`. Внешний вид — по ближайшему существу той же
+  семьи (sk/avatar), `body ghost(0,1,0)`; это догадка, не live. Сгенерировано 65 из 104
+  фантомов идолов; у остальных (например зомби, убийца, духи Лазло) нет записи: идол в списке
+  есть, каст падает явной ошибкой `absent from the catalog`. Дописывать в `bots-overlay.json`.
+- Проверка: `/scenario idols`, e2e `idols` в `tests/e2e/fight-scenario.test.ts`,
+  `tests/unit/combat/idol-summon.test.ts`, `spell-mana.test.ts`.
+
+Не сделано: правило «один такой фантом на бой» (`selgroupdeny`), LUCK фантома (initiative = как у
+мобов без публикации), живая проверка вида фантомов и `oppnew` в клиенте.

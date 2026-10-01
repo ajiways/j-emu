@@ -26,6 +26,7 @@ const LOADOUT: CombatLoadout = {
       },
     },
   ],
+  idols: [],
   glove: {
     hits: [2, 2, 2, 2, 2, 2, 2, 2],
     spells: [

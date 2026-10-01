@@ -36,7 +36,12 @@ const GLOVE_PRESENTATION: SpellPresentation = {
 
 export type KeepTurnResult =
   | Readonly<{ kind: "ignored" }>
-  | Readonly<{ kind: "resolved"; events: readonly BattleEvent[]; consumePocketItemId?: number }>;
+  | Readonly<{
+      kind: "resolved";
+      events: readonly BattleEvent[];
+      consumePocketItemId?: number;
+      consumeBagItemId?: number;
+    }>;
 
 export function tryPocketCast(
   human: HumanFighter,

@@ -69,13 +69,43 @@ export type CombatGearSpell = Readonly<{
   spell: CombatSpell;
 }>;
 
+/** The mob an idol calls, at the stats it has for the full mana of its spell. */
+export type PhantomTemplate = Readonly<{
+  artikulId: number;
+  nick: string;
+  level: number;
+  strength: number;
+  maxHp: number;
+  avatar: string;
+  sk: string;
+  body: string;
+}>;
+
+/** An idol in the bag: a summon spell the hero can cast in the fight, once per item. */
+export type CombatIdolRow = Readonly<{
+  itemId: number;
+  artifactId: number;
+  count: number;
+  title: string;
+  picture: string;
+  spell: CombatSpell;
+  /** `null` while the catalog has no mob for the idol; casting it then fails. */
+  phantom: PhantomTemplate | null;
+}>;
+
 export type CombatLoadout = Readonly<{
   pocket: readonly CombatPocketRow[];
+  idols: readonly CombatIdolRow[];
   glove: CombatGloveLoadout | null;
   gearSpells: readonly CombatGearSpell[];
 }>;
 
-export const EMPTY_COMBAT_LOADOUT: CombatLoadout = { pocket: [], glove: null, gearSpells: [] };
+export const EMPTY_COMBAT_LOADOUT: CombatLoadout = {
+  pocket: [],
+  idols: [],
+  glove: null,
+  gearSpells: [],
+};
 
 export function requireCombatLoadout(loadout: CombatLoadout): void {
   const seen = new Set<number>();
@@ -94,6 +124,7 @@ export function requireCombatLoadout(loadout: CombatLoadout): void {
       throw new Error(`Pocket item ${row.itemId} spell effects are required`);
     }
   }
+  requireIdols(loadout, seen);
   requireGearSpells(loadout);
   if (!loadout.glove) return;
   if (loadout.glove.hits.length !== 8) throw new Error("Glove hits must contain 8 L/C/R steps");
@@ -107,6 +138,21 @@ export function requireCombatLoadout(loadout: CombatLoadout): void {
     }
     if (spell.spell.effects.length < 1) {
       throw new Error(`Glove spell ${spell.artikulId} effects are required`);
+    }
+  }
+}
+
+function requireIdols(loadout: CombatLoadout, seen: Set<number>): void {
+  for (const idol of loadout.idols) {
+    requireFightSafeItemId(BigInt(idol.itemId));
+    requireWireIdentity(idol.artifactId, "idol artifact id");
+    if (!Number.isInteger(idol.count) || idol.count < 1) {
+      throw new Error(`Idol item ${idol.itemId} count must be positive`);
+    }
+    if (seen.has(idol.itemId)) throw new Error(`Duplicate fight item ${idol.itemId}`);
+    seen.add(idol.itemId);
+    if (!idol.spell.effects.some((effect) => effect.kind === 10)) {
+      throw new Error(`Idol item ${idol.itemId} has no summon effect`);
     }
   }
 }

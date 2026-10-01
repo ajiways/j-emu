@@ -1,13 +1,23 @@
-import type { CombatLoadout, CombatPocketRow } from "../../combat/domain/combat-loadout.ts";
+import type {
+  CombatIdolRow,
+  CombatLoadout,
+  CombatPocketRow,
+} from "../../combat/domain/combat-loadout.ts";
 import { pocketSpellWireFlags } from "../../combat/domain/pocket-spell-wire-flags.ts";
 import { huntNativePersSpells } from "./hunt-native-pers-spells.ts";
+
+const IDOL_WIRE_FLAGS = "48";
 
 export function huntPersSpellsEvent(
   loadout: CombatLoadout,
   aggroCount: number,
 ): Readonly<Record<string, unknown>> {
   const native = huntNativePersSpells(aggroCount);
-  const extras = [...pocketSpells(loadout.pocket), ...gloveSpells(loadout)];
+  const extras = [
+    ...pocketSpells(loadout.pocket),
+    ...idolSpells(loadout.idols),
+    ...gloveSpells(loadout),
+  ];
   if (extras.length === 0) return native;
   const merged: Record<string, unknown> = { ...native };
   let index = Object.keys(native).filter((key) => key !== "et").length;
@@ -36,6 +46,28 @@ function pocketSpells(
       persRestr: row.spell.persRestr,
       srcId: row.itemId,
       srcType: 2,
+      targetRestr: row.spell.targetRestr,
+      title: row.title,
+    };
+  });
+}
+
+/** Idols ride the bag-source `srcType 4` with the fixed flags the live client showed. */
+function idolSpells(rows: readonly CombatIdolRow[]): readonly Readonly<Record<string, unknown>>[] {
+  return rows.map((row) => {
+    if (!row.spell.persRestr) throw new Error(`Idol item ${row.itemId} persRestr is required`);
+    if (!row.spell.targetRestr) throw new Error(`Idol item ${row.itemId} targetRestr is required`);
+    if (row.spell.mpCost === undefined)
+      throw new Error(`Idol item ${row.itemId} mpCost is required`);
+    return {
+      artikulId: row.artifactId,
+      count: row.count,
+      flags: IDOL_WIRE_FLAGS,
+      img: row.picture,
+      mpCost: row.spell.mpCost,
+      persRestr: row.spell.persRestr,
+      srcId: row.itemId,
+      srcType: 4,
       targetRestr: row.spell.targetRestr,
       title: row.title,
     };

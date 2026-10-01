@@ -17,7 +17,6 @@ import {
 import {
   battleOpener,
   battlePairedOpponent,
-  duelPairingOf,
   requireAuthedHuman,
   requireBattleHuman,
 } from "./battle-lookups.ts";
@@ -35,12 +34,13 @@ import { rosterIsPvp } from "./roster-pvp.ts";
 import { consumeStunSkip, timeoutBattleTurn } from "./battle-turn-skips.ts";
 import type { HumanTimeout } from "./timeout-human-turn.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
+import { tryIdolCast } from "./idol-summon.ts";
 import { tryPocketCast, tryRageCast, type KeepTurnResult } from "./player-casts.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import { tryAggro, type AggroResult } from "./aggro.ts";
 import { aiOnlyDuelTurns, pairWaitingSeekers, type AiDuelTurn } from "./battle-ai-duels.ts";
 import type { RandomSource } from "./random-source.ts";
-import { pairNextWaiter, shuffleAfterHits } from "./battle-pairing.ts";
+import { nextWaiterOfBattle, shuffleOfBattle, type NextWaiter } from "./battle-turnover.ts";
 import { seedBattleParticipants } from "./battle-seed.ts";
 import { battleOutcomeSnapshot, leaveWinnerTeam } from "./battle-outcome.ts";
 import type { FightOutcomeKind, FightOutcomeSnapshot } from "./fight-outcome-snapshot.ts";
@@ -230,6 +230,16 @@ export class Battle {
     return tryPocketCast(human, itemId, nowMs, sequence, rosterIsPvp(this.humans));
   }
 
+  tryIdol(
+    accountId: number,
+    itemId: number,
+    sequence: string | number,
+    allocateBotId: () => number,
+  ): KeepTurnResult {
+    const human = requireAuthedHuman(this.humans, accountId);
+    return tryIdolCast({ ...this.actionState(), human, itemId, sequence, allocateBotId });
+  }
+
   tryRage(accountId: number): KeepTurnResult {
     return tryRageCast(requireAuthedHuman(this.humans, accountId));
   }
@@ -293,17 +303,7 @@ export class Battle {
   }
 
   tryShuffleAfterHits(accountId: number): ShuffleOutcome {
-    const human = requireBattleHuman(this.humans, accountId);
-    const duel = this.duels.find((entry) => entry.has(human.heroId));
-    if (!duel) return { kind: "none" };
-    return shuffleAfterHits({
-      pairing: duelPairingOf(duel, this.humans, accountId),
-      openerTeam: this.fightRules.teamAssignment.openerTeam,
-      enemyTeam: this.fightRules.teamAssignment.enemyTeam,
-      bots: this.bots,
-      duels: this.duels,
-      finished: this.finishedValue,
-    });
+    return shuffleOfBattle(this.actionState(), accountId);
   }
 
   timeoutTurn(accountId: number, nowMs: number): HumanTimeout | null {
@@ -357,24 +357,8 @@ export class Battle {
     return leaveWinnerTeam(this.humans);
   }
 
-  pairNextWaiter(previousAccountId: number): Readonly<{
-    accountId: number;
-    authed: boolean;
-    events: readonly BattleEvent[];
-  }> | null {
-    if (!this.fightRules.pairsNextWaiter) return null;
-    const previous = requireBattleHuman(this.humans, previousAccountId);
-    const duel = this.duels.find((entry) => entry.has(previous.heroId));
-    if (!duel) return null;
-    const primary = primaryEnemyBot(this.bots, this.fightRules.teamAssignment.enemyTeam);
-    return pairNextWaiter({
-      pairing: duelPairingOf(duel, this.humans, previousAccountId),
-      primary,
-      openerTeam: this.fightRules.teamAssignment.openerTeam,
-      enemyTeam: this.fightRules.teamAssignment.enemyTeam,
-      botHp: primary.hp,
-      finished: this.finishedValue,
-    });
+  pairNextWaiter(previousAccountId: number): NextWaiter | null {
+    return nextWaiterOfBattle(this.actionState(), previousAccountId);
   }
 
   dissolveDuelOf(accountId: number): void {

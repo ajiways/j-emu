@@ -43,6 +43,7 @@ function fakeCombat(): CombatPort {
     },
     execute: async () => [],
     takePocketConsume: () => null,
+    takeBagConsume: () => null,
     participantTeam: async () => null,
     activeFightId: async () => null,
     resumeFight: async () => null,

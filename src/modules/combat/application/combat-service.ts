@@ -1,3 +1,4 @@
+import { PendingConsumes } from "./pending-consumes.ts";
 import { randomBytes } from "node:crypto";
 import type { Clock } from "../../../shared/kernel/clock.ts";
 import { requirePresent } from "../../../shared/kernel/require-present.ts";
@@ -54,7 +55,7 @@ export class CombatService implements CombatPort {
   private readonly pendingExits = new Map<number, FightExit>();
   private readonly pendingLoot = new Map<number, FightLootBlock>();
   private readonly pendingFightInfo = new Map<number, FightResultInfo>();
-  private readonly pendingPocketConsume = new Map<number, number>();
+  private readonly pendingConsume = new PendingConsumes();
   private readonly settledFights = new Set<string>();
   private readonly exitSent = new Set<string>();
   private readonly botFightIds = new EphemeralBotFightIds();
@@ -282,16 +283,17 @@ export class CombatService implements CombatPort {
       nowMs: this.scheduler.now().getTime(),
       botFightIds: this.botFightIds,
       melee: this.melee,
-      pendingPocketConsume: this.pendingPocketConsume,
+      pendingConsume: this.pendingConsume,
       enqueue: (id, events) => this.enqueue(id, events),
     });
   }
 
   takePocketConsume(accountId: number): number | null {
-    const itemId = this.pendingPocketConsume.get(accountId);
-    if (itemId === undefined) return null;
-    this.pendingPocketConsume.delete(accountId);
-    return itemId;
+    return this.pendingConsume.takePocket(accountId);
+  }
+
+  takeBagConsume(accountId: number): number | null {
+    return this.pendingConsume.takeBag(accountId);
   }
 
   async activeFightId(accountId: number): Promise<string | null> {
@@ -302,8 +304,7 @@ export class CombatService implements CombatPort {
     requireWireIdentity(accountId, "account id");
     const battle = this.byAccount.get(accountId);
     if (!battle || battle.finished) return null;
-    const human = battle.livingHumans().find((entry) => entry.accountId === accountId);
-    return human === undefined ? null : human.team;
+    return battle.livingHumans().find((entry) => entry.accountId === accountId)?.team ?? null;
   }
 
   async resumeFight(accountId: number): Promise<FightStart | null> {
@@ -358,7 +359,7 @@ export class CombatService implements CombatPort {
     this.pendingLoot.clear();
     this.pendingFightInfo.clear();
     this.finish.discardHeldWire();
-    this.pendingPocketConsume.clear();
+    this.pendingConsume.clear();
     this.settledFights.clear();
     this.exitSent.clear();
   }

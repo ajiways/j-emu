@@ -3,7 +3,9 @@ import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type {
   CombatGearSpell,
   CombatGloveLoadout,
+  CombatIdolRow,
   CombatLoadout,
+  PhantomTemplate,
 } from "../../combat/domain/combat-loadout.ts";
 import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
@@ -11,6 +13,7 @@ import { isRolledGloveInstance } from "../../inventory/domain/item-instance-data
 import { toCombatSpell } from "./to-combat-spell.ts";
 
 const GLOVE_SLOT = 32;
+const IDOL_KIND_ID = 35;
 
 export class HuntCombatLoadout {
   constructor(
@@ -41,8 +44,50 @@ export class HuntCombatLoadout {
     }
     return {
       pocket,
+      idols: await this.idolsFrom(items),
       glove: await this.gloveFrom(items),
       gearSpells: await this.gearSpellsFrom(items),
+    };
+  }
+
+  /** Every idol in the bag: the fight lists them all, the summon checks its mob when cast. */
+  private async idolsFrom(items: readonly InventoryItem[]): Promise<CombatIdolRow[]> {
+    const idols: CombatIdolRow[] = [];
+    for (const item of items) {
+      if (item.location.kind !== "bag") continue;
+      const definition = await this.requireArtifact(item.artifactId);
+      const spell = definition.extra.spell;
+      if (definition.kindId !== IDOL_KIND_ID || !spell) continue;
+      const combatSpell = toCombatSpell(spell);
+      const summon = combatSpell.effects.find((effect) => effect.kind === 10);
+      if (summon?.botArtikulId === undefined) {
+        throw new Error(`Idol artifact ${item.artifactId} has no summon mob`);
+      }
+      idols.push({
+        itemId: item.id,
+        artifactId: item.artifactId,
+        count: item.quantity,
+        title: definition.title,
+        picture: definition.picture,
+        spell: combatSpell,
+        phantom: await this.phantomOf(summon.botArtikulId),
+      });
+    }
+    return idols;
+  }
+
+  private async phantomOf(botArtikulId: number): Promise<PhantomTemplate | null> {
+    const bot = await this.catalog.bot(botArtikulId);
+    if (!bot) return null;
+    return {
+      artikulId: bot.id,
+      nick: bot.hunt.nick,
+      level: bot.level,
+      strength: bot.strength,
+      maxHp: bot.maxHp,
+      avatar: bot.hunt.avatar,
+      sk: bot.hunt.sk,
+      body: bot.hunt.body,
     };
   }
 

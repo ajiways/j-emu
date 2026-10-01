@@ -38,6 +38,7 @@ import {
   requireDropItem,
   requireHeroItem,
 } from "./inventory-item-lookup.ts";
+import { consumeOne } from "./consume-one.ts";
 import { refillPocketAfterFight, type PocketRefillCell } from "./refill-pocket-after-fight.ts";
 import {
   applyGearUpgrade,
@@ -338,14 +339,13 @@ export class InventoryService {
     return bonuses;
   }
 
-  async consumePocket(command: { characterId: number; itemId: number }): Promise<void> {
-    const items = await this.inventory.lockForHero(command.characterId);
-    const item = requireHeroItem(items, command.characterId, command.itemId);
-    if (item.location.kind !== "pocket") {
-      throw new Error(`Item ${command.itemId} is not in the pocket`);
-    }
-    if (item.quantity <= 1) await this.inventory.delete(item);
-    else await this.inventory.save(item.withQuantity(item.quantity - 1));
+  consumePocket(command: { characterId: number; itemId: number }): Promise<void> {
+    return consumeOne(this.inventory, command, "pocket");
+  }
+
+  /** Spends one piece of a bag stack, e.g. an idol cast in a fight. */
+  consumeBagItem(command: { characterId: number; itemId: number }): Promise<void> {
+    return consumeOne(this.inventory, command, "bag");
   }
 
   async bagLoad(command: { characterId: number }): Promise<BagLoad> {

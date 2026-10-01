@@ -31,6 +31,8 @@ const heroSchema = z
     glove: heroGlove.nullable(),
     /** Pocket items the hero is given (real items, put in his pocket) before the fight. */
     pocket: z.array(z.object({ artikulId: positiveInt, count: positiveInt }).strict()),
+    /** Idols the hero is given in the bag (topped up to `count`); the fight lists them all. */
+    idols: z.array(z.object({ artikulId: positiveInt, count: positiveInt }).strict()),
   })
   .strict()
   .refine((hero) => hero.maxHp === null || hero.hp <= hero.maxHp, {

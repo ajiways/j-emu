@@ -34,6 +34,9 @@ export class FightTcpConnection {
     if (pocketItemId !== null) {
       throw new Error("TCP fproxy cannot persist pocket consume");
     }
+    if (this.combat.takeBagConsume(accountId) !== null) {
+      throw new Error("TCP fproxy cannot persist bag consume");
+    }
     return encodePlainFrames(this.wire.frames(immediate));
   }
 

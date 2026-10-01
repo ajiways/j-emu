@@ -22,14 +22,23 @@ export class FproxyRouteRegistrar {
         const events = await this.fightEvents(request, account.id, command);
         if (command.kind !== "poll") {
           const itemId = this.dependencies.combat.takePocketConsume(account.id);
-          if (itemId !== null) {
+          const bagItemId = this.dependencies.combat.takeBagConsume(account.id);
+          if (itemId !== null || bagItemId !== null) {
             await this.dependencies.unitOfWork.run(async () => {
               const hero = await this.dependencies.characters.getByAccountId(account.id);
               if (!hero) throw new Error(`Hero for account ${account.id} is missing`);
-              await this.dependencies.inventory.consumePocket({
-                characterId: hero.id,
-                itemId,
-              });
+              if (itemId !== null) {
+                await this.dependencies.inventory.consumePocket({
+                  characterId: hero.id,
+                  itemId,
+                });
+              }
+              if (bagItemId !== null) {
+                await this.dependencies.inventory.consumeBagItem({
+                  characterId: hero.id,
+                  itemId: bagItemId,
+                });
+              }
             });
           }
         }
