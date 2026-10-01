@@ -43,11 +43,10 @@ export function advanceDuelClock(
 
 export type FighterTimerTicks = Readonly<{ fighter: Fighter; events: readonly BattleEvent[] }>;
 
-/** The battle timer: real time up to `nowMs` for every fighter; only paired ones tick. */
+/** The battle timer: real time up to `nowMs` for every fighter, paired or not. */
 export function advanceFightTimer(
   input: Readonly<{
     fighters: readonly Fighter[];
-    inDuel: (fighter: Fighter) => boolean;
     nowMs: number;
     random: RandomSource;
     rules: BattleRules;
@@ -57,7 +56,7 @@ export function advanceFightTimer(
   const ticked: FighterTimerTicks[] = [];
   for (const fighter of input.fighters) {
     if (fighter.hp < 1) continue;
-    const items = fighter.effects.advanceOnTimer(input.nowMs, input.inDuel(fighter));
+    const items = fighter.effects.advanceOnTimer(input.nowMs);
     if (items.length === 0) continue;
     ticked.push({
       fighter,

@@ -104,7 +104,7 @@ describe("FighterEffects", () => {
       gearSpells: [GEAR],
       effectIds: new FightEffectIds(),
     });
-    expect(effects.advanceOnTimer(320_000, false)).toEqual([{ kind: "expire", effectId: 1 }]);
+    expect(effects.advanceOnTimer(320_000)).toEqual([{ kind: "expire", effectId: 1 }]);
     expect(effects.snapshot()).toEqual([]);
   });
 

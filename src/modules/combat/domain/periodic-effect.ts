@@ -66,13 +66,12 @@ export function stepPeriodicOnAction(
 }
 
 /**
- * Real time up to `nowMs`. Every threshold crossed strictly before expiry is a tick while the
- * carrier is in a duel and is skipped otherwise; the expiry instant itself never ticks.
+ * Real time up to `nowMs`. Every threshold crossed strictly before expiry is a tick, whether or
+ * not the carrier stands in a duel; the expiry instant itself never ticks.
  */
 export function stepPeriodicOnTimer(
   state: PeriodicState,
   nowMs: number,
-  inDuel: boolean,
 ): Readonly<{ ticks: number; expired: boolean }> {
   const before = state.ageSeconds;
   const after = before + realSecondsSince(state, nowMs);
@@ -85,7 +84,6 @@ export function stepPeriodicOnTimer(
     k * period <= after + CLOCK_EPSILON_SECONDS;
     k += 1
   ) {
-    if (!inDuel) continue;
     state.ticksDone += 1;
     ticks += 1;
   }

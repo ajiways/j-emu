@@ -7,7 +7,6 @@ import {
 import { FightCastDenied } from "../../../src/modules/combat/domain/fight-cast-denied.ts";
 import { Battle as BattleClass } from "../../../src/modules/combat/domain/battle.ts";
 import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
-import { applyPeriodicItems } from "../../../src/modules/combat/domain/apply-periodic-items.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { unitFightJoin, unitHuntFightSetup } from "../../support/fight-setup.ts";
 import { FixedRandom } from "../../support/fakes/fixed-random.ts";
@@ -63,9 +62,9 @@ describe("a healing sign from the pocket", () => {
     });
     expect(mate.effects.snapshot(NOW)).toHaveLength(1);
     expect(healer.effects.snapshot(NOW)).toHaveLength(0);
-    // The effect ticks only while its carrier stands in a duel: tick it the way the clock does.
-    const items = mate.effects.advanceOnTimer(NOW + 15_000, true);
-    applyPeriodicItems(mate, items, new FixedRandom(), UNIT_BATTLE_RULES, [healer, mate]);
+    // The teammate waits for a foe, and the sign still ticks on the battle timer at once.
+    expect(battle.nextEffectDueMs()).toBe(NOW + 15_000);
+    battle.tickDueEffects(NOW + 15_000);
     expect(mate.hp).toBeGreaterThan(hurt);
     expect(healer.healedOthers).toBe(mate.hp - hurt);
     expect(healer.healedHumansByTarget()).toEqual([{ targetId: 2, amount: mate.hp - hurt }]);

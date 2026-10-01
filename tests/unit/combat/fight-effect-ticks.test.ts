@@ -60,15 +60,17 @@ describe("FighterEffects periodic effects", () => {
     expect(kinds(effects.advanceOnAction(3_000, 0))).toEqual([]);
   });
 
-  it("ticks on the timer only for a paired carrier and never at the expiry instant", () => {
-    const paired = effectsWithPoison(80, 20);
-    expect(kinds(paired.advanceOnTimer(20_000, true))).toEqual(["tick"]);
-    expect(kinds(paired.advanceOnTimer(40_000, true))).toEqual(["tick"]);
-    expect(kinds(paired.advanceOnTimer(60_000, true))).toEqual(["tick"]);
-    expect(kinds(paired.advanceOnTimer(80_000, true))).toEqual(["expire"]);
-    const unpaired = effectsWithPoison(80, 20);
-    expect(kinds(unpaired.advanceOnTimer(30_000, false))).toEqual([]);
-    expect(kinds(unpaired.advanceOnAction(31_000, 0))).toEqual(["tick"]);
+  it("ticks on the timer wherever the carrier stands, and never at the expiry instant", () => {
+    const effects = effectsWithPoison(80, 20);
+    expect(kinds(effects.advanceOnTimer(20_000))).toEqual(["tick"]);
+    expect(kinds(effects.advanceOnTimer(40_000))).toEqual(["tick"]);
+    expect(kinds(effects.advanceOnTimer(60_000))).toEqual(["tick"]);
+    expect(kinds(effects.advanceOnTimer(80_000))).toEqual(["expire"]);
+  });
+
+  it("pays every threshold crossed at once when the timer wakes late", () => {
+    const effects = effectsWithPoison(80, 20);
+    expect(kinds(effects.advanceOnTimer(50_000))).toEqual(["tick", "tick"]);
   });
 
   it("skips the clock jump of the action that cast a turn-ending effect", () => {
@@ -81,7 +83,7 @@ describe("FighterEffects periodic effects", () => {
     const effects = effectsWithPoison(81, 40);
     expect(effects.nextPeriodicDueMs()).toBe(40_000);
     expect(effects.snapshot(10_000)).toMatchObject([{ remainTime: 71 }]);
-    effects.advanceOnTimer(40_000, true);
+    effects.advanceOnTimer(40_000);
     expect(effects.nextPeriodicDueMs()).toBe(80_000);
   });
 

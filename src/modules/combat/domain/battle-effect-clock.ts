@@ -20,7 +20,7 @@ export function nextEffectDueMs(fighters: readonly Fighter[]): number | null {
   return due;
 }
 
-/** The battle timer fired: real time for every effect, ticks for paired carriers, then fallout. */
+/** The battle timer fired: real time and ticks for every carrier, then fallout. */
 export function tickFightEffects(
   input: Readonly<{
     roster: Roster;
@@ -38,7 +38,6 @@ export function tickFightEffects(
   ];
   const ticked = advanceFightTimer({
     fighters,
-    inDuel: (fighter) => input.duels.some((duel) => duel.has(fighter.id)),
     nowMs: input.nowMs,
     random: input.random,
     rules: input.rules,

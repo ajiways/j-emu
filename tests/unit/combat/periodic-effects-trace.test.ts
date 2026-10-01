@@ -107,17 +107,19 @@ class TraceRun {
       }
       if (due === null || due > untilMs) return;
       for (const [id, fx] of this.fighters) {
-        this.collect(fx.advanceOnTimer(due, this.duel.has(id)), due / 1000);
+        // The effect ticks wherever its carrier stands; the client sees the ticks of its own duel.
+        this.collect(fx.advanceOnTimer(due), due / 1000, this.duel.has(id));
       }
     }
   }
 
-  private collect(items: readonly PeriodicItem[], at: number): void {
+  private collect(items: readonly PeriodicItem[], at: number, seen = true): void {
     for (const item of items) {
       if (item.kind === "expire") {
         this.expiries.push({ effect: this.names.get(item.effectId) ?? "?", at });
         continue;
       }
+      if (!seen) continue;
       const effect = this.names.get(item.pulse.effectId) ?? "?";
       const k = (this.tickCounts.get(effect) ?? 0) + 1;
       this.tickCounts.set(effect, k);

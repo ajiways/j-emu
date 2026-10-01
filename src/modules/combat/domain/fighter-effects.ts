@@ -143,9 +143,9 @@ export class FighterEffects {
     });
   }
 
-  /** Real time up to `nowMs`; only a fighter in a duel ticks, expiry is silent otherwise. */
-  advanceOnTimer(nowMs: number, inDuel: boolean): readonly PeriodicItem[] {
-    return this.stepPeriodic((state) => stepPeriodicOnTimer(state, nowMs, inDuel));
+  /** Real time up to `nowMs`: effects tick on the fight clock wherever their carrier stands. */
+  advanceOnTimer(nowMs: number): readonly PeriodicItem[] {
+    return this.stepPeriodic((state) => stepPeriodicOnTimer(state, nowMs));
   }
 
   nextPeriodicDueMs(): number | null {

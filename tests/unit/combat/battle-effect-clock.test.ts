@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { EMPTY_HUNT_BOT_SPELL_BOOK } from "../../support/hunt-start-input.ts";
 import { createUnitBattle } from "../../support/fight-rules.ts";
-import { unitHuntFightSetup } from "../../support/fight-setup.ts";
+import { unitFightJoin, unitHuntFightSetup } from "../../support/fight-setup.ts";
 import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 
 const NOW = Date.parse("2026-09-07T12:00:00.000Z");
@@ -93,5 +93,35 @@ describe("Battle effect clock", () => {
     );
     expect(battle.pairedOpponent(1)).toEqual({ kind: "bot" });
     expect(battle.foeBotSnap(1).id).toBe(1_000_001);
+  });
+
+  it("ticks an effect on a participant who waits for a foe, as it does on one in a duel", () => {
+    const battle = createUnitBattle(unitHuntFightSetup(), new SequenceRandom([5]));
+    battle.authenticate(1, NOW);
+    battle.addHuman(unitFightJoin({ hp: 100, maxHp: 100 }));
+    battle.authenticate(2, NOW);
+    const waiter = battle.boardParticipants().humans[1];
+    if (!waiter?.waiting) throw new Error("the joiner should be waiting");
+    waiter.effects.attachTick({
+      kind: 4,
+      sourceId: 1,
+      artikulId: 447,
+      title: "Ветхий знак погибели",
+      img: "znak_death1.png",
+      dmgType: 256,
+      durationSeconds: 80,
+      periodSeconds: 20,
+      nowMs: NOW,
+      castEndsTurn: false,
+      amount: 5,
+      catalogPcStr: 0,
+      catalogStr: 0,
+      casterStrength: 10,
+      casterMagPower: 0,
+      casterMagResist: 0,
+    });
+    expect(battle.nextEffectDueMs()).toBe(NOW + 20_000);
+    battle.tickDueEffects(NOW + 20_000);
+    expect(waiter.hp).toBeLessThan(100);
   });
 });
