@@ -2,7 +2,16 @@ import type { ArtifactSkillBonus } from "../../catalog/domain/artifact-skill-bon
 import type { HeroSkill } from "./hero-skill.ts";
 
 const SKILL_FLAG_PERCENT = 1;
-const PERCENT_MULTIPLIER_SKILLS = new Set(["STR", "RAG", "DEX", "DEF", "VIT", "MPMAX", "HPREG"]);
+const PERCENT_MULTIPLIER_SKILLS = new Set([
+  "STR",
+  "RAG",
+  "DEX",
+  "DEF",
+  "VIT",
+  "MPMAX",
+  "HPREG",
+  "MPREG",
+]);
 
 export function totalHeroSkills(
   naked: readonly HeroSkill[],

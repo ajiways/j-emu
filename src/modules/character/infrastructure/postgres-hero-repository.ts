@@ -94,6 +94,8 @@ export class PostgresHeroRepository implements HeroRepository {
         honor: values.honor,
         hpTime: BigInt(values.hpTime),
         regenAt: values.regenAt,
+        mpTime: BigInt(values.mpTime),
+        mpRegenAt: values.mpRegenAt,
         moveReadyAt: values.moveReadyAt,
         ghost: values.ghost,
         injuryTime: BigInt(values.injuryTime),
@@ -129,6 +131,8 @@ export class PostgresHeroRepository implements HeroRepository {
         honor: hero.honor,
         hpTime: BigInt(hero.hpTime),
         regenAt: hero.regenAt,
+        mpTime: BigInt(hero.mpTime),
+        mpRegenAt: hero.mpRegenAt,
         moveReadyAt: hero.moveReadyAt,
         ghost: hero.ghost,
         injuryTime: BigInt(hero.injuryTime),
@@ -175,6 +179,8 @@ export class PostgresHeroRepository implements HeroRepository {
       honor: number;
       hpTime: bigint;
       regenAt: Date;
+      mpTime: bigint;
+      mpRegenAt: Date;
       moveReadyAt: Date | null;
       ghost: boolean;
       injuryTime: bigint;
@@ -212,6 +218,8 @@ function recordFromRow(
     honor: number;
     hpTime: bigint;
     regenAt: Date;
+    mpTime: bigint;
+    mpRegenAt: Date;
     moveReadyAt: Date | null;
     ghost: boolean;
     injuryTime: bigint;
@@ -241,6 +249,8 @@ function recordFromRow(
     honor: row.honor,
     hpTime: safeInteger(row.hpTime, `hpTime for ${key}`),
     regenAt: requireTimestamp(row.regenAt, `regen_at for ${key}`),
+    mpTime: safeInteger(row.mpTime, `mpTime for ${key}`),
+    mpRegenAt: requireTimestamp(row.mpRegenAt, `mp_regen_at for ${key}`),
     moveReadyAt: optionalTimestamp(row.moveReadyAt, `move_ready_at for ${key}`),
     ghost: row.ghost,
     injuryTime: safeInteger(row.injuryTime, `injury_time for ${key}`),

@@ -17,6 +17,8 @@ import {
 import { InvalidNoteHpError } from "../domain/invalid-note-hp-error.ts";
 import { InvalidNoteMpError } from "../domain/invalid-note-mp-error.ts";
 import { MissingHpregError } from "../domain/missing-hpreg-error.ts";
+import { MissingMpregError } from "../domain/missing-mpreg-error.ts";
+import { applyElapsedMpRegen, remainingMpSeconds } from "../domain/mp-regen.ts";
 import { parseCharacterId } from "../domain/parse-resource-command.ts";
 import { ProgressionContentError } from "../domain/progression-content-error.ts";
 import type { RegenPolicy } from "../domain/regen-policy.ts";
@@ -80,7 +82,9 @@ export class ResourceService implements CharacterResources {
       if (!Number.isInteger(command.mp) || command.mp < 0 || command.mp > hero.maxMp) {
         throw new InvalidNoteMpError(command.mp, hero.maxMp);
       }
-      hero.applyMp(command.mp);
+      const mpreg = await this.regenSkillFor(hero, "MPREG", hero.maxMp - command.mp);
+      const mpTime = remainingMpSeconds(hero.maxMp - command.mp, mpreg, this.policy.mpK, hero.id);
+      hero.applyMpClock(command.mp, mpTime, truncatedUnixDate(this.clock));
       await this.heroes.save(hero);
       return resourceSnapshot(hero, false, true);
     });
@@ -119,7 +123,7 @@ export class ResourceService implements CharacterResources {
   async applyElapsedToLocked(hero: Hero): Promise<ResourceSnapshot> {
     const inFight = await this.activeFight.isHeroInActiveFight(hero.id);
     if (inFight || hero.ghost) return resourceSnapshot(hero, inFight, false);
-    const hpreg = await this.hpregFor(hero, hero.maxHp - hero.hp);
+    const hpreg = await this.regenSkillFor(hero, "HPREG", hero.maxHp - hero.hp);
     const next = applyElapsedHpRegen({
       hp: hero.hp,
       hpMax: hero.maxHp,
@@ -129,19 +133,35 @@ export class ResourceService implements CharacterResources {
       k: this.policy.k,
       characterId: hero.id,
     });
-    if (next.hp === hero.hp && next.hpTime === hero.hpTime) {
-      return resourceSnapshot(hero, false, false);
+    const mpreg = await this.regenSkillFor(hero, "MPREG", hero.maxMp - hero.mp);
+    const nextMp = applyElapsedMpRegen({
+      mp: hero.mp,
+      mpMax: hero.maxMp,
+      regenAtSec: unixSecondsOf(hero.mpRegenAt),
+      nowSec: this.clock.unixSeconds(),
+      mpreg,
+      mpK: this.policy.mpK,
+      characterId: hero.id,
+    });
+    const hpMoved = next.hp !== hero.hp || next.hpTime !== hero.hpTime;
+    const mpMoved = nextMp.mp !== hero.mp || nextMp.mpTime !== hero.mpTime;
+    if (!hpMoved && !mpMoved) return resourceSnapshot(hero, false, false);
+    if (hpMoved) hero.applyResourceClock(next.hp, next.hpTime, truncatedUnixDate(this.clock));
+    if (mpMoved) {
+      hero.applyMpClock(nextMp.mp, nextMp.mpTime, new Date(nextMp.regenAtSec * 1000));
     }
-    hero.applyResourceClock(next.hp, next.hpTime, truncatedUnixDate(this.clock));
     await this.heroes.save(hero);
     return resourceSnapshot(hero, false, true);
   }
 
   async recomputeHpTimeAfterMutation(hero: Hero): Promise<void> {
     if (hero.ghost || (await this.activeFight.isHeroInActiveFight(hero.id))) return;
-    const hpreg = await this.hpregFor(hero, hero.maxHp - hero.hp);
+    const hpreg = await this.regenSkillFor(hero, "HPREG", hero.maxHp - hero.hp);
     const hpTime = remainingHpSeconds(hero.maxHp - hero.hp, hpreg, this.policy.k, hero.id);
     hero.applyResourceClock(hero.hp, hpTime, truncatedUnixDate(this.clock));
+    const mpreg = await this.regenSkillFor(hero, "MPREG", hero.maxMp - hero.mp);
+    const mpTime = remainingMpSeconds(hero.maxMp - hero.mp, mpreg, this.policy.mpK, hero.id);
+    hero.applyMpClock(hero.mp, mpTime, truncatedUnixDate(this.clock));
   }
 
   private async requireLocked(characterId: number): Promise<Hero> {
@@ -151,14 +171,18 @@ export class ResourceService implements CharacterResources {
   }
 
   private async hpregFor(hero: Hero, deficit: number): Promise<number> {
+    return this.regenSkillFor(hero, "HPREG", deficit);
+  }
+
+  /** The regeneration skill of a hero short of that resource; 0 when nothing is missing. */
+  private async regenSkillFor(hero: Hero, skillId: "HPREG" | "MPREG", deficit: number) {
     if (deficit <= 0) return 0;
     const snapshot = await this.requireSnapshot();
     const bonuses = await this.requireModifiers(hero.id, snapshot.contentReleaseId);
     const naked = requireHeroSkills(await this.skills.list(hero.id));
-    const totals = totalHeroSkills(naked, bonuses);
-    const skill = totals.find((entry) => entry.id === "HPREG");
+    const skill = totalHeroSkills(naked, bonuses).find((entry) => entry.id === skillId);
     if (!skill || !Number.isInteger(skill.value) || skill.value < 1) {
-      throw new MissingHpregError(hero.id);
+      throw skillId === "HPREG" ? new MissingHpregError(hero.id) : new MissingMpregError(hero.id);
     }
     return skill.value;
   }
@@ -193,6 +217,9 @@ function resourceSnapshot(hero: Hero, inFight: boolean, persisted: boolean): Res
     hp: hero.hp,
     maxHp: hero.maxHp,
     hpTime: inFight ? 0 : hero.hpTime,
+    mp: hero.mp,
+    maxMp: hero.maxMp,
+    mpTime: inFight ? 0 : hero.mpTime,
     regenAt: hero.regenAt,
     inActiveFight: inFight,
     persisted,

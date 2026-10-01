@@ -58,7 +58,7 @@ export function buildUserUnitframe(
     fight_id: fightId ?? hud.fightId,
     gag_time: hud.gagTime,
     hp_time: inActiveFight ? 0 : hero.hpTime,
-    mp_time: hud.mpTime,
+    mp_time: inActiveFight ? 0 : hero.mpTime,
     epic_value: hud.epicValue,
     hp: hero.hp,
     hpMax: hero.maxHp,

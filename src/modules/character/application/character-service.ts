@@ -1,3 +1,4 @@
+import { newHeroRecord } from "../domain/new-hero-record.ts";
 import type { ArtifactBonus } from "../../catalog/domain/artifact-bonus.ts";
 import type { ArtifactSkillBonus } from "../../catalog/domain/artifact-skill-bonus.ts";
 import type { CatalogProgression } from "../../catalog/ports/catalog-progression.ts";
@@ -226,32 +227,16 @@ export class CharacterService
       const levelOne = snapshot.requireLevel(1);
       const vit = requiredManagedL1(levelOne.managedSkills, "VIT");
       const mpMax = requiredManagedL1(levelOne.managedSkills, "MPMAX");
-      const hero = await this.heroes.create({
-        accountId,
-        nick,
-        level: 1,
-        hp: vit,
-        maxHp: vit,
-        mp: mpMax,
-        maxMp: mpMax,
-        exp: this.creationPolicy.exp,
-        areaId: this.creationPolicy.areaId,
-        moneyMinor: this.creationPolicy.moneyMinor,
-        moneyGoldMinor: this.creationPolicy.moneyGoldMinor,
-        kind: this.creationPolicy.kind,
-        gender: this.creationPolicy.gender,
-        language: this.creationPolicy.language,
-        body: this.creationPolicy.body,
-        sk: this.creationPolicy.sk,
-        honor: this.creationPolicy.honor,
-        hpTime: 0,
-        regenAt: truncatedUnixDate(this.clock),
-        moveReadyAt: null,
-        ghost: false,
-        injuryTime: 0,
-        injuryArtikulId: 0,
-        instanceCopyId: null,
-      });
+      const hero = await this.heroes.create(
+        newHeroRecord({
+          policy: this.creationPolicy,
+          accountId,
+          nick,
+          vit,
+          mpMax,
+          now: truncatedUnixDate(this.clock),
+        }),
+      );
       await this.skills.replace(hero.id, [
         ...levelOne.managedSkills.map((skill) => ({ id: skill.id, value: skill.value })),
         ...this.creationPolicy.skills,

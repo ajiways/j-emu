@@ -34,6 +34,7 @@ const schema = z.object({
   }),
   regen: z.object({
     k: z.literal(250),
+    mpK: z.number().int().positive(),
     provenance: z.literal("legacy behavior / empirical"),
   }),
   starterItems: z

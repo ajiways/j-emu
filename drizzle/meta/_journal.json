@@ -267,6 +267,13 @@
       "when": 1790671582161,
       "tag": "0037_catalog_level_notice",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1790819576261,
+      "tag": "0038_character_hero_mp_clock",
+      "breakpoints": true
     }
   ]
 }

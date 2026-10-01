@@ -127,6 +127,8 @@ function sampleHero(): Hero {
     honor: 0,
     hpTime: 0,
     regenAt: new Date("2026-09-07T12:00:00.000Z"),
+    mpTime: 0,
+    mpRegenAt: new Date("2026-09-07T12:00:00.000Z"),
     moveReadyAt: null,
     ghost: false,
     injuryTime: 0,

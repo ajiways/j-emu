@@ -16,6 +16,7 @@
     },
     "skills": [
       { "id": "HPREG", "value": 700 },
+      { "id": "MPREG", "value": 100 },
       { "id": "ORATORY", "value": 1 },
       { "id": "MONEYMOD", "value": 0 },
       { "id": "LUCK", "value": 0 },
@@ -25,6 +26,7 @@
   },
   "regen": {
     "k": 250,
+    "mpK": 3300,
     "provenance": "legacy behavior / empirical"
   },
   "starterItems": [

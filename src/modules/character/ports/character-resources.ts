@@ -26,6 +26,9 @@ export type ResourceSnapshot = Readonly<{
   hp: number;
   maxHp: number;
   hpTime: number;
+  mp: number;
+  maxMp: number;
+  mpTime: number;
   regenAt: Date;
   inActiveFight: boolean;
   persisted: boolean;

@@ -43,6 +43,8 @@ export const heroes = characterSchema.table(
     honor: integer("honor").notNull(),
     hpTime: bigint("hp_time", { mode: "bigint" }).notNull(),
     regenAt: timestamp("regen_at", { withTimezone: true, mode: "date" }).notNull(),
+    mpTime: bigint("mp_time", { mode: "bigint" }).notNull(),
+    mpRegenAt: timestamp("mp_regen_at", { withTimezone: true, mode: "date" }).notNull(),
     moveReadyAt: timestamp("move_ready_at", { withTimezone: true, mode: "date" }),
     ghost: boolean("ghost").notNull().default(false),
     // drizzle-kit cannot serialize JS BigInt defaults (`0n`).
@@ -67,6 +69,7 @@ export const heroes = characterSchema.table(
     check("heroes_sk_check", sql`${table.sk} >= 0`),
     check("heroes_honor_check", sql`${table.honor} >= 0`),
     check("heroes_hp_time_check", sql`${table.hpTime} >= 0`),
+    check("heroes_mp_time_check", sql`${table.mpTime} >= 0`),
     check("heroes_injury_time_check", sql`${table.injuryTime} >= 0`),
     check("heroes_injury_artikul_id_check", sql`${table.injuryArtikulId} >= 0`),
     check(

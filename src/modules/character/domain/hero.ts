@@ -34,6 +34,8 @@ export class Hero {
     private injuryTimeValue: number,
     private injuryArtikulIdValue: number,
     private instanceCopyIdValue: number | null,
+    private mpTimeValue: number,
+    private mpRegenAtValue: Date,
   ) {}
 
   static assertCreationPolicy(policy: HeroCreationPolicy): void {
@@ -96,6 +98,8 @@ export class Hero {
       values.injuryTime,
       values.injuryArtikulId,
       requireInstanceCopyId(values.instanceCopyId),
+      values.mpTime,
+      values.mpRegenAt,
     );
   }
 
@@ -146,6 +150,12 @@ export class Hero {
   }
   get hpTime(): number {
     return this.hpTimeValue;
+  }
+  get mpTime(): number {
+    return this.mpTimeValue;
+  }
+  get mpRegenAt(): Date {
+    return this.mpRegenAtValue;
   }
   get regenAt(): Date {
     return this.regenAtValue;
@@ -269,11 +279,20 @@ export class Hero {
     this.hpValue = this.maxHpValue;
   }
 
-  applyMp(mp: number): void {
+  /** Sets the mana together with the clock its regeneration counts from. */
+  applyMpClock(mp: number, mpTime: number, mpRegenAt: Date): void {
     if (!Number.isInteger(mp) || mp < 0 || mp > this.maxMpValue) {
       throw new Error("Hero MP must be an integer in [0, maxMp]");
     }
+    if (!Number.isInteger(mpTime) || mpTime < 0) {
+      throw new Error("Hero mpTime must be a non-negative integer");
+    }
+    if (!(mpRegenAt instanceof Date) || !Number.isFinite(mpRegenAt.getTime())) {
+      throw new Error("Hero mp_regen_at must be a valid timestamp");
+    }
     this.mpValue = mp;
+    this.mpTimeValue = mpTime;
+    this.mpRegenAtValue = mpRegenAt;
   }
 
   creditMoney(minorUnits: number): void {

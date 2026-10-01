@@ -10,6 +10,7 @@ import type { ActiveFightQuery } from "../../src/modules/character/ports/active-
 
 export const PLAYABLE_REGEN_POLICY: RegenPolicy = {
   k: 250,
+  mpK: 3300,
   provenance: "legacy behavior / empirical",
 };
 
@@ -67,6 +68,8 @@ export function playableNewHero(accountId: number, nick: string): NewHero {
     honor: 0,
     hpTime: 0,
     regenAt: TEST_REGEN_AT,
+    mpTime: 0,
+    mpRegenAt: TEST_REGEN_AT,
     moveReadyAt: null,
     ghost: false,
     injuryTime: 0,
@@ -97,6 +100,8 @@ export function testHero(overrides: Partial<HeroRecord> = {}): Hero {
     honor: 0,
     hpTime: 0,
     regenAt: TEST_REGEN_AT,
+    mpTime: 0,
+    mpRegenAt: TEST_REGEN_AT,
     moveReadyAt: null,
     ghost: false,
     injuryTime: 0,

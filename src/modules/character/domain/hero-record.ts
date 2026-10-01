@@ -39,6 +39,8 @@ export type HeroRecord = Readonly<{
   honor: number;
   hpTime: number;
   regenAt: Date;
+  mpTime: number;
+  mpRegenAt: Date;
   moveReadyAt: Date | null;
   ghost: boolean;
   injuryTime: number;

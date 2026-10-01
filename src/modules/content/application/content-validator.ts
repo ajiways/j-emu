@@ -26,6 +26,7 @@ import { collectFightSpellIssues } from "./collect-fight-spell-issues.ts";
 
 const REQUIRED_SKILL_IDS = [
   "HPREG",
+  "MPREG",
   "ORATORY",
   "STR",
   "RAG",

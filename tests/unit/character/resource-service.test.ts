@@ -49,6 +49,30 @@ describe("ResourceService", () => {
     expect(hero.hpTime).toBe(0);
   });
 
+  it("regains mana outside a fight and keeps the fraction already earned", async () => {
+    const hero = testHero({ mp: 2, maxMp: 12 });
+    const clock = new FakeClock(START_MS);
+    const { service, saves } = resources(hero, { clock });
+    clock.advanceSeconds(70);
+    // MPREG 100 / mpK 3300: one point per 33 s, so 70 s give two points and 4 s are left over.
+    const result = await service.syncResources({ characterId: hero.id });
+    expect(result).toMatchObject({ mp: 4, persisted: true });
+    expect(hero.mp).toBe(4);
+    expect(hero.mpRegenAt.getTime()).toBe(START_MS + 66_000);
+    expect(hero.mpTime).toBe(Math.round((8 * PLAYABLE_REGEN_POLICY.mpK) / 100));
+    expect(saves).toHaveLength(1);
+  });
+
+  it("does not regain mana during a fight", async () => {
+    const hero = testHero({ mp: 2, maxMp: 12 });
+    const clock = new FakeClock(START_MS);
+    const { service, saves } = resources(hero, { clock, inFight: true });
+    clock.advanceSeconds(500);
+    await service.syncResources({ characterId: hero.id });
+    expect(hero.mp).toBe(2);
+    expect(saves).toHaveLength(0);
+  });
+
   it("fails when HPREG is missing while wounded", async () => {
     const hero = woundedHero({ hp: 8, maxHp: 50, hpTime: 35, hpreg: 0 });
     const { service } = resources(hero, { hpreg: 0 });
@@ -149,8 +173,10 @@ function memoryHeroes(hero: Hero, saves: Hero[]): HeroRepository {
 }
 
 function memorySkills(hpreg: number): HeroSkillRepository {
-  const skills: HeroSkill[] =
-    hpreg > 0 ? [{ id: "HPREG", value: hpreg }] : [{ id: "ORATORY", value: 1 }];
+  const skills: HeroSkill[] = [
+    ...(hpreg > 0 ? [{ id: "HPREG", value: hpreg }] : [{ id: "ORATORY", value: 1 }]),
+    { id: "MPREG", value: 100 },
+  ];
   return {
     list: async () => skills,
     replace: async () => {
