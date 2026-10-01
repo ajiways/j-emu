@@ -149,6 +149,13 @@ describe("scripted fight scenarios from chat", () => {
     expect(cast).toContain('"delta":-12');
     expect(cast).toContain("Фантом Грызла");
     expect(cast).toContain('"artikulId":305,"count":1');
+    // The phantom (id 1000002) takes the second mob across from it and fights it on its own (its dealt damage grows).
+    const seen: string[] = [];
+    for (let second = 0; second < 10; second += 1) {
+      await harness.elapseCombat(1000);
+      seen.push(JSON.stringify(await client.pollFight()));
+    }
+    expect(seen.join("")).toMatch(/"dealtDamage":[1-9]\d*,"faction":0,"hp":\d+,"id":1000002/);
   });
 
   it("answers an unknown scenario with a system line and starts no fight", async () => {

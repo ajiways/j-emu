@@ -55,6 +55,7 @@ export function tryIdolCast(
   const mana = payMana(human, row.spell);
   const phantom = summon(human, row.phantom, stats, input);
   input.roster.add(phantom);
+  phantom.unpair();
   const events: BattleEvent[] = [
     ...(mana ? [mana] : []),
     {
