@@ -15,6 +15,7 @@ import {
   applyBattleGlove,
   applyBattlePlayerMelee,
   type BotTurnResult,
+  type GloveCast,
 } from "./battle-actions.ts";
 import {
   battleOpener,
@@ -265,13 +266,8 @@ export class Battle {
     });
   }
 
-  tryGlove(
-    accountId: number,
-    spellId: number,
-    sequence: string | number,
-    nowMs: number,
-  ): KeepTurnResult | EndingGloveResult {
-    const applied = applyBattleGlove(this.actionState(), accountId, spellId, sequence, nowMs);
+  tryGlove(accountId: number, glove: GloveCast, nowMs: number): KeepTurnResult | EndingGloveResult {
+    const applied = applyBattleGlove(this.actionState(), accountId, glove, nowMs);
     if (applied.finished) this.finishedValue = true;
     return applied.result;
   }

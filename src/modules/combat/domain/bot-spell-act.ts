@@ -46,6 +46,7 @@ export function actBotSpellCard(
   const events = castSpell({
     caster: actor,
     foe: () => target,
+    ally: actor,
     source: {
       artikulId: card.artikulId,
       title: card.title,

@@ -55,7 +55,12 @@ describe("fproxy command registry", () => {
     ).toEqual({ kind: "pocket", itemId: 100001, sequence: 3 });
     expect(
       registry.decodePayload(encodeAmf3({ rc: "castSpell", srcType: 3, srcId: 9098, sq: 4 })),
-    ).toEqual({ kind: "glove", spellId: 9098, sequence: 4 });
+    ).toEqual({ kind: "glove", spellId: 9098, targetId: null, sequence: 4 });
+    expect(
+      registry.decodePayload(
+        encodeAmf3({ rc: "castSpell", srcType: 3, srcId: 6193, targetId: 2, sq: 4 }),
+      ),
+    ).toEqual({ kind: "glove", spellId: 6193, targetId: 2, sequence: 4 });
     expect(
       registry.decodePayload(encodeAmf3({ rc: "castSpell", srcType: 1, srcId: 6, sq: 5 })),
     ).toEqual({ kind: "rage", sequence: 5 });

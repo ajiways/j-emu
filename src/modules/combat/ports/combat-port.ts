@@ -20,7 +20,13 @@ export type FightCommand =
     }>
   | Readonly<{ kind: "pocket"; itemId: number; sequence: CommandSequence }>
   | Readonly<{ kind: "idol"; itemId: number; sequence: CommandSequence }>
-  | Readonly<{ kind: "glove"; spellId: number; sequence: CommandSequence }>
+  | Readonly<{
+      kind: "glove";
+      spellId: number;
+      /** The unit the player clicked, when the client sent one. */
+      targetId: number | null;
+      sequence: CommandSequence;
+    }>
   | Readonly<{ kind: "rage"; sequence: CommandSequence }>
   | Readonly<{ kind: "concentrate"; sequence: CommandSequence }>
   | Readonly<{ kind: "aggro"; targetId: number; sequence: CommandSequence }>

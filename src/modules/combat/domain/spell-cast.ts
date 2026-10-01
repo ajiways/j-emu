@@ -10,6 +10,7 @@ import { pocketHealAmount, spellCharging, spellKind } from "./cast-state.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
 import { manaToSpend, payMana } from "./spell-mana.ts";
+import { aimsOnlyAtAllies } from "./spell-target.ts";
 import { schoolOverlayFromKind1 } from "./school-overlay.ts";
 import { chargedSkills, strikeModsFromSkills, strikeModsOfOverlay } from "./strike-mods.ts";
 import { castTimedSpell, isTimedSpell, type TimedSpellSource } from "./timed-spell.ts";
@@ -41,6 +42,8 @@ export type SpellCast = Readonly<{
   caster: SpellCaster;
   /** The foe the spell is aimed at, looked up only by a spell that needs one. */
   foe: () => Fighter;
+  /** The ally an ally spell lands on; a bot's own spell lands on the bot, a pocket item on its user. */
+  ally: Fighter | null;
   source: TimedSpellSource;
   nowMs: number;
   presentation: SpellPresentation;
@@ -50,15 +53,6 @@ export type SpellCast = Readonly<{
 
 function castsOnSelf(spell: CombatSpell): boolean {
   return spell.targetRestr?.self === true || spell.effects.some((e) => e.forceSelfTargeting);
-}
-
-/**
- * A spell the catalog forbids aiming at the opposing side («Дар неистовства», «Прикрытие») is an
- * ally spell. Choosing allies is not modelled yet, so it lands on the caster, never on the foe.
- */
-function aimsOnlyAtAllies(spell: CombatSpell): boolean {
-  const restriction = spell.targetRestr;
-  return restriction?.opp === false && restriction.oppTeam === false;
 }
 
 /**
@@ -92,11 +86,12 @@ function castEffects(cast: SpellCast): readonly BattleEvent[] | null {
 }
 
 function carrierOf(cast: SpellCast): Fighter {
-  return cast.presentation.selfOnly ||
-    castsOnSelf(cast.source.spell) ||
-    aimsOnlyAtAllies(cast.source.spell)
-    ? cast.caster
-    : cast.foe();
+  if (cast.presentation.selfOnly || castsOnSelf(cast.source.spell)) return cast.caster;
+  if (!aimsOnlyAtAllies(cast.source.spell)) return cast.foe();
+  if (cast.ally === null) {
+    throw new Error(`Spell ${cast.source.artikulId} needs an ally to land on`);
+  }
+  return cast.ally;
 }
 
 function animationOf(cast: SpellCast, fallback: string | null): string {

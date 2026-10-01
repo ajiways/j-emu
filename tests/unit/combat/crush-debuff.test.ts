@@ -68,7 +68,11 @@ function hero(): HumanFighter {
 
 /** The glove keep-turn cast of Сокрушение by a hero whose foe is `foe`. */
 function castCrush(foe: BotFighter) {
-  const result = tryGloveKeepTurn(hero(), CRUSH.artikulId, 1, false, { nowMs: 0, foe: () => foe });
+  const result = tryGloveKeepTurn(hero(), CRUSH.artikulId, 1, false, {
+    nowMs: 0,
+    foe: () => foe,
+    ally: () => null,
+  });
   if (result.kind !== "resolved") throw new Error("Сокрушение was not cast");
   return result.events;
 }

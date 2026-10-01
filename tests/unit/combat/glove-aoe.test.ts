@@ -96,7 +96,11 @@ describe("glove AOE leftover", () => {
     const battle = pairedHunt();
     buildFourCombo(battle);
     battle.grantTurn(1, AUTH_NOW + 10);
-    const ending = battle.tryGlove(1, 9099, 5, AUTH_NOW + 10);
+    const ending = battle.tryGlove(
+      1,
+      { spellId: 9099, targetId: null, sequence: 5 },
+      AUTH_NOW + 10,
+    );
     expect(ending.kind).toBe("ending");
     if (ending.kind !== "ending") throw new Error("expected ending glove");
     expect(ending.hitTargetIds).toEqual([1_000_000, 1_000_001]);
@@ -141,7 +145,11 @@ describe("glove AOE leftover", () => {
     expect(battle.tryAggro(1, 1_000_000, () => 1_000_001).kind).toBe("resolved");
     buildFourCombo(battle);
     battle.grantTurn(1, AUTH_NOW + 10);
-    const ending = battle.tryGlove(1, 9099, 5, AUTH_NOW + 10);
+    const ending = battle.tryGlove(
+      1,
+      { spellId: 9099, targetId: null, sequence: 5 },
+      AUTH_NOW + 10,
+    );
     expect(ending.kind).toBe("ending");
     if (ending.kind !== "ending") throw new Error("expected ending glove");
     expect(ending.hitTargetIds).toEqual([1_000_000, 1_000_001]);
@@ -156,7 +164,7 @@ describe("glove AOE leftover", () => {
     battle.grantTurn(1, AUTH_NOW + 1);
     battle.tryPlayerMelee(1, "right", AUTH_NOW + 1);
     battle.grantTurn(1, AUTH_NOW + 2);
-    const ending = battle.tryGlove(1, 9098, 5, AUTH_NOW + 2);
+    const ending = battle.tryGlove(1, { spellId: 9098, targetId: null, sequence: 5 }, AUTH_NOW + 2);
     expect(ending.kind).toBe("ending");
     if (ending.kind !== "ending") throw new Error("expected ending glove");
     expect(ending.hitTargetIds).toEqual([1_000_000]);
@@ -187,7 +195,7 @@ describe("glove AOE leftover", () => {
     await strikeAndLoop(combat, delay, clock, "right", 4);
     await strikeAndLoop(combat, delay, clock, "center", 5);
     await strikeAndLoop(combat, delay, clock, "right", 6);
-    await combat.execute(1, { kind: "glove", spellId: 9099, sequence: 7 });
+    await combat.execute(1, { kind: "glove", targetId: null, spellId: 9099, sequence: 7 });
     const caster = await combat.execute(1, { kind: "poll" });
     expect(caster.map((event) => event.type)).toEqual(
       expect.arrayContaining(["command-accepted", "turn-wait", "damage", "pers-change"]),

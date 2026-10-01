@@ -191,7 +191,7 @@ describe("CombatService pocket glove rage", () => {
     await strikeAndLoop(combat, delay, clock, "right", 3);
     await combat.execute(1, { kind: "pocket", itemId: 100_002, sequence: 4 });
     await combat.execute(1, { kind: "poll" });
-    await combat.execute(1, { kind: "glove", spellId: 9098, sequence: 5 });
+    await combat.execute(1, { kind: "glove", targetId: null, spellId: 9098, sequence: 5 });
     const ending = await combat.execute(1, { kind: "poll" });
     expect(ending.map((event) => event.type)).toEqual(["command-accepted", "turn-wait", "damage"]);
     expect(ending.some((event) => event.type === "effect-purge")).toBe(false);
@@ -337,7 +337,7 @@ describe("CombatService pocket glove rage", () => {
     await combat.execute(1, { kind: "strike", side: "center", sequence: 2 });
     const first = await combat.execute(1, { kind: "poll" });
     expect(first.find((event) => event.type === "damage")).toMatchObject({ comboCp: 1 });
-    await combat.execute(1, { kind: "glove", spellId: 9098, sequence: 3 });
+    await combat.execute(1, { kind: "glove", targetId: null, spellId: 9098, sequence: 3 });
     expect(await combat.execute(1, { kind: "poll" })).toEqual([
       { type: "command-accepted", sequence: 3 },
       { type: "pers-cp", cp: 1 },
@@ -356,7 +356,7 @@ describe("CombatService pocket glove rage", () => {
     await strikeAndLoop(combat, delay, clock, "center", 2);
     await strikeAndLoop(combat, delay, clock, "right", 3);
     await strikeAndLoop(combat, delay, clock, "center", 4);
-    await combat.execute(1, { kind: "glove", spellId: 9100, sequence: 5 });
+    await combat.execute(1, { kind: "glove", targetId: null, spellId: 9100, sequence: 5 });
     const cast = await combat.execute(1, { kind: "poll" });
     expect(cast.map((event) => event.type)).toEqual([
       "command-accepted",
@@ -384,7 +384,7 @@ describe("CombatService pocket glove rage", () => {
     await combat.execute(1, { kind: "poll" });
     await strikeAndLoop(combat, delay, clock, "center", 2);
     await strikeAndLoop(combat, delay, clock, "right", 3);
-    await combat.execute(1, { kind: "glove", spellId: 9098, sequence: 4 });
+    await combat.execute(1, { kind: "glove", targetId: null, spellId: 9098, sequence: 4 });
     expect((await combat.execute(1, { kind: "poll" })).map((event) => event.type)).toEqual([
       "command-accepted",
       "turn-wait",

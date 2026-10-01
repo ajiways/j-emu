@@ -43,7 +43,7 @@ const CLEANSE: CombatGloveSpell = {
   },
 };
 
-/** «Дар неистовства»: aimed at allies only, so it stands on the caster. */
+/** «Дар неистовства»: aimed at allies only, a player's one (not the caster, not a mob). */
 const RALLY: CombatGloveSpell = {
   artikulId: 7002,
   cost: 1,
@@ -52,16 +52,16 @@ const RALLY: CombatGloveSpell = {
   picture: "p.png",
   spell: {
     animData: "magic_baf_electro",
-    targetRestr: { self: false, opp: false, oppTeam: false },
+    targetRestr: { self: false, opp: false, oppTeam: false, dead: false, noBot: true },
     effects: [{ kind: 3, duration: 40, skills: [{ skillId: "CRBonus", value: 27 }] }],
   },
 };
 
-function hero(): HumanFighter {
+function hero(id = 1): HumanFighter {
   const human = new HumanFighter({
-    accountId: 1,
-    heroId: 1,
-    nick: "H1",
+    accountId: id,
+    heroId: id,
+    nick: `H${id}`,
     level: 7,
     kind: 1,
     hp: 50,
@@ -111,7 +111,7 @@ describe("a player's glove spell goes through the same cast as a bot's", () => {
     const human = hero();
     const foe = bot();
     const cast = (spellId: number, nowMs: number) =>
-      tryGloveKeepTurn(human, spellId, 1, false, { nowMs, foe: () => foe });
+      tryGloveKeepTurn(human, spellId, 1, false, { nowMs, foe: () => foe, ally: () => null });
     cast(6197, 0);
     expect(foe.effects.takenDamage(10, 1)).toBe(6);
     const cleansed = cast(7001, 1000);
@@ -137,7 +137,7 @@ describe("a player's glove spell goes through the same cast as a bot's", () => {
       },
       0,
     );
-    tryGloveKeepTurn(human, 6197, 1, false, { nowMs: 0, foe: () => foe });
+    tryGloveKeepTurn(human, 6197, 1, false, { nowMs: 0, foe: () => foe, ally: () => null });
     expect(foe.stunnedTurns).toBe(0);
     expect(foe.effects.takenDamage(10, 1)).toBe(6);
   });
@@ -146,15 +146,23 @@ describe("a player's glove spell goes through the same cast as a bot's", () => {
     const human = hero();
     const foe = bot();
     foe.stunnedTurns = 1;
-    tryGloveKeepTurn(human, 6197, 1, false, { nowMs: 0, foe: () => foe });
+    tryGloveKeepTurn(human, 6197, 1, false, { nowMs: 0, foe: () => foe, ally: () => null });
     expect(foe.stunnedTurns).toBe(1);
   });
 
-  it("puts an ally-only buff on the caster, not on the foe", () => {
+  it("puts an ally-only buff on the ally it was cast on, not on the foe or the caster", () => {
     const human = hero();
+    const mate = hero(2);
     const foe = bot();
-    tryGloveKeepTurn(human, 7002, 1, false, { nowMs: 0, foe: () => foe });
+    tryGloveKeepTurn(human, 7002, 1, false, { nowMs: 0, foe: () => foe, ally: () => mate });
     expect(foe.effects.standingSkill("CRBonus")).toBe(0);
-    expect(human.effects.standingSkill("CRBonus")).toBe(27);
+    expect(human.effects.standingSkill("CRBonus")).toBe(0);
+    expect(mate.effects.standingSkill("CRBonus")).toBe(27);
+  });
+
+  it("refuses an ally-only buff that has no ally to land on", () => {
+    expect(() =>
+      tryGloveKeepTurn(hero(), 7002, 1, false, { nowMs: 0, foe: () => bot(), ally: () => null }),
+    ).toThrow(/needs an ally/);
   });
 });

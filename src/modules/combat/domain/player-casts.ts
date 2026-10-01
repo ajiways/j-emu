@@ -66,6 +66,7 @@ export function tryPocketCast(
     foe: () => {
       throw new Error("A pocket item is used on oneself and has no foe");
     },
+    ally: human,
     source: {
       artikulId: consumed.artifactId,
       title: consumed.title,
@@ -122,7 +123,11 @@ export function tryGloveKeepTurn(
   spellId: number,
   sequence: string | number,
   pvp: boolean,
-  cast: Readonly<{ nowMs: number; foe: () => Fighter }>,
+  cast: Readonly<{
+    nowMs: number;
+    foe: () => Fighter;
+    ally: (spell: CombatSpell) => Fighter | null;
+  }>,
 ): KeepTurnResult {
   if (!human.authed || human.waiting || human.hp === 0) return { kind: "ignored" };
   const glove = human.casts.gloveSpell(spellId);
@@ -130,6 +135,7 @@ export function tryGloveKeepTurn(
   requirePvpForSpell(glove.spell, pvp, sequence);
   if (spellKind(glove.spell, 11)) throw new FightCastDenied("kind11", sequence);
   if (isEndingGlove(glove.spell)) return { kind: "ignored" };
+  const ally = cast.ally(glove.spell);
   if (human.casts.cp < glove.cost) {
     return { kind: "resolved", events: [{ type: "pers-cp", cp: human.casts.cp }] };
   }
@@ -140,6 +146,7 @@ export function tryGloveKeepTurn(
   const events = castSpell({
     caster: human,
     foe: cast.foe,
+    ally,
     source: {
       artikulId: glove.artikulId,
       title: glove.title,

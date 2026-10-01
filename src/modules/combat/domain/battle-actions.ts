@@ -12,6 +12,7 @@ import type { FightRules } from "./fight-rules.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import type { KeepTurnResult } from "./player-casts.ts";
 import { tryGloveKeepTurn } from "./player-casts.ts";
+import { allyTargetOf } from "./spell-target.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotMeleeResult } from "./turn-grant.ts";
 import { rotateBotDuel } from "./rotate-bot-duel.ts";
@@ -71,18 +72,33 @@ export function applyBattlePlayerMelee(
   return settleAfterPlayerHit(resolved, hitInput(state, human, duel));
 }
 
+/** A glove spell the player casts: what he clicked and the command it came with. */
+export type GloveCast = Readonly<{
+  spellId: number;
+  targetId: number | null;
+  sequence: string | number;
+}>;
+
 export function applyBattleGlove(
   state: HuntActionState,
   accountId: number,
-  spellId: number,
-  sequence: string | number,
+  glove: GloveCast,
   nowMs: number,
 ): Readonly<{ result: KeepTurnResult | EndingGloveResult; finished: boolean }> {
+  const { spellId, sequence } = glove;
   const human = requireAuthedHuman(state.roster.humans, accountId);
   const keep = tryGloveKeepTurn(human, spellId, sequence, rosterIsPvp(state.roster.humans), {
     nowMs,
     foe: () =>
       duelFoe(requireDuelContaining(state.duels, human.heroId), state.roster.all(), human.id),
+    ally: (spell) =>
+      allyTargetOf({
+        spell,
+        caster: human,
+        roster: state.roster,
+        targetId: glove.targetId,
+        sequence,
+      }),
   });
   if (keep.kind !== "ignored") return { result: keep, finished: state.finished };
   const duel = requireDuelContaining(state.duels, human.heroId);

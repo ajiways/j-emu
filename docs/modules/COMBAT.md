@@ -191,14 +191,22 @@ injected RNG, урон `max(1, round(full/2))`. Caster и остальные aut
 том же id даёт 5 vs 3 / 0 на живом. Ally, чей фо —
 secondary, получает тот же кадр: roster patch + `animData` и `targetId`
 своего фо. Kill secondary — `attackwait` + `react=KILL` + `oppwait`/swap
-на той дуэли. Click `targetId` нет в glove
-command — не изобретаем. Bot kind-1 AOE — leftover. Орб 99 drink вешает RAM standing
+на той дуэли. Bot kind-1 AOE — leftover. Орб 99 drink вешает RAM standing
 kind-3 (`charging` ходов, `groupId` 842, без bake STR — melee бонус остаётся
 `takeOrbPcStr`); consuming L/C/R melee шлёт `effPurge`; glove/kind-1 орб не
 тратит. Повторный drink той же group снимает предыдущий standing.
 CEF 2026-09-17: орб 99 standing + `effPurge` на физ L/C/R. Glove AOE
 (`targetCount>=2`, «Волна света»): CEF 2026-09-17 урон по двум мобам и
 same-map HP. Bot kind-1 AOE бьёт тех же выбранных врагов (ADR-0021).
+Заклинание только для своих (`opp:false` и `oppTeam:false`, «Дар неистовства»,
+«Прикрытие»): glove-cast несёт `targetId` клика, бафф ложится на эту цель
+(`spell-target.ts`). Клиент проверяет ограничения до отправки и сам показывает
+тосты (`noBot`, `self:false`, `dead`, `jgr-emu/docs/FIGHT_TOASTS.md`),
+поэтому сервер получает только допустимую цель; чужая/мёртвая/свой герой при
+`self:false`/моб при `noBot:true`/нет клика — тихий `{rs:false}`, ничего не
+накладывается и не перенаправляется. `inParty` и `targetCount` сервер не
+применяет: бафф получает один кликнутый союзник (бой не знает групп). Живого
+дампа каста по союзнику нет — форма запроса взята из контракта `castSpell`.
 Kind 11 HTTP
 `{rs:false, restriction:18}` — только если опубликованный spell kind 11
 (в текущем slice нет). CEF счётчиков пояса/перчатки/ярости не прогонялся.

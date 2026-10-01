@@ -102,7 +102,7 @@ async function castFightSpecial(
     }
     return;
   }
-  const resolved = battle.tryGlove(accountId, command.spellId, command.sequence, input.nowMs);
+  const resolved = battle.tryGlove(accountId, command, input.nowMs);
   if (resolved.kind === "ending") {
     await input.melee.endingGlove(accountId, command.sequence, resolved);
     return;

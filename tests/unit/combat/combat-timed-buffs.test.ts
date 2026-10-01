@@ -97,7 +97,7 @@ describe("timed buffs through a fight", () => {
     const { combat } = await startedFight();
     await combat.execute(1, { kind: "strike", side: "center", sequence: 2 });
     await combat.execute(1, { kind: "poll" });
-    await combat.execute(1, { kind: "glove", spellId: 182, sequence: 3 });
+    await combat.execute(1, { kind: "glove", targetId: null, spellId: 182, sequence: 3 });
     const events = await combat.execute(1, { kind: "poll" });
     expect(events.map((event) => event.type)).toEqual([
       "command-accepted",
