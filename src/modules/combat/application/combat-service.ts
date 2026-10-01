@@ -296,6 +296,10 @@ export class CombatService implements CombatPort {
     return this.pendingConsume.takeBag(accountId);
   }
 
+  async abandonFight(accountId: number): Promise<void> {
+    await this.finish.leaveFight(accountId);
+  }
+
   async activeFightId(accountId: number): Promise<string | null> {
     return this.byAccount.get(accountId)?.id ?? null;
   }
@@ -317,9 +321,7 @@ export class CombatService implements CombatPort {
   }
 
   async accountForFight(fightId: string): Promise<number | null> {
-    const battle = this.battleByFight.get(requireFightId(fightId));
-    if (!battle) return null;
-    return battle.accountId;
+    return this.battleByFight.get(requireFightId(fightId))?.accountId ?? null;
   }
 
   async takeExit(accountId: number) {
@@ -352,15 +354,12 @@ export class CombatService implements CombatPort {
     for (const battle of this.battleByFight.values()) {
       for (const token of battle.delayTokens()) this.scheduler.cancel(token);
     }
-    this.byAccount.clear();
-    this.battleByFight.clear();
-    this.queues.clear();
-    this.pendingExits.clear();
-    this.pendingLoot.clear();
-    this.pendingFightInfo.clear();
+    const stores = [this.byAccount, this.battleByFight, this.queues, this.pendingExits];
+    for (const store of [...stores, this.pendingLoot, this.pendingFightInfo, this.settledFights]) {
+      store.clear();
+    }
     this.finish.discardHeldWire();
     this.pendingConsume.clear();
-    this.settledFights.clear();
     this.exitSent.clear();
   }
 

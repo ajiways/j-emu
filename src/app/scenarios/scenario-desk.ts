@@ -18,6 +18,8 @@ import type { FightScenario, FightScenarioBot } from "./fight-scenario.ts";
 import type { FightScenarioCatalog } from "./fight-scenario-catalog.ts";
 
 const COMMAND = "/scenario";
+/** `/scenario stop` takes the player out of his fight, the way out of a fight that cannot be left. */
+const STOP = "stop";
 
 type ScenarioDeskDeps = Readonly<{
   scenarios: FightScenarioCatalog;
@@ -40,6 +42,15 @@ export class ScenarioDesk {
     if (command !== COMMAND) return null;
     if (name === undefined || rest.length > 0) {
       await this.deps.chat.deliverSystem(accountId, this.usage());
+      return {};
+    }
+    if (name === STOP) {
+      const fighting = (await this.deps.start.combat.activeFightId(accountId)) !== null;
+      await this.deps.start.combat.abandonFight(accountId);
+      await this.deps.chat.deliverSystem(
+        accountId,
+        fighting ? "Вы вышли из боя." : "Вы сейчас не в бою.",
+      );
       return {};
     }
     const scenario = this.deps.scenarios.find(name);
@@ -105,7 +116,7 @@ export class ScenarioDesk {
   private usage(): string {
     const listed = this.deps.scenarios.describe();
     if (listed.length === 0) return "Сценариев нет.";
-    return `Использование: /scenario <имя>. Доступны: ${listed
+    return `Использование: /scenario <имя>; /scenario stop — выйти из боя. Доступны: ${listed
       .map((entry) => entry.name)
       .join(", ")}.`;
   }

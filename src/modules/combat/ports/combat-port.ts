@@ -187,6 +187,8 @@ export interface CombatPort {
   takePocketConsume(accountId: number): number | null;
   takeBagConsume(accountId: number): number | null;
   activeFightId(accountId: number): Promise<string | null>;
+  /** Takes the player out of his fight whatever its rules say (a way out of a stuck test fight). */
+  abandonFight(accountId: number): Promise<void>;
   resumeFight(accountId: number): Promise<FightStart | null>;
   accountForFight(fightId: string): Promise<number | null>;
   takeExit(accountId: number): Promise<FightExit | null>;

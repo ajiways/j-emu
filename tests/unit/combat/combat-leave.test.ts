@@ -60,6 +60,15 @@ describe("CombatService leaveFight", () => {
     expect(await combat.hasFight(start.fightId)).toBe(true);
   });
 
+  it("abandons a fight that cannot be left, for the way out of a stuck test fight", async () => {
+    const { combat } = createCombatService({ random: new SequenceRandom([8, 2]) });
+    const start = await startHuntWithIssuedId(combat, unitHuntStart({ purpose: "quest" }));
+    await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
+    await combat.abandonFight(1);
+    expect(await combat.activeFightId(1)).toBeNull();
+    expect(await combat.takeExit(1)).toMatchObject({ fightId: start.fightId, flee: true });
+  });
+
   it("denies leave when the hunt is in an instance copy", async () => {
     const { combat } = createCombatService({ random: new SequenceRandom([8, 2]) });
     const start = await startHuntWithIssuedId(combat, unitHuntStart({ instanceCopyId: 12 }));

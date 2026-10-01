@@ -221,6 +221,27 @@ describe("scripted fight scenarios from chat", () => {
     expect(JSON.stringify(await client.pollFight())).toContain("magic_backstab");
   });
 
+  it("/scenario stop takes the player out of a fight that cannot be left", async () => {
+    const client = await startScenario("idols");
+    expect(await client.fight({ rc: "leaveFight", sq: 4 })).toEqual([
+      { rs: false, err: "нельзя выйти из боя", sq: 4 },
+    ]);
+    await client.objectAction({
+      object: "chat",
+      action: "add",
+      form: { message: "/scenario stop", type: "main" },
+      sq: 5,
+    });
+    // He is out: the same scenario can start again, which a hero in a fight cannot do.
+    const again = await client.objectAction({
+      object: "chat",
+      action: "add",
+      form: { message: "/scenario idols", type: "main" },
+      sq: 6,
+    });
+    expect(Object.keys(again)).toContain("fight|conf");
+  });
+
   it("answers an unknown scenario with a system line and starts no fight", async () => {
     const client = await AuthenticatedClient.login(application);
     const sent = await client.objectAction({
