@@ -144,9 +144,11 @@ export class BattlegroundChrome {
       return this.requireHeroByAccount(hero.accountId);
     });
     const appearance = await this.deps.catalog.appearance(locked.kind, locked.gender);
-    const loadout = await new HuntCombatLoadout(this.deps.inventory, this.deps.catalog).snapshot(
-      locked.id,
-    );
+    const loadout = await new HuntCombatLoadout(
+      this.deps.inventory,
+      this.deps.catalog,
+      this.deps.party,
+    ).snapshot(locked.id);
     return {
       accountId: locked.accountId,
       heroId: locked.id,

@@ -12,7 +12,7 @@ import type { FightRules } from "./fight-rules.ts";
 import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import type { KeepTurnResult } from "./player-casts.ts";
 import { tryGloveKeepTurn } from "./player-casts.ts";
-import { allyTargetOf } from "./spell-target.ts";
+import { allyTargetsOf } from "./spell-target.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotMeleeResult } from "./turn-grant.ts";
 import { rotateBotDuel } from "./rotate-bot-duel.ts";
@@ -91,13 +91,14 @@ export function applyBattleGlove(
     nowMs,
     foe: () =>
       duelFoe(requireDuelContaining(state.duels, human.heroId), state.roster.all(), human.id),
-    ally: (spell) =>
-      allyTargetOf({
+    allies: (spell) =>
+      allyTargetsOf({
         spell,
         caster: human,
         roster: state.roster,
         targetId: glove.targetId,
         sequence,
+        random: state.random,
       }),
   });
   if (keep.kind !== "ignored") return { result: keep, finished: state.finished };

@@ -28,6 +28,7 @@ const orbLoadout: CombatLoadout = {
   concentration: null,
   glove: null,
   gearSpells: [],
+  partyId: null,
 };
 
 describe("CombatService roster effects", () => {

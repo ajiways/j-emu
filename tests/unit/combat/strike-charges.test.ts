@@ -136,10 +136,10 @@ describe("glove buffs follow their skills", () => {
 
   it("makes the next swing a crit only when the buff carries CR", () => {
     const crit = hero(glove("CR", 1));
-    tryGloveKeepTurn(crit, 9100, 1, false, { nowMs: 0, foe: () => crit, ally: () => null });
+    tryGloveKeepTurn(crit, 9100, 1, false, { nowMs: 0, foe: () => crit, allies: () => [] });
     expect(crit.effects.takeStrike().critChance).toBe(1);
     const vamp = hero(glove("VAMP", 10));
-    tryGloveKeepTurn(vamp, 9100, 1, false, { nowMs: 0, foe: () => vamp, ally: () => null });
+    tryGloveKeepTurn(vamp, 9100, 1, false, { nowMs: 0, foe: () => vamp, allies: () => [] });
     expect(vamp.effects.takeStrike().critChance).toBe(0);
   });
 });

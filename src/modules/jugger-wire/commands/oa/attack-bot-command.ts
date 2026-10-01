@@ -103,7 +103,11 @@ export class AttackBotCommand implements OaCommand {
     const bot = await this.catalog.bot(spawn.botId);
     if (!bot) throw new Error(`Bot catalog entry ${spawn.botId} is missing`);
     await this.inventory.ensureStarterInventory(hero.id);
-    const loadout = await new HuntCombatLoadout(this.inventory, this.catalog).snapshot(hero.id);
+    const loadout = await new HuntCombatLoadout(
+      this.inventory,
+      this.catalog,
+      this.parties,
+    ).snapshot(hero.id);
     const occupied =
       hero.instanceCopyId === null
         ? this.world.occupiedFightId(area.id, spawn.id)

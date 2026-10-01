@@ -111,7 +111,7 @@ describe("a player's glove spell goes through the same cast as a bot's", () => {
     const human = hero();
     const foe = bot();
     const cast = (spellId: number, nowMs: number) =>
-      tryGloveKeepTurn(human, spellId, 1, false, { nowMs, foe: () => foe, ally: () => null });
+      tryGloveKeepTurn(human, spellId, 1, false, { nowMs, foe: () => foe, allies: () => [] });
     cast(6197, 0);
     expect(foe.effects.takenDamage(10, 1)).toBe(6);
     const cleansed = cast(7001, 1000);
@@ -137,7 +137,7 @@ describe("a player's glove spell goes through the same cast as a bot's", () => {
       },
       0,
     );
-    tryGloveKeepTurn(human, 6197, 1, false, { nowMs: 0, foe: () => foe, ally: () => null });
+    tryGloveKeepTurn(human, 6197, 1, false, { nowMs: 0, foe: () => foe, allies: () => [] });
     expect(foe.stunnedTurns).toBe(0);
     expect(foe.effects.takenDamage(10, 1)).toBe(6);
   });
@@ -146,7 +146,7 @@ describe("a player's glove spell goes through the same cast as a bot's", () => {
     const human = hero();
     const foe = bot();
     foe.stunnedTurns = 1;
-    tryGloveKeepTurn(human, 6197, 1, false, { nowMs: 0, foe: () => foe, ally: () => null });
+    tryGloveKeepTurn(human, 6197, 1, false, { nowMs: 0, foe: () => foe, allies: () => [] });
     expect(foe.stunnedTurns).toBe(1);
   });
 
@@ -154,7 +154,7 @@ describe("a player's glove spell goes through the same cast as a bot's", () => {
     const human = hero();
     const mate = hero(2);
     const foe = bot();
-    tryGloveKeepTurn(human, 7002, 1, false, { nowMs: 0, foe: () => foe, ally: () => mate });
+    tryGloveKeepTurn(human, 7002, 1, false, { nowMs: 0, foe: () => foe, allies: () => [mate] });
     expect(foe.effects.standingSkill("CRBonus")).toBe(0);
     expect(human.effects.standingSkill("CRBonus")).toBe(0);
     expect(mate.effects.standingSkill("CRBonus")).toBe(27);
@@ -162,7 +162,7 @@ describe("a player's glove spell goes through the same cast as a bot's", () => {
 
   it("refuses an ally-only buff that has no ally to land on", () => {
     expect(() =>
-      tryGloveKeepTurn(hero(), 7002, 1, false, { nowMs: 0, foe: () => bot(), ally: () => null }),
+      tryGloveKeepTurn(hero(), 7002, 1, false, { nowMs: 0, foe: () => bot(), allies: () => [] }),
     ).toThrow(/needs an ally/);
   });
 });

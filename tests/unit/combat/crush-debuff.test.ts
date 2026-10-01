@@ -71,7 +71,7 @@ function castCrush(foe: BotFighter) {
   const result = tryGloveKeepTurn(hero(), CRUSH.artikulId, 1, false, {
     nowMs: 0,
     foe: () => foe,
-    ally: () => null,
+    allies: () => [],
   });
   if (result.kind !== "resolved") throw new Error("Сокрушение was not cast");
   return result.events;

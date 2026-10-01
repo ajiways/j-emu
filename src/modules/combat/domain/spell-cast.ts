@@ -42,8 +42,8 @@ export type SpellCast = Readonly<{
   caster: SpellCaster;
   /** The foe the spell is aimed at, looked up only by a spell that needs one. */
   foe: () => Fighter;
-  /** The ally an ally spell lands on; a bot's own spell lands on the bot, a pocket item on its user. */
-  ally: Fighter | null;
+  /** The allies an ally spell lands on; a bot's own spell lands on the bot, a pocket item on its user. */
+  allies: readonly Fighter[];
   source: TimedSpellSource;
   nowMs: number;
   presentation: SpellPresentation;
@@ -85,13 +85,13 @@ function castEffects(cast: SpellCast): readonly BattleEvent[] | null {
   throw new Error(`Spell ${cast.source.artikulId} has no supported fight effect`);
 }
 
-function carrierOf(cast: SpellCast): Fighter {
-  if (cast.presentation.selfOnly || castsOnSelf(cast.source.spell)) return cast.caster;
-  if (!aimsOnlyAtAllies(cast.source.spell)) return cast.foe();
-  if (cast.ally === null) {
+function carriersOf(cast: SpellCast): readonly Fighter[] {
+  if (cast.presentation.selfOnly || castsOnSelf(cast.source.spell)) return [cast.caster];
+  if (!aimsOnlyAtAllies(cast.source.spell)) return [cast.foe()];
+  if (cast.allies.length === 0) {
     throw new Error(`Spell ${cast.source.artikulId} needs an ally to land on`);
   }
-  return cast.ally;
+  return cast.allies;
 }
 
 function animationOf(cast: SpellCast, fallback: string | null): string {
@@ -103,19 +103,20 @@ function animationOf(cast: SpellCast, fallback: string | null): string {
 }
 
 function castTimed(cast: SpellCast): readonly BattleEvent[] {
-  const carrier = carrierOf(cast);
-  const events = castTimedSpell(cast.caster, carrier, cast.source, cast.nowMs);
-  if (!cast.presentation.timedTrailingCast) return events;
-  return [
-    ...events,
-    {
-      type: "buff-cast",
-      animation: animationOf(cast, cast.presentation.castAnimation),
-      sourceId: cast.caster.id,
-      targetId: carrier.id,
-      maxHp: carrier.maxHp,
-    },
-  ];
+  return carriersOf(cast).flatMap((carrier) => {
+    const events = castTimedSpell(cast.caster, carrier, cast.source, cast.nowMs);
+    if (!cast.presentation.timedTrailingCast) return events;
+    return [
+      ...events,
+      {
+        type: "buff-cast" as const,
+        animation: animationOf(cast, cast.presentation.castAnimation),
+        sourceId: cast.caster.id,
+        targetId: carrier.id,
+        maxHp: carrier.maxHp,
+      },
+    ];
+  });
 }
 
 function castHeal(cast: SpellCast): readonly BattleEvent[] {

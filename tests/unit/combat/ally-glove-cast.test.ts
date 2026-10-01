@@ -26,7 +26,14 @@ const loadout: CombatLoadout = {
           animData: "magic_baf_electro",
           cooldown: 120,
           persRestr: { dead: false },
-          targetRestr: { self: false, oppTeam: false, opp: false, dead: false, noBot: true },
+          targetRestr: {
+            self: false,
+            oppTeam: false,
+            opp: false,
+            dead: false,
+            noBot: true,
+            inParty: true,
+          },
           effects: [
             {
               kind: 3,
@@ -41,15 +48,16 @@ const loadout: CombatLoadout = {
     ],
   },
   gearSpells: [],
+  partyId: null,
 };
 
-function twoHeroes(): Battle {
+function twoHeroes(matePartyId = 7): Battle {
   const battle = createUnitBattle(
-    unitHuntFightSetup({ botMaxHp: 200, loadout }),
+    unitHuntFightSetup({ botMaxHp: 200, loadout: { ...loadout, partyId: 7 } }),
     new SequenceRandom([0.4, 8, 8, 8]),
   );
   battle.authenticate(1, AUTH_NOW);
-  battle.addHuman(unitFightJoin({ loadout }));
+  battle.addHuman(unitFightJoin({ loadout: { ...loadout, partyId: matePartyId } }));
   battle.authenticate(2, AUTH_NOW);
   const [caster] = battle.boardParticipants().humans;
   if (caster) caster.casts.cp = 1;
@@ -64,6 +72,13 @@ describe("an ally buff of the glove", () => {
     const [caster, ally] = battle.boardParticipants().humans;
     expect(ally?.effects.standingSkill("CRBonus")).toBe(27);
     expect(caster?.effects.standingSkill("CRBonus")).toBe(0);
+  });
+
+  it("is denied for a player of another party", () => {
+    const battle = twoHeroes(8);
+    expect(() =>
+      battle.tryGlove(1, { spellId: 6193, targetId: 2, sequence: 3 }, AUTH_NOW + 10),
+    ).toThrow(FightCastDenied);
   });
 
   it.each([

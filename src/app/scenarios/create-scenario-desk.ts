@@ -7,6 +7,7 @@ import type { UnitOfWork } from "../../shared/kernel/unit-of-work.ts";
 import type { WorldService } from "../../modules/world/domain/world-service.ts";
 import type { ChatDesk } from "../chat-desk.ts";
 import { FightScenarioCatalog } from "./fight-scenario-catalog.ts";
+import type { PartyMembershipQuery } from "../../modules/party/ports/party-membership-query.ts";
 import { ScenarioDesk } from "./scenario-desk.ts";
 
 /** `null` directory means scenarios are switched off; the `/scenario` message is then plain chat. */
@@ -20,6 +21,7 @@ export function createScenarioDesk(
     combat: CombatPort;
     chat: ChatDesk;
     fightWire: FightWireMapper;
+    parties: Pick<PartyMembershipQuery, "partyIdOf">;
     unitOfWork: UnitOfWork;
   }>,
 ): ScenarioDesk | null {
@@ -40,6 +42,7 @@ export function createScenarioDesk(
       inventory: deps.inventory,
       combat: deps.combat,
       combatFightStats: (heroId) => deps.characters.combatFightStats(heroId),
+      parties: deps.parties,
     },
   });
 }

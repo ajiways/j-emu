@@ -179,6 +179,7 @@ export class JuggerCommandModule {
       travel,
       presence,
       new ProgressNotifier(catalog, outbox, wake),
+      party,
     );
     const invites = new FriendlyDuelInvites(clock);
     const propose = new ProposeFriendlyDuel(
@@ -204,6 +205,7 @@ export class JuggerCommandModule {
       wake,
       fightWire,
       bootstrap,
+      party,
     );
     const tradeMutation = new TradeMutation(
       trade,
@@ -258,6 +260,7 @@ export class JuggerCommandModule {
           combat,
           chat,
           fightWire,
+          parties: party,
           unitOfWork,
         }),
       ),
@@ -364,6 +367,7 @@ export class JuggerCommandModule {
         combat,
         fightWire,
         huntFanout,
+        party,
       ),
       new FightJoinCommand(
         "common|object:FIGHT_HELP",
@@ -375,6 +379,7 @@ export class JuggerCommandModule {
         combat,
         fightWire,
         huntFanout,
+        party,
       ),
       ...deskOaCommands({
         party: partyDesk,

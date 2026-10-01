@@ -60,6 +60,10 @@ export class PartyService implements PartyMembershipQuery {
     return this.parties.membershipByHero(heroId);
   }
 
+  async partyIdOf(heroId: number): Promise<number | null> {
+    return (await this.membership(heroId))?.party.id ?? null;
+  }
+
   async inParty(heroId: number): Promise<boolean> {
     return (await this.membership(heroId)) !== null;
   }

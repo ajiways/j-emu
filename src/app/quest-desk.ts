@@ -1,3 +1,4 @@
+import type { PartyMembershipQuery } from "../modules/party/ports/party-membership-query.ts";
 import type { Catalog } from "../modules/catalog/ports/catalog.ts";
 import type { CharacterService } from "../modules/character/application/character-service.ts";
 import type { CombatPort } from "../modules/combat/ports/combat-port.ts";
@@ -54,6 +55,7 @@ export class QuestDesk {
     private readonly travel: ComeInTravel,
     private readonly presence: PresenceFanout,
     private readonly progress: ProgressNotifier,
+    private readonly parties: Pick<PartyMembershipQuery, "partyIdOf">,
   ) {}
 
   async execute(
@@ -251,6 +253,7 @@ export class QuestDesk {
       combat: this.combat,
       chat: this.chat,
       fightWire: this.fightWire,
+      parties: this.parties,
       bootstrap: this.bootstrap,
       random: this.random,
       bookTrio: (heroId, filterType) => this.bookTrio(heroId, filterType),

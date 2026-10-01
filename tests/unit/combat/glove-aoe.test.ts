@@ -50,6 +50,7 @@ const aoeLoadout: CombatLoadout = {
     ],
   },
   gearSpells: [],
+  partyId: null,
 };
 
 function huntInit(overrides: Parameters<typeof unitHuntFightSetup>[0] = {}) {

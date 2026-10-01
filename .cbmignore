@@ -1,0 +1,4 @@
+# Generated content corpora: huge single-line JSON that only adds thousands of data nodes.
+content/*.generated.json
+content/*.generated.manifest.json
+drizzle/meta/

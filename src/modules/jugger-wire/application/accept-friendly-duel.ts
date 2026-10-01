@@ -12,6 +12,7 @@ import type { EsrvOutbox } from "./esrv-outbox.ts";
 import type { FightWireMapper } from "./fight-wire-mapper.ts";
 import type { FriendlyDuelInvites } from "./friendly-duel-invites.ts";
 import { huntHeroStatFields } from "../../combat/domain/combatant-fight-stats.ts";
+import type { PartyMembershipQuery } from "../../party/ports/party-membership-query.ts";
 import { HuntCombatLoadout } from "./hunt-combat-loadout.ts";
 import { heroFightConfLook } from "./hero-fight-appearance.ts";
 
@@ -36,6 +37,7 @@ export class AcceptFriendlyDuel {
     private readonly wake: Readonly<{ wake(accountId: number): void }>,
     private readonly fightWire: FightWireMapper,
     private readonly bootstrap: BootstrapReadModel,
+    private readonly parties: Pick<PartyMembershipQuery, "partyIdOf">,
   ) {}
 
   async execute(accountId: number, challengerNick: string): Promise<FriendlyDuelAcceptBlocks> {
@@ -111,7 +113,11 @@ export class AcceptFriendlyDuel {
       return next;
     });
     const appearance = await this.catalog.appearance(locked.kind, locked.gender);
-    const loadout = await new HuntCombatLoadout(this.inventory, this.catalog).snapshot(locked.id);
+    const loadout = await new HuntCombatLoadout(
+      this.inventory,
+      this.catalog,
+      this.parties,
+    ).snapshot(locked.id);
     return {
       accountId: locked.accountId,
       heroId: locked.id,

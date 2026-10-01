@@ -1,3 +1,4 @@
+import type { PartyMembershipQuery } from "../../party/ports/party-membership-query.ts";
 import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
 import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type {
@@ -21,6 +22,7 @@ export class HuntCombatLoadout {
   constructor(
     private readonly inventory: InventoryService,
     private readonly catalog: Catalog,
+    private readonly parties: Pick<PartyMembershipQuery, "partyIdOf">,
   ) {}
 
   async snapshot(characterId: number): Promise<CombatLoadout> {
@@ -50,6 +52,7 @@ export class HuntCombatLoadout {
       concentration: await this.concentrationSpell(),
       glove: await this.gloveFrom(items),
       gearSpells: await this.gearSpellsFrom(items),
+      partyId: await this.parties.partyIdOf(characterId),
     };
   }
 

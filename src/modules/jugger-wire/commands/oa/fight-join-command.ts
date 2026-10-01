@@ -16,6 +16,7 @@ import type {
 } from "../../application/fight-wire-mapper.ts";
 import type { HuntAreaFanout } from "../../application/hunt-area-fanout.ts";
 import { heroFightAppearance, heroFightConfLook } from "../../application/hero-fight-appearance.ts";
+import type { PartyMembershipQuery } from "../../../party/ports/party-membership-query.ts";
 import { HuntCombatLoadout } from "../../application/hunt-combat-loadout.ts";
 import { asHelpFightError } from "../../application/help-fight-error.ts";
 import { pvpFightWireOverlay } from "../../application/pvp-fight-wire-overlay.ts";
@@ -47,6 +48,7 @@ export class FightJoinCommand implements OaCommand {
     private readonly combat: CombatPort,
     private readonly fightWire: FightWireMapper,
     private readonly huntFanout: HuntAreaFanout,
+    private readonly parties: Pick<PartyMembershipQuery, "partyIdOf">,
   ) {}
 
   decode(envelope: ObjectActionEnvelope): FightJoinRequest {
@@ -87,7 +89,11 @@ export class FightJoinCommand implements OaCommand {
           ? { fightId: request.fightId, team: request.team }
           : await this.helpTarget(request.nick);
       await this.inventory.ensureStarterInventory(hero.id);
-      const loadout = await new HuntCombatLoadout(this.inventory, this.catalog).snapshot(hero.id);
+      const loadout = await new HuntCombatLoadout(
+        this.inventory,
+        this.catalog,
+        this.parties,
+      ).snapshot(hero.id);
       const fight = await this.combat.joinHunt({
         accountId: context.accountId,
         heroId: hero.id,

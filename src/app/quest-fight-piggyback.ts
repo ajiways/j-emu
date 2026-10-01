@@ -10,6 +10,7 @@ import {
   isAmbushStartFight,
   isQuestModeStartFight,
 } from "../modules/quests/domain/quest-start-fight.ts";
+import type { PartyMembershipQuery } from "../modules/party/ports/party-membership-query.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import { startAmbushHunt, startQuestFight } from "./quest-fight-start.ts";
 import { heroFightConfLook } from "../modules/jugger-wire/application/hero-fight-appearance.ts";
@@ -25,6 +26,7 @@ export async function piggybackQuestFight(
     combat: CombatPort;
     chat: ChatDesk;
     fightWire: FightWireMapper;
+    parties: Pick<PartyMembershipQuery, "partyIdOf">;
     random: Readonly<{ unit(): number }>;
   }>,
 ): Promise<Readonly<Record<string, unknown>>> {
@@ -42,6 +44,7 @@ export async function piggybackQuestFight(
     inventory: deps.inventory,
     combat: deps.combat,
     combatFightStats: (id: number) => deps.characters.combatFightStats(id),
+    parties: deps.parties,
   };
   if (isQuestModeStartFight(fight)) {
     const started = await startQuestFight(hero, fight, startDeps);

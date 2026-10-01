@@ -102,6 +102,8 @@ export type CombatLoadout = Readonly<{
   concentration: CombatSpell | null;
   glove: CombatGloveLoadout | null;
   gearSpells: readonly CombatGearSpell[];
+  /** The party the hero fights in, for spells that only reach party members; `null` for none. */
+  partyId: number | null;
 }>;
 
 export const EMPTY_COMBAT_LOADOUT: CombatLoadout = {
@@ -110,6 +112,7 @@ export const EMPTY_COMBAT_LOADOUT: CombatLoadout = {
   concentration: null,
   glove: null,
   gearSpells: [],
+  partyId: null,
 };
 
 export function requireCombatLoadout(loadout: CombatLoadout): void {
