@@ -2,8 +2,8 @@
   "sourceGroup": "DATA-03 / spell definitions",
   "decoderVersion": "pub1-bot-spell-books/v1",
   "documentSchema": "bot-document/playable-slice-v35",
-  "filesDigest": "aaba901bcac8634ebff1e92b448b4fb6f30ec71b32e8e26ae66127c12c01edaf",
-  "acceptedCount": 229,
+  "filesDigest": "507dab3f0d18394d564df12a1432a45d5eb700d929e57b984532e5f3a236859e",
+  "acceptedCount": 265,
   "keys": [
     {
       "key": "10",
@@ -82,6 +82,26 @@
       "digest": "27dcb5360a7589db55af05171a2d062f94a58d03371910cf371c61b3f679a403"
     },
     {
+      "key": "1450",
+      "digest": "f34739f415df2c6585fa62be40dbc927bef61fae423cc2cca63453c5ee0d335c"
+    },
+    {
+      "key": "1451",
+      "digest": "63bdc98c1f2b126928bd0f5559d6fc39edb71eceee74c8636f067e4d7ffbfee7"
+    },
+    {
+      "key": "1452",
+      "digest": "738a57a1bcc1df844079dd50bd72cc699fd7f1ba845ff1387e78e1cd128bb2a1"
+    },
+    {
+      "key": "1457",
+      "digest": "3b21fe8edfce8d814de47bfa5a1e41f215821d37cce0bb5d62df1c09b91d0afe"
+    },
+    {
+      "key": "1458",
+      "digest": "ddf475b243bdb87b14ebcc866ce3fcb959fc310b7a1d84c1408ed369415b27df"
+    },
+    {
       "key": "1459",
       "digest": "3aa439e10955f5d8576c1ce44e600e762b389494827b9381dae43b2dc7ca25bc"
     },
@@ -118,6 +138,10 @@
       "digest": "b15f82073f3f8f53d73770465e1b69cb9a3aa7e9ec4b0ba62c6d853327149e8a"
     },
     {
+      "key": "166",
+      "digest": "a240a90a774e54055f63b70cfb11f4b9f4b4d770095d03be8df1572301c296da"
+    },
+    {
       "key": "1679",
       "digest": "6e4184a7bd9238aed1bf7444e2fcf8ada9d3344dbb3ac76095a06fe8fcc6b472"
     },
@@ -138,6 +162,26 @@
       "digest": "a5c56c9a657b31a5d0ee6d26c9365b34da43037b1ec5084ab42a3807c557b89b"
     },
     {
+      "key": "1784",
+      "digest": "3e32de1b8bf333ac36d676c51d75b1e5324701b0dadf32ae517ed1fe92c0b5e7"
+    },
+    {
+      "key": "1785",
+      "digest": "1508c893bd7080f30ebaffae0b3764a4fd5a1b985c495ce2df87b6aeb76c3b86"
+    },
+    {
+      "key": "1786",
+      "digest": "3e76c049828f582c2489c16299a63af44f2f90402a8b5f30edf42d9ea06e3842"
+    },
+    {
+      "key": "1795",
+      "digest": "3d30d7c582e72da672f8acfc25c3e8339f2e8aa267b0a998d0370b3852efab3a"
+    },
+    {
+      "key": "1796",
+      "digest": "938a52aaac8d7a7896812e0922757ed129c6ca356df159e5f721c236a28e5a84"
+    },
+    {
       "key": "18",
       "digest": "088c582f72a1e3ee0f8e8fea44d93f8c2a3139a4ebdff228e30de00dab0ea680"
     },
@@ -148,6 +192,10 @@
     {
       "key": "1801",
       "digest": "f23cbdca30e5bb2ba3138c2a13c978a76d5d59a70f9cfc68d4c666b16d391cee"
+    },
+    {
+      "key": "1818",
+      "digest": "922610aa1d63e7ae50f776fa6a08f9b89f8faca9ea4b45bd32fd123f5c2b07fc"
     },
     {
       "key": "1830",
@@ -250,6 +298,34 @@
       "digest": "c94b97bd042a51729cf7976963926791483f3bdf5ee6c4957dd1028586862387"
     },
     {
+      "key": "1991",
+      "digest": "90d215ea6afa85613153d0bce98806a0d53ef5e4cb6d0577df3719666717894a"
+    },
+    {
+      "key": "1992",
+      "digest": "4740e07b4a2314f8288f771d29036d7ccc7783627f8e16e82e4f9137630bd643"
+    },
+    {
+      "key": "1993",
+      "digest": "9f5f77c7f8414b5ac3e632e5ce8c8a1d29c76640336997117bd84c9f5204f7c6"
+    },
+    {
+      "key": "1994",
+      "digest": "8bcbf0aa998a42e2ee263aaa31dbb2a0384f0da7c55207b3de9fe93eab014e61"
+    },
+    {
+      "key": "1995",
+      "digest": "bc419a01f6c546696fc4683b0d53b794c7aa02f77e1f94a80c27f9f2f3af3caa"
+    },
+    {
+      "key": "1996",
+      "digest": "0fae689e80d2cede06b495d1b8f0d8691c6ee12e67c3f393d0369b87d668949d"
+    },
+    {
+      "key": "1997",
+      "digest": "895cb10d875a69c322e0becf3ddbee48b3895421ca0129629b2d2152e2868a25"
+    },
+    {
       "key": "2",
       "digest": "41fce88c7d3886928ac7e3169b87d0e89b5fafa1708d9bbbd3dfa92f5d90052d"
     },
@@ -280,6 +356,18 @@
     {
       "key": "206",
       "digest": "f003f1eb21e2d6b1d6f0641bea36bf60bd3120bd46095823c10d178aa90e6c7d"
+    },
+    {
+      "key": "2067",
+      "digest": "e54cca5c6234a6bc5eed59f15a3bbe7dba742cea1bfebc1ef8399593687e88fc"
+    },
+    {
+      "key": "2068",
+      "digest": "41bd0f602f2a414af7572f313b22b90ef2cfc20b1f63be1e2e7ea3e74cf83a3b"
+    },
+    {
+      "key": "2069",
+      "digest": "4d87ec8affc8ffc2d494696e249b1491f109d4cd8e7c7a8e60e521689b6f5c5f"
     },
     {
       "key": "207",
@@ -408,6 +496,10 @@
     {
       "key": "33",
       "digest": "e0b2cf119d1615104e4897c2f61ab958dd9da5aa0bdd155d870942b6ad4bcc1b"
+    },
+    {
+      "key": "352",
+      "digest": "57bbc3a9c97c914095f1c89e57a9fbc6f8b900b229185c6789fc855d935ab5fa"
     },
     {
       "key": "353",
@@ -582,6 +674,10 @@
       "digest": "3d23f2bfd0d3fbb2743d3b2826824312bea670f7b3037bcd5803caac642ed2ee"
     },
     {
+      "key": "48",
+      "digest": "9990c0d507bede0a8a3f3a4790719ab91622be1630ffc758743e9e94b9795198"
+    },
+    {
       "key": "483",
       "digest": "ec8b23c3904291c90ce3419ad319aaf85ef12431250cd37f61502729306e039b"
     },
@@ -620,6 +716,10 @@
     {
       "key": "53",
       "digest": "dd97cb308c4845d1bc9c0910a32de29dc96e3659c3e2784af6f2e219853793cc"
+    },
+    {
+      "key": "54",
+      "digest": "483b7f8ab8dfc5186c98b0a1da14f46b67164deb6af042f1001aadda3d9a0809"
     },
     {
       "key": "547",
@@ -686,6 +786,10 @@
       "digest": "ce83a37c9e4fbb4baf11745d21dcaa2f3b319a39d2020016e09bd96ae44a0bee"
     },
     {
+      "key": "574",
+      "digest": "edb68c2c7db0acbce9e15cd36f0585b763c0101ed4714fc9adc60c016742471d"
+    },
+    {
       "key": "58",
       "digest": "c619edce7f4bf4615c763eb7af0a29355067bc1799e1dee88b756539f1f04c19"
     },
@@ -710,12 +814,24 @@
       "digest": "25345f9346239f5f3613bda34a22fb7958b6fe3602b9cf54120bfe83ba3bb9f4"
     },
     {
+      "key": "63",
+      "digest": "2937ee5873a0d3f1b13eebc958045d947b050b2643163ecbe71b95a6c0509be3"
+    },
+    {
       "key": "64",
       "digest": "18d15f542b25271f70ce6420c8ddcb17e2457b5565e99fe77443f287859a0dac"
     },
     {
+      "key": "644",
+      "digest": "f18820e12bf45cc35aedefff4ea42450e3f0ccd4f7ec9f2e0cd75f24a0ea3a29"
+    },
+    {
       "key": "65",
       "digest": "056367a42fb4fb94c4b2419b3e53c959d20e65cce9a9b20e1765ddb113361daf"
+    },
+    {
+      "key": "66",
+      "digest": "5992ddfcd27e00b75514e3ee3fe4386b0db142223038355cf72e58e919c146d4"
     },
     {
       "key": "67",
@@ -754,6 +870,10 @@
       "digest": "78842f5bdb1c87fab1c34598ccfdfabb71b734ba669ee2f27bf60fe3b54d34c9"
     },
     {
+      "key": "688",
+      "digest": "017ec20453124d3178b59d5af6f7160b93b63c45c14e69d64050384e53d4ead7"
+    },
+    {
       "key": "689",
       "digest": "2f9d1e597e351a5448294d078dc360ac3a9e21573c77567f52e2ed707559154f"
     },
@@ -766,6 +886,10 @@
       "digest": "678584bbc827b28f6471c7a28a4f7f5640438f3ff370d253a3c50189ed9df390"
     },
     {
+      "key": "691",
+      "digest": "506664ba1b58e44b13969083ad0fcf5fd6fea275fa0297690ee9be5e14bc3dc2"
+    },
+    {
       "key": "692",
       "digest": "9dd20e76ef4035ea8520f61b85c7c130cf1848e94b944809dce237d6affdc9d1"
     },
@@ -776,6 +900,22 @@
     {
       "key": "7",
       "digest": "51b41e9acba56390713cd8bd9d2ed852a360d0500957ff5a424279f257b481cb"
+    },
+    {
+      "key": "717",
+      "digest": "affec697a30cc8b3440a84d79a489443b25fc5323bbd8ab3af532eadf71d3e02"
+    },
+    {
+      "key": "718",
+      "digest": "a813780b792ff0730858246bc7e3659f21d68708055e3bb9ceea857836521e1e"
+    },
+    {
+      "key": "719",
+      "digest": "3c350b1b742138cc3e1ca9e6d191d5917f1d5409f94290117704866721d19751"
+    },
+    {
+      "key": "720",
+      "digest": "e6fc06815712f3b74388ee158d04968e444204ee12235e6aec8ae905c86df774"
     },
     {
       "key": "74",
@@ -898,6 +1038,10 @@
       "digest": "da34f792299274a5d34168fb5e7200e62635326fafa360b99b762061ad890c2d"
     },
     {
+      "key": "941",
+      "digest": "ea633a41b3b1ba2422cac36e3ae27a113aa614aa5e9c039439153dfc2b065bea"
+    },
+    {
       "key": "964",
       "digest": "dd41ed39f19921b3b746b20431f79c74fa20956c3209aba7131334a3cf48b27c"
     },
@@ -922,5 +1066,5 @@
       "digest": "bae9b4ec23cb56e43981e2edb815df77c7f64d6fc06238fdf7203ea7b6f1037b"
     }
   ],
-  "corpusDigest": "0723a08e93cce509b9b7b8c47e20b9fbcece933026b9762d19cf050636200d73"
+  "corpusDigest": "61bbb5afea6ab52b32dccdb91bfc6b88e28fe20399c64026d5cd5dd7f91c58a3"
 }
