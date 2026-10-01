@@ -141,6 +141,10 @@ describe("scripted fight scenarios from chat", () => {
     const client = await startScenario("idols");
     expect(opened.match(/"srcType":4/g)).toHaveLength(3);
     expect(opened).toContain('"mpCost":12');
+    // A quest fight has no way to anger a mob: no aggro button in the spell list.
+    expect(opened).not.toContain("Разозлить");
+    // ...and no mob of it carries the flag that makes the client draw the anger button.
+    expect(opened).not.toContain('"aggressive":true');
     const idol = /"artikulId":305[\s\S]*?"srcId":(\d+),"srcType":4/.exec(opened);
     if (!idol?.[1]) throw new Error("Idol 305 is not in the fight spell list");
     await client.fight({ rc: "castSpell", srcType: 4, srcId: Number(idol[1]), targetId: 1, sq: 4 });
@@ -148,6 +152,7 @@ describe("scripted fight scenarios from chat", () => {
     expect(cast).toContain('"et":"mpChange"');
     expect(cast).toContain('"delta":-12');
     expect(cast).toContain("Фантом Грызла");
+    expect(cast).not.toContain('"aggressive":true');
     expect(cast).toContain('"artikulId":305,"count":1');
     // The phantom (id 1000002) takes the second mob across from it and fights it on its own (its dealt damage grows).
     const seen: string[] = [];

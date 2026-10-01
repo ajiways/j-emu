@@ -26,6 +26,7 @@ const bot = {
   body: "",
   team: 2 as const,
   dealtDamage: 0,
+  aggressive: true,
 };
 
 describe("huntFightBootstrapEvents", () => {

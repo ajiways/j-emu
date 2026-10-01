@@ -57,6 +57,7 @@ describe("Battle", () => {
           body: "",
           team: 2,
           dealtDamage: 0,
+          aggressive: true,
         },
         rosterBots: [
           {
@@ -71,6 +72,7 @@ describe("Battle", () => {
             body: "",
             team: 2,
             dealtDamage: 0,
+            aggressive: true,
           },
         ],
         cp: 0,

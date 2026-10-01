@@ -2,7 +2,7 @@ import type { BotSnap } from "../../combat/domain/battle-event.ts";
 
 export function huntOppNewEvent(bot: BotSnap): Readonly<Record<string, unknown>> {
   return {
-    aggressive: true,
+    aggressive: bot.aggressive,
     artikulId: bot.artikulId,
     avatar: bot.avatar,
     body: bot.body,

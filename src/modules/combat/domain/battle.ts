@@ -88,6 +88,9 @@ export class Battle {
       this.roster.add(participant);
     }
     this.duels.push(...seed.duels);
+    for (const bot of this.bots) {
+      bot.angerable = fightRules.canAggro && bot.team === fightRules.teamAssignment.enemyTeam;
+    }
   }
 
   get accountId(): number {
@@ -255,7 +258,10 @@ export class Battle {
       accountId,
       targetId,
       allocateBotId,
-      addBot: (bot) => this.roster.add(bot),
+      addBot: (bot) => {
+        bot.angerable = true;
+        this.roster.add(bot);
+      },
     });
   }
 

@@ -29,6 +29,8 @@ export class BotFighter extends Participant {
   readonly brain: BotBrain;
   /** Called into the fight by a summon (an idol): nobody may anger it into a clone. */
   summoned = false;
+  /** Set by the fight: an enemy mob of a fight where angering is allowed. */
+  angerable = false;
 
   constructor(
     readonly fightId: number,
@@ -136,6 +138,7 @@ export class BotFighter extends Participant {
       body: this.body,
       team: this.team,
       dealtDamage: this.dealtDamage,
+      aggressive: this.angerable && !this.summoned,
     };
   }
 }

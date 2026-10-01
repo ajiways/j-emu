@@ -14,5 +14,6 @@ export function botSnapOf(bot: BotFighter, hp: number, enemyTeam: 1 | 2): BotSna
     body: bot.body,
     team: enemyTeam,
     dealtDamage: 0,
+    aggressive: bot.angerable && !bot.summoned,
   };
 }

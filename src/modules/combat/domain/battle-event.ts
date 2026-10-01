@@ -21,6 +21,8 @@ export type BotSnap = Readonly<{
   body: string;
   team: 1 | 2;
   dealtDamage: number;
+  /** Whether the client offers to anger this mob (an enemy of a fight that allows it). */
+  aggressive: boolean;
 }>;
 
 export type BattleEvent =

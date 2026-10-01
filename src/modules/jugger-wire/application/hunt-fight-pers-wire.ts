@@ -48,7 +48,7 @@ export function huntHumanPersFields(human: HumanSnap): Readonly<Record<string, u
 
 function huntBotPersFields(bot: BotSnap): Readonly<Record<string, unknown>> {
   return {
-    aggressive: true,
+    aggressive: bot.aggressive,
     artikulId: bot.artikulId,
     avatar: bot.avatar,
     berserk: 0,
