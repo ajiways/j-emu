@@ -7,25 +7,30 @@ import { pocketSpellWireFlags } from "../../combat/domain/pocket-spell-wire-flag
 import { huntNativePersSpells } from "./hunt-native-pers-spells.ts";
 
 const IDOL_WIRE_FLAGS = "48";
+const MELEE_STRIKES = 3;
 
 export function huntPersSpellsEvent(
   loadout: CombatLoadout,
   aggroCount: number,
 ): Readonly<Record<string, unknown>> {
   const native = huntNativePersSpells(aggroCount);
-  const extras = [
+  const melee = Object.keys(native)
+    .filter((key) => key !== "et")
+    .sort((left, right) => Number(left) - Number(right))
+    .map((key) => native[key]);
+  // The live order: the three strikes, the pocket, the idols, then rage, back strike, aggro, glove.
+  const ordered = [
+    ...melee.slice(0, MELEE_STRIKES),
     ...pocketSpells(loadout.pocket),
     ...idolSpells(loadout.idols),
+    ...melee.slice(MELEE_STRIKES),
     ...gloveSpells(loadout),
   ];
-  if (extras.length === 0) return native;
-  const merged: Record<string, unknown> = { ...native };
-  let index = Object.keys(native).filter((key) => key !== "et").length;
-  for (const spell of extras) {
-    index += 1;
-    merged[String(index)] = spell;
-  }
-  return merged;
+  const event: Record<string, unknown> = { et: "persSpells" };
+  ordered.forEach((spell, index) => {
+    event[String(index + 1)] = spell;
+  });
+  return event;
 }
 
 function pocketSpells(
