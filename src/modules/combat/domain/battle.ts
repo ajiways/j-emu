@@ -73,6 +73,8 @@ export class Battle {
     private readonly rules: BattleRules,
     readonly fightRules: FightRules,
     private readonly random: RandomSource,
+    /** Rolls who strikes first in the duel that opens the fight (the same source in play). */
+    openingRandom: RandomSource,
   ) {
     FightRules.require(fightRules);
     this.id = setup.meta.fightId;
@@ -86,7 +88,7 @@ export class Battle {
     this.meleeBotCounterMs = rules.meleeBotCounterMs;
     this.turnGrantDelayMs = rules.turnGrantDelayMs;
     this.resultRevealDelayMs = rules.resultRevealDelayMs;
-    const seed = seedBattleParticipants(setup, rules, fightRules);
+    const seed = seedBattleParticipants(setup, rules, fightRules, openingRandom);
     for (const participant of [...seed.humans, ...requireFightBots(seed.bots)]) {
       this.roster.add(participant);
     }

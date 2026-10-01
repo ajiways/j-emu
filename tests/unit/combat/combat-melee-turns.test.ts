@@ -49,6 +49,28 @@ describe("CombatService melee turns", () => {
     expect(grant).toEqual([{ type: "turn-granted", timeoutSeconds: 20 }]);
   });
 
+  it("starts a mob that wins the opening roll once the hunter is in, and grants the hunter after it", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat, delay } = createCombatService({
+      clock,
+      random: new SequenceRandom([2]),
+      openingRandom: new SequenceRandom([0.01]),
+    });
+    await startHuntWithIssuedId(combat, unitHuntStart());
+    await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
+    const opened = await combat.execute(1, { kind: "poll" });
+    expect(opened.some((event) => event.type === "turn-granted")).toBe(false);
+    clock.advanceMs(1400);
+    await delay.fireDue(clock.now());
+    const bot = await combat.execute(1, { kind: "poll" });
+    expect(bot[0]).toMatchObject({ type: "damage", sourceId: 1_000_000 });
+    clock.advanceMs(1100);
+    await delay.fireDue(clock.now());
+    expect(await combat.execute(1, { kind: "poll" })).toEqual([
+      { type: "turn-granted", timeoutSeconds: 20 },
+    ]);
+  });
+
   it("skips an AFK hunt turn with attacktimeout then bot melee", async () => {
     const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const { combat, delay } = createCombatService({

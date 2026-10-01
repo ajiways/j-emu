@@ -13,15 +13,22 @@ type AiDuelState = Readonly<{
   random: RandomSource;
 }>;
 
-/** An AI participant whose turn it is in a duel where no player stands on either side. */
+/** An AI participant whose turn it is and whom no click will move: it has to be started. */
 export type AiDuelTurn = Readonly<{ botId: number; token: string }>;
 
-/** Whose turn it is in every duel of two AI participants: nobody's click moves those. */
+/**
+ * Whose turn it is in every duel that waits for an AI participant to act: a duel of two of them
+ * (nobody's click moves those) and one where a mob opens against a player who is already in the
+ * fight (the player moves after it).
+ */
 export function aiOnlyDuelTurns(state: AiDuelState): readonly AiDuelTurn[] {
   if (state.finished) return [];
   const live = (id: number) => state.roster.bots.some((bot) => bot.fightId === id && bot.alive);
+  const present = (id: number) =>
+    live(id) ||
+    state.roster.humans.some((human) => human.heroId === id && human.authed && human.alive);
   return state.duels
-    .filter((duel) => live(duel.aId) && live(duel.bId) && live(duel.nextActorId))
+    .filter((duel) => present(duel.aId) && present(duel.bId) && live(duel.nextActorId))
     .map((duel) => ({
       botId: duel.nextActorId,
       token: fightDuelDelayToken(state.fightId, duel),

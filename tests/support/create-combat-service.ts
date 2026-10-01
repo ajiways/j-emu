@@ -11,6 +11,7 @@ import { MutableClock } from "./fakes/mutable-clock.ts";
 import { RecordingFinishedFightStore } from "./fakes/recording-finished-fight-store.ts";
 import { RecordingCombatDiagnostics } from "./fakes/recording-combat-diagnostics.ts";
 import { RecordingHistoryWriteObserver } from "./fakes/recording-history-write-observer.ts";
+import { FixedRandom } from "./fakes/fixed-random.ts";
 import { SequenceRandom } from "./fakes/sequence-random.ts";
 import type { RandomSource } from "../../src/modules/combat/domain/random-source.ts";
 import type { FinishedFightStore } from "../../src/modules/combat/ports/finished-fight-store.ts";
@@ -23,6 +24,8 @@ export function battleRules(overrides: Partial<BattleRules> = {}): BattleRules {
 
 export function createCombatService(input: {
   random?: RandomSource;
+  /** The roll of who strikes first in the opening duel; the hunter strikes first by default. */
+  openingRandom?: RandomSource;
   rules?: BattleRules;
   clock?: Clock;
   delay?: ManualCombatDelay;
@@ -54,6 +57,8 @@ export function createCombatService(input: {
     delay,
     input.attackPolicy ?? new AllowPlayerAttackPolicy(),
     diagnostics,
+    undefined,
+    input.openingRandom ?? new FixedRandom(),
   );
   combat.bindHistoryList(new FinishedFightList(history, clock));
   return { combat, clock, delay, history, writes, diagnostics };

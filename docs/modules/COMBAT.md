@@ -642,9 +642,15 @@ HP без сброса. Shuffle отменяет delay token **только за
 новой пары — без второго bot-counter сразу после смены. Чужие пары
 свой bot-counter/grant сохраняют.
 
-Новая пара из `tryPairQueues` — `rollOpensFirst` (LUCK, `INITIATIVE_SOFT_C=80`,
-`legacy behavior`). Стартовая opener↔spawn-bot пара открывает opener.
-Инициатива моба — его `LUCK` из бестиария/оверлея (`BotDefinition.initiative`, колонка `catalog.bots.initiative`); у фантома идола — LUCK предмета (у «до N маны» 0). Моб без LUCK — `0`. Формула `rollOpensFirst` вероятностная: вес `ini/(ini+80)`, но при `0` вес нулевой, и любой ненулевой LUCK выигрывает всегда. Delay token
+Новая пара из `tryPairQueues` и открывающая бой дуэль (герой↔первый моб, дуэль двух людей) —
+`rollOpensFirst` по инициативе (LUCK): шанс первого удара `(A + C) / (A + B + 2C)`, `C=80`
+(`INITIATIVE_SOFT_C`, legacy; живая формула неизвестна). Больший LUCK бьёт первым чаще, но не
+всегда, и у нуля против сильного тоже есть шанс. Инициатива моба — его `LUCK` из
+бестиария/оверлея (`BotDefinition.initiative`, `catalog.bots.initiative`); у фантома идола — LUCK
+предмета (у «до N маны» 0). Если открывает моб, герой ждёт, а ход моба стартует после входа игрока
+(`aiOnlyDuelTurns`). Открывающий бросок идёт через отдельный `openingRandom` (в проде тот же
+источник; в тестах `FixedRandom`: открывает герой). Дуэли союзников-мобов из квестового ростера
+открывают союзники без броска. Delay token
 `${fightId}:{min}:{max}`.
 
 Не в срезе: dodge/crit (CMB-14), magic kinds (CMB-15), BG JOIN, assault/`FightRules`.
@@ -813,12 +819,15 @@ ADR-0017–0020 достаточны для этого среза. «Не выд
 ## HERO-01 — PvP honor snapshot
 
 Combat не считает героизм и не пишет `heroes.honor`. На terminal PvP
-(`purpose:"pvp"`) snapshot отдаёт 1v1 humans: `level`, `maxHp`,
-applied урон по вражескому человеку (`damageToHumans`: хилы раздувают
+(`purpose:"pvp"`) snapshot отдаёт humans: `level`, `maxHp`,
+applied урон по вражеским людям (`damageToHumans` и по жертвам `damageByVictim`: хилы раздувают
 сумму; кредит как jgr-emu `applied`, не `damageToBot`), `winnerTeam`.
 Все human-hits (melee + glove ending) идут через
-`applyDamageToMeleeTarget`. Не ровно 2 humans — throw в composition.
-Hunt/quest/friendly не грантят героизм; `fight|loot.honor` остаётся 0.
+`applyDamageToMeleeTarget`.
+Героизм считается по урону **по игрокам** (урон по мобам и фантомам не входит), отдельно по каждой
+жертве: `round(Σ Base(ур. жертвы) × урон_жертве / hpMax_жертвы × (1.4 победа | 0.8 поражение))`.
+Это работает в любом PvP-бою с любым числом участников (`damageByVictim` в снимке исхода).
+Бонус за добивание игрока не реализован (нет подтверждённых цифр). Hunt/quest/friendly не грантят героизм; `fight|loot.honor` остаётся 0.
 HTML `fight|info.users[].honor` — leftover INFO. Product-status —
 [CAPABILITIES.md](../CAPABILITIES.md).
 

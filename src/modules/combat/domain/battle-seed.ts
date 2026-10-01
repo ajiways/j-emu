@@ -13,7 +13,10 @@ import {
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { pairLeftoverRosterBots } from "./pair-leftover-roster-bots.ts";
+import type { Participant } from "./participant.ts";
+import type { RandomSource } from "./random-source.ts";
 import { requireFightSetup } from "./require-fight-setup.ts";
+import { rollOpensFirst } from "./roll-opens-first.ts";
 
 export type BattleSeed = Readonly<{
   bots: readonly BotFighter[];
@@ -26,6 +29,7 @@ export function seedBattleParticipants(
   setup: FightSetup,
   rules: BattleRules,
   fightRules: FightRules,
+  random: RandomSource,
 ): BattleSeed {
   requireFightSetup(setup, rules, fightRules);
   const effectIds = new FightEffectIds();
@@ -46,7 +50,13 @@ export function seedBattleParticipants(
       bots: [],
       pairedAccountId: opener.accountId,
       humans,
-      duels: [new FightDuel(opener.heroId, enemy.heroId, opener.heroId)],
+      duels: [
+        rolledOpening(new FightDuel(opener.heroId, enemy.heroId, opener.heroId), {
+          members: humans,
+          enemyTeam,
+          random,
+        }),
+      ],
     };
   }
   const enemyAis = fightSetupTeamAis(setup, enemyTeam);
@@ -69,7 +79,13 @@ export function seedBattleParticipants(
     duels: [
       ...(fightRules.openerWaits
         ? []
-        : [new FightDuel(opener.heroId, primary.fightId, opener.heroId)]),
+        : [
+            rolledOpening(new FightDuel(opener.heroId, primary.fightId, opener.heroId), {
+              members: [...humans, ...bots],
+              enemyTeam,
+              random,
+            }),
+          ]),
       ...pairLeftoverRosterBots(bots, fightRules.teamAssignment),
     ],
   };
@@ -79,4 +95,29 @@ function requireTeamHuman(setup: FightSetup, team: 1 | 2, label: string) {
   const human = fightSetupTeamHumans(setup, team)[0];
   if (!human) throw new Error(`${label} is missing`);
   return human;
+}
+
+/**
+ * The first strike of a duel that opens the fight is rolled on the initiative of both sides, as
+ * every later pair is. The enemy is the first side of the roll, so an even roll goes to the opener.
+ */
+function rolledOpening(
+  duel: FightDuel,
+  input: Readonly<{ members: readonly Participant[]; enemyTeam: 1 | 2; random: RandomSource }>,
+): FightDuel {
+  const sides = [duel.aId, duel.bId].map((id) => {
+    const member = input.members.find((entry) => entry.id === id);
+    if (!member) throw new Error(`Opening duel side ${id} is not in the fight`);
+    return member;
+  });
+  const enemy = sides.find((side) => side.team === input.enemyTeam);
+  const opener = sides.find((side) => side.team !== input.enemyTeam);
+  if (!enemy || !opener) throw new Error("The opening duel needs one side of each team");
+  const enemyFirst = rollOpensFirst(
+    enemy.currentInitiative,
+    opener.currentInitiative,
+    input.random,
+  );
+  duel.setNextActor(enemyFirst ? enemy.id : opener.id);
+  return duel;
 }

@@ -1,3 +1,4 @@
+import { FixedRandom } from "../../support/fakes/fixed-random.ts";
 import { RecordingCombatDiagnostics } from "../../support/fakes/recording-combat-diagnostics.ts";
 import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
 import net from "node:net";
@@ -35,6 +36,8 @@ describe("FightTcpServer", () => {
       new ManualCombatDelay(),
       new AllowPlayerAttackPolicy(),
       new RecordingCombatDiagnostics(),
+      undefined,
+      new FixedRandom(),
     );
     const started = await startHuntWithIssuedId(combat, unitHuntStart());
     const longPoll = new LongPollCoordinator();

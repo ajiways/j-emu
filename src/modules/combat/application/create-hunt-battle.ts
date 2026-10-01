@@ -16,6 +16,7 @@ export function createHuntBattle(
   testBotStrength: number | undefined,
   rules: BattleRules,
   random: RandomSource,
+  openingRandom: RandomSource,
 ): Battle {
   const fightRules = drilledRules(huntFightRules(input), input);
   if (!fightRules.allowsSideBots && (input.extraEnemies.length > 0 || input.allies.length > 0)) {
@@ -45,6 +46,7 @@ export function createHuntBattle(
     rules,
     fightRules,
     random,
+    openingRandom,
   );
 }
 

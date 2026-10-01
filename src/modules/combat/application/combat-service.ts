@@ -1,4 +1,5 @@
 import { PendingConsumes } from "./pending-consumes.ts";
+import { requireFightId } from "./require-fight-id.ts";
 import { randomBytes } from "node:crypto";
 import type { Clock } from "../../../shared/kernel/clock.ts";
 import { requirePresent } from "../../../shared/kernel/require-present.ts";
@@ -78,6 +79,8 @@ export class CombatService implements CombatPort {
     private readonly attackPolicy: PlayerAttackPolicy,
     private readonly diagnostics: CombatDiagnostics,
     private readonly testBotStrength?: number,
+    /** Rolls the first strike of the opening duel; the combat random itself when not given. */
+    private readonly openingRandom?: RandomSource,
   ) {
     this.scheduler = new FightScheduler(delay, clock);
     this.melee = new CombatMeleeLoop(
@@ -179,6 +182,7 @@ export class CombatService implements CombatPort {
       this.testBotStrength,
       this.rules,
       this.random,
+      this.openingRandom ?? this.random,
     );
     this.byAccount.set(input.accountId, battle);
     this.battleByFight.set(fightId, battle);
@@ -373,6 +377,7 @@ export class CombatService implements CombatPort {
       battleByFight: this.battleByFight,
       rules: this.rules,
       random: this.random,
+      openingRandom: this.openingRandom ?? this.random,
       now: this.scheduler.now(),
       diagnostics: this.diagnostics,
       requireFightId,
@@ -391,8 +396,4 @@ export class CombatService implements CombatPort {
   private wakeAccount(accountId: number): void {
     this.wakePort?.wake(accountId);
   }
-}
-
-function requireFightId(fightId: string): string {
-  return String(requireWireIdentity(Number(parseDecimalId(fightId, "fight id")), "fight id"));
 }

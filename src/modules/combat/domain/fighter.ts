@@ -29,6 +29,6 @@ export interface Fighter {
   /** Who dealt the blow that dropped this fighter to 0 hp; `null` while he stands. */
   readonly killedBy: number | null;
   markKilledBy(killerId: number): void;
-  /** Books damage this fighter dealt to a target of the given kind. */
-  creditDealt(amount: number, targetKind: FighterKind): void;
+  /** Books damage this fighter dealt to a target; a human target is booked by his id. */
+  creditDealt(amount: number, target: Readonly<{ id: number; fighterKind: FighterKind }>): void;
 }

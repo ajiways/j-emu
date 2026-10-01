@@ -1,3 +1,4 @@
+import { FixedRandom } from "../../support/fakes/fixed-random.ts";
 import { describe, expect, it } from "vitest";
 import { FightEffectIds } from "../../../src/modules/combat/domain/fight-effect-ids.ts";
 import { BotFighter } from "../../../src/modules/combat/domain/bot-fighter.ts";
@@ -26,6 +27,7 @@ describe("fight bots on Battle", () => {
       unitDuelFightSetup(),
       UNIT_BATTLE_RULES,
       FightRules.forFriendlyDuel(),
+      new FixedRandom(),
     );
     expect(seed.bots).toEqual([]);
     expect("huntRoster" in seed).toBe(false);
@@ -36,7 +38,12 @@ describe("fight bots on Battle", () => {
 
   it("seeds hunt bots onto the same Battle as humans", () => {
     const setup = unitHuntFightSetup();
-    const seed = seedBattleParticipants(setup, UNIT_BATTLE_RULES, FightRules.forHunt(null));
+    const seed = seedBattleParticipants(
+      setup,
+      UNIT_BATTLE_RULES,
+      FightRules.forHunt(null),
+      new FixedRandom(),
+    );
     expect(seed.bots.map((bot) => bot.fightId)).toEqual([1_000_000]);
     const battle = createUnitBattle(setup, new SequenceRandom([8]));
     expect(battle.bots.map((bot) => bot.fightId)).toEqual([1_000_000]);

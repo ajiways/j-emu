@@ -17,6 +17,7 @@ export function startHumanDuelBattle(
     battleByFight: Map<string, Battle>;
     rules: BattleRules;
     random: RandomSource;
+    openingRandom: RandomSource;
     now: Date;
     diagnostics: CombatDiagnostics;
     requireFightId: (fightId: string) => string;
@@ -37,6 +38,7 @@ export function startHumanDuelBattle(
     deps.rules,
     fightRules,
     deps.random,
+    deps.openingRandom,
   );
   deps.byAccount.set(input.challenger.accountId, battle);
   deps.byAccount.set(input.acceptor.accountId, battle);

@@ -1,3 +1,4 @@
+import { FixedRandom } from "./fakes/fixed-random.ts";
 import { Battle } from "../../src/modules/combat/domain/battle.ts";
 import { FightRules } from "../../src/modules/combat/domain/fight-rules.ts";
 import { fightSetupAis, type FightSetup } from "../../src/modules/combat/domain/fight-setup.ts";
@@ -19,5 +20,5 @@ function fightRulesForSetup(setup: FightSetup): FightRules {
 }
 
 export function createUnitBattle(setup: FightSetup, random: RandomSource): Battle {
-  return new Battle(setup, UNIT_BATTLE_RULES, fightRulesForSetup(setup), random);
+  return new Battle(setup, UNIT_BATTLE_RULES, fightRulesForSetup(setup), random, new FixedRandom());
 }

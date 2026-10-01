@@ -1,3 +1,4 @@
+import { FixedRandom } from "../../support/fakes/fixed-random.ts";
 import { RecordingCombatDiagnostics } from "../../support/fakes/recording-combat-diagnostics.ts";
 import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
 import { describe, expect, it } from "vitest";
@@ -32,6 +33,8 @@ describe("FightTcpConnection", () => {
       new ManualCombatDelay(),
       new AllowPlayerAttackPolicy(),
       new RecordingCombatDiagnostics(),
+      undefined,
+      new FixedRandom(),
     );
     const started = await startHuntWithIssuedId(combat, unitHuntStart());
     const commands = FproxyCommandRegistry.fromMeleeSourceIds({ left: 1, center: 2, right: 3 });

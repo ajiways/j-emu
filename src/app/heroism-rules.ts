@@ -13,6 +13,48 @@ export const HEROISM_RULES: HeroismRules = {
   loseMultiplier: 0.8,
 };
 
+export type HonorVictim = Readonly<{
+  dmgToVictim: number;
+  victimLevel: number;
+  victimHpMax: number;
+}>;
+
+/** Heroism of one fighter for a fight: the damage he dealt to each human, rated per victim. */
+export function rawHonorFromVictims(
+  victims: readonly HonorVictim[],
+  won: boolean,
+  rules: HeroismRules,
+): number {
+  if (rules.baseByLevel.length !== 35) {
+    throw new Error("HeroismRules.baseByLevel must have 35 entries for levels 1..35");
+  }
+  if (rules.winMultiplier !== 1.4) throw new Error("HeroismRules.winMultiplier must be 1.4");
+  if (rules.loseMultiplier !== 0.8) throw new Error("HeroismRules.loseMultiplier must be 0.8");
+  let sum = 0;
+  for (const victim of victims) {
+    if (
+      !Number.isInteger(victim.victimLevel) ||
+      victim.victimLevel < 1 ||
+      victim.victimLevel > rules.baseByLevel.length
+    ) {
+      throw new Error(`Heroism victim level ${victim.victimLevel} is outside 1..35`);
+    }
+    if (!Number.isInteger(victim.victimHpMax) || victim.victimHpMax < 1) {
+      throw new Error("Heroism victim maxHp must be a positive integer");
+    }
+    if (!Number.isInteger(victim.dmgToVictim) || victim.dmgToVictim < 0) {
+      throw new Error("Heroism damage must be a non-negative integer");
+    }
+    const base = rules.baseByLevel[victim.victimLevel - 1];
+    if (base === undefined) {
+      throw new Error(`Heroism base for level ${victim.victimLevel} is missing`);
+    }
+    sum += (base * victim.dmgToVictim) / victim.victimHpMax;
+  }
+  return Math.round(sum * (won ? rules.winMultiplier : rules.loseMultiplier));
+}
+
+/** One victim: the same as `rawHonorFromVictims` with a single entry. */
 export function rawHonorFromDamage(
   opts: Readonly<{
     dmgToVictim: number;
@@ -22,28 +64,5 @@ export function rawHonorFromDamage(
   }>,
   rules: HeroismRules,
 ): number {
-  if (rules.baseByLevel.length !== 35) {
-    throw new Error("HeroismRules.baseByLevel must have 35 entries for levels 1..35");
-  }
-  if (rules.winMultiplier !== 1.4) throw new Error("HeroismRules.winMultiplier must be 1.4");
-  if (rules.loseMultiplier !== 0.8) throw new Error("HeroismRules.loseMultiplier must be 0.8");
-  if (
-    !Number.isInteger(opts.victimLevel) ||
-    opts.victimLevel < 1 ||
-    opts.victimLevel > rules.baseByLevel.length
-  ) {
-    throw new Error(`Heroism victim level ${opts.victimLevel} is outside 1..35`);
-  }
-  if (!Number.isInteger(opts.victimHpMax) || opts.victimHpMax < 1) {
-    throw new Error("Heroism victim maxHp must be a positive integer");
-  }
-  if (!Number.isInteger(opts.dmgToVictim) || opts.dmgToVictim < 0) {
-    throw new Error("Heroism damage must be a non-negative integer");
-  }
-  const base = rules.baseByLevel[opts.victimLevel - 1];
-  if (base === undefined) {
-    throw new Error(`Heroism base for level ${opts.victimLevel} is missing`);
-  }
-  const mult = opts.won ? rules.winMultiplier : rules.loseMultiplier;
-  return Math.round((base * opts.dmgToVictim * mult) / opts.victimHpMax);
+  return rawHonorFromVictims([opts], opts.won, rules);
 }

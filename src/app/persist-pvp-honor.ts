@@ -6,7 +6,7 @@ import type { Catalog } from "../modules/catalog/ports/catalog.ts";
 import type { Hero } from "../modules/character/domain/hero.ts";
 import type { CharacterProgression } from "../modules/character/ports/character-progression.ts";
 import type { PvpFightOutcomeSnapshot } from "../modules/combat/domain/fight-outcome-snapshot.ts";
-import { rawHonorFromDamage, type HeroismRules } from "./heroism-rules.ts";
+import { rawHonorFromVictims, type HeroismRules } from "./heroism-rules.ts";
 import type { FightProgressUp } from "./fight-progress-log.ts";
 import type { PvpHonorShare } from "./pvp-fight-honor-cache.ts";
 
@@ -21,26 +21,19 @@ export async function persistPvpHonor(input: {
   catalog: Pick<Catalog, "commonConf">;
   rules: HeroismRules;
 }): Promise<Readonly<{ shares: readonly PvpHonorShare[]; rankUps: readonly FightProgressUp[] }>> {
-  if (input.outcome.humans.length !== 2) {
-    throw new Error(`PvP snapshot ${input.outcome.fightId} must have exactly 2 humans`);
-  }
   const ranks = honorRankCatalogFromConf(await input.catalog.commonConf());
   const shares: PvpHonorShare[] = [];
   const rankUps: FightProgressUp[] = [];
   for (const human of input.outcome.humans) {
-    const victim = input.outcome.humans.find((row) => row.characterId !== human.characterId);
-    if (!victim) {
-      throw new Error(`PvP snapshot ${input.outcome.fightId} is missing the opposing human`);
-    }
-    const raw = rawHonorFromDamage(
-      {
-        dmgToVictim: human.damageToHumans,
-        victimLevel: victim.level,
-        victimHpMax: victim.maxHp,
-        won: human.team === input.outcome.winnerTeam,
-      },
-      input.rules,
-    );
+    // Only the damage dealt to human enemies counts: mobs and phantoms are not in the ledger.
+    const victims = human.damageByVictim.map((dealt) => {
+      const victim = input.outcome.humans.find((row) => row.characterId === dealt.victimId);
+      if (!victim) {
+        throw new Error(`PvP snapshot ${input.outcome.fightId} has no victim ${dealt.victimId}`);
+      }
+      return { dmgToVictim: dealt.damage, victimLevel: victim.level, victimHpMax: victim.maxHp };
+    });
+    const raw = rawHonorFromVictims(victims, human.team === input.outcome.winnerTeam, input.rules);
     let rank: string;
     if (raw > 0) {
       const granted = await input.characters.grantHonor({

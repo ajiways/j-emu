@@ -1,3 +1,4 @@
+import { FixedRandom } from "../../support/fakes/fixed-random.ts";
 import { describe, expect, it } from "vitest";
 import { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
@@ -105,6 +106,7 @@ describe("FightSetup", () => {
           UNIT_BATTLE_RULES,
           FightRules.forPvp(),
           random(),
+          new FixedRandom(),
         ),
     ).toThrow(/PvP fight copy is required/);
     expect(() => createUnitBattle(unitDuelFightSetup({ fightFlags: "8" }), random())).toThrow(

@@ -359,6 +359,7 @@ describe("HuntFightSettlement", () => {
           level: 7,
           maxHp: 111,
           damageToHumans: 350,
+          damageByVictim: [{ victimId: 2, damage: 350 }],
         },
         {
           ...human(11, 2, 0, 0),
@@ -366,6 +367,7 @@ describe("HuntFightSettlement", () => {
           level: 6,
           maxHp: 108,
           damageToHumans: 222,
+          damageByVictim: [{ victimId: 1, damage: 222 }],
         },
       ],
     };
@@ -417,6 +419,7 @@ function human(
     mp: 10,
     damageToBot,
     damageToHumans: 0,
+    damageByVictim: [],
     leftLive: false,
     pocket: [],
   };

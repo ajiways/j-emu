@@ -1,3 +1,4 @@
+import { FixedRandom } from "../../support/fakes/fixed-random.ts";
 import { describe, expect, it } from "vitest";
 import { Battle } from "../../../src/modules/combat/domain/battle.ts";
 import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
@@ -21,7 +22,14 @@ describe("FightRules", () => {
 
   it("fails fast on a missing rule, unknown kind, and unknown version", () => {
     expect(
-      () => new Battle(unitHuntFightSetup(), UNIT_BATTLE_RULES, undefined as never, random()),
+      () =>
+        new Battle(
+          unitHuntFightSetup(),
+          UNIT_BATTLE_RULES,
+          undefined as never,
+          random(),
+          new FixedRandom(),
+        ),
     ).toThrow(/FightRules is required/);
     expect(() => FightRules.for({ kind: "arena" } as never)).toThrow(/Unknown fight kind: arena/);
     expect(() => FightRules.create({ ...FightRules.forHunt(null), version: 2 } as never)).toThrow(

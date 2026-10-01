@@ -40,6 +40,7 @@ export class CombatModule {
     clock: Clock;
     delay: CombatDelay;
     random?: RandomSource;
+    openingRandom?: RandomSource;
     playerAttackPolicy: PlayerAttackPolicy;
     testBotStrength?: number;
   }): CombatModule {
@@ -64,6 +65,7 @@ export class CombatModule {
         process.stderr.write(`${JSON.stringify(entry)}\n`);
       }),
       input.testBotStrength,
+      input.openingRandom,
     );
     runtime.bindHistoryList(new FinishedFightList(history, clock));
     return new CombatModule(

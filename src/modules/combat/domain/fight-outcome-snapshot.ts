@@ -16,6 +16,8 @@ export type FightHumanOutcome = Readonly<{
   mp: number;
   damageToBot: number;
   damageToHumans: number;
+  /** The same damage split by the human who took it (heroism is rated per victim). */
+  damageByVictim: readonly Readonly<{ victimId: number; damage: number }>[];
   leftLive: boolean;
   pocket: readonly PocketCellSnapshot[];
 }>;

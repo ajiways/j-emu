@@ -1,3 +1,4 @@
+import { FixedRandom } from "../fakes/fixed-random.ts";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -29,6 +30,7 @@ export class ApplicationHarness {
   private readonly extras: Readonly<{
     lootRandom?: RandomSource;
     combatRandom?: RandomSource;
+    combatOpeningRandom?: RandomSource;
     partyRandom?: RandomSource;
     upgradeRandom?: RandomSource;
     combatRules?: Partial<BattleRules>;
@@ -44,6 +46,7 @@ export class ApplicationHarness {
     extras: Readonly<{
       lootRandom?: RandomSource;
       combatRandom?: RandomSource;
+      combatOpeningRandom?: RandomSource;
       partyRandom?: RandomSource;
       upgradeRandom?: RandomSource;
       combatRules?: Partial<BattleRules>;
@@ -55,7 +58,12 @@ export class ApplicationHarness {
   ) {
     this.clock = clock ?? new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     this.delay = delay;
-    this.extras = { playerAttackPolicy: new AllowPlayerAttackPolicy(), ...extras };
+    this.extras = {
+      playerAttackPolicy: new AllowPlayerAttackPolicy(),
+      // The hunter strikes first unless a test rolls the opening itself.
+      combatOpeningRandom: new FixedRandom(),
+      ...extras,
+    };
   }
 
   /** Fight proxy port of this worker, so parallel e2e workers do not collide. */

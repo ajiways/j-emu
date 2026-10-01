@@ -1,3 +1,4 @@
+import { FixedRandom } from "../../support/fakes/fixed-random.ts";
 import { RecordingCombatDiagnostics } from "../../support/fakes/recording-combat-diagnostics.ts";
 import { AllowPlayerAttackPolicy } from "../../support/fakes/allow-player-attack-policy.ts";
 import { describe, expect, it } from "vitest";
@@ -165,6 +166,8 @@ describe("CombatService history", () => {
       delay,
       new AllowPlayerAttackPolicy(),
       new RecordingCombatDiagnostics(),
+      undefined,
+      new FixedRandom(),
     );
     const start = await startHuntWithIssuedId(combat, huntInput({ heroStrength: 200 }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });
@@ -215,6 +218,8 @@ function service(
     delay,
     new AllowPlayerAttackPolicy(),
     new RecordingCombatDiagnostics(),
+    undefined,
+    new FixedRandom(),
   );
 }
 

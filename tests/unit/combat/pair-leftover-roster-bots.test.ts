@@ -1,3 +1,4 @@
+import { FixedRandom } from "../../support/fakes/fixed-random.ts";
 import { describe, expect, it } from "vitest";
 import { seedBattleParticipants } from "../../../src/modules/combat/domain/battle-seed.ts";
 import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
@@ -60,6 +61,7 @@ describe("quest leftover duels in Battle.duels", () => {
       setup,
       UNIT_BATTLE_RULES,
       FightRules.for({ kind: "quest", botCount: 3 }),
+      new FixedRandom(),
     );
     expect(seed.duels).toHaveLength(2);
     expect(seed.duels[0]?.has(1)).toBe(true);

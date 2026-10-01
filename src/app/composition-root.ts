@@ -56,6 +56,7 @@ export class CompositionRoot {
     extras: Readonly<{
       lootRandom?: RandomSource;
       combatRandom?: RandomSource;
+      combatOpeningRandom?: RandomSource;
       partyRandom?: RandomSource;
       upgradeRandom?: RandomSource;
       wanderRandom?: RandomSource;
@@ -124,6 +125,9 @@ export class CompositionRoot {
             ? new RadwayPlayerAttackPolicy()
             : extras.playerAttackPolicy,
         ...(extras.combatRandom === undefined ? {} : { random: extras.combatRandom }),
+        ...(extras.combatOpeningRandom === undefined
+          ? {}
+          : { openingRandom: extras.combatOpeningRandom }),
         ...(extras.combatBotStrength === undefined
           ? {}
           : { testBotStrength: extras.combatBotStrength }),

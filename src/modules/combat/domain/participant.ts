@@ -47,6 +47,7 @@ export abstract class Participant implements Fighter {
   private damageToBotValue = 0;
   private killedByValue: number | null = null;
   private damageToHumansValue = 0;
+  private readonly damageToHumanById = new Map<number, number>();
   private lastOpponentIdValue: number | null = null;
 
   protected constructor(protected readonly init: ParticipantInit) {
@@ -149,6 +150,10 @@ export abstract class Participant implements Fighter {
   get damageToBot(): number {
     return this.damageToBotValue;
   }
+  /** What this fighter dealt to each human, by the id of the one who took it. */
+  damageToHumansByVictim(): readonly Readonly<{ victimId: number; damage: number }>[] {
+    return [...this.damageToHumanById].map(([victimId, damage]) => ({ victimId, damage }));
+  }
   get damageToHumans(): number {
     return this.damageToHumansValue;
   }
@@ -200,12 +205,16 @@ export abstract class Participant implements Fighter {
     this.killedByValue = killerId;
   }
 
-  creditDealt(amount: number, targetKind: FighterKind): void {
+  creditDealt(amount: number, target: Readonly<{ id: number; fighterKind: FighterKind }>): void {
     if (!Number.isInteger(amount) || amount < 0) {
       throw new Error("Dealt damage must be a non-negative integer");
     }
-    if (targetKind === "bot") this.damageToBotValue += amount;
-    else this.damageToHumansValue += amount;
+    if (target.fighterKind === "bot") {
+      this.damageToBotValue += amount;
+      return;
+    }
+    this.damageToHumansValue += amount;
+    this.damageToHumanById.set(target.id, (this.damageToHumanById.get(target.id) ?? 0) + amount);
   }
 
   applyDamage(amount: number): boolean {

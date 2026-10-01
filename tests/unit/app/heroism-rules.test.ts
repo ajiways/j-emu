@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { HEROISM_RULES, rawHonorFromDamage } from "../../../src/app/heroism-rules.ts";
+import {
+  HEROISM_RULES,
+  rawHonorFromDamage,
+  rawHonorFromVictims,
+} from "../../../src/app/heroism-rules.ts";
 
 describe("rawHonorFromDamage", () => {
   it("matches dump pairs at hpMax 108/111 without level_penalty", () => {
@@ -57,5 +61,21 @@ describe("rawHonorFromDamage", () => {
         HEROISM_RULES,
       ),
     ).toThrow(/maxHp must be a positive integer/);
+  });
+});
+
+describe("rawHonorFromVictims", () => {
+  it("rates the damage per victim and rounds the sum once", () => {
+    const victims = [
+      { dmgToVictim: 108, victimLevel: 6, victimHpMax: 108 },
+      { dmgToVictim: 111, victimLevel: 7, victimHpMax: 111 },
+    ];
+    // (15 + 16) × 1.4 = 43.4; rounding each victim first would give 21 + 22 = 43.
+    expect(rawHonorFromVictims(victims, true, HEROISM_RULES)).toBe(43);
+    expect(rawHonorFromVictims(victims, false, HEROISM_RULES)).toBe(25);
+  });
+
+  it("is nothing without a human victim", () => {
+    expect(rawHonorFromVictims([], true, HEROISM_RULES)).toBe(0);
   });
 });
