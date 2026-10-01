@@ -14,5 +14,5 @@ const DENY_MESSAGES = {
   "pvp-only": "spell is only for PvP fights",
   mana: "not enough mana",
   target: "the spell cannot be cast on that target",
-  phantom: "a phantom has already been called in this fight",
+  phantom: "a phantom of that idol group has already been called in this fight",
 } as const;

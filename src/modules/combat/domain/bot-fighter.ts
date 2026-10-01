@@ -29,6 +29,8 @@ export class BotFighter extends Participant {
   readonly brain: BotBrain;
   /** Called into the fight by a summon (an idol): nobody may anger it into a clone. */
   summoned = false;
+  /** The group of the idol that called it, when the idol is limited to one phantom per group. */
+  summonedGroupId: number | null = null;
   /** Set by the fight: an enemy mob of a fight where angering is allowed. */
   angerable = false;
 

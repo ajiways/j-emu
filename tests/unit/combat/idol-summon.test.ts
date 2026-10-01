@@ -97,25 +97,30 @@ describe("idol summon", () => {
     expect(human.casts.idolRow(100_001)).not.toBeNull();
   });
 
-  it("calls only one phantom per fight, even from a stack of idols, and hides the idols after", () => {
-    const stack: CombatIdolRow = { ...idol(FIXED, PHANTOM), count: 2 };
-    const human = hero(stack, 40);
-    const roster = rosterOf([human], []);
-    const call = (sequence: number) =>
+  it("calls an idol again and again unless its group already has a phantom in the fight", () => {
+    const free = hero({ ...idol(FIXED, PHANTOM), count: 3 }, 40);
+    const roster = rosterOf([free], []);
+    const call = (human: HumanFighter, itemId: number, sequence: number) =>
       tryIdolCast({
         human,
-        itemId: 100_001,
+        itemId,
         sequence,
         roster,
         fightRules: FightRules.forHunt(null),
         finished: false,
-        allocateBotId: () => 1_000_007 + sequence,
+        allocateBotId: () => 1_000_000 + sequence,
       });
-    expect(call(1)).toMatchObject({ kind: "resolved" });
-    expect(human.casts.wireLoadout().idols).toEqual([]);
-    expect(() => call(2)).toThrow(FightCastDenied);
-    expect(human.mp).toBe(20);
-    expect(roster.bots).toHaveLength(1);
+    expect(call(free, 100_001, 1)).toMatchObject({ kind: "resolved" });
+    expect(call(free, 100_001, 2)).toMatchObject({ kind: "resolved" });
+    expect(roster.bots).toHaveLength(2);
+    // A strong idol carries a group: the first call takes it, nobody can call it again.
+    const strong = idol({ ...FIXED, groupId: 77 }, PHANTOM);
+    const mate = hero({ ...strong, count: 2 }, 40);
+    expect(call(mate, 100_001, 3)).toMatchObject({ kind: "resolved" });
+    expect(() => call(mate, 100_001, 4)).toThrow(FightCastDenied);
+    expect(mate.mp).toBe(20);
+    expect(mate.casts.idolRow(100_001)).not.toBeNull();
+    expect(roster.bots).toHaveLength(3);
   });
 
   it("fails loudly when the catalog has no mob for the idol", () => {

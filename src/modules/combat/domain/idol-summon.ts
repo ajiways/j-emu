@@ -51,7 +51,10 @@ export function tryIdolCast(
       `Idol ${row.artifactId} summons mob ${summonedBot(row)}, absent from the catalog`,
     );
   }
-  if (human.casts.hasCalledPhantom()) throw new FightCastDenied("phantom", input.sequence);
+  const group = row.spell.groupId ?? null;
+  if (group !== null && input.roster.bots.some((bot) => bot.summonedGroupId === group)) {
+    throw new FightCastDenied("phantom", input.sequence);
+  }
   requireMana(human, row.spell, input.sequence);
   const range = manaRange(row.spell);
   const spent = Math.min(human.mp, range.max);
@@ -60,6 +63,7 @@ export function tryIdolCast(
   const mana = payMana(human, row.spell);
   const phantom = summon(human, row.phantom, stats, input);
   phantom.summoned = true;
+  phantom.summonedGroupId = group;
   input.roster.add(phantom);
   phantom.unpair();
   const events: BattleEvent[] = [
