@@ -18,7 +18,8 @@ function phantomStats(
   spent: number,
   full: number,
 ): Readonly<{ strength: number; maxHp: number }> {
-  const ratio = Math.min(1, spent / full);
+  // A free idol (nothing to spend) always calls its phantom at full strength.
+  const ratio = full === 0 ? 1 : Math.min(1, spent / full);
   return {
     strength: Math.max(1, Math.round(template.strength * ratio)),
     maxHp: Math.max(1, Math.round(template.maxHp * ratio)),

@@ -84,6 +84,13 @@ describe("idol summon", () => {
     expect(human.casts.idolRow(100_001)).toBeNull();
   });
 
+  it("calls the phantom of a free idol at full strength", () => {
+    const human = hero(idol({ mpCost: 0, effects: [{ kind: 10, botArtikulId: 550 }] }, PHANTOM), 0);
+    const { roster } = cast(human);
+    expect(roster.bots[0]).toMatchObject({ hp: 300, strength: 200 });
+    expect(human.mp).toBe(0);
+  });
+
   it("scales a spend-range idol by the mana it took", () => {
     const human = hero(idol(RANGE, PHANTOM), 20);
     const { roster } = cast(human);

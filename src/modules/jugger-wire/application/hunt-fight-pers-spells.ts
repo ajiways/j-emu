@@ -62,14 +62,13 @@ function idolSpells(rows: readonly CombatIdolRow[]): readonly Readonly<Record<st
   return rows.map((row) => {
     if (!row.spell.persRestr) throw new Error(`Idol item ${row.itemId} persRestr is required`);
     if (!row.spell.targetRestr) throw new Error(`Idol item ${row.itemId} targetRestr is required`);
-    if (row.spell.mpCost === undefined)
-      throw new Error(`Idol item ${row.itemId} mpCost is required`);
     return {
       artikulId: row.artifactId,
       count: row.count,
       flags: IDOL_WIRE_FLAGS,
       img: row.picture,
-      mpCost: row.spell.mpCost,
+      // A free idol («Колдовской», no mana price) carries no mpCost, like any other free spell.
+      ...(row.spell.mpCost !== undefined ? { mpCost: row.spell.mpCost } : {}),
       persRestr: row.spell.persRestr,
       srcId: row.itemId,
       srcType: 4,

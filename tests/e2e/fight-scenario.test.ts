@@ -139,7 +139,7 @@ describe("scripted fight scenarios from chat", () => {
 
   it("idols: the bag idols are listed, a cast spends mana, calls the phantom and uses up the item", async () => {
     const client = await startScenario("idols");
-    expect(opened.match(/"srcType":4/g)).toHaveLength(3);
+    expect(opened.match(/"srcType":4/g)).toHaveLength(4);
     expect(opened).toContain('"mpCost":12');
     // A quest fight has no way to anger a mob: no aggro button in the spell list.
     expect(opened).not.toContain("Разозлить");
@@ -161,6 +161,31 @@ describe("scripted fight scenarios from chat", () => {
       seen.push(JSON.stringify(await client.pollFight()));
     }
     expect(seen.join("")).toMatch(/"dealtDamage":[1-9]\d*,"faction":0,"hp":\d+,"id":1000002/);
+  });
+
+  it("idols: an idol of a limited group is called once per fight, the others still are", async () => {
+    const client = await startScenario("idols");
+    const srcOf = (artikulId: number): number => {
+      const row = new RegExp(`"artikulId":${artikulId}[\\s\\S]*?"srcId":(\\d+),"srcType":4`).exec(
+        opened,
+      );
+      if (!row?.[1]) throw new Error(`Idol ${artikulId} is not in the fight spell list`);
+      return Number(row[1]);
+    };
+    // 2717 is free and carries the test group 9305, so only the group can refuse its second call.
+    const limited = srcOf(2717);
+    expect(
+      JSON.stringify(
+        await client.fight({ rc: "castSpell", srcType: 4, srcId: limited, targetId: 1, sq: 4 }),
+      ),
+    ).toBe("[]");
+    await client.pollFight();
+    expect(
+      await client.fight({ rc: "castSpell", srcType: 4, srcId: limited, targetId: 1, sq: 5 }),
+    ).toEqual([{ rs: false }]);
+    // Another idol without a group is called after it.
+    await client.fight({ rc: "castSpell", srcType: 4, srcId: srcOf(305), targetId: 1, sq: 6 });
+    expect(JSON.stringify(await client.pollFight())).toContain('"delta":-12');
   });
 
   it("idols: after 3↔3 the hero and the phantom swap their mobs", async () => {
