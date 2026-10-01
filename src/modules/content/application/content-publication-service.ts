@@ -33,6 +33,24 @@ export class ContentPublicationService {
     });
   }
 
+  /**
+   * Makes the bundle the active content for a development database: a bundle that was already
+   * published is activated again (a way back to an earlier release), a new one is published.
+   */
+  async publishOrActivate(bundle: ContentBundle): Promise<PublishedRelease> {
+    const validated = this.validator.validate(bundle);
+    return this.unitOfWork.run(async () => {
+      const activeReleaseId = await this.store.lockPublication();
+      const existing = await this.store.findByChecksum(validated.checksum);
+      if (existing) {
+        if (activeReleaseId !== existing.id) await this.store.activate(existing.id);
+        return existing;
+      }
+      await this.assertActivationCompatible(activeReleaseId, validated);
+      return this.persistAndActivate(validated);
+    });
+  }
+
   async seed(bundle: ContentBundle, source: string): Promise<PublishedRelease> {
     if (!source.trim()) throw new Error("Bootstrap import source is required");
     const validated = this.validator.validate(bundle);

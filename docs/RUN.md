@@ -16,7 +16,7 @@ npm run db:migrate
 npm run db:publish:development
 ```
 
-`db:migrate` накатывает схему. `db:publish:development` публикует `content/playable-slice.json`. Без обоих шагов runtime не стартует с пустой БД.
+`db:migrate` накатывает схему. `db:publish:development` публикует `content/playable-slice.json`. Если такой набор уже был опубликован раньше, он просто активируется снова (так можно вернуться к прежнему релизу). Без обоих шагов runtime не стартует с пустой БД.
 
 Если `db:migrate` падает с `was modified` / missing journal, SQL миграций не
 правят. Development база из `DATABASE_URL` пересоздаётся целиком:

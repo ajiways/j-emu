@@ -20,7 +20,7 @@ export async function publishDevelopmentContent(
       if (!message.includes("already has content without a matching bootstrap import")) {
         throw error;
       }
-      await publication.publish(bundle);
+      await publication.publishOrActivate(bundle);
     }
   } finally {
     await database.close();

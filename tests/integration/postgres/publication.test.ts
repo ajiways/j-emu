@@ -69,6 +69,24 @@ describe("content publication", () => {
     expect(hissa?.spellBook.spells.map((card) => card.artikulId)).toEqual([396, 397]);
   });
 
+  it("activates an already published bundle again instead of failing on its checksum", async () => {
+    const publication = createPostgresContentPublication(database);
+    const first = await publication.seed(playable, playablePath);
+    const extraId = nextUnusedBotId(playable.bots);
+    const changed: ContentBundle = {
+      ...playable,
+      bots: [...playable.bots, withHuntBot(extraId, "Временный")],
+    };
+    const second = await publication.publish(changed);
+    expect(second.id).not.toBe(first.id);
+    const catalog = new PostgresCatalog(database, new PostgresActiveContentRevision(database));
+    await expect(catalog.bot(extraId)).resolves.toMatchObject({ title: "Временный" });
+    await expect(publication.publish(playable)).rejects.toThrow(/already exists/);
+    const back = await publication.publishOrActivate(playable);
+    expect(back.id).toBe(first.id);
+    await expect(catalog.bot(extraId)).resolves.toBeNull();
+  });
+
   it("does not change the active revision when a candidate is invalid", async () => {
     const publication = createPostgresContentPublication(database);
     const active = await publication.seed(playable, playablePath);
