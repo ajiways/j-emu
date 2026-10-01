@@ -244,6 +244,19 @@ describe("scripted fight scenarios from chat", () => {
     expect(Object.keys(again)).toContain("fight|conf");
   });
 
+  it("lists the scenarios for a bare /scenario, without angle brackets the client would take for a tag", async () => {
+    const client = await AuthenticatedClient.login(application);
+    const sent = await client.objectAction({
+      object: "chat",
+      action: "add",
+      form: { message: "/scenario", type: "main" },
+      sq: 2,
+    });
+    const line = JSON.stringify(sent["chat|message"]);
+    expect(line).toContain("Доступны:");
+    expect(line).not.toMatch(/[<>]/);
+  });
+
   it("answers an unknown scenario with a system line and starts no fight", async () => {
     const client = await AuthenticatedClient.login(application);
     const sent = await client.objectAction({

@@ -102,7 +102,7 @@ export class ScenarioDesk {
     };
   }
 
-  /** The line goes in the answer to the message: the client draws an empty line without it. */
+  /** The line goes in the answer to the message (the client draws an empty line without it); chat is HTML, so no angle brackets in it. */
   private async reply(accountId: number, text: string): Promise<Record<string, unknown>> {
     return { "chat|message": await this.deps.chat.systemReply(accountId, text) };
   }
@@ -110,7 +110,7 @@ export class ScenarioDesk {
   private usage(): string {
     const listed = this.deps.scenarios.describe();
     if (listed.length === 0) return "Сценариев нет.";
-    return `Использование: /scenario <имя>; /scenario stop — выйти из боя. Доступны: ${listed
+    return `Использование: /scenario имя_сценария; /scenario stop — выйти из боя. Доступны: ${listed
       .map((entry) => entry.name)
       .join(", ")}.`;
   }
