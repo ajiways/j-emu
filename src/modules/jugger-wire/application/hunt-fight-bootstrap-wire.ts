@@ -37,7 +37,12 @@ export function huntFightBootstrapEvents(
     ),
   ];
   if (!event.resumePaired) events.push({ et: "oppwait" });
-  if (waiting) return events;
+  if (waiting) {
+    // `gcdend` ends the client's "pair is being created" state: without it a hero who starts
+    // without a foe stays on the waiting plaque and «Концентрация» never begins.
+    if (!event.resumePaired) events.push({ et: "gcdend" });
+    return events;
+  }
   if (event.humanOpponent) {
     const appearance = event.humanOpponentAppearance;
     if (!appearance) throw new Error("Hunt human opponent appearance is required");

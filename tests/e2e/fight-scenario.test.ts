@@ -207,6 +207,8 @@ describe("scripted fight scenarios from chat", () => {
     const client = await startScenario("concentration");
     // He starts without a foe: the ally is already fighting the mob.
     expect(opened).toContain('"et":"oppwait"');
+    // `gcdend` after it lets the client leave the "pair is being created" state and start concentrating.
+    expect(opened.indexOf('"et":"gcdend"')).toBeGreaterThan(opened.indexOf('"et":"oppwait"'));
     await client.fight({ rc: "castSpell", srcType: 1, srcId: 5, sq: 4 });
     const first = JSON.stringify(await client.pollFight());
     expect(first).toContain("magic_backstab");

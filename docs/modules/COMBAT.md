@@ -1148,3 +1148,10 @@ Combat получает immutable combat-ready snapshots через public ports
 magic-hit, что и любой kind-1 спелл (сила × 0.1, разброс, min 1), `cast animData magic_backstab`;
 урон засчитан как свой (`damageToBot`/`damageToHumans`, из них опыт и PvP-героизм), убитого
 разбирает `settleFallen`. Ход не тратится. У ботов `concentration: null` — её нет.
+
+Клиентская сторона (разбор `main_unity_flash.swf` и `FRCOppWaitCommand`/`FRCgcdEndCommand`): фаза
+«концентрация» (`PREPARING_BACKSTAB`, полоска до готовности) начинается, когда герой ждёт
+(`oppwait`) и клиент вышел из состояния «пара создаётся» (`InPairCreating`). Выводит из него
+`oppnew`, `gcdend` или запись `persSpells` с `cdInterval`. Поэтому для героя, который стартует без
+противника, bootstrap шлёт `gcdend` сразу после `oppwait`; иначе остаётся плашка ожидания.
+Кулдаун клиент ведёт сам (`cooldown 90` из `persSpells`), после каста перезапускает.
