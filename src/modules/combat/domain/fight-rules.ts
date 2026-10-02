@@ -33,7 +33,12 @@ type FightRulesFields = Readonly<{
   openerWaits: boolean;
 }>;
 
-export type ScenarioDrill = Readonly<{ openerWaits: boolean; rotatesDuels: boolean }>;
+/** What a manual-test scenario changes in the rules; a field left out keeps the fight's own. */
+export type ScenarioDrill = Readonly<{
+  openerWaits?: boolean;
+  rotatesDuels?: boolean;
+  humanJoin?: HumanJoinMode;
+}>;
 
 type FightRulesContext =
   | Readonly<{ kind: "hunt"; instanceCopyId: number | null }>

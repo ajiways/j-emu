@@ -257,6 +257,66 @@ describe("scripted fight scenarios from chat", () => {
     expect(line).not.toMatch(/[<>]/);
   });
 
+  it("puts the named players into the same scenario fight and sends them its start", async () => {
+    const first = await AuthenticatedClient.login(application);
+    const second = await AuthenticatedClient.login(application);
+    const init = async (client: AuthenticatedClient, sq: number) => {
+      const payload = await client.objectAction({ object: "common", action: "init", sq });
+      const conf = payload["user|conf"] as { nick?: string } | undefined;
+      if (!conf?.nick) throw new Error("user|conf.nick missing");
+      return conf.nick;
+    };
+    await init(first, 1);
+    const nickOfSecond = await init(second, 1);
+    const sent = await first.objectAction({
+      object: "chat",
+      action: "add",
+      form: { message: `/scenario stun-by-glove ${nickOfSecond}`, type: "main" },
+      sq: 2,
+    });
+    expect(JSON.stringify(sent["chat|message"])).toContain(`${nickOfSecond}: в бою`);
+    const fightId = huntFightIdFrom(sent);
+    const packets = JSON.stringify(await second.pollEsrv());
+    expect(packets).toContain("fight|conf");
+    expect(packets).toContain(fightId);
+    await first.fight({ rc: "auth", eid: fightId, sq: 3 });
+    await second.fight({ rc: "auth", eid: fightId, sq: 3 });
+    // The second player stands in the same fight, on the first one's side.
+    expect(JSON.stringify(await first.pollFight())).toContain(nickOfSecond);
+  });
+
+  it("lets a quest scenario take other players too", async () => {
+    const first = await AuthenticatedClient.login(application);
+    const second = await AuthenticatedClient.login(application);
+    await first.objectAction({ object: "common", action: "init", sq: 1 });
+    const payload = await second.objectAction({ object: "common", action: "init", sq: 1 });
+    const nick = (payload["user|conf"] as { nick?: string } | undefined)?.nick ?? "";
+    const sent = await first.objectAction({
+      object: "chat",
+      action: "add",
+      form: { message: `/scenario idols ${nick}`, type: "main" },
+      sq: 2,
+    });
+    expect(JSON.stringify(sent["chat|message"])).toContain(`${nick}: в бою`);
+    const fightId = huntFightIdFrom(sent);
+    await first.fight({ rc: "auth", eid: fightId, sq: 3 });
+    await second.fight({ rc: "auth", eid: fightId, sq: 3 });
+    // The second player got the scenario's idols in his own spell list.
+    expect(JSON.stringify(await second.pollFight())).toContain('"srcType":4');
+  });
+
+  it("tells a player who is not there or is already fighting, and starts the fight for the rest", async () => {
+    const first = await AuthenticatedClient.login(application);
+    const sent = await first.objectAction({
+      object: "chat",
+      action: "add",
+      form: { message: "/scenario stun-by-glove Никто", type: "main" },
+      sq: 2,
+    });
+    expect(JSON.stringify(sent["chat|message"])).toContain("Никто: такого игрока нет");
+    expect(sent["fight|conf"]).toBeDefined();
+  });
+
   it("answers an unknown scenario with a system line and starts no fight", async () => {
     const client = await AuthenticatedClient.login(application);
     const sent = await client.objectAction({

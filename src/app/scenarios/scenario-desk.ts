@@ -14,10 +14,13 @@ import type { ChatDesk } from "../chat-desk.ts";
 import { startHuntWithRoster, type FightStartDeps } from "../quest-fight-start.ts";
 import { PocketDeniedError } from "../../modules/inventory/domain/pocket-denied-error.ts";
 import { provisionIdols, provisionPocket } from "./scenario-hero-pocket.ts";
+import type { ScenarioPartners } from "./scenario-partners.ts";
 import type { FightScenario, FightScenarioBot } from "./fight-scenario.ts";
 import type { FightScenarioCatalog } from "./fight-scenario-catalog.ts";
 
 const COMMAND = "/scenario";
+/** A fight that other players may enter, as a hunt is. */
+const JOINABLE = { mode: "hunt-roster" } as const;
 /** `/scenario stop` takes the player out of his fight, the way out of a fight that cannot be left. */
 const STOP = "stop";
 
@@ -28,6 +31,7 @@ type ScenarioDeskDeps = Readonly<{
   fightWire: FightWireMapper;
   start: FightStartDeps;
   pocket: Parameters<typeof provisionPocket>[2];
+  partners: ScenarioPartners;
 }>;
 
 /**
@@ -38,9 +42,9 @@ export class ScenarioDesk {
   constructor(private readonly deps: ScenarioDeskDeps) {}
 
   async tryRun(accountId: number, text: string): Promise<Readonly<Record<string, unknown>> | null> {
-    const [command, name, ...rest] = text.split(/\s+/);
+    const [command, name, ...partners] = text.split(/\s+/);
     if (command !== COMMAND) return null;
-    if (name === undefined || rest.length > 0) {
+    if (name === undefined) {
       return this.reply(accountId, this.usage());
     }
     if (name === STOP) {
@@ -76,21 +80,33 @@ export class ScenarioDesk {
       );
     }
     await provisionIdols(hero, scenario.hero.idols, this.deps.pocket);
+    const glove = await this.glove(scenario);
     const started = await startHuntWithRoster(hero, this.deps.start, {
       purpose: scenario.purpose,
-      drill: scenario.drill,
+      // Other players can only join a fight whose rules let them in, a quest fight's do not.
+      drill: partners.length === 0 ? scenario.drill : { ...scenario.drill, humanJoin: JOINABLE },
       heroHp: scenario.hero.hp,
       heroMaxHp: maxHp,
-      gloveOverride: await this.glove(scenario),
+      gloveOverride: glove,
       enemies: await this.roster(scenario, scenario.enemies),
       allies: await this.roster(scenario, scenario.allies),
       chatWin: "",
       chatLose: "",
     });
+    const joined = await this.deps.partners.join({
+      callerAccountId: accountId,
+      nicks: partners,
+      scenario,
+      glove,
+      fightId: started.fightId,
+      team: 1,
+    });
     return {
       ...(await this.reply(
         accountId,
-        `Сценарий «${name}»: ${scenario.description} Боевой карман: ${pocket}.`,
+        `Сценарий «${name}»: ${scenario.description} Боевой карман: ${pocket}.${
+          joined.length === 0 ? "" : ` Игроки: ${joined.join("; ")}.`
+        }`,
       )),
       "fight|conf": this.deps.fightWire.fightConfiguration(
         started,
@@ -110,7 +126,7 @@ export class ScenarioDesk {
   private usage(): string {
     const listed = this.deps.scenarios.describe();
     if (listed.length === 0) return "Сценариев нет.";
-    return `Использование: /scenario имя_сценария; /scenario stop — выйти из боя. Доступны: ${listed
+    return `Использование: /scenario имя_сценария; /scenario имя_сценария ник1 ник2 — то же с другими игроками; /scenario stop — выйти из боя. Доступны: ${listed
       .map((entry) => entry.name)
       .join(", ")}.`;
   }

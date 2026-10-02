@@ -191,6 +191,19 @@ export class JuggerCommandModule {
       wake,
       clock,
     );
+    const joinCommand = (key: "common|object:FIGHT_JOIN" | "common|object:FIGHT_HELP") =>
+      new FightJoinCommand(
+        key,
+        unitOfWork,
+        bootstrap,
+        characters,
+        inventory,
+        catalog,
+        combat,
+        fightWire,
+        huntFanout,
+        party,
+      );
     const decline = new DeclineFriendlyDuel(invites);
     const accept = new AcceptFriendlyDuel(
       unitOfWork,
@@ -260,6 +273,8 @@ export class JuggerCommandModule {
           combat,
           chat,
           fightWire,
+          outbox,
+          wake,
           parties: party,
           unitOfWork,
         }),
@@ -357,30 +372,8 @@ export class JuggerCommandModule {
         auctionTenderCancel,
         trade: tradeMutation,
       }),
-      new FightJoinCommand(
-        "common|object:FIGHT_JOIN",
-        unitOfWork,
-        bootstrap,
-        characters,
-        inventory,
-        catalog,
-        combat,
-        fightWire,
-        huntFanout,
-        party,
-      ),
-      new FightJoinCommand(
-        "common|object:FIGHT_HELP",
-        unitOfWork,
-        bootstrap,
-        characters,
-        inventory,
-        catalog,
-        combat,
-        fightWire,
-        huntFanout,
-        party,
-      ),
+      joinCommand("common|object:FIGHT_JOIN"),
+      joinCommand("common|object:FIGHT_HELP"),
       ...deskOaCommands({
         party: partyDesk,
         battleground,
