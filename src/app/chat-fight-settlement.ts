@@ -1,3 +1,6 @@
+import { FINISHED_FIGHT_RETENTION_MS } from "../modules/combat/domain/finished-fight-retention.ts";
+import type { Clock } from "../shared/kernel/clock.ts";
+import { TtlMap } from "../shared/kernel/ttl-map.ts";
 import type { FightLootBlock } from "../modules/combat/domain/fight-loot-block.ts";
 import type { FightOutcomeSnapshot } from "../modules/combat/domain/fight-outcome-snapshot.ts";
 import type { DeathDurabilityBreak } from "../modules/inventory/domain/apply-death-durability.ts";
@@ -22,14 +25,17 @@ type PendingEnded = Readonly<{
 }>;
 
 export class ChatFightSettlement implements FightSettlement {
-  private readonly pendingEnded = new Map<string, PendingEnded>();
+  private readonly pendingEnded: TtlMap<string, PendingEnded>;
 
   constructor(
     private readonly inner: HuntFightSettlement,
     private readonly chat: ChatDesk,
     private readonly progress: ProgressNotifier,
+    clock: Clock,
     private readonly failures: FightChatFailureSink,
-  ) {}
+  ) {
+    this.pendingEnded = new TtlMap(FINISHED_FIGHT_RETENTION_MS, clock);
+  }
 
   async persistHumanLeft(snapshot: HumanLeftSnapshot): Promise<void> {
     await this.inner.persistHumanLeft(snapshot);
@@ -55,6 +61,10 @@ export class ChatFightSettlement implements FightSettlement {
       progress: this.inner.takeProgress(outcome.fightId),
     });
     return loot;
+  }
+
+  honorOf(fightId: string): ReadonlyMap<number, number> {
+    return this.inner.honorOf(fightId);
   }
 
   async publishEnded(fightId: string): Promise<void> {

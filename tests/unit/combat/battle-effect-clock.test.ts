@@ -95,6 +95,28 @@ describe("Battle effect clock", () => {
     expect(battle.foeBotSnap(1).id).toBe(1_000_001);
   });
 
+  it("lets the next foe strike first when the opening roll falls to it", () => {
+    const battle = createUnitBattle(
+      unitHuntFightSetup({ purpose: "quest", extraEnemies: [EXTRA_BOT] }),
+      new SequenceRandom([500]),
+      new SequenceRandom([0.99, 0.01]),
+    );
+    battle.authenticate(1, NOW);
+    poison(battle, 0);
+    const outcome = battle.tickDueEffects(NOW + 20_000);
+    expect(outcome.finished).toBeNull();
+    expect(outcome.reassignedAccountIds).toEqual([1]);
+    expect(outcome.deliveries.flatMap((delivery) => delivery.events)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: "opponent-new",
+          bot: expect.objectContaining({ id: 1_000_001 }),
+        }),
+      ]),
+    );
+    expect(battle.nextActorIdOf(1)).toBe(1_000_001);
+  });
+
   it("ticks an effect on a participant who waits for a foe, as it does on one in a duel", () => {
     const battle = createUnitBattle(unitHuntFightSetup(), new SequenceRandom([5]));
     battle.authenticate(1, NOW);

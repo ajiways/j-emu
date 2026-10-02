@@ -44,6 +44,8 @@ type HuntActionState = Readonly<{
   duels: FightDuel[];
   rules: BattleRules;
   random: RandomSource;
+  /** Rolls who strikes first against the next mob of a hunter. */
+  openingRandom: RandomSource;
   fightId: string;
 }>;
 
@@ -184,6 +186,7 @@ export function applyBattleAiTurn(
     duels: state.duels,
     fightRules: state.fightRules,
     fightId: state.fightId,
+    openingRandom: state.openingRandom,
   });
   const events = [
     ...result.events,
@@ -231,6 +234,7 @@ function botFellInTurn(
     duel,
     duels: state.duels,
     opener: foe as HumanFighter,
+    openingRandom: state.openingRandom,
   }).events;
 }
 
@@ -242,6 +246,7 @@ function settleGloveHits(
     duel: FightDuel;
     duels: FightDuel[];
     opener: HumanFighter;
+    openingRandom: RandomSource;
   }>,
 ): EndingGloveResult {
   if (ending.selfKilled) return ending;
@@ -300,6 +305,7 @@ function hitInput(
   duel: FightDuel;
   duels: FightDuel[];
   opener: HumanFighter;
+  openingRandom: RandomSource;
 }> {
   return {
     roster: state.roster,
@@ -307,5 +313,6 @@ function hitInput(
     duel,
     duels: state.duels,
     opener: human,
+    openingRandom: state.openingRandom,
   };
 }

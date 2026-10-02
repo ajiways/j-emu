@@ -61,6 +61,7 @@ describe("fight result info", () => {
         },
       ],
       lootByAccount: new Map([[7, loot]]),
+      honorByAccount: new Map([[7, 12]]),
     });
     expect(info).toMatchObject({
       fightId: "12",
@@ -73,6 +74,7 @@ describe("fight result info", () => {
       participantId: 100,
       nick: "Ann",
       heal: 25,
+      honor: 12,
       exp: 15,
       money: 0.2,
       dmg: 12,
@@ -138,6 +140,7 @@ describe("fight result info", () => {
       ],
       bots: [],
       lootByAccount: new Map(),
+      honorByAccount: new Map(),
     });
     expect(info.finished).toBe(1);
     // The kill was a mob of his side's (id 1000003), not his.
@@ -191,6 +194,7 @@ describe("fight result info", () => {
         },
       ],
       lootByAccount: new Map(),
+      honorByAccount: new Map(),
     });
     expect(info.finished).toBe(0);
     expect(info.duration).toBe("1");

@@ -1,3 +1,4 @@
+import type { Clock } from "../shared/kernel/clock.ts";
 import type { Catalog } from "../modules/catalog/ports/catalog.ts";
 import type { CharacterService } from "../modules/character/application/character-service.ts";
 import type { HeroBestiary } from "../modules/character/ports/hero-bestiary.ts";
@@ -36,6 +37,7 @@ export function createChatHuntSettlement(input: {
   heroism: HeroismRules;
   pvpHonor: PvpFightHonorCache;
   dungeonGrant: DungeonPersonalGrant;
+  clock: Clock;
 }): ChatFightSettlement {
   return new ChatFightSettlement(
     new HuntFightSettlement(
@@ -58,9 +60,11 @@ export function createChatHuntSettlement(input: {
       input.heroism,
       input.pvpHonor,
       input.dungeonGrant,
+      input.clock,
     ),
     input.chat,
     new ProgressNotifier(input.catalog, input.outbox, input.wake),
+    input.clock,
     {
       failed(fightId, error) {
         process.stderr.write(`fight-chat ${fightId}: ${error.message}\n`);

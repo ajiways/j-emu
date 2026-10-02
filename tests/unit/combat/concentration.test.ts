@@ -1,3 +1,4 @@
+import { FixedRandom } from "../../support/fakes/fixed-random.ts";
 import { describe, expect, it } from "vitest";
 import { concentrate } from "../../../src/modules/combat/domain/concentration.ts";
 import type { CombatSpell } from "../../../src/modules/combat/domain/combat-loadout.ts";
@@ -56,6 +57,7 @@ function use(hero: HumanFighter, bot = unitRosterBot({ hp: 20 }), draws = [0, 1]
     fightId: "9",
     rules: UNIT_BATTLE_RULES,
     random: new SequenceRandom(draws),
+    openingRandom: new FixedRandom(),
     nowMs,
   });
   return { result, bot };
@@ -115,6 +117,7 @@ describe("concentration", () => {
         fightId: "9",
         rules: UNIT_BATTLE_RULES,
         random: new SequenceRandom([0, 1, 0, 1]),
+        openingRandom: new FixedRandom(),
         nowMs,
       });
     expect(fire(0)).not.toBeNull();

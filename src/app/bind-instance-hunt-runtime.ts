@@ -94,6 +94,7 @@ export function bindInstanceHuntRuntime(input: {
       heroism: HEROISM_RULES,
       pvpHonor: input.pvpHonor,
       dungeonGrant,
+      clock: input.clock,
     }),
   );
   return {

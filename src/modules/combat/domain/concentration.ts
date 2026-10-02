@@ -34,6 +34,7 @@ export function concentrate(
     fightId: string;
     rules: BattleRules;
     random: RandomSource;
+    openingRandom: RandomSource;
     nowMs: number;
   }>,
 ): ConcentrationResult | null {

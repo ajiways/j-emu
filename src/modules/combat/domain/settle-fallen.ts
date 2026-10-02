@@ -1,3 +1,4 @@
+import type { RandomSource } from "./random-source.ts";
 import type { Roster } from "./roster.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import { settleAfterMobFell } from "./battle-runtime.ts";
@@ -32,6 +33,7 @@ export function settleFallen(
     duels: FightDuel[];
     fightRules: FightRules;
     fightId: string;
+    openingRandom: RandomSource;
   }>,
 ): Fallout {
   const combatants = input.roster.all();
@@ -64,6 +66,7 @@ export function settleFallen(
       duel,
       duels: input.duels,
       opener: hunter,
+      openingRandom: input.openingRandom,
     });
     if (hunter.authed) reassigned.push({ accountId: hunter.accountId, events: next.events });
   }

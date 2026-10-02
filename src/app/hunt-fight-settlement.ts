@@ -4,28 +4,19 @@ import type { Hero } from "../modules/character/domain/hero.ts";
 import type { CharacterMoney } from "../modules/character/ports/character-money.ts";
 import type { CharacterProgression } from "../modules/character/ports/character-progression.ts";
 import type { CharacterResources } from "../modules/character/ports/character-resources.ts";
-import { fightLootBlock, type FightLootBlock } from "../modules/combat/domain/fight-loot-block.ts";
 import {
-  goldToMinor,
-  goldWireString,
-  rollMoneyGold,
-} from "../modules/combat/domain/fight-money.ts";
+  fightLootBlock,
+  type FightArtikulListWire,
+  type FightLootBlock,
+} from "../modules/combat/domain/fight-loot-block.ts";
+import { goldWireString } from "../modules/combat/domain/fight-money.ts";
 import type {
+  FightHumanOutcome,
   FightOutcomeSnapshot,
   PracticeFightOutcomeSnapshot,
   PvpFightOutcomeSnapshot,
 } from "../modules/combat/domain/fight-outcome-snapshot.ts";
-import {
-  overlevel,
-  scaleMoneyReward,
-  worldLootAllowed,
-} from "../modules/combat/domain/overlevel.ts";
 import type { RandomSource } from "../modules/combat/domain/random-source.ts";
-import { rollBotLoot } from "../modules/combat/domain/roll-bot-loot.ts";
-import {
-  rewardedTopDamager,
-  splitFightExperience,
-} from "../modules/combat/domain/split-fight-experience.ts";
 import type {
   FightSettlement,
   HumanLeftSnapshot,
@@ -34,13 +25,22 @@ import type { FightLootRouting } from "../modules/combat/ports/fight-loot-routin
 import type { FightPartyLootNotify } from "../modules/combat/ports/fight-party-loot-notify.ts";
 import { bestiaryCreditHeroIds } from "../modules/character/domain/bestiary-kill-credit.ts";
 import type { HeroBestiary } from "../modules/character/ports/hero-bestiary.ts";
-import { splitMinorUnits } from "../modules/combat/domain/split-minor-units.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
 import type { DeathDurabilityBreak } from "../modules/inventory/domain/apply-death-durability.ts";
 import type { QuestLootNeeded } from "../modules/quests/ports/quest-loot-needed.ts";
 import type { PartyBagDeposit } from "../modules/party/ports/party-bag-deposit.ts";
+import { FINISHED_FIGHT_RETENTION_MS } from "../modules/combat/domain/finished-fight-retention.ts";
+import type { Clock } from "../shared/kernel/clock.ts";
+import { TtlMap } from "../shared/kernel/ttl-map.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
 import type { HeroismRules } from "./heroism-rules.ts";
+import {
+  cutForParty,
+  goldMinorOf,
+  rollHuntRewards,
+  type Drop,
+  type HuntOutcome,
+} from "./hunt-reward-plan.ts";
 import { persistPvpHonor } from "./persist-pvp-honor.ts";
 import type { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 import type { DungeonPersonalGrant } from "./dungeon-personal-grant.ts";
@@ -56,10 +56,10 @@ type SettlementCharacters = CharacterResources &
   }>;
 
 export class HuntFightSettlement implements FightSettlement {
-  private readonly finished = new Map<string, Map<number, FightLootBlock>>();
-  private readonly left = new Set<string>();
+  private readonly finished: TtlMap<string, Map<number, FightLootBlock>>;
+  private readonly left: TtlMap<string, true>;
   private readonly progress = new FightProgressLog();
-  private readonly deathBreaks = new Map<string, Map<number, readonly DeathDurabilityBreak[]>>();
+  private readonly deathBreaks: TtlMap<string, Map<number, readonly DeathDurabilityBreak[]>>;
 
   constructor(
     private readonly unitOfWork: UnitOfWork,
@@ -75,12 +75,17 @@ export class HuntFightSettlement implements FightSettlement {
     private readonly heroism: HeroismRules,
     private readonly pvpHonor: PvpFightHonorCache,
     private readonly dungeonGrant: DungeonPersonalGrant,
-  ) {}
+    clock: Clock,
+  ) {
+    this.finished = new TtlMap(FINISHED_FIGHT_RETENTION_MS, clock);
+    this.left = new TtlMap(FINISHED_FIGHT_RETENTION_MS, clock);
+    this.deathBreaks = new TtlMap(FINISHED_FIGHT_RETENTION_MS, clock);
+  }
 
   persistHumanLeft(snapshot: HumanLeftSnapshot): Promise<void> {
     const key = `${snapshot.fightId}:${snapshot.accountId}`;
     if (this.left.has(key)) return Promise.resolve();
-    this.left.add(key);
+    this.left.set(key, true);
     return this.unitOfWork.run(async () => {
       await persistFightResources(this.characters, snapshot);
       await this.applyDeathIfDefeated(
@@ -101,6 +106,10 @@ export class HuntFightSettlement implements FightSettlement {
   ): Promise<ReadonlyMap<number, FightLootBlock>> {
     if (outcome.mode === "friendly-practice") return this.persistPractice(outcome);
     if (outcome.mode === "pvp") return this.persistPvp(outcome);
+    return this.persistHunt(outcome);
+  }
+
+  private async persistHunt(outcome: HuntOutcome): Promise<ReadonlyMap<number, FightLootBlock>> {
     const cached = this.finished.get(outcome.fightId);
     if (cached) return cached;
     const bot = await this.catalog.bot(outcome.botId);
@@ -108,39 +117,22 @@ export class HuntFightSettlement implements FightSettlement {
     const opener = outcome.humans[0];
     if (!opener) throw new Error("Hunt outcome is missing the opener");
     const rewarded = outcome.humans.filter((human) => human.team === opener.team);
-    const win = outcome.kind === "win";
-    const shares = rewarded.map((human) => ({
-      characterId: human.characterId,
-      damage: human.damageToBot,
-      level: human.level,
-    }));
-    const experience = win
-      ? splitFightExperience(bot.reward.baseExp, outcome.botLevel, shares, outcome.alliedBotDamage)
-      : new Map<number, number>();
-    const top = win ? rewardedTopDamager(shares, outcome.alliedBotDamage) : undefined;
-    const over = top ? overlevel(top.level, outcome.botLevel) : 0;
-    let moneyMinor = 0;
-    let rolled: readonly { artikulId: number; quantity: number }[] = [];
-    if (win && top) {
-      moneyMinor = goldToMinor(
-        scaleMoneyReward(
-          rollMoneyGold(bot.reward.moneyMin, bot.reward.moneyMax, this.random),
-          over,
-        ),
-      );
-      if (worldLootAllowed(over)) rolled = rollBotLoot(bot.reward, this.random);
-    }
-    const dungeonCtx = win ? await this.dungeonGrant.load(outcome.fightId) : null;
-    if (dungeonCtx) {
-      rolled = rolled.filter((drop) => !dungeonCtx.exclude.has(drop.artikulId));
-    }
+    const roll = rollHuntRewards({ bot, outcome, rewarded, random: this.random });
+    const { top, moneyMinor } = roll;
+    const dungeonCtx =
+      outcome.kind === "win" ? await this.dungeonGrant.load(outcome.fightId) : null;
+    let rolled = dungeonCtx
+      ? roll.rolled.filter((drop) => !dungeonCtx.exclude.has(drop.artikulId))
+      : roll.rolled;
     const route = await this.lootRouting.routeFor(rewarded.map((human) => human.characterId));
-    const topInParty = Boolean(top && route?.memberCharacterIds.has(top.characterId));
-    const partyMoney = topInParty ? moneyMinor : 0;
-    const deferItems = Boolean(
-      route && (route.lootRules === "2" || route.lootRules === "3") && topInParty && rolled.length,
-    );
-    if (win && top && rolled.length > 0 && !deferItems) {
+    const cut = cutForParty({
+      route,
+      humans: outcome.humans,
+      top,
+      moneyMinor,
+      rolledCount: rolled.length,
+    });
+    if (outcome.kind === "win" && top && rolled.length > 0 && !cut.deferItems) {
       rolled = await capRolledDrops({
         inventory: this.inventory,
         lootNeeded: this.lootNeeded,
@@ -148,12 +140,6 @@ export class HuntFightSettlement implements FightSettlement {
         rolled,
       });
     }
-    const partyFighters = route
-      ? outcome.humans.filter((human) => route.memberCharacterIds.has(human.characterId))
-      : [];
-    const splitMoney =
-      route?.lootRules === "1" && partyFighters.length > 1 && topInParty && moneyMinor > 0;
-    const moneyShares = splitMoney ? splitMinorUnits(moneyMinor, partyFighters.length) : null;
     const artikulList = await loadArtikulList(this.catalog, rolled);
     const lootByAccount = new Map<number, FightLootBlock>();
     await this.unitOfWork.run(async () => {
@@ -163,91 +149,26 @@ export class HuntFightSettlement implements FightSettlement {
         this.catalog,
         personal[0] === undefined ? [] : personal[0].items,
       );
-      if (deferItems && route) {
+      if (cut.deferItems && route) {
         await this.partyBag.deposit(
           route.partyId,
           rolled.map((drop) => ({ artikulId: drop.artikulId, quantity: drop.quantity })),
         );
       }
       for (const human of outcome.humans) {
-        const exp = human.team === opener.team ? (experience.get(human.characterId) ?? 0) : 0;
-        const isTop = human.team === opener.team && top?.characterId === human.characterId;
-        const splitIndex = partyFighters.findIndex((row) => row.characterId === human.characterId);
-        const goldMinor = moneyShares
-          ? splitIndex >= 0
-            ? (moneyShares[splitIndex] ?? 0)
-            : 0
-          : isTop
-            ? moneyMinor
-            : 0;
-        const drops = isTop && !deferItems ? rolled : [];
+        const ownTeam = human.team === opener.team;
+        const isTop = ownTeam && top?.characterId === human.characterId;
         const mine = personal.find((row) => row.characterId === human.characterId);
-        const extra = mine === undefined ? [] : mine.items;
-        if (!human.leftLive) {
-          await persistFightResources(this.characters, {
-            characterId: human.characterId,
-            hp: human.hp,
-            mp: human.mp,
-          });
-          await this.applyDeathIfDefeated(
-            outcome.fightId,
-            human.accountId,
-            human.characterId,
-            human.hp,
-          );
-          await this.inventory.refillPocketAfterFight({
-            characterId: human.characterId,
-            cells: human.pocket,
-          });
-        }
-        if (exp >= 1) {
-          const grant = await this.characters.grantExperience({
-            characterId: human.characterId,
-            operationId: `fight:${outcome.fightId}:${human.characterId}`,
-            amount: exp,
-          });
-          if (grant.levelsGained > 0) {
-            this.progress.note(outcome.fightId, {
-              kind: "level",
-              accountId: human.accountId,
-              before: grant.levelBefore,
-              after: grant.levelAfter,
-            });
-          }
-        }
-        if (goldMinor >= 1) {
-          await this.characters.creditMoney({
-            characterId: human.characterId,
-            minorUnits: goldMinor,
-          });
-        }
-        for (const drop of drops) {
-          await this.inventory.grantToBag({
-            characterId: human.characterId,
-            artifactId: drop.artikulId,
-            quantity: drop.quantity,
-          });
-        }
-        for (const drop of extra) {
-          await this.inventory.grantToBag({
-            characterId: human.characterId,
-            artifactId: drop.artikulId,
-            quantity: drop.quantity,
-          });
-        }
         lootByAccount.set(
           human.accountId,
-          fightLootBlock({
-            fightId: outcome.fightId,
-            experience: exp,
-            money: goldWireString(goldMinor),
-            items: [
-              ...drops.map((drop) => ({ artikul_id: drop.artikulId, amount: drop.quantity })),
-              ...extra.map((drop) => ({ artikul_id: drop.artikulId, amount: drop.quantity })),
-            ],
+          await this.rewardHuman(outcome, human, {
+            experience: ownTeam ? (roll.experience.get(human.characterId) ?? 0) : 0,
+            goldMinor: goldMinorOf({ characterId: human.characterId, isTop, moneyMinor, cut }),
+            drops: isTop && !cut.deferItems ? rolled : [],
+            extra: mine === undefined ? [] : mine.items,
             artikulList: [
-              ...(isTop && !deferItems ? artikulList : []),
-              ...(extra.length === 0 ? [] : personalList),
+              ...(isTop && !cut.deferItems ? artikulList : []),
+              ...(mine === undefined || mine.items.length === 0 ? [] : personalList),
             ],
           }),
         );
@@ -262,17 +183,86 @@ export class HuntFightSettlement implements FightSettlement {
       }
     });
     this.finished.set(outcome.fightId, lootByAccount);
-    if (route && (partyMoney > 0 || deferItems)) {
+    if (route && (cut.partyMoneyMinor > 0 || cut.deferItems)) {
       await this.partyLoot.notify({
         partyId: route.partyId,
         fightId: outcome.fightId,
         lootRules: route.lootRules,
-        moneyMinor: partyMoney,
-        items: deferItems ? rolled : [],
-        artikulList: deferItems ? artikulList : [],
+        moneyMinor: cut.partyMoneyMinor,
+        items: cut.deferItems ? rolled : [],
+        artikulList: cut.deferItems ? artikulList : [],
       });
     }
     return lootByAccount;
+  }
+
+  /** What one human takes out of a hunt: his hp and pocket, experience, gold, drops; the loot block. */
+  private async rewardHuman(
+    outcome: HuntOutcome,
+    human: FightHumanOutcome,
+    reward: Readonly<{
+      experience: number;
+      goldMinor: number;
+      drops: readonly Drop[];
+      extra: readonly Drop[];
+      artikulList: readonly FightArtikulListWire[];
+    }>,
+  ): Promise<FightLootBlock> {
+    if (!human.leftLive) {
+      await persistFightResources(this.characters, {
+        characterId: human.characterId,
+        hp: human.hp,
+        mp: human.mp,
+      });
+      await this.applyDeathIfDefeated(
+        outcome.fightId,
+        human.accountId,
+        human.characterId,
+        human.hp,
+      );
+      await this.inventory.refillPocketAfterFight({
+        characterId: human.characterId,
+        cells: human.pocket,
+      });
+    }
+    if (reward.experience >= 1) {
+      const grant = await this.characters.grantExperience({
+        characterId: human.characterId,
+        operationId: `fight:${outcome.fightId}:${human.characterId}`,
+        amount: reward.experience,
+      });
+      if (grant.levelsGained > 0) {
+        this.progress.note(outcome.fightId, {
+          kind: "level",
+          accountId: human.accountId,
+          before: grant.levelBefore,
+          after: grant.levelAfter,
+        });
+      }
+    }
+    if (reward.goldMinor >= 1) {
+      await this.characters.creditMoney({
+        characterId: human.characterId,
+        minorUnits: reward.goldMinor,
+      });
+    }
+    for (const drop of [...reward.drops, ...reward.extra]) {
+      await this.inventory.grantToBag({
+        characterId: human.characterId,
+        artifactId: drop.artikulId,
+        quantity: drop.quantity,
+      });
+    }
+    return fightLootBlock({
+      fightId: outcome.fightId,
+      experience: reward.experience,
+      money: goldWireString(reward.goldMinor),
+      items: [...reward.drops, ...reward.extra].map((drop) => ({
+        artikul_id: drop.artikulId,
+        amount: drop.quantity,
+      })),
+      artikulList: reward.artikulList,
+    });
   }
 
   private async persistPractice(
@@ -335,6 +325,10 @@ export class HuntFightSettlement implements FightSettlement {
     for (const up of honor.rankUps) this.progress.note(outcome.fightId, up);
     this.finished.set(outcome.fightId, lootByAccount);
     return lootByAccount;
+  }
+
+  honorOf(fightId: string): ReadonlyMap<number, number> {
+    return this.pvpHonor.honorByAccount(fightId);
   }
 
   async publishEnded(fightId: string): Promise<void> {

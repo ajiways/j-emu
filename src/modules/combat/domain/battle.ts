@@ -75,7 +75,7 @@ export class Battle {
     readonly fightRules: FightRules,
     private readonly random: RandomSource,
     /** Rolls who strikes first in the duel that opens the fight (the same source in play). */
-    openingRandom: RandomSource,
+    private readonly openingRandom: RandomSource,
   ) {
     FightRules.require(fightRules);
     this.id = setup.meta.fightId;
@@ -386,6 +386,7 @@ export class Battle {
       duels: this.duels,
       rules: this.rules,
       random: this.random,
+      openingRandom: this.openingRandom,
       fightId: this.id,
     };
   }

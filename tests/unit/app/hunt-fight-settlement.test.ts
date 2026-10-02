@@ -1,3 +1,4 @@
+import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { describe, expect, it } from "vitest";
 import { HuntFightSettlement } from "../../../src/app/hunt-fight-settlement.ts";
 import type { Catalog } from "../../../src/modules/catalog/ports/catalog.ts";
@@ -22,6 +23,8 @@ function silentDungeonGrant(): DungeonPersonalGrant {
   );
 }
 
+const CLOCK = new MutableClock(new Date("2026-10-03T12:00:00.000Z"));
+
 describe("HuntFightSettlement", () => {
   const bot = playableHuntBot();
   const minMoneyMinor = goldToMinor(bot.reward.moneyMin);
@@ -43,8 +46,9 @@ describe("HuntFightSettlement", () => {
       bestiary,
       unlimitedLoot(),
       HEROISM_RULES,
-      new PvpFightHonorCache(),
+      new PvpFightHonorCache(CLOCK),
       silentDungeonGrant(),
+      CLOCK,
     );
     const win = await settlement.persistFinished(outcome("win", 27, 20));
     expect(characters.notes).toEqual([{ characterId: 1, hp: 27 }]);
@@ -92,8 +96,9 @@ describe("HuntFightSettlement", () => {
       lossBestiary,
       unlimitedLoot(),
       HEROISM_RULES,
-      new PvpFightHonorCache(),
+      new PvpFightHonorCache(CLOCK),
       silentDungeonGrant(),
+      CLOCK,
     );
     const lost = await loss.persistFinished(outcome("loss", 0, 20));
     expect(lossCharacters.notes).toEqual([]);
@@ -119,8 +124,9 @@ describe("HuntFightSettlement", () => {
       recordingBestiary(),
       unlimitedLoot(),
       HEROISM_RULES,
-      new PvpFightHonorCache(),
+      new PvpFightHonorCache(CLOCK),
       silentDungeonGrant(),
+      CLOCK,
     );
     const win = await settlement.persistFinished(outcome("win", 27, 20));
     expect(inventory.grants).toEqual([{ characterId: 1, artifactId: 77, quantity: 1 }]);
@@ -147,8 +153,9 @@ describe("HuntFightSettlement", () => {
           artikulId === 77 ? Math.max(0, 1 - owned) : null,
       },
       HEROISM_RULES,
-      new PvpFightHonorCache(),
+      new PvpFightHonorCache(CLOCK),
       silentDungeonGrant(),
+      CLOCK,
     );
     await settlement.persistFinished(outcome("win", 27, 20));
     expect(inventory.grants).toEqual([]);
@@ -169,8 +176,9 @@ describe("HuntFightSettlement", () => {
       recordingBestiary(),
       unlimitedLoot(),
       HEROISM_RULES,
-      new PvpFightHonorCache(),
+      new PvpFightHonorCache(CLOCK),
       silentDungeonGrant(),
+      CLOCK,
     );
     const bot = playableHuntBot();
     const alone = splitFightExperience(
@@ -210,8 +218,9 @@ describe("HuntFightSettlement", () => {
       recordingBestiary(),
       unlimitedLoot(),
       HEROISM_RULES,
-      new PvpFightHonorCache(),
+      new PvpFightHonorCache(CLOCK),
       silentDungeonGrant(),
+      CLOCK,
     );
     const result = await settlement.persistFinished({
       mode: "hunt",
@@ -256,8 +265,9 @@ describe("HuntFightSettlement", () => {
       recordingBestiary(),
       unlimitedLoot(),
       HEROISM_RULES,
-      new PvpFightHonorCache(),
+      new PvpFightHonorCache(CLOCK),
       silentDungeonGrant(),
+      CLOCK,
     );
     const result = await settlement.persistFinished({
       mode: "hunt",
@@ -297,8 +307,9 @@ describe("HuntFightSettlement", () => {
       recordingBestiary(),
       unlimitedLoot(),
       HEROISM_RULES,
-      new PvpFightHonorCache(),
+      new PvpFightHonorCache(CLOCK),
       silentDungeonGrant(),
+      CLOCK,
     );
     const loot = await settlement.persistFinished({
       mode: "friendly-practice",
@@ -331,7 +342,7 @@ describe("HuntFightSettlement", () => {
 
   it("grants PvP honor once from applied human damage", async () => {
     const characters = recordingCharacters();
-    const cache = new PvpFightHonorCache();
+    const cache = new PvpFightHonorCache(CLOCK);
     const settlement = new HuntFightSettlement(
       identityUow(),
       fakeCatalog(),
@@ -346,6 +357,7 @@ describe("HuntFightSettlement", () => {
       HEROISM_RULES,
       cache,
       silentDungeonGrant(),
+      CLOCK,
     );
     const snapshot: FightOutcomeSnapshot = {
       mode: "pvp",
@@ -404,8 +416,9 @@ describe("HuntFightSettlement", () => {
       recordingBestiary(),
       unlimitedLoot(),
       HEROISM_RULES,
-      new PvpFightHonorCache(),
+      new PvpFightHonorCache(CLOCK),
       silentDungeonGrant(),
+      CLOCK,
     );
     const healer = { ...human(10, 1, 0, 50), team: 1 as const, level: 7, maxHp: 111 };
     const mate = { ...human(11, 2, 0, 50), team: 1 as const, level: 7, maxHp: 111 };

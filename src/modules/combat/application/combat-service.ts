@@ -1,3 +1,5 @@
+import { FINISHED_FIGHT_RETENTION_MS } from "../domain/finished-fight-retention.ts";
+import { TtlMap } from "../../../shared/kernel/ttl-map.ts";
 import { PendingConsumes } from "./pending-consumes.ts";
 import { requireFightId } from "./require-fight-id.ts";
 import { randomBytes } from "node:crypto";
@@ -57,8 +59,8 @@ export class CombatService implements CombatPort {
   private readonly pendingLoot = new Map<number, FightLootBlock>();
   private readonly pendingFightInfo = new Map<number, FightResultInfo>();
   private readonly pendingConsume = new PendingConsumes();
-  private readonly settledFights = new Set<string>();
-  private readonly exitSent = new Set<string>();
+  private readonly settledFights: TtlMap<string, true>;
+  private readonly exitSent: TtlMap<string, true>;
   private readonly botFightIds = new EphemeralBotFightIds();
   private readonly scheduler: FightScheduler;
   private readonly melee: CombatMeleeLoop;
@@ -83,6 +85,8 @@ export class CombatService implements CombatPort {
     private readonly openingRandom?: RandomSource,
   ) {
     this.scheduler = new FightScheduler(delay, clock);
+    this.settledFights = new TtlMap(FINISHED_FIGHT_RETENTION_MS, clock);
+    this.exitSent = new TtlMap(FINISHED_FIGHT_RETENTION_MS, clock);
     this.melee = new CombatMeleeLoop(
       this.byAccount,
       this.battleByFight,
@@ -358,20 +362,16 @@ export class CombatService implements CombatPort {
     for (const battle of this.battleByFight.values()) {
       for (const token of battle.delayTokens()) this.scheduler.cancel(token);
     }
-    const stores = [this.byAccount, this.battleByFight, this.queues, this.pendingExits];
-    for (const store of [...stores, this.pendingLoot, this.pendingFightInfo, this.settledFights]) {
+    for (const store of [this.byAccount, this.battleByFight, this.queues, this.pendingExits]) {
       store.clear();
     }
+    for (const store of [this.pendingLoot, this.pendingFightInfo]) store.clear();
+    for (const store of [this.settledFights, this.exitSent]) store.clear();
     this.finish.discardHeldWire();
     this.pendingConsume.clear();
-    this.exitSent.clear();
   }
 
   private startHumanDuel(input: FriendlyDuelStartInput, kind: "friendly-duel" | "pvp"): FightStart {
-    requireWireIdentity(input.challenger.accountId, "challenger account id");
-    requireWireIdentity(input.acceptor.accountId, "acceptor account id");
-    requireWireIdentity(input.challenger.heroId, "challenger hero id");
-    requireWireIdentity(input.acceptor.heroId, "acceptor hero id");
     return startHumanDuelBattle(input, kind, {
       byAccount: this.byAccount,
       battleByFight: this.battleByFight,

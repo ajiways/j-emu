@@ -1,3 +1,4 @@
+import type { TtlMap } from "../../../shared/kernel/ttl-map.ts";
 import type { Battle } from "../domain/battle.ts";
 import { fightContinuesWithout } from "../domain/battle-lookups.ts";
 import type { FightLootBlock } from "../domain/fight-loot-block.ts";
@@ -30,8 +31,8 @@ export class CombatTerminal {
     private readonly pendingExits: Map<number, FightExit>,
     private readonly pendingLoot: Map<number, FightLootBlock>,
     private readonly pendingFightInfo: Map<number, FightResultInfo>,
-    private readonly settledFights: Set<string>,
-    private readonly exitSent: Set<string>,
+    private readonly settledFights: TtlMap<string, true>,
+    private readonly exitSent: TtlMap<string, true>,
     private readonly scheduler: FightScheduler,
     private readonly melee: CombatMeleeLoop,
     private readonly history: FinishedFightRecorder,
@@ -72,7 +73,7 @@ export class CombatTerminal {
       const winnerOnLeave = battle.opposingTeamOf(accountId);
       this.pendingFightInfo.set(
         accountId,
-        this.resultInfo(battle, winnerOnLeave, new Map(), false),
+        this.resultInfo(battle, winnerOnLeave, new Map(), new Map(), false),
       );
       this.queueExit(accountId, battle.id, {
         fightId: battle.id,
@@ -171,7 +172,7 @@ export class CombatTerminal {
   queueExit(accountId: number, fightId: string, exit: FightExit): void {
     const key = `${fightId}:${accountId}`;
     if (this.exitSent.has(key)) return;
-    this.exitSent.add(key);
+    this.exitSent.set(key, true);
     this.pendingExits.set(accountId, exit);
   }
 
@@ -188,9 +189,10 @@ export class CombatTerminal {
     const lootByAccount = settlement
       ? await settlement.persistFinished(outcome)
       : new Map<number, FightLootBlock>();
-    this.settledFights.add(battle.id);
+    this.settledFights.set(battle.id, true);
     await this.recordHistory(battle, winnerTeam);
-    const info = this.resultInfo(battle, winnerTeam, lootByAccount, kind !== "last-leave");
+    const honor = settlement ? settlement.honorOf(battle.id) : new Map<number, number>();
+    const info = this.resultInfo(battle, winnerTeam, lootByAccount, honor, kind !== "last-leave");
     const flee = kind === "last-leave";
     const exit: FightExit = flee
       ? { fightId: battle.id, winnerTeam, flee: true }
@@ -225,6 +227,7 @@ export class CombatTerminal {
     battle: Battle,
     winnerTeam: 1 | 2,
     lootByAccount: ReadonlyMap<number, FightLootBlock>,
+    honorByAccount: ReadonlyMap<number, number>,
     fightOver: boolean,
   ): FightResultInfo {
     const { humans, bots } = battle.boardParticipants();
@@ -242,6 +245,7 @@ export class CombatTerminal {
       humans,
       bots,
       lootByAccount,
+      honorByAccount,
     });
   }
 

@@ -1,3 +1,4 @@
+import type { RandomSource } from "./random-source.ts";
 import type { Roster } from "./roster.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import type { BotSideHit } from "./bot-side-hit.ts";
@@ -35,6 +36,7 @@ export function settleBotSideHits(
     duels: FightDuel[];
     fightRules: FightRules;
     fightId: string;
+    openingRandom: RandomSource;
   }>,
 ): SideHitsOutcome {
   if (input.sideHits.length === 0) return { patch: null, fallout: NO_FALLOUT };

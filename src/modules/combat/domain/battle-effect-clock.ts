@@ -28,6 +28,7 @@ export function tickFightEffects(
     fightRules: FightRules;
     rules: BattleRules;
     random: RandomSource;
+    openingRandom: RandomSource;
     fightId: string;
     nowMs: number;
   }>,

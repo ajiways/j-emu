@@ -1,3 +1,5 @@
+import { rollOpensFirst } from "./roll-opens-first.ts";
+import type { RandomSource } from "./random-source.ts";
 import type { Roster } from "./roster.ts";
 import type { BattleEvent } from "./battle-event.ts";
 import { humanOpponentNew, livingWaiterOnTeam } from "./battle-pairing.ts";
@@ -19,6 +21,7 @@ export function settleAfterPlayerHit(
     duel: FightDuel;
     duels: FightDuel[];
     opener: HumanFighter;
+    openingRandom: RandomSource;
   }>,
 ): Readonly<{ result: PlayerMeleeResult; finished: boolean }> {
   if (resolved.result.kind !== "resolved" || resolved.result.selfKilled) {
@@ -42,6 +45,8 @@ export function settleAfterMobFell(
     duel: FightDuel;
     duels: FightDuel[];
     opener: HumanFighter;
+    /** Rolls who strikes first against the next mob (the same roll as for a new pair). */
+    openingRandom: RandomSource;
   }>,
 ): Readonly<{ events: readonly BattleEvent[]; finished: boolean }> {
   if (finished) return { events: [], finished: true };
@@ -58,7 +63,12 @@ export function settleAfterMobFell(
   if (next) {
     input.duel.replace(hitBot.fightId, next.fightId);
     input.duel.resetHits();
-    input.duel.setNextActor(input.opener.heroId);
+    const mobFirst = rollOpensFirst(
+      next.currentInitiative,
+      input.opener.currentInitiative,
+      input.openingRandom,
+    );
+    input.duel.setNextActor(mobFirst ? next.fightId : input.opener.heroId);
     return { events: [{ type: "opponent-new", bot: next.snap() }], finished: false };
   }
   const intervenor = livingWaiterOnTeam(input.roster.humans, hitBot.team);

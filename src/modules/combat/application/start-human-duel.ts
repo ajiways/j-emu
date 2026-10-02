@@ -1,3 +1,4 @@
+import { requireWireIdentity } from "../../../shared/kernel/decimal-id.ts";
 import { randomBytes } from "node:crypto";
 import { Battle } from "../domain/battle.ts";
 import { fightStartOf } from "./fight-start-of.ts";
@@ -23,6 +24,10 @@ export function startHumanDuelBattle(
     requireFightId: (fightId: string) => string;
   }>,
 ): FightStart {
+  requireWireIdentity(input.challenger.accountId, "challenger account id");
+  requireWireIdentity(input.acceptor.accountId, "acceptor account id");
+  requireWireIdentity(input.challenger.heroId, "challenger hero id");
+  requireWireIdentity(input.acceptor.heroId, "acceptor hero id");
   if (deps.byAccount.has(input.challenger.accountId)) {
     throw new Error("Challenger already has an active fight");
   }

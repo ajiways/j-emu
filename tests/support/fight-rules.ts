@@ -19,6 +19,11 @@ function fightRulesForSetup(setup: FightSetup): FightRules {
   throw new Error(`Unknown fight kind: ${String(kind)}`);
 }
 
-export function createUnitBattle(setup: FightSetup, random: RandomSource): Battle {
-  return new Battle(setup, UNIT_BATTLE_RULES, fightRulesForSetup(setup), random, new FixedRandom());
+/** `openingRandom` rolls the first strikes of the opening duel and of the next mob; the hunter wins them by default. */
+export function createUnitBattle(
+  setup: FightSetup,
+  random: RandomSource,
+  openingRandom: RandomSource = new FixedRandom(),
+): Battle {
+  return new Battle(setup, UNIT_BATTLE_RULES, fightRulesForSetup(setup), random, openingRandom);
 }

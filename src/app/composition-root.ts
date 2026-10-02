@@ -243,7 +243,7 @@ export class CompositionRoot {
       instance.hunt.bindWake((copyId, areaId) => huntFanout.wakeArea(areaId, copyId));
       combat.bindWake({ wake: (accountId) => longPoll.wake(accountId) });
       world.service.bindAreaWake(huntFanout);
-      const pvpHonor = new PvpFightHonorCache();
+      const pvpHonor = new PvpFightHonorCache(clock);
       const { instanceDesk, instanceHuntRelease } = bindInstanceHuntRuntime({
         instance,
         characters,

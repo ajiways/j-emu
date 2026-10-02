@@ -85,6 +85,7 @@ describe("CombatService history", () => {
       persistHumanLeft: async () => {
         throw new Error("persistHumanLeft must not run on a hunt win");
       },
+      honorOf: () => new Map(),
       persistFinished: async (outcome) => {
         enteredPersist();
         await persistGate;

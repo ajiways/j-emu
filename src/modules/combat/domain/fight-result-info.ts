@@ -84,6 +84,8 @@ export function buildFightResultInfo(input: {
   humans: readonly FightResultHumanInput[];
   bots: readonly BotSnap[];
   lootByAccount: ReadonlyMap<number, FightLootBlock>;
+  /** Heroism earned by account; a fight that paid none leaves its humans out. */
+  honorByAccount: ReadonlyMap<number, number>;
 }): FightResultInfo {
   if (!input.fightId) throw new Error("Fight result requires a fight id");
   if (!input.title) throw new Error("Fight result requires a title");
@@ -114,7 +116,7 @@ export function buildFightResultInfo(input: {
       injury: 0,
       killCount: input.kills.get(human.heroId) ?? 0,
       exp: loot?.experience ?? 0,
-      honor: 0,
+      honor: input.honorByAccount.get(human.accountId) ?? 0,
       dmg: human.damageToBot + human.damageToHumans,
       heal: human.healedOthers,
       dead: human.hp <= 0,
