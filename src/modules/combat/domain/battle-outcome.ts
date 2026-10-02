@@ -85,12 +85,12 @@ export function battleOutcomeSnapshot(
   };
 }
 
-/** The mobs that pay a reward: the enemy mobs of the fight, not those an enemy called in. */
+/** The mobs that pay a reward: every enemy mob of the fight, summoned ones included. */
 function huntMobOutcomes(roster: Roster, rules: FightRules): readonly HuntMobOutcome[] {
   const { openerTeam, enemyTeam } = rules.teamAssignment;
   const allies = roster.bots.filter((bot) => bot.team === openerTeam);
   return roster.bots
-    .filter((bot) => bot.team === enemyTeam && !bot.summoned)
+    .filter((bot) => bot.team === enemyTeam)
     .map((bot) => ({
       botId: bot.artikulId,
       level: bot.level,
