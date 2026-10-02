@@ -53,7 +53,8 @@ export function tryPocketCast(
   pvp: boolean,
   allies: (spell: CombatSpell) => readonly Fighter[],
 ): KeepTurnResult {
-  if (!human.authed || human.waiting || human.hp === 0) return { kind: "ignored" };
+  // A pocket item needs no foe, so a hero who waits for one may use it on himself or a teammate.
+  if (!human.authed || human.hp === 0) return { kind: "ignored" };
   const row = human.casts.pocketRow(itemId);
   if (!row) return { kind: "ignored" };
   requirePvpForSpell(row.spell, pvp, sequence);

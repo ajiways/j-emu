@@ -71,6 +71,17 @@ describe("a healing sign from the pocket", () => {
     expect(mate.healedOthers).toBe(0);
   });
 
+  it("lets a hero who waits for a foe put the sign on a teammate", () => {
+    const battle = twoHeroes();
+    const [fighting, waiting] = battle.boardParticipants().humans;
+    if (!fighting || !waiting) throw new Error("two heroes expected");
+    expect(waiting.waiting).toBe(true);
+    expect(battle.tryPocket(2, { itemId: 100_001, targetId: 1, sequence: 3 }, NOW)).toMatchObject({
+      kind: "resolved",
+    });
+    expect(fighting.effects.snapshot(NOW)).toHaveLength(1);
+  });
+
   it("uses up nothing when the cast is denied: the item and its cooldown stay", () => {
     const barred: CombatLoadout = {
       ...loadout,
