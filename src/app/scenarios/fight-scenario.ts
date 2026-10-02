@@ -23,12 +23,26 @@ const heroGlove = z
   })
   .strict();
 
+const heroPatch = z
+  .object({
+    strength: positiveInt.nullable(),
+    initiative: z.number().int().nonnegative().nullable(),
+    rage: z.number().int().nonnegative().nullable(),
+    dexterity: z.number().int().nonnegative().nullable(),
+    defense: z.number().int().nonnegative().nullable(),
+    block: z.number().int().nonnegative().nullable(),
+    mp: z.number().int().nonnegative().nullable(),
+  })
+  .strict();
+
 const heroSchema = z
   .object({
     hp: positiveInt,
     /** Max hp for this fight; `null` keeps the hero's own. Baking of hp buffs starts from it. */
     maxHp: positiveInt.nullable(),
     glove: heroGlove.nullable(),
+    /** Stats and mana of the hero for this fight (`null` fields keep his own); `null` keeps all. */
+    stats: heroPatch.nullable(),
     /** Pocket items the hero is given (real items, put in his pocket) before the fight. */
     pocket: z.array(z.object({ artikulId: positiveInt, count: positiveInt }).strict()),
     /** Idols the hero is given in the bag (topped up to `count`); the fight lists them all. */

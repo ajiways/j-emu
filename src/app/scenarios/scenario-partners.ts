@@ -1,5 +1,6 @@
 import type { Catalog } from "../../modules/catalog/ports/catalog.ts";
 import type { CharacterService } from "../../modules/character/application/character-service.ts";
+import { patchedFightStats } from "./hero-fight-patch.ts";
 import { huntHeroStatFields } from "../../modules/combat/domain/combatant-fight-stats.ts";
 import type { CombatGloveLoadout } from "../../modules/combat/domain/combat-loadout.ts";
 import type { CombatPort } from "../../modules/combat/ports/combat-port.ts";
@@ -69,8 +70,9 @@ export class ScenarioPartners {
     if (!hero) throw new Error(`Hero for account ${known.accountId} is missing`);
     if (hero.ghost) return `${nick}: призрак не может войти в бой`;
     const { scenario } = input;
-    if (scenario.hero.hp > hero.maxHp) {
-      return `${nick}: сценарий требует ${scenario.hero.hp} HP, максимум ${hero.maxHp}`;
+    const maxHp = scenario.hero.maxHp ?? hero.maxHp;
+    if (scenario.hero.hp > maxHp) {
+      return `${nick}: сценарий требует ${scenario.hero.hp} HP, максимум ${maxHp}`;
     }
     const pocketDeps = {
       unitOfWork: this.deps.unitOfWork,
@@ -98,10 +100,15 @@ export class ScenarioPartners {
       heroLevel: hero.level,
       heroKind: hero.kind,
       heroHp: scenario.hero.hp,
-      heroMaxHp: hero.maxHp,
-      heroMp: hero.mp,
-      heroMaxMp: hero.maxMp,
-      ...huntHeroStatFields(await this.deps.characters.combatFightStats(hero.id)),
+      heroMaxHp: maxHp,
+      heroMp: scenario.hero.stats?.mp ?? hero.mp,
+      heroMaxMp: scenario.hero.stats?.mp ?? hero.maxMp,
+      ...huntHeroStatFields(
+        patchedFightStats(
+          await this.deps.characters.combatFightStats(hero.id),
+          scenario.hero.stats,
+        ),
+      ),
       fightId: input.fightId,
       areaId: hero.areaId,
       instanceCopyId: hero.instanceCopyId,

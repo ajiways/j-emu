@@ -6,6 +6,7 @@
     "hp": 42,
     "maxHp": null,
     "glove": null,
+    "stats": null,
     "pocket": [],
     "idols": []
   },

@@ -4,8 +4,17 @@
   "drill": null,
   "hero": {
     "hp": 200,
-    "maxHp": null,
+    "maxHp": 200,
     "glove": null,
+    "stats": {
+      "strength": 200,
+      "initiative": null,
+      "rage": null,
+      "dexterity": null,
+      "defense": null,
+      "block": null,
+      "mp": null
+    },
     "pocket": [],
     "idols": []
   },

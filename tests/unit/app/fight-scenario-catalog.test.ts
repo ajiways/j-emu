@@ -15,7 +15,7 @@ const valid = {
   description: "d",
   purpose: "hunt",
   drill: null,
-  hero: { hp: 3, maxHp: null, glove: null, pocket: [], idols: [] },
+  hero: { hp: 3, maxHp: null, glove: null, stats: null, pocket: [], idols: [] },
   enemies: [bot],
   allies: [],
 };
@@ -34,6 +34,28 @@ describe("FightScenarioCatalog", () => {
     expect(catalog.names()).toEqual(["one"]);
     expect(catalog.find("one")?.hero.hp).toBe(3);
     expect(catalog.find("two")).toBeNull();
+  });
+
+  it("takes the hero's stats for the fight and fails on a stats field left out", () => {
+    const stats = {
+      strength: 200,
+      initiative: null,
+      rage: null,
+      dexterity: null,
+      defense: null,
+      block: null,
+      mp: 50,
+    };
+    const withStats = { ...valid, hero: { ...valid.hero, stats } };
+    const catalog = FightScenarioCatalog.load(
+      directoryWith({ "one.json": JSON.stringify(withStats) }),
+    );
+    expect(catalog.find("one")?.hero.stats).toEqual(stats);
+    const incomplete = { ...stats, mp: undefined };
+    const bad = { ...valid, hero: { ...valid.hero, stats: incomplete } };
+    expect(() =>
+      FightScenarioCatalog.load(directoryWith({ "bad.json": JSON.stringify(bad) })),
+    ).toThrow(/hero\.stats/);
   });
 
   it("fails on a missing required field instead of filling it in", () => {

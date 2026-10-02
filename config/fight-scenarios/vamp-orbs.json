@@ -6,6 +6,7 @@
     "hp": 20,
     "maxHp": null,
     "glove": null,
+    "stats": null,
     "pocket": [
       {
         "artikulId": 159,

@@ -41,6 +41,9 @@
 - Сценарии: по одному JSON на файл в `config/fight-scenarios/`, имя файла = имя
   сценария (kebab-case). Поля обязательны, неизвестные и пропущенные поля —
   ошибка при старте сервера: `description`, `purpose`, `hero.hp`, `enemies[]`, `allies[]`;
+  `hero.maxHp` (максимум хп на этот бой, `null` — свой; `hp` не больше него),
+  `hero.stats` (`null` или `strength`, `initiative`, `rage`, `dexterity`, `defense`, `block`, `mp`:
+  значения героя на этот бой, `null` в поле — своё; `mp` задаёт и текущую, и максимальную ману),
   `hero.glove` (`null` или `hits`[8] и `spells`[`artikulId`, `cost`, `row`] — перчатка
   на время боя вместо надетой), `purpose` (`hunt` — один бот без союзников, `quest` — состав с союзниками или
   несколькими врагами; у `quest` нет кнопки «выйти»);

@@ -19,6 +19,7 @@ import {
 } from "../modules/combat/domain/combatant-fight-stats.ts";
 import type { HeroLifetimeStats } from "../modules/character/ports/hero-lifetime-stats.ts";
 import type { PartyMembershipQuery } from "../modules/party/ports/party-membership-query.ts";
+import { patchedFightStats, type HeroFightPatch } from "./scenarios/hero-fight-patch.ts";
 import { QuestDeniedError } from "../modules/quests/domain/quest-denied-error.ts";
 import type { QuestStartFightOpDocument } from "../modules/content/domain/content-quest.ts";
 
@@ -78,6 +79,7 @@ async function startAuthoredHunt(
     drill: null,
     heroHp: hero.hp,
     heroMaxHp: hero.maxHp,
+    heroPatch: null,
     gloveOverride: null,
     enemies,
     allies: await loadRosterBots(deps.catalog, input.allies),
@@ -96,6 +98,8 @@ export async function startHuntWithRoster(
     drill: ScenarioDrill | null;
     heroHp: number;
     heroMaxHp: number;
+    /** A scenario's own stats and mana for the hero; `null` for a real fight. */
+    heroPatch: HeroFightPatch | null;
     /** A glove for this fight instead of the equipped one; `null` keeps the hero's own loadout. */
     gloveOverride: CombatGloveLoadout | null;
     enemies: readonly HuntRosterBotInput[];
@@ -126,9 +130,9 @@ export async function startHuntWithRoster(
     heroKind: hero.kind,
     heroHp: input.heroHp,
     heroMaxHp: input.heroMaxHp,
-    heroMp: hero.mp,
-    heroMaxMp: hero.maxMp,
-    ...huntHeroStatFields(await deps.combatFightStats(hero.id)),
+    heroMp: input.heroPatch?.mp ?? hero.mp,
+    heroMaxMp: input.heroPatch?.mp ?? hero.maxMp,
+    ...huntHeroStatFields(patchedFightStats(await deps.combatFightStats(hero.id), input.heroPatch)),
     fightId,
     botId: primary.artikulId,
     botNick: primary.nick,

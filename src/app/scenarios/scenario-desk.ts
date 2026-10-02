@@ -87,6 +87,7 @@ export class ScenarioDesk {
       drill: partners.length === 0 ? scenario.drill : { ...scenario.drill, humanJoin: JOINABLE },
       heroHp: scenario.hero.hp,
       heroMaxHp: maxHp,
+      heroPatch: scenario.hero.stats,
       gloveOverride: glove,
       enemies: await this.roster(scenario, scenario.enemies),
       allies: await this.roster(scenario, scenario.allies),
