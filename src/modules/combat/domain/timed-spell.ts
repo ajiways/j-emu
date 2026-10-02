@@ -42,10 +42,11 @@ export function castTimedSpell(
   target: Fighter,
   source: TimedSpellSource,
   nowMs: number,
+  replaceGroup: boolean,
 ): readonly BattleEvent[] {
   const events: BattleEvent[] = [];
   const { spell } = source;
-  if (spell.groupId !== undefined) {
+  if (replaceGroup && spell.groupId !== undefined) {
     for (const effectId of target.effects.dispelGroups([spell.groupId])) {
       events.push({ type: "effect-purge", effectId });
     }

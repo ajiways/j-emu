@@ -10,7 +10,7 @@ import { pocketHealAmount, spellCharging, spellKind } from "./cast-state.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
 import { pocketEffectUse } from "./pocket-effect-use.ts";
 import { manaToSpend, payMana } from "./spell-mana.ts";
-import { aimsAtOwnSide } from "./spell-target.ts";
+import { aimsAtOwnSide, requireOpenCarrier } from "./spell-target.ts";
 import { schoolOverlayFromKind1 } from "./school-overlay.ts";
 import { chargedSkills, strikeModsFromSkills, strikeModsOfOverlay } from "./strike-mods.ts";
 import { castTimedSpell, isTimedSpell, type TimedSpellSource } from "./timed-spell.ts";
@@ -36,6 +36,12 @@ export type SpellPresentation = Readonly<{
   timedTrailingCast: boolean;
   /** The spell is always used on oneself (a pocket item), whatever its target restriction says. */
   selfOnly: boolean;
+  /**
+   * A recast of a group replaces the earlier effect of that group (a mob does not stack its own
+   * buffs). A player's cast never replaces: the catalog's `groupdeny` forbids a second one, and
+   * a spell without it stacks.
+   */
+  replacesGroup: boolean;
 }>;
 
 export type SpellCast = Readonly<{
@@ -49,6 +55,11 @@ export type SpellCast = Readonly<{
   presentation: SpellPresentation;
   /** Whether the cast ends the caster's turn, for the tick effects it leaves. */
   endsTurn: boolean;
+  /**
+   * The command of a player's cast, to deny it when the carrier's standing effects forbid the
+   * spell; `null` for a mob, which picks only the spells that may land.
+   */
+  sequence: string | number | null;
 }>;
 
 function castsOnSelf(spell: CombatSpell): boolean {
@@ -64,10 +75,20 @@ function castsOnSelf(spell: CombatSpell): boolean {
 export function castSpell(cast: SpellCast): readonly BattleEvent[] | null {
   const { spell } = cast.source;
   manaToSpend(spell, cast.caster.mp);
+  if (cast.sequence !== null && !isInstantHit(spell)) {
+    for (const carrier of carriersOf(cast)) {
+      requireOpenCarrier(spell, cast.source.artikulId, carrier, cast.sequence);
+    }
+  }
   const events = castEffects(cast);
   if (events === null) return null;
   const mana = payMana(cast.caster, spell);
   return mana ? [mana, ...events] : events;
+}
+
+/** An instant kind-1 hit: the caller picks the targets, no carrier takes an effect from it. */
+function isInstantHit(spell: CombatSpell): boolean {
+  return kind1OverlayCharges(spell) === 0 && spellKind(spell, 1);
 }
 
 function castEffects(cast: SpellCast): readonly BattleEvent[] | null {
@@ -107,7 +128,13 @@ function animationOf(cast: SpellCast, fallback: string | null): string {
 
 function castTimed(cast: SpellCast): readonly BattleEvent[] {
   return carriersOf(cast).flatMap((carrier) => {
-    const events = castTimedSpell(cast.caster, carrier, cast.source, cast.nowMs);
+    const events = castTimedSpell(
+      cast.caster,
+      carrier,
+      cast.source,
+      cast.nowMs,
+      cast.presentation.replacesGroup,
+    );
     if (!cast.presentation.timedTrailingCast) return events;
     return [
       ...events,
@@ -164,7 +191,7 @@ function castStun(cast: SpellCast): readonly BattleEvent[] {
   const { caster, source } = cast;
   const foe = cast.foe();
   return [
-    ...applyStunSpell(caster, foe, source, cast.nowMs),
+    ...applyStunSpell(caster, foe, source, cast.nowMs, cast.presentation.replacesGroup),
     {
       type: "buff-cast",
       animation: animationOf(cast, cast.presentation.castAnimation),
@@ -215,7 +242,7 @@ function castCharged(cast: SpellCast): readonly BattleEvent[] {
   const { caster, source } = cast;
   const { spell } = source;
   const purges: BattleEvent[] = [];
-  if (spell.groupId !== undefined) {
+  if (cast.presentation.replacesGroup && spell.groupId !== undefined) {
     for (const effectId of caster.effects.dispelGroups([spell.groupId])) {
       purges.push({ type: "effect-purge", effectId });
     }

@@ -194,7 +194,7 @@ secondary, получает тот же кадр: roster patch + `animData` и `
 на той дуэли. Bot kind-1 AOE — leftover. Орб 99 drink вешает RAM standing
 kind-3 (`charging` ходов, `groupId` 842, без bake STR — melee бонус остаётся
 `takeOrbPcStr`); consuming L/C/R melee шлёт `effPurge`; glove/kind-1 орб не
-тратит. Повторный drink той же group снимает предыдущий standing.
+тратит. Повторный drink той же group при `groupdeny` отклоняется (см. «Стаки эффектов»).
 CEF 2026-09-17: орб 99 standing + `effPurge` на физ L/C/R. Glove AOE
 (`targetCount>=2`, «Волна света»): CEF 2026-09-17 урон по двум мобам и
 same-map HP. Bot kind-1 AOE бьёт тех же выбранных врагов (ADR-0021).
@@ -693,6 +693,18 @@ Glove keep-turn баффы (crit 9100, overlay 181) вешают стоящий 
 иконка висела вечно и делила `id` с DoT). Representative: Hissa 397, перчатка 181. Bot 397: `effUse` kind-3 на мобе
 (catalog title/img) до `magic_baf`; overlay charges; `effPurge` после
 последнего consuming melee. CEF 2026-09-17: иконка 397 на Хиссе.
+
+## Стаки эффектов
+
+Каждый каст — отдельный стоящий эффект со своим таймером и тиками: сто «Знаков жизни» на одной
+цели тикают по сто раз, плоские навыки баффов (`STR`, `CRBonus` …) суммируются, ставки
+(`DR`/`BR`/`CR`/`ANTI_STUN`) берут максимум. Второй эффект запрещает только сам каталог
+(`targetRestr`): `artdeny` — тот же артикул, `groupdeny` — та же `groupId`, `selgroupdeny
+{cond:true,id}` — цель под эффектом группы `id` (клиент проверяет это до отправки и показывает
+тост; сервер при подделке отвечает тихим `{rs:false}` и ничего не накладывает). Каст игрока
+никогда не заменяет эффект той же группы; замена по группе осталась только у мобов
+(`SpellPresentation.replacesGroup`), чтобы моб не копил свои баффы: книга моба не знает, что на
+нём уже стоит.
 
 ## CMB-15c — remaining magic kinds
 

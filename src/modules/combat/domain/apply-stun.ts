@@ -65,6 +65,7 @@ export function applyStunSpell(
   target: Fighter,
   source: StunSource & Readonly<{ flags: string | number }>,
   nowMs: number,
+  replaceGroup: boolean,
 ): readonly BattleEvent[] {
   const timed = source.spell.effects.filter(isTimedBuff);
   const lingering =
@@ -75,6 +76,7 @@ export function applyStunSpell(
           target,
           { ...source, spell: { ...source.spell, effects: timed } },
           nowMs,
+          replaceGroup,
         );
   // ANTI_STUN: immune while it stands; the rest of the spell still lands.
   if (stunImmunity(target.effects.standingMax("ANTI_STUN")) >= 1) return lingering;

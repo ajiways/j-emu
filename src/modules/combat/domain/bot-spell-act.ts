@@ -35,6 +35,7 @@ const BOT_PRESENTATION: SpellPresentation = {
   announceHeal: false,
   timedTrailingCast: true,
   selfOnly: false,
+  replacesGroup: true,
 };
 
 export function actBotSpellCard(
@@ -57,6 +58,7 @@ export function actBotSpellCard(
     nowMs: state.nowMs,
     presentation: BOT_PRESENTATION,
     endsTurn: botSpellEndsTurn(card.spell),
+    sequence: null,
   });
   return events === null ? instantKind1(actor, target, card, state) : { events, sideHits: [] };
 }

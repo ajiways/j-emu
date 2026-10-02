@@ -23,6 +23,7 @@ const POCKET_PRESENTATION: SpellPresentation = {
   announceHeal: true,
   timedTrailingCast: false,
   selfOnly: true,
+  replacesGroup: false,
 };
 
 const GLOVE_PRESENTATION: SpellPresentation = {
@@ -32,6 +33,7 @@ const GLOVE_PRESENTATION: SpellPresentation = {
   announceHeal: false,
   timedTrailingCast: false,
   selfOnly: false,
+  replacesGroup: false,
 };
 
 export type KeepTurnResult =
@@ -80,6 +82,7 @@ export function tryPocketCast(
     nowMs,
     presentation: POCKET_PRESENTATION,
     endsTurn: false,
+    sequence,
   });
   if (events === null) {
     throw new Error(`Pocket artifact ${consumed.artifactId} has no supported fight effect`);
@@ -160,6 +163,7 @@ export function tryGloveKeepTurn(
     nowMs: cast.nowMs,
     presentation: GLOVE_PRESENTATION,
     endsTurn: false,
+    sequence,
   });
   if (events === null) throw new Error(`Glove spell ${glove.artikulId} is not a keep-turn spell`);
   const cp = human.casts.spendCombo(glove.cost);

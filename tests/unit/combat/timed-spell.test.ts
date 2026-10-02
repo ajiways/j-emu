@@ -79,7 +79,7 @@ describe("timed spells", () => {
 
   it("raises dexterity by the baked amount for 400 fight seconds (live 182)", () => {
     const human = hero();
-    const events = castTimedSpell(human, human, source(182, "Покров Тьмы I", DARK_VEIL), 0);
+    const events = castTimedSpell(human, human, source(182, "Покров Тьмы I", DARK_VEIL), 0, false);
     expect(events).toEqual([
       expect.objectContaining({
         type: "effect-use",
@@ -103,11 +103,19 @@ describe("timed spells", () => {
 
   it("replaces an earlier buff of the same group", () => {
     const human = hero();
-    castTimedSpell(human, human, source(182, "Покров Тьмы I", DARK_VEIL), 0);
-    const again = castTimedSpell(human, human, source(182, "Покров Тьмы I", DARK_VEIL), 0);
+    castTimedSpell(human, human, source(182, "Покров Тьмы I", DARK_VEIL), 0, true);
+    const again = castTimedSpell(human, human, source(182, "Покров Тьмы I", DARK_VEIL), 0, true);
     expect(again[0]).toEqual({ type: "effect-purge", effectId: 1 });
     expect(human.dexterity).toBe(68);
     expect(human.effects.snapshot()).toHaveLength(1);
+  });
+
+  it("stacks a buff of the same group when nothing replaces it", () => {
+    const human = hero();
+    castTimedSpell(human, human, source(182, "Покров Тьмы I", DARK_VEIL), 0, false);
+    castTimedSpell(human, human, source(182, "Покров Тьмы I", DARK_VEIL), 0, false);
+    expect(human.effects.snapshot()).toHaveLength(2);
+    expect(human.dexterity).toBe(100);
   });
 
   it("raises the maximum first and heals the new maximum (live 169: 93/111 -> 132/150)", () => {
@@ -117,6 +125,7 @@ describe("timed spells", () => {
       human,
       source(169, "Малый эликсир богатыря", HERO_ELIXIR),
       0,
+      false,
     );
     expect(events).toEqual([
       expect.objectContaining({
@@ -133,7 +142,7 @@ describe("timed spells", () => {
 
   it("pulls hp back under the old maximum when a max hp buff is replaced or ends", () => {
     const human = hero({ hp: 111 });
-    castTimedSpell(human, human, source(169, "Малый эликсир богатыря", HERO_ELIXIR), 0);
+    castTimedSpell(human, human, source(169, "Малый эликсир богатыря", HERO_ELIXIR), 0, false);
     expect(human.hp).toBe(150);
     human.effects.dispelGroups([843]);
     human.clampToMaxHp();
@@ -152,7 +161,13 @@ describe("timed spells", () => {
       ],
     };
     const human = hero();
-    const events = castTimedSpell(human, human, source(1014, "Малый эликсир Титана", titan), 0);
+    const events = castTimedSpell(
+      human,
+      human,
+      source(1014, "Малый эликсир Титана", titan),
+      0,
+      false,
+    );
     expect(events.filter((event) => event.type === "effect-use")).toHaveLength(1);
     expect(human.effects.snapshot()).toHaveLength(1);
     expect(human.meleeStrength()).toBeGreaterThan(53);

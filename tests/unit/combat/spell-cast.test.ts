@@ -136,6 +136,7 @@ describe("a player's glove spell goes through the same cast as a bot's", () => {
         spell: { effects: [{ kind: 3, duration: 80, skills: [{ skillId: "ANTI_STUN", value }] }] },
       },
       0,
+      false,
     );
     tryGloveKeepTurn(human, 6197, 1, false, { nowMs: 0, foe: () => foe, allies: () => [] });
     expect(foe.stunnedTurns).toBe(0);

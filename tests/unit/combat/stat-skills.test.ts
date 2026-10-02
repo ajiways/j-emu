@@ -62,7 +62,13 @@ function buff(human: HumanFighter | BotFighter, skills: [string, number][]): voi
       { kind: 3, duration: 40, skills: skills.map(([skillId, value]) => ({ skillId, value })) },
     ],
   };
-  castTimedSpell(human, human, { artikulId: 1, title: "t", picture: "p.png", spell, flags: 0 }, 0);
+  castTimedSpell(
+    human,
+    human,
+    { artikulId: 1, title: "t", picture: "p.png", spell, flags: 0 },
+    0,
+    false,
+  );
 }
 
 describe("LUCK", () => {
