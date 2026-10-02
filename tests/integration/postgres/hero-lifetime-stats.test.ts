@@ -88,9 +88,11 @@ describe("hero lifetime stats", () => {
       pvpKills: 0,
       dailyPvpKills: 0,
     });
+    expect(await stats.fatalityCount(hero.id)).toBe(0);
     await stats.applyFight(
       delta(hero.id, { wins: 1, fightDamage: 40, fatalities: 1, pvpKills: 2 }),
     );
+    expect(await stats.fatalityCount(hero.id)).toBe(1);
     await stats.applyFight(delta(hero.id, { losses: 1, fightDamage: 25, duelWins: 1 }));
     expect(await stats.read(hero.id, 1000)).toEqual({
       wins: 1,

@@ -47,6 +47,7 @@ export function createScenarioDesk(
       combat: deps.combat,
       combatFightStats: (heroId) => deps.characters.combatFightStats(heroId),
       parties: deps.parties,
+      lifetime: deps.characters,
     },
     partners: new ScenarioPartners({
       characters: deps.characters,

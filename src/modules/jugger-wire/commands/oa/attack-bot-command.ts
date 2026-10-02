@@ -107,6 +107,7 @@ export class AttackBotCommand implements OaCommand {
       this.inventory,
       this.catalog,
       this.parties,
+      this.characters,
     ).snapshot(hero.id);
     const occupied =
       hero.instanceCopyId === null

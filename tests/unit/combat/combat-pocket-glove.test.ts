@@ -97,6 +97,7 @@ function dumpLoadout(overrides: Partial<CombatLoadout> = {}): CombatLoadout {
     },
     gearSpells: [],
     partyId: null,
+    lifetimeExecutions: 0,
     ...overrides,
   };
 }
@@ -420,6 +421,7 @@ describe("CombatService pocket glove rage", () => {
           glove: null,
           gearSpells: [],
           partyId: null,
+          lifetimeExecutions: 0,
         },
       }),
     );

@@ -17,6 +17,7 @@ import {
   unpublishedBotFightStats,
   type CombatantFightStats,
 } from "../modules/combat/domain/combatant-fight-stats.ts";
+import type { HeroLifetimeStats } from "../modules/character/ports/hero-lifetime-stats.ts";
 import type { PartyMembershipQuery } from "../modules/party/ports/party-membership-query.ts";
 import { QuestDeniedError } from "../modules/quests/domain/quest-denied-error.ts";
 import type { QuestStartFightOpDocument } from "../modules/content/domain/content-quest.ts";
@@ -28,6 +29,7 @@ export type FightStartDeps = Readonly<{
   combat: CombatPort;
   combatFightStats: (heroId: number) => Promise<CombatantFightStats>;
   parties: Pick<PartyMembershipQuery, "partyIdOf">;
+  lifetime: Pick<HeroLifetimeStats, "fatalityCount">;
 }>;
 
 export async function startQuestFight(
@@ -107,9 +109,12 @@ export async function startHuntWithRoster(
   if (!primary) throw new Error("A hunt requires an enemy");
   const area = await deps.world.area(hero.areaId);
   await deps.inventory.ensureStarterInventory(hero.id);
-  const equipped = await new HuntCombatLoadout(deps.inventory, deps.catalog, deps.parties).snapshot(
-    hero.id,
-  );
+  const equipped = await new HuntCombatLoadout(
+    deps.inventory,
+    deps.catalog,
+    deps.parties,
+    deps.lifetime,
+  ).snapshot(hero.id);
   const loadout =
     input.gloveOverride === null ? equipped : { ...equipped, glove: input.gloveOverride };
   const fightId = await deps.combat.nextFightId();

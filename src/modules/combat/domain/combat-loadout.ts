@@ -104,6 +104,8 @@ export type CombatLoadout = Readonly<{
   gearSpells: readonly CombatGearSpell[];
   /** The party the hero fights in, for spells that only reach party members; `null` for none. */
   partyId: number | null;
+  /** The executions («Казни») the hero carried out in earlier fights; they unlock the animations. */
+  lifetimeExecutions: number;
 }>;
 
 export const EMPTY_COMBAT_LOADOUT: CombatLoadout = {
@@ -113,9 +115,13 @@ export const EMPTY_COMBAT_LOADOUT: CombatLoadout = {
   glove: null,
   gearSpells: [],
   partyId: null,
+  lifetimeExecutions: 0,
 };
 
 export function requireCombatLoadout(loadout: CombatLoadout): void {
+  if (!Number.isInteger(loadout.lifetimeExecutions) || loadout.lifetimeExecutions < 0) {
+    throw new Error("Loadout lifetime executions must be a non-negative integer");
+  }
   const seen = new Set<number>();
   for (const row of loadout.pocket) {
     requireFightSafeItemId(BigInt(row.itemId));

@@ -3,6 +3,7 @@ import type { BattleRules } from "./battle-rules.ts";
 import { settleDrain, type DrainOutcome } from "./drain.ts";
 import type { Fighter } from "./fighter.ts";
 import type { Participant } from "./participant.ts";
+import { pickExecutionAnimation } from "./execution-animation.ts";
 import { isExecution } from "./execution.ts";
 import {
   MELEE_REACT,
@@ -14,9 +15,6 @@ import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
 import { rollSwing, type Swing } from "./swing.ts";
-
-/** The animation of the execution: the first of the nine the old game unlocks by the count of executions. */
-const EXECUTION_ANIMATION = "fatality1";
 
 export type FighterStrike = Readonly<{
   swing: Swing;
@@ -32,8 +30,8 @@ export type FighterStrike = Readonly<{
   dRage: number;
   /** `effPurge` of every charge the strike spent the last of. */
   purges: readonly BattleEvent[];
-  /** The killing blow was an execution («Казнь»). */
-  execution: boolean;
+  /** The wire animation of the execution («Казнь») the killing blow was; `null` for no execution. */
+  execution: string | null;
 }>;
 
 /**
@@ -76,7 +74,7 @@ export function strikeFighter(
   );
   if (extra) resolveHpLoss(target, -extra.hpChange, attacker);
   const dealt = outcome.applied + (extra ? -extra.hpChange : 0);
-  const execution = isExecution({
+  const executes = isExecution({
     furySpent: swing.furySpent,
     killed: target.hp === 0,
     rawDamage: outcome.raw,
@@ -86,8 +84,9 @@ export function strikeFighter(
     chance: input.rules.executionChance,
     random: input.random,
   });
-  if (execution) {
-    attacker.creditExecution(target);
+  let execution: string | null = null;
+  if (executes) {
+    execution = pickExecutionAnimation(attacker.creditExecution(target), input.random);
     target.markExecuted();
   }
   return {
@@ -129,8 +128,8 @@ export function strikeEvents(
       targetMaxHp: target.maxHp,
       killed: strike.killed,
       // The execution replaces the kill react with its own animation of the blow.
-      react: strike.execution ? MELEE_REACT.kill : outcome.react,
-      ...(strike.execution ? { fatality: EXECUTION_ANIMATION } : {}),
+      react: strike.execution !== null ? MELEE_REACT.kill : outcome.react,
+      ...(strike.execution === null ? {} : { fatality: strike.execution }),
       ...(outcome.blocked > 0 ? { blocked: outcome.blocked } : {}),
       dRage: strike.dRage,
       ...(input.comboCp !== undefined ? { comboCp: input.comboCp } : {}),

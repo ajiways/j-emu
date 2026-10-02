@@ -117,6 +117,7 @@ export class AcceptFriendlyDuel {
       this.inventory,
       this.catalog,
       this.parties,
+      this.characters,
     ).snapshot(locked.id);
     return {
       accountId: locked.accountId,

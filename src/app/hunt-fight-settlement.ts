@@ -48,7 +48,7 @@ import { loadArtikulList, persistFightResources } from "./hunt-fight-loot-apply.
 type SettlementCharacters = CharacterResources &
   CharacterProgression &
   CharacterMoney &
-  HeroLifetimeStats &
+  Pick<HeroLifetimeStats, "applyFight"> &
   Readonly<{
     lockById(characterId: number): Promise<Hero>;
     applyEquipmentVitals(hero: Hero, bonuses: readonly ArtifactSkillBonus[]): Promise<Hero>;

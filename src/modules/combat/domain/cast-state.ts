@@ -184,6 +184,7 @@ export class CastState {
       glove: this.loadout.glove,
       gearSpells: this.loadout.gearSpells,
       partyId: this.loadout.partyId,
+      lifetimeExecutions: this.loadout.lifetimeExecutions,
     };
   }
 }

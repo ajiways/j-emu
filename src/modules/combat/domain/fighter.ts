@@ -32,8 +32,11 @@ export interface Fighter {
   markKilledBy(killerId: number): void;
   /** Books damage this fighter dealt to a target; a human target is booked by his id. */
   creditDealt(amount: number, target: Readonly<{ id: number; fighterKind: FighterKind }>): void;
-  /** Books an execution this fighter carried out on `target`, who falls to it. */
-  creditExecution(target: Fighter): void;
+  /**
+   * Books an execution this fighter carried out on `target`, who falls to it. Returns the count of
+   * his executions in all fights, this one included.
+   */
+  creditExecution(target: Fighter): number;
   /** The fighter fell to an execution. */
   markExecuted(): void;
   /** Books hit points this fighter restored to someone else; healing oneself is not booked. */

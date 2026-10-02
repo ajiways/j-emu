@@ -89,6 +89,7 @@ export class ScenarioPartners {
       this.deps.inventory,
       this.deps.catalog,
       this.deps.parties,
+      this.deps.characters,
     ).snapshot(hero.id);
     const fight = await combat.joinHunt({
       accountId: hero.accountId,

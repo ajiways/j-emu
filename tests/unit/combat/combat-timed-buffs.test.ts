@@ -59,6 +59,7 @@ const LOADOUT: CombatLoadout = {
   },
   gearSpells: [],
   partyId: null,
+  lifetimeExecutions: 0,
 };
 
 async function startedFight() {

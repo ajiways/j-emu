@@ -60,7 +60,9 @@ class FakeFighter implements Fighter {
 
   creditHealed(): void {}
 
-  creditExecution(): void {}
+  creditExecution(): number {
+    return 1;
+  }
 
   markExecuted(): void {}
 

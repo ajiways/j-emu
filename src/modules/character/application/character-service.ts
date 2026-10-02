@@ -138,6 +138,10 @@ export class CharacterService
     return this.lifetime.applyFight(delta);
   }
 
+  fatalityCount(characterId: number): Promise<number> {
+    return this.lifetime.fatalityCount(characterId);
+  }
+
   read(characterId: number, dailyCycleStart: number): Promise<HeroLifetimeCounters> {
     return this.lifetime.read(characterId, dailyCycleStart);
   }
@@ -307,11 +311,6 @@ export class CharacterService
     const hero = await this.heroes.lockById(characterId);
     if (!hero) throw new Error(`Hero ${characterId} is missing`);
     return hero;
-  }
-
-  async combatStrength(characterId: number): Promise<number> {
-    const stats = await this.combatFightStats(characterId);
-    return stats.strength;
   }
 
   async combatFightStats(characterId: number): Promise<HeroCombatStats> {

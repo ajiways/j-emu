@@ -93,6 +93,7 @@ export class FightJoinCommand implements OaCommand {
         this.inventory,
         this.catalog,
         this.parties,
+        this.characters,
       ).snapshot(hero.id);
       const fight = await this.combat.joinHunt({
         accountId: context.accountId,

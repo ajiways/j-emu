@@ -1,3 +1,4 @@
+import type { HeroLifetimeStats } from "../../character/ports/hero-lifetime-stats.ts";
 import type { PartyMembershipQuery } from "../../party/ports/party-membership-query.ts";
 import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
 import type { Catalog } from "../../catalog/ports/catalog.ts";
@@ -23,6 +24,7 @@ export class HuntCombatLoadout {
     private readonly inventory: InventoryService,
     private readonly catalog: Catalog,
     private readonly parties: Pick<PartyMembershipQuery, "partyIdOf">,
+    private readonly lifetime: Pick<HeroLifetimeStats, "fatalityCount">,
   ) {}
 
   async snapshot(characterId: number): Promise<CombatLoadout> {
@@ -53,6 +55,7 @@ export class HuntCombatLoadout {
       glove: await this.gloveFrom(items),
       gearSpells: await this.gearSpellsFrom(items),
       partyId: await this.parties.partyIdOf(characterId),
+      lifetimeExecutions: await this.lifetime.fatalityCount(characterId),
     };
   }
 

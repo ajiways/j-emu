@@ -49,6 +49,16 @@ export class PostgresHeroLifetimeStats implements HeroLifetimeStats {
       });
   }
 
+  async fatalityCount(characterId: number): Promise<number> {
+    const rows = await this.database
+      .session()
+      .select({ fatalities: heroLifetimeStats.fatalities })
+      .from(heroLifetimeStats)
+      .where(eq(heroLifetimeStats.heroId, characterId));
+    // No row: the hero has not finished a fight, so he has executed no one.
+    return rows[0]?.fatalities ?? 0;
+  }
+
   async read(characterId: number, dailyCycleStart: number): Promise<HeroLifetimeCounters> {
     const rows = await this.database
       .session()

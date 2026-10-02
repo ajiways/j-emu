@@ -165,8 +165,9 @@ export abstract class Participant implements Fighter {
     return this.executedValue;
   }
 
-  creditExecution(target: Fighter): void {
+  creditExecution(target: Fighter): number {
     this.executedVictims.add(target.id);
+    return this.init.loadout.lifetimeExecutions + this.executedVictims.size;
   }
 
   markExecuted(): void {

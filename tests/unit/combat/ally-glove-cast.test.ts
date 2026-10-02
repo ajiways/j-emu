@@ -49,6 +49,7 @@ const loadout: CombatLoadout = {
   },
   gearSpells: [],
   partyId: null,
+  lifetimeExecutions: 0,
 };
 
 function twoHeroes(matePartyId = 7): Battle {

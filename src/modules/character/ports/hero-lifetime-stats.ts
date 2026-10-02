@@ -31,6 +31,8 @@ export type FightCounterDelta = Readonly<{
 export interface HeroLifetimeStats {
   /** Adds the fight to the hero's counters; the daily kills start again in a later cycle. */
   applyFight(delta: FightCounterDelta): Promise<void>;
+  /** The executions of the hero in all finished fights; zero for a hero with no row yet. */
+  fatalityCount(characterId: number): Promise<number>;
   /** The counters; a hero who has not finished a fight yet has all of them at zero. */
   read(characterId: number, dailyCycleStart: number): Promise<HeroLifetimeCounters>;
 }

@@ -11,7 +11,14 @@ import { FixedRandom } from "../../support/fakes/fixed-random.ts";
 import { UNIT_HUNT_APPEARANCE, unitHuntHumanStats } from "../../support/hunt-start-input.ts";
 import { rosterOf } from "../../support/roster-of.ts";
 
-function human(heroId: number, team: 1 | 2, hp: number, level: number, strength = 10) {
+function human(
+  heroId: number,
+  team: 1 | 2,
+  hp: number,
+  level: number,
+  strength = 10,
+  lifetimeExecutions = 0,
+) {
   const fighter = new HumanFighter({
     accountId: heroId,
     heroId,
@@ -26,7 +33,7 @@ function human(heroId: number, team: 1 | 2, hp: number, level: number, strength 
     waiting: false,
     ...unitHuntHumanStats(strength),
     startedAtMs: 0,
-    loadout: EMPTY_COMBAT_LOADOUT,
+    loadout: { ...EMPTY_COMBAT_LOADOUT, lifetimeExecutions },
     appearance: UNIT_HUNT_APPEARANCE,
     effectIds: new FightEffectIds(),
   });
@@ -74,6 +81,31 @@ describe("an execution", () => {
     expect(hit).toMatchObject({ killed: true, fatality: "fatality1", react: 10 });
     expect(attacker.executedVictimIds()).toEqual([2]);
     expect(victim.executed).toBe(true);
+  });
+
+  it("shows an animation the earlier executions of the hero unlocked", () => {
+    // The 50th execution unlocks the second blow; the roll below takes the last of the pool.
+    const attacker = human(1, 1, 50, 5, 400, 49);
+    const victim = human(2, 2, 3, 5);
+    attacker.beginTurn(0, 20);
+    attacker.effects.attachChargingKind3({
+      strike: { ...NO_STRIKE_MODS, pcStr: 50 },
+      sourceId: attacker.id,
+      artikulId: RAGE_EFFECT_ARTIKUL_ID,
+      title: "Ярость",
+      img: "rageeffect_2702.png",
+      dmgType: 1,
+      remainTurns: 1,
+    });
+    const resolved = tryPairedMelee(attacker, victim, "center", {
+      finished: false,
+      rules: UNIT_BATTLE_RULES,
+      random: { integer: (min, max) => (min === 0 ? max : min), unit: () => 0.99 },
+      fightId: "8",
+      roster: rosterOf([attacker, victim], []),
+      nowMs: 0,
+    });
+    expect(hitOf(resolved)).toMatchObject({ fatality: "fatality2" });
   });
 
   it("does not happen without the rage button, even for a huge blow", () => {

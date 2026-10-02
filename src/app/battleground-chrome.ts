@@ -148,6 +148,7 @@ export class BattlegroundChrome {
       this.deps.inventory,
       this.deps.catalog,
       this.deps.party,
+      this.deps.characters,
     ).snapshot(locked.id);
     return {
       accountId: locked.accountId,

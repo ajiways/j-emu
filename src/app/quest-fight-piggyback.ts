@@ -45,6 +45,7 @@ export async function piggybackQuestFight(
     combat: deps.combat,
     combatFightStats: (id: number) => deps.characters.combatFightStats(id),
     parties: deps.parties,
+    lifetime: deps.characters,
   };
   if (isQuestModeStartFight(fight)) {
     const started = await startQuestFight(hero, fight, startDeps);
