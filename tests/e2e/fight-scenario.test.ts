@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Application } from "../../src/app/application.ts";
+import { RadwayPlayerAttackPolicy } from "../../src/app/radway-player-attack-policy.ts";
 import { AuthenticatedClient } from "../support/harness/authenticated-client.ts";
 import { ApplicationHarness } from "../support/harness/application-harness.ts";
 import { FixedRandom } from "../support/fakes/fixed-random.ts";
@@ -11,7 +12,11 @@ describe("scripted fight scenarios from chat", () => {
   let opened = "";
 
   beforeEach(async () => {
-    harness = new ApplicationHarness(undefined, undefined, { combatRandom: new FixedRandom() });
+    // The real policy: nobody may attack players, so a partner must join the hero's own team.
+    harness = new ApplicationHarness(undefined, undefined, {
+      combatRandom: new FixedRandom(),
+      playerAttackPolicy: new RadwayPlayerAttackPolicy(),
+    });
     application = await harness.start();
   });
 

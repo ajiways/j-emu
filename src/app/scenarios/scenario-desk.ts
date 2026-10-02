@@ -5,6 +5,7 @@ import type {
   CombatGloveLoadout,
   CombatGloveSpell,
 } from "../../modules/combat/domain/combat-loadout.ts";
+import { FightRules } from "../../modules/combat/domain/fight-rules.ts";
 import type { MobSpellBook } from "../../modules/combat/domain/mob-spell-book.ts";
 import { unpublishedBotFightStats } from "../../modules/combat/domain/combatant-fight-stats.ts";
 import type { FightWireMapper } from "../../modules/jugger-wire/application/fight-wire-mapper.ts";
@@ -100,7 +101,7 @@ export class ScenarioDesk {
       scenario,
       glove,
       fightId: started.fightId,
-      team: 1,
+      team: heroTeamOf(scenario),
     });
     return {
       ...(await this.reply(
@@ -209,4 +210,13 @@ async function spellBook(
     });
   }
   return { nothingWeight: entry.nothingWeight, spells };
+}
+
+/** The team the hero fights in: a quest fight puts the players in team 2, a hunt in team 1. */
+function heroTeamOf(scenario: FightScenario): 1 | 2 {
+  const rules =
+    scenario.purpose === "quest"
+      ? FightRules.for({ kind: "quest", botCount: scenario.enemies.length })
+      : FightRules.for({ kind: "hunt", instanceCopyId: null });
+  return rules.teamAssignment.openerTeam;
 }
