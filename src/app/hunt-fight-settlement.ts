@@ -23,7 +23,6 @@ import type {
 } from "../modules/combat/ports/fight-settlement.ts";
 import type { FightLootRouting } from "../modules/combat/ports/fight-loot-routing.ts";
 import type { FightPartyLootNotify } from "../modules/combat/ports/fight-party-loot-notify.ts";
-import { bestiaryCreditHeroIds } from "../modules/character/domain/bestiary-kill-credit.ts";
 import type { HeroLifetimeStats } from "../modules/character/ports/hero-lifetime-stats.ts";
 import { DAILY_CYCLE_RULES, lastMoscow6am } from "../modules/quests/domain/daily-cycle-rules.ts";
 import { fightCounterDeltas } from "./fight-counter-deltas.ts";
@@ -37,19 +36,14 @@ import type { Clock } from "../shared/kernel/clock.ts";
 import { TtlMap } from "../shared/kernel/ttl-map.ts";
 import type { UnitOfWork } from "../shared/kernel/unit-of-work.ts";
 import type { HeroismRules } from "./heroism-rules.ts";
-import {
-  cutForParty,
-  goldMinorOf,
-  rollHuntRewards,
-  type Drop,
-  type HuntOutcome,
-} from "./hunt-reward-plan.ts";
+import type { Drop, HuntOutcome } from "./hunt-reward-plan.ts";
+import { planHuntPayout } from "./hunt-payout.ts";
 import { persistPvpHonor } from "./persist-pvp-honor.ts";
 import type { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 import type { DungeonPersonalGrant } from "./dungeon-personal-grant.ts";
 import { FightDeathBreaks } from "./fight-death-breaks.ts";
 import { FightProgressLog, type FightProgressUp } from "./fight-progress-log.ts";
-import { capRolledDrops, loadArtikulList, persistFightResources } from "./hunt-fight-loot-apply.ts";
+import { loadArtikulList, persistFightResources } from "./hunt-fight-loot-apply.ts";
 
 type SettlementCharacters = CharacterResources &
   CharacterProgression &
@@ -117,35 +111,26 @@ export class HuntFightSettlement implements FightSettlement {
   private async persistHunt(outcome: HuntOutcome): Promise<ReadonlyMap<number, FightLootBlock>> {
     const cached = this.finished.get(outcome.fightId);
     if (cached) return cached;
-    const bot = await this.catalog.bot(outcome.botId);
-    if (!bot) throw new Error(`Bot catalog entry ${outcome.botId} is missing`);
     const opener = outcome.humans[0];
     if (!opener) throw new Error("Hunt outcome is missing the opener");
     const rewarded = outcome.humans.filter((human) => human.team === opener.team);
-    const roll = rollHuntRewards({ bot, outcome, rewarded, random: this.random });
-    const { top, moneyMinor } = roll;
     const dungeonCtx =
       outcome.kind === "win" ? await this.dungeonGrant.load(outcome.fightId) : null;
-    let rolled = dungeonCtx
-      ? roll.rolled.filter((drop) => !dungeonCtx.exclude.has(drop.artikulId))
-      : roll.rolled;
     const route = await this.lootRouting.routeFor(rewarded.map((human) => human.characterId));
-    const cut = cutForParty({
-      route,
-      humans: outcome.humans,
-      top,
-      moneyMinor,
-      rolledCount: rolled.length,
-    });
-    if (outcome.kind === "win" && top && rolled.length > 0 && !cut.deferItems) {
-      rolled = await capRolledDrops({
+    const payout = await planHuntPayout(
+      {
+        catalog: this.catalog,
         inventory: this.inventory,
         lootNeeded: this.lootNeeded,
-        characterId: top.characterId,
-        rolled,
-      });
-    }
-    const artikulList = await loadArtikulList(this.catalog, rolled);
+        random: this.random,
+      },
+      {
+        outcome,
+        rewarded,
+        route,
+        excludedDrops: dungeonCtx === null ? null : dungeonCtx.exclude,
+      },
+    );
     const lootByAccount = new Map<number, FightLootBlock>();
     await this.unitOfWork.run(async () => {
       const personal =
@@ -154,49 +139,44 @@ export class HuntFightSettlement implements FightSettlement {
         this.catalog,
         personal[0] === undefined ? [] : personal[0].items,
       );
-      if (cut.deferItems && route) {
+      if (route && payout.deferred.length > 0) {
         await this.partyBag.deposit(
           route.partyId,
-          rolled.map((drop) => ({ artikulId: drop.artikulId, quantity: drop.quantity })),
+          payout.deferred.map((drop) => ({ artikulId: drop.artikulId, quantity: drop.quantity })),
         );
       }
       for (const human of outcome.humans) {
         const ownTeam = human.team === opener.team;
-        const isTop = ownTeam && top?.characterId === human.characterId;
         const mine = personal.find((row) => row.characterId === human.characterId);
+        const drops = ownTeam ? (payout.drops.get(human.characterId) ?? []) : [];
         lootByAccount.set(
           human.accountId,
           await this.rewardHuman(outcome, human, {
-            experience: ownTeam ? (roll.experience.get(human.characterId) ?? 0) : 0,
-            goldMinor: goldMinorOf({ characterId: human.characterId, isTop, moneyMinor, cut }),
-            drops: isTop && !cut.deferItems ? rolled : [],
+            experience: ownTeam ? (payout.experience.get(human.characterId) ?? 0) : 0,
+            goldMinor: ownTeam ? (payout.goldMinor.get(human.characterId) ?? 0) : 0,
+            drops,
             extra: mine === undefined ? [] : mine.items,
             artikulList: [
-              ...(isTop && !cut.deferItems ? artikulList : []),
+              ...(await loadArtikulList(this.catalog, drops)),
               ...(mine === undefined || mine.items.length === 0 ? [] : personalList),
             ],
           }),
         );
       }
-      for (const heroId of bestiaryCreditHeroIds({
-        kind: outcome.kind,
-        topCharacterId: top === undefined ? null : top.characterId,
-        humanIds: rewarded.map((human) => human.characterId),
-        partyMemberIds: route?.memberCharacterIds ?? null,
-      })) {
-        await this.bestiary.noteWin(heroId, outcome.botId);
+      for (const kill of payout.bestiaryKills) {
+        await this.bestiary.noteWin(kill.heroId, kill.botId);
       }
       await this.recordCounters(outcome);
     });
     this.finished.set(outcome.fightId, lootByAccount);
-    if (route && (cut.partyMoneyMinor > 0 || cut.deferItems)) {
+    if (route && (payout.partyMoneyMinor > 0 || payout.deferred.length > 0)) {
       await this.partyLoot.notify({
         partyId: route.partyId,
         fightId: outcome.fightId,
         lootRules: route.lootRules,
-        moneyMinor: cut.partyMoneyMinor,
-        items: cut.deferItems ? rolled : [],
-        artikulList: cut.deferItems ? artikulList : [],
+        moneyMinor: payout.partyMoneyMinor,
+        items: payout.deferred,
+        artikulList: await loadArtikulList(this.catalog, payout.deferred),
       });
     }
     return lootByAccount;

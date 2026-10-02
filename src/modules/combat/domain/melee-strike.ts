@@ -83,6 +83,8 @@ export function strikeFighter(
     hpBefore,
     attacker,
     target,
+    chance: input.rules.executionChance,
+    random: input.random,
   });
   if (execution) {
     attacker.creditExecution(target);

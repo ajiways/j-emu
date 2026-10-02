@@ -125,6 +125,7 @@
     "dexChokesRag": 0.4,
     "defChokesDex": 0.3,
     "magresSoftC": 200,
+    "executionChance": 0.5,
     "meleeSourceIds": {
       "left": 1,
       "center": 2,

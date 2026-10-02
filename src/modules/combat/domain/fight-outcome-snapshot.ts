@@ -37,6 +37,19 @@ export type PracticeRestore = Readonly<{
   pocket: readonly PocketCellSnapshot[];
 }>;
 
+/** One enemy mob of a hunt and who brought it down: every mob pays its own reward. */
+export type HuntMobOutcome = Readonly<{
+  /** Catalog id of the mob. */
+  botId: number;
+  level: number;
+  /** What each human of the side dealt to this mob. */
+  damageByHuman: readonly Readonly<{ characterId: number; damage: number }>[];
+  /** What each allied mob (an idol's phantom, a scripted helper) dealt to this mob. */
+  alliedDamage: readonly number[];
+  /** The human whose execution felled it; `null` when it did not fall to one. */
+  executedBy: number | null;
+}>;
+
 type HuntFightOutcomeSnapshot = Readonly<{
   mode: "hunt";
   fightId: string;
@@ -45,10 +58,8 @@ type HuntFightOutcomeSnapshot = Readonly<{
   winnerTeam: 1 | 2;
   kind: FightOutcomeKind;
   humans: readonly FightHumanOutcome[];
-  /** What each allied mob (an idol's phantom, a scripted helper) dealt to the enemy mobs. */
-  alliedBotDamage: readonly number[];
-  /** The mob whose reward the fight pays fell to an execution: its experience and money double. */
-  primaryExecuted: boolean;
+  /** Every enemy mob the heroes fought (the first mob, the angered ones), in the order of the roster. */
+  mobs: readonly HuntMobOutcome[];
 }>;
 
 export type PracticeFightOutcomeSnapshot = Readonly<{

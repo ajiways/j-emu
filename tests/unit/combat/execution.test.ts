@@ -104,7 +104,14 @@ describe("an execution", () => {
 });
 
 describe("the level gate of an execution", () => {
-  const base = { furySpent: true, killed: true, rawDamage: 100, hpBefore: 10 };
+  const base = {
+    furySpent: true,
+    killed: true,
+    rawDamage: 100,
+    hpBefore: 10,
+    chance: 1,
+    random: new FixedRandom(),
+  };
 
   it("lets a player strike one up to ten levels above him, and a mob one level above", () => {
     expect(
@@ -119,5 +126,29 @@ describe("the level gate of an execution", () => {
     expect(
       isExecution({ ...base, attacker: { level: 12 }, target: { level: 10, fighterKind: "bot" } }),
     ).toBe(false);
+  });
+});
+
+describe("the chance of an execution", () => {
+  const base = {
+    furySpent: true,
+    killed: true,
+    rawDamage: 100,
+    hpBefore: 10,
+    attacker: { level: 5 },
+    target: { level: 5, fighterKind: "human" as const },
+  };
+
+  it("lets the conditions through only when the roll is under the chance", () => {
+    expect(isExecution({ ...base, chance: 0.5, random: new FixedRandom(0.49) })).toBe(true);
+    expect(isExecution({ ...base, chance: 0.5, random: new FixedRandom(0.5) })).toBe(false);
+  });
+
+  it("never rolls when a condition fails", () => {
+    const rolls: number[] = [];
+    const random = { integer: () => 0, unit: () => (rolls.push(1), 0) };
+    isExecution({ ...base, furySpent: false, chance: 0.5, random });
+    isExecution({ ...base, rawDamage: 1, chance: 0.5, random });
+    expect(rolls).toEqual([]);
   });
 });

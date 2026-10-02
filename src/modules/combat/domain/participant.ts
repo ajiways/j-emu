@@ -48,6 +48,7 @@ export abstract class Participant implements Fighter {
   private killedByValue: number | null = null;
   private damageToHumansValue = 0;
   private readonly damageToHumanById = new Map<number, number>();
+  private readonly damageToBotById = new Map<number, number>();
   private healedOthersValue = 0;
   private readonly executedVictims = new Set<number>();
   private executedValue = false;
@@ -193,6 +194,11 @@ export abstract class Participant implements Fighter {
     }
   }
 
+  /** What this fighter dealt to one mob, by the fight id of the mob. */
+  damageToBotOf(botId: number): number {
+    return this.damageToBotById.get(botId) ?? 0;
+  }
+
   /** What this fighter dealt to each human, by the id of the one who took it. */
   damageToHumansByVictim(): readonly Readonly<{ victimId: number; damage: number }>[] {
     return [...this.damageToHumanById].map(([victimId, damage]) => ({ victimId, damage }));
@@ -254,6 +260,7 @@ export abstract class Participant implements Fighter {
     }
     if (target.fighterKind === "bot") {
       this.damageToBotValue += amount;
+      this.damageToBotById.set(target.id, (this.damageToBotById.get(target.id) ?? 0) + amount);
       return;
     }
     this.damageToHumansValue += amount;

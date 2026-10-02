@@ -18,4 +18,5 @@ export const UNIT_BATTLE_RULES: BattleRules = {
   dexChokesRag: 0.4,
   defChokesDex: 0.3,
   magresSoftC: 200,
+  executionChance: 1,
 };

@@ -1,4 +1,3 @@
-import { primaryEnemyBot } from "./fight-bots.ts";
 import type { Roster } from "./roster.ts";
 import { practiceRestoreFrom } from "./battle-fighters.ts";
 import type { FightRules } from "./fight-rules.ts";
@@ -8,7 +7,11 @@ import {
   type FightSetup,
 } from "./fight-setup.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import type { FightOutcomeKind, FightOutcomeSnapshot } from "./fight-outcome-snapshot.ts";
+import type {
+  FightOutcomeKind,
+  FightOutcomeSnapshot,
+  HuntMobOutcome,
+} from "./fight-outcome-snapshot.ts";
 
 export function leaveWinnerTeam(humans: readonly HumanFighter[]): 1 | 2 {
   const remaining = humans.filter((human) => !human.leftLive);
@@ -78,10 +81,25 @@ export function battleOutcomeSnapshot(
     winnerTeam: input.winnerTeam,
     kind: input.kind,
     humans,
-    alliedBotDamage: input.roster.bots
-      .filter((bot) => bot.team === input.fightRules.teamAssignment.openerTeam)
-      .map((bot) => bot.damageToBot),
-    primaryExecuted: primaryEnemyBot(input.roster.bots, input.fightRules.teamAssignment.enemyTeam)
-      .executed,
+    mobs: huntMobOutcomes(input.roster, input.fightRules),
   };
+}
+
+/** The mobs that pay a reward: the enemy mobs of the fight, not those an enemy called in. */
+function huntMobOutcomes(roster: Roster, rules: FightRules): readonly HuntMobOutcome[] {
+  const { openerTeam, enemyTeam } = rules.teamAssignment;
+  const allies = roster.bots.filter((bot) => bot.team === openerTeam);
+  return roster.bots
+    .filter((bot) => bot.team === enemyTeam && !bot.summoned)
+    .map((bot) => ({
+      botId: bot.artikulId,
+      level: bot.level,
+      damageByHuman: roster.humans.map((human) => ({
+        characterId: human.heroId,
+        damage: human.damageToBotOf(bot.id),
+      })),
+      alliedDamage: allies.map((ally) => ally.damageToBotOf(bot.id)),
+      executedBy:
+        roster.humans.find((human) => human.executedVictimIds().includes(bot.id))?.heroId ?? null,
+    }));
 }

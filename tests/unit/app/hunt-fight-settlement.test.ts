@@ -4,7 +4,10 @@ import { describe, expect, it } from "vitest";
 import { HuntFightSettlement } from "../../../src/app/hunt-fight-settlement.ts";
 import type { Catalog } from "../../../src/modules/catalog/ports/catalog.ts";
 import type { ArtifactDefinition } from "../../../src/modules/catalog/domain/artifact-definition.ts";
-import type { FightOutcomeSnapshot } from "../../../src/modules/combat/domain/fight-outcome-snapshot.ts";
+import type {
+  FightOutcomeSnapshot,
+  HuntMobOutcome,
+} from "../../../src/modules/combat/domain/fight-outcome-snapshot.ts";
 import { goldToMinor, goldWireString } from "../../../src/modules/combat/domain/fight-money.ts";
 import { splitFightExperience } from "../../../src/modules/combat/domain/split-fight-experience.ts";
 import type { InventoryService } from "../../../src/modules/inventory/domain/inventory-service.ts";
@@ -49,7 +52,10 @@ describe("HuntFightSettlement", () => {
       silentDungeonGrant(),
       CLOCK,
     );
-    const executed = { ...outcome("win", 27, 20), primaryExecuted: true };
+    const executed = {
+      ...outcome("win", 27, 20),
+      mobs: [mobOf({ 1: 20 }, { executedBy: 1 })],
+    } as FightOutcomeSnapshot;
     const win = await settlement.persistFinished(executed);
     expect(characters.grants).toEqual([
       { characterId: 1, operationId: "fight:9:1", amount: bot.reward.baseExp * 2 },
@@ -59,6 +65,74 @@ describe("HuntFightSettlement", () => {
       experience: bot.reward.baseExp * 2,
       money: goldWireString(minMoneyMinor * 2),
     });
+  });
+
+  function settlementWith(characters: ReturnType<typeof recordingCharacters>) {
+    return new HuntFightSettlement(
+      identityUow(),
+      fakeCatalog(),
+      characters,
+      recordingInventory(),
+      new SequenceRandom([0, 0, 0, 0, 0, 0, 0, 0]),
+      { routeFor: async () => null },
+      { deposit: async () => undefined },
+      { notify: async () => undefined },
+      recordingBestiary(),
+      unlimitedLoot(),
+      HEROISM_RULES,
+      new PvpFightHonorCache(CLOCK),
+      silentDungeonGrant(),
+      CLOCK,
+    );
+  }
+
+  it("pays every mob on its own: the executed one twice, the other once", async () => {
+    const characters = recordingCharacters();
+    const win = await settlementWith(characters).persistFinished({
+      ...outcome("win", 27, 20),
+      mobs: [mobOf({ 1: 20 }, { executedBy: 1 }), mobOf({ 1: 20 })],
+    } as FightOutcomeSnapshot);
+    expect(characters.grants).toEqual([
+      { characterId: 1, operationId: "fight:9:1", amount: bot.reward.baseExp * 3 },
+    ]);
+    expect(characters.credits).toEqual([{ characterId: 1, minorUnits: minMoneyMinor * 3 }]);
+    expect(win.get(10)).toMatchObject({ experience: bot.reward.baseExp * 3 });
+  });
+
+  it("gives each mob's money to the one who dealt the most to that mob", async () => {
+    const characters = recordingCharacters();
+    await settlementWith(characters).persistFinished({
+      ...outcome("win", 27, 0),
+      humans: [human(10, 1, 15), human(11, 2, 15)],
+      mobs: [mobOf({ 1: 15, 2: 5 }), mobOf({ 1: 5, 2: 15 })],
+    } as FightOutcomeSnapshot);
+    expect([...characters.credits].sort((a, b) => a.characterId - b.characterId)).toEqual([
+      { characterId: 1, minorUnits: minMoneyMinor },
+      { characterId: 2, minorUnits: minMoneyMinor },
+    ]);
+  });
+
+  it("does not double the reward of a mob executed by someone who did not deal the most to it", async () => {
+    const characters = recordingCharacters();
+    await settlementWith(characters).persistFinished({
+      ...outcome("win", 27, 0),
+      humans: [human(10, 1, 5), human(11, 2, 15)],
+      mobs: [mobOf({ 1: 5, 2: 15 }, { executedBy: 1 })],
+    } as FightOutcomeSnapshot);
+    expect(characters.credits).toEqual([{ characterId: 2, minorUnits: minMoneyMinor }]);
+    const experience = splitFightExperience(
+      bot.reward.baseExp,
+      bot.level,
+      [
+        { characterId: 1, damage: 5, level: 1 },
+        { characterId: 2, damage: 15, level: 1 },
+      ],
+      [],
+    );
+    expect(characters.grants).toEqual([
+      { characterId: 1, operationId: "fight:9:1", amount: experience.get(1) },
+      { characterId: 2, operationId: "fight:9:2", amount: experience.get(2) },
+    ]);
   });
 
   it("grants EXP/money/loot on win once and skips them on loss", async () => {
@@ -226,8 +300,7 @@ describe("HuntFightSettlement", () => {
       winnerTeam: 1,
       kind: "win",
       humans: [human(10, 1, 10)],
-      alliedBotDamage: [90],
-      primaryExecuted: false,
+      mobs: [mobOf({ 1: 10 }, { allied: [90] })],
     });
     const mine = result.get(10);
     expect(characters.credits).toEqual([]);
@@ -262,8 +335,7 @@ describe("HuntFightSettlement", () => {
       winnerTeam: 1,
       kind: "win",
       humans: [human(10, 1, 10), { ...human(11, 2, 5), damageToBot: 5 }],
-      alliedBotDamage: [],
-      primaryExecuted: false,
+      mobs: [mobOf({ 1: 10, 2: 5 })],
     });
     const experience = splitFightExperience(
       bot.reward.baseExp,
@@ -310,8 +382,7 @@ describe("HuntFightSettlement", () => {
       winnerTeam: 1,
       kind: "win",
       humans: [human(10, 1, 20), { ...human(11, 2, 0), team: 2, hp: 19 }],
-      alliedBotDamage: [],
-      primaryExecuted: false,
+      mobs: [mobOf({ 1: 20, 2: 0 })],
     });
     expect(characters.notes).toEqual([
       { characterId: 1, hp: 27 },
@@ -485,8 +556,25 @@ function outcome(kind: "win" | "loss", hp: number, damageToBot: number): FightOu
     winnerTeam: kind === "win" ? 1 : 2,
     kind,
     humans: [human(10, 1, damageToBot, hp)],
-    alliedBotDamage: [],
-    primaryExecuted: false,
+    mobs: [mobOf({ 1: damageToBot })],
+  };
+}
+
+/** One enemy mob: the damage each hero (by character id) dealt to it, its allied damage, its executioner. */
+function mobOf(
+  damage: Readonly<Record<number, number>>,
+  options: Readonly<{ allied?: readonly number[]; executedBy?: number }> = {},
+): HuntMobOutcome {
+  const bot = playableHuntBot();
+  return {
+    botId: bot.id,
+    level: bot.level,
+    damageByHuman: Object.entries(damage).map(([characterId, dealt]) => ({
+      characterId: Number(characterId),
+      damage: dealt,
+    })),
+    alliedDamage: options.allied ?? [],
+    executedBy: options.executedBy ?? null,
   };
 }
 

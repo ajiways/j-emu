@@ -117,6 +117,7 @@ export class CompositionRoot {
           dexChokesRag: extras.combatRules?.dexChokesRag ?? policy.combat.dexChokesRag,
           defChokesDex: extras.combatRules?.defChokesDex ?? policy.combat.defChokesDex,
           magresSoftC: extras.combatRules?.magresSoftC ?? policy.combat.magresSoftC,
+          executionChance: extras.combatRules?.executionChance ?? policy.combat.executionChance,
         },
         clock,
         delay,

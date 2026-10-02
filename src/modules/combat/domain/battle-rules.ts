@@ -15,4 +15,6 @@ export type BattleRules = Readonly<{
   dexChokesRag: number;
   defChokesDex: number;
   magresSoftC: number;
+  /** The chance that a swing meeting every condition of an execution becomes one. */
+  executionChance: number;
 }>;

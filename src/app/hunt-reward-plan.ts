@@ -2,6 +2,7 @@ import type { BotDefinition } from "../modules/catalog/domain/bot-definition.ts"
 import type {
   FightHumanOutcome,
   FightOutcomeSnapshot,
+  HuntMobOutcome,
 } from "../modules/combat/domain/fight-outcome-snapshot.ts";
 import { goldToMinor, rollMoneyGold } from "../modules/combat/domain/fight-money.ts";
 import {
@@ -25,46 +26,48 @@ const EXECUTION_REWARD_MULTIPLIER = 2;
 export type HuntOutcome = Extract<FightOutcomeSnapshot, { mode: "hunt" }>;
 export type Drop = Readonly<{ artikulId: number; quantity: number }>;
 
-/** What the win of a hunt pays before it is split among the party: one roll for the whole fight. */
-export type HuntRewardRoll = Readonly<{
+/** What the fall of one mob pays before it is split among the party: one roll per mob. */
+export type MobRewardRoll = Readonly<{
   experience: ReadonlyMap<number, number>;
-  /** The human who dealt the most damage, `undefined` when an allied mob outdid every human. */
+  /** The human who dealt the most damage to the mob, `undefined` when an allied mob outdid every human. */
   top: DamageShare | undefined;
   moneyMinor: number;
   rolled: readonly Drop[];
 }>;
 
-/** The experience, money and drops of a won hunt, rolled once from the top damager's level. */
-export function rollHuntRewards(
+/**
+ * The experience, money and drops of one mob that fell in a won hunt, rolled from the level of the
+ * human who dealt the most to it. An execution doubles the experience and the money only when the
+ * executioner is that top damager: the reward condition holds for him, and the execution does not
+ * waive it.
+ */
+export function rollMobReward(
   input: Readonly<{
     bot: BotDefinition;
-    outcome: HuntOutcome;
+    mob: HuntMobOutcome;
     rewarded: readonly FightHumanOutcome[];
     random: RandomSource;
   }>,
-): HuntRewardRoll {
-  const { bot, outcome, rewarded, random } = input;
-  if (outcome.kind !== "win")
-    return { experience: new Map(), top: undefined, moneyMinor: 0, rolled: [] };
-  const shares = rewarded.map((human) => ({
-    characterId: human.characterId,
-    damage: human.damageToBot,
-    level: human.level,
-  }));
-  const doubled = outcome.primaryExecuted ? EXECUTION_REWARD_MULTIPLIER : 1;
+): MobRewardRoll {
+  const { bot, mob, rewarded, random } = input;
+  const dealt = new Map(mob.damageByHuman.map((row) => [row.characterId, row.damage]));
+  const shares = rewarded.map((human) => {
+    const damage = dealt.get(human.characterId);
+    if (damage === undefined) {
+      throw new Error(`Mob ${mob.botId} outcome lacks the damage of hero ${human.characterId}`);
+    }
+    return { characterId: human.characterId, damage, level: human.level };
+  });
+  const top = rewardedTopDamager(shares, mob.alliedDamage);
+  const doubled =
+    top !== undefined && mob.executedBy === top.characterId ? EXECUTION_REWARD_MULTIPLIER : 1;
   const experience = new Map(
-    [
-      ...splitFightExperience(
-        bot.reward.baseExp,
-        outcome.botLevel,
-        shares,
-        outcome.alliedBotDamage,
-      ),
-    ].map(([characterId, amount]) => [characterId, amount * doubled]),
+    [...splitFightExperience(bot.reward.baseExp, mob.level, shares, mob.alliedDamage)].map(
+      ([characterId, amount]) => [characterId, amount * doubled],
+    ),
   );
-  const top = rewardedTopDamager(shares, outcome.alliedBotDamage);
   if (!top) return { experience, top, moneyMinor: 0, rolled: [] };
-  const over = overlevel(top.level, outcome.botLevel);
+  const over = overlevel(top.level, mob.level);
   const moneyMinor =
     doubled *
     goldToMinor(
