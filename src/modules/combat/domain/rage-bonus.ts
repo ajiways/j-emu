@@ -11,3 +11,12 @@ export function rageBonusPctFromFill(fill: number): number {
   const raw = f <= 50 ? (18 / 50) * f : 18 + ((50 - 18) / 50) * (f - 50);
   return Math.round(raw * 10) / 10;
 }
+
+/** The rage fill (0–100) that gave a next-hit bonus of `pct` percent: the inverse of the curve above. */
+export function rageFillFromBonusPct(pct: number): number {
+  if (typeof pct !== "number" || Number.isNaN(pct) || pct < 0) {
+    throw new Error("Rage bonus must be a non-negative number");
+  }
+  const bonus = Math.min(50, pct);
+  return bonus <= 18 ? (bonus * 50) / 18 : 50 + ((bonus - 18) * 50) / 32;
+}

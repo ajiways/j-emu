@@ -75,7 +75,7 @@ export function strikeFighter(
   if (extra) resolveHpLoss(target, -extra.hpChange, attacker);
   const dealt = outcome.applied + (extra ? -extra.hpChange : 0);
   const executes = isExecution({
-    furySpent: swing.furySpent,
+    furyFill: swing.furyFill,
     killed: target.hp === 0,
     rawDamage: outcome.raw,
     hpBefore,

@@ -27,6 +27,10 @@ function silentDungeonGrant(): DungeonPersonalGrant {
   );
 }
 
+/** The hit points and mana the hero of the fake characters really has at most. */
+const HERO_MAX_HP = 100;
+const HERO_MAX_MP = 50;
+
 const CLOCK = new MutableClock(new Date("2026-10-03T12:00:00.000Z"));
 
 describe("HuntFightSettlement", () => {
@@ -133,6 +137,16 @@ describe("HuntFightSettlement", () => {
       { characterId: 1, operationId: "fight:9:1", amount: experience.get(1) },
       { characterId: 2, operationId: "fight:9:2", amount: experience.get(2) },
     ]);
+  });
+
+  it("keeps no more hit points and mana than the hero's own maximum after a fight with a raised one", async () => {
+    const characters = recordingCharacters();
+    await settlementWith(characters).persistFinished({
+      ...outcome("win", HERO_MAX_HP + 40, 20),
+      humans: [{ ...human(10, 1, 20, HERO_MAX_HP + 40), mp: HERO_MAX_MP + 30 }],
+    } as FightOutcomeSnapshot);
+    expect(characters.notes).toEqual([{ characterId: 1, hp: HERO_MAX_HP }]);
+    expect(characters.mps).toEqual([{ characterId: 1, mp: HERO_MAX_MP }]);
   });
 
   it("grants EXP/money/loot on win once and skips them on loss", async () => {
@@ -684,7 +698,7 @@ function recordingCharacters() {
       throw new Error("unused");
     },
     async lockById(characterId: number) {
-      return testHero({ id: characterId });
+      return testHero({ id: characterId, maxHp: HERO_MAX_HP, maxMp: HERO_MAX_MP });
     },
     async applyEquipmentVitals() {
       throw new Error("unused");

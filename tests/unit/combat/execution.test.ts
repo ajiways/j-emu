@@ -137,7 +137,7 @@ describe("an execution", () => {
 
 describe("the level gate of an execution", () => {
   const base = {
-    furySpent: true,
+    furyFill: 100,
     killed: true,
     rawDamage: 100,
     hpBefore: 10,
@@ -163,7 +163,7 @@ describe("the level gate of an execution", () => {
 
 describe("the chance of an execution", () => {
   const base = {
-    furySpent: true,
+    furyFill: 100,
     killed: true,
     rawDamage: 100,
     hpBefore: 10,
@@ -176,10 +176,19 @@ describe("the chance of an execution", () => {
     expect(isExecution({ ...base, chance: 0.5, random: new FixedRandom(0.5) })).toBe(false);
   });
 
+  it("shrinks with the rage the button carried: half a scale, half the chance", () => {
+    const half = { ...base, furyFill: 50, chance: 0.5 };
+    expect(isExecution({ ...half, random: new FixedRandom(0.24) })).toBe(true);
+    expect(isExecution({ ...half, random: new FixedRandom(0.26) })).toBe(false);
+    const little = { ...base, furyFill: 4, chance: 0.5 };
+    expect(isExecution({ ...little, random: new FixedRandom(0.019) })).toBe(true);
+    expect(isExecution({ ...little, random: new FixedRandom(0.03) })).toBe(false);
+  });
+
   it("never rolls when a condition fails", () => {
     const rolls: number[] = [];
     const random = { integer: () => 0, unit: () => (rolls.push(1), 0) };
-    isExecution({ ...base, furySpent: false, chance: 0.5, random });
+    isExecution({ ...base, furyFill: null, chance: 0.5, random });
     isExecution({ ...base, rawDamage: 1, chance: 0.5, random });
     expect(rolls).toEqual([]);
   });

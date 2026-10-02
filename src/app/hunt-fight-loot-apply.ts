@@ -13,12 +13,19 @@ type SettlementCharacters = Readonly<{
   lockById(characterId: number): Promise<Hero>;
 }>;
 
-/** Mana goes first: a defeated hero becomes a ghost, and a ghost takes no resource updates. */
+/**
+ * What a hero keeps of his hit points and mana after a fight. A bonus to the maximum (an elixir, a
+ * scenario's own maximum) lasts only for the fight, so the remainder is cut to the hero's real
+ * maximum. Mana goes first: a defeated hero becomes a ghost, and a ghost takes no resource updates.
+ */
 export async function persistFightResources(
   characters: SettlementCharacters,
   resources: Readonly<{ characterId: number; hp: number; mp: number }>,
 ): Promise<void> {
-  const { characterId, hp, mp } = resources;
+  const { characterId } = resources;
+  const hero = await characters.lockById(characterId);
+  const hp = Math.min(resources.hp, hero.maxHp);
+  const mp = Math.min(resources.mp, hero.maxMp);
   await characters.noteMp({ characterId, mp });
   if (hp === 0) await characters.noteDefeat({ characterId, hp: 0 });
   else await characters.noteHp({ characterId, hp });

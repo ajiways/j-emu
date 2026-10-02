@@ -59,6 +59,6 @@ export type SpentStrike = Readonly<{
   drain: Drain;
   /** Icons of the effects whose last charge this strike was. */
   purged: readonly number[];
-  /** The swing carried the «Ярость» button: it may become an execution. */
-  furySpent: boolean;
+  /** The rage fill (0–100) the «Ярость» button of this swing carried; `null` without the button. */
+  furyFill: number | null;
 }>;

@@ -13,8 +13,8 @@ export type Swing = Readonly<{
   drain: Drain;
   /** `effPurge` of the charged effects this swing spent the last charge of. */
   purges: readonly BattleEvent[];
-  /** The swing carried the «Ярость» button. */
-  furySpent: boolean;
+  /** The rage fill (0–100) the «Ярость» button of the swing carried; `null` without the button. */
+  furyFill: number | null;
 }>;
 
 /**
@@ -39,6 +39,6 @@ export function rollSwing(
     critChance: crit < 1 ? crit : 0,
     drain: addDrain(spent.drain, effects.standingDrain()),
     purges: spent.purged.map((effectId) => ({ type: "effect-purge" as const, effectId })),
-    furySpent: spent.furySpent,
+    furyFill: spent.furyFill,
   };
 }
