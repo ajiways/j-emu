@@ -310,6 +310,47 @@ describe("scripted fight scenarios from chat", () => {
     expect(JSON.stringify(await second.pollFight())).toContain('"srcType":4');
   });
 
+  it("party-heal: the teammate a healing sign lands on sees the cast animation, not only the effect", async () => {
+    const first = await AuthenticatedClient.login(application);
+    const second = await AuthenticatedClient.login(application);
+    await first.objectAction({ object: "common", action: "init", sq: 1 });
+    const payload = await second.objectAction({ object: "common", action: "init", sq: 1 });
+    const nick = (payload["user|conf"] as { nick?: string } | undefined)?.nick ?? "";
+    const sent = await first.objectAction({
+      object: "chat",
+      action: "add",
+      form: { message: `/scenario party-heal ${nick}`, type: "main" },
+      sq: 2,
+    });
+    const fightId = huntFightIdFrom(sent);
+    await first.fight({ rc: "auth", eid: fightId, sq: 3 });
+    await second.fight({ rc: "auth", eid: fightId, sq: 3 });
+    const opened = JSON.stringify(await first.pollFight());
+    await second.pollFight();
+    const sign = /"artikulId":4219[\s\S]*?"srcId":(\d+),"srcType":2/.exec(opened);
+    if (!sign?.[1]) throw new Error("The healing sign is not in the pocket");
+    const mate = new RegExp(`"id":(\\d+),[^{}]*?"nick":"${nick}"`).exec(opened);
+    if (!mate?.[1]) throw new Error("The teammate is not in the fight roster");
+    const mateId = Number(mate[1]);
+    await first.fight({
+      rc: "castSpell",
+      srcType: 2,
+      srcId: Number(sign[1]),
+      targetId: mateId,
+      sq: 4,
+    });
+    await first.pollFight();
+    // The client polls until something comes; the cast reaches the teammate a moment later.
+    let seen = "[]";
+    for (let attempt = 0; attempt < 20 && seen === "[]"; attempt += 1) {
+      seen = JSON.stringify(await second.pollFight());
+      if (seen === "[]") await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+    expect(seen).toContain('"et":"effUse"');
+    expect(seen).toContain('"et":"cast"');
+    expect(seen).toContain('"animData":"botles_healfriend_red"');
+  });
+
   it("tells a player who is not there or is already fighting, and starts the fight for the rest", async () => {
     const first = await AuthenticatedClient.login(application);
     const sent = await first.objectAction({

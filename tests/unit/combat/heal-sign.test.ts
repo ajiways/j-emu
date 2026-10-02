@@ -71,6 +71,36 @@ describe("a healing sign from the pocket", () => {
     expect(mate.healedOthers).toBe(0);
   });
 
+  it("uses up nothing when the cast is denied: the item and its cooldown stay", () => {
+    const barred: CombatLoadout = {
+      ...loadout,
+      pocket: loadout.pocket.map((row) => ({
+        ...row,
+        spell: { ...row.spell, targetRestr: { ...row.spell.targetRestr, groupdeny: true } },
+      })),
+    };
+    const battle = new BattleClass(
+      unitHuntFightSetup({ botMaxHp: 200, loadout: barred }),
+      UNIT_BATTLE_RULES,
+      FightRules.forHunt(null),
+      new FixedRandom(),
+      new FixedRandom(),
+    );
+    battle.authenticate(1, NOW);
+    battle.addHuman(unitFightJoin({ loadout: barred, hp: 100, maxHp: 100 }));
+    battle.authenticate(2, NOW);
+    battle.tryPocket(1, { itemId: 100_001, targetId: 2, sequence: 3 }, NOW);
+    const [healer] = battle.boardParticipants().humans;
+    if (!healer) throw new Error("a hero expected");
+    const left = healer.casts.pocketRow(100_001)?.count;
+    const later = NOW + 40_000;
+    expect(() => battle.tryPocket(1, { itemId: 100_001, targetId: 2, sequence: 4 }, later)).toThrow(
+      FightCastDenied,
+    );
+    expect(healer.casts.pocketRow(100_001)?.count).toBe(left);
+    expect(healer.casts.cooldownLeftMs(100_001, later + 1_000)).toBe(0);
+  });
+
   it("heals oneself without booking anything: own heals are not counted", () => {
     const battle = twoHeroes();
     const [healer] = battle.boardParticipants().humans;

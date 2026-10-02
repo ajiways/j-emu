@@ -14,9 +14,18 @@ export function fanoutRosterEffects(
 ): void {
   const fx = events.filter((event) => event.type === "effect-use" || event.type === "effect-purge");
   if (fx.length === 0) return;
+  const humans = battle.boardParticipants().humans;
   for (const accountId of battle.authedAccountIds()) {
     if (accountId === actorAccountId) continue;
-    enqueue(accountId, fx);
+    const heroId = humans.find((human) => human.accountId === accountId)?.heroId;
+    // The one a buff is cast on sees the cast animation too, not only the effect appearing.
+    const shown = events.filter(
+      (event) =>
+        event.type === "effect-use" ||
+        event.type === "effect-purge" ||
+        (event.type === "buff-cast" && event.targetId === heroId),
+    );
+    enqueue(accountId, shown);
     wakeAccount(accountId);
   }
 }

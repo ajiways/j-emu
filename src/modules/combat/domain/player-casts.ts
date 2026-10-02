@@ -65,7 +65,8 @@ export function tryPocketCast(
   if (spellKind(row.spell, 3) && !isTimedSpell(row.spell)) requirePocketOrb(row);
   // An item for one's own side goes to the one clicked (a teammate, or oneself); asked first.
   const carriers = allies(row.spell);
-  const consumed = human.casts.consumePocket(itemId, nowMs);
+  // The item is used up only once the cast has gone through: a cast the carrier's standing
+  // effects forbid is denied with the item and its cooldown untouched.
   const events = castSpell({
     caster: human,
     foe: () => {
@@ -73,11 +74,11 @@ export function tryPocketCast(
     },
     allies: carriers.length > 0 ? carriers : [human],
     source: {
-      artikulId: consumed.artifactId,
-      title: consumed.title,
-      picture: consumed.picture,
-      spell: consumed.spell,
-      flags: pocketSpellWireFlags(consumed.spell.flags),
+      artikulId: row.artifactId,
+      title: row.title,
+      picture: row.picture,
+      spell: row.spell,
+      flags: pocketSpellWireFlags(row.spell.flags),
     },
     nowMs,
     presentation: POCKET_PRESENTATION,
@@ -85,8 +86,9 @@ export function tryPocketCast(
     sequence,
   });
   if (events === null) {
-    throw new Error(`Pocket artifact ${consumed.artifactId} has no supported fight effect`);
+    throw new Error(`Pocket artifact ${row.artifactId} has no supported fight effect`);
   }
+  human.casts.consumePocket(itemId, nowMs);
   return { kind: "resolved", consumePocketItemId: itemId, events };
 }
 

@@ -37,9 +37,10 @@ export function attachSpellTicks(
     events.push({
       type: "effect-use",
       artikulId: card.artikulId,
-      animation: "",
+      // The effect carries the animation and the flags of its spell (live: the healing sign).
+      animation: card.spell.animData ?? "",
       kind: snap.kind,
-      flags: 0,
+      flags: card.flags,
       img: snap.img,
       title: snap.title,
       persId: carrier.id,
