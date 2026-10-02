@@ -76,6 +76,12 @@ export function settleAfterMobFell(
     dissolveDuelContaining(input.duels, input.roster.all(), hitBot.fightId);
     return { events: [{ type: "opponent-wait" }], finished: false };
   }
-  retargetDuelTo({ duel: input.duel, fromHeroId: hitBot.fightId, waiter: intervenor });
+  retargetDuelTo({
+    duel: input.duel,
+    fromHeroId: hitBot.fightId,
+    waiter: intervenor,
+    other: input.opener,
+    openingRandom: input.openingRandom,
+  });
   return { events: [humanOpponentNew(intervenor)], finished: false };
 }

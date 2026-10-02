@@ -4,6 +4,7 @@ import { duelPairingOf, requireBattleHuman } from "./battle-lookups.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
 import { primaryEnemyBot } from "./fight-bots.ts";
+import type { RandomSource } from "./random-source.ts";
 import type { Roster } from "./roster.ts";
 import type { ShuffleOutcome } from "./try-shuffle-after-hits.ts";
 
@@ -12,6 +13,7 @@ type TurnoverState = Readonly<{
   finished: boolean;
   roster: Roster;
   duels: FightDuel[];
+  openingRandom: RandomSource;
 }>;
 
 export type NextWaiter = Readonly<{
@@ -33,6 +35,7 @@ export function shuffleOfBattle(state: TurnoverState, accountId: number): Shuffl
     bots: state.roster.bots,
     duels: state.duels,
     finished: state.finished,
+    openingRandom: state.openingRandom,
   });
 }
 
@@ -54,5 +57,6 @@ export function nextWaiterOfBattle(
     enemyTeam,
     botHp: primary.hp,
     finished: state.finished,
+    openingRandom: state.openingRandom,
   });
 }

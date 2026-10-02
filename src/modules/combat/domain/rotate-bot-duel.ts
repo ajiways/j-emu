@@ -3,6 +3,8 @@ import type { BotFighter } from "./bot-fighter.ts";
 import type { Participant } from "./participant.ts";
 import type { FightRules } from "./fight-rules.ts";
 import type { Roster } from "./roster.ts";
+import type { RandomSource } from "./random-source.ts";
+import { rollDuelOpener } from "./roll-duel-opener.ts";
 import { PAIR_HITS_TO_SWITCH } from "./try-shuffle-after-hits.ts";
 
 /**
@@ -17,6 +19,7 @@ export function rotateBotDuel(
     duel: FightDuel;
     roster: Roster;
     fightRules: FightRules;
+    openingRandom: RandomSource;
   }>,
 ): Participant | null {
   const { bot, foe, duel } = input;
@@ -34,7 +37,7 @@ export function rotateBotDuel(
   waiter.pair();
   duel.replace(bot.id, waiter.id);
   duel.resetHits();
-  duel.setNextActor(waiter.id);
+  rollDuelOpener(duel, { holder: waiter, other: foe, random: input.openingRandom });
   if (bot.hp !== hp[0] || foe.hp !== hp[1] || waiter.hp !== hp[2]) {
     throw new Error("Rotation must not change participant HP");
   }

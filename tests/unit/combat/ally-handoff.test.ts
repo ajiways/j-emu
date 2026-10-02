@@ -1,3 +1,4 @@
+import { SequenceRandom } from "../../support/fakes/sequence-random.ts";
 import { rosterOf } from "../../support/roster-of.ts";
 import { describe, expect, it } from "vitest";
 import {
@@ -84,6 +85,7 @@ describe("a waiting ally mob takes a duel over", () => {
       bots: [foe, ally],
       duels: [duel],
       finished: false,
+      openingRandom: new FixedRandom(),
     });
     expect(outcome).toEqual({ kind: "ally-handoff", actorAccountId: 1 });
     expect(duel.otherId(foe.fightId)).toBe(ally.fightId);
@@ -125,5 +127,34 @@ describe("a waiting ally mob takes a duel over", () => {
     expect(fightContinuesWithout([human], [foe, ally], 1)).toBe(true);
     ally.applyDamage(ally.hp);
     expect(fightContinuesWithout([human], [foe, ally], 1)).toBe(false);
+  });
+
+  it("rolls who strikes first once the mob has stepped in, on the initiative of both", () => {
+    const effectIds = new FightEffectIds();
+    const duelAfter = (opening: number) => {
+      const human = hero(effectIds);
+      const foe = mob(1_000_000 + opening * 100, 1, effectIds);
+      const ally = mob(1_000_001 + opening * 100, 2, effectIds);
+      ally.unpair();
+      const duel = new FightDuel(human.heroId, foe.fightId, human.heroId);
+      for (let round = 0; round < 3; round += 1) {
+        duel.addHit(human.heroId);
+        duel.addHit(foe.fightId);
+      }
+      shuffleAfterHits({
+        pairing: { duel, humans: [human], pairedAccountId: human.accountId },
+        openerTeam: 2,
+        enemyTeam: 1,
+        bots: [foe, ally],
+        duels: [duel],
+        finished: false,
+        openingRandom: new SequenceRandom([opening]),
+      });
+      return { duel, foe, ally };
+    };
+    const lost = duelAfter(0.01);
+    expect(lost.duel.nextActorId).toBe(lost.foe.fightId);
+    const won = duelAfter(0.99);
+    expect(won.duel.nextActorId).toBe(won.ally.fightId);
   });
 });

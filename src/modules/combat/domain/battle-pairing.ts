@@ -6,6 +6,8 @@ import type { BotFighter } from "./bot-fighter.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import { peekWaitingEnemy, takeNextEnemyForHuman } from "./wait-queue.ts";
 import { PAIR_HITS_TO_SWITCH, planShuffle, type ShuffleOutcome } from "./try-shuffle-after-hits.ts";
+import type { RandomSource } from "./random-source.ts";
+import { rollDuelOpener } from "./roll-duel-opener.ts";
 import { retargetDuelTo } from "./retarget-duel.ts";
 
 export type DuelPairing = {
@@ -42,6 +44,7 @@ export function shuffleAfterHits(
     bots: readonly BotFighter[];
     duels: FightDuel[];
     finished: boolean;
+    openingRandom: RandomSource;
   }>,
 ): ShuffleOutcome {
   const actor = requirePaired(input.pairing);
@@ -81,17 +84,32 @@ export function shuffleAfterHits(
       input.bots,
       actor,
       foeBot,
+      input.openingRandom,
     );
   }
   if (plan === "reserve-swap") {
-    return applyReserveSwap(input.pairing, input.bots, input.enemyTeam, input.duels, actor, foeBot);
+    return applyReserveSwap(
+      input.pairing,
+      input.bots,
+      input.enemyTeam,
+      input.duels,
+      actor,
+      foeBot,
+      input.openingRandom,
+    );
   }
   const waiter = livingWaiterOnTeam(input.pairing.humans, openerTeam);
   if (!waiter) return handOffToAllyBot(input, actor, foeBot, openerTeam);
   const actorHp = actor.hp;
   const waiterHp = waiter.hp;
   actor.unpair();
-  retargetDuelTo({ duel: input.pairing.duel, fromHeroId: actor.heroId, waiter });
+  retargetDuelTo({
+    duel: input.pairing.duel,
+    fromHeroId: actor.heroId,
+    waiter,
+    other: foeBot,
+    openingRandom: input.openingRandom,
+  });
   input.pairing.pairedAccountId = waiter.accountId;
   if (actor.hp !== actorHp || waiter.hp !== waiterHp) {
     throw new Error("Shuffle must not change participant HP");
@@ -107,7 +125,11 @@ export function shuffleAfterHits(
 
 /** The duel goes on between the foe and a waiting ally mob; the hero steps out and waits. */
 function handOffToAllyBot(
-  input: Readonly<{ pairing: DuelPairing; bots: readonly BotFighter[] }>,
+  input: Readonly<{
+    pairing: DuelPairing;
+    bots: readonly BotFighter[];
+    openingRandom: RandomSource;
+  }>,
   actor: HumanFighter,
   foeBot: BotFighter,
   team: 1 | 2,
@@ -119,7 +141,11 @@ function handOffToAllyBot(
   ally.pair();
   input.pairing.duel.replace(actor.heroId, ally.fightId);
   input.pairing.duel.resetHits();
-  input.pairing.duel.setNextActor(ally.fightId);
+  rollDuelOpener(input.pairing.duel, {
+    holder: ally,
+    other: foeBot,
+    random: input.openingRandom,
+  });
   if (actor.hp !== hp[0] || foeBot.hp !== hp[1] || ally.hp !== hp[2]) {
     throw new Error("Shuffle must not change participant HP");
   }
@@ -134,6 +160,7 @@ export function pairNextWaiter(
     enemyTeam: 1 | 2;
     botHp: number;
     finished: boolean;
+    openingRandom: RandomSource;
   }>,
 ): Readonly<{
   accountId: number;
@@ -145,7 +172,16 @@ export function pairNextWaiter(
   const team = input.botHp > 0 ? input.openerTeam : previous.team;
   const waiter = livingWaiterOnTeam(input.pairing.humans, team);
   if (!waiter) return null;
-  retargetDuelTo({ duel: input.pairing.duel, fromHeroId: previous.heroId, waiter });
+  const stays = input.pairing.duel.otherId(previous.heroId);
+  retargetDuelTo({
+    duel: input.pairing.duel,
+    fromHeroId: previous.heroId,
+    waiter,
+    other:
+      input.pairing.humans.find((entry) => entry.heroId === stays) ??
+      requireBotById(input.primary, stays),
+    openingRandom: input.openingRandom,
+  });
   input.pairing.pairedAccountId = waiter.accountId;
   if (!waiter.authed) return { accountId: waiter.accountId, authed: false, events: [] };
   if (input.botHp > 0) {
@@ -177,6 +213,7 @@ function applyReserveSwap(
   duels: FightDuel[],
   actor: HumanFighter,
   foeBot: BotFighter,
+  openingRandom: RandomSource,
 ): ShuffleOutcome {
   const reserve = peekWaitingEnemy(bots, enemyTeam);
   if (!reserve) throw new Error("Shuffle reserve-swap requires a waiting enemy");
@@ -195,7 +232,7 @@ function applyReserveSwap(
   foeBot.unpair();
   pairing.duel.replace(foeBot.fightId, next.fightId);
   pairing.duel.resetHits();
-  pairing.duel.setNextActor(actor.heroId);
+  rollDuelOpener(pairing.duel, { holder: actor, other: next, random: openingRandom });
   if (actor.hp !== actorHp || foeBot.hp !== foeHp || next.hp !== nextHp) {
     throw new Error("Shuffle must not change participant HP");
   }
@@ -209,6 +246,7 @@ function applyCrossSwap(
   bots: readonly BotFighter[],
   actor: HumanFighter,
   actorBot: BotFighter,
+  openingRandom: RandomSource,
 ): ShuffleOutcome {
   const otherHuman = livingAllyIn(other, humans, bots, actor.team);
   if (!otherHuman) throw new Error("Shuffle cross-swap requires a living other ally");
@@ -226,8 +264,8 @@ function applyCrossSwap(
   other.replace(otherBot.fightId, actorBot.fightId);
   leftPairing.duel.resetHits();
   other.resetHits();
-  leftPairing.duel.setNextActor(actor.heroId);
-  other.setNextActor(otherHuman.id);
+  rollDuelOpener(leftPairing.duel, { holder: actor, other: otherBot, random: openingRandom });
+  rollDuelOpener(other, { holder: otherHuman, other: actorBot, random: openingRandom });
   if (
     actor.hp !== leftHp ||
     otherHuman.hp !== rightHp ||
@@ -285,4 +323,9 @@ function requirePaired(pairing: DuelPairing): HumanFighter {
   const human = pairing.humans.find((entry) => entry.accountId === pairing.pairedAccountId);
   if (!human) throw new Error(`Human account ${pairing.pairedAccountId} is not in this battle`);
   return human;
+}
+
+function requireBotById(bot: BotFighter, id: number): BotFighter {
+  if (bot.fightId !== id) throw new Error(`The side ${id} that stays in the duel is unknown`);
+  return bot;
 }

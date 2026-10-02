@@ -288,6 +288,8 @@ export class CombatMeleeLoop {
         },
       ]);
       this.wakeAccount(opponent.accountId);
+      this.openDuel(battle, accountId);
+      return;
     }
     this.passTurnToFoe(battle, accountId);
   }
@@ -315,7 +317,7 @@ export class CombatMeleeLoop {
     if (!waiter.authed) return;
     this.enqueue(waiter.accountId, waiter.events);
     this.wakeAccount(waiter.accountId);
-    this.giveTurn(battle, battle.heroIdFor(waiter.accountId));
+    this.openDuel(battle, waiter.accountId);
   }
 
   private applyShuffle(battle: Battle, accountId: number): boolean {
@@ -331,7 +333,7 @@ export class CombatMeleeLoop {
       shuffle,
       enqueue: this.enqueue,
       wakeAccount: this.wakeAccount,
-      grantAfterPair: (id) => this.giveTurn(battle, battle.heroIdFor(id)),
+      grantAfterPair: (id) => this.openDuel(battle, id),
       grantPairedBot: (id) => this.openDuel(battle, id),
     });
     this.aiDriver.arm(battle);
