@@ -1,3 +1,5 @@
+import { DAILY_CYCLE_RULES, lastMoscow6am } from "../../../quests/domain/daily-cycle-rules.ts";
+import type { Clock } from "../../../../shared/kernel/clock.ts";
 import type { Catalog } from "../../../catalog/ports/catalog.ts";
 import type { CharacterService } from "../../../character/application/character-service.ts";
 import type { ProfessionsService } from "../../../professions/application/professions-service.ts";
@@ -13,6 +15,7 @@ export class UserStatsCommand implements OaCommand {
     private readonly characters: CharacterService,
     private readonly catalog: Catalog,
     private readonly professions: ProfessionsService,
+    private readonly clock: Clock,
   ) {}
 
   async execute(accountId: number): Promise<OaEncodedResponse> {
@@ -27,6 +30,10 @@ export class UserStatsCommand implements OaCommand {
           rows,
           this.catalog,
           await this.professions.farmStats(hero.id),
+          await this.characters.read(
+            hero.id,
+            lastMoscow6am(this.clock.unixSeconds(), DAILY_CYCLE_RULES),
+          ),
         ),
       };
     } catch (error) {

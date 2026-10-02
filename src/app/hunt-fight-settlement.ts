@@ -24,6 +24,9 @@ import type {
 import type { FightLootRouting } from "../modules/combat/ports/fight-loot-routing.ts";
 import type { FightPartyLootNotify } from "../modules/combat/ports/fight-party-loot-notify.ts";
 import { bestiaryCreditHeroIds } from "../modules/character/domain/bestiary-kill-credit.ts";
+import type { HeroLifetimeStats } from "../modules/character/ports/hero-lifetime-stats.ts";
+import { DAILY_CYCLE_RULES, lastMoscow6am } from "../modules/quests/domain/daily-cycle-rules.ts";
+import { fightCounterDeltas } from "./fight-counter-deltas.ts";
 import type { HeroBestiary } from "../modules/character/ports/hero-bestiary.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
 import type { DeathDurabilityBreak } from "../modules/inventory/domain/apply-death-durability.ts";
@@ -44,12 +47,14 @@ import {
 import { persistPvpHonor } from "./persist-pvp-honor.ts";
 import type { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 import type { DungeonPersonalGrant } from "./dungeon-personal-grant.ts";
+import { FightDeathBreaks } from "./fight-death-breaks.ts";
 import { FightProgressLog, type FightProgressUp } from "./fight-progress-log.ts";
 import { capRolledDrops, loadArtikulList, persistFightResources } from "./hunt-fight-loot-apply.ts";
 
 type SettlementCharacters = CharacterResources &
   CharacterProgression &
   CharacterMoney &
+  HeroLifetimeStats &
   Readonly<{
     lockById(characterId: number): Promise<Hero>;
     applyEquipmentVitals(hero: Hero, bonuses: readonly ArtifactSkillBonus[]): Promise<Hero>;
@@ -59,7 +64,7 @@ export class HuntFightSettlement implements FightSettlement {
   private readonly finished: TtlMap<string, Map<number, FightLootBlock>>;
   private readonly left: TtlMap<string, true>;
   private readonly progress = new FightProgressLog();
-  private readonly deathBreaks: TtlMap<string, Map<number, readonly DeathDurabilityBreak[]>>;
+  private readonly deathBreaks: FightDeathBreaks;
 
   constructor(
     private readonly unitOfWork: UnitOfWork,
@@ -75,11 +80,11 @@ export class HuntFightSettlement implements FightSettlement {
     private readonly heroism: HeroismRules,
     private readonly pvpHonor: PvpFightHonorCache,
     private readonly dungeonGrant: DungeonPersonalGrant,
-    clock: Clock,
+    private readonly clock: Clock,
   ) {
     this.finished = new TtlMap(FINISHED_FIGHT_RETENTION_MS, clock);
     this.left = new TtlMap(FINISHED_FIGHT_RETENTION_MS, clock);
-    this.deathBreaks = new TtlMap(FINISHED_FIGHT_RETENTION_MS, clock);
+    this.deathBreaks = new FightDeathBreaks(clock);
   }
 
   persistHumanLeft(snapshot: HumanLeftSnapshot): Promise<void> {
@@ -181,6 +186,7 @@ export class HuntFightSettlement implements FightSettlement {
       })) {
         await this.bestiary.noteWin(heroId, outcome.botId);
       }
+      await this.recordCounters(outcome);
     });
     this.finished.set(outcome.fightId, lootByAccount);
     if (route && (cut.partyMoneyMinor > 0 || cut.deferItems)) {
@@ -284,6 +290,7 @@ export class HuntFightSettlement implements FightSettlement {
           cells: restore.pocket,
         });
       }
+      await this.recordCounters(outcome);
     });
     this.finished.set(outcome.fightId, lootByAccount);
     return lootByAccount;
@@ -314,6 +321,7 @@ export class HuntFightSettlement implements FightSettlement {
           human.hp,
         );
       }
+      await this.recordCounters(outcome);
       return persistPvpHonor({
         outcome,
         characters: this.characters,
@@ -325,6 +333,14 @@ export class HuntFightSettlement implements FightSettlement {
     for (const up of honor.rankUps) this.progress.note(outcome.fightId, up);
     this.finished.set(outcome.fightId, lootByAccount);
     return lootByAccount;
+  }
+
+  /** The lifetime counters of everyone who stayed to the end of the fight. */
+  private async recordCounters(outcome: FightOutcomeSnapshot): Promise<void> {
+    const now = Math.floor(this.clock.now().getTime() / 1000);
+    for (const delta of fightCounterDeltas(outcome, lastMoscow6am(now, DAILY_CYCLE_RULES))) {
+      await this.characters.applyFight(delta);
+    }
   }
 
   honorOf(fightId: string): ReadonlyMap<number, number> {
@@ -340,18 +356,11 @@ export class HuntFightSettlement implements FightSettlement {
   }
 
   takeDeathBreaks(fightId: string): ReadonlyMap<number, readonly DeathDurabilityBreak[]> {
-    const row = this.deathBreaks.get(fightId) ?? new Map();
-    this.deathBreaks.delete(fightId);
-    return row;
+    return this.deathBreaks.takeFight(fightId);
   }
 
   takeAccountDeathBreaks(fightId: string, accountId: number): readonly DeathDurabilityBreak[] {
-    const row = this.deathBreaks.get(fightId);
-    if (!row) return [];
-    const breaks = row.get(accountId) ?? [];
-    row.delete(accountId);
-    if (row.size === 0) this.deathBreaks.delete(fightId);
-    return breaks;
+    return this.deathBreaks.takeAccount(fightId, accountId);
   }
 
   private async applyDeathIfDefeated(
@@ -365,26 +374,12 @@ export class HuntFightSettlement implements FightSettlement {
       characterId,
       random: this.random,
     });
-    this.rememberDeathBreaks(fightId, accountId, result.breaks);
+    this.deathBreaks.remember(fightId, accountId, result.breaks);
     if (!result.paperdollChanged) return;
     const hero = await this.characters.lockById(characterId);
     await this.characters.applyEquipmentVitals(
       hero,
       await this.inventory.equippedSkillBonuses(characterId),
     );
-  }
-
-  private rememberDeathBreaks(
-    fightId: string,
-    accountId: number,
-    breaks: readonly DeathDurabilityBreak[],
-  ): void {
-    if (breaks.length === 0) return;
-    const row = this.deathBreaks.get(fightId) ?? new Map();
-    if (row.has(accountId)) {
-      throw new Error(`Death breaks for fight ${fightId} account ${accountId} already recorded`);
-    }
-    row.set(accountId, breaks);
-    this.deathBreaks.set(fightId, row);
   }
 }

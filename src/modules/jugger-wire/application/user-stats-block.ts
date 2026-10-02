@@ -3,6 +3,7 @@ import {
   SUM_REPUTATION_OBJECT_ID,
   SUM_REPUTATION_TITLE,
 } from "../../catalog/domain/reputation-ids.ts";
+import type { HeroLifetimeCounters } from "../../character/ports/hero-lifetime-stats.ts";
 import type { HeroReputationRow } from "../../character/ports/character-reputation.ts";
 import { ProtocolError } from "./protocol-error.ts";
 
@@ -29,6 +30,7 @@ export async function buildUserStatsBlock(
   reputations: readonly HeroReputationRow[],
   catalog: ReputationCatalog,
   farmStats: readonly unknown[],
+  lifetime: HeroLifetimeCounters,
 ): Promise<UserStatsBlock> {
   const tracks = await catalog.reputationTracks();
   const byId = new Map(tracks.map((track) => [track.objectId, track]));
@@ -57,12 +59,12 @@ export async function buildUserStatsBlock(
     stats: [
       namedStat("Опыт", hero.exp, 1, 1, ""),
       namedStat("Героизм", hero.honor, 2, 1, ""),
-      namedStat("Убито врагов", 0, 3, 1, ""),
-      namedStat("Количество побед в дуэлях", 0, 4, 1, ""),
-      namedStat("Казни", 0, 8, 1, ""),
+      namedStat("Убито врагов", lifetime.pvpKills, 3, 1, ""),
+      namedStat("Количество побед в дуэлях", lifetime.duelWins, 4, 1, ""),
+      namedStat("Казни", lifetime.fatalities, 8, 1, ""),
       ...faction,
       namedStat(SUM_REPUTATION_TITLE, total, SUM_REPUTATION_OBJECT_ID, 3, ""),
-      namedStat("Убито врагов за день", 0, 49, 1, ""),
+      namedStat("Убито врагов за день", lifetime.dailyPvpKills, 49, 1, ""),
     ],
     farm_stats: farmStats,
     fish_stats: [],

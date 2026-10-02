@@ -251,7 +251,7 @@ export class JuggerCommandModule {
       new UserPersonalDetailsCommand(bootstrap),
       new UserSavePersonalDetailsCommand(characters, bootstrap),
       new UserSkillsCommand(bootstrap),
-      new UserStatsCommand(characters, catalog, professions),
+      new UserStatsCommand(characters, catalog, professions, clock),
       new UserProfessionsCommand(characters),
       new UserUnitframeCommand(unitOfWork, characters, bootstrap),
       new UserViewCommand(bootstrap),

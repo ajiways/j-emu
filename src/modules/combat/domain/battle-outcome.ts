@@ -1,3 +1,4 @@
+import { primaryEnemyBot } from "./fight-bots.ts";
 import type { Roster } from "./roster.ts";
 import { practiceRestoreFrom } from "./battle-fighters.ts";
 import type { FightRules } from "./fight-rules.ts";
@@ -38,6 +39,8 @@ export function battleOutcomeSnapshot(
     damageToHumans: human.damageToHumans,
     damageByVictim: human.damageToHumansByVictim(),
     healedByTarget: human.healedHumansByTarget(),
+    executedVictimIds: human.executedVictimIds(),
+    humanKills: input.roster.humans.filter((victim) => victim.killedBy === human.id).length,
     leftLive: human.leftLive,
     pocket: human.pocketCells(),
   }));
@@ -78,5 +81,7 @@ export function battleOutcomeSnapshot(
     alliedBotDamage: input.roster.bots
       .filter((bot) => bot.team === input.fightRules.teamAssignment.openerTeam)
       .map((bot) => bot.damageToBot),
+    primaryExecuted: primaryEnemyBot(input.roster.bots, input.fightRules.teamAssignment.enemyTeam)
+      .executed,
   };
 }

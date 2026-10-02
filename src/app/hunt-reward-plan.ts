@@ -19,6 +19,9 @@ import {
 import type { FightLootRoute } from "../modules/combat/ports/fight-loot-routing.ts";
 import { splitMinorUnits } from "../modules/combat/domain/split-minor-units.ts";
 
+/** The experience and the money of a mob that fell to an execution count twice; its drops do not. */
+const EXECUTION_REWARD_MULTIPLIER = 2;
+
 export type HuntOutcome = Extract<FightOutcomeSnapshot, { mode: "hunt" }>;
 export type Drop = Readonly<{ artikulId: number; quantity: number }>;
 
@@ -48,18 +51,25 @@ export function rollHuntRewards(
     damage: human.damageToBot,
     level: human.level,
   }));
-  const experience = splitFightExperience(
-    bot.reward.baseExp,
-    outcome.botLevel,
-    shares,
-    outcome.alliedBotDamage,
+  const doubled = outcome.primaryExecuted ? EXECUTION_REWARD_MULTIPLIER : 1;
+  const experience = new Map(
+    [
+      ...splitFightExperience(
+        bot.reward.baseExp,
+        outcome.botLevel,
+        shares,
+        outcome.alliedBotDamage,
+      ),
+    ].map(([characterId, amount]) => [characterId, amount * doubled]),
   );
   const top = rewardedTopDamager(shares, outcome.alliedBotDamage);
   if (!top) return { experience, top, moneyMinor: 0, rolled: [] };
   const over = overlevel(top.level, outcome.botLevel);
-  const moneyMinor = goldToMinor(
-    scaleMoneyReward(rollMoneyGold(bot.reward.moneyMin, bot.reward.moneyMax, random), over),
-  );
+  const moneyMinor =
+    doubled *
+    goldToMinor(
+      scaleMoneyReward(rollMoneyGold(bot.reward.moneyMin, bot.reward.moneyMax, random), over),
+    );
   return {
     experience,
     top,

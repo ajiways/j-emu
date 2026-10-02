@@ -1,3 +1,4 @@
+import type { FightCounterDelta } from "../../../src/modules/character/ports/hero-lifetime-stats.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { describe, expect, it } from "vitest";
 import { HuntFightSettlement } from "../../../src/app/hunt-fight-settlement.ts";
@@ -29,6 +30,36 @@ describe("HuntFightSettlement", () => {
   const bot = playableHuntBot();
   const minMoneyMinor = goldToMinor(bot.reward.moneyMin);
   const minMoneyWire = goldWireString(minMoneyMinor);
+
+  it("pays the experience and the money twice for a mob that fell to an execution", async () => {
+    const characters = recordingCharacters();
+    const settlement = new HuntFightSettlement(
+      identityUow(),
+      fakeCatalog(),
+      characters,
+      recordingInventory(),
+      new SequenceRandom([0, 0, 0, 0]),
+      { routeFor: async () => null },
+      { deposit: async () => undefined },
+      { notify: async () => undefined },
+      recordingBestiary(),
+      unlimitedLoot(),
+      HEROISM_RULES,
+      new PvpFightHonorCache(CLOCK),
+      silentDungeonGrant(),
+      CLOCK,
+    );
+    const executed = { ...outcome("win", 27, 20), primaryExecuted: true };
+    const win = await settlement.persistFinished(executed);
+    expect(characters.grants).toEqual([
+      { characterId: 1, operationId: "fight:9:1", amount: bot.reward.baseExp * 2 },
+    ]);
+    expect(characters.credits).toEqual([{ characterId: 1, minorUnits: minMoneyMinor * 2 }]);
+    expect(win.get(10)).toMatchObject({
+      experience: bot.reward.baseExp * 2,
+      money: goldWireString(minMoneyMinor * 2),
+    });
+  });
 
   it("grants EXP/money/loot on win once and skips them on loss", async () => {
     const characters = recordingCharacters();
@@ -196,6 +227,7 @@ describe("HuntFightSettlement", () => {
       kind: "win",
       humans: [human(10, 1, 10)],
       alliedBotDamage: [90],
+      primaryExecuted: false,
     });
     const mine = result.get(10);
     expect(characters.credits).toEqual([]);
@@ -231,6 +263,7 @@ describe("HuntFightSettlement", () => {
       kind: "win",
       humans: [human(10, 1, 10), { ...human(11, 2, 5), damageToBot: 5 }],
       alliedBotDamage: [],
+      primaryExecuted: false,
     });
     const experience = splitFightExperience(
       bot.reward.baseExp,
@@ -278,6 +311,7 @@ describe("HuntFightSettlement", () => {
       kind: "win",
       humans: [human(10, 1, 20), { ...human(11, 2, 0), team: 2, hp: 19 }],
       alliedBotDamage: [],
+      primaryExecuted: false,
     });
     expect(characters.notes).toEqual([
       { characterId: 1, hp: 27 },
@@ -373,6 +407,8 @@ describe("HuntFightSettlement", () => {
           damageToHumans: 350,
           damageByVictim: [{ victimId: 2, damage: 350 }],
           healedByTarget: [],
+          executedVictimIds: [],
+          humanKills: 0,
         },
         {
           ...human(11, 2, 0, 0),
@@ -382,6 +418,8 @@ describe("HuntFightSettlement", () => {
           damageToHumans: 222,
           damageByVictim: [{ victimId: 1, damage: 222 }],
           healedByTarget: [],
+          executedVictimIds: [],
+          humanKills: 0,
         },
       ],
     };
@@ -448,6 +486,7 @@ function outcome(kind: "win" | "loss", hp: number, damageToBot: number): FightOu
     kind,
     humans: [human(10, 1, damageToBot, hp)],
     alliedBotDamage: [],
+    primaryExecuted: false,
   };
 }
 
@@ -469,6 +508,8 @@ function human(
     damageToHumans: 0,
     damageByVictim: [],
     healedByTarget: [],
+    executedVictimIds: [],
+    humanKills: 0,
     leftLive: false,
     pocket: [],
   };
@@ -498,6 +539,7 @@ function recordingCharacters() {
     grants: [] as Array<{ characterId: number; operationId: string; amount: number }>,
     honorGrants: [] as Array<{ characterId: number; operationId: string; amount: number }>,
     credits: [] as Array<{ characterId: number; minorUnits: number }>,
+    counters: [] as FightCounterDelta[],
     async noteHp(command: { characterId: number; hp: number }) {
       this.notes.push(command);
       return snapshot(command.characterId, command.hp);
@@ -537,6 +579,12 @@ function recordingCharacters() {
         honorStatus: 0,
         contentReleaseId: "r",
       };
+    },
+    async applyFight(delta: FightCounterDelta) {
+      this.counters.push(delta);
+    },
+    async read() {
+      throw new Error("unused");
     },
     async creditMoney(command: { characterId: number; minorUnits: number }) {
       this.credits.push(command);

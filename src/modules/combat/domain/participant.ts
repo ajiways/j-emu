@@ -49,6 +49,8 @@ export abstract class Participant implements Fighter {
   private damageToHumansValue = 0;
   private readonly damageToHumanById = new Map<number, number>();
   private healedOthersValue = 0;
+  private readonly executedVictims = new Set<number>();
+  private executedValue = false;
   private readonly healedHumanById = new Map<number, number>();
   private lastOpponentIdValue: number | null = null;
 
@@ -152,6 +154,24 @@ export abstract class Participant implements Fighter {
   get damageToBot(): number {
     return this.damageToBotValue;
   }
+  /** The fighters this one executed in the fight (ids), for the counters and the rewards. */
+  executedVictimIds(): readonly number[] {
+    return [...this.executedVictims];
+  }
+
+  /** The fighter fell to an execution. */
+  get executed(): boolean {
+    return this.executedValue;
+  }
+
+  creditExecution(target: Fighter): void {
+    this.executedVictims.add(target.id);
+  }
+
+  markExecuted(): void {
+    this.executedValue = true;
+  }
+
   /** The hit points this fighter restored to others (his own heals are not counted). */
   get healedOthers(): number {
     return this.healedOthersValue;

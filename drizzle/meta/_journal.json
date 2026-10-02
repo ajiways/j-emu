@@ -281,6 +281,13 @@
       "when": 1790872268791,
       "tag": "0039_catalog_bot_initiative",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1790970803550,
+      "tag": "0040_character_hero_lifetime_stats",
+      "breakpoints": true
     }
   ]
 }

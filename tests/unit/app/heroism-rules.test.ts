@@ -67,8 +67,8 @@ describe("rawHonorFromDamage", () => {
 describe("rawHonorFromVictims", () => {
   it("rates the damage per victim and rounds the sum once", () => {
     const victims = [
-      { dmgToVictim: 108, victimLevel: 6, victimHpMax: 108 },
-      { dmgToVictim: 111, victimLevel: 7, victimHpMax: 111 },
+      { executed: false, dmgToVictim: 108, victimLevel: 6, victimHpMax: 108 },
+      { executed: false, dmgToVictim: 111, victimLevel: 7, victimHpMax: 111 },
     ];
     // (15 + 16) × 1.4 = 43.4; rounding each victim first would give 21 + 22 = 43.
     expect(rawHonorFromVictims(victims, true, HEROISM_RULES, [])).toBe(43);
@@ -81,7 +81,7 @@ describe("rawHonorFromVictims", () => {
 });
 
 describe("heroism of healing", () => {
-  const healed = [{ dmgToVictim: 400, victimLevel: 7, victimHpMax: 80 }];
+  const healed = [{ executed: false, dmgToVictim: 400, victimLevel: 7, victimHpMax: 80 }];
 
   it("pays half of what the same amount of damage pays", () => {
     // Base 16 × 400 / 80 = 80, times 1.4 for a win: 112 for damage, 56 for healing.
@@ -92,5 +92,16 @@ describe("heroism of healing", () => {
 
   it("adds to the damage before one rounding", () => {
     expect(rawHonorFromVictims(healed, true, HEROISM_RULES, healed)).toBe(168);
+  });
+});
+
+describe("heroism of an execution", () => {
+  it("doubles the damage term of the executed victim and no other", () => {
+    const victims = [
+      { executed: true, dmgToVictim: 108, victimLevel: 6, victimHpMax: 108 },
+      { executed: false, dmgToVictim: 111, victimLevel: 7, victimHpMax: 111 },
+    ];
+    // (15 × 2 + 16) × 1.4 = 64.4, not (15 + 16) × 2 × 1.4.
+    expect(rawHonorFromVictims(victims, true, HEROISM_RULES, [])).toBe(64);
   });
 });

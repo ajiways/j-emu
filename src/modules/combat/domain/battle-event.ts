@@ -75,6 +75,8 @@ export type BattleEvent =
       drain?: number;
       selfReact?: number;
       extraHits?: readonly ExtraHit[];
+      /** The animation of an execution of the victim. */
+      fatality?: string;
     }>
   | Readonly<{ type: "turn-granted"; timeoutSeconds: number }>
   | Readonly<{ type: "turn-timeout" }>

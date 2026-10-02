@@ -48,6 +48,7 @@ describe("charged strike effects", () => {
       critChance: 0,
       drain: { healPct: 0, hurtPct: 0 },
       purged: [2],
+      furySpent: true,
     });
     expect(fx.takeStrike()).toMatchObject({ pcStrs: [43], purged: [1] });
     expect(fx.takeStrike()).toMatchObject({ pcStrs: [], purged: [] });

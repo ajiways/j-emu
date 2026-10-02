@@ -12,6 +12,7 @@ import { Hero } from "./domain/hero.ts";
 import type { RegenPolicy } from "./domain/regen-policy.ts";
 import { PostgresExperienceGrantRepository } from "./infrastructure/postgres-experience-grant-repository.ts";
 import { PostgresHonorGrantRepository } from "./infrastructure/postgres-honor-grant-repository.ts";
+import { PostgresHeroLifetimeStats } from "./infrastructure/postgres-hero-lifetime-stats.ts";
 import { PostgresHeroBestiary } from "./infrastructure/postgres-hero-bestiary.ts";
 import { PostgresHeroLearnedBonusRepository } from "./infrastructure/postgres-hero-learned-bonus-repository.ts";
 import { PostgresHeroRepository } from "./infrastructure/postgres-hero-repository.ts";
@@ -107,6 +108,7 @@ export class CharacterModule {
         clock,
         regenPolicy,
         activeFight,
+        new PostgresHeroLifetimeStats(database),
       ),
       new PostgresHeroBestiary(database),
     );

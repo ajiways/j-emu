@@ -31,7 +31,12 @@ export async function persistPvpHonor(input: {
       if (!victim) {
         throw new Error(`PvP snapshot ${input.outcome.fightId} has no victim ${dealt.victimId}`);
       }
-      return { dmgToVictim: dealt.damage, victimLevel: victim.level, victimHpMax: victim.maxHp };
+      return {
+        executed: human.executedVictimIds.includes(dealt.victimId),
+        dmgToVictim: dealt.damage,
+        victimLevel: victim.level,
+        victimHpMax: victim.maxHp,
+      };
     });
     // What he healed in the other humans is rated by the one healed (never his own heals).
     const healed = human.healedByTarget.map((restored) => {
@@ -39,7 +44,12 @@ export async function persistPvpHonor(input: {
       if (!target) {
         throw new Error(`PvP snapshot ${input.outcome.fightId} has no healed ${restored.targetId}`);
       }
-      return { dmgToVictim: restored.amount, victimLevel: target.level, victimHpMax: target.maxHp };
+      return {
+        executed: false,
+        dmgToVictim: restored.amount,
+        victimLevel: target.level,
+        victimHpMax: target.maxHp,
+      };
     });
     const raw = rawHonorFromVictims(
       victims,

@@ -1,3 +1,6 @@
+/** The standing effect of the «Ярость» button: the next weapon swing carries it. */
+export const RAGE_EFFECT_ARTIKUL_ID = 212;
+
 /** Next-hit STR% from rage fill. Official anchors: 50% → +18%, 100% → +50%. */
 export function rageBonusPctFromFill(fill: number): number {
   if (typeof fill !== "number" || Number.isNaN(fill) || fill < 0) {

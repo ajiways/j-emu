@@ -30,6 +30,11 @@ import type { ExperienceGrantCommand } from "../domain/experience-grant-command.
 import type { ExperienceGrantResult } from "../domain/experience-grant-result.ts";
 import type { HonorGrantCommand } from "../domain/honor-grant-command.ts";
 import type { HonorGrantResult } from "../domain/honor-grant-result.ts";
+import type {
+  FightCounterDelta,
+  HeroLifetimeCounters,
+  HeroLifetimeStats,
+} from "../ports/hero-lifetime-stats.ts";
 import type { CharacterProgression } from "../ports/character-progression.ts";
 import type {
   CharacterMoney,
@@ -76,7 +81,8 @@ export class CharacterService
     CharacterLocation,
     CharacterPresence,
     CharacterReputation,
-    CharacterProfessions
+    CharacterProfessions,
+    HeroLifetimeStats
 {
   private readonly grants: ExperienceGrantService;
   private readonly honorGrants: HonorGrantService;
@@ -100,6 +106,7 @@ export class CharacterService
     private readonly clock: Clock,
     regenPolicy: RegenPolicy,
     activeFight: ActiveFightQuery,
+    private readonly lifetime: HeroLifetimeStats,
   ) {
     this.resources = new ResourceService(
       unitOfWork,
@@ -125,6 +132,14 @@ export class CharacterService
 
   grantExperience(command: ExperienceGrantCommand): Promise<ExperienceGrantResult> {
     return this.grants.grantExperience(command);
+  }
+
+  applyFight(delta: FightCounterDelta): Promise<void> {
+    return this.lifetime.applyFight(delta);
+  }
+
+  read(characterId: number, dailyCycleStart: number): Promise<HeroLifetimeCounters> {
+    return this.lifetime.read(characterId, dailyCycleStart);
   }
 
   grantHonor(command: HonorGrantCommand): Promise<HonorGrantResult> {

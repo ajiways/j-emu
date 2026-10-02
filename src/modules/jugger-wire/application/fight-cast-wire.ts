@@ -70,6 +70,7 @@ function hpChangeRow(event: DamageEvent, react: number, heal: boolean): Record<s
     persId: event.sourceId,
     react,
     ...(event.blocked ? { blocked: event.blocked } : {}),
+    ...(event.fatality ? { fatality: event.fatality } : {}),
     selfReact: event.selfReact ?? 0,
     targetId: event.targetId,
   };

@@ -253,3 +253,33 @@ export const heroProfessions = characterSchema.table(
     check("hero_professions_value_check", sql`${table.value} > 0`),
   ],
 );
+
+/** Lifetime fight counters of a hero (the old game's «Боевая сводка»), one row per hero. */
+export const heroLifetimeStats = characterSchema.table(
+  "hero_lifetime_stats",
+  {
+    heroId: integer("hero_id")
+      .primaryKey()
+      .references(() => heroes.id, { onDelete: "cascade" }),
+    wins: integer("wins").notNull(),
+    losses: integer("losses").notNull(),
+    duelWins: integer("duel_wins").notNull(),
+    maxFightDamage: integer("max_fight_damage").notNull(),
+    fatalities: integer("fatalities").notNull(),
+    pvpKills: integer("pvp_kills").notNull(),
+    /** Kills since `dailyCycleStart`; a later cycle starts the count again. */
+    dailyPvpKills: integer("daily_pvp_kills").notNull(),
+    /** Unix time of the Moscow 06:00 the daily kills belong to. */
+    dailyCycleStart: bigint("daily_cycle_start", { mode: "number" }).notNull(),
+  },
+  (table) => [
+    check("hero_lifetime_stats_wins_check", sql`${table.wins} >= 0`),
+    check("hero_lifetime_stats_losses_check", sql`${table.losses} >= 0`),
+    check("hero_lifetime_stats_duel_wins_check", sql`${table.duelWins} >= 0`),
+    check("hero_lifetime_stats_max_damage_check", sql`${table.maxFightDamage} >= 0`),
+    check("hero_lifetime_stats_fatalities_check", sql`${table.fatalities} >= 0`),
+    check("hero_lifetime_stats_pvp_kills_check", sql`${table.pvpKills} >= 0`),
+    check("hero_lifetime_stats_daily_kills_check", sql`${table.dailyPvpKills} >= 0`),
+    check("hero_lifetime_stats_cycle_check", sql`${table.dailyCycleStart} >= 0`),
+  ],
+);

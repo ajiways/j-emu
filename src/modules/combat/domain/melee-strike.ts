@@ -3,11 +3,20 @@ import type { BattleRules } from "./battle-rules.ts";
 import { settleDrain, type DrainOutcome } from "./drain.ts";
 import type { Fighter } from "./fighter.ts";
 import type { Participant } from "./participant.ts";
-import { rollMeleeOutcome, type MeleeOutcome, type StrikeStats } from "./melee-outcome.ts";
+import { isExecution } from "./execution.ts";
+import {
+  MELEE_REACT,
+  rollMeleeOutcome,
+  type MeleeOutcome,
+  type StrikeStats,
+} from "./melee-outcome.ts";
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
 import { rollSwing, type Swing } from "./swing.ts";
+
+/** The animation of the execution: the first of the nine the old game unlocks by the count of executions. */
+const EXECUTION_ANIMATION = "fatality1";
 
 export type FighterStrike = Readonly<{
   swing: Swing;
@@ -23,6 +32,8 @@ export type FighterStrike = Readonly<{
   dRage: number;
   /** `effPurge` of every charge the strike spent the last of. */
   purges: readonly BattleEvent[];
+  /** The killing blow was an execution («Казнь»). */
+  execution: boolean;
 }>;
 
 /**
@@ -53,6 +64,7 @@ export function strikeFighter(
     random: input.random,
     rules: input.rules,
   });
+  const hpBefore = target.hp;
   resolveHpLoss(target, outcome.applied, attacker);
   const { extra, purges: overlayPurges } = rollOverlayExtra(
     attacker.effects,
@@ -64,6 +76,18 @@ export function strikeFighter(
   );
   if (extra) resolveHpLoss(target, -extra.hpChange, attacker);
   const dealt = outcome.applied + (extra ? -extra.hpChange : 0);
+  const execution = isExecution({
+    furySpent: swing.furySpent,
+    killed: target.hp === 0,
+    rawDamage: outcome.raw,
+    hpBefore,
+    attacker,
+    target,
+  });
+  if (execution) {
+    attacker.creditExecution(target);
+    target.markExecuted();
+  }
   return {
     swing,
     outcome,
@@ -73,6 +97,7 @@ export function strikeFighter(
     drained: settleDrain(attacker, dealt, swing.drain),
     dRage: dealt < 1 ? 0 : target.awardIncomingRage(dealt),
     purges: [...swing.purges, ...overlayPurges],
+    execution,
   };
 }
 
@@ -101,7 +126,9 @@ export function strikeEvents(
       hpChange: -outcome.applied,
       targetMaxHp: target.maxHp,
       killed: strike.killed,
-      react: outcome.react,
+      // The execution replaces the kill react with its own animation of the blow.
+      react: strike.execution ? MELEE_REACT.kill : outcome.react,
+      ...(strike.execution ? { fatality: EXECUTION_ANIMATION } : {}),
       ...(outcome.blocked > 0 ? { blocked: outcome.blocked } : {}),
       dRage: strike.dRage,
       ...(input.comboCp !== undefined ? { comboCp: input.comboCp } : {}),

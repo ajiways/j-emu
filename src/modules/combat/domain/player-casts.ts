@@ -12,7 +12,7 @@ import { castChargingBuff } from "./charging-buff-cast.ts";
 import { isTimedSpell } from "./timed-spell.ts";
 import { pocketSpellWireFlags } from "./pocket-spell-wire-flags.ts";
 import { kind1OverlayCharges } from "./magic-hit.ts";
-import { rageBonusPctFromFill } from "./rage-bonus.ts";
+import { RAGE_EFFECT_ARTIKUL_ID, rageBonusPctFromFill } from "./rage-bonus.ts";
 import { NO_STRIKE_MODS } from "./strike-mods.ts";
 
 /** Live pocket elixirs: announced by their own `effUse`, always drunk by oneself, no trailing cast. */
@@ -99,7 +99,7 @@ export function tryRageCast(human: HumanFighter): KeepTurnResult {
     targetId: human.heroId,
     maxHp: human.maxHp,
   };
-  if (human.effects.snapshot().some((fx) => fx.artikulId === 212)) {
+  if (human.effects.snapshot().some((fx) => fx.artikulId === RAGE_EFFECT_ARTIKUL_ID)) {
     return { kind: "resolved", events: [fury] };
   }
   const fill = human.casts.spendRage();
@@ -108,7 +108,7 @@ export function tryRageCast(human: HumanFighter): KeepTurnResult {
   return {
     kind: "resolved",
     events: castChargingBuff(human, {
-      artikulId: 212,
+      artikulId: RAGE_EFFECT_ARTIKUL_ID,
       title: "Ярость",
       img: "rageeffect_2702.png",
       dmgType: 1,

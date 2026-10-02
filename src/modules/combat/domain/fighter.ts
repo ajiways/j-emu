@@ -11,6 +11,7 @@ export interface Fighter {
   readonly id: number;
   readonly fighterKind: FighterKind;
   readonly team: 1 | 2;
+  readonly level: number;
   readonly hp: number;
   readonly maxHp: number;
   readonly mag: MagStats;
@@ -31,6 +32,10 @@ export interface Fighter {
   markKilledBy(killerId: number): void;
   /** Books damage this fighter dealt to a target; a human target is booked by his id. */
   creditDealt(amount: number, target: Readonly<{ id: number; fighterKind: FighterKind }>): void;
+  /** Books an execution this fighter carried out on `target`, who falls to it. */
+  creditExecution(target: Fighter): void;
+  /** The fighter fell to an execution. */
+  markExecuted(): void;
   /** Books hit points this fighter restored to someone else; healing oneself is not booked. */
   creditHealed(amount: number, target: Readonly<{ id: number; fighterKind: FighterKind }>): void;
 }

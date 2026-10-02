@@ -4,6 +4,8 @@ export type HeroismRules = Readonly<{
   loseMultiplier: 0.8;
   /** Heroism of a healed hit point against one of damage: 10 damage pay 2, 10 healed pay 1. */
   healShare: 0.5;
+  /** A human victim who fell to an execution pays his damage term twice. */
+  executionMultiplier: 2;
 }>;
 
 export const HEROISM_RULES: HeroismRules = {
@@ -14,9 +16,12 @@ export const HEROISM_RULES: HeroismRules = {
   winMultiplier: 1.4,
   loseMultiplier: 0.8,
   healShare: 0.5,
+  executionMultiplier: 2,
 };
 
 export type HonorVictim = Readonly<{
+  /** The victim fell to an execution by this fighter. */
+  executed: boolean;
   dmgToVictim: number;
   victimLevel: number;
   victimHpMax: number;
@@ -38,9 +43,15 @@ export function rawHonorFromVictims(
   if (rules.winMultiplier !== 1.4) throw new Error("HeroismRules.winMultiplier must be 1.4");
   if (rules.loseMultiplier !== 0.8) throw new Error("HeroismRules.loseMultiplier must be 0.8");
   if (rules.healShare !== 0.5) throw new Error("HeroismRules.healShare must be 0.5");
+  if (rules.executionMultiplier !== 2) {
+    throw new Error("HeroismRules.executionMultiplier must be 2");
+  }
   let sum = 0;
   const rated = [
-    ...victims.map((victim) => ({ ...victim, share: 1 })),
+    ...victims.map((victim) => ({
+      ...victim,
+      share: victim.executed ? rules.executionMultiplier : 1,
+    })),
     ...healed.map((victim) => ({ ...victim, share: rules.healShare })),
   ];
   for (const victim of rated) {
@@ -76,5 +87,5 @@ export function rawHonorFromDamage(
   }>,
   rules: HeroismRules,
 ): number {
-  return rawHonorFromVictims([opts], opts.won, rules, []);
+  return rawHonorFromVictims([{ ...opts, executed: false }], opts.won, rules, []);
 }

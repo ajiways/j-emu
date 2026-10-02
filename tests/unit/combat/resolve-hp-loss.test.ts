@@ -7,6 +7,7 @@ import { resolveHpLoss } from "../../../src/modules/combat/domain/resolve-hp-los
 
 class FakeFighter implements Fighter {
   readonly team = 1 as const;
+  readonly level = 1;
   readonly maxHp: number;
   readonly mag = { power: 0, resist: 0 };
   stunnedTurns = 0;
@@ -58,6 +59,10 @@ class FakeFighter implements Fighter {
   }
 
   creditHealed(): void {}
+
+  creditExecution(): void {}
+
+  markExecuted(): void {}
 
   creditDealt(amount: number, target: { fighterKind: FighterKind }): void {
     this.credits.push({ amount, targetKind: target.fighterKind });

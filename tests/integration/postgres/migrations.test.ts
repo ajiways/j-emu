@@ -198,6 +198,7 @@ describe("Drizzle migrations", () => {
         "character.hero_bot_kills",
         "character.hero_professions",
         "character.hero_learned_bonuses",
+        "character.hero_lifetime_stats",
         "character.hero_personal_details",
         "character.hero_reputations",
         "character.hero_skills",
@@ -384,6 +385,8 @@ describe("Drizzle migrations", () => {
       "0036_mail_auction_trade_item_data_json.sql",
       "0037_catalog_level_notice.sql",
       "0038_character_hero_mp_clock.sql",
+      "0039_catalog_bot_initiative.sql",
+      "0040_character_hero_lifetime_stats.sql",
     ]);
     const journal = JSON.parse(
       fs.readFileSync(path.join(drizzleFolder, "meta/_journal.json"), "utf8"),
@@ -428,8 +431,10 @@ describe("Drizzle migrations", () => {
       "0036_mail_auction_trade_item_data_json",
       "0037_catalog_level_notice",
       "0038_character_hero_mp_clock",
+      "0039_catalog_bot_initiative",
+      "0040_character_hero_lifetime_stats",
     ]);
-    expect(await appliedCount()).toBe(39);
+    expect(await appliedCount()).toBe(41);
     expect(fs.readFileSync(path.join(drizzleFolder, "0000_foundation_init.sql"), "utf8")).toMatch(
       /INSERT INTO "content"\."active_release"/,
     );
