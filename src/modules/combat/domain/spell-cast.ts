@@ -149,10 +149,18 @@ function castTimed(cast: SpellCast): readonly BattleEvent[] {
   });
 }
 
+/** A heal goes to the carriers of one's own side the spell names (a teammate, a few at random), else to the caster. */
 function castHeal(cast: SpellCast): readonly BattleEvent[] {
   const { caster, source, presentation } = cast;
-  const healed = caster.applyHeal(pocketHealAmount(source.spell, caster.maxHp));
+  const carriers =
+    aimsAtOwnSide(source.spell) && !castsOnSelf(source.spell) ? carriersOf(cast) : [caster];
   const animation = animationOf(cast, presentation.healAnimation);
+  const healed = carriers.map((carrier) => {
+    const restored = carrier.applyHeal(pocketHealAmount(source.spell, carrier.maxHp));
+    // What heals another is booked to the healer; healing oneself counts nowhere.
+    caster.creditHealed(restored, carrier);
+    return { carrier, restored };
+  });
   return [
     ...(presentation.announceHeal
       ? [
@@ -163,20 +171,20 @@ function castHeal(cast: SpellCast): readonly BattleEvent[] {
               picture: source.picture,
               spell: source.spell,
             },
-            caster.id,
+            carriers[0]?.id ?? caster.id,
             2,
           ),
         ]
       : []),
-    {
-      type: "damage",
+    ...healed.map(({ carrier, restored }) => ({
+      type: "damage" as const,
       sourceId: caster.id,
-      targetId: caster.id,
+      targetId: carrier.id,
       animation,
-      hpChange: healed,
-      targetMaxHp: caster.maxHp,
+      hpChange: restored,
+      targetMaxHp: carrier.maxHp,
       killed: false,
-    },
+    })),
   ];
 }
 

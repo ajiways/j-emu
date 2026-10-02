@@ -15,6 +15,16 @@ export function aimsAtOwnSide(spell: CombatSpell): boolean {
   return restriction?.oppTeam === false && restriction.opp !== true;
 }
 
+/** A spell that picks its carriers at random and names no count reaches this many (jgr `gloveCast.ts`). */
+const RANDOM_TARGET_DEFAULT_COUNT = 8;
+
+function targetCountOf(spell: CombatSpell, fallback: number): number {
+  const counts = spell.effects.flatMap((effect) =>
+    effect.targetCount === undefined ? [] : [effect.targetCount],
+  );
+  return counts.length === 0 ? fallback : Math.max(1, ...counts);
+}
+
 type AllyAim = Readonly<{
   spell: CombatSpell;
   caster: Participant;
@@ -49,9 +59,15 @@ function mayCarry(spell: CombatSpell, caster: Participant, member: Participant):
 export function allyTargetsOf(input: AllyAim): readonly Participant[] {
   const { spell, caster, sequence } = input;
   if (!aimsAtOwnSide(spell) || spell.targetRestr?.self === true) return [];
+  if (spell.targetRestr?.randTarget === true) {
+    // No click: the spell picks its carriers itself, up to its `targetCount`.
+    const candidates = input.roster.all().filter((member) => mayCarry(spell, caster, member));
+    shuffleInPlace(candidates, input.random);
+    return candidates.slice(0, targetCountOf(spell, RANDOM_TARGET_DEFAULT_COUNT));
+  }
   const clicked = input.targetId === null ? undefined : input.roster.find(input.targetId);
   if (!clicked || !mayCarry(spell, caster, clicked)) throw new FightCastDenied("target", sequence);
-  const count = Math.max(1, ...spell.effects.map((effect) => effect.targetCount ?? 1));
+  const count = targetCountOf(spell, 1);
   const others = input.roster.all().filter((member) => {
     return member.id !== clicked.id && mayCarry(spell, caster, member);
   });

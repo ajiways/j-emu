@@ -11,6 +11,8 @@ import {
   castSpell,
   type SpellPresentation,
 } from "../../../src/modules/combat/domain/spell-cast.ts";
+import { Roster } from "../../../src/modules/combat/domain/roster.ts";
+import { allyTargetsOf } from "../../../src/modules/combat/domain/spell-target.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { FixedRandom } from "../../support/fakes/fixed-random.ts";
 import { UNIT_HUNT_APPEARANCE, unitHuntHumanStats } from "../../support/hunt-start-input.ts";
@@ -54,6 +56,12 @@ function hero(id: number): HumanFighter {
   });
   human.authed = true;
   return human;
+}
+
+function rosterOfHumans(humans: readonly HumanFighter[]): Roster {
+  const roster = new Roster();
+  for (const human of humans) roster.add(human);
+  return roster;
 }
 
 function cast(
@@ -159,5 +167,76 @@ describe("what forbids a second effect", () => {
       sequence: null,
     });
     expect(second).not.toBeNull();
+  });
+});
+
+describe("an instant heal of one's own side", () => {
+  /** «Регенерация»: heals a teammate (not oneself) by a share of his maximum. */
+  const REGENERATION: CombatSpell = {
+    animData: "botles_healfriend_red",
+    targetRestr: { self: false, oppTeam: false, opp: false, dead: false, noBot: true },
+    effects: [{ kind: 2, amount: "30%", order: 1 }],
+  };
+  /** «АОЕ хилл»: no click, a few of one's own side at random. */
+  const AOE_HEAL: CombatSpell = {
+    animData: "magic_aoe_light",
+    targetRestr: { oppTeam: false, dead: false, randTarget: true },
+    effects: [{ kind: 2, amount: "20%", order: 1, targetCount: 2 }],
+  };
+
+  it("heals the clicked teammate and books it to the healer", () => {
+    const healer = hero(1);
+    const mate = hero(2);
+    mate.applyDamage(60);
+    const events = cast(REGENERATION, healer, mate, 6191);
+    expect(mate.hp).toBe(70);
+    expect(healer.hp).toBe(100);
+    expect(events).toMatchObject([{ type: "damage", targetId: 2, hpChange: 30 }]);
+    expect(healer.healedOthers).toBe(30);
+  });
+
+  it("heals only what is missing: nothing booked for hit points that were not lost", () => {
+    const healer = hero(1);
+    const mate = hero(2);
+    mate.applyDamage(10);
+    cast(REGENERATION, healer, mate, 6191);
+    expect(mate.hp).toBe(100);
+    expect(healer.healedOthers).toBe(10);
+  });
+
+  it("heals the caster himself without booking it when the spell may land on oneself", () => {
+    const healer = hero(1);
+    healer.applyDamage(50);
+    const spell: CombatSpell = { ...REGENERATION, targetRestr: { oppTeam: false, noBot: true } };
+    cast(spell, healer, healer, 5755);
+    expect(healer.hp).toBe(80);
+    expect(healer.healedOthers).toBe(0);
+  });
+
+  it("lets a heal that names no click pick its carriers at random, up to its count", () => {
+    const healer = hero(1);
+    const mates = [hero(2), hero(3), hero(4)];
+    for (const member of [healer, ...mates]) member.applyDamage(50);
+    const allies = allyTargetsOf({
+      spell: AOE_HEAL,
+      caster: healer,
+      roster: rosterOfHumans([healer, ...mates]),
+      targetId: null,
+      sequence: 1,
+      random: new FixedRandom(),
+    });
+    expect(allies).toHaveLength(2);
+    const events = castSpell({
+      caster: healer,
+      foe: () => healer,
+      allies,
+      source: { artikulId: 8281, title: "АОЕ хилл", picture: "p.png", spell: AOE_HEAL, flags: 0 },
+      nowMs: 0,
+      presentation: PRESENTATION,
+      endsTurn: false,
+      sequence: 1,
+    });
+    expect(events).toHaveLength(2);
+    expect(allies.every((member) => member.hp === 70)).toBe(true);
   });
 });
