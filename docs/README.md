@@ -40,6 +40,7 @@
 - [ID policy](architecture/ID_POLICY.md)
 - [Content publication](architecture/CONTENT_PIPELINE.md)
 - [Структура кода](architecture/CODE_STRUCTURE.md)
+- [Статика клиента: сервер против кэша установки](PUB1_UPDATE.md)
 
 Краткие причины действующих решений: [ADR index](adr/README.md). Старые ADR и
 завершённые планы находятся только в историческом разделе.
