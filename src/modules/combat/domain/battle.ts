@@ -30,7 +30,7 @@ import { fightDelayTokens, fightDuelDelayToken } from "./fight-delay-token.ts";
 import { FightRules } from "./fight-rules.ts";
 import type { FightSetup, FightSetupJoin } from "./fight-setup.ts";
 import { Roster } from "./roster.ts";
-import { requireFightBot, requireFightBots } from "./fight-bots.ts";
+import { requireFightBot, requireFightBots, titledByBot } from "./fight-bots.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { grantTurn as grantHumanTurn } from "./turn-grant.ts";
@@ -106,7 +106,7 @@ export class Battle {
     return this.finishedValue;
   }
   get hasBots(): boolean {
-    return this.bots.length > 0;
+    return titledByBot(this.bots, this.fightRules);
   }
   get purpose(): "hunt" | "quest" | "friendly-duel" | "pvp" {
     return this.setup.meta.kind;

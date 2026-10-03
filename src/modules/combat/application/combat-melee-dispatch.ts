@@ -252,8 +252,13 @@ export function deliverGloveSides(
 export function shuffleAffectedAccountIds(
   shuffle: Exclude<ShuffleOutcome, { kind: "none" }>,
 ): readonly number[] {
-  if (shuffle.kind === "waiter-handoff") return [shuffle.actorAccountId, shuffle.waiterAccountId];
-  if (shuffle.kind === "ally-handoff") return [shuffle.actorAccountId];
+  const foe =
+    shuffle.kind === "waiter-handoff" || shuffle.kind === "ally-handoff" ? shuffle.foe : undefined;
+  const foes = foe ? [foe.accountId] : [];
+  if (shuffle.kind === "waiter-handoff") {
+    return [shuffle.actorAccountId, shuffle.waiterAccountId, ...foes];
+  }
+  if (shuffle.kind === "ally-handoff") return [shuffle.actorAccountId, ...foes];
   if (shuffle.kind === "reserve-swap") return [shuffle.accountId];
   return shuffle.rightAccountId === null
     ? [shuffle.leftAccountId]
@@ -278,9 +283,13 @@ export function deliverShuffle(
   };
   if (shuffle.kind === "waiter-handoff" || shuffle.kind === "ally-handoff") {
     tell(shuffle.actorAccountId, [{ type: "opponent-wait" }]);
+    if (shuffle.foe) tell(shuffle.foe.accountId, shuffle.foe.events);
     if (shuffle.kind === "waiter-handoff" && shuffle.waiterAuthed) {
       tell(shuffle.waiterAccountId, shuffle.events);
       input.grantAfterPair(shuffle.waiterAccountId);
+    } else if (shuffle.foe && shuffle.kind === "ally-handoff") {
+      // The duel of a player against a summoned mob has no fight clock to start it.
+      input.grantAfterPair(shuffle.foe.accountId);
     }
     return;
   }

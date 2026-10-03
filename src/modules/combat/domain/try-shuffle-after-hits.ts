@@ -4,6 +4,9 @@ export const PAIR_HITS_TO_SWITCH = 3;
 
 export type ShufflePlan = "none" | "waiter-handoff" | "cross-swap" | "reserve-swap";
 
+/** The player a handed-off duel goes on against, and what his client is told about the new foe. */
+type ShuffleFoe = Readonly<{ accountId: number; events: readonly BattleEvent[] }>;
+
 export type ShuffleOutcome =
   | Readonly<{ kind: "none" }>
   | Readonly<{
@@ -12,8 +15,9 @@ export type ShuffleOutcome =
       waiterAccountId: number;
       waiterAuthed: boolean;
       events: readonly BattleEvent[];
+      foe?: ShuffleFoe;
     }>
-  | Readonly<{ kind: "ally-handoff"; actorAccountId: number }>
+  | Readonly<{ kind: "ally-handoff"; actorAccountId: number; foe?: ShuffleFoe }>
   | Readonly<{
       kind: "cross-swap";
       leftAccountId: number;

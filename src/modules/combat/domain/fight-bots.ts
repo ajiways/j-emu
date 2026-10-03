@@ -1,3 +1,4 @@
+import type { FightRules } from "./fight-rules.ts";
 import type { FightEffectIds } from "./fight-effect-ids.ts";
 import { BotFighter, type BotFighterSeed } from "./bot-fighter.ts";
 
@@ -82,4 +83,12 @@ function createFightBot(
   seen.add(bot.fightId);
   if (waiting) bot.unpair();
   return bot;
+}
+
+/** A fight against mobs is titled by its first one; a duel of players stays titled by the players. */
+export function titledByBot(bots: readonly BotFighter[], rules: FightRules): boolean {
+  return (
+    rules.historyRow !== "practice-humans" &&
+    bots.some((bot) => bot.team === rules.teamAssignment.enemyTeam)
+  );
 }

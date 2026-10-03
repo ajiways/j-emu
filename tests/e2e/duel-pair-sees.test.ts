@@ -31,6 +31,7 @@ describe("what one player does in a duel, the player across sees", () => {
     const b = await createIsolatedHero(application);
     const init = await a.objectAction({ object: "common", action: "init", sq: 1 });
     const pocketIds = new Map<number, number>();
+    let pocketBefore: AmfValue | undefined;
     for (const art of [93, 99]) {
       const itemId = requireId(bagItemByArtikulId(init, art));
       const put = await a.objectAction({
@@ -39,6 +40,7 @@ describe("what one player does in a duel, the player across sees", () => {
         form: { code: "PUT_ON", artifact_id: itemId },
         sq: 2,
       });
+      pocketBefore = put["user|pocket"];
       pocketIds.set(
         art,
         requireId(pocketItems(put["user|pocket"]).find((i) => i.artikul_id === art)),
@@ -75,6 +77,11 @@ describe("what one player does in a duel, the player across sees", () => {
     expect(fightEventTypes(await b.pollFight())).toEqual(
       expect.arrayContaining(["effUse", "cast", "persChangeInfo"]),
     );
+    // A practice duel restores its fighters: what was drunk in it stays in the pocket.
+    const after = await a.objectAction({ object: "common", action: "init", sq: 22 });
+    const row93 = (pocket: AmfValue | undefined) =>
+      JSON.stringify(pocketItems(pocket).find((row) => row.artikul_id === 93));
+    expect(row93(after["user|pocket"])).toBe(row93(pocketBefore));
     await a.fight({ rc: "castSpell", srcType: 2, srcId: pocketId(99), sq: 21 });
     await a.pollFight();
     expect(fightEventTypes(await b.pollFight())).toEqual(["effUse", "cast"]);

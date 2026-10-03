@@ -64,14 +64,14 @@ async function castFightSpecial(
     return;
   }
   if (command.kind === "pocket") {
-    finishKeepTurn(input, battle.tryPocket(accountId, command, input.nowMs));
+    finishKeepTurn({ ...input, battle }, battle.tryPocket(accountId, command, input.nowMs));
     return;
   }
   if (command.kind === "idol") {
     const resolved = battle.tryIdol(accountId, command.itemId, command.sequence, () =>
       input.botFightIds.allocate(battle.heroIdFor(accountId)),
     );
-    finishKeepTurn(input, resolved);
+    finishKeepTurn({ ...input, battle }, resolved);
     if (resolved.kind === "resolved") input.melee.notifySummon(battle, accountId, resolved.events);
     return;
   }
@@ -80,14 +80,14 @@ async function castFightSpecial(
     return;
   }
   if (command.kind === "rage") {
-    finishKeepTurn(input, battle.tryRage(accountId));
+    finishKeepTurn({ ...input, battle }, battle.tryRage(accountId));
     return;
   }
   if (command.kind === "aggro") {
     const resolved = battle.tryAggro(accountId, command.targetId, () =>
       input.botFightIds.allocate(battle.heroIdFor(accountId)),
     );
-    finishKeepTurn(input, resolved);
+    finishKeepTurn({ ...input, battle }, resolved);
     if (resolved.kind === "resolved") {
       const roster = resolved.events.find((event) => event.type === "roster-updated");
       input.melee.notifyAggroPairs(
@@ -104,7 +104,7 @@ async function castFightSpecial(
     await input.melee.endingGlove(accountId, command.sequence, resolved);
     return;
   }
-  finishKeepTurn(input, resolved);
+  finishKeepTurn({ ...input, battle }, resolved);
 }
 
 function finishKeepTurn(
@@ -114,6 +114,7 @@ function finishKeepTurn(
       FightCommand,
       { kind: "pocket" | "idol" | "glove" | "rage" | "aggro" | "concentrate" }
     >;
+    battle: Battle;
     melee: CombatMeleeLoop;
     pendingConsume: PendingConsumes;
     enqueue: (accountId: number, events: readonly CombatEvent[]) => void;
@@ -133,10 +134,12 @@ function finishKeepTurn(
     ]);
     return;
   }
-  if (resolved.consumePocketItemId !== undefined) {
+  // A practice duel restores its fighters: what they used up in it is spent in the fight only.
+  const spends = !input.battle.fightRules.restoresFighters;
+  if (spends && resolved.consumePocketItemId !== undefined) {
     input.pendingConsume.setPocket(input.accountId, resolved.consumePocketItemId);
   }
-  if (resolved.consumeBagItemId !== undefined) {
+  if (spends && resolved.consumeBagItemId !== undefined) {
     input.pendingConsume.setBag(input.accountId, resolved.consumeBagItemId);
   }
   input.melee.keepTurn(input.accountId, input.command.sequence, resolved.events);

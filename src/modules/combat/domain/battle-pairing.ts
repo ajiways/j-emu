@@ -48,6 +48,10 @@ export function shuffleAfterHits(
   }>,
 ): ShuffleOutcome {
   const actor = requirePaired(input.pairing);
+  const foeHuman = input.pairing.humans.find(
+    (entry) => entry.heroId === input.pairing.duel.otherId(actor.heroId),
+  );
+  if (foeHuman) return shuffleAgainstHuman(input, actor, foeHuman);
   const foeBot = input.bots.find((bot) => bot.fightId === input.pairing.duel.otherId(actor.heroId));
   if (!foeBot) return { kind: "none" };
   const openerTeam = input.openerTeam;
@@ -120,6 +124,61 @@ export function shuffleAfterHits(
     waiterAccountId: waiter.accountId,
     waiterAuthed: waiter.authed,
     events: waiter.authed ? [{ type: "opponent-new", bot: foeBot.snap() }] : [],
+  };
+}
+
+/**
+ * A duel of two players: once both have struck enough, the actor steps out for a waiting ally of
+ * his own team (a player or a summoned mob) and the duel goes on against the same foe. The other
+ * ways to swap are between a player and mobs only.
+ */
+function shuffleAgainstHuman(
+  input: Parameters<typeof shuffleAfterHits>[0],
+  actor: HumanFighter,
+  foe: HumanFighter,
+): ShuffleOutcome {
+  const { duel } = input.pairing;
+  const waiter = livingWaiterOnTeam(input.pairing.humans, actor.team);
+  const ally = livingBotWaiterOnTeam(input.bots, actor.team);
+  const plan = planShuffle({
+    humanHits: duel.hitsFor(actor.heroId),
+    botHits: duel.hitsFor(foe.heroId),
+    hasLivingWaiter: waiter !== undefined || ally !== undefined,
+    hasSwappableOther: false,
+    hasLivingReserve: false,
+    finished: input.finished || !foe.alive,
+  });
+  if (plan === "none") return { kind: "none" };
+  actor.markFought(foe.heroId);
+  foe.markFought(actor.heroId);
+  actor.unpair();
+  if (waiter) {
+    retargetDuelTo({
+      duel,
+      fromHeroId: actor.heroId,
+      waiter,
+      other: foe,
+      openingRandom: input.openingRandom,
+    });
+    input.pairing.pairedAccountId = waiter.accountId;
+    return {
+      kind: "waiter-handoff",
+      actorAccountId: actor.accountId,
+      waiterAccountId: waiter.accountId,
+      waiterAuthed: waiter.authed,
+      events: waiter.authed ? [humanOpponentNew(foe)] : [],
+      foe: { accountId: foe.accountId, events: [humanOpponentNew(waiter)] },
+    };
+  }
+  if (!ally) throw new Error("Shuffle waiter-handoff requires a living waiter");
+  ally.pair();
+  duel.replace(actor.heroId, ally.fightId);
+  duel.resetHits();
+  rollDuelOpener(duel, { holder: ally, other: foe, random: input.openingRandom });
+  return {
+    kind: "ally-handoff",
+    actorAccountId: actor.accountId,
+    foe: { accountId: foe.accountId, events: [{ type: "opponent-new", bot: ally.snap() }] },
   };
 }
 
