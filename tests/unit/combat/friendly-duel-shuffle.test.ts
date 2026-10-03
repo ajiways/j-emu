@@ -118,4 +118,40 @@ describe("a duel of two players with a summoned phantom", () => {
       "finished",
     );
   });
+
+  it("never sets a player against the phantom he called, however long the duel goes on", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat, delay } = createCombatService({ clock, random: new FixedRandom() });
+    const fightId = await combat.nextFightId();
+    await combat.startFriendlyDuel({
+      fightId,
+      arena: "1_1",
+      areaId: "503",
+      instanceCopyId: null,
+      fightFlags: null,
+      challenger: fighter(1, [IDOL]),
+      acceptor: fighter(2, []),
+    });
+    for (const id of [1, 2]) {
+      await combat.execute(id, { kind: "authenticate", fightId, sequence: 1 });
+      await combat.execute(id, { kind: "poll" });
+    }
+    await combat.execute(1, { kind: "idol", itemId: 100_001, sequence: 2 });
+    let sequence = 3;
+    const seenByCaller: string[] = [];
+    for (let round = 0; round < 12; round += 1) {
+      for (const id of [1, 2]) {
+        await combat.execute(id, { kind: "strike", side: "center", sequence: sequence++ });
+        clock.advanceMs(1400);
+        await delay.fireDue(clock.now());
+        clock.advanceMs(1100);
+        await delay.fireDue(clock.now());
+      }
+      const events = await combat.execute(1, { kind: "poll" });
+      seenByCaller.push(...events.map((event) => event.type));
+      await combat.execute(2, { kind: "poll" });
+    }
+    // He steps out for the phantom once and waits: no one ever sets him across from it.
+    expect(seenByCaller.filter((type) => type === "opponent-new")).toEqual([]);
+  });
 });
