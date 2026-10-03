@@ -1,3 +1,4 @@
+import { FightCastDenied } from "../domain/fight-cast-denied.ts";
 import type { Battle } from "../domain/battle.ts";
 import type { EphemeralBotFightIds } from "../domain/ephemeral-bot-fight-ids.ts";
 import type { CombatEvent, FightCommand } from "../ports/combat-port.ts";
@@ -59,10 +60,7 @@ async function castFightSpecial(
   }>,
 ): Promise<void> {
   const { accountId, command, battle } = input;
-  if (!battle) {
-    input.enqueue(accountId, [{ type: "command-accepted", sequence: command.sequence }]);
-    return;
-  }
+  if (!battle) throw new FightCastDenied("unavailable", command.sequence);
   if (command.kind === "pocket") {
     finishKeepTurn({ ...input, battle }, battle.tryPocket(accountId, command, input.nowMs));
     return;
@@ -128,12 +126,8 @@ function finishKeepTurn(
         consumeBagItemId?: number;
       },
 ): void {
-  if (resolved.kind === "ignored") {
-    input.enqueue(input.accountId, [
-      { type: "command-accepted", sequence: input.command.sequence },
-    ]);
-    return;
-  }
+  // An answer of acceptance would make the client count the item as used.
+  if (resolved.kind === "ignored") throw new FightCastDenied("unavailable", input.command.sequence);
   // A practice duel restores its fighters: what they used up in it is spent in the fight only.
   const spends = !input.battle.fightRules.restoresFighters;
   if (spends && resolved.consumePocketItemId !== undefined) {

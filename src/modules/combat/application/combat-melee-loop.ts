@@ -1,3 +1,4 @@
+import { FightCastDenied } from "../domain/fight-cast-denied.ts";
 import type { Battle } from "../domain/battle.ts";
 import type { EndingGloveResult } from "../domain/glove-ending-cast.ts";
 import type { CombatEvent } from "../ports/combat-port.ts";
@@ -135,10 +136,7 @@ export class CombatMeleeLoop {
   ): Promise<void> {
     await this.armAfter(battle, async () => {
       const result = battle.tryConcentration(accountId, nowMs);
-      if (result === null) {
-        this.enqueue(accountId, [{ type: "command-accepted", sequence }]);
-        return;
-      }
+      if (result === null) throw new FightCastDenied("unavailable", sequence);
       this.keepTurn(accountId, sequence, result.events);
       fanoutPersChange(battle, accountId, result.events, this.enqueue, this.wakeAccount);
       if (battle.finished) {

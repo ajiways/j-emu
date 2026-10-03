@@ -230,6 +230,21 @@ describe("CombatService pocket glove rage", () => {
     expect(orb.map((event) => event.type)).toEqual(["command-accepted", "effect-use", "buff-cast"]);
   });
 
+  it("denies a pocket item or a glove spell the hero does not have, instead of accepting it", async () => {
+    const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
+    const { combat } = createCombatService({ clock });
+    await startHuntWithIssuedId(combat, unitHuntStart({ loadout: dumpLoadout(), botHp: 50 }));
+    await combat.execute(1, { kind: "authenticate", fightId: "1", sequence: 1 });
+    await combat.execute(1, { kind: "poll" });
+    await expect(
+      combat.execute(1, { kind: "pocket", targetId: null, itemId: 999_999, sequence: 2 }),
+    ).rejects.toMatchObject({ deny: "unavailable" });
+    await expect(
+      combat.execute(1, { kind: "glove", spellId: 424_242, targetId: null, sequence: 3 }),
+    ).rejects.toMatchObject({ deny: "unavailable" });
+    await expect(combat.execute(1, { kind: "rage", sequence: 4 })).resolves.toBeDefined();
+  });
+
   it("denies elixir 93 cooldown without poll events", async () => {
     const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const { combat } = createCombatService({ clock });

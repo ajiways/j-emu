@@ -416,6 +416,9 @@ describe("fproxy settlement two hunters and refill", () => {
       sq: 2,
     });
     expect(putOn["common|action"]).toEqual({ status: 100 });
+    const cell = pocketItems(putOn["user|pocket"]).find((item) => item.artikul_id === 93);
+    if (!cell) throw new Error("the elixir is not in the pocket");
+    const pocketItemId = requireId(cell);
     const start = await client.objectAction({
       object: "common",
       action: "object",
@@ -426,7 +429,7 @@ describe("fproxy settlement two hunters and refill", () => {
     expect(await client.fight({ rc: "auth", eid: fightId, sq: 4 })).toHaveLength(0);
     await client.pollFight();
     expect(
-      await client.fight({ rc: "castSpell", srcType: 2, srcId: elixirId, sq: 5 }),
+      await client.fight({ rc: "castSpell", srcType: 2, srcId: pocketItemId, sq: 5 }),
     ).toHaveLength(0);
     await client.pollFight();
     await strikeUntilHuntFinish(client, (ms) => harness.elapseCombat(ms), 6);
