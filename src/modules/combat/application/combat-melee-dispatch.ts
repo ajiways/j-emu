@@ -249,61 +249,20 @@ export function deliverGloveSides(
   }
 }
 
-export function shuffleAffectedAccountIds(
-  shuffle: Exclude<ShuffleOutcome, { kind: "none" }>,
-): readonly number[] {
-  const foe =
-    shuffle.kind === "waiter-handoff" || shuffle.kind === "ally-handoff" ? shuffle.foe : undefined;
-  const foes = foe ? [foe.accountId] : [];
-  if (shuffle.kind === "waiter-handoff") {
-    return [shuffle.actorAccountId, shuffle.waiterAccountId, ...foes];
-  }
-  if (shuffle.kind === "ally-handoff") return [shuffle.actorAccountId, ...foes];
-  if (shuffle.kind === "reserve-swap") return [shuffle.accountId];
-  return shuffle.rightAccountId === null
-    ? [shuffle.leftAccountId]
-    : [shuffle.leftAccountId, shuffle.rightAccountId];
-}
-
 /** What each side of a finished shuffle is told, and whose turn is granted next. */
 export function deliverShuffle(
   input: Readonly<{
-    battle: Battle;
     shuffle: Exclude<ShuffleOutcome, { kind: "none" }>;
     enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void;
     wakeAccount: (accountId: number) => void;
-    grantAfterPair: (accountId: number) => void;
-    grantPairedBot: (accountId: number) => void;
+    startDuel: (accountId: number) => void;
   }>,
 ): void {
-  const { shuffle, enqueue, wakeAccount } = input;
-  const tell = (accountId: number, events: readonly CombatEvent[]) => {
-    enqueue(accountId, events);
-    wakeAccount(accountId);
-  };
-  if (shuffle.kind === "waiter-handoff" || shuffle.kind === "ally-handoff") {
-    tell(shuffle.actorAccountId, [{ type: "opponent-wait" }]);
-    if (shuffle.foe) tell(shuffle.foe.accountId, shuffle.foe.events);
-    if (shuffle.kind === "waiter-handoff" && shuffle.waiterAuthed) {
-      tell(shuffle.waiterAccountId, shuffle.events);
-      input.grantAfterPair(shuffle.waiterAccountId);
-    } else if (shuffle.foe && shuffle.kind === "ally-handoff") {
-      // The duel of a player against a summoned mob has no fight clock to start it.
-      input.grantAfterPair(shuffle.foe.accountId);
-    }
-    return;
+  for (const told of input.shuffle.tells) {
+    input.enqueue(told.accountId, told.events);
+    input.wakeAccount(told.accountId);
   }
-  if (shuffle.kind === "reserve-swap") {
-    tell(shuffle.accountId, [{ type: "opponent-new", bot: shuffle.bot }]);
-    input.grantPairedBot(shuffle.accountId);
-    return;
-  }
-  tell(shuffle.leftAccountId, [{ type: "opponent-new", bot: shuffle.leftBot }]);
-  input.grantPairedBot(shuffle.leftAccountId);
-  // An ally mob on the other side needs no word: its duel goes on by the fight clock.
-  if (shuffle.rightAccountId === null) return;
-  tell(shuffle.rightAccountId, [{ type: "opponent-new", bot: shuffle.rightBot }]);
-  input.grantPairedBot(shuffle.rightAccountId);
+  for (const accountId of input.shuffle.starts) input.startDuel(accountId);
 }
 
 /**

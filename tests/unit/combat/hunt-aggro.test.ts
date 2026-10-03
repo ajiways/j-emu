@@ -113,8 +113,8 @@ describe("hunt aggro clone", () => {
     }
     expect(battle.tryShuffleAfterHits(1)).toMatchObject({
       kind: "reserve-swap",
-      accountId: 1,
-      bot: { id: 1_000_001 },
+      tells: [{ accountId: 1, events: [{ type: "opponent-new", bot: { id: 1_000_001 } }] }],
+      starts: [1],
     });
     expect(battle.finished).toBe(false);
     expect(battle.foeBotSnap(1).id).toBe(1_000_001);

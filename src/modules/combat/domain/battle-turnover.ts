@@ -1,5 +1,6 @@
 import type { BattleEvent } from "./battle-event.ts";
-import { pairNextWaiter, shuffleAfterHits } from "./battle-pairing.ts";
+import { pairNextWaiter } from "./battle-pairing.ts";
+import { shuffleAfterHits } from "./duel-shuffle.ts";
 import { duelPairingOf, requireBattleHuman } from "./battle-lookups.ts";
 import type { FightDuel } from "./fight-duel.ts";
 import type { FightRules } from "./fight-rules.ts";
@@ -26,12 +27,9 @@ export type NextWaiter = Readonly<{
 export function shuffleOfBattle(state: TurnoverState, accountId: number): ShuffleOutcome {
   if (!state.fightRules.rotatesDuels) return { kind: "none" };
   const human = requireBattleHuman(state.roster.humans, accountId);
-  const duel = state.duels.find((entry) => entry.has(human.heroId));
-  if (!duel) return { kind: "none" };
   return shuffleAfterHits({
-    pairing: duelPairingOf(duel, state.roster.humans, accountId),
-    openerTeam: state.fightRules.teamAssignment.openerTeam,
-    enemyTeam: state.fightRules.teamAssignment.enemyTeam,
+    actor: human,
+    humans: state.roster.humans,
     bots: state.roster.bots,
     duels: state.duels,
     finished: state.finished,

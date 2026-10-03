@@ -1,35 +1,23 @@
-import type { BattleEvent, BotSnap } from "./battle-event.ts";
+import type { BattleEvent } from "./battle-event.ts";
 
 export const PAIR_HITS_TO_SWITCH = 3;
 
 export type ShufflePlan = "none" | "waiter-handoff" | "cross-swap" | "reserve-swap";
 
-/** The player a handed-off duel goes on against, and what his client is told about the new foe. */
-type ShuffleFoe = Readonly<{ accountId: number; events: readonly BattleEvent[] }>;
+/** What one player's client is told when his duel changes hands. */
+export type ShuffleTell = Readonly<{ accountId: number; events: readonly BattleEvent[] }>;
 
+/**
+ * A duel that changed its sides: who is told what, which players open the new duel with a turn,
+ * and whose pending turn timers it replaces. Players and mobs alike take part.
+ */
 export type ShuffleOutcome =
   | Readonly<{ kind: "none" }>
   | Readonly<{
-      kind: "waiter-handoff";
-      actorAccountId: number;
-      waiterAccountId: number;
-      waiterAuthed: boolean;
-      events: readonly BattleEvent[];
-      foe?: ShuffleFoe;
-    }>
-  | Readonly<{ kind: "ally-handoff"; actorAccountId: number; foe?: ShuffleFoe }>
-  | Readonly<{
-      kind: "cross-swap";
-      leftAccountId: number;
-      /** `null` when the other side of the swap is a mob. */
-      rightAccountId: number | null;
-      leftBot: BotSnap;
-      rightBot: BotSnap;
-    }>
-  | Readonly<{
-      kind: "reserve-swap";
-      accountId: number;
-      bot: BotSnap;
+      kind: Exclude<ShufflePlan, "none">;
+      tells: readonly ShuffleTell[];
+      starts: readonly number[];
+      affected: readonly number[];
     }>;
 
 export function planShuffle(

@@ -9,7 +9,6 @@ import {
   deliverPairedWaiters,
   deliverGloveSides,
   delayTokensByAccount,
-  shuffleAffectedAccountIds,
   enqueuePlayerMelee,
   fanoutPersChange,
   fanoutHit,
@@ -322,17 +321,15 @@ export class CombatMeleeLoop {
     const previousByAccount = delayTokensByAccount(battle);
     const shuffle = battle.tryShuffleAfterHits(accountId);
     if (shuffle.kind === "none") return false;
-    for (const id of shuffleAffectedAccountIds(shuffle)) {
+    for (const id of shuffle.affected) {
       const token = previousByAccount.get(id);
       if (token) this.scheduler.cancel(token);
     }
     deliverShuffle({
-      battle,
       shuffle,
       enqueue: this.enqueue,
       wakeAccount: this.wakeAccount,
-      grantAfterPair: (id) => this.openDuel(battle, id),
-      grantPairedBot: (id) => this.openDuel(battle, id),
+      startDuel: (id) => this.openDuel(battle, id),
     });
     this.aiDriver.arm(battle);
     return true;

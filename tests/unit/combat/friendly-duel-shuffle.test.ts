@@ -54,7 +54,7 @@ function fighter(
 }
 
 describe("a duel of two players with a summoned phantom", () => {
-  it("hands the duel over to the phantom after enough blows and tells the foe of the new opponent", async () => {
+  it("puts the waiting phantom across from the player who struck enough, as it would a mob duel", async () => {
     const clock = new MutableClock(new Date("2026-09-07T12:00:00.000Z"));
     const { combat, delay } = createCombatService({ clock, random: new FixedRandom() });
     const fightId = await combat.nextFightId();
@@ -86,9 +86,6 @@ describe("a duel of two players with a summoned phantom", () => {
       await turn(1);
       await turn(2);
     }
-    await combat.execute(1, { kind: "poll" });
-    await combat.execute(2, { kind: "poll" });
-    await combat.execute(1, { kind: "strike", side: "center", sequence: sequence++ });
     const first = await combat.execute(1, { kind: "poll" });
     const second = await combat.execute(2, { kind: "poll" });
     expect(first.map((event) => event.type)).toContain("opponent-wait");

@@ -2,7 +2,7 @@ import type { FightDuel } from "./fight-duel.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { dissolveDuelAt } from "./pairing.ts";
 
-export function peekWaitingEnemy(bots: readonly BotFighter[], enemyTeam: 1 | 2): BotFighter | null {
+function peekWaitingEnemy(bots: readonly BotFighter[], enemyTeam: 1 | 2): BotFighter | null {
   return bots.find((bot) => bot.waiting && bot.team === enemyTeam && bot.alive) ?? null;
 }
 

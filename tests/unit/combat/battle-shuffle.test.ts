@@ -35,9 +35,11 @@ describe("Battle 3↔3 shuffle", () => {
     const actorHp = 24;
     expect(battle.tryShuffleAfterHits(1)).toMatchObject({
       kind: "waiter-handoff",
-      actorAccountId: 1,
-      waiterAccountId: 2,
-      waiterAuthed: true,
+      tells: [
+        { accountId: 1, events: [{ type: "opponent-wait" }] },
+        { accountId: 2, events: [{ type: "opponent-new" }] },
+      ],
+      starts: [2],
     });
     expect(battle.pairedOpponent(2)).toEqual({ kind: "bot" });
     expect(battle.tryPlayerMelee(1, "center", AUTH_NOW)).toEqual({ kind: "ignored" });
@@ -65,8 +67,7 @@ describe("Battle 3↔3 shuffle", () => {
     expect(battle.tryPlayerMelee(1, "center", AUTH_NOW).kind).toBe("resolved");
     expect(battle.tryShuffleAfterHits(1)).toMatchObject({
       kind: "waiter-handoff",
-      actorAccountId: 1,
-      waiterAccountId: 2,
+      starts: [2],
     });
     expect(battle.pairedOpponent(2)).toEqual({ kind: "bot" });
     expect(battle.tryPlayerMelee(1, "center", AUTH_NOW)).toEqual({ kind: "ignored" });
@@ -99,8 +100,11 @@ describe("Battle 3↔3 shuffle", () => {
     const rightBot = battle.foeBotSnap(2).id;
     expect(battle.tryShuffleAfterHits(2)).toMatchObject({
       kind: "cross-swap",
-      leftAccountId: 2,
-      rightAccountId: 1,
+      tells: [
+        { accountId: 2, events: [{ type: "opponent-new" }] },
+        { accountId: 1, events: [{ type: "opponent-new" }] },
+      ],
+      starts: [2, 1],
     });
     expect(battle.foeBotSnap(1).id).toBe(rightBot);
     expect(battle.foeBotSnap(2).id).toBe(leftBot);
