@@ -72,6 +72,6 @@ function deliver(
     .filter((human) => human.authed)
     .map((human) => ({
       accountId: human.accountId,
-      events: involved.has(human.heroId) ? [patch, ...entry.events] : [patch],
+      events: involved.has(human.heroId) ? [...entry.events, patch] : [patch],
     }));
 }

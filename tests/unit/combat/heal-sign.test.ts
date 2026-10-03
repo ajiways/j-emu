@@ -71,6 +71,17 @@ describe("a healing sign from the pocket", () => {
     expect(mate.healedOthers).toBe(0);
   });
 
+  it("sends a tick's hit points change before the absolute hit points: the client adds the change to what it shows", () => {
+    const battle = twoHeroes();
+    const [, mate] = battle.boardParticipants().humans;
+    if (!mate) throw new Error("two heroes expected");
+    mate.applyDamage(30);
+    battle.tryPocket(1, { itemId: 100_001, targetId: 2, sequence: 3 }, NOW);
+    const { deliveries } = battle.tickDueEffects(NOW + 15_000);
+    const types = deliveries.find((entry) => entry.accountId === 2)?.events.map((e) => e.type);
+    expect(types).toEqual(["damage", "pers-change"]);
+  });
+
   it("lets a hero who waits for a foe put the sign on a teammate", () => {
     const battle = twoHeroes();
     const [fighting, waiting] = battle.boardParticipants().humans;
