@@ -44,7 +44,7 @@ import type { EndingGloveResult } from "./glove-ending-cast.ts";
 import { tryAggro, type AggroResult } from "./aggro.ts";
 import { aiOnlyDuelTurns, pairWaitingSeekers, type AiDuelTurn } from "./battle-ai-duels.ts";
 import type { RandomSource } from "./random-source.ts";
-import { nextWaiterOfBattle, shuffleOfBattle, type NextWaiter } from "./battle-turnover.ts";
+import { replaceFallenOfBattle, shuffleOfBattle } from "./battle-turnover.ts";
 import { seedBattleParticipants } from "./battle-seed.ts";
 import { battleOutcomeSnapshot, leaveWinnerTeam } from "./battle-outcome.ts";
 import type { FightOutcomeKind, FightOutcomeSnapshot } from "./fight-outcome-snapshot.ts";
@@ -374,8 +374,8 @@ export class Battle {
     return leaveWinnerTeam(this.humans);
   }
 
-  pairNextWaiter(previousAccountId: number): NextWaiter | null {
-    return nextWaiterOfBattle(this.actionState(), previousAccountId);
+  replaceFallen(accountId: number) {
+    return replaceFallenOfBattle(this.actionState(), accountId);
   }
 
   dissolveDuelOf(accountId: number): void {

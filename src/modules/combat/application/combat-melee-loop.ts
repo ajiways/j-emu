@@ -5,10 +5,10 @@ import {
   cancelDuel,
   deliverEffects,
   deliverAggroPairs,
-  deliverShuffle,
+  opponentNewHuman,
+  fallenFoeAccounts,
   deliverPairedWaiters,
   deliverGloveSides,
-  delayTokensByAccount,
   enqueuePlayerMelee,
   fanoutPersChange,
   fanoutHit,
@@ -16,6 +16,7 @@ import {
   enqueueKeepTurn,
   deliverTurnEmblems,
 } from "./combat-melee-dispatch.ts";
+import { CombatDuelChanges } from "./combat-duel-changes.ts";
 import { CombatAiDriver } from "./combat-ai-driver.ts";
 import { CombatEffectClock } from "./combat-effect-clock.ts";
 import type { FightScheduler } from "./fight-scheduler.ts";
@@ -37,6 +38,13 @@ export class CombatMeleeLoop {
       strikerAccountId: number | null,
     ) => Promise<void>,
   ) {
+    this.changes = new CombatDuelChanges(
+      scheduler,
+      enqueue,
+      wakeAccount,
+      (battle, accountId) => this.openDuel(battle, accountId),
+      (battle) => this.aiDriver.arm(battle),
+    );
     this.effectClock = new CombatEffectClock(
       battleByFight,
       scheduler,
@@ -47,7 +55,7 @@ export class CombatMeleeLoop {
         cancelDuel(this.scheduler, battle, accountId);
         this.openDuel(battle, accountId);
       },
-      (battle, accountId) => this.handOffToWaiter(battle, accountId),
+      (battle, accountId) => this.changes.handOff(battle, accountId),
     );
     this.aiDriver = new CombatAiDriver({
       battleByFight,
@@ -56,8 +64,8 @@ export class CombatMeleeLoop {
       wakeAccount,
       settleFinished,
       settleFallout: (battle, fallout) => this.effectClock.settleFallout(battle, fallout),
-      handOff: (battle, accountId) => this.handOffToWaiter(battle, accountId),
-      applyShuffle: (battle, accountId) => this.applyShuffle(battle, accountId),
+      handOff: (battle, accountId) => this.changes.handOff(battle, accountId),
+      applyShuffle: (battle, accountId) => this.changes.shuffle(battle, accountId),
       grantPlayer: (battle, accountId, delayMs) => {
         const token = battle.delayTokenFor(accountId);
         if (!token) return;
@@ -79,6 +87,12 @@ export class CombatMeleeLoop {
   }
 
   private readonly effectClock: CombatEffectClock;
+  private readonly changes: CombatDuelChanges;
+
+  /** The waiting ally of a departed player takes his place across from his foe. */
+  replaceFallen(battle: Battle, accountId: number): void {
+    this.changes.replace(battle, accountId);
+  }
   private readonly aiDriver: CombatAiDriver;
 
   async strike(
@@ -104,9 +118,10 @@ export class CombatMeleeLoop {
         return;
       }
       if (resolved.selfKilled) {
-        await this.handOffToWaiter(battle, accountId);
+        await this.changes.handOff(battle, accountId);
         return;
       }
+      if (await this.replaceFallenFoes(battle, accountId, resolved.events)) return;
       await this.followUpAfterStrike(battle, accountId, resolved.events);
     });
   }
@@ -167,9 +182,10 @@ export class CombatMeleeLoop {
         return;
       }
       if (ending.selfKilled) {
-        await this.handOffToWaiter(battle, accountId);
+        await this.changes.handOff(battle, accountId);
         return;
       }
+      if (await this.replaceFallenFoes(battle, accountId, ending.events)) return;
       await this.followUpAfterStrike(battle, accountId, ending.events);
     });
   }
@@ -223,13 +239,7 @@ export class CombatMeleeLoop {
       return;
     }
     if (!battle.authedAccountIds().includes(opponent.accountId)) return;
-    this.enqueue(opponent.accountId, [
-      {
-        type: "opponent-new-human",
-        human: joiner.snapshot(),
-        appearance: joiner.appearance,
-      },
-    ]);
+    this.enqueue(opponent.accountId, [opponentNewHuman(joiner)]);
     this.wakeAccount(opponent.accountId);
     const opener = battle.nextActorIdOf(joinerAccountId);
     const openerAccount = battle.accountOfParticipant(opener);
@@ -270,7 +280,7 @@ export class CombatMeleeLoop {
     accountId: number,
     events: readonly CombatEvent[],
   ): Promise<void> {
-    if (this.applyShuffle(battle, accountId)) return;
+    if (this.changes.shuffle(battle, accountId)) return;
     if (!battle.delayTokenFor(accountId)) return;
     const opponent = battle.pairedOpponent(accountId);
     if (opponent.kind === "bot" && events.some((event) => event.type === "opponent-new")) {
@@ -280,13 +290,7 @@ export class CombatMeleeLoop {
     if (opponent.kind === "human" && events.some((event) => event.type === "opponent-new-human")) {
       const striker = battle.livingHumans().find((human) => human.accountId === accountId);
       if (!striker) throw new Error("Intervene striker is missing from the battle");
-      this.enqueue(opponent.accountId, [
-        {
-          type: "opponent-new-human",
-          human: striker.snapshot(),
-          appearance: striker.appearance,
-        },
-      ]);
+      this.enqueue(opponent.accountId, [opponentNewHuman(striker)]);
       this.wakeAccount(opponent.accountId);
       this.openDuel(battle, accountId);
       return;
@@ -294,45 +298,20 @@ export class CombatMeleeLoop {
     this.passTurnToFoe(battle, accountId);
   }
 
-  /** The turn goes to whoever stands across from `accountId`: a mob acts after a pause, a player is granted it. */
+  /** The turn goes to whoever stands across: a mob acts after a pause, a player is granted it. */
   private passTurnToFoe(battle: Battle, accountId: number): void {
     const foeId = battle.foeIdOf(accountId);
     if (foeId !== null) this.giveTurn(battle, foeId);
   }
 
-  private async handOffToWaiter(battle: Battle, deadAccountId: number): Promise<void> {
-    cancelDuel(this.scheduler, battle, deadAccountId);
-    // The fight goes on without him: he waits (and may leave where the fight allows it, old
-    // server `flee`) and gets the result with everyone else when it ends.
-    this.enqueue(deadAccountId, [{ type: "opponent-wait" }]);
-    this.wakeAccount(deadAccountId);
-    const waiter = battle.pairNextWaiter(deadAccountId);
-    if (!waiter) {
-      battle.dissolveDuelOf(deadAccountId);
-      return;
-    }
-    if (!waiter.authed) return;
-    this.enqueue(waiter.accountId, waiter.events);
-    this.wakeAccount(waiter.accountId);
-    this.openDuel(battle, waiter.accountId);
-  }
-
-  private applyShuffle(battle: Battle, accountId: number): boolean {
-    const previousByAccount = delayTokensByAccount(battle);
-    const shuffle = battle.tryShuffleAfterHits(accountId);
-    if (shuffle.kind === "none") return false;
-    for (const id of shuffle.affected) {
-      const token = previousByAccount.get(id);
-      if (token) this.scheduler.cancel(token);
-    }
-    deliverShuffle({
-      shuffle,
-      enqueue: this.enqueue,
-      wakeAccount: this.wakeAccount,
-      startDuel: (id) => this.openDuel(battle, id),
-    });
-    this.aiDriver.arm(battle);
-    return true;
+  private async replaceFallenFoes(
+    battle: Battle,
+    actorAccountId: number,
+    events: readonly CombatEvent[],
+  ): Promise<boolean> {
+    const fallen = fallenFoeAccounts(battle, actorAccountId, events);
+    for (const accountId of fallen) await this.changes.handOff(battle, accountId);
+    return fallen.length > 0;
   }
 
   private runGrant(fightId: string, accountId: number): void {
@@ -366,11 +345,11 @@ export class CombatMeleeLoop {
         return;
       }
       if (timeout.fell) {
-        await this.handOffToWaiter(battle, accountId);
+        await this.changes.handOff(battle, accountId);
         return;
       }
       battle.countPairHit(accountId);
-      if (this.applyShuffle(battle, accountId)) return;
+      if (this.changes.shuffle(battle, accountId)) return;
       const botId = battle.foeIdOf(accountId);
       const token = battle.delayTokenFor(accountId);
       if (botId !== null && battle.accountOfParticipant(botId) === null && token) {
@@ -379,7 +358,9 @@ export class CombatMeleeLoop {
         await this.aiDriver.run(fightId, botId, token, dueAt);
         return;
       }
-      this.passTurnToFoe(battle, accountId);
+      // The turn goes to whoever stands across: a mob acts after a pause, a player is granted it.
+      const foeId = battle.foeIdOf(accountId);
+      if (foeId !== null) this.giveTurn(battle, foeId);
     });
   }
 

@@ -84,15 +84,7 @@ export class CombatTerminal {
       this.byAccount.delete(accountId);
       this.wakeAccount(accountId);
       if (!wasPaired) return;
-      const waiter = battle.pairNextWaiter(accountId);
-      if (!waiter) {
-        battle.dissolveDuelOf(accountId);
-        return;
-      }
-      if (!waiter.authed) return;
-      this.enqueue(waiter.accountId, waiter.events);
-      this.wakeAccount(waiter.accountId);
-      this.melee.giveTurn(battle, battle.nextActorIdOf(waiter.accountId));
+      this.melee.replaceFallen(battle, accountId);
       return;
     }
     const winnerTeam = battle.finishLeave();

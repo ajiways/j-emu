@@ -200,3 +200,52 @@ function swapFoe(
     affected: [actor, foe, next].filter(isHuman).map((human) => human.accountId),
   };
 }
+
+/**
+ * A participant has fallen (or walked out of) his duel: a waiting ally of his team takes his place
+ * across from the foe, or, with none, the duel is dissolved and the foe waits. Whoever the fallen
+ * and the foe are, a player or a mob, the rule is the same.
+ */
+export function replaceFallen(
+  input: Readonly<{
+    dead: HumanFighter;
+    humans: readonly HumanFighter[];
+    bots: readonly BotFighter[];
+    duels: FightDuel[];
+    /** Whether the fight lets a waiting ally step in (`FightRules.pairsNextWaiter`). */
+    pairsWaiters: boolean;
+    openingRandom: RandomSource;
+  }>,
+): Exclude<ShuffleOutcome, { kind: "none" }> | null {
+  const { dead, duels } = input;
+  const everyone: readonly Participant[] = [...input.humans, ...input.bots];
+  const index = duels.findIndex((entry) => entry.has(dead.id));
+  const duel = duels[index];
+  if (!duel) return null;
+  const foe = everyone.find((entry) => entry.id === duel.otherId(dead.id));
+  if (!foe) throw new Error(`Duel of ${dead.id} has no foe`);
+  const waiter = input.pairsWaiters
+    ? everyone.find(
+        (entry) => entry.waiting && entry.alive && entry.team === dead.team && entry.id !== dead.id,
+      )
+    : undefined;
+  if (!waiter) {
+    dissolveDuelAt(duels, index, everyone, null);
+    return {
+      kind: "waiter-handoff",
+      tells: tell(foe, [{ type: "opponent-wait" }]),
+      starts: [],
+      affected: isHuman(foe) ? [foe.accountId] : [],
+    };
+  }
+  waiter.pair();
+  duel.replace(dead.id, waiter.id);
+  duel.resetHits();
+  rollDuelOpener(duel, { holder: waiter, other: foe, random: input.openingRandom });
+  return {
+    kind: "waiter-handoff",
+    tells: [...tell(waiter, [newOpponent(foe)]), ...tell(foe, [newOpponent(waiter)])],
+    starts: starter(waiter, foe),
+    affected: [waiter, foe].filter(isHuman).map((human) => human.accountId),
+  };
+}

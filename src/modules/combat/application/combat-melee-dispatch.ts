@@ -1,3 +1,4 @@
+import type { HumanFighter } from "../domain/human-fighter.ts";
 import type { Battle } from "../domain/battle.ts";
 import type { EndingGloveResult } from "../domain/glove-ending-cast.ts";
 import { persChangeForHit, persChangeForParticipants } from "../domain/melee-pers-change.ts";
@@ -249,20 +250,42 @@ export function deliverGloveSides(
   }
 }
 
-/** What each side of a finished shuffle is told, and whose turn is granted next. */
-export function deliverShuffle(
+/**
+ * What each side of a changed duel is told, whose pending turn timers it replaces (`previous` is
+ * read before the change), and which player opens the new duel with a turn.
+ */
+export function deliverDuelChange(
   input: Readonly<{
     shuffle: Exclude<ShuffleOutcome, { kind: "none" }>;
+    previous: ReadonlyMap<number, string>;
+    scheduler: FightScheduler;
     enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void;
     wakeAccount: (accountId: number) => void;
     startDuel: (accountId: number) => void;
   }>,
 ): void {
+  for (const id of input.shuffle.affected) {
+    const token = input.previous.get(id);
+    if (token) input.scheduler.cancel(token);
+  }
   for (const told of input.shuffle.tells) {
     input.enqueue(told.accountId, told.events);
     input.wakeAccount(told.accountId);
   }
   for (const accountId of input.shuffle.starts) input.startDuel(accountId);
+}
+
+/** Players brought down by the blows of `actorAccountId`, not counting himself. */
+export function fallenFoeAccounts(
+  battle: Battle,
+  actorAccountId: number,
+  events: readonly CombatEvent[],
+): readonly number[] {
+  return events.flatMap((event) => {
+    if (event.type !== "damage" || !event.killed) return [];
+    const accountId = battle.accountOfParticipant(event.targetId);
+    return accountId === null || accountId === actorAccountId ? [] : [accountId];
+  });
 }
 
 /**
@@ -294,4 +317,9 @@ export function deliverPairedWaiters(
       grantPairedBot: input.grantPairedBot,
     });
   }
+}
+
+/** What a player is told when `human` becomes his opponent. */
+export function opponentNewHuman(human: HumanFighter): CombatEvent {
+  return { type: "opponent-new-human", human: human.snapshot(), appearance: human.appearance };
 }

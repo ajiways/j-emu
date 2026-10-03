@@ -1,6 +1,5 @@
 import type { FightDuel } from "./fight-duel.ts";
 import type { HumanFighter } from "./human-fighter.ts";
-import type { DuelPairing } from "./battle-pairing.ts";
 import type { BotFighter } from "./bot-fighter.ts";
 import { duelFoe } from "./melee-target.ts";
 import { requireDuelContaining } from "./pairing.ts";
@@ -27,14 +26,6 @@ export function battleOpener(humans: readonly HumanFighter[]): HumanFighter {
   const human = humans[0];
   if (!human) throw new Error("Battle has no humans");
   return human;
-}
-
-export function duelPairingOf(
-  duel: FightDuel,
-  humans: HumanFighter[],
-  pairedAccountId: number,
-): DuelPairing {
-  return { duel, humans, pairedAccountId };
 }
 
 export function battlePairedOpponent(

@@ -68,10 +68,14 @@ function deliver(
   const involved = new Set<number>([entry.fighter.id]);
   const duel = input.duels.find((candidate) => candidate.has(entry.fighter.id));
   if (duel) involved.add(duel.otherId(entry.fighter.id));
+  // The effects that come and go on a fighter show to everyone in the fight, the blows to his duel.
+  const effects = entry.events.filter(
+    (event) => event.type === "effect-use" || event.type === "effect-purge",
+  );
   return input.roster.humans
     .filter((human) => human.authed)
     .map((human) => ({
       accountId: human.accountId,
-      events: involved.has(human.heroId) ? [...entry.events, patch] : [patch],
+      events: involved.has(human.heroId) ? [...entry.events, patch] : [...effects, patch],
     }));
 }

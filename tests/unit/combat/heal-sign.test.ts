@@ -82,6 +82,17 @@ describe("a healing sign from the pocket", () => {
     expect(types).toEqual(["damage", "pers-change"]);
   });
 
+  it("shows the end of a sign to every player of the fight, not only to the duel it was in", () => {
+    const battle = twoHeroes();
+    battle.tryPocket(1, { itemId: 100_001, targetId: 2, sequence: 3 }, NOW);
+    for (const at of [15, 30, 45, 60, 61]) {
+      const { deliveries } = battle.tickDueEffects(NOW + at * 1000);
+      const types = deliveries.find((entry) => entry.accountId === 1)?.events.map((e) => e.type);
+      if (types?.includes("effect-purge")) return;
+    }
+    throw new Error("the hero who is not across from the healed one never saw the sign end");
+  });
+
   it("lets a hero who waits for a foe put the sign on a teammate", () => {
     const battle = twoHeroes();
     const [fighting, waiting] = battle.boardParticipants().humans;
