@@ -12,19 +12,20 @@ export function fanoutRosterEffects(
   enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void,
   wakeAccount: (accountId: number) => void,
 ): void {
-  const fx = events.filter((event) => event.type === "effect-use" || event.type === "effect-purge");
-  if (fx.length === 0) return;
   const humans = battle.boardParticipants().humans;
+  const foeId = battle.foeIdOf(actorAccountId);
+  const pair = foeId === null ? null : battle.accountOfParticipant(foeId);
   for (const accountId of battle.authedAccountIds()) {
     if (accountId === actorAccountId) continue;
     const heroId = humans.find((human) => human.accountId === accountId)?.heroId;
-    // The one a buff is cast on sees the cast animation too, not only the effect appearing.
+    // Whoever a buff lands on, and the player across from the caster, see the cast animation too.
     const shown = events.filter(
       (event) =>
         event.type === "effect-use" ||
         event.type === "effect-purge" ||
-        (event.type === "buff-cast" && event.targetId === heroId),
+        (event.type === "buff-cast" && (event.targetId === heroId || accountId === pair)),
     );
+    if (shown.length === 0) continue;
     enqueue(accountId, shown);
     wakeAccount(accountId);
   }
@@ -99,16 +100,19 @@ export function fanoutHit(
   fanoutRosterEffects(battle, actorAccountId, events, enqueue, wakeAccount);
 }
 
-/** The blows of a strike for the one it hits: no turn wait, no glove combo of the striker, hp after the swing. */
-function strikeSeenByFoe(
+/**
+ * The blows (and heals) of an action that a player sees: those aimed at him, and all of them for
+ * the player across from the actor. No turn wait, no glove combo of the actor, hp after the swing.
+ */
+function blowsSeenBy(
   battle: Battle,
-  foeAccountId: number,
+  accountId: number,
+  isPair: boolean,
   events: readonly CombatEvent[],
 ): readonly CombatEvent[] {
   const blows = events.flatMap((event): CombatEvent[] => {
-    if (event.type !== "damage" || battle.accountOfParticipant(event.targetId) !== foeAccountId) {
-      return [];
-    }
+    if (event.type !== "damage") return [];
+    if (!isPair && battle.accountOfParticipant(event.targetId) !== accountId) return [];
     const blow = Object.fromEntries(Object.entries(event).filter(([key]) => key !== "comboCp"));
     return [blow as typeof event];
   });
@@ -131,10 +135,12 @@ export function fanoutPersChange(
       events.find((event) => event.type === "damage"),
     );
   if (!patch) return;
+  const foeId = battle.foeIdOf(actorAccountId);
+  const pair = foeId === null ? null : battle.accountOfParticipant(foeId);
   for (const accountId of battle.authedAccountIds()) {
     if (accountId === actorAccountId || skipAccountIds.has(accountId)) continue;
     // The player struck across from the actor sees the swing land, not only the fresh hit points.
-    const blows = strikeSeenByFoe(battle, accountId, events);
+    const blows = blowsSeenBy(battle, accountId, accountId === pair, events);
     if (blows.length > 0) enqueue(accountId, blows);
     else enqueue(accountId, [patch], "head");
     wakeAccount(accountId);
@@ -168,7 +174,9 @@ export function enqueueKeepTurn(
 ): void {
   const shown = battle ? withActorPersChange(battle, events) : events;
   enqueue(accountId, [{ type: "command-accepted", sequence }, ...shown]);
-  if (battle) fanoutRosterEffects(battle, accountId, events, enqueue, wakeAccount);
+  if (!battle) return;
+  fanoutPersChange(battle, accountId, events, enqueue, wakeAccount);
+  fanoutRosterEffects(battle, accountId, events, enqueue, wakeAccount);
 }
 
 export function withActorPersChange(

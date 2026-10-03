@@ -76,6 +76,10 @@ describe("fproxy friendly duel", () => {
       expect.arrayContaining(["fightState", "persList", "oppnew"]),
     );
     expect(fightEventTypes(bootstrapB)).not.toContain("attacknow");
+    // Whatever a player does, the one across from him sees it: here the rage cast.
+    expect(await a.fight({ rc: "castSpell", srcType: 1, srcId: 6, sq: 4 })).toHaveLength(0);
+    expect(fightEventTypes(await a.pollFight())).toContain("cast");
+    expect(fightEventTypes(await b.pollFight())).toContain("cast");
     expect(await a.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: 5 })).toHaveLength(0);
     const strike = await a.pollFight();
     expect(fightEventTypes(strike)).toEqual(expect.arrayContaining(["attackwait", "cast"]));
