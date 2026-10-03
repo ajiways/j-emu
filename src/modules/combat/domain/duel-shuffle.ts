@@ -27,6 +27,15 @@ function isHuman(participant: Participant): participant is HumanFighter {
   return participant.fighterKind === "human";
 }
 
+/** Of those who wait, the one who has waited longest: the line is first come, first served. */
+function longestWaiting(waiting: readonly Participant[]): Participant | undefined {
+  return waiting.reduce<Participant | undefined>(
+    (first, entry) =>
+      first === undefined || entry.waitingSince < first.waitingSince ? entry : first,
+    undefined,
+  );
+}
+
 /** What a participant is told when `opponent` stands across from him from now on. */
 function newOpponent(opponent: Participant): BattleEvent {
   if (isHuman(opponent)) {
@@ -85,9 +94,9 @@ export function shuffleAfterHits(input: ShuffleInput): ShuffleOutcome {
   const duel = duels.find((entry) => entry.has(actor.id));
   const foe = duel ? everyone.find((entry) => entry.id === duel.otherId(actor.id)) : undefined;
   if (!duel || !foe || !actor.alive) return { kind: "none" };
-  const waiter =
-    humans.find((entry) => entry.waiting && entry.alive && entry.team === actor.team) ??
-    bots.find((entry) => entry.waiting && entry.alive && entry.team === actor.team);
+  const waiter = longestWaiting(
+    everyone.filter((entry) => entry.waiting && entry.alive && entry.team === actor.team),
+  );
   const partner = allyDuel(duels, duel, everyone, actor.team);
   const swappable =
     partner &&
@@ -160,8 +169,10 @@ function nextInLine(
   everyone: readonly Participant[],
   duels: readonly FightDuel[],
 ): Readonly<{ next: Participant; stolenFrom: number | null }> | null {
-  const waiting = everyone.find(
-    (entry) => entry.waiting && entry.alive && entry.team === team && entry.id !== exceptId,
+  const waiting = longestWaiting(
+    everyone.filter(
+      (entry) => entry.waiting && entry.alive && entry.team === team && entry.id !== exceptId,
+    ),
   );
   if (waiting) return { next: waiting, stolenFrom: null };
   for (let index = duels.length - 1; index >= 0; index -= 1) {

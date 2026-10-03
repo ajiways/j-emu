@@ -223,4 +223,40 @@ describe("a waiting ally mob takes a duel over", () => {
     expect(duels).toEqual([]);
     expect(human.waiting).toBe(true);
   });
+
+  it("hands the duel to the ally who has waited longest, not back to the one who just stepped out", () => {
+    const effectIds = new FightEffectIds();
+    const human = hero(effectIds);
+    const foe = mob(1_000_000, 1, effectIds);
+    const first = mob(1_000_001, 2, effectIds);
+    const second = mob(1_000_002, 2, effectIds);
+    first.unpair();
+    second.unpair();
+    const duel = new FightDuel(human.heroId, foe.fightId, human.heroId);
+    const hitsOut = () => {
+      for (let round = 0; round < 3; round += 1) {
+        duel.addHit(duel.aId);
+        duel.addHit(duel.bId);
+      }
+    };
+    const shuffle = (actor: HumanFighter | BotFighter) =>
+      shuffleAfterHits({
+        actor,
+        humans: [human],
+        bots: [foe, first, second],
+        duels: [duel],
+        finished: false,
+        openingRandom: new FixedRandom(),
+      });
+    hitsOut();
+    shuffle(human);
+    expect(duel.has(first.fightId)).toBe(true);
+    hitsOut();
+    shuffle(first);
+    expect(duel.has(second.fightId)).toBe(true);
+    expect(duel.has(human.heroId)).toBe(false);
+    hitsOut();
+    shuffle(second);
+    expect(duel.has(human.heroId)).toBe(true);
+  });
 });

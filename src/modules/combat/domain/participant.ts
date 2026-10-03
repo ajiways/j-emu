@@ -37,6 +37,9 @@ export type ParticipantInit = Readonly<{
  * what a participant may do differs only through what it carries (`loadout`) and through its
  * controller: a player's commands or an AI's decisions.
  */
+/** Orders those who wait: the one who began to wait earlier has a smaller tick. */
+let waitTick = 0;
+
 export abstract class Participant implements Fighter {
   readonly casts: CastState;
   readonly effects: FighterEffects;
@@ -44,6 +47,7 @@ export abstract class Participant implements Fighter {
   private hpValue: number;
   private mpValue: number;
   private waitingValue: boolean;
+  private waitingSinceValue = 0;
   private damageToBotValue = 0;
   private killedByValue: number | null = null;
   private damageToHumansValue = 0;
@@ -60,6 +64,7 @@ export abstract class Participant implements Fighter {
     this.hpValue = init.hp;
     this.mpValue = init.mp;
     this.waitingValue = init.waiting;
+    if (init.waiting) this.waitingSinceValue = ++waitTick;
     this.casts = new CastState(init.loadout, init.aggroCharges);
     this.effects = new FighterEffects({
       heroId: init.id,
@@ -149,6 +154,11 @@ export abstract class Participant implements Fighter {
   get waiting(): boolean {
     return this.waitingValue;
   }
+
+  /** When the participant began to wait for a foe; the smaller, the longer he has waited. */
+  get waitingSince(): number {
+    return this.waitingSinceValue;
+  }
   get lastOpponentId(): number | null {
     return this.lastOpponentIdValue;
   }
@@ -233,6 +243,7 @@ export abstract class Participant implements Fighter {
   unpair(): void {
     if (this.waitingValue) throw new Error(`Participant ${this.id} is already waiting`);
     this.waitingValue = true;
+    this.waitingSinceValue = ++waitTick;
   }
 
   /** The waiting flag of a participant that leaves the pairing for good. */
