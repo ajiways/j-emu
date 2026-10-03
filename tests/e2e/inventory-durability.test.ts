@@ -7,6 +7,7 @@ import { completeMeleeHunt } from "../support/harness/complete-melee-hunt.ts";
 import { FixedRandom } from "../support/fakes/fixed-random.ts";
 import { SequenceRandom } from "../support/fakes/sequence-random.ts";
 import { bagItemByArtikulId } from "../support/harness/wire-payload.ts";
+import { wornHeroBodyFromGeneratedMany } from "../support/worn-hero-body.ts";
 
 describe("inventory durability death and repair", () => {
   let harness: ApplicationHarness;
@@ -66,9 +67,14 @@ describe("inventory durability death and repair", () => {
       }
     }
 
-    const afterDeaths = await client.objectAction({ object: "user", action: "bag", sq });
+    const afterDeaths = await client.objectAction({ object: "user", action: "view", sq });
     sq += 1;
-    const glove = bagItemByArtikulId(afterDeaths, 9095);
+    expect(objectBlock(afterDeaths["user|view"]).body).toBe(
+      wornHeroBodyFromGeneratedMany([20, 21, 26]),
+    );
+    const bag = await client.objectAction({ object: "user", action: "bag", sq });
+    sq += 1;
+    const glove = bagItemByArtikulId(bag, 9095);
     expect(glove).toMatchObject({ durability: 0, durability_max: 3, actions: 515 });
     const denied = await client.objectAction({
       object: "common",
@@ -149,6 +155,7 @@ describe("inventory durability death and repair", () => {
       durability: 29,
       durability_max: 29,
     });
+    expect(objectBlock(view["user|view"]).body).toBe(wornHeroBodyFromGeneratedMany([20, 21, 26]));
   });
 });
 
@@ -160,6 +167,13 @@ async function putOn(client: AuthenticatedClient, itemId: number, sq: number) {
     sq,
   });
   expect(putOn["common|action"]).toEqual({ status: 100 });
+}
+
+function objectBlock(value: AmfValue | undefined): Record<string, AmfValue> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("expected object block");
+  }
+  return value;
 }
 
 function equippedByArtikul(

@@ -31,7 +31,7 @@ finish. Quest/farm assistant announce не в срезе.
 - composition `ChatDesk` читает presence/character/catalog/world/combat ports и
   кладёт кадры в outbox;
 - combat **не** импортирует chat. Post-commit notify — обёртка
-  `ChatFightSettlement` над `HuntFightSettlement`. Сбой enqueue **не** откатывает
+  `ChatFightSettlement` над `FightOutcomeSettlement`. Сбой enqueue **не** откатывает
   UoW награды.
 
 Roster area-канала: `listPopulation` (sessions ⨝ `heroes.area_id`), без

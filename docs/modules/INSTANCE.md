@@ -144,7 +144,7 @@ graph — [WORLD.md](WORLD.md) leftover.
 
 Composition hunt-win: peek dungeon fight→spawn **до** `releaseFight` (mapping
 ещё жив). Combat snapshot spawn key не обязан; combat instance не импортирует.
-`HuntFightSettlement` грантит personal/coins в том же UoW, что HP/EXP/world
+`FightOutcomeSettlement` грантит personal/coins в том же UoW, что HP/EXP/world
 loot; `InstanceHuntLockRelease` по-прежнему `markSpawnKilled` (idempotent
 `ON CONFLICT DO NOTHING`) и forget wander. Progress esrv после mark, если
 bar сдвинулся.

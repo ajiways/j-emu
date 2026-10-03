@@ -1,11 +1,14 @@
 import type { Catalog } from "../../catalog/ports/catalog.ts";
-import type { CharacterService } from "../../character/application/character-service.ts";
 import { composeHeroBody, parseFBodyTokens } from "../../character/domain/hero-body.ts";
 import type { Hero } from "../../character/domain/hero.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 
+type WornBodyStore = Readonly<{
+  save(hero: Hero): Promise<void>;
+}>;
+
 export async function syncWornBody(
-  characters: CharacterService,
+  characters: WornBodyStore,
   inventory: InventoryService,
   catalog: Catalog,
   hero: Hero,

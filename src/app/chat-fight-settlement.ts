@@ -9,7 +9,7 @@ import type {
   HumanLeftSnapshot,
 } from "../modules/combat/ports/fight-settlement.ts";
 import type { ChatDesk } from "./chat-desk.ts";
-import type { HuntFightSettlement } from "./hunt-fight-settlement.ts";
+import type { FightOutcomeSettlement } from "./fight-outcome-settlement.ts";
 import type { FightProgressUp } from "./fight-progress-log.ts";
 import type { ProgressNotifier } from "./progress-notifier.ts";
 
@@ -28,7 +28,7 @@ export class ChatFightSettlement implements FightSettlement {
   private readonly pendingEnded: TtlMap<string, PendingEnded>;
 
   constructor(
-    private readonly inner: HuntFightSettlement,
+    private readonly inner: FightOutcomeSettlement,
     private readonly chat: ChatDesk,
     private readonly progress: ProgressNotifier,
     clock: Clock,

@@ -17,7 +17,7 @@ import type { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.
 import type { PresenceFanout } from "../modules/jugger-wire/application/presence-fanout.ts";
 import type { PartySnapshot } from "../modules/jugger-wire/application/party-snapshot.ts";
 import type { UnreadMailQuery } from "../modules/mail/ports/unread-mail.ts";
-import { createChatHuntSettlement } from "./create-chat-hunt-settlement.ts";
+import { createChatFightSettlement } from "./create-chat-fight-settlement.ts";
 import type { ChatDesk } from "./chat-desk.ts";
 import { DungeonPersonalGrant } from "./dungeon-personal-grant.ts";
 import { HEROISM_RULES } from "./heroism-rules.ts";
@@ -77,7 +77,7 @@ export function bindInstanceHuntRuntime(input: {
   });
   const dungeonGrant = new DungeonPersonalGrant(input.instance.hunt, input.instance.service);
   input.combat.bindSettlement(
-    createChatHuntSettlement({
+    createChatFightSettlement({
       unitOfWork: input.unitOfWork,
       catalog: input.catalog,
       characters: input.characters.service,

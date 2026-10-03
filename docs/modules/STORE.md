@@ -36,7 +36,7 @@ release. `store_lots.pay` — дискриминированный union `gold` 
 `null` = нет гейта лота; `{all}` AND или `{any}` OR.
 World владеет area **504** и **552** с `code=store`. Inventory выдаёт
 экземпляры в bag и списывает бартер. Composition UoW (`src/app`, как
-`HuntFightSettlement`) вызывает gate → pay → `grantToBag`. Inventory не
+`FightOutcomeSettlement`) вызывает gate → pay → `grantToBag`. Inventory не
 пишет `heroes`. Character не пишет `items`. Store OA не импортирует combat
 domain (в том числе `fight-money.ts`); перевод золотых и алмазных монет в
 minor — helper в character/shared kernel, то же правило, что INV-02:

@@ -28,16 +28,16 @@ Known bugs сверх QL-1/QM-1/QM-2 в `TEMP_QUEST_ITEM_AND_MARKER_BUGS.md` н�
 Отдельный ADR и блокирующий `ARC-QST` не нужны: награды и consume идут через
 уже существующие ports в одной composition UoW.
 
-| Owner       | Holds                                                                                                                                                 |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `quests`    | authored NPC/quest/dialog/goal/script/flag (`release_id`) и player `hero_quests` (включая `hidden_in_journal`) / goals / facts / waiting              |
-| `catalog`   | artifacts, bots, store lots, reputation tracks; не NPC и не quest graph                                                                               |
-| `world`     | areas и travel `area_links` (только `COME_IN`)                                                                                                        |
-| `character` | EXP/money/reputation/`setArea`/`learnProfession`                                                                                                      |
-| `inventory` | grant/consume/PUT_ON; USE `openDialog` не импортирует quests                                                                                          |
-| `combat`    | RAM fight; `startHunt({ purpose: "quest" })`; terminal notice                                                                                         |
-| `chat`      | `MSG` после commit                                                                                                                                    |
-| composition | `QuestDesk`: UoW, script effects, book piggyback, area_conf overlay, fight start after commit; `HuntFightSettlement` клипает hunt drop через `needed` |
+| Owner       | Holds                                                                                                                                                    |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `quests`    | authored NPC/quest/dialog/goal/script/flag (`release_id`) и player `hero_quests` (включая `hidden_in_journal`) / goals / facts / waiting                 |
+| `catalog`   | artifacts, bots, store lots, reputation tracks; не NPC и не quest graph                                                                                  |
+| `world`     | areas и travel `area_links` (только `COME_IN`)                                                                                                           |
+| `character` | EXP/money/reputation/`setArea`/`learnProfession`                                                                                                         |
+| `inventory` | grant/consume/PUT_ON; USE `openDialog` не импортирует quests                                                                                             |
+| `combat`    | RAM fight; `startHunt({ purpose: "quest" })`; terminal notice                                                                                            |
+| `chat`      | `MSG` после commit                                                                                                                                       |
+| composition | `QuestDesk`: UoW, script effects, book piggyback, area_conf overlay, fight start after commit; `FightOutcomeSettlement` клипает hunt drop через `needed` |
 
 `quests` не пишет `heroes`/`items` и не импортирует combat/world/inventory.
 Script registry возвращает typed effects; `QuestDesk` исполняет их через

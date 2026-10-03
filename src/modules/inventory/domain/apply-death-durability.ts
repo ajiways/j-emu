@@ -1,4 +1,5 @@
 import type { Catalog } from "../../catalog/ports/catalog.ts";
+import { syncGearSetBonuses } from "./apply-gear-set-bonuses.ts";
 import type { InventoryItem } from "./inventory-item.ts";
 import { applyBreak, instanceDurability, pickDeathBreaks, tracksDurability } from "./durability.ts";
 import { isPaperdollSlotMask } from "./paperdoll-slot.ts";
@@ -22,11 +23,37 @@ export type DeathDurabilityResult = Readonly<{
   breaks: readonly DeathDurabilityBreak[];
 }>;
 
-export async function applyDeathDurability(
+type DeathDurabilityWork = DeathDurabilityResult &
+  Readonly<{
+    unequipItemIds: readonly number[];
+  }>;
+
+type PutOffPaperdoll = (heroId: number, itemId: number) => Promise<"paperdoll" | "pocket">;
+
+export async function applyDeathBreaks(
   inventory: InventoryRepository,
   catalog: Catalog,
   command: ApplyDeathDurabilityCommand,
+  putOff: PutOffPaperdoll,
 ): Promise<DeathDurabilityResult> {
+  const worked = await applyDeathDurability(inventory, catalog, command);
+  for (const itemId of worked.unequipItemIds) {
+    const kind = await putOff(command.characterId, itemId);
+    if (kind !== "paperdoll") {
+      throw new Error(`Death-break item ${itemId} did not leave the paperdoll`);
+    }
+  }
+  if (worked.paperdollChanged && worked.unequipItemIds.length === 0) {
+    await syncGearSetBonuses(inventory, catalog, command.characterId);
+  }
+  return { paperdollChanged: worked.paperdollChanged, breaks: worked.breaks };
+}
+
+async function applyDeathDurability(
+  inventory: InventoryRepository,
+  catalog: Catalog,
+  command: ApplyDeathDurabilityCommand,
+): Promise<DeathDurabilityWork> {
   const items = await inventory.lockForHero(command.characterId);
   const pool: InventoryItem[] = [];
   const flagsByItem = new Map<number, number>();
@@ -42,6 +69,7 @@ export async function applyDeathDurability(
   }
   const picked = pickDeathBreaks(pool, command.random);
   let paperdollChanged = false;
+  const unequipItemIds: number[] = [];
   const breaks: DeathDurabilityBreak[] = [];
   for (const item of picked) {
     if (item.location.kind !== "equipment") {
@@ -64,12 +92,11 @@ export async function applyDeathDurability(
       paperdollChanged = true;
       continue;
     }
-    let updated = item.withDurability(next.current, next.max);
+    await inventory.save(item.withDurability(next.current, next.max));
     if (next.current <= 0) {
-      updated = updated.withLocation({ kind: "bag" });
+      unequipItemIds.push(item.id);
       paperdollChanged = true;
     }
-    await inventory.save(updated);
   }
-  return { paperdollChanged, breaks };
+  return { paperdollChanged, unequipItemIds, breaks };
 }

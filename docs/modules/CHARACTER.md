@@ -42,8 +42,9 @@ Hero identity:
   из transaction-pinned progression snapshot;
 - equipment totals (`user|skills`, `hpMax`) считаются из naked + надетых
   `artifact_skills` на PUT_ON/OFF и при чтении skills;
-- `heroes.body` / `user|view.body` пересобирается на paperdoll PUT_ON/OFF из
-  catalog `fBody` надетого экипа (старый `rebuildHeroBody`); без экипа —
+- `heroes.body` / `user|view.body` пересобирается на paperdoll PUT_ON/OFF и
+  когда смерть снимает сломанную вещь, из catalog `fBody` надетого экипа
+  (старый `rebuildHeroBody`); без экипа —
   `armor();head(...);skin()` из `HeroCreationPolicy`. Тот же `heroes.body`
   уходит в `fight|conf.persSelf_body`;
 - tutorial flags пишутся в `hero_personal_details` при создании и больше не
@@ -584,7 +585,7 @@ esrv outbox synced `user|unitframe` + `user|conf` + `user|bag` + `state` и
 `wins`, `losses`, `duel_wins` (выигранные дружеские дуэли), `max_fight_damage` (максимум урона
 за один бой), `fatalities` (казни), `pvp_kills` (добитые игроки), `daily_pvp_kills` и
 `daily_cycle_start` (убийства за сутки с границей в 06:00 по Москве; в новом цикле счёт идёт
-заново, чтение в новом цикле возвращает 0). Применяет `HuntFightSettlement` в той же транзакции,
+заново, чтение в новом цикле возвращает 0). Применяет `FightOutcomeSettlement` в той же транзакции,
 что и награда, всем, кто остался до конца боя (ушедший раньше ничего не получает): охота и PvP —
 победа/поражение, дружеская дуэль — только выигранная дуэль. Порт `HeroLifetimeStats`
 (`applyFight`, `read`); в `user|stats` из них идут «Убито врагов» (3), «Количество побед в

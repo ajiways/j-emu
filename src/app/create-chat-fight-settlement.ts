@@ -11,7 +11,7 @@ import type { EsrvOutbox } from "../modules/jugger-wire/application/esrv-outbox.
 import { ProgressNotifier } from "./progress-notifier.ts";
 import { ChatFightSettlement } from "./chat-fight-settlement.ts";
 import type { ChatDesk } from "./chat-desk.ts";
-import { HuntFightSettlement } from "./hunt-fight-settlement.ts";
+import { FightOutcomeSettlement } from "./fight-outcome-settlement.ts";
 import type { HeroismRules } from "./heroism-rules.ts";
 import type { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 import { PartyFightLootNotify } from "./party-fight-loot-notify.ts";
@@ -20,7 +20,7 @@ import type { PartyNotify } from "./party-notify.ts";
 import type { QuestLootNeeded } from "../modules/quests/ports/quest-loot-needed.ts";
 import type { DungeonPersonalGrant } from "./dungeon-personal-grant.ts";
 
-export function createChatHuntSettlement(input: {
+export function createChatFightSettlement(input: {
   unitOfWork: UnitOfWork;
   catalog: Catalog;
   characters: CharacterService;
@@ -40,7 +40,7 @@ export function createChatHuntSettlement(input: {
   clock: Clock;
 }): ChatFightSettlement {
   return new ChatFightSettlement(
-    new HuntFightSettlement(
+    new FightOutcomeSettlement(
       input.unitOfWork,
       input.catalog,
       input.characters,

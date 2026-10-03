@@ -542,7 +542,7 @@
   `durability_max` (columns, not JSON) and mutations (break, auto PUT_OFF,
   1/1 destroy, repair). Catalog owns authored template durability and
   `priceMinor`/`flags`. Character owns `debitMoney` for repair gold.
-  Combat does not write `items`; `HuntFightSettlement` calls inventory
+  Combat does not write `items`; `FightOutcomeSettlement` calls inventory
   `applyDeathDurability` in the same UoW as `noteDefeat` when hp is 0
   (hunt only; no practice fights). Repair is composition `StoreRepair`:
   inventory `repair` + `debitMoney`; inventory does not write `heroes`.
@@ -1160,7 +1160,7 @@
   `purpose:"quest"` бампает ту же `area_action` и гоняет оставшийся onFinish
   (MSG/SET_FLAG); `win_fight` signal цель `area_action` не закрывает.
   Проигрыш оставляет цель incomplete. Loot-cap — composition
-  `HuntFightSettlement` спрашивает quests-port `needed` по текущей
+  `FightOutcomeSettlement` спрашивает quests-port `needed` по текущей
   loot/deliver цели, combat quests не импортирует. Markers: честный
   `finished_quests_id`; `book|quest_targets` только `currentGoal`;
   `area_conf` offer href только NPC-доска / AREA hotspot, не hunt-бот.
@@ -1363,7 +1363,7 @@ img:picture, dmgType, remainTime:320, groupId:936 }` → сразу
   `CharacterProgression`), ledger `honor_grants` PK
   `(hero_id, operation_id)`, clamp через `honorProgress`. Battleground —
   RAM `player.honor` / `dmg` / `rank` (сумма боёв матча) и history
-  columns. Composition `HuntFightSettlement.persistPvp` в той же UoW, что
+  columns. Composition `FightOutcomeSettlement.persistPvp` в той же UoW, что
   HP: чистая `rawHonorFromDamage` → `grantHonor`;
   `BattlegroundMatchRuntime.afterFightFinished` читает кэш этого боя
   (оба героя) и копит RAM stats, затем `pushMapAndStats`. Не считать
@@ -1959,7 +1959,7 @@ behavior`. Wire `react` 1/2/6/10/14. Fatality/казнь — не этот ср�
   `startBattle({ team1, team2, rules })`.
 - **Триггеры из FIGHT_MODEL сработали оба.** `FightRules` — «третий режим
   последствий»: в j-emu их четыре (hunt, quest, friendly-practice, pvp;
-  `HuntFightSettlement.persistFinished` ветвится на три). Общий
+  `FightOutcomeSettlement.persistFinished` ветвится на три). Общий
   `startBattle` — «арена N×N или несколько новых стартов подряд»: N×N
   приземлён (CMB-12/CMB-13), точек старта три (`startHunt`,
   `startFriendlyDuel`, `startPvp`) плюс BG. Ранее отложено осознанно:
@@ -2273,7 +2273,7 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   killed keys и считает bar (чистые функции, как jgr `clear.ts`). Combat
   не импортирует instance: spawn для grant — peek `DungeonHuntWorld`
   fight→copy/spawn **до** `releaseFight`. Inventory грантит coins/2371
-  `personal_only` каждому team-1 в том же UoW, что `HuntFightSettlement`
+  `personal_only` каждому team-1 в том же UoW, что `FightOutcomeSettlement`
   (не только top damager). World loot/EXP — CMB-07 как сейчас.
   `markSpawnKilled` остаётся в `InstanceHuntLockRelease` (idempotent).
   esrv `instance_conf` на enter / floor travel / progress tick (team-1
@@ -2294,7 +2294,7 @@ err:"нельзя выйти из боя"}`, бой жив; dungeon copy — т�
   Контракт: [INSTANCE.md](../modules/INSTANCE.md),
   [COMBAT.md](../modules/COMBAT.md).
   Лимит 400: extract clear-progress (instance domain) и dungeon personal
-  grant (app composition) из `hunt-fight-settlement` (337) /
+  grant (app composition) из `fight-outcome-settlement` (367) /
   `instance-desk` (240); `composition-root` (379) / `jugger-wire-module`
   (392) / `combat-service` (371) / `battle` (368) не растить ради spawn
   key на snapshot.

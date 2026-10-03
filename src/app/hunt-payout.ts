@@ -5,7 +5,7 @@ import type { RandomSource } from "../modules/combat/domain/random-source.ts";
 import type { FightLootRoute } from "../modules/combat/ports/fight-loot-routing.ts";
 import type { InventoryService } from "../modules/inventory/domain/inventory-service.ts";
 import type { QuestLootNeeded } from "../modules/quests/ports/quest-loot-needed.ts";
-import { capRolledDrops } from "./hunt-fight-loot-apply.ts";
+import { capRolledDrops } from "./fight-settlement-apply.ts";
 import {
   cutForParty,
   goldMinorOf,

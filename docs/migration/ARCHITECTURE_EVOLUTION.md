@@ -241,7 +241,7 @@ LEVEL / `store_entries` не вводились. `src/modules/store-engine` не
 **Решение INV-05:** текущих границ достаточно; отдельный `ARC-INV` /
 `ARC-ECO` не нужен. Durability — inventory instance columns. Repair gold —
 character `debitMoney` в composition UoW, как ECO-01. Death break —
-inventory port из `HuntFightSettlement`, как pocket refill. Контракт:
+inventory port из `FightOutcomeSettlement`, как pocket refill. Контракт:
 [INVENTORY.md](../modules/INVENTORY.md).
 
 **Решение AUC-01:** тех же границ достаточно. Модуль `auction` владеет

@@ -531,7 +531,7 @@ ghost. Durability — INV-05.
 `inventory.items.durability` / `durability_max`, не JSON. Catalog владеет
 шаблоном (`artifacts.durability` / `durability_max`) и `priceMinor`/`flags`.
 Character владеет золотом через `debitMoney`. Combat не пишет `items`.
-Death: composition `HuntFightSettlement`, та же UoW что `noteDefeat`, порт
+Death: composition `FightOutcomeSettlement`, та же UoW что `noteDefeat`, порт
 `applyDeathDurability`. Repair: composition `StoreRepair`, та же схема что
 ECO-01 buy (inventory mutation + `debitMoney`). Economy-модуля нет.
 `flags_ext` не добавлять: infinite = `flags & 1` (NON_BREAK) и
@@ -572,7 +572,9 @@ catalog/instance без клэмпинга, все должны быть сог�
 
 Смерть (hp 0 на hunt finish): pool = надетые tracking с `current > 0`, без
 TEMPEFFECT; `pickDeathBreaks` 4–5 или весь pool. −1; finite `1/1` delete;
-`0/N` PUT_OFF в bag. RNG — `RandomSource.unit` на settlement. Win тоже
+`0/N` снимается тем же `putOff`, что и команда, затем `heroes.body`
+пересобирается тем же шагом, что после `PUT_OFF`. RNG —
+`RandomSource.unit` на settlement. Win тоже
 ломает, если hunter hp 0 (live rewards loop). Practice fights в j-emu нет.
 
 PUT_ON `0/N` — **204** `Эту вещь нельзя надеть!` (`BrokenItemError`).

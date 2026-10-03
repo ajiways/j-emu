@@ -30,7 +30,7 @@ RAM; party bag — PostgreSQL. Модуль `party` (`src/modules/party`), не 
 
 - `party` держит membership, invites, settings, bag rows и serial lock;
 - `inventory` выдаёт экземпляры только через `grantToBag` / `canFitBag`;
-- `combat` не импортирует party. `HuntFightSettlement` читает
+- `combat` не импортирует party. `FightOutcomeSettlement` читает
   `FightLootRouting` и пишет bag через `PartyBagDeposit` — оба порта
   внедряет composition;
 - `jugger-wire` владеет OA `party|*`, `common|object:FIGHT_JOIN` /

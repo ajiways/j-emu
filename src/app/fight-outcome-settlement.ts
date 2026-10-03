@@ -41,9 +41,10 @@ import { planHuntPayout } from "./hunt-payout.ts";
 import { persistPvpHonor } from "./persist-pvp-honor.ts";
 import type { PvpFightHonorCache } from "./pvp-fight-honor-cache.ts";
 import type { DungeonPersonalGrant } from "./dungeon-personal-grant.ts";
+import { syncWornBody } from "../modules/jugger-wire/application/sync-worn-body.ts";
 import { FightDeathBreaks } from "./fight-death-breaks.ts";
 import { FightProgressLog, type FightProgressUp } from "./fight-progress-log.ts";
-import { loadArtikulList, persistFightResources } from "./hunt-fight-loot-apply.ts";
+import { loadArtikulList, persistFightResources } from "./fight-settlement-apply.ts";
 
 type SettlementCharacters = CharacterResources &
   CharacterProgression &
@@ -52,9 +53,10 @@ type SettlementCharacters = CharacterResources &
   Readonly<{
     lockById(characterId: number): Promise<Hero>;
     applyEquipmentVitals(hero: Hero, bonuses: readonly ArtifactSkillBonus[]): Promise<Hero>;
+    save(hero: Hero): Promise<void>;
   }>;
 
-export class HuntFightSettlement implements FightSettlement {
+export class FightOutcomeSettlement implements FightSettlement {
   private readonly finished: TtlMap<string, Map<number, FightLootBlock>>;
   private readonly left: TtlMap<string, true>;
   private readonly progress = new FightProgressLog();
@@ -86,17 +88,7 @@ export class HuntFightSettlement implements FightSettlement {
     if (this.left.has(key)) return Promise.resolve();
     this.left.set(key, true);
     return this.unitOfWork.run(async () => {
-      await persistFightResources(this.characters, snapshot);
-      await this.applyDeathIfDefeated(
-        snapshot.fightId,
-        snapshot.accountId,
-        snapshot.characterId,
-        snapshot.hp,
-      );
-      await this.inventory.refillPocketAfterFight({
-        characterId: snapshot.characterId,
-        cells: snapshot.pocket,
-      });
+      await this.persistFoughtHuman(snapshot);
     });
   }
 
@@ -195,20 +187,13 @@ export class HuntFightSettlement implements FightSettlement {
     }>,
   ): Promise<FightLootBlock> {
     if (!human.leftLive) {
-      await persistFightResources(this.characters, {
+      await this.persistFoughtHuman({
+        fightId: outcome.fightId,
+        accountId: human.accountId,
         characterId: human.characterId,
         hp: human.hp,
         mp: human.mp,
-      });
-      await this.applyDeathIfDefeated(
-        outcome.fightId,
-        human.accountId,
-        human.characterId,
-        human.hp,
-      );
-      await this.inventory.refillPocketAfterFight({
-        characterId: human.characterId,
-        cells: human.pocket,
+        pocket: human.pocket,
       });
     }
     if (reward.experience >= 1) {
@@ -285,21 +270,14 @@ export class HuntFightSettlement implements FightSettlement {
     const honor = await this.unitOfWork.run(async () => {
       for (const human of outcome.humans) {
         if (human.leftLive) continue;
-        await persistFightResources(this.characters, {
+        await this.persistFoughtHuman({
+          fightId: outcome.fightId,
+          accountId: human.accountId,
           characterId: human.characterId,
           hp: human.hp,
           mp: human.mp,
+          pocket: human.pocket,
         });
-        await this.inventory.refillPocketAfterFight({
-          characterId: human.characterId,
-          cells: human.pocket,
-        });
-        await this.applyDeathIfDefeated(
-          outcome.fightId,
-          human.accountId,
-          human.characterId,
-          human.hp,
-        );
       }
       await this.recordCounters(outcome);
       return persistPvpHonor({
@@ -313,6 +291,29 @@ export class HuntFightSettlement implements FightSettlement {
     for (const up of honor.rankUps) this.progress.note(outcome.fightId, up);
     this.finished.set(outcome.fightId, lootByAccount);
     return lootByAccount;
+  }
+
+  /**
+   * What every fight that keeps its result writes for one human who is still in it:
+   * hit points and mana, a death break when hp is 0, then the pocket refill.
+   * A friendly duel restores the pre-fight hit points, mana and pocket instead.
+   */
+  private async persistFoughtHuman(
+    input: Readonly<{
+      fightId: string;
+      accountId: number;
+      characterId: number;
+      hp: number;
+      mp: number;
+      pocket: FightHumanOutcome["pocket"];
+    }>,
+  ): Promise<void> {
+    await persistFightResources(this.characters, input);
+    await this.applyDeathIfDefeated(input.fightId, input.accountId, input.characterId, input.hp);
+    await this.inventory.refillPocketAfterFight({
+      characterId: input.characterId,
+      cells: input.pocket,
+    });
   }
 
   /** The lifetime counters of everyone who stayed to the end of the fight. */
@@ -361,5 +362,6 @@ export class HuntFightSettlement implements FightSettlement {
       hero,
       await this.inventory.equippedSkillBonuses(characterId),
     );
+    await syncWornBody(this.characters, this.inventory, this.catalog, hero);
   }
 }

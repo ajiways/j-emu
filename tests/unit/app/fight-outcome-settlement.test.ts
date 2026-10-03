@@ -1,7 +1,7 @@
 import type { FightCounterDelta } from "../../../src/modules/character/ports/hero-lifetime-stats.ts";
 import { MutableClock } from "../../support/fakes/mutable-clock.ts";
 import { describe, expect, it } from "vitest";
-import { HuntFightSettlement } from "../../../src/app/hunt-fight-settlement.ts";
+import { FightOutcomeSettlement } from "../../../src/app/fight-outcome-settlement.ts";
 import type { Catalog } from "../../../src/modules/catalog/ports/catalog.ts";
 import type { ArtifactDefinition } from "../../../src/modules/catalog/domain/artifact-definition.ts";
 import type {
@@ -33,14 +33,14 @@ const HERO_MAX_MP = 50;
 
 const CLOCK = new MutableClock(new Date("2026-10-03T12:00:00.000Z"));
 
-describe("HuntFightSettlement", () => {
+describe("FightOutcomeSettlement", () => {
   const bot = playableHuntBot();
   const minMoneyMinor = goldToMinor(bot.reward.moneyMin);
   const minMoneyWire = goldWireString(minMoneyMinor);
 
   it("pays the experience and the money twice for a mob that fell to an execution", async () => {
     const characters = recordingCharacters();
-    const settlement = new HuntFightSettlement(
+    const settlement = new FightOutcomeSettlement(
       identityUow(),
       fakeCatalog(),
       characters,
@@ -72,7 +72,7 @@ describe("HuntFightSettlement", () => {
   });
 
   function settlementWith(characters: ReturnType<typeof recordingCharacters>) {
-    return new HuntFightSettlement(
+    return new FightOutcomeSettlement(
       identityUow(),
       fakeCatalog(),
       characters,
@@ -153,7 +153,7 @@ describe("HuntFightSettlement", () => {
     const characters = recordingCharacters();
     const inventory = recordingInventory();
     const bestiary = recordingBestiary();
-    const settlement = new HuntFightSettlement(
+    const settlement = new FightOutcomeSettlement(
       identityUow(),
       fakeCatalog(),
       characters,
@@ -203,7 +203,7 @@ describe("HuntFightSettlement", () => {
     const lossCharacters = recordingCharacters();
     const lossInventory = recordingInventory();
     const lossBestiary = recordingBestiary();
-    const loss = new HuntFightSettlement(
+    const loss = new FightOutcomeSettlement(
       identityUow(),
       fakeCatalog(),
       lossCharacters,
@@ -231,7 +231,7 @@ describe("HuntFightSettlement", () => {
 
   it("grants Gryzl 77 when the loot unit draw lands past NOTHING", async () => {
     const inventory = recordingInventory();
-    const settlement = new HuntFightSettlement(
+    const settlement = new FightOutcomeSettlement(
       identityUow(),
       fakeCatalog(),
       recordingCharacters(),
@@ -257,7 +257,7 @@ describe("HuntFightSettlement", () => {
   it("clips hunt drops to the current quest loot remainder", async () => {
     const inventory = recordingInventory();
     inventory.bag.set(77, 1);
-    const settlement = new HuntFightSettlement(
+    const settlement = new FightOutcomeSettlement(
       identityUow(),
       fakeCatalog(),
       recordingCharacters(),
@@ -283,7 +283,7 @@ describe("HuntFightSettlement", () => {
   it("pays no money or loot when a mob of his own side did the most, and only his share of EXP", async () => {
     const characters = recordingCharacters();
     const inventory = recordingInventory();
-    const settlement = new HuntFightSettlement(
+    const settlement = new FightOutcomeSettlement(
       identityUow(),
       fakeCatalog(),
       characters,
@@ -325,7 +325,7 @@ describe("HuntFightSettlement", () => {
 
   it("splits EXP by damage and gives loot only to the top damager", async () => {
     const characters = recordingCharacters();
-    const settlement = new HuntFightSettlement(
+    const settlement = new FightOutcomeSettlement(
       identityUow(),
       fakeCatalog(),
       characters,
@@ -372,7 +372,7 @@ describe("HuntFightSettlement", () => {
   it("persists team-2 HP without hunt EXP or loot on opener-team win", async () => {
     const characters = recordingCharacters();
     const inventory = recordingInventory();
-    const settlement = new HuntFightSettlement(
+    const settlement = new FightOutcomeSettlement(
       identityUow(),
       fakeCatalog(),
       characters,
@@ -414,7 +414,7 @@ describe("HuntFightSettlement", () => {
   it("restores practice HP/MP/pocket and skips loot", async () => {
     const characters = recordingCharacters();
     const inventory = recordingInventory();
-    const settlement = new HuntFightSettlement(
+    const settlement = new FightOutcomeSettlement(
       identityUow(),
       fakeCatalog(),
       characters,
@@ -462,7 +462,7 @@ describe("HuntFightSettlement", () => {
   it("grants PvP honor once from applied human damage", async () => {
     const characters = recordingCharacters();
     const cache = new PvpFightHonorCache(CLOCK);
-    const settlement = new HuntFightSettlement(
+    const settlement = new FightOutcomeSettlement(
       identityUow(),
       fakeCatalog(),
       characters,
@@ -527,7 +527,7 @@ describe("HuntFightSettlement", () => {
 
   it("pays PvP heroism for healing a teammate and nothing for the hero's own heals", async () => {
     const characters = recordingCharacters();
-    const settlement = new HuntFightSettlement(
+    const settlement = new FightOutcomeSettlement(
       identityUow(),
       fakeCatalog(),
       characters,
@@ -701,6 +701,9 @@ function recordingCharacters() {
       return testHero({ id: characterId, maxHp: HERO_MAX_HP, maxMp: HERO_MAX_MP });
     },
     async applyEquipmentVitals() {
+      throw new Error("unused");
+    },
+    async save() {
       throw new Error("unused");
     },
     async syncResources() {

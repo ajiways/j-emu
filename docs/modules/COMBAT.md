@@ -15,7 +15,7 @@ overkill / орб 99 / сайдбар / loot tooltip. Product status combat ос
 CMB-09 отдаёт
 quest `on_win`/`on_lose` через `FightTerminalObserver` (unit). AREA
 `START_FIGHT` (quest + ambush) и hunt loot-cap — composition (`QuestDesk` /
-`HuntFightSettlement`), не combat domain. Roster/flags квестового боя
+`FightOutcomeSettlement`), не combat domain. Roster/flags квестового боя
 landed raw-AMF (`CMB-10`); deny leave — `QST-ENG-04`; CEF leftover.
 
 ## Источники поведения
@@ -173,6 +173,8 @@ group 844 / `rageeffect_2702.png`, `remainTime` 0, `skills.pcSTR` с fill
 (50%→+18, 100%→+50). Consuming L/C/R шлёт `effPurge`. Повтор и пустая шкала —
 только `fury` `ev:[]`, без второй иконки.
 
+Команда каста (карман, идол, перчатка, ярость, концентрация, агро), которую сервер не может выполнить (нет такого предмета или заклинания, нет хода, нет боя), — `FightCastDenied("unavailable")`, wire `{rs:false}`; ответ `rs:true` клиент считает расходом предмета. Устаревший клик удара (`strike`) по-прежнему принимается без действия.
+
 Content: dump-proven `spell` у **93** (хил, CD 20) и **99** (орб `ev:[]`);
 **9095** сокеты **9098/9100/9099**. World-карточка и `user|magic` —
 [INVENTORY.md](INVENTORY.md); бой читает instance `data_json` (пул 23 и 9095
@@ -215,7 +217,7 @@ Kind 11 HTTP
 
 ## CMB-03 — terminal settlement
 
-Срез закрыт (raw-AMF). Composition `HuntFightSettlement` после RAM finish:
+Срез закрыт (raw-AMF). Composition `FightOutcomeSettlement` после RAM finish:
 одна UoW (`noteHp`, `grantExperience` если ≥ 1, `creditMoney`, `grantToBag`,
 `refillPocketAfterFight`), затем history best-effort, затем esrv
 `fight|loot` затем `fight|exit`. Combat не пишет `heroes`/`items`. Catalog
@@ -328,7 +330,7 @@ Restart процесса по-прежнему без боя, награды и 
 
 Ghost/injury принадлежат character (`heroes.ghost`, `injury_time`,
 `injury_artikul_id`). Combat эти колонки не пишет. Loss/HP 0 в
-`HuntFightSettlement` вызывает `noteDefeat` в той же UoW. Ghost блокирует
+`FightOutcomeSettlement` вызывает `noteDefeat` в той же UoW. Ghost блокирует
 CHR-02 regen. Roster `dead:4`. Injury id **875**, `injury_time` = unix now+600;
 артефакт 875 не публиковать. OA `RESURRECT`: не в бою; HP
 `max(2, floor(hpMax*0.05))`; снять ghost/injury. Outdoor dest — временный
@@ -1139,7 +1141,7 @@ SQL не доходят; поиск по нику разбирает jsonb `team
 плотной локации это всё окно на каждый запрос доски.
 
 **Память о завершённых боях.** Записи завершённого боя (`CombatService.settledFights` и
-`exitSent`, `HuntFightSettlement.finished` / `left` / `deathBreaks`, `PvpFightHonorCache`,
+`exitSent`, `FightOutcomeSettlement.finished` / `left` / `deathBreaks`, `PvpFightHonorCache`,
 `ChatFightSettlement.pendingEnded`) лежат в `TtlMap` и забываются через срок хранения истории
 (`FINISHED_FIGHT_RETENTION_MS`, 72 ч); устаревшее вычищается при записи. Бой, который бросил
 клиент, заканчивается сам: три пропущенных хода подряд убивают бойца (`maxConsecutiveSkips`), а
@@ -1148,7 +1150,7 @@ SQL не доходят; поиск по нику разбирает jsonb `team
 `pendingFightInfo`, `queues`).
 
 **Settlement.** Награда охоты разложена: `hunt-reward-plan.ts` — чистый расчёт (бросок
-опыта/денег/дропа, раздел по правилам группы, золото бойца), `HuntFightSettlement.rewardHuman` —
+опыта/денег/дропа, раздел по правилам группы, золото бойца), `FightOutcomeSettlement.rewardHuman` —
 запись одному бойцу. Охота, квест, PvP и ранний выход мёртвым пишут человеку одно и то же
 в одном порядке: HP/мана, death durability, refill кармана (`persistFoughtHuman`). Дальше
 охота добавляет EXP, деньги и дропы. Дружеская дуэль этот шаг не вызывает: она откатывает

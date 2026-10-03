@@ -6,7 +6,7 @@ import type { InventoryItem, ItemLocation } from "./inventory-item.ts";
 import type { InventoryRepository } from "../ports/inventory-repository.ts";
 import { applyInventoryMutation } from "./apply-inventory-mutation.ts";
 import {
-  applyDeathDurability,
+  applyDeathBreaks,
   type ApplyDeathDurabilityCommand,
   type DeathDurabilityResult,
 } from "./apply-death-durability.ts";
@@ -313,12 +313,9 @@ export class InventoryService {
   }
 
   applyDeathDurability(command: ApplyDeathDurabilityCommand): Promise<DeathDurabilityResult> {
-    return applyDeathDurability(this.inventory, this.catalog, command).then(async (result) => {
-      if (result.paperdollChanged) {
-        await syncGearSetBonuses(this.inventory, this.catalog, command.characterId);
-      }
-      return result;
-    });
+    return applyDeathBreaks(this.inventory, this.catalog, command, (heroId, itemId) =>
+      this.putOff(heroId, itemId),
+    );
   }
 
   repair(command: RepairItemCommand): Promise<RepairItemResult> {

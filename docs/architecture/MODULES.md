@@ -192,7 +192,7 @@ player `hero_quests` (`hidden_in_journal`) / `hero_quest_goals` /
 **API:** `board`, `answer`, `bookSnapshot`, `cancel`, `hideJournal`,
 `recordSignal`, `beginAreaAction` / `finishAreaAction`, loot
 `needed(heroId, artikulId)`. GRANT/consume/`START_FIGHT`/`MSG`/`JUMP_AREA`
-leftover — composition `QuestDesk`; hunt drop-cap — `HuntFightSettlement`
+leftover — composition `QuestDesk`; hunt drop-cap — `FightOutcomeSettlement`
 через тот же `needed`, не импорт владельцев в domain. Multi-board
 `npc_quests`, talk-npc, `JUMP_AREA` wire, `GRANT_AWARDS.rep` — QST-ENG-03.
 Deny leave / ambush / QL-2 — QST-ENG-04 (`syncOwned` после bag mutation).
