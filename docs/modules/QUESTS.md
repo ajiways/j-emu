@@ -1,5 +1,10 @@
 # Quests (QST-ENG-01 / QST-ENG-02)
 
+> Этот документ описывает текущий экспериментальный runtime. Целевая модель и
+> план его аудита/возможной замены находятся в
+> [migration/quest-engine](../migration/quest-engine/README.md). План не следует
+> считать уже реализованным поведением.
+
 Runtime board/dialog/progress: NPC **271**/**272**, восемь синтетических квестов
 (включая `q_engine_daily` `flags:1`, `q_engine_roster`, `q_engine_multi`,
 `q_engine_ambush`, `q_engine_store`), USE **584** открывает доску без consume. QST-ENG-02
