@@ -15,6 +15,7 @@ import { uniqueDevelopmentSlot } from "../../support/harness/unique-development-
 import { playableCharacterModuleInput } from "../../support/playable-character-module-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 import { SystemClock } from "../../../src/shared/kernel/system-clock.ts";
+import { testWearHero } from "../../support/wear-hero.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
 const policy = loadGamePolicy(path.resolve(process.cwd(), "config/development.json"));
@@ -109,7 +110,7 @@ describe("experience grants", () => {
       if (!glove) throw new Error("Starter glove is missing");
       const definition = await catalog.catalog.artifact(glove.artifactId);
       if (!definition) throw new Error("Glove definition is missing");
-      await inventory.service.putOn(locked, glove.id, definition);
+      await inventory.service.putOn(testWearHero(locked), glove.id, definition);
       const snapshot = await catalog.progression.progressionSnapshot();
       await characters.service.applyEquipmentVitals(
         locked,

@@ -24,6 +24,7 @@ export type BagItemBlock = Readonly<{
   slot2: 0;
   slot_num: 0;
   slot_mask: number;
+  slot2_mask: number;
   level_min: number;
   level_max: number;
   cnt: number;
@@ -63,6 +64,7 @@ export async function buildBagItemBlock(
     slot2: 0,
     slot_num: 0,
     slot_mask: definition.slotMask,
+    slot2_mask: definition.extra.slot2Mask,
     level_min: definition.levelMin,
     level_max: definition.levelMax,
     cnt: item.quantity,
@@ -71,6 +73,7 @@ export async function buildBagItemBlock(
     action: "bag",
     actions: bagActionsFor(
       definition.slotMask,
+      definition.extra.slot2Mask,
       definition.useAction !== undefined,
       isBroken(instanceDurability(item.durability, item.durabilityMax, definition.flags)),
       canItemBeUpgraded({

@@ -10,6 +10,7 @@ import type { InventoryService } from "../../../src/modules/inventory/domain/inv
 import type { WorldService } from "../../../src/modules/world/domain/world-service.ts";
 import { Area } from "../../../src/modules/world/domain/area.ts";
 import { testHero } from "../../support/hero-fixtures.ts";
+import { ArtifactExtra } from "../../../src/modules/catalog/domain/artifact-extra.ts";
 import { testArtifact } from "../../support/artifact-fixtures.ts";
 
 const ranksConf = {
@@ -150,6 +151,35 @@ describe("StorePurchase", () => {
     ).rejects.toEqual(new StoreGateError("Нужно звание «Громила»."));
   });
 
+  it("refuses to sell an item whose card asks for a rank the hero has not reached", async () => {
+    const gated = testArtifact({
+      id: 621,
+      extra: new ArtifactExtra(null, [], null, null, 0, 0, 0, 0, {
+        rank: 4,
+        buy: true,
+        wear: false,
+      }),
+    });
+    const lot = { ...rankLot(), requires: null };
+    const purchase = new StorePurchase(
+      { run: async (work) => work() },
+      {
+        lockById: async () => testHero({ areaId: "552", honor: 0, level: 1 }),
+        reputations: async () => [],
+        debitMoney: async () => {
+          throw new Error("an item rank deny must not debit gold");
+        },
+        debitMoneyGold: async () => undefined,
+      },
+      { grantToBag: async () => undefined } as unknown as InventoryService,
+      fakeCatalog([lot], [gated]),
+      fakeWorld("552"),
+    );
+    await expect(
+      purchase.buy({ characterId: 1, areaId: "552", lines: [{ key: "438", count: 1 }] }),
+    ).rejects.toEqual(new StoreGateError("Нужно звание «Громила»."));
+  });
+
   it("still debits gold for an ungated gold lot", async () => {
     const debits: number[] = [];
     const grants: Array<{ artifactId: number; quantity: number }> = [];
@@ -246,10 +276,15 @@ function fakeCatalog(
   lots: readonly StoreLot[],
   artifacts: readonly ReturnType<typeof testArtifact>[],
 ): Catalog {
+  // A lot sells a catalog artifact; the ones a test does not describe are plain items.
+  const sold = lots
+    .filter((lot) => !artifacts.some((row) => row.id === lot.artikulId))
+    .map((lot) => testArtifact({ id: lot.artikulId }));
+  const known = [...artifacts, ...sold];
   return {
     commonConf: async () => ranksConf,
     storeLots: async () => lots,
-    artifact: async (id: number) => artifacts.find((row) => row.id === id) ?? null,
+    artifact: async (id: number) => known.find((row) => row.id === id) ?? null,
     reputationTrack: async () => null,
   } as unknown as Catalog;
 }

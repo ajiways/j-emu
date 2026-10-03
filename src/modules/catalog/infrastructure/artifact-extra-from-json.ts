@@ -1,4 +1,5 @@
 import { ArtifactExtra } from "../domain/artifact-extra.ts";
+import type { ArtifactRankRule } from "../domain/artifact-rank-rule.ts";
 import type { ArtifactSetInfo, SetBonusThreshold } from "../domain/artifact-set-info.ts";
 import type {
   ArtifactGloveSocket,
@@ -19,6 +20,8 @@ export function artifactExtraFromJson(artifactId: number, value: unknown): Artif
     trendFromJson(artifactId, record.trend),
     param1FromJson(artifactId, record.param1),
     flagsExtFromJson(artifactId, record.flagsExt),
+    slot2MaskFromJson(artifactId, record.slot2Mask),
+    rankRuleFromJson(artifactId, record.rank),
   );
 }
 
@@ -44,6 +47,29 @@ function flagsExtFromJson(artifactId: number, value: unknown): number {
     throw new Error(`Artifact ${artifactId} extra.flagsExt must be a non-negative integer`);
   }
   return value;
+}
+
+function slot2MaskFromJson(artifactId: number, value: unknown): number {
+  if (value === undefined) return 0;
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 1) {
+    throw new Error(`Artifact ${artifactId} extra.slot2Mask must be a positive integer`);
+  }
+  return value;
+}
+
+function rankRuleFromJson(artifactId: number, value: unknown): ArtifactRankRule | null {
+  if (value === undefined) return null;
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`Artifact ${artifactId} extra.rank must be an object`);
+  }
+  const record = value as Record<string, unknown>;
+  if (typeof record.rank !== "number" || typeof record.buy !== "boolean") {
+    throw new Error(`Artifact ${artifactId} extra.rank needs rank, buy and wear`);
+  }
+  if (typeof record.wear !== "boolean") {
+    throw new Error(`Artifact ${artifactId} extra.rank needs rank, buy and wear`);
+  }
+  return { rank: record.rank, buy: record.buy, wear: record.wear };
 }
 
 function setFromJson(artifactId: number, value: unknown): ArtifactSetInfo | null {

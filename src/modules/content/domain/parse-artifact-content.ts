@@ -158,6 +158,11 @@ const artifactExtraSchema = z
     set: artifactSetSchema.optional(),
     param1: z.number().int().nonnegative().optional(),
     flagsExt: z.number().int().nonnegative().optional(),
+    slot2Mask: z.number().int().positive().optional(),
+    rank: z
+      .object({ rank: z.number().int().positive(), buy: z.boolean(), wear: z.boolean() })
+      .strict()
+      .optional(),
   })
   .strict()
   .transform((extra) => ({
@@ -168,6 +173,8 @@ const artifactExtraSchema = z
     ...(extra.set ? { set: extra.set } : {}),
     ...(extra.param1 !== undefined ? { param1: extra.param1 } : {}),
     ...(extra.flagsExt !== undefined ? { flagsExt: extra.flagsExt } : {}),
+    ...(extra.slot2Mask !== undefined ? { slot2Mask: extra.slot2Mask } : {}),
+    ...(extra.rank ? { rank: extra.rank } : {}),
   }));
 
 export const artifactDocumentSchema = z

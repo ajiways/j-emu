@@ -3,7 +3,12 @@ import {
   SUM_REPUTATION_OBJECT_ID,
   SUM_REPUTATION_TITLE,
 } from "../modules/catalog/domain/reputation-ids.ts";
-import { honorRankCatalogFromConf } from "../modules/catalog/domain/honor-progress.ts";
+import type { ArtifactRankRule } from "../modules/catalog/domain/artifact-rank-rule.ts";
+import {
+  honorProgress,
+  honorRankCatalogFromConf,
+  honorRankTitle,
+} from "../modules/catalog/domain/honor-progress.ts";
 import { storeRequiresDeny } from "../modules/catalog/domain/eval-store-requires.ts";
 import { addStorePay, emptyStorePayTotals } from "../modules/catalog/domain/store-pay.ts";
 import {
@@ -81,11 +86,23 @@ export class StorePurchase {
         },
       );
       if (deny) throw new StoreGateError(deny);
+      const rule = await this.buyRankRule(lot.artikulId);
+      if (rule && honorProgress(ranks, hero.honor, hero.level).rank < rule.rank) {
+        throw new StoreGateError(`Нужно звание «${honorRankTitle(ranks, rule.rank)}».`);
+      }
       totals = addStorePay(totals, lot.pay, line.count);
       grants.push({ artifactId: lot.artikulId, quantity: line.count });
     }
     await this.payAndGrant(command.characterId, totals, grants);
     return grants.map((grant) => grant.artifactId);
+  }
+
+  /** The rank the item's card asks for to buy it; a lot of an artifact the catalog lacks is a bug. */
+  private async buyRankRule(artikulId: number): Promise<ArtifactRankRule | null> {
+    const definition = await this.catalog.artifact(artikulId);
+    if (!definition) throw new Error(`Store lot artifact ${artikulId} is missing`);
+    const rule = definition.extra.rankRule;
+    return rule?.buy ? rule : null;
   }
 
   private async loadReputationTitles(

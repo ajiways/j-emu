@@ -17,6 +17,8 @@ describe("glove instance wire", () => {
         0,
         0,
         0,
+        0,
+        null,
       ),
     });
     const spell = testArtifact({
@@ -25,7 +27,7 @@ describe("glove instance wire", () => {
       picture: "electro_ball1.png",
       kindId: 65,
       slotMask: 0,
-      extra: new ArtifactExtra(null, [], null, null, 0, 0, 0),
+      extra: new ArtifactExtra(null, [], null, null, 0, 0, 0, 0, null),
     });
     const catalog = {
       artifact: async (id: number) => {
@@ -84,6 +86,8 @@ describe("glove instance wire", () => {
         0,
         0,
         0,
+        0,
+        null,
       ),
     });
     await expect(gloveInstanceFromCatalog(glove, { artifact: async () => null })).rejects.toThrow(
@@ -101,6 +105,8 @@ describe("glove instance wire", () => {
         0,
         0,
         0,
+        0,
+        null,
       ),
     });
     await expect(gloveInstanceFromCatalog(glove, { artifact: async () => null })).rejects.toThrow(

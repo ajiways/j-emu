@@ -16,6 +16,7 @@ import { uniqueDevelopmentSlot } from "../../support/harness/unique-development-
 import { playableCharacterModuleInput } from "../../support/playable-character-module-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 import { SystemClock } from "../../../src/shared/kernel/system-clock.ts";
+import { testWearHero } from "../../support/wear-hero.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
 const policy = loadGamePolicy(path.resolve(process.cwd(), "config/development.json"));
@@ -69,7 +70,9 @@ describe("inventory durability persistence", () => {
     const hero = await createHero();
     const glove = requireArtikul(await inventory.service.list(hero.id), 9095);
     const definition = await requireDefinition(9095);
-    await database.run(async () => inventory.service.putOn(hero, glove.id, definition));
+    await database.run(async () =>
+      inventory.service.putOn(testWearHero(hero), glove.id, definition),
+    );
     const death = await database.run(async () =>
       inventory.service.applyDeathDurability({
         characterId: hero.id,
@@ -104,7 +107,7 @@ describe("inventory durability persistence", () => {
     const repository = new PostgresInventoryRepository(database);
     await repository.save(chest.withDurability(0, 30));
     await expect(
-      database.run(async () => inventory.service.putOn(hero, chest.id, definition)),
+      database.run(async () => inventory.service.putOn(testWearHero(hero), chest.id, definition)),
     ).rejects.toBeInstanceOf(BrokenItemError);
 
     const results = await Promise.allSettled([
@@ -131,7 +134,9 @@ describe("inventory durability persistence", () => {
     const hero = await createHero();
     const glove = requireArtikul(await inventory.service.list(hero.id), 9095);
     const definition = await requireDefinition(9095);
-    await database.run(async () => inventory.service.putOn(hero, glove.id, definition));
+    await database.run(async () =>
+      inventory.service.putOn(testWearHero(hero), glove.id, definition),
+    );
     for (const expected of [2, 1, 0]) {
       const death = await database.run(async () =>
         inventory.service.applyDeathDurability({

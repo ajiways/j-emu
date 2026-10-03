@@ -12,6 +12,7 @@ import { uniqueDevelopmentSlot } from "../../support/harness/unique-development-
 import { playableCharacterModuleInput } from "../../support/playable-character-module-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 import { SystemClock } from "../../../src/shared/kernel/system-clock.ts";
+import { testWearHero } from "../../support/wear-hero.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
 const policy = loadGamePolicy(path.resolve(process.cwd(), "config/development.json"));
@@ -95,8 +96,10 @@ describe("inventory pocket persistence", () => {
     const elixirDef = await requireDefinition(93);
     const orbDef = await requireDefinition(99);
     await Promise.allSettled([
-      database.run(async () => inventory.service.putOn(hero, elixir.id, elixirDef, 1)),
-      database.run(async () => inventory.service.putOn(hero, orb.id, orbDef, 1)),
+      database.run(async () =>
+        inventory.service.putOn(testWearHero(hero), elixir.id, elixirDef, 1),
+      ),
+      database.run(async () => inventory.service.putOn(testWearHero(hero), orb.id, orbDef, 1)),
     ]);
     const pocket = await inventory.service.listPocket({ characterId: hero.id });
     const slotOne = pocket.filter(
@@ -111,7 +114,7 @@ describe("inventory pocket persistence", () => {
     const definition = await requireDefinition(93);
     await expect(
       database.run(async () => {
-        await inventory.service.putOn(hero, elixir.id, definition);
+        await inventory.service.putOn(testWearHero(hero), elixir.id, definition);
         throw new Error("forced rollback");
       }),
     ).rejects.toThrow(/forced rollback/);
@@ -123,7 +126,9 @@ describe("inventory pocket persistence", () => {
     const hero = await createHero();
     const elixir = requireArtikul(await inventory.service.list(hero.id), 93);
     const definition = await requireDefinition(93);
-    await database.run(async () => inventory.service.putOn(hero, elixir.id, definition));
+    await database.run(async () =>
+      inventory.service.putOn(testWearHero(hero), elixir.id, definition),
+    );
     const pocket = await inventory.service.listPocket({ characterId: hero.id });
     expect(pocket).toHaveLength(1);
     await database.run(async () => inventory.service.putOff(hero.id, pocket[0]!.id));
@@ -163,7 +168,9 @@ describe("inventory pocket persistence", () => {
       data: {},
     });
     const definition = await requireDefinition(99);
-    await database.run(async () => inventory.service.putOn(hero, bag.id, definition, 1));
+    await database.run(async () =>
+      inventory.service.putOn(testWearHero(hero), bag.id, definition, 1),
+    );
     const after = await inventory.service.list(hero.id);
     const pocketOrb = after.find((item) => item.id === pocket.id);
     const bagOrb = after.find((item) => item.id === bag.id);

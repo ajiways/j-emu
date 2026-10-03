@@ -97,6 +97,8 @@ type ArtifactExtraDocument = Readonly<{
   set?: ArtifactSetDocument;
   param1?: number;
   flagsExt?: number;
+  slot2Mask?: number;
+  rank?: Readonly<{ rank: number; buy: boolean; wear: boolean }>;
 }>;
 
 type ArtifactSetDocument = Readonly<{

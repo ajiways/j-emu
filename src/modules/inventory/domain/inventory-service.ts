@@ -197,6 +197,7 @@ export class InventoryService {
     requireQuantityWithinStack(definition, item.quantity);
     const actions = bagActionsFor(
       definition.slotMask,
+      definition.extra.slot2Mask,
       definition.useAction !== undefined,
       isBroken(instanceDurability(item.durability, item.durabilityMax, definition.flags)),
       false,

@@ -1,6 +1,7 @@
 import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
 import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
 import { SLOT_TEMPEFFECT } from "../../inventory/domain/gear-sets.ts";
+import { wireSlotPair } from "../../inventory/domain/paperdoll-slot.ts";
 import type { ArtifactInstanceOverlay } from "./artifact-instance-overlay.ts";
 import type { ArtifactSkillWireBlock } from "./artifact-skill-wire.ts";
 import type { GloveInstanceWire } from "./glove-instance-wire.ts";
@@ -14,9 +15,10 @@ export type EquippedArtifactBlock = Readonly<{
   type_id: string;
   kind_id: number;
   slot: number;
-  slot2: 0;
+  slot2: number;
   slot_num: 0;
   slot_mask: number;
+  slot2_mask: number;
   level_min: number;
   level_max: number;
   cnt: 0;
@@ -49,6 +51,7 @@ export function buildEquippedArtifact(
     );
   }
   const tempeffect = item.location.kind === "tempeffect";
+  const slots = tempeffect ? { slot: SLOT_TEMPEFFECT, slot2: 0 } : wireSlotPair(item.location.slot);
   return {
     id: item.id,
     artikul_id: definition.id,
@@ -56,10 +59,11 @@ export function buildEquippedArtifact(
     picture: definition.picture,
     type_id: definition.typeId,
     kind_id: definition.kindId,
-    slot: tempeffect ? SLOT_TEMPEFFECT : item.location.slot,
-    slot2: 0,
+    slot: slots.slot,
+    slot2: slots.slot2,
     slot_num: 0,
     slot_mask: definition.slotMask,
+    slot2_mask: definition.extra.slot2Mask,
     level_min: definition.levelMin,
     level_max: definition.levelMax,
     cnt: 0,

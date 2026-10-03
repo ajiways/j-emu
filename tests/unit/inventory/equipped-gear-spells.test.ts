@@ -19,6 +19,8 @@ describe("equippedGearSpells", () => {
         0,
         0,
         0,
+        0,
+        null,
       ),
     });
     const recruit = testArtifact({ id: 30 });

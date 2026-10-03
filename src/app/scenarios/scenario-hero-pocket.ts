@@ -1,6 +1,7 @@
 import type { Catalog } from "../../modules/catalog/ports/catalog.ts";
 import type { Hero } from "../../modules/character/domain/hero.ts";
 import type { InventoryService } from "../../modules/inventory/domain/inventory-service.ts";
+import { wearHeroOf } from "../../modules/jugger-wire/application/wear-hero.ts";
 import type { UnitOfWork } from "../../shared/kernel/unit-of-work.ts";
 
 type PocketDeps = Readonly<{
@@ -40,7 +41,7 @@ export async function provisionPocket(
         );
         if (!stack)
           throw new Error(`Scenario pocket artifact ${entry.artikulId} ran out in the bag`);
-        await deps.inventory.putOn(hero, stack.id, definition);
+        await deps.inventory.putOn(await wearHeroOf(deps.catalog, hero), stack.id, definition);
       }
     });
   }

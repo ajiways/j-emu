@@ -1,6 +1,11 @@
 import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
 import type { InventoryItem } from "./inventory-item.ts";
-import { isPaperdollSlotMask, pickPaperdollSlot } from "./paperdoll-slot.ts";
+import {
+  INSIGNIA_EQUIPMENT_SLOT,
+  isPaperdollSlotMask,
+  pickPaperdollSlot,
+  wearsInInsigniaSlot,
+} from "./paperdoll-slot.ts";
 import { BrokenItemError } from "./broken-item-error.ts";
 import { instanceDurability, isBroken } from "./durability.ts";
 import { WearDeniedError } from "./wear-denied-error.ts";
@@ -9,6 +14,9 @@ export type WearHero = Readonly<{
   id: number;
   level: number;
   gender: number;
+  /** The honor rank the hero holds now, and the title of any rank for the refusal text. */
+  rank: number;
+  rankTitle(rank: number): string;
 }>;
 
 export function requireWearablePaperdoll(
@@ -31,7 +39,8 @@ export function requireWearablePaperdoll(
   if (isBroken(instanceDurability(item.durability, item.durabilityMax, definition.flags))) {
     throw new BrokenItemError();
   }
-  if (!isPaperdollSlotMask(definition.slotMask)) {
+  const insignia = wearsInInsigniaSlot(definition.slotMask, definition.extra.slot2Mask);
+  if (!insignia && !isPaperdollSlotMask(definition.slotMask)) {
     throw new WearDeniedError("Этот предмет нельзя надеть");
   }
   if (definition.levelMin > 0 && hero.level < definition.levelMin) {
@@ -47,6 +56,11 @@ export function requireWearablePaperdoll(
   if (definition.gender > 0 && definition.gender !== hero.gender) {
     throw new WearDeniedError("Этот предмет нельзя надеть");
   }
+  const rule = definition.extra.rankRule;
+  if (rule?.wear && hero.rank < rule.rank) {
+    throw new WearDeniedError(`Нужно звание «${hero.rankTitle(rule.rank)}».`);
+  }
+  if (insignia) return INSIGNIA_EQUIPMENT_SLOT;
   const slot = pickPaperdollSlot(definition.slotMask, occupied);
   if (slot == null) throw new WearDeniedError("Этот предмет нельзя надеть");
   return slot;

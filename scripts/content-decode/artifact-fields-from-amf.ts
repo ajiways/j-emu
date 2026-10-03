@@ -5,6 +5,7 @@ import {
   amfString,
   isRecord,
 } from "./amf-fields.ts";
+import { decodeRankRule } from "./artifact-rank-rule-from-amf.ts";
 import { decodeSpell } from "./artifact-spell-from-amf.ts";
 import {
   GEAR_COMBO_GLOVE_ARTIKUL_ID,
@@ -146,6 +147,10 @@ export function decodeArtifactExtra(
   if (param1 !== 0) extra.param1 = param1;
   const flagsExt = amfOmittedZeroInteger(record.flags_ext, `artifact ${artifactId} flags_ext`);
   if (flagsExt !== 0) extra.flagsExt = flagsExt;
+  const slot2Mask = amfOmittedZeroInteger(record.slot2_mask, `artifact ${artifactId} slot2_mask`);
+  if (slot2Mask !== 0) extra.slot2Mask = slot2Mask;
+  const rank = decodeRankRule(record.description, artifactId);
+  if (rank) extra.rank = rank;
   return extra;
 }
 

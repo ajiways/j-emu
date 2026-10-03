@@ -1,3 +1,4 @@
+import type { ArtifactRankRule } from "./artifact-rank-rule.ts";
 import type { ArtifactSetInfo } from "./artifact-set-info.ts";
 import type { ArtifactGloveSocket, ArtifactSpell } from "./artifact-spell.ts";
 
@@ -10,6 +11,9 @@ export class ArtifactExtra {
     readonly trend: number,
     readonly param1: number,
     readonly flagsExt: number,
+    /** The second slot mask (`SLOT2_*`): insignia, companion, the other hand's shield. */
+    readonly slot2Mask: number,
+    readonly rankRule: ArtifactRankRule | null,
   ) {
     if (!Number.isInteger(trend) || trend < 0 || trend > 3) {
       throw new Error("Artifact extra.trend must be 0, 1, 2 or 3");
@@ -19,6 +23,15 @@ export class ArtifactExtra {
     }
     if (!Number.isInteger(flagsExt) || flagsExt < 0) {
       throw new Error("Artifact extra.flagsExt must be a non-negative integer");
+    }
+    if (!Number.isInteger(slot2Mask) || slot2Mask < 0) {
+      throw new Error("Artifact extra.slot2Mask must be a non-negative integer");
+    }
+    if (rankRule !== null && (!Number.isInteger(rankRule.rank) || rankRule.rank < 1)) {
+      throw new Error("Artifact extra.rank.rank must be a positive integer");
+    }
+    if (rankRule !== null && !rankRule.buy && !rankRule.wear) {
+      throw new Error("Artifact extra.rank must gate buying or wearing");
     }
     if (this.hits !== null && this.hits.length !== 8) {
       throw new Error("Glove hits must contain 8 L/C/R steps");

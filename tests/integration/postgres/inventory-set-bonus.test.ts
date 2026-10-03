@@ -13,6 +13,7 @@ import { uniqueDevelopmentSlot } from "../../support/harness/unique-development-
 import { playableCharacterModuleInput } from "../../support/playable-character-module-input.ts";
 import { requireTestDatabaseUrl } from "../../support/postgres/test-database-url.ts";
 import { SystemClock } from "../../../src/shared/kernel/system-clock.ts";
+import { testWearHero } from "../../support/wear-hero.ts";
 
 const databaseUrl = requireTestDatabaseUrl();
 const policy = loadGamePolicy(path.resolve(process.cwd(), "config/development.json"));
@@ -81,15 +82,15 @@ describe("inventory set-bonus persistence", () => {
         const item = requireArtikul(await inventory.service.list(hero.id), artifactId);
         const definition = await catalog.catalog.artifact(artifactId);
         if (!definition) throw new Error(`Artifact catalog entry ${artifactId} is missing`);
-        await inventory.service.putOn(hero, item.id, definition);
+        await inventory.service.putOn(testWearHero(hero), item.id, definition);
       }
     });
     const helm = requireArtikul(await inventory.service.list(hero.id), 28);
     const definition = await catalog.catalog.artifact(28);
     if (!definition) throw new Error("Artifact catalog entry 28 is missing");
     const results = await Promise.allSettled([
-      database.run(async () => inventory.service.putOn(hero, helm.id, definition)),
-      database.run(async () => inventory.service.putOn(hero, helm.id, definition)),
+      database.run(async () => inventory.service.putOn(testWearHero(hero), helm.id, definition)),
+      database.run(async () => inventory.service.putOn(testWearHero(hero), helm.id, definition)),
     ]);
     const worn = results.filter((result) => result.status === "fulfilled");
     const denied = results.filter(

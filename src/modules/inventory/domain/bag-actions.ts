@@ -1,4 +1,4 @@
-import { isPaperdollSlotMask } from "./paperdoll-slot.ts";
+import { isPaperdollSlotMask, wearsInInsigniaSlot } from "./paperdoll-slot.ts";
 import { isLeftPocket } from "./pocket-slot.ts";
 import { CAN_BE_UPGRADED } from "./upgrade-tables.ts";
 
@@ -9,12 +9,17 @@ const FLAG_PUT_ON = 8;
 
 export function bagActionsFor(
   slotMask: number,
+  slot2Mask: number,
   hasUseAction: boolean,
   broken: boolean,
   upgradeable: boolean,
 ): number {
   let actions = FLAG_DROP | FLAG_SELL;
-  if (!broken && (isPaperdollSlotMask(slotMask) || isLeftPocket(slotMask))) actions |= FLAG_PUT_ON;
+  const wearable =
+    isPaperdollSlotMask(slotMask) ||
+    isLeftPocket(slotMask) ||
+    wearsInInsigniaSlot(slotMask, slot2Mask);
+  if (!broken && wearable) actions |= FLAG_PUT_ON;
   if (hasUseAction) actions |= FLAG_USE;
   if (upgradeable) actions |= CAN_BE_UPGRADED;
   return actions;

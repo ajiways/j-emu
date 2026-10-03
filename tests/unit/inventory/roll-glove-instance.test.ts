@@ -15,6 +15,8 @@ describe("roll glove instance", () => {
       0,
       0,
       0,
+      0,
+      null,
     );
     expect(rollGloveInstance(extra, () => 0.9)).toEqual({
       hits: [2, 3, 2, 3, 1, 2, 3, 1],
@@ -31,6 +33,8 @@ describe("roll glove instance", () => {
       0,
       0,
       0,
+      0,
+      null,
     );
     const values = [0, 0, 0, 0, 0, 0, 0, 0, 0.9];
     expect(
@@ -58,6 +62,8 @@ describe("glove instance from item", () => {
         0,
         0,
         0,
+        0,
+        null,
       ),
     });
     const spell = testArtifact({

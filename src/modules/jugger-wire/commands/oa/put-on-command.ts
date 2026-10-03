@@ -11,6 +11,7 @@ import type { UnitOfWork } from "../../../../shared/kernel/unit-of-work.ts";
 import type { BootstrapReadModel } from "../../application/bootstrap-read-model.ts";
 import { equippedSkillBonuses } from "../../application/equipped-skill-bonuses.ts";
 import { ProtocolError } from "../../application/protocol-error.ts";
+import { wearHeroOf } from "../../application/wear-hero.ts";
 import { syncWornBody } from "../../application/sync-worn-body.ts";
 import { artifactInstanceIdFrom } from "./artifact-instance-id.ts";
 import type { OaCommand, OaCommandContext, OaEncodedResponse } from "./oa-command.ts";
@@ -58,7 +59,7 @@ export class PutOnCommand implements OaCommand {
         const definition = await this.catalog.artifact(item.artifactId);
         if (!definition) throw new Error(`Artifact catalog entry ${item.artifactId} is missing`);
         const kind = await this.inventory.putOn(
-          hero,
+          await wearHeroOf(this.catalog, hero),
           request.itemId,
           definition,
           request.pocketTarget,

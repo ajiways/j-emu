@@ -45,7 +45,7 @@ export function testArtifact(
     overrides.bagStack ?? 1,
     overrides.skills ?? [new ArtifactSkillBonus("VIT", 5, 0)],
     overrides.useActions ?? {},
-    overrides.extra ?? new ArtifactExtra(null, [], null, null, 0, 0, 0),
+    overrides.extra ?? new ArtifactExtra(null, [], null, null, 0, 0, 0, 0, null),
     durability,
     durabilityMax,
     overrides.fBody ?? "",
