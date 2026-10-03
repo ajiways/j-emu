@@ -36,7 +36,7 @@ function idol(spell: CombatIdolRow["spell"], phantom: CombatIdolRow["phantom"]):
 const FIXED = { mpCost: 20, effects: [{ kind: 10, botArtikulId: 550 }] };
 const RANGE = { mpCost: 1, effects: [{ kind: 10, botArtikulId: 550, manaCost: 39 }] };
 
-function hero(row: CombatIdolRow, mp: number): HumanFighter {
+function hero(row: CombatIdolRow, mp: number, waiting = false): HumanFighter {
   const human = new HumanFighter({
     accountId: 1,
     heroId: 1,
@@ -48,7 +48,7 @@ function hero(row: CombatIdolRow, mp: number): HumanFighter {
     mp,
     maxMp: 40,
     team: 1,
-    waiting: false,
+    waiting,
     ...unitHuntHumanStats(20),
     startedAtMs: 0,
     loadout: { ...EMPTY_COMBAT_LOADOUT, idols: [row] },
@@ -84,6 +84,14 @@ describe("idol summon", () => {
     expect(roster.bots[0]?.initiative).toBe(25);
     expect(roster.bots[0]?.waiting).toBe(true);
     expect(human.casts.idolRow(100_001)).toBeNull();
+  });
+
+  it("calls a phantom for a hero who waits for a foe, and refuses one he cannot pay for", () => {
+    const waiter = hero(idol(FIXED, PHANTOM), 30, true);
+    expect(cast(waiter).result).toMatchObject({ kind: "resolved", consumeBagItemId: 100_001 });
+    const poor = hero(idol(FIXED, PHANTOM), 5, true);
+    expect(() => cast(poor)).toThrow(FightCastDenied);
+    expect(poor.casts.idolRow(100_001)).not.toBeNull();
   });
 
   it("calls the phantom of a free idol at full strength", () => {

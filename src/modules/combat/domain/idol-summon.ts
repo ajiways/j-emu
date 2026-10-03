@@ -42,7 +42,7 @@ export function tryIdolCast(
   }>,
 ): KeepTurnResult {
   const { human } = input;
-  if (!human.authed || human.waiting || human.hp === 0 || input.finished) {
+  if (!human.authed || human.hp === 0 || input.finished) {
     return { kind: "ignored" };
   }
   const row = human.casts.idolRow(input.itemId);
