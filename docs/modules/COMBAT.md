@@ -627,8 +627,9 @@ Grant/bot-counter новой пары ставится сразу, даже ес
 fight-auth; `oppnew` на poll — только authed, иначе первый auth. Auth
 bootstrap `oppnew` — текущий duel foe, не primary spawn. Quest/copy/
 friendly deny: fury + полный абсолютный `persSpells`, без −1 если заряд 0.
-После смерти текущего бота `takeNextEnemyForHuman` отдаёт
-клон (`oppnew`) паре убившего (next actor = этот охотник, не fight
+После гибели участника дуэли (моб, игрок, фантом — правило одно, `replaceFallen`)
+его место занимает следующий своей команды: ждущий или игрок/моб из дуэли без игроков;
+пара убившего получает клон (`oppnew`) (next actor = этот охотник, не fight
 opener), бой не finish, пока жив хотя бы один enemy.
 После `oppnew` смены моба grant ставится охотнику (`grantPairedBot`, human
 opens), без bot-counter на нового моба. Убийство текущего бота при живой
@@ -659,6 +660,10 @@ HP без сброса. Shuffle отменяет delay token **только за
 (`${fightId}:{min}:{max}` меняется вместе с id) и отдаёт ход охотникам
 новой пары — без второго bot-counter сразу после смены. Чужие пары
 свой bot-counter/grant сохраняют.
+Этим же правилом (`replaceFallen`) место павшего моба или фантома занимает следующий своей команды;
+при броске первого хода держит ход переживший (он только что действовал), новичок берёт его,
+если бросок инициативы в его пользу. Ход моба в дуэли «моб↔моб» после трёх ударов тасуется
+тем же `shuffleAfterHits`, что и ход игрока; дуэль с игроком тасует приложение по ходу игрока.
 
 Новая пара из `tryPairQueues`, открывающая бой дуэль (герой↔первый моб, дуэль двух людей) и каждая дуэль, получившая нового соперника (следующий моб, вступивший ждущий игрок или моб, обмен при 3↔3 и ротация мобов) —
 `rollOpensFirst` по инициативе (LUCK): шанс первого удара `(A + C) / (A + B + 2C)`, `C=80`
@@ -1065,7 +1070,7 @@ human↔human и bot↔bot. Отдельного `HuntRoster.extraDuels` нет.
 собирает `huntSeekers` из обоих, живость — `Combatant.alive`, не
 отдельный `hp > 0 && !leftLive`. Join, aggro-клон и shuffle (в том числе
 `oppnew` / reserve-swap) паруют через тот же `pairHuntQueues` /
-`peekWaitingEnemy` / `takeNextEnemyForHuman`. Новая пара из очереди —
+`nextInLine`. Новая пара из очереди —
 `rollOpensFirst`. Квестовый leftover ally↔enemy на сиде — отдельный
 `pairLeftoverRosterBots`: opener всегда союзник, без броска инициативы
 (байт-в-байт со старым конструктором roster).
@@ -1108,8 +1113,7 @@ layout — [INVENTORY.md](INVENTORY.md), travel — [WORLD.md](WORLD.md).
 `humanJoin` `hunt-roster` / `pvp-humans` / `denied`+причина; `canLeave` и
 `canAggro` (у hunt пекутся из `instanceCopyId === null`); `skipQuestKills`
 (квест с одним ботом кредитует киллы, с несколькими — нет: стартовый
-`botCount > 1`, не live roster); `allowsSideBots`; `pairsNextWaiter` (очередь паринга, не боты: у quest join
-запрещён, значение ненаблюдаемо); `hasEnemyBots` (ходы бота, title
+`botCount > 1`, не live roster); `allowsSideBots`; `hasEnemyBots` (ходы бота, title
 результата, botId в notice; `historyRow` `"hunt-bot"` выводится из него);
 `awardsHonor` / `restoresFighters`; `historyRow` (`hunt-bot` /
 `practice-humans` / `none`); `includesQuestChat`.
@@ -1145,9 +1149,11 @@ SQL не доходят; поиск по нику разбирает jsonb `team
 
 **Settlement.** Награда охоты разложена: `hunt-reward-plan.ts` — чистый расчёт (бросок
 опыта/денег/дропа, раздел по правилам группы, золото бойца), `HuntFightSettlement.rewardHuman` —
-запись одному бойцу. Внутри одной транзакции по-прежнему цикл по игрокам с отдельными await на
-HP, death durability, refill кармана, EXP, деньги и каждый дроп, плюс `capRolledDrops` с запросом
-на каждый дроп — это самое долгое удержание транзакции.
+запись одному бойцу. Охота, квест, PvP и ранний выход мёртвым пишут человеку одно и то же
+в одном порядке: HP/мана, death durability, refill кармана (`persistFoughtHuman`). Дальше
+охота добавляет EXP, деньги и дропы. Дружеская дуэль этот шаг не вызывает: она откатывает
+HP, ману и карман. Внутри одной транзакции по-прежнему цикл по игрокам с отдельными await,
+плюс `capRolledDrops` с запросом на каждый дроп — это самое долгое удержание транзакции.
 
 **History write — принятый риск, без наблюдаемости.** Решение CMB-03
 («history best-effort не откатывает награду») в силе и не отменяется:

@@ -15,7 +15,8 @@ import { tryGloveKeepTurn, tryPocketCast } from "./player-casts.ts";
 import { allyTargetsOf } from "./spell-target.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import type { BotMeleeResult } from "./turn-grant.ts";
-import { rotateBotDuel } from "./rotate-bot-duel.ts";
+import { replaceFallen, shuffleAfterHits } from "./duel-shuffle.ts";
+import type { ShuffleOutcome } from "./try-shuffle-after-hits.ts";
 import { settleBotSideHits } from "./bot-side-hits.ts";
 import type { Fallout } from "./settle-fallen.ts";
 import type { BotFighter } from "./bot-fighter.ts";
@@ -24,7 +25,9 @@ import type { Participant } from "./participant.ts";
 import { persChangeForParticipants } from "./melee-pers-change.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
-import { dissolveDuelContaining, requireDuelContaining } from "./pairing.ts";
+import { requireDuelContaining } from "./pairing.ts";
+
+export type DuelChange = Exclude<ShuffleOutcome, { kind: "none" }>;
 
 /** A bot's turn, with what its AOE spell did to the others it reached. */
 export type BotTurnResult = BotMeleeResult &
@@ -33,8 +36,8 @@ export type BotTurnResult = BotMeleeResult &
     sideFallout: Fallout;
     /** The account of the player across from the bot; `null` when the foe is a mob. */
     foeAccountId: number | null;
-    /** The account of a player who took the place of this mob in a duel of mobs; else `null`. */
-    rotatedInAccountId: number | null;
+    /** Changes of who stands across from whom that the turn brought about, besides the foe's. */
+    changes: readonly DuelChange[];
   }>;
 
 type HuntActionState = Readonly<{
@@ -174,9 +177,11 @@ export function applyBattleAiTurn(
     fightId: state.fightId,
     nowMs,
   });
-  if (foe.fighterKind !== "human" && !foe.alive) {
-    // The dead foe stays in the dissolved duel; the mob that struck him is freed to wait.
-    dissolveDuelContaining(state.duels, everyone, foe.id);
+  const changes: DuelChange[] = [];
+  if (bot.alive && foe.fighterKind !== "human" && !foe.alive) {
+    // The foe fell: the next of his team stands across from the mob that struck him.
+    const next = replaceFallen({ dead: foe, ...participantsOf(state) });
+    if (next) changes.push(next);
   }
   const side = settleBotSideHits({
     sideHits: result.sideHits,
@@ -191,27 +196,23 @@ export function applyBattleAiTurn(
   const events = [
     ...result.events,
     ...(side.patch ? [side.patch] : []),
-    ...botFellInTurn(state, bot, foe, duel, result),
+    ...botFellInTurn(state, bot, foe, duel, result, changes),
     ...(side.fallout.finished && !result.events.some((event) => event.type === "finished")
       ? [side.fallout.finished]
       : []),
   ];
-  const rotatedIn = events.some((event) => event.type === "finished")
-    ? null
-    : rotateBotDuel({
-        bot,
-        foe,
-        duel,
-        roster: state.roster,
-        fightRules: state.fightRules,
-        openingRandom: state.openingRandom,
-      });
+  // A duel with a player in it is shuffled when the player's turn ends, by the application.
+  if (
+    !events.some((event) => event.type === "finished") &&
+    state.fightRules.rotatesDuels &&
+    foe.fighterKind !== "human"
+  ) {
+    const shuffle = shuffleAfterHits({ actor: bot, finished: false, ...participantsOf(state) });
+    if (shuffle.kind !== "none") changes.push(shuffle);
+  }
   return {
     events,
-    rotatedInAccountId:
-      rotatedIn !== null && rotatedIn.fighterKind === "human"
-        ? (rotatedIn as HumanFighter).accountId
-        : null,
+    changes,
     killedPlayer: result.killedPlayer,
     sideHits: result.sideHits,
     sideFallout: side.fallout,
@@ -227,29 +228,44 @@ function botFellInTurn(
   foe: Participant,
   duel: FightDuel,
   result: BotMeleeResult,
+  changes: DuelChange[],
 ): readonly BattleEvent[] {
   if (bot.alive || result.killedPlayer) return [];
-  const everyone = state.roster.all();
-  if (enemySideCleared(bot.team, everyone)) return [];
-  if (foe.fighterKind !== "human") {
-    dissolveDuelContaining(state.duels, everyone, bot.id);
-    return [];
+  if (enemySideCleared(bot.team, state.roster.all())) return [];
+  if (foe.fighterKind === "human") {
+    // A player is told in the packet of the turn itself; the rest of the change is the same.
+    return settleAfterMobFell(false, {
+      roster: state.roster,
+      duel,
+      duels: state.duels,
+      opener: foe as HumanFighter,
+      openingRandom: state.openingRandom,
+    }).events;
   }
-  return settleAfterMobFell(false, {
-    roster: state.roster,
-    enemyTeam: state.fightRules.teamAssignment.enemyTeam,
-    duel,
+  if (!foe.alive) return [];
+  const next = replaceFallen({ dead: bot, ...participantsOf(state) });
+  if (next) changes.push(next);
+  return [];
+}
+
+function participantsOf(state: HuntActionState): Readonly<{
+  humans: readonly HumanFighter[];
+  bots: readonly BotFighter[];
+  duels: FightDuel[];
+  openingRandom: RandomSource;
+}> {
+  return {
+    humans: state.roster.humans,
+    bots: state.roster.bots,
     duels: state.duels,
-    opener: foe as HumanFighter,
     openingRandom: state.openingRandom,
-  }).events;
+  };
 }
 
 function settleGloveHits(
   ending: EndingGloveResult,
   input: Readonly<{
     roster: Roster;
-    enemyTeam: 1 | 2;
     duel: FightDuel;
     duels: FightDuel[];
     opener: HumanFighter;
@@ -308,7 +324,6 @@ function hitInput(
   duel: FightDuel,
 ): Readonly<{
   roster: Roster;
-  enemyTeam: 1 | 2;
   duel: FightDuel;
   duels: FightDuel[];
   opener: HumanFighter;
@@ -316,7 +331,6 @@ function hitInput(
 }> {
   return {
     roster: state.roster,
-    enemyTeam: state.fightRules.teamAssignment.enemyTeam,
     duel,
     duels: state.duels,
     opener: human,

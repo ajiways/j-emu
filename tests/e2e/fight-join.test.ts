@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Application } from "../../src/app/application.ts";
 import { RadwayPlayerAttackPolicy } from "../../src/app/radway-player-attack-policy.ts";
+import type { RandomSource } from "../../src/modules/combat/domain/random-source.ts";
 import type { AmfValue } from "../../src/modules/jugger-wire/amf/amf3.ts";
 import {
   AuthenticatedClient,
@@ -27,6 +28,15 @@ import {
 
 const START_MS = 1_700_000_000_000;
 const LEVEL3_EXP = 202;
+
+/** The hunter opens the fight; every later opening roll falls to the one who comes in. */
+function openingRolls(): RandomSource {
+  let rolls = 0;
+  return {
+    integer: (minInclusive) => minInclusive,
+    unit: () => (rolls++ === 0 ? 0.99 : 0.01),
+  };
+}
 
 describe("hunt fight join team 2 opener pin", () => {
   let harness: ApplicationHarness;
@@ -122,6 +132,7 @@ describe("hunt fight join team 2", () => {
       combatBotStrength: 1,
       combatRules: { strPerDamagePoint: 1 },
       combatRandom: new FixedRandom(),
+      combatOpeningRandom: openingRolls(),
     });
     application = await harness.start();
   });

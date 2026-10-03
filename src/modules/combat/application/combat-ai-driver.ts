@@ -2,7 +2,8 @@ import type { Battle } from "../domain/battle.ts";
 import { persChangeForHit } from "../domain/melee-pers-change.ts";
 import type { Fallout } from "../domain/settle-fallen.ts";
 import type { CombatEvent } from "../ports/combat-port.ts";
-import { fanoutHit, withActorPersChange } from "./combat-melee-dispatch.ts";
+import type { DuelChange } from "../domain/battle-actions.ts";
+import { delayTokensByAccount, fanoutHit, withActorPersChange } from "./combat-melee-dispatch.ts";
 import type { FightScheduler } from "./fight-scheduler.ts";
 
 type AiDriverDeps = Readonly<{
@@ -20,6 +21,12 @@ type AiDriverDeps = Readonly<{
   applyShuffle: (battle: Battle, accountId: number) => boolean;
   grantPlayer: (battle: Battle, accountId: number, delayMs: number) => void;
   announcePaired: (battle: Battle, accountIds: readonly number[]) => void;
+  /** Tells the players of a changed duel and starts it; `previous` are the turn timers before. */
+  deliverChange: (
+    battle: Battle,
+    change: DuelChange,
+    previous: ReadonlyMap<number, string>,
+  ) => void;
   /** Re-arms the effect timer for what the turn changed. */
   armEffects: (battle: Battle) => void;
 }>;
@@ -86,6 +93,7 @@ export class CombatAiDriver {
     const battle = deps.battleByFight.get(fightId);
     if (!battle || battle.finished) return;
     if (battle.duelTokenOfParticipant(botId) !== token) return;
+    const previous = delayTokensByAccount(battle);
     const result = battle.resolveAiTurn(botId, deps.scheduler.now().getTime());
     const foe = result.foeAccountId;
     if (foe !== null) {
@@ -109,9 +117,7 @@ export class CombatAiDriver {
       else if (!deps.applyShuffle(battle, foe))
         deps.grantPlayer(battle, foe, grantAtMs - deps.scheduler.now().getTime());
     }
-    if (result.rotatedInAccountId !== null) {
-      deps.announcePaired(battle, [result.rotatedInAccountId]);
-    }
+    for (const change of result.changes) deps.deliverChange(battle, change, previous);
     this.arm(battle);
   }
 

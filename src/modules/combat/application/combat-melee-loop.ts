@@ -66,6 +66,7 @@ export class CombatMeleeLoop {
       settleFallout: (battle, fallout) => this.effectClock.settleFallout(battle, fallout),
       handOff: (battle, accountId) => this.changes.handOff(battle, accountId),
       applyShuffle: (battle, accountId) => this.changes.shuffle(battle, accountId),
+      deliverChange: (battle, change, previous) => this.changes.announce(battle, change, previous),
       grantPlayer: (battle, accountId, delayMs) => {
         const token = battle.delayTokenFor(accountId);
         if (!token) return;

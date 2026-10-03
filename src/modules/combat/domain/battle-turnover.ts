@@ -35,7 +35,6 @@ export function replaceFallenOfBattle(state: TurnoverState, accountId: number) {
     humans: state.roster.humans,
     bots: state.roster.bots,
     duels: state.duels,
-    pairsWaiters: state.fightRules.pairsNextWaiter,
     openingRandom: state.openingRandom,
   });
 }

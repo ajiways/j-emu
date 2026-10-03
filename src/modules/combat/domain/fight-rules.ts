@@ -20,8 +20,6 @@ type FightRulesFields = Readonly<{
   canAggro: boolean;
   skipQuestKills: boolean;
   allowsSideBots: boolean;
-  // Queue pairing, not enemy bots: quest join is denied so this value is unobservable there.
-  pairsNextWaiter: boolean;
   hasEnemyBots: boolean;
   awardsHonor: boolean;
   restoresFighters: boolean;
@@ -61,7 +59,6 @@ export class FightRules implements FightRulesFields {
   readonly canAggro!: boolean;
   readonly skipQuestKills!: boolean;
   readonly allowsSideBots!: boolean;
-  readonly pairsNextWaiter!: boolean;
   readonly hasEnemyBots!: boolean;
   readonly awardsHonor!: boolean;
   readonly restoresFighters!: boolean;
@@ -121,7 +118,6 @@ export class FightRules implements FightRulesFields {
       canAggro: inWorld,
       skipQuestKills: false,
       allowsSideBots: false,
-      pairsNextWaiter: true,
       awardsHonor: false,
       restoresFighters: false,
       includesQuestChat: false,
@@ -143,7 +139,6 @@ export class FightRules implements FightRulesFields {
       canAggro: false,
       skipQuestKills: botCount > 1,
       allowsSideBots: true,
-      pairsNextWaiter: true,
       awardsHonor: false,
       restoresFighters: false,
       includesQuestChat: true,
@@ -162,7 +157,6 @@ export class FightRules implements FightRulesFields {
       canAggro: false,
       skipQuestKills: false,
       allowsSideBots: false,
-      pairsNextWaiter: true,
       awardsHonor: false,
       restoresFighters: true,
       includesQuestChat: false,
@@ -181,7 +175,6 @@ export class FightRules implements FightRulesFields {
       canAggro: false,
       skipQuestKills: false,
       allowsSideBots: false,
-      pairsNextWaiter: true,
       awardsHonor: true,
       restoresFighters: false,
       includesQuestChat: false,
@@ -237,7 +230,6 @@ function assertFightRules(fields: FightRulesFields): void {
   requireFlag(fields.canAggro, "canAggro");
   requireFlag(fields.skipQuestKills, "skipQuestKills");
   requireFlag(fields.allowsSideBots, "allowsSideBots");
-  requireFlag(fields.pairsNextWaiter, "pairsNextWaiter");
   requireFlag(fields.hasEnemyBots, "hasEnemyBots");
   requireFlag(fields.awardsHonor, "awardsHonor");
   requireFlag(fields.restoresFighters, "restoresFighters");

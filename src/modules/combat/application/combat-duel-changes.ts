@@ -19,7 +19,7 @@ export class CombatDuelChanges {
     const previous = delayTokensByAccount(battle);
     const shuffle = battle.tryShuffleAfterHits(accountId);
     if (shuffle.kind === "none") return false;
-    this.deliver(battle, shuffle, previous);
+    this.announce(battle, shuffle, previous);
     return true;
   }
 
@@ -27,7 +27,7 @@ export class CombatDuelChanges {
   replace(battle: Battle, accountId: number): void {
     const previous = delayTokensByAccount(battle);
     const shuffle = battle.replaceFallen(accountId);
-    if (shuffle !== null) this.deliver(battle, shuffle, previous);
+    if (shuffle !== null) this.announce(battle, shuffle, previous);
   }
 
   /** The fight goes on without a fallen player: he waits and gets the result when it ends. */
@@ -38,7 +38,8 @@ export class CombatDuelChanges {
     this.replace(battle, deadAccountId);
   }
 
-  private deliver(
+  /** Tells the players of a changed duel, starts it, and arms the mobs. */
+  announce(
     battle: Battle,
     shuffle: Exclude<ShuffleOutcome, { kind: "none" }>,
     previous: ReadonlyMap<number, string>,

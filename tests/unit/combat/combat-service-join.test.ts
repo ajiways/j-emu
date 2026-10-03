@@ -114,7 +114,8 @@ describe("CombatService hunt join", () => {
       new AllowPlayerAttackPolicy(),
       new RecordingCombatDiagnostics(),
       undefined,
-      new FixedRandom(),
+      // The opening roll falls to the waiter who steps in.
+      new SequenceRandom([0.99, 0.01]),
     );
     const start = await startHuntWithIssuedId(combat, unitHuntStart({ heroStrength: 200 }));
     await combat.execute(1, { kind: "authenticate", fightId: start.fightId, sequence: 1 });

@@ -62,7 +62,6 @@ export function settleFallen(
     if (!duel) continue;
     const next = settleAfterMobFell(false, {
       roster: input.roster,
-      enemyTeam: input.fightRules.teamAssignment.enemyTeam,
       duel,
       duels: input.duels,
       opener: hunter,

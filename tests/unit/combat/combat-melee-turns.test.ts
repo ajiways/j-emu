@@ -197,6 +197,8 @@ describe("CombatService melee turns", () => {
     const { combat, delay } = createCombatService({
       clock,
       random: new SequenceRandom([1, 27]),
+      // The opening roll falls to the waiter who steps in: he takes the first turn.
+      openingRandom: new SequenceRandom([0.99, 0.01]),
     });
     const start = await startHuntWithIssuedId(
       combat,

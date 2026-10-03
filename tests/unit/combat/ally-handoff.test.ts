@@ -9,7 +9,10 @@ import { fightContinuesWithout } from "../../../src/modules/combat/domain/battle
 import { FightRules } from "../../../src/modules/combat/domain/fight-rules.ts";
 import { UNIT_BATTLE_RULES } from "../../support/battle-rules.ts";
 import { FixedRandom } from "../../support/fakes/fixed-random.ts";
-import { shuffleAfterHits } from "../../../src/modules/combat/domain/duel-shuffle.ts";
+import {
+  replaceFallen,
+  shuffleAfterHits,
+} from "../../../src/modules/combat/domain/duel-shuffle.ts";
 import { BotFighter } from "../../../src/modules/combat/domain/bot-fighter.ts";
 import { EMPTY_COMBAT_LOADOUT } from "../../../src/modules/combat/domain/combat-loadout.ts";
 import { FightDuel } from "../../../src/modules/combat/domain/fight-duel.ts";
@@ -157,5 +160,67 @@ describe("a waiting ally mob takes a duel over", () => {
     expect(lost.duel.nextActorId).toBe(lost.foe.fightId);
     const won = duelAfter(0.99);
     expect(won.duel.nextActorId).toBe(won.ally.fightId);
+  });
+
+  it("sets the next waiting foe across from a mob whose foe fell, as it does across from a player", () => {
+    const effectIds = new FightEffectIds();
+    const mine = mob(1_000_000, 2, effectIds);
+    const fallen = mob(1_000_001, 1, effectIds);
+    const next = mob(1_000_002, 1, effectIds);
+    next.unpair();
+    fallen.applyDamage(fallen.hp);
+    const duel = new FightDuel(mine.fightId, fallen.fightId, mine.fightId);
+    const outcome = replaceFallen({
+      dead: fallen,
+      humans: [],
+      bots: [mine, fallen, next],
+      duels: [duel],
+      openingRandom: new FixedRandom(),
+    });
+    expect(outcome).toMatchObject({ kind: "waiter-handoff", tells: [], starts: [] });
+    expect(duel.otherId(mine.fightId)).toBe(next.fightId);
+    expect(next.waiting).toBe(false);
+  });
+
+  it("draws the next foe from a duel of mobs when none waits, and leaves the other mob waiting", () => {
+    const effectIds = new FightEffectIds();
+    const mine = mob(1_000_000, 2, effectIds);
+    const fallen = mob(1_000_001, 1, effectIds);
+    const drawn = mob(1_000_002, 1, effectIds);
+    const other = mob(1_000_003, 2, effectIds);
+    fallen.applyDamage(fallen.hp);
+    const duel = new FightDuel(mine.fightId, fallen.fightId, mine.fightId);
+    const elsewhere = new FightDuel(other.fightId, drawn.fightId, other.fightId);
+    const duels = [duel, elsewhere];
+    replaceFallen({
+      dead: fallen,
+      humans: [],
+      bots: [mine, fallen, drawn, other],
+      duels,
+      openingRandom: new FixedRandom(),
+    });
+    expect(duels).toEqual([duel]);
+    expect(duel.otherId(mine.fightId)).toBe(drawn.fightId);
+    expect(other.waiting).toBe(true);
+  });
+
+  it("leaves the survivor waiting when nobody can take the fallen's place", () => {
+    const effectIds = new FightEffectIds();
+    const human = hero(effectIds);
+    const fallen = mob(1_000_000, 1, effectIds);
+    fallen.applyDamage(fallen.hp);
+    const duels = [new FightDuel(human.heroId, fallen.fightId, human.heroId)];
+    const outcome = replaceFallen({
+      dead: fallen,
+      humans: [human],
+      bots: [fallen],
+      duels,
+      openingRandom: new FixedRandom(),
+    });
+    expect(outcome).toMatchObject({
+      tells: [{ accountId: 1, events: [{ type: "opponent-wait" }] }],
+    });
+    expect(duels).toEqual([]);
+    expect(human.waiting).toBe(true);
   });
 });
