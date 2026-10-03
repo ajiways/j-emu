@@ -79,6 +79,10 @@ describe("fproxy friendly duel", () => {
     expect(await a.fight({ rc: "castSpell", srcType: 1, srcId: 2, sq: 5 })).toHaveLength(0);
     const strike = await a.pollFight();
     expect(fightEventTypes(strike)).toEqual(expect.arrayContaining(["attackwait", "cast"]));
+    // The player struck across sees the swing land, and nothing of the striker's glove combo.
+    const struck = fightEventTypes(await b.pollFight());
+    expect(struck).toEqual(expect.arrayContaining(["cast", "persChangeInfo"]));
+    expect(struck).not.toContain("persCP");
     await harness.elapseCombat(2500);
     const grantB = await b.pollFight();
     expect(fightEventTypes(grantB)).toContain("attacknow");

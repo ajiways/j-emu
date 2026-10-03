@@ -391,15 +391,16 @@ describe("CombatService melee turns", () => {
       "command-accepted",
     ]);
     expect(melee.some((event) => event.type === "damage" && event.targetId === 2)).toBe(true);
-    expect(await combat.execute(2, { kind: "poll" })).toEqual([
-      expect.objectContaining({
-        type: "pers-change",
-        humans: expect.arrayContaining([
-          expect.objectContaining({ id: 1 }),
-          expect.objectContaining({ id: 2 }),
-        ]),
-      }),
-    ]);
+    // The one struck sees the blow land, then the fresh hit points; no turn wait, no combo.
+    const struck = await combat.execute(2, { kind: "poll" });
+    expect(struck.map((event) => event.type)).toEqual(["damage", "pers-change"]);
+    expect(struck[0]).toMatchObject({ sourceId: 1, targetId: 2 });
+    expect(struck[1]).toMatchObject({
+      humans: expect.arrayContaining([
+        expect.objectContaining({ id: 1 }),
+        expect.objectContaining({ id: 2 }),
+      ]),
+    });
 
     clock.advanceMs(1400);
     await delay.fireDue(clock.now());

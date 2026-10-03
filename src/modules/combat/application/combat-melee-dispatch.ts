@@ -99,6 +99,23 @@ export function fanoutHit(
   fanoutRosterEffects(battle, actorAccountId, events, enqueue, wakeAccount);
 }
 
+/** The blows of a strike for the one it hits: no turn wait, no glove combo of the striker, hp after the swing. */
+function strikeSeenByFoe(
+  battle: Battle,
+  foeAccountId: number,
+  events: readonly CombatEvent[],
+): readonly CombatEvent[] {
+  const blows = events.flatMap((event): CombatEvent[] => {
+    if (event.type !== "damage" || battle.accountOfParticipant(event.targetId) !== foeAccountId) {
+      return [];
+    }
+    const blow = Object.fromEntries(Object.entries(event).filter(([key]) => key !== "comboCp"));
+    return [blow as typeof event];
+  });
+  if (blows.length === 0) return [];
+  return [...blows, ...withActorPersChange(battle, events).filter((e) => e.type === "pers-change")];
+}
+
 export function fanoutPersChange(
   battle: Battle,
   actorAccountId: number,
@@ -116,7 +133,10 @@ export function fanoutPersChange(
   if (!patch) return;
   for (const accountId of battle.authedAccountIds()) {
     if (accountId === actorAccountId || skipAccountIds.has(accountId)) continue;
-    enqueue(accountId, [patch], "head");
+    // The player struck across from the actor sees the swing land, not only the fresh hit points.
+    const blows = strikeSeenByFoe(battle, accountId, events);
+    if (blows.length > 0) enqueue(accountId, blows);
+    else enqueue(accountId, [patch], "head");
     wakeAccount(accountId);
   }
 }
