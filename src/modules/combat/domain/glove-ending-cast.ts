@@ -22,6 +22,7 @@ import { duelFoe } from "./melee-target.ts";
 import type { Participant } from "./participant.ts";
 import { applyDamageToMeleeTarget } from "./paired-melee.ts";
 import type { RandomSource } from "./random-source.ts";
+import { shieldEvents } from "./shield-pool.ts";
 
 type GloveSideNotify = Readonly<{
   accountId: number;
@@ -89,6 +90,7 @@ export function resolveGloveFinisher(
   const events: BattleEvent[] = [
     { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },
     gloveDamageEvent(human.heroId, glove.spell, primaryHit, cp, dmgType),
+    ...primaryHit.shields,
   ];
   let finished = hits.some((hit) => hit.finished);
   if (finished) {
@@ -127,6 +129,8 @@ type GloveKind1Hit = Readonly<{
   hpChange: number;
   killed: boolean;
   finished: boolean;
+  /** What the target's shields took of the hit. */
+  shields: readonly BattleEvent[];
 }>;
 
 function applyGloveKind1Hits(
@@ -142,17 +146,16 @@ function applyGloveKind1Hits(
   const hits: GloveKind1Hit[] = [];
   for (const target of targets) {
     const foeHp = target.hp;
-    const damage = appliedHpLoss(
-      rollSpellDamage({
-        spell,
-        casterStrength: human.meleeStrength(),
-        caster: human,
-        target,
-        random: input.random,
-        rules: input.rules,
-      }),
-      foeHp,
-    );
+    const rolled = rollSpellDamage({
+      spell,
+      casterStrength: human.meleeStrength(),
+      caster: human,
+      target,
+      random: input.random,
+      rules: input.rules,
+    });
+    const shields = shieldEvents(human.heroId, target, target.effects.takeHitShield());
+    const damage = appliedHpLoss(rolled, foeHp);
     const hit = applyDamageToMeleeTarget(human, target, damage, input.participants);
     hits.push({
       targetId: hit.targetId,
@@ -160,6 +163,7 @@ function applyGloveKind1Hits(
       hpChange: -damage,
       killed: hit.killed,
       finished: hit.finished,
+      shields,
     });
   }
   return hits;
@@ -209,8 +213,12 @@ function sideNotifiesForHits(
     const damage = gloveDamageEvent(caster.heroId, spell, hit, undefined, dmgType);
     for (const accountId of notifyAccountIds(caster.accountId, hit.targetId, input)) {
       const events: BattleEvent[] = hit.killed
-        ? [{ type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds }, damage]
-        : [damage];
+        ? [
+            { type: "turn-wait", timeoutSeconds: input.rules.turnTimeoutSeconds },
+            damage,
+            ...hit.shields,
+          ]
+        : [damage, ...hit.shields];
       notifies.push({ accountId, events, targetId: hit.targetId });
     }
   }

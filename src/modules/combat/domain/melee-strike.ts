@@ -14,6 +14,7 @@ import {
 import { rollOverlayExtra } from "./melee-school-overlay.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
+import { shieldEvents } from "./shield-pool.ts";
 import { rollSwing, type Swing } from "./swing.ts";
 
 export type FighterStrike = Readonly<{
@@ -30,6 +31,8 @@ export type FighterStrike = Readonly<{
   dRage: number;
   /** `effPurge` of every charge the strike spent the last of. */
   purges: readonly BattleEvent[];
+  /** What the target's shields took of the hit and the float, and the shields it used up. */
+  shields: readonly BattleEvent[];
   /** The wire animation of the execution («Казнь») the killing blow was; `null` for no execution. */
   execution: string | null;
 }>;
@@ -62,6 +65,7 @@ export function strikeFighter(
     random: input.random,
     rules: input.rules,
   });
+  const hitShield = shieldEvents(attacker.id, target, target.effects.takeHitShield());
   const hpBefore = target.hp;
   resolveHpLoss(target, outcome.applied, attacker);
   const { extra, purges: overlayPurges } = rollOverlayExtra(
@@ -73,6 +77,7 @@ export function strikeFighter(
     input.rules,
   );
   if (extra) resolveHpLoss(target, -extra.hpChange, attacker);
+  const floatShield = shieldEvents(attacker.id, target, target.effects.takeHitShield());
   const dealt = outcome.applied + (extra ? -extra.hpChange : 0);
   const executes = isExecution({
     furyFill: swing.furyFill,
@@ -98,6 +103,7 @@ export function strikeFighter(
     drained: settleDrain(attacker, dealt, swing.drain),
     dRage: dealt < 1 ? 0 : target.awardIncomingRage(dealt),
     purges: [...swing.purges, ...overlayPurges],
+    shields: [...hitShield, ...floatShield],
     execution,
   };
 }
@@ -136,6 +142,7 @@ export function strikeEvents(
       ...(drained.healed > 0 ? { drain: drained.healed, selfReact: drained.selfReact } : {}),
       ...(extra ? { extraHits: [extra] } : {}),
     },
+    ...strike.shields,
     ...(drained.hurtEvent ? [drained.hurtEvent] : []),
     ...strike.purges,
   ];

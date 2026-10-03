@@ -35,7 +35,7 @@ import type { BotFighter } from "./bot-fighter.ts";
 import type { HumanFighter } from "./human-fighter.ts";
 import { grantTurn as grantHumanTurn } from "./turn-grant.ts";
 import { opposingTeam } from "./opposing-team.ts";
-import { consumeStunSkip, timeoutBattleTurn } from "./battle-turn-skips.ts";
+import { consumeStunSkip, timeoutBattleTurn, turnStartEmblems } from "./battle-turn-skips.ts";
 import type { HumanTimeout } from "./timeout-human-turn.ts";
 import type { PlayerMeleeResult } from "./paired-melee.ts";
 import { tryIdolCast } from "./idol-summon.ts";
@@ -316,6 +316,11 @@ export class Battle {
 
   consumeStunSkip(accountId: number): readonly BattleEvent[] | null {
     return consumeStunSkip(requireBattleHuman(this.humans, accountId));
+  }
+
+  /** The emblems the hero wears fire, when they do, at the start of his turn. */
+  fireTurnEmblems(accountId: number, nowMs: number): readonly BattleEvent[] {
+    return turnStartEmblems(this.humans, accountId, nowMs, this.random, this.rules);
   }
 
   countPairHit(accountId: number): void {

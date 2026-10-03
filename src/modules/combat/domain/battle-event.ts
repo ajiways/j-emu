@@ -77,6 +77,8 @@ export type BattleEvent =
       extraHits?: readonly ExtraHit[];
       /** The animation of an execution of the victim. */
       fatality?: string;
+      /** Damage a shield of the target took: shown as an absorption, the hit points do not move. */
+      absorb?: number;
     }>
   | Readonly<{ type: "turn-granted"; timeoutSeconds: number }>
   | Readonly<{ type: "turn-timeout" }>
@@ -128,6 +130,8 @@ export type BattleEvent =
       id?: number;
       sourceId?: number;
       remainTime?: number;
+      /** A shield (`kind 9`): what it can take. */
+      amount?: number;
       skills?: Readonly<Record<string, number>>;
     }>
   | Readonly<{ type: "effect-purge"; effectId: number }>

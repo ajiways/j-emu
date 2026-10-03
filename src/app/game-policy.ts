@@ -75,6 +75,7 @@ const schema = z.object({
     defChokesDex: z.literal(0.3),
     magresSoftC: z.literal(200),
     executionChance: z.number().min(0).max(1),
+    emblemChances: z.array(z.number().min(0).max(1)).min(2),
     meleeSourceIds: z.object({
       left: z.number().int().positive(),
       center: z.number().int().positive(),

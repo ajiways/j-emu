@@ -1,6 +1,7 @@
 import type { BotFighter } from "../domain/bot-fighter.ts";
 import type { CombatSpell } from "../domain/combat-loadout.ts";
 import type { HumanFighter } from "../domain/human-fighter.ts";
+import { emblemPlanOf } from "../domain/emblem-plan.ts";
 import { unsupportedSkillsOf } from "../domain/unsupported-skills.ts";
 import type { CombatDiagnostics, UnsupportedSkillReport } from "../ports/combat-diagnostics.ts";
 
@@ -18,6 +19,19 @@ export function reportUnsupportedSkills(
   fightId: string,
   fighters: Readonly<{ humans: readonly HumanFighter[]; bots: readonly BotFighter[] }>,
 ): void {
+  for (const human of fighters.humans) {
+    for (const emblem of human.casts.loadout.emblems) {
+      const planned = emblemPlanOf(emblem);
+      if (planned.kind !== "unsupported") continue;
+      diagnostics.unsupportedEmblem({
+        fightId,
+        participantId: human.heroId,
+        artikulId: emblem.artikulId,
+        title: emblem.title,
+        reason: planned.reason,
+      });
+    }
+  }
   for (const source of [
     ...fighters.humans.flatMap(humanSpells),
     ...fighters.bots.flatMap(botSpells),

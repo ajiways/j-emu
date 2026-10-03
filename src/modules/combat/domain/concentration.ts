@@ -10,6 +10,7 @@ import type { RandomSource } from "./random-source.ts";
 import { rollSpellDamage } from "./spell-aoe.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
 import type { Roster } from "./roster.ts";
+import { shieldEvents } from "./shield-pool.ts";
 import { settleFallen, type Fallout } from "./settle-fallen.ts";
 
 export type ConcentrationResult = Readonly<{
@@ -56,6 +57,7 @@ export function concentrate(
     random: input.random,
     rules,
   });
+  const shields = shieldEvents(actor.id, victim, victim.effects.takeHitShield());
   const { applied, killed } = resolveHpLoss(victim, damage, actor);
   actor.casts.noteConcentration(input.nowMs);
   const patch = persChangeForParticipants(
@@ -77,5 +79,8 @@ export function concentrate(
   const fallout = killed
     ? settleFallen([victim], input)
     : { deliveries: [], finished: null, fallenAccountIds: [], reassignedAccountIds: [] };
-  return { events: [hit, patch, ...(fallout.finished ? [fallout.finished] : [])], fallout };
+  return {
+    events: [hit, ...shields, patch, ...(fallout.finished ? [fallout.finished] : [])],
+    fallout,
+  };
 }

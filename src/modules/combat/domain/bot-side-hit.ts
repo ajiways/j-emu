@@ -4,6 +4,8 @@ import type { BattleEvent } from "./battle-event.ts";
 export type BotSideHit = Readonly<{
   targetId: number;
   event: Extract<BattleEvent, { type: "damage" }>;
+  /** What the target's shields took of the hit. */
+  shields: readonly BattleEvent[];
   killed: boolean;
 }>;
 

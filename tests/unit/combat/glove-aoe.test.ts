@@ -50,6 +50,7 @@ const aoeLoadout: CombatLoadout = {
     ],
   },
   gearSpells: [],
+  emblems: [],
   partyId: null,
   lifetimeExecutions: 0,
 };

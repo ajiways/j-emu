@@ -58,6 +58,7 @@ const LOADOUT: CombatLoadout = {
     ],
   },
   gearSpells: [],
+  emblems: [],
   partyId: null,
   lifetimeExecutions: 0,
 };

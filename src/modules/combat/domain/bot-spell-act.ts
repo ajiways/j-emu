@@ -13,6 +13,7 @@ import type { BotFighter } from "./bot-fighter.ts";
 import { magicReact } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
+import { shieldEvents } from "./shield-pool.ts";
 import { attachSpellTicks } from "./fight-effect-ticks.ts";
 import { castSpell, type SpellPresentation } from "./spell-cast.ts";
 import type { BotSideHit, BotSpellAct } from "./bot-side-hit.ts";
@@ -70,11 +71,16 @@ function instantKind1(
   state: BotKindActState,
 ): BotSpellAct {
   const others = aoeOthers(actor, target, card, state);
-  const { applied: damage, killed } = resolveHpLoss(
-    target,
-    rollBotSpellDamage(actor.strength, card.spell, state.random, state.rules, actor, target),
+  const rolled = rollBotSpellDamage(
+    actor.strength,
+    card.spell,
+    state.random,
+    state.rules,
     actor,
+    target,
   );
+  const shields = shieldEvents(actor.fightId, target, target.effects.takeHitShield());
+  const { applied: damage, killed } = resolveHpLoss(target, rolled, actor);
   const hit: Extract<BattleEvent, { type: "damage" }> = {
     type: "damage",
     sourceId: actor.fightId,
@@ -98,7 +104,7 @@ function instantKind1(
       : [];
   const sideHits = others.map((other) => hitOther(actor, other, card, state));
   const dRage = damage < 1 ? 0 : target.awardIncomingRage(damage);
-  return { events: [...ticks, { ...hit, dRage }], sideHits };
+  return { events: [...ticks, { ...hit, dRage }, ...shields], sideHits };
 }
 
 /** The others an AOE spell reaches besides the aimed foe, picked before anyone is hit. */
@@ -123,15 +129,21 @@ function hitOther(
   card: MobSpellCard,
   state: BotKindActState,
 ): BotSideHit {
-  const { applied, killed } = resolveHpLoss(
-    other,
-    rollBotSpellDamage(actor.strength, card.spell, state.random, state.rules, actor, other),
+  const rolled = rollBotSpellDamage(
+    actor.strength,
+    card.spell,
+    state.random,
+    state.rules,
     actor,
+    other,
   );
+  const shields = shieldEvents(actor.fightId, other, other.effects.takeHitShield());
+  const { applied, killed } = resolveHpLoss(other, rolled, actor);
   const dRage = applied < 1 ? 0 : other.awardIncomingRage(applied);
   return {
     targetId: other.id,
     killed,
+    shields,
     event: {
       type: "damage",
       sourceId: actor.fightId,

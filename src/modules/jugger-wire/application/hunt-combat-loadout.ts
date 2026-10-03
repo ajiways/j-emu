@@ -3,6 +3,7 @@ import type { PartyMembershipQuery } from "../../party/ports/party-membership-qu
 import type { ArtifactDefinition } from "../../catalog/domain/artifact-definition.ts";
 import type { Catalog } from "../../catalog/ports/catalog.ts";
 import type {
+  CombatEmblem,
   CombatGearSpell,
   CombatGloveLoadout,
   CombatIdolRow,
@@ -13,6 +14,7 @@ import type {
 import type { InventoryItem } from "../../inventory/domain/inventory-item.ts";
 import type { InventoryService } from "../../inventory/domain/inventory-service.ts";
 import { isIdolArtifact } from "../../inventory/domain/idol-artifact.ts";
+import { INSIGNIA_EQUIPMENT_SLOT } from "../../inventory/domain/paperdoll-slot.ts";
 import { isRolledGloveInstance } from "../../inventory/domain/item-instance-data.ts";
 import { toCombatSpell } from "./to-combat-spell.ts";
 
@@ -54,6 +56,7 @@ export class HuntCombatLoadout {
       concentration: await this.concentrationSpell(),
       glove: await this.gloveFrom(items),
       gearSpells: await this.gearSpellsFrom(items),
+      emblems: await this.emblemsFrom(items),
       partyId: await this.parties.partyIdOf(characterId),
       lifetimeExecutions: await this.lifetime.fatalityCount(characterId),
     };
@@ -114,6 +117,7 @@ export class HuntCombatLoadout {
     const spells: CombatGearSpell[] = [];
     for (const item of items) {
       if (item.location.kind !== "equipment") continue;
+      if (item.location.slot === INSIGNIA_EQUIPMENT_SLOT) continue;
       const definition = await this.requireArtifact(item.artifactId);
       const spell = definition.extra.spell;
       if (!spell || spell.effects.length < 1) continue;
@@ -130,6 +134,27 @@ export class HuntCombatLoadout {
       });
     }
     return spells;
+  }
+
+  /** The emblem worn in the insignia slot; a card without a spell is only an ornament. */
+  private async emblemsFrom(items: readonly InventoryItem[]): Promise<CombatEmblem[]> {
+    const emblems: CombatEmblem[] = [];
+    for (const item of items) {
+      if (item.location.kind !== "equipment" || item.location.slot !== INSIGNIA_EQUIPMENT_SLOT) {
+        continue;
+      }
+      const definition = await this.requireArtifact(item.artifactId);
+      const spell = definition.extra.spell;
+      if (!spell || spell.effects.length < 1) continue;
+      emblems.push({
+        artikulId: item.artifactId,
+        title: definition.title,
+        picture: definition.picture,
+        power: definition.skills.find((skill) => skill.id === "PVP_SHIELD")?.value ?? 0,
+        spell: toCombatSpell(spell),
+      });
+    }
+    return emblems;
   }
 
   private async gloveFrom(items: readonly InventoryItem[]): Promise<CombatGloveLoadout | null> {

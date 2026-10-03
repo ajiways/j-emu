@@ -49,7 +49,9 @@ export function settleBotSideHits(
     const human = input.roster.humans.find((entry) => entry.heroId === hit.targetId);
     // The striker is not on this player's screen, so no cast of his: the hit shows as plain damage.
     const shown = { ...hit.event, animation: "" };
-    return human?.authed ? [{ accountId: human.accountId, events: [shown, patch] }] : [];
+    return human?.authed
+      ? [{ accountId: human.accountId, events: [shown, ...hit.shields, patch] }]
+      : [];
   });
   const fallenIds = new Set(input.sideHits.filter((hit) => hit.killed).map((hit) => hit.targetId));
   const fallen = input.roster.all().filter((fighter) => fallenIds.has(fighter.id));

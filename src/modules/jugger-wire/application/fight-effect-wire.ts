@@ -23,6 +23,7 @@ export function fightPersEffEvent(
       dmgType: fx.dmgType,
       ...(fx.remainTime !== undefined ? { remainTime: fx.remainTime } : {}),
       ...(fx.groupId !== undefined ? { groupId: fx.groupId } : {}),
+      ...(fx.amount !== undefined ? { amount: fx.amount } : {}),
     };
   }
   return out;
@@ -55,6 +56,7 @@ function fightStandingEffectUseEvent(
     dmgType: fx.dmgType,
     ...(fx.remainTime !== undefined ? { remainTime: fx.remainTime } : {}),
     ...(fx.groupId !== undefined ? { groupId: fx.groupId } : {}),
+    ...(fx.amount !== undefined ? { amount: fx.amount } : {}),
     skills: fx.skills,
   };
 }
@@ -75,6 +77,7 @@ export function fightEffectUseEvent(event: EffectUse): Readonly<Record<string, u
     ...(event.groupId !== undefined ? { groupId: event.groupId } : {}),
     ...(event.dmgType !== undefined ? { dmgType: event.dmgType } : {}),
     ...(event.remainTime !== undefined ? { remainTime: event.remainTime } : {}),
+    ...(event.amount !== undefined ? { amount: event.amount } : {}),
     ...(event.skills !== undefined ? { skills: event.skills } : {}),
   };
 }

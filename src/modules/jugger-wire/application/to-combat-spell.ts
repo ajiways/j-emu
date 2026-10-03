@@ -6,6 +6,7 @@ export function toCombatSpell(spell: ArtifactSpell): CombatSpell {
     ...(spell.animData !== undefined ? { animData: spell.animData } : {}),
     ...(spell.groupId !== undefined ? { groupId: spell.groupId } : {}),
     ...(spell.cooldown !== undefined ? { cooldown: spell.cooldown } : {}),
+    ...(spell.triggerCount !== undefined ? { triggerCount: spell.triggerCount } : {}),
     ...(spell.mpCost !== undefined ? { mpCost: spell.mpCost } : {}),
     ...(spell.endTurn !== undefined ? { endTurn: spell.endTurn } : {}),
     ...(spell.flags !== undefined ? { flags: spell.flags } : {}),
@@ -35,6 +36,8 @@ export function toCombatSpell(spell: ArtifactSpell): CombatSpell {
       ...(effect.realStartTime !== undefined ? { realStartTime: effect.realStartTime } : {}),
       ...(effect.botArtikulId !== undefined ? { botArtikulId: effect.botArtikulId } : {}),
       ...(effect.manaCost !== undefined ? { manaCost: effect.manaCost } : {}),
+      ...(effect.limit !== undefined ? { limit: effect.limit } : {}),
+      ...(effect.delta !== undefined ? { delta: effect.delta } : {}),
       ...(effect.skills ? { skills: effect.skills } : {}),
     })),
   };

@@ -15,6 +15,7 @@ import {
   fanoutHit,
   fanoutRosterEffects,
   enqueueKeepTurn,
+  deliverTurnEmblems,
 } from "./combat-melee-dispatch.ts";
 import { CombatAiDriver } from "./combat-ai-driver.ts";
 import { CombatEffectClock } from "./combat-effect-clock.ts";
@@ -294,10 +295,7 @@ export class CombatMeleeLoop {
     this.passTurnToFoe(battle, accountId);
   }
 
-  /**
-   * The turn goes to whoever stands across from `accountId`: a mob acts after a pause, a player
-   * is granted it. The one place a turn is handed on after an action, a stunned turn or a timeout.
-   */
+  /** The turn goes to whoever stands across from `accountId`: a mob acts after a pause, a player is granted it. */
   private passTurnToFoe(battle: Battle, accountId: number): void {
     const foeId = battle.foeIdOf(accountId);
     if (foeId !== null) this.giveTurn(battle, foeId);
@@ -349,7 +347,9 @@ export class CombatMeleeLoop {
       deliverEffects(battle, accountId, skipped, this.enqueue, this.wakeAccount);
       return this.passTurnToFoe(battle, accountId);
     }
-    const granted = battle.grantTurn(accountId, this.scheduler.now().getTime());
+    const now = this.scheduler.now().getTime();
+    deliverTurnEmblems(battle, accountId, now, this.enqueue, this.wakeAccount);
+    const granted = battle.grantTurn(accountId, now);
     if (!granted) return;
     this.enqueue(accountId, [granted]);
     this.wakeAccount(accountId);

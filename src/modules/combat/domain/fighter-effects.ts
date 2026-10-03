@@ -3,10 +3,12 @@ import { takeOverlayCharge, takeStrikeCharges } from "./strike-charges.ts";
 import type { SpentStrike } from "./strike-mods.ts";
 import { addDrain, drainFromSkills, NO_DRAIN, type Drain } from "./drain.ts";
 import { takenDamage } from "./damage-intake.ts";
+import { absorbIntoShields, NO_HIT_SHIELD, type HitShield } from "./shield-pool.ts";
 import type { StatBase } from "./skill-bake.ts";
 import { timedBuffEffect, type TimedBuffInput } from "./timed-buff.ts";
 import type {
   ChargingKind3Input,
+  ShieldEffectInput,
   StunEffectInput,
   TickEffectInput,
 } from "./fighter-effect-inputs.ts";
@@ -31,6 +33,8 @@ export class FighterEffects {
   readonly effectIds: FightEffectIds;
   private readonly base: StatBase;
   private readonly standing: StandingEffect[] = [];
+  /** What the shields did to the damage the last `takenDamage` call worked out. */
+  private hitShield: HitShield = NO_HIT_SHIELD;
 
   constructor(
     input: Readonly<{
@@ -83,9 +87,55 @@ export class FighterEffects {
     return total;
   }
 
-  /** What the damage `raw` of `dmgType` becomes under the effects standing on this fighter. */
+  /**
+   * What the damage `raw` of `dmgType` becomes under the effects standing on this fighter, shields
+   * included; what they took of it is read with `takeHitShield` by whoever shows the hit.
+   */
   takenDamage(raw: number, dmgType: number): number {
-    return takenDamage(this.standing, raw, dmgType);
+    const taken = takenDamage(this.standing, raw, dmgType);
+    const { passed, hit } = absorbIntoShields(this.standing, taken, dmgType);
+    this.hitShield = hit;
+    return passed;
+  }
+
+  /** The shield part of the last hit worked out here; reading it clears it. */
+  takeHitShield(): HitShield {
+    const hit = this.hitShield;
+    this.hitShield = NO_HIT_SHIELD;
+    return hit;
+  }
+
+  /** A shield (`kind 9`) that stands until it is spent; the icon of it goes with `effUse`. */
+  attachShield(input: ShieldEffectInput): FightEffectSnap {
+    requireWireIdentity(input.sourceId, "shield source id");
+    requireWireIdentity(input.artikulId, "shield artikul id");
+    if (!input.title) throw new Error(`Shield ${input.artikulId} title is required`);
+    if (!input.img) throw new Error(`Shield ${input.artikulId} img is required`);
+    if (!Number.isInteger(input.capacity) || input.capacity < 1) {
+      throw new Error(`Shield ${input.artikulId} capacity must be a positive integer`);
+    }
+    if (input.limitPct < 1 || input.limitPct > 100) {
+      throw new Error(`Shield ${input.artikulId} limit must be a share of 1..100 percent`);
+    }
+    const id = this.effectIds.take();
+    this.standing.push({
+      id,
+      kind: 9,
+      sourceId: input.sourceId,
+      artikulId: input.artikulId,
+      title: input.title,
+      img: input.img,
+      dmgType: input.dmgType,
+      ...(input.groupId !== undefined ? { groupId: input.groupId } : {}),
+      skills: {},
+      remainTurns: 0,
+      expiresAtMs: Number.MAX_SAFE_INTEGER,
+      fightLong: true,
+      shield: { remaining: input.capacity, mask: input.mask, limitPct: input.limitPct },
+    });
+    const snap = this.snapshot().find((fx) => fx.id === id);
+    if (!snap) throw new Error(`Shield ${id} did not snapshot`);
+    return snap;
   }
 
   /** A kind-3 buff that lives on the fight clock (or the whole fight); baked against the fighter's stats. */

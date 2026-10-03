@@ -40,3 +40,16 @@ export type StunEffectInput = Readonly<{
   remainTurns: number;
   groupId?: number;
 }>;
+
+/** A shield that lasts to the end of the fight or until it is spent. */
+export type ShieldEffectInput = Readonly<{
+  sourceId: number;
+  artikulId: number;
+  title: string;
+  img: string;
+  dmgType: number;
+  groupId?: number;
+  capacity: number;
+  mask: number;
+  limitPct: number;
+}>;

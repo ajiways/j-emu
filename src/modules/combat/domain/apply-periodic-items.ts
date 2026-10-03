@@ -6,6 +6,7 @@ import { pocketHealAmount } from "./cast-state.ts";
 import { magicReact, rollMagicHit } from "./magic-hit.ts";
 import type { RandomSource } from "./random-source.ts";
 import { resolveHpLoss } from "./resolve-hp-loss.ts";
+import { shieldEvents } from "./shield-pool.ts";
 
 /** Wire `hpChange.react` of a HoT tick (live trace: hp +N, react 32, no dmgType). */
 const HOT_TICK_REACT = 32;
@@ -46,19 +47,21 @@ export function applyPeriodicItems(
       continue;
     }
     if (fighter.hp < 1) continue;
+    const rolled = rollMagicHit({
+      caster: { power: pulse.casterMagPower, resist: pulse.casterMagResist },
+      target: fighter,
+      casterStrength: pulse.casterStrength,
+      dmgType: pulse.dmgType,
+      ...(typeof pulse.amount === "number" ? { catalogAmount: pulse.amount } : {}),
+      catalogStr: pulse.catalogStr,
+      catalogPcStr: pulse.catalogPcStr,
+      random,
+      rules,
+    });
+    events.push(...shieldEvents(pulse.sourceId, fighter, fighter.effects.takeHitShield()));
     const { applied, killed } = resolveHpLoss(
       fighter,
-      rollMagicHit({
-        caster: { power: pulse.casterMagPower, resist: pulse.casterMagResist },
-        target: fighter,
-        casterStrength: pulse.casterStrength,
-        dmgType: pulse.dmgType,
-        ...(typeof pulse.amount === "number" ? { catalogAmount: pulse.amount } : {}),
-        catalogStr: pulse.catalogStr,
-        catalogPcStr: pulse.catalogPcStr,
-        random,
-        rules,
-      }),
+      rolled,
       requireTickSource(sources, pulse.sourceId),
     );
     if (applied < 1) continue;

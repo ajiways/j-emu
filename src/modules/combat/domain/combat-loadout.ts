@@ -20,6 +20,10 @@ type CombatSpellEffect = Readonly<{
   botArtikulId?: number;
   /** Kind 10 with a spend range: mana above `mpCost` that strengthens the summon. */
   manaCost?: number;
+  /** Kind 9: the share of a hit the shield takes (`100` or `"100%"`). */
+  limit?: number | string;
+  /** Kind 9: the size comes from a skill, `abs + proc × skill`. */
+  delta?: Readonly<{ skill: string; abs?: number; proc?: number }>;
   skills?: readonly Readonly<{ skillId: string; value: number }>[];
 }>;
 
@@ -27,6 +31,8 @@ export type CombatSpell = Readonly<{
   animData?: string;
   groupId?: number;
   cooldown?: number;
+  /** An emblem: how many times it may fire in one fight. */
+  triggerCount?: number;
   /** Mana the cast takes; a spell with a spend range takes up to this plus its `manaCost`. */
   mpCost?: number;
   endTurn?: boolean;
@@ -60,6 +66,16 @@ export type CombatGloveSpell = Readonly<{
 export type CombatGloveLoadout = Readonly<{
   hits: readonly number[];
   spells: readonly CombatGloveSpell[];
+}>;
+
+/** An emblem of the insignia slot: the card's spell and the shield power the hero's skills give it. */
+export type CombatEmblem = Readonly<{
+  artikulId: number;
+  title: string;
+  picture: string;
+  /** The `PVP_SHIELD` of the card. */
+  power: number;
+  spell: CombatSpell;
 }>;
 
 export type CombatGearSpell = Readonly<{
@@ -102,6 +118,8 @@ export type CombatLoadout = Readonly<{
   concentration: CombatSpell | null;
   glove: CombatGloveLoadout | null;
   gearSpells: readonly CombatGearSpell[];
+  /** The emblems worn, which fire on their own at the start of the hero's turn. */
+  emblems: readonly CombatEmblem[];
   /** The party the hero fights in, for spells that only reach party members; `null` for none. */
   partyId: number | null;
   /** The executions («Казни») the hero carried out in earlier fights; they unlock the animations. */
@@ -114,6 +132,7 @@ export const EMPTY_COMBAT_LOADOUT: CombatLoadout = {
   concentration: null,
   glove: null,
   gearSpells: [],
+  emblems: [],
   partyId: null,
   lifetimeExecutions: 0,
 };

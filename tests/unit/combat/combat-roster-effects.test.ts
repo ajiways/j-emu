@@ -28,6 +28,7 @@ const orbLoadout: CombatLoadout = {
   concentration: null,
   glove: null,
   gearSpells: [],
+  emblems: [],
   partyId: null,
   lifetimeExecutions: 0,
 };

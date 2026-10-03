@@ -143,6 +143,7 @@ describe("huntFightBootstrapEvents", () => {
       loadout: {
         pocket: [],
         gearSpells: [],
+        emblems: [],
         partyId: null,
         lifetimeExecutions: 0,
         idols: [],

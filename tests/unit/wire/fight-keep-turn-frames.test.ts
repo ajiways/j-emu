@@ -115,6 +115,7 @@ describe("FightWireMapper keep-turn frames", () => {
         loadout: {
           pocket: [],
           gearSpells: [],
+          emblems: [],
           partyId: null,
           lifetimeExecutions: 0,
           idols: [],

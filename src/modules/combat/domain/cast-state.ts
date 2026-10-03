@@ -23,6 +23,7 @@ export class CastState {
   private concentrationUsedAtMs: number | null = null;
   private readonly groupLastUseAt = new Map<number, number>();
   private readonly gloveLastUseAt = new Map<number, number>();
+  private readonly emblemUses = new Map<number, number>();
 
   constructor(
     readonly loadout: CombatLoadout,
@@ -47,6 +48,15 @@ export class CastState {
 
   noteConcentration(nowMs: number): void {
     this.concentrationUsedAtMs = nowMs;
+  }
+
+  /** How many times the emblem has fired in this fight. */
+  emblemFired(artikulId: number): number {
+    return this.emblemUses.get(artikulId) ?? 0;
+  }
+
+  noteEmblemFired(artikulId: number): void {
+    this.emblemUses.set(artikulId, this.emblemFired(artikulId) + 1);
   }
 
   idolRow(itemId: number): CombatIdolRow | null {
@@ -183,6 +193,7 @@ export class CastState {
       }),
       glove: this.loadout.glove,
       gearSpells: this.loadout.gearSpells,
+      emblems: this.loadout.emblems,
       partyId: this.loadout.partyId,
       lifetimeExecutions: this.loadout.lifetimeExecutions,
     };

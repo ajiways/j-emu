@@ -59,7 +59,7 @@ export function fightSiblingHpChangeEvent(event: DamageEvent): Readonly<Record<s
 
 function hpChangeRow(event: DamageEvent, react: number, heal: boolean): Record<string, unknown> {
   return {
-    absorb: 0,
+    absorb: event.absorb ?? 0,
     dRage: event.dRage ?? 0,
     deflect: 0,
     dmgType: heal ? 0 : (event.dmgType ?? 1),

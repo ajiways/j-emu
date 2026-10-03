@@ -30,6 +30,18 @@ export function fanoutRosterEffects(
   }
 }
 
+/** The hero's emblems that fire as his turn begins: he and the roster see what they put on him. */
+export function deliverTurnEmblems(
+  battle: Battle,
+  accountId: number,
+  nowMs: number,
+  enqueue: (accountId: number, events: readonly CombatEvent[], at?: "head" | "tail") => void,
+  wakeAccount: (accountId: number) => void,
+): void {
+  const fired = battle.fireTurnEmblems(accountId, nowMs);
+  if (fired.length > 0) deliverEffects(battle, accountId, fired, enqueue, wakeAccount);
+}
+
 /** Sends the events to the acting fighter and shows their effect changes to everyone else. */
 export function deliverEffects(
   battle: Battle,

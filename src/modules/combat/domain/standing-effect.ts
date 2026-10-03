@@ -1,3 +1,4 @@
+import type { ShieldState } from "./shield-pool.ts";
 import type { StrikeMods } from "./strike-mods.ts";
 import { remainingSeconds, type PeriodicState } from "./periodic-effect.ts";
 
@@ -32,6 +33,8 @@ export type FightEffectSnap = Readonly<{
   /** Absent for a buff that lasts the whole fight. */
   remainTime?: number;
   groupId?: number;
+  /** A shield (`kind 9`): what it can still take. */
+  amount?: number;
   skills: Readonly<Record<string, number>>;
 }>;
 
@@ -58,6 +61,8 @@ export type StandingEffect = {
   /** Set on a charging effect: what the strikes that spend it get. */
   strike?: StrikeMods;
   stun?: boolean;
+  /** A shield (`kind 9`): takes part of the damage the carrier is dealt until it is spent. */
+  shield?: ShieldState;
   /** No duration in the data: lasts to the end of the fight, `remainTime` is left off the wire. */
   fightLong?: boolean;
   /** Damage types (bit set) that `DFR`/`ADFR`/`DMG_AMP` of this effect cover; absent — all. */
@@ -82,6 +87,7 @@ export function snapOf(fx: StandingEffect, nowMs?: number): FightEffectSnap {
             : fx.remainTurns * TURN_SECONDS,
         }),
     ...(fx.groupId !== undefined ? { groupId: fx.groupId } : {}),
+    ...(fx.shield ? { amount: fx.shield.remaining } : {}),
     skills: fx.skills,
   };
 }

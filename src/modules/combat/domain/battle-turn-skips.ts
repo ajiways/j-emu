@@ -4,8 +4,11 @@ import { spendStunTurn } from "./apply-stun.ts";
 import type { BattleRules } from "./battle-rules.ts";
 import { requireBattleHuman } from "./battle-lookups.ts";
 import type { HumanFighter } from "./human-fighter.ts";
+import { fireEmblems } from "./emblem-turn.ts";
 import { enemySideCleared } from "./melee-target.ts";
 import { opposingTeam } from "./opposing-team.ts";
+import type { RandomSource } from "./random-source.ts";
+import { rosterIsPvp } from "./roster-pvp.ts";
 import { timeoutHumanTurn, type HumanTimeout } from "./timeout-human-turn.ts";
 
 /** The turn timed out; an AFK fighter at the skip limit dies, and the fight ends if he was the last. */
@@ -36,4 +39,16 @@ export function timeoutBattleTurn(
 export function consumeStunSkip(human: HumanFighter): readonly BattleEvent[] | null {
   if (human.stunnedTurns < 1 || human.waiting || human.hp === 0) return null;
   return spendStunTurn(human);
+}
+
+/** The emblems the hero wears fire, when they do, at the start of his turn (PvP only for most). */
+export function turnStartEmblems(
+  humans: readonly HumanFighter[],
+  accountId: number,
+  nowMs: number,
+  random: RandomSource,
+  rules: BattleRules,
+): readonly BattleEvent[] {
+  const human = requireBattleHuman(humans, accountId);
+  return fireEmblems({ human, pvp: rosterIsPvp(humans), nowMs, random, rules });
 }
